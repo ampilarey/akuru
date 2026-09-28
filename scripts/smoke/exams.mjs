@@ -34,7 +34,7 @@
  * host with no worker running that is the finding, and it is the same one
  * `OPERATOR_CHECKLIST` §5 records for the deploy.
  *
- * Environment: SMOKE_BASE_URL, SMOKE_ADMIN, SMOKE_PARENT, SMOKE_PASSWORD,
+ * Environment: SMOKE_BASE_URL, SMOKE_DEAN, SMOKE_PARENT, SMOKE_PASSWORD,
  * SMOKE_CLASS (the label of the class the parent's child is in, as the
  * schedule form shows it — default `Grade 5 A`, the seeded pilot class),
  * SMOKE_QUEUE_WAIT, SMOKE_CHROMIUM.
@@ -42,7 +42,10 @@
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
-const ADMIN = process.env.SMOKE_ADMIN ?? 'admin@akuru.edu.mv';
+// The dean, not the educational admin: since ADR-040 slice 2 (STATUS §5ie) the
+// office account `admin@` sees the academics and does not run them, so the walks
+// that author, schedule, mark and map sign in as `headmaster@` (STATUS §5jt).
+const ADMIN = process.env.SMOKE_DEAN ?? 'headmaster@akuru.edu.mv';
 const PARENT = process.env.SMOKE_PARENT ?? 'parent@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const CLASS_LABEL = process.env.SMOKE_CLASS ?? 'Grade 5 A';

@@ -38,7 +38,10 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
-const AUTHOR = process.env.SMOKE_AUTHOR ?? 'admin@akuru.edu.mv';
+// The dean, not the educational admin: since ADR-040 slice 2 (STATUS §5ie) the
+// office account `admin@` sees the academics and does not run them, so the walks
+// that author, schedule, mark and map sign in as `headmaster@` (STATUS §5jt).
+const AUTHOR = process.env.SMOKE_AUTHOR ?? 'headmaster@akuru.edu.mv';
 const REVIEWER = process.env.SMOKE_REVIEWER ?? 'supervisor@akuru.edu.mv';
 const STUDENT = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
@@ -225,8 +228,16 @@ const lessonRow = author.locator('.border-t', { hasText: LESSON }).first();
 await lessonRow.locator('button', { hasText: /^Publish$/ }).first().click();
 check('the lesson is published as revision 1', await settles(author, 'Lesson published.') && /published r1/i.test(await lessonRow.innerText()), (await lessonRow.innerText()).replace(/\s+/g, ' ').slice(0, 120));
 
-await author.locator(`button[aria-label="Publish module ${MODULE}"]`).click();
-check('the module is published', await settles(author, 'Module status updated.'), (await text(author)).slice(0, 160));
+// Publishing a module is `courses.publish` (SPEC §8.4: approving is
+// publishing), which the supervisor holds and the dean does not (ADR-040,
+// `RoleGrants`); before the role matrix the author account held everything.
+// So the supervisor publishes the module the author wrote (STATUS §5jt).
+const outlineUrl = author.url();
+const reviewer = await signIn(REVIEWER);
+check('the supervisor signs in', !reviewer.url().includes('/login'), reviewer.url());
+await reviewer.goto(outlineUrl, { waitUntil: 'networkidle' });
+await reviewer.locator(`button[aria-label="Publish module ${MODULE}"]`).click();
+check('the supervisor publishes the module', await settles(reviewer, 'Module status updated.'), (await text(reviewer)).slice(0, 160));
 
 // 5. submit for review
 await author.goto(`${BASE}/en/catalog/courses`, { waitUntil: 'networkidle' });
@@ -234,9 +245,6 @@ await author.locator('tr', { hasText: COURSE }).locator('button:has-text("Submit
 check('the course is submitted for review', await settles(author, 'Course status updated.') && (await rowText(author, COURSE)).includes('in_review'), await rowText(author, COURSE));
 
 // ---------------------------------------------------------- the supervisor
-
-const reviewer = await signIn(REVIEWER);
-check('the supervisor signs in', !reviewer.url().includes('/login'), reviewer.url());
 
 await reviewer.goto(`${BASE}/en/catalog/courses`, { waitUntil: 'networkidle' });
 const review = reviewer.locator('tr', { hasText: COURSE });

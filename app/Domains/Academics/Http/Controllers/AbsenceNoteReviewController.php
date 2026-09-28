@@ -19,7 +19,7 @@ class AbsenceNoteReviewController extends Controller
 {
     public function index(Request $request): Response
     {
-        abort_unless($request->user()?->can('manage_attendance'), 403);
+        $this->authorizeReview($request);
 
         $status = $request->string('status')->toString() ?: null;
 
@@ -32,7 +32,7 @@ class AbsenceNoteReviewController extends Controller
 
     public function approve(Request $request, AbsenceNote $absenceNote): RedirectResponse
     {
-        abort_unless($request->user()?->can('manage_attendance'), 403);
+        $this->authorizeReview($request);
 
         $data = $request->validate(['review_notes' => ['nullable', 'string', 'max:2000']]);
         app(ApproveAbsenceNoteAction::class)->execute(
@@ -46,7 +46,7 @@ class AbsenceNoteReviewController extends Controller
 
     public function reject(Request $request, AbsenceNote $absenceNote): RedirectResponse
     {
-        abort_unless($request->user()?->can('manage_attendance'), 403);
+        $this->authorizeReview($request);
 
         $data = $request->validate(['review_notes' => ['nullable', 'string', 'max:2000']]);
         app(RejectAbsenceNoteAction::class)->execute(
@@ -60,7 +60,7 @@ class AbsenceNoteReviewController extends Controller
 
     public function export(Request $request): StreamedResponse
     {
-        abort_unless($request->user()?->can('manage_attendance'), 403);
+        $this->authorizeReview($request);
 
         $rows = app(ListAbsenceNotesAction::class)->execute([
             'status' => $request->string('status')->toString() ?: null,
@@ -82,5 +82,18 @@ class AbsenceNoteReviewController extends Controller
             }
             fclose($handle);
         }, 'absence-notes.csv', ['Content-Type' => 'text/csv']);
+    }
+
+    private function authorizeReview(Request $request): void
+    {
+        // Attendance staff, and the office: an absence note is a family's
+        // request to the school, and since ADR-040 the educational admin, the
+        // dean and the supervisor hold `requests.review` and none of the
+        // attendance pair — so the screen answered them 403 while the decision
+        // said the office answers families (STATUS §5jt).
+        abort_unless(
+            $request->user()?->can('manage_attendance') || $request->user()?->can('requests.review'),
+            403,
+        );
     }
 }

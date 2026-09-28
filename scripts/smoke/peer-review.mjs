@@ -191,6 +191,11 @@ if ((await text(writer)).includes('Apply to publish')) {
 
     await writer.fill('textarea[placeholder="Abstract"]', 'SMOKE-Research-Abstract');
     await writer.locator('[data-testid="body-editor"] .ProseMirror').fill('SMOKE-Research-Body: assimilation across the sun letters.');
+    // §11.3: research submits only with the copyright, originality and
+    // conflict-of-interest declarations confirmed (the L4 declarations, STATUS §5jt).
+    for (const name of ['copyright', 'originality', 'conflict_of_interest']) {
+        await writer.check(`input[name="declarations[${name}]"]`);
+    }
     await writer.click('button:has-text("Save draft")');
 
     const drafted = await settles(writer, TITLE);

@@ -22,12 +22,15 @@
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/timetable.mjs
  *
- * Environment: SMOKE_BASE_URL, SMOKE_ADMIN, SMOKE_PASSWORD, SMOKE_CHROMIUM.
+ * Environment: SMOKE_BASE_URL, SMOKE_DEAN, SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
-const ADMIN = process.env.SMOKE_ADMIN ?? 'admin@akuru.edu.mv';
+// The dean, not the educational admin: since ADR-040 slice 2 (STATUS §5ie) the
+// office account `admin@` sees the academics and does not run them, so the walks
+// that author, schedule, mark and map sign in as `headmaster@` (STATUS §5jt).
+const ADMIN = process.env.SMOKE_DEAN ?? 'headmaster@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
 const CLASS_A = 'SMOKE-Class A';
