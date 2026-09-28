@@ -39,23 +39,14 @@ it('lets an operator tick and untick shared checklist items with attribution', f
         ->assertHeader('content-type', 'text/csv; charset=UTF-8');
 });
 
-it('serves the feature walkthrough with the same shared tick store', function () {
+it('keeps the feature list out of the close-out tick store', function () {
     $admin = actingSystemAdmin(['operations.manage']);
 
+    // Feature testing keeps its own log (FeatureTestingTest); its keys are not ticks.
     $this->withoutLocalizationMiddleware()->actingAs($admin)
-        ->get(route('admin.operations.features'))
-        ->assertOk();
-
-    // Feature keys share the store; ops and feature pages count separately.
-    $this->withoutLocalizationMiddleware()->actingAs($admin)
-        ->post(route('admin.operations.toggle', 'fw-pub1'))
-        ->assertSessionHasNoErrors();
-    expect(OperatorCheck::query()->where('item_key', 'fw-pub1')->exists())->toBeTrue();
-
-    $this->withoutLocalizationMiddleware()->actingAs($admin)
-        ->get(route('admin.operations.features.export'))
-        ->assertOk()
-        ->assertHeader('content-type', 'text/csv; charset=UTF-8');
+        ->post(route('admin.operations.toggle', 'ft-signin-1'))
+        ->assertSessionHasErrors('item');
+    expect(OperatorCheck::query()->where('item_key', 'ft-signin-1')->exists())->toBeFalse();
 });
 
 it('forbids the checklist without operations.manage', function () {

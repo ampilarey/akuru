@@ -4414,6 +4414,44 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kh. Feature testing: the owner's checklist in the System section (2026-09-28)
+
+The owner: "I want to start testing each and every feature one by one …
+put this in system admin settings so he can tick and comment and later can
+be seen." System → **Feature testing** (`/admin/operations/features`, the
+old *Feature walkthrough*, System admin with `operations.manage`) now holds
+125 features in 17 sections, by who uses them — sign-in and accounts, the
+website, the Institute, the School office, exams, finance, HR, the
+teacher, the catalogue, the parent, the pupil, the adult learner and My
+account, Hifz, the Library, the Bookstore, the money checks, the phone —
+each with where to find it.
+
+Each feature is marked **Works**, **Broken** or **Blocked** with a
+comment (required for Broken and Blocked). Every mark is a new row in
+`feature_test_notes` (append-only: nothing edited or deleted), so the
+feature shows its latest result and, when opened, its whole history with
+who and when. Filters by status, a progress bar, and a CSV of the latest
+results. Keys are stable (`ft-…`), so a result stays with its feature if
+the wording changes. The walkthrough's old list, its ticks in the shared
+close-out store (`fw-…`, no comment and no way to say "broken") and its
+stale rows (the Hifz screens as "frozen Blade") are replaced; the old
+ticks stay in the table, unread. The screen's own words are in EN/DV/AR;
+the feature list itself is English, as a test script.
+
+**Tests.** `FeatureTestingTest` (new, 3): the list starts untested; two
+marks on one feature leave it at the latest with both in its history, the
+counts and the CSV follow; Broken or Blocked without a comment, an unknown
+status and an unknown feature are refused; nobody but the System admin may
+read or mark it. `OperatorChecklistTest`: the feature keys are no longer
+close-out ticks. Settings, admin, nav and architecture: 181 passed.
+
+**Walked** at 390px as the System admin: More → Feature testing; a feature
+marked Broken with a comment, then Works; after a reload it reads Works
+with both marks in its history; the Works filter shows it alone; the
+Dhivehi page fits the phone.
+
+**Production.** The pull line's `migrate --force` creates the table.
+
 ## 5kg. The vendor's shop page fits a phone (2026-09-28)
 
 The owner's screenshot from an iPhone: the shop page (`/vendor`) was
