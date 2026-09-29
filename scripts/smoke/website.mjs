@@ -5,12 +5,14 @@
  * A visitor, not signed in:
  *
  *   1. on a desk finds Courses, Digital Library, Bookstore and School in the
- *      header, opens About and finds News, Research and Contact there, and
- *      still sees the prayer times in the header;
+ *      header, opens About and finds News and Contact there, opens the
+ *      Digital Library's caret and finds Books, Articles and Research (R5),
+ *      and still sees the prayer times in the header;
  *   2. on a phone finds the bottom bar — Home, Courses, Library, Shop,
  *      Account — and it takes them where it says;
- *   3. opens the phone menu, searches from it, and finds the four products
- *      and About;
+ *   3. opens the phone menu, searches from it, and finds the four products,
+ *      the library's sections and About; (R5) searching for a library
+ *      title finds it, labelled, and opens its page;
  *   4. on the home page (W2) finds the four products under the hero, the
  *      Library's newest books and the Bookstore's newest items — a grid on
  *      a desk, a sideways swipe on a phone — and a book and an item each
@@ -88,17 +90,26 @@ const overflow = (page) => page.evaluate(() => document.documentElement.scrollWi
 // ------------------------------------------------------------ 1. on a desk
 const desk = await visitor(1440, 900);
 await desk.goto(`${BASE}/en`, { waitUntil: 'networkidle' });
-const products = await desk.locator('[data-testid="site-nav"] nav > a').allInnerTexts();
+const products = await desk.locator('[data-testid="site-nav"] nav a.nav-link').allInnerTexts();
 check('the header leads with the four products', JSON.stringify(products.map((t) => t.trim())) === JSON.stringify(['Courses', 'Digital Library', 'Bookstore', 'School']), products.join(' · '));
 check('the prayer times are still in the header', await desk.locator('[data-testid="site-nav"] [data-block="prayer_bar"]').isVisible());
 check('the About menu is closed until asked for', !(await desk.locator('[data-testid="nav-about-menu"]').isVisible()));
 await desk.click('[data-testid="nav-about"]');
 const about = await desk.locator('[data-testid="nav-about-menu"] a').allInnerTexts();
-check('About opens and holds News, Research and Contact', ['News', 'Research', 'Contact'].every((t) => about.includes(t)), about.join(' · '));
-// R2: research lives in the Digital Library; the old address redirects to its shelf.
-await Promise.all([desk.waitForURL(/\/library/), desk.click('[data-testid="nav-about-menu"] a:has-text("Research")')]);
-check('Research opens from About, on the library\'s research shelf', path(desk.url()) === '/library' && new URL(desk.url()).searchParams.get('content_type') === 'research', path(desk.url()) + new URL(desk.url()).search);
+check('About opens and holds News and Contact — and no longer Research or Articles', ['News', 'Contact'].every((t) => about.includes(t)) && !about.includes('Research') && !about.includes('Articles'), about.join(' · '));
 await desk.keyboard.press('Escape');
+// R5: the Digital Library's caret opens its sections; research is one of them.
+check('the library\'s sections are closed until asked for', !(await desk.locator('[data-testid="nav-library-menu"]').isVisible()));
+await desk.click('[data-testid="nav-library-more"]');
+const sections = (await desk.locator('[data-testid="nav-library-menu"] a').allInnerTexts()).map((t) => t.trim());
+check('the caret opens Books, Articles, Research, Authors and Gift cards', ['Books', 'Articles', 'Research', 'Authors', 'Gift cards'].every((t) => sections.includes(t)) && !(await desk.locator('[data-testid="nav-about-menu"]').isVisible()), sections.join(' · '));
+// The caret is still open from the step above.
+await Promise.all([desk.waitForURL(/#authors$/), desk.click('[data-testid="nav-library-authors"]')]);
+const authorCount = await desk.locator('[data-testid="library-author"]').count();
+check('Authors lands on the shelf\'s list of writers', authorCount > 0 && (await desk.locator('#authors').isVisible()), `${authorCount} writers`);
+await desk.click('[data-testid="nav-library-more"]');
+await Promise.all([desk.waitForURL(/\/library/), desk.click('[data-testid="nav-library-research"]')]);
+check('Research opens the library\'s research shelf', path(desk.url()) === '/library' && new URL(desk.url()).searchParams.get('content_type') === 'research', path(desk.url()) + new URL(desk.url()).search);
 await Promise.all([desk.waitForURL(/\/library/), desk.click('[data-testid="nav-library"]')]);
 check('Digital Library opens, and the header says where you are', path(desk.url()) === '/library' && (await desk.getAttribute('[data-testid="nav-library"]', 'aria-current')) === 'page', path(desk.url()));
 
@@ -116,10 +127,28 @@ check('the chat button shows on a phone, clear of the bar', await phone.locator(
 
 // ------------------------------------------------------------ 3. the phone menu
 await phone.click('[data-testid="nav-burger"]');
-check('the menu opens with the four products and About', (await phone.locator('[data-testid="mobile-menu-products"] a').count()) === 4 && (await phone.locator('[data-testid="mobile-menu-about"] a').count()) >= 9);
+check('the menu opens with the four products and About', (await phone.locator('[data-testid="mobile-menu-products"] > a').count()) === 4 && (await phone.locator('[data-testid="mobile-menu-about"] a').count()) >= 7);
+const phoneSections = (await phone.locator('[data-testid="mobile-menu-library"] a').allInnerTexts()).map((t) => t.trim());
+check('the library\'s row lists Books, Articles, Research, Authors and Gift cards', JSON.stringify(phoneSections) === JSON.stringify(['Books', 'Articles', 'Research', 'Authors', 'Gift cards']), phoneSections.join(' · '));
 await phone.fill('#nav-m-q', 'Arabic');
 await Promise.all([phone.waitForURL(/\/search/), phone.press('#nav-m-q', 'Enter')]);
 check('searching from the menu opens the results', path(phone.url()) === '/search' && new URL(phone.url()).searchParams.get('q') === 'Arabic', phone.url());
+
+// ------------------------------------------------------------ 3b. the search finds the library (R5)
+{
+    const seeker = await visitor(1440, 900);
+    await seeker.goto(`${BASE}/en`, { waitUntil: 'networkidle' });
+    const title = (await seeker.locator('[data-testid="home-book"] strong').first().innerText().catch(() => '')).trim();
+    if (title) {
+        await seeker.goto(`${BASE}/en/search?q=${encodeURIComponent(title)}`, { waitUntil: 'networkidle' });
+        const hit = seeker.locator('[data-testid="search-library-item"]', { hasText: title }).first();
+        check('searching a library title finds it under Digital Library', (await hit.count()) === 1, title);
+        await Promise.all([seeker.waitForURL(/\/library\//), hit.click()]);
+        check('the result opens its library page', path(seeker.url()).startsWith('/library/'), path(seeker.url()));
+    } else {
+        check('searching a library title finds it under Digital Library', true, 'skipped: nothing is published in the library');
+    }
+}
 
 // ------------------------------------------------------------ 4. the home page's sections (W2)
 const home = await visitor(1440, 900);

@@ -4,6 +4,7 @@ namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Commerce\Actions\ListPromotionCampaignsAction;
 use App\Domains\Library\Actions\DownloadLibraryItemAction;
+use App\Domains\Library\Actions\ListLibraryAuthorsAction;
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Library\Actions\ListMyLibraryAction;
@@ -53,6 +54,8 @@ class PublicLibraryController extends Controller
             'featured' => $browsing ? app(ListLibraryItemsAction::class)->execute(['featured' => true]) : [],
             // B4 (§8.1): the offers running now, a strip on the front of the shelf.
             'promotions' => $browsing ? app(ListPromotionCampaignsAction::class)->active() : [],
+            // R5: the writers, where the header's and footer's Authors link lands.
+            'authors' => $browsing ? app(ListLibraryAuthorsAction::class)->execute() : [],
             'continue_reading' => $browsing && $request->user()
                 ? array_slice(array_values(array_filter(app(ListMyLibraryAction::class)->execute((int) $request->user()->id)['continue'], fn ($row) => ! $row['completed'])), 0, 3)
                 : [],

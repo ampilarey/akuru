@@ -31,15 +31,40 @@ it('leads with the four products and keeps the institute under About', function 
 
     preg_match('#data-testid="nav-about-menu">(.*?)</div>#s', $html, $about);
     expect($about)->not->toBeEmpty();
-    foreach (['public.about', 'public.news.index', 'public.articles.index', 'public.research.index', 'public.events.index',
+    foreach (['public.about', 'public.news.index', 'public.events.index',
         'public.gallery.index', 'public.achievements', 'public.careers', 'public.contact.create'] as $name) {
         expect($about[1])->toContain('href="'.route($name).'"');
     }
+    // R5: articles and research are the Digital Library's, not About's.
+    expect($about[1])->not->toContain('research')
+        ->and($about[1])->not->toContain('articles');
 
     // The old flat row is gone: news, gallery and the rest are not top-level links any more.
     preg_match('#data-testid="site-nav">(.*?)data-testid="nav-about"#s', $html, $row);
     expect($row[1])->not->toContain(route('public.news.index'))
         ->and($row[1])->not->toContain(route('public.gallery.index'));
+});
+
+it('opens the Digital Library\'s sections from its caret — books, articles, research, authors and gift cards (R5)', function () {
+    $html = siteFramePage()->getContent();
+
+    preg_match('#data-testid="nav-library-menu">(.*?)</div>#s', $html, $menu);
+    expect($menu)->not->toBeEmpty()
+        ->and($html)->toContain('data-testid="nav-library-more"');
+    preg_match_all('#<a href="([^"]+)" data-testid="nav-library-([a-z-]+)"#', $menu[1], $links, PREG_SET_ORDER);
+    expect(collect($links)->mapWithKeys(fn ($l) => [$l[2] => html_entity_decode($l[1])])->all())->toBe([
+        'all' => route('public.library.index'),
+        'books' => route('public.library.index', ['content_type' => 'book']),
+        'articles' => route('public.library.index', ['content_type' => 'article']),
+        'research' => route('public.library.index', ['content_type' => 'research']),
+        'authors' => route('public.library.index').'#authors',
+        'gift-cards' => route('public.gift-cards.index'),
+    ]);
+
+    // The phone lists the same sections under the library's row.
+    preg_match('#data-testid="mobile-menu-library">(.*?)</div>#s', $html, $phone);
+    expect($phone[1])->toContain('href="'.e(route('public.library.index', ['content_type' => 'research'])).'"')
+        ->and(substr_count($phone[1], '<a '))->toBe(5);
 });
 
 it('marks the product you are in', function () {
@@ -79,7 +104,7 @@ it('opens a phone menu with search, the products, About and Call us', function (
         ->and($menu[1])->toContain('action="'.route('public.search').'"')
         ->and($menu[1])->toContain('name="q"')
         ->and(substr_count($menu[1], 'class="nav-m-icon"'))->toBe(4)
-        ->and($menu[2])->toContain('href="'.route('public.research.index').'"')
+        ->and($menu[2])->toContain('href="'.route('public.news.index').'"')
         ->and($menu[2])->toContain('href="tel:');
 });
 

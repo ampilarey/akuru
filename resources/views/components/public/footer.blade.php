@@ -52,7 +52,11 @@
                 [__('site.tajweed'), route('public.courses.index')],
             ]],
             ['library', __('site.digital_library'), [
-                [__('site.browse_books'), route('public.library.index')],
+                // R5: books, articles and research are one shelf, filtered.
+                [__('site.browse_books'), route('public.library.index', ['content_type' => 'book'])],
+                [__('site.articles'), route('public.library.index', ['content_type' => 'article'])],
+                [__('site.research'), route('public.library.index', ['content_type' => 'research'])],
+                [__('site.authors'), route('public.library.index').'#authors'],
                 [__('site.gift_cards'), route('public.gift-cards.index')],
                 [__('site.write_for_akuru'), route('write.index')],
             ]],
@@ -69,8 +73,6 @@
             ['about', __('site.about'), [
                 [__('site.about_us'), route('public.about')],
                 [__('site.news'), route('public.news.index')],
-                [__('site.articles'), route('public.articles.index')],
-                [__('site.research'), route('public.research.index')],
                 [__('site.events'), route('public.events.index')],
                 [__('site.gallery'), route('public.gallery.index')],
                 [__('site.daily_reminders'), route('public.daily.index', 'ayah')],

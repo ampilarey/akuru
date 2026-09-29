@@ -1,7 +1,11 @@
 # Research, articles and the Digital Library: one home (plan)
 
 **Status:** audit done 2026-09-29; the owner answered the three decisions
-the same day (§4) and asked for this plan. Nothing here is built yet.
+the same day (§4) and asked for this plan. **All five slices shipped
+2026-09-29** (STATUS §5ko–§5kt); every finding F1–F12 is closed (§1.4).
+What remains is the owner's production step: run
+`php artisan library:import-website-research --force` once after R2's
+deploy and paste back its table (STATUS §5kp).
 **Owner's brief (2026-09-29):** "Does research and educational articles
 come under digital library?" → re-audit → "1) both, but the author has
 option to set; 2) peer review is a must, build infrastructure needed for
@@ -104,18 +108,18 @@ not talk to each other.
 
 | # | Finding | Where |
 |---|---|---|
-| F1 | Two research systems; a paper in one is invisible to the other | §1.1, §1.3 |
-| F2 | "Research" appears three times to a visitor: About menu, footer, library filter — different lists | nav, footer, `/library` |
-| F3 | Website Articles page exists with no way to write one | §1.2 |
-| F4 | News is on the home page and in two menus with no editor | §1.2 |
-| F5 | Website research skips review entirely | §1.1 |
-| F6 | Library research review can be bypassed (direct publish) and switched off | §1.3 |
-| F7 | Reviewer assignment is one email, no pool / due date / reminder / COI | §1.3 |
-| F8 | Resubmission after "revise" does not return to the reviewer | §1.3 |
-| F9 | Library items missing from sitemap and site search | §1.3 |
-| F10 | Library research has no download, even when open access; website research has only download, no reader | §1.1, §1.3 |
-| F11 | Library authors cannot be linked to a teacher profile; the website's can | §1.3 |
-| F12 | No "year" filter on the library shelf; the website research page has one | §1.1 |
+| F1 | ~~Two research systems; a paper in one is invisible to the other~~ | §1.1, §1.3 — **closed, R2, §5kp** |
+| F2 | ~~"Research" appears three times to a visitor: About menu, footer, library filter — different lists~~ | nav, footer, `/library` — **closed, R5, §5kt** |
+| F3 | ~~Website Articles page exists with no way to write one~~ | §1.2 — **closed, R2, §5kp** |
+| F4 | ~~News is on the home page and in two menus with no editor~~ | §1.2 — **closed, R4, §5ks** |
+| F5 | ~~Website research skips review entirely~~ | §1.1 — **closed, R2 + R3a, §5kp/§5kq** |
+| F6 | ~~Library research review can be bypassed (direct publish) and switched off~~ | §1.3 — **closed, R3a, §5kq** |
+| F7 | ~~Reviewer assignment is one email, no pool / due date / reminder / COI~~ | §1.3 — **closed, R3b, §5kr** |
+| F8 | ~~Resubmission after "revise" does not return to the reviewer~~ | §1.3 — **closed, R3a, §5kq** |
+| F9 | ~~Library items missing from sitemap and site search~~ | §1.3 — **closed, R2 sitemap §5kp, R5 search §5kt** |
+| F10 | ~~Library research has no download, even when open access; website research has only download, no reader~~ | §1.1, §1.3 — **closed, R1, §5ko** |
+| F11 | ~~Library authors cannot be linked to a teacher profile; the website's can~~ | §1.3 — **closed, R1, §5ko** |
+| F12 | ~~No "year" filter on the library shelf; the website research page has one~~ | §1.1 — **closed, R1, §5ko** |
 
 ## 2. The target
 
@@ -167,7 +171,7 @@ editor (D3); R5 cleans the menus and closes SEO. Each is one PR with tests,
 a walk in `scripts/smoke/`, a STATUS section and a line here marking it
 shipped.
 
-### R1 — The library can hold institute research (one PR)
+### R1 — The library can hold institute research (one PR) — **shipped, STATUS §5ko**
 
 Additive only (rule 9).
 
@@ -201,7 +205,7 @@ Additive only (rule 9).
 - **Walk:** `library.mjs` gains: a writer sets *both*, a reader downloads
   the PDF, the shelf filters research by year.
 
-### R2 — Move website research into the library, redirect the old doors (one PR)
+### R2 — Move website research into the library, redirect the old doors (one PR) — **shipped, STATUS §5kp**
 
 - **Migration command** `php artisan library:import-website-research`
   (idempotent; dry-run flag; prints a table): for each `posts` row with
@@ -254,7 +258,7 @@ Additive only (rule 9).
   to research; an old paper's link lands on its library page with *Read*
   and *Download*.
 
-### R3 — Peer review is a must (one PR, or two if the reviewer inbox grows)
+### R3 — Peer review is a must (one PR, or two if the reviewer inbox grows) — **shipped, STATUS §5kq (R3a) and §5kr (R3b)**
 
 D2. Everything below is in the Library domain.
 
@@ -315,7 +319,7 @@ D2. Everything below is in the Library domain.
   publishes; before both accepts the office's publish button is disabled
   and the action refuses.
 
-### R4 — A news editor (one PR)
+### R4 — A news editor (one PR) — **shipped, STATUS §5ks**
 
 D3. Website domain, Inertia, trilingual (the C9 pattern).
 
@@ -341,7 +345,7 @@ D3. Website domain, Inertia, trilingual (the C9 pattern).
   news item with a cover, publishes it, and it appears on `/news` and on
   the home page.
 
-### R5 — One place in the menus, and search (one PR)
+### R5 — One place in the menus, and search (one PR) — **shipped, STATUS §5kt**
 
 - **Header (W1's `nav.blade.php`):** *Digital Library* becomes a dropdown
   like About — Books · Articles · Research · Authors · Gift cards — each a

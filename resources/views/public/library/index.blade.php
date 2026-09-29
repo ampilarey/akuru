@@ -234,6 +234,28 @@
             @endforeach
         </div>
 
+        {{-- R5: the writers — the header's and footer's Authors link lands here. --}}
+        @if(count($authors ?? []) > 0)
+            <div id="authors" class="mt-12 scroll-mt-24" data-testid="library-authors">
+                <h2 class="text-xl font-bold text-gray-900 mb-4">{{ __('site.authors') }}</h2>
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach($authors as $author)
+                        <a href="{{ route('public.library.author', $author['slug']) }}" class="card p-3 flex items-center gap-3 hover:shadow-md transition-shadow" data-testid="library-author">
+                            @if($author['photo_url'])
+                                <img src="{{ $author['photo_url'] }}" alt="" class="w-12 h-12 rounded-full object-cover shrink-0" loading="lazy">
+                            @else
+                                <span class="w-12 h-12 rounded-full bg-brandBeige-200 text-brandMaroon-700 font-bold flex items-center justify-center shrink-0" aria-hidden="true">{{ mb_substr($author['display_name'], 0, 1) }}</span>
+                            @endif
+                            <span class="min-w-0">
+                                <strong class="block text-gray-900 truncate">{{ $author['display_name'] }}</strong>
+                                <span class="block text-xs text-gray-500">{{ __('site.works_count', ['count' => $author['published']]) }}</span>
+                            </span>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         {{-- The plan's required pages (LIBRARY_PLAN "Required pages"), where a reader looks for them. --}}
         <p class="mt-10 text-xs text-gray-500" data-testid="library-policies">
             <a href="{{ route('public.page.show', 'reader-terms') }}" class="hover:underline">{{ __('public.Reader Terms') }}</a>
