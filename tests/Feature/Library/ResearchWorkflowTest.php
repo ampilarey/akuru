@@ -62,6 +62,13 @@ it('walks the research peer-review loop: assign → revise → accept → publis
         ->post(route('review.store', $assignment->id), ['recommendation' => 'accept'])
         ->assertSessionHasErrors('assignment');
 
+    // R3b: no report before the conflict-of-interest declaration.
+    $this->withoutLocalizationMiddleware()->actingAs($reviewerUser)
+        ->post(route('review.store', $assignment->id), ['recommendation' => 'revise'])
+        ->assertSessionHasErrors('assignment');
+    $this->withoutLocalizationMiddleware()->actingAs($reviewerUser)
+        ->post(route('review.declare', $assignment->id))->assertSessionHasNoErrors();
+
     // Reviewer asks for a revision — the comment reaches the writer's trail.
     $this->withoutLocalizationMiddleware()->actingAs($reviewerUser)
         ->post(route('review.store', $assignment->id), [

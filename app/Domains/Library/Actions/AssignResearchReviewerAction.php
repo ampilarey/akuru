@@ -6,6 +6,7 @@ use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryReviewAssignment;
+use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -15,7 +16,7 @@ use Illuminate\Validation\ValidationException;
  */
 class AssignResearchReviewerAction
 {
-    public function execute(int $itemId, string $reviewerEmail, int $assignedBy): LibraryReviewAssignment
+    public function execute(int $itemId, string $reviewerEmail, int $assignedBy, ?string $dueOn = null): LibraryReviewAssignment
     {
         $item = LibraryItem::query()->findOrFail($itemId);
         if ($item->content_type !== LibraryContentType::Research) {
@@ -24,6 +25,19 @@ class AssignResearchReviewerAction
         $status = $item->status instanceof LibraryItemStatus ? $item->status : LibraryItemStatus::tryFrom((string) $item->status);
         if ($status !== LibraryItemStatus::Submitted) {
             throw ValidationException::withMessages(['item' => 'Only submitted items can be assigned a reviewer.']);
+        }
+
+        // R3b: the report is due in 14 days unless the office picks a day.
+        $due = now()->addDays(LibraryReviewAssignment::DEFAULT_DUE_DAYS)->endOfDay();
+        if ($dueOn !== null && trim($dueOn) !== '') {
+            try {
+                $due = Carbon::parse($dueOn, 'Indian/Maldives')->endOfDay();
+            } catch (\Throwable) {
+                throw ValidationException::withMessages(['due_on' => 'That is not a date.']);
+            }
+            if ($due->isPast()) {
+                throw ValidationException::withMessages(['due_on' => 'The due date must be in the future.']);
+            }
         }
 
         $userModel = config('auth.providers.users.model');
@@ -42,7 +56,7 @@ class AssignResearchReviewerAction
         );
         $fresh = ! $assignment->exists || (int) $assignment->round < $round;
         if ($fresh) {
-            $assignment->fill(['assigned_by' => $assignedBy, 'status' => 'assigned', 'recommendation' => null, 'round' => $round])->save();
+            $assignment->fill(['assigned_by' => $assignedBy, 'status' => 'assigned', 'recommendation' => null, 'round' => $round, 'due_at' => $due, 'reminded_at' => null])->save();
         }
         $reviewer->assignRole('reviewer');
 
@@ -50,7 +64,7 @@ class AssignResearchReviewerAction
             app(NotifyLibraryUserAction::class)->execute(
                 (int) $reviewer->id,
                 'Research to review',
-                'You have been asked to peer-review "'.$item->title.'" (round '.$round.').',
+                'You have been asked to peer-review "'.$item->title.'" (round '.$round.'), due '.$due->timezone('Indian/Maldives')->toDateString().'.',
                 '/review',
             );
         }

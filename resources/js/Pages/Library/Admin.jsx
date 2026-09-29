@@ -137,20 +137,25 @@ function PayoutsQueue({ payouts }) {
 // R3: research waits for its peer-review accepts before it can be published.
 const blockedByReview = (item) => item.content_type === 'research' && item.status !== 'published' && item.review_state?.state !== 'accepted_awaiting_publish';
 
-function SubmissionsQueue({ submissions }) {
+function SubmissionsQueue({ submissions, reviewers = [] }) {
     const t = usePage().props.i18n?.common || {};
     const [comments, setComments] = useState({});
     const [reviewerEmails, setReviewerEmails] = useState({});
+    // R3b: when each report is due; 14 days when left empty.
+    const [dueDates, setDueDates] = useState({});
     if (submissions.length === 0) return null;
 
     const review = (id, decision) =>
         router.post(`/admin/library/items/${id}/review`, { decision, comment: comments[id] || undefined }, { preserveScroll: true });
 
     const assign = (id) =>
-        router.post(`/admin/library/items/${id}/assign-reviewer`, { reviewer_email: reviewerEmails[id] || '' }, { preserveScroll: true });
+        router.post(`/admin/library/items/${id}/assign-reviewer`, { reviewer_email: reviewerEmails[id] || '', due_on: dueDates[id] || undefined }, { preserveScroll: true });
 
     return (
         <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
+            <datalist id="reviewer-pool">
+                {reviewers.map((reviewer) => <option key={reviewer.email} value={reviewer.email}>{`${reviewer.name} (${reviewer.open} open)`}</option>)}
+            </datalist>
             <table className="min-w-full text-sm">
                 <thead className="bg-[#F3EBE0] text-start">
                     <tr>
@@ -178,12 +183,23 @@ function SubmissionsQueue({ submissions }) {
                                         {(sub.reviews || []).map((rev, index) => (
                                             <p key={index}>peer review (round {rev.round}): {rev.status}{rev.recommendation ? ` — ${rev.recommendation}` : ''}</p>
                                         ))}
-                                        <span className="mt-1 flex gap-1">
+                                        {/* R3b: pick from the reviewer pool, or type a new email (which adds them). */}
+                                        <span className="mt-1 flex flex-wrap gap-1">
                                             <input
                                                 className="form-input w-44"
                                                 placeholder="Reviewer email"
+                                                list="reviewer-pool"
                                                 value={reviewerEmails[sub.id] || ''}
                                                 onChange={(e) => setReviewerEmails({ ...reviewerEmails, [sub.id]: e.target.value })}
+                                                data-testid={`assign-email-${sub.id}`}
+                                            />
+                                            <input
+                                                type="date"
+                                                className="form-input w-36"
+                                                aria-label={t.review_due_label || 'Report due on'}
+                                                value={dueDates[sub.id] || ''}
+                                                onChange={(e) => setDueDates({ ...dueDates, [sub.id]: e.target.value })}
+                                                data-testid={`assign-due-${sub.id}`}
                                             />
                                             <button type="button" className="btn-secondary" onClick={() => assign(sub.id)}>Assign</button>
                                         </span>
@@ -354,6 +370,7 @@ export default function Admin({ items, categories, options, sales = [], queues =
                 {/* Wraps on a phone: six buttons in one row were 649 px wide and made Safari zoom the page out (STATUS §5jq). */}
                 <span className="flex flex-wrap gap-2">
                     <a className="btn-secondary" href="/admin/library/reading-alerts">Reading alerts</a>
+                    <a className="btn-secondary" href="/admin/library/reviewers" data-testid="library-reviewers-link">{common.library_reviewers_link || 'Reviewers'}</a>
                     <a className="btn-secondary" href="/admin/library/settings" data-testid="library-settings-link">Settings</a>
                     <a className="btn-secondary" href="/admin/library/insights" data-testid="library-insights-link">Insights</a>
                     <a className="btn-secondary" href="/admin/library/promotions" data-testid="library-promotions-link">Promotions</a>
@@ -363,7 +380,7 @@ export default function Admin({ items, categories, options, sales = [], queues =
             </div>
 
             <ApplicationsQueue applications={queues.applications} />
-            <SubmissionsQueue submissions={queues.submissions} />
+            <SubmissionsQueue submissions={queues.submissions} reviewers={options.reviewers || []} />
             <PayoutsQueue payouts={payouts} />
 
             <ItemForm categories={categories} options={options} />

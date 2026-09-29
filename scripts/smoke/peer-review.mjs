@@ -232,6 +232,16 @@ if ((await text(writer)).includes('Apply to publish')) {
         check('publishing research without a peer review is refused: the button waits, and says why', false, 'no Approve button on the submission');
     }
 
+    // ---------------------------- 2b. the office keeps a pool of reviewers (R3b)
+
+    await staff.goto(`${BASE}/en/admin/library/reviewers`, { waitUntil: 'networkidle' });
+    await staff.fill('[data-testid="reviewer-add"] input[type=email]', REVIEWER);
+    await staff.click('[data-testid="reviewer-add"] button[type=submit]');
+    await settles(staff, 'Reviewer added.');
+    const inPool = await staff.locator('[data-testid="reviewer-row"]').filter({ hasText: REVIEWER }).count();
+    check('the office adds a reviewer to the pool', inPool === 1, `${inPool} row(s) for ${REVIEWER}`);
+    await staff.goto(`${BASE}/en/admin/library`, { waitUntil: 'networkidle' });
+
     // -------------------------------- 3. the office assigns a peer reviewer
 
     let assigned = false;
@@ -256,6 +266,16 @@ if ((await text(writer)).includes('Apply to publish')) {
         // Assigning grants the role. Seeing the assignment is what proves it,
         // rather than a row existing somewhere nobody looks.
         check('assigning made them a reviewer, with the item in their queue', queue.includes(TITLE), queue.slice(0, 200));
+
+        // R3b: the paper stays closed until they declare no conflict of interest.
+        const mine = reviewer.locator('[data-testid="review-assignment"]').filter({ hasText: TITLE }).first();
+        const closed = (await mine.locator('[data-testid="review-coi"]').count()) === 1 && !(await mine.innerText()).includes('SMOKE-Research-Body');
+        const due = (await mine.locator('[data-testid="review-due"]').count()) === 1;
+        await mine.locator('[data-testid="review-coi-declare"]').click();
+        // This run's card only: an earlier run's card may be open already.
+        await settles(reviewer, 'The paper is open to review.');
+        const opened = (await mine.innerText()).includes('SMOKE-Research-Body');
+        check('the reviewer declares no conflict of interest, and only then reads the paper', closed && due && opened, `closed first: ${closed}, due date shown: ${due}, opened: ${opened}`);
 
         const comment = reviewer.locator('textarea').first();
         if (await comment.count()) {
@@ -283,6 +303,8 @@ if ((await text(writer)).includes('Apply to publish')) {
         const backState = await back.locator('[data-testid="review-state"]').getAttribute('data-state').catch(() => null);
         check('the writer sees a reviewer asked for revisions', backState === 'revision_requested', String(backState));
         const resubmit = back.locator('button:has-text("Submit for review")').first();
+        const note = back.locator('[data-testid^="revision-note-"]').first();
+        if (await note.count()) await note.fill(`SMOKE-Revision-Note ${STAMP}: sample size added.`);
         if (await resubmit.count()) {
             await resubmit.click();
             check('and resubmits the revised draft', await rowSettles(writer, TITLE, 'submitted'), (await text(writer)).slice(0, 160));
@@ -294,7 +316,7 @@ if ((await text(writer)).includes('Apply to publish')) {
 
         await reviewer.goto(`${BASE}/en/review`, { waitUntil: 'networkidle' });
         const card = reviewer.locator('div.rounded-lg').filter({ hasText: TITLE }).first();
-        check('the reviewer sees the revision as round 2', (await card.innerText()).includes('Round 2'), (await card.innerText()).slice(0, 120));
+        check('the reviewer sees the revision as round 2, with the writer\'s note', (await card.innerText()).includes('Round 2') && (await card.innerText()).includes(`SMOKE-Revision-Note ${STAMP}`), (await card.innerText()).slice(0, 160));
         const accept = card.locator('button:has-text("Recommend accept")').first();
         if (await accept.count()) {
             await accept.click();

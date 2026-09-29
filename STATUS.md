@@ -4414,6 +4414,44 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kr. R3b: the reviewer's side of peer review (2026-09-29)
+
+Second half of `docs/RESEARCH_ARTICLES_PLAN.md` R3.
+
+- **Reviewer pool.** `/admin/library/reviewers` (Library office, CSV):
+  everyone with the `reviewer` role, each with open, overdue and reported
+  counts and the average days to report. Add by email (an Akuru account);
+  remove only when nothing is open. Users are read through the configured
+  auth model, never Identity's class. The office's assignment field offers
+  the pool and still takes a new email, which adds that person.
+- **Due dates.** `library_review_assignments.due_at`: 14 days from
+  assignment, or a day the office picks on assign (not in the past). A new
+  round sets a new date.
+- **Reminders.** `library:remind-reviewers`, daily at 08:30 (Maldives), next
+  to `library:remind-readers`. It sends "due soon" three days before the due
+  date and "due today" on the day, each once (`reminded_at`). Only open
+  reports on papers with the reviewers.
+- **Conflict of interest.** `coi_declared_at`. The inbox shows the title and
+  the due date, and withholds the abstract, body and citations until the
+  reviewer declares no conflict. No report is taken before that
+  (`POST /review/{assignment}/declare`, own assignment only; listed in the
+  unguarded-write-routes baseline).
+- **The inbox** also shows the round, whether the report is overdue, the
+  reviewer's own earlier reports on the paper, and, on a revision, the
+  writer's note on what changed. The writer adds that note beside "Submit
+  for review" on a paper sent back for changes; it is stored on the
+  submission's trail row. Still never the author, the price, the sales or
+  the other reviewers (single-blind).
+
+Strings EN/DV/AR (`common`, `admin`). Tests:
+`tests/Feature/Library/PeerReviewInboxTest.php` (5). The R3a tests and the
+workflow test now declare before reporting. The Reviewers page is listed
+as opened from the Library office hub. Full suite 2473 passed; the two
+reachability failures it found were fixed and re-run. Walk:
+`peer-review.mjs` 18/18, adding the office putting the reviewer in the
+pool, the declaration before the paper opens, and the writer's note
+reaching round 2.
+
 ## 5kq. R3a: peer review is a must — the gate, rounds, readable status, notifications (2026-09-29)
 
 First half of `docs/RESEARCH_ARTICLES_PLAN.md` R3 (the owner's decision D2).

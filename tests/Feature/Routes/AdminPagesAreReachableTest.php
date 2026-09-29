@@ -52,6 +52,8 @@ function adminPagesOpenedFromAParent(): array
         // Deliberately not in the menu: a list that accuses readers of
         // theft should take a decision to open, not sit in a nav bar.
         'admin.library.reading-alerts' => 'opened from the Library admin hub (admin.library.index)',
+        // R3b: the peer-reviewer pool, a button on the Library office page.
+        'admin.library.reviewers' => 'opened from the Library admin hub (admin.library.index)',
         // B12: the money rules, behind a Settings button on the same hub.
         'admin.library.settings' => 'opened from the Library admin hub (admin.library.index)',
         'admin.library.insights' => 'opened from the Library admin hub (admin.library.index)',

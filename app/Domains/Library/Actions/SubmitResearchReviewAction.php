@@ -37,6 +37,11 @@ class SubmitResearchReviewAction
             throw ValidationException::withMessages(['assignment' => 'This review is not assigned to you.']);
         }
 
+        // R3b: no report without the conflict-of-interest declaration.
+        if ($assignment->coi_declared_at === null) {
+            throw ValidationException::withMessages(['assignment' => 'Confirm you have no conflict of interest before reviewing.']);
+        }
+
         $item = LibraryItem::query()->findOrFail($assignment->library_item_id);
         $status = $item->status instanceof LibraryItemStatus ? $item->status : LibraryItemStatus::tryFrom((string) $item->status);
         if ($status !== LibraryItemStatus::Submitted) {
