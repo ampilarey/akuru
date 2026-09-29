@@ -112,4 +112,5 @@ return [
     'stat_books' => 'كتب في المكتبة',
     'stat_items' => 'منتجات في المتجر',
     'akuru_in_numbers' => 'أكورو بالأرقام',
+    'store_deals' => 'العروض',
 ];

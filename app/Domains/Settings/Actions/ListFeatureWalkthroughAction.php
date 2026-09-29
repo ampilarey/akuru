@@ -169,7 +169,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-library-11', 'label' => 'Authors list on the shelf, and the website\'s old research papers imported into the library', 'where' => '/library#authors'],
             ]],
             ['key' => 'ft-bookstore', 'title' => 'Bookstore', 'items' => [
-                ['key' => 'ft-bookstore-1', 'label' => 'Shop, categories, product page, search; the Bookstore menu in the header (Shops, Categories, My orders, Sell on Akuru, Shop owners: sign in)', 'where' => '/shop'],
+                ['key' => 'ft-bookstore-1', 'label' => 'Shop, categories, product page, search; the Bookstore menu in the header (Shops, Deals, Categories, My orders, Sell on Akuru, Shop owners: sign in)', 'where' => '/shop'],
                 ['key' => 'ft-bookstore-2', 'label' => 'Cart and checkout: card, wallet, bank slip, cash on delivery', 'where' => '/shop/cart'],
                 ['key' => 'ft-bookstore-3', 'label' => 'My orders: tracking, cancel, returns; wishlist; bulk quotes', 'where' => '/my-orders'],
                 ['key' => 'ft-bookstore-4', 'label' => 'Vendor: agreement, products, bulk edit, CSV import and export', 'where' => '/vendor'],
@@ -179,6 +179,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-bookstore-8', 'label' => 'Vendor: delivery methods, staff members, own domain', 'where' => '/vendor'],
                 ['key' => 'ft-bookstore-9', 'label' => 'Office: vendor applications, moderation, bank slips, payouts, themes', 'where' => '/admin/bookshop'],
                 ['key' => 'ft-bookstore-10', 'label' => 'Every open shop is listed on the shop page (Opening soon when it has nothing yet); on a phone the filters fold under Filter and sort', 'where' => '/shop'],
+                ['key' => 'ft-bookstore-11', 'label' => 'Timed sales: a shop sets % off until a date on its product form; the card shows the badge and a countdown, Deals lists them, and the cart and checkout charge the sale price until it ends', 'where' => '/shop/deals'],
             ]],
             ['key' => 'ft-money', 'title' => 'Money checks', 'items' => [
                 ['key' => 'ft-money-1', 'label' => 'A payment grants access only after the bank confirms (not on return to the site)', 'where' => '/admin/enrollments/payments'],

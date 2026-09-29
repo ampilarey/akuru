@@ -93,6 +93,13 @@
                     <span class="ms-2 text-lg font-normal text-gray-500 line-through">{{ $product['compare_at_price'] }}</span>
                 @endif
             </p>
+            @if($product['sale'])
+                {{-- §5lb: how much is off, and how long the sale has left. --}}
+                <p class="mt-1 flex flex-wrap items-center gap-2 text-sm" data-testid="product-sale">
+                    <span class="rounded bg-brandMaroon-700 px-2 py-0.5 font-semibold text-white">{{ __('shop.percent_off', ['percent' => $product['sale']['percent']]) }}</span>
+                    <span class="font-medium text-brandMaroon-700" data-sale-ends="{{ $product['sale']['ends_at'] }}" data-template="{{ __('shop.sale_ends_in', ['time' => '__TIME__']) }}" data-days="{{ __('shop.days_short') }}" data-ended="{{ __('shop.sale_ended') }}">{{ __('shop.sale_ends_on', ['date' => \Illuminate\Support\Carbon::parse($product['sale']['ends_at'])->translatedFormat('j M, H:i')]) }}</span>
+                </p>
+            @endif
             <p class="text-xs text-gray-500">{{ __('shop.prices_include_tax') }}</p>
             @if($product['vendor']['free_delivery_over'])
                 <p class="text-sm text-green-800" data-testid="free-delivery-line">{{ __('shop.free_delivery_over_line', ['amount' => $product['currency'].' '.$product['vendor']['free_delivery_over'], 'vendor' => $product['vendor']['name']]) }}</p>

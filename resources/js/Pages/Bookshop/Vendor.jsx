@@ -21,6 +21,7 @@ function blankProduct() {
         description: '', description_dv: '', description_ar: '',
         product_category_id: '', brand_id: '', tags_text: '', library_item_id: '',
         price: '', compare_at_price: '', cost: '', tax_class: 'standard',
+        sale_percent: '', sale_starts_at: '', sale_ends_at: '',
         sku: '', barcode: '', weight_grams: '', dimensions: '',
         track_stock: true, stock: '0', low_stock_at: '', lead_days: '',
         status: 'draft', visibility: 'shop',
@@ -41,6 +42,7 @@ function fromProduct(p) {
         library_item_id: text(p.library_item_id),
         image_alts: Object.fromEntries((p.images || []).map((i) => [i.id, text(i.alt)])),
         price: text(p.price), compare_at_price: text(p.compare_at_price), cost: text(p.cost), tax_class: p.tax_class,
+        sale_percent: text(p.sale_percent), sale_starts_at: text(p.sale_starts_at), sale_ends_at: text(p.sale_ends_at),
         sku: text(p.sku), barcode: text(p.barcode), weight_grams: text(p.weight_grams), dimensions: text(p.dimensions),
         track_stock: Boolean(p.track_stock), stock: text(p.stock), low_stock_at: text(p.low_stock_at), lead_days: text(p.lead_days),
         status: p.status, visibility: p.visibility,
@@ -171,6 +173,15 @@ function ProductEditor({ product, options, t, onDone }) {
                     </select>
                 </Field>
             </div>
+
+            {/* STATUS §5lb: a timed sale — the store shows and charges the lower price until it ends. */}
+            <fieldset className="min-w-0 grid gap-3 rounded border p-3 md:grid-cols-3" data-testid="product-sale">
+                <legend className="px-1 text-sm font-semibold">{t.sale_heading}</legend>
+                <Field label={t.sale_percent}><input className="form-input w-full" type="number" min="1" max="90" step="1" value={form.data.sale_percent} onChange={set('sale_percent')} data-testid="product-sale-percent" /></Field>
+                <Field label={t.sale_starts_at}><input className="form-input w-full" type="datetime-local" value={form.data.sale_starts_at} onChange={set('sale_starts_at')} data-testid="product-sale-starts" /></Field>
+                <Field label={t.sale_ends_at}><input className="form-input w-full" type="datetime-local" value={form.data.sale_ends_at} onChange={set('sale_ends_at')} required={form.data.sale_percent !== ''} data-testid="product-sale-ends" /></Field>
+                <p className="text-xs text-gray-500 md:col-span-3">{t.sale_hint}</p>
+            </fieldset>
 
             <fieldset className="min-w-0 grid gap-3 rounded border p-3 md:grid-cols-5">
                 <legend className="px-1 text-sm font-semibold">{t.book_details}</legend>
@@ -584,6 +595,7 @@ function ProductList({ products, t, onEdit, selected, setSelected }) {
                         <td className="p-2 sm:text-end" data-label={t.price}>
                             {p.price}
                             {p.compare_at_price && <span className="ms-1 text-xs text-gray-500 line-through">{p.compare_at_price}</span>}
+                            {p.sale_state && <span className="ms-1 rounded bg-rose-100 px-1 text-xs text-rose-800" data-testid={`sale-${p.slug}`}>{p.sale_state === 'running' ? t.sale_running : (t.sale_scheduled || '').replace(':date', p.sale_starts_at.replace('T', ' '))} · {(t.percent_off || '').replace(':percent', p.sale_percent)}</span>}
                         </td>
                         <td className="p-2 sm:text-end" data-label={t.stock}>
                             {p.track_stock ? p.stock : t.not_tracked}

@@ -105,6 +105,7 @@ return [
     'GET refunds' => 'Public site content. No per-person data; nothing here reads the session.',
     'GET research' => 'A permanent redirect to the Digital Library\'s research shelf (R2). No per-person data.',
     'GET shop' => 'The public bookshop (BOOKSHOP_PLAN B1b): products for sale, filtered from the query string. Since B7 the home reads the session for the visitor\'s own recently viewed products and nothing else; no other person\'s data.',
+    'GET shop/deals' => 'The public deals page (STATUS §5lb): products of active shops on a timed sale now. Public catalogue content only. No per-person data.',
     'GET shop/export' => 'The public bookshop listing as CSV (every listing gets one). Only what the page shows. No per-person data.',
     'GET shop/products/{slug}' => 'A product for sale. Drafts, archived products and suspended vendors\' products are a 404. The vendor\'s contact details are deliberately not shown. Since B7 it reads the session for the visitor\'s own recently viewed list, and, when signed in, only their own wishlist and back-in-stock state; published reviews show a first name and initial only.',
     'GET shop/newsletter/unsubscribe/{token}' => 'BOOKSHOP_PLAN B9c: the unsubscribe page a shop links in its newsletter emails. Verified by token: the 48-character token is the whole of the right, and the page shows only that address and the shop; unknown tokens 404.',

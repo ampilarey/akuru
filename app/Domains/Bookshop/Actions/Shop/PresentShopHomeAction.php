@@ -90,6 +90,8 @@ class PresentShopHomeAction
 
         return [
             'hero' => $this->hero($features->get('hero', collect())),
+            // §5lb: the timed sales ending soonest.
+            'deals' => $cards(ListShopProductsAction::onSale($shopWide())->orderBy('sale_ends_at')->orderBy('id')->limit(8)),
             'featured' => $featured,
             'collections' => $this->collections($features->get('collection', collect())),
             'best_sellers' => $best,

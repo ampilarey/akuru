@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Enums\ProductVisibility;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductImage;
 use App\Domains\Bookshop\Models\ProductVariant;
+use App\Domains\Bookshop\Support\SalePrice;
 use App\Domains\Bookshop\Support\ShopPresenter;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Media\Actions\ResolvePublicImageVariantAction;
@@ -65,7 +66,7 @@ class PresentShopProductAction
                 ->map(fn (ProductVariant $v) => [
                     'id' => $v->id,
                     'name' => $v->name,
-                    'price' => (string) ($v->price ?? $product->price),
+                    'price' => number_format(SalePrice::apply((float) ($v->price ?? $product->price), $product), 2, '.', ''),
                     'in_stock' => ! $product->track_stock || $v->stock > 0,
                 ])->values()->all(),
             'related' => $this->related($product),
@@ -98,14 +99,16 @@ class PresentShopProductAction
             'sku' => $product->sku,
             'gtin13' => is_string($product->barcode) && preg_match('/^\d{13}$/', $product->barcode) ? $product->barcode : null,
             'brand' => $product->brand !== null ? ['@type' => 'Brand', 'name' => $product->brand->name] : null,
-            'offers' => [
+            'offers' => array_filter([
                 '@type' => 'Offer',
                 'url' => route('public.shop.product', $product->slug),
                 'priceCurrency' => $card['currency'],
                 'price' => $card['price'],
+                // §5lb: a sale price is good until the sale ends.
+                'priceValidUntil' => $card['sale'] !== null ? substr($card['sale']['ends_at'], 0, 10) : null,
                 'availability' => $availability,
                 'seller' => ['@type' => 'Organization', 'name' => $card['vendor']['name']],
-            ],
+            ], fn ($v) => $v !== null),
         ], fn ($v) => $v !== null && $v !== '' && $v !== []);
     }
 

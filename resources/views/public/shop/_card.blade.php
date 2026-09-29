@@ -27,6 +27,10 @@
                 <span class="ms-1 text-sm text-gray-500 line-through">{{ $card['compare_at_price'] }}</span>
             @endif
         </p>
+        @if($card['sale'] ?? null)
+            {{-- §5lb: a timed sale counts down to its end (the layout's clock); without script, the end date. --}}
+            <p class="text-xs font-medium text-brandMaroon-700" data-sale-ends="{{ $card['sale']['ends_at'] }}" data-template="{{ __('shop.sale_ends_in', ['time' => '__TIME__']) }}" data-days="{{ __('shop.days_short') }}" data-ended="{{ __('shop.sale_ended') }}" data-testid="card-sale-ends">{{ __('shop.sale_ends_on', ['date' => \Illuminate\Support\Carbon::parse($card['sale']['ends_at'])->translatedFormat('j M, H:i')]) }}</p>
+        @endif
         @include('public.shop._stock', ['stock' => $card['stock'], 'compact' => true])
     </div>
 </a>

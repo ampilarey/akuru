@@ -42,20 +42,25 @@ final class ShopPresenter
     public static function card(Product $product): array
     {
         $first = $product->images->first();
+        // §5lb: while a timed sale runs the card shows the sale price, with the list price struck through.
+        $sale = SalePrice::present($product);
+        $price = $sale !== null ? number_format(SalePrice::apply((float) $product->price, $product), 2, '.', '') : (string) $product->price;
+        $was = $sale !== null ? (string) $product->price : ($product->compare_at_price !== null ? (string) $product->compare_at_price : null);
 
         return [
             'slug' => $product->slug,
             'title' => self::localized($product, 'title'),
             'summary' => self::localized($product, 'summary'),
-            'price' => (string) $product->price,
-            'compare_at_price' => $product->compare_at_price !== null ? (string) $product->compare_at_price : null,
+            'price' => $price,
+            'compare_at_price' => $was,
+            'sale' => $sale,
             'currency' => $product->currency,
             'image' => $first instanceof ProductImage ? app(ResolvePublicImageVariantAction::class)->execute((int) $first->media_file_id, self::CARD_WIDTH) : null,
             'image_alt' => $first?->alt_text ?: $product->title,
             'stock' => self::stock($product),
             'vendor' => self::vendor($product->vendor),
             'category' => $product->category?->name,
-            'on_sale' => $product->compare_at_price !== null && (float) $product->compare_at_price > (float) $product->price,
+            'on_sale' => $was !== null && (float) $was > (float) $price,
             // B7: badges and stars.
             'badges' => Merchandise::badges($product),
             'rating' => Merchandise::rating($product),

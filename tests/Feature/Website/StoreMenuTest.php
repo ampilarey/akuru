@@ -28,6 +28,7 @@ it('opens the Bookstore\'s sections from its caret in the header, and lists them
     expect(collect($links)->mapWithKeys(fn ($l) => [$l[2] => html_entity_decode($l[1])])->all())->toBe([
         'all' => route('public.shop.index'),
         'shops' => route('public.shop.index').'#shops',
+        'deals' => route('public.shop.deals'),
         'categories' => route('public.shop.index').'#categories',
         'my-orders' => route('public.shop.orders'),
         'sell' => route('vendor.apply'),
@@ -37,7 +38,7 @@ it('opens the Bookstore\'s sections from its caret in the header, and lists them
     expect($html)->toMatch('#href="'.preg_quote(route('public.shop.index'), '#').'"\s+data-testid="nav-bookstore"#');
 
     preg_match('#data-testid="mobile-menu-bookstore">(.*?)</div>#s', $html, $phone);
-    expect(substr_count($phone[1], '<a '))->toBe(5)
+    expect(substr_count($phone[1], '<a '))->toBe(6)
         ->and($phone[1])->toContain('href="'.route('public.shop.index').'#shops"');
 });
 
@@ -66,7 +67,7 @@ it('links the shops and the shop owners\' way in from the footer', function () {
 
 it('names the Bookstore\'s sections in Dhivehi and Arabic', function () {
     foreach (['dv', 'ar'] as $locale) {
-        foreach (['store_all', 'shops', 'shop_categories', 'my_orders', 'shop_owner_signin', 'store_menu'] as $key) {
+        foreach (['store_all', 'shops', 'store_deals', 'shop_categories', 'my_orders', 'shop_owner_signin', 'store_menu'] as $key) {
             expect(__('site.'.$key, [], $locale))->not->toBe('site.'.$key)->not->toBe(__('site.'.$key, [], 'en'));
         }
     }

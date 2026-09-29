@@ -242,6 +242,7 @@ Each section has: visibility (published / hidden / scheduled between dates), lan
 
 - Access or fulfilment for anything paid depends on the **BML webhook**, never the return URL (rule 12). Card checkouts become *paid* on the webhook; wallet checkouts immediately.
 - Wallet and ledgers are append-only; refunds are reversals.
+- *(§5lb)* **Timed sales** are a shop's own price cut, not a discount code: a percentage off a product (and its variants) from an optional start to a required end, 1–90%. The cart and the checkout charge the sale price through `CartPrice` (a school quote's price wins over a sale). A discount code applies on top, to the sale price. The shop funds it, as it funds its own list price.
 - Discount codes reduce a price and never buy gift cards; each says who funds it (Akuru or the vendor); the vendor's share is computed like writers' (Akuru-funded: on full price; vendor-funded: on the discounted price).
 - One BML payment per checkout (payable alias `bookshop_checkout`); the webhook marks every order under it. Stock is decremented on *paid*; if a product sold out between checkout and payment the order is marked *needs attention* and the vendor and office are told; never a silent oversell.
 - Tax: *(audit)* a **tax class per product** (standard / zero-rated / exempt) and a rate per class in the office settings; prices are inclusive; the receipt shows tax per line and a total, under the vendor's TIN, only when the vendor is GST-registered (a vendor below the registration threshold sells without a tax line — the plan's earlier "GST on every receipt" was wrong for a small shop). **Rates, registration and who files are the owner's** (§13 no. 4).
@@ -462,3 +463,21 @@ The queue worker (OWNER_ACTIONS 3); DNS and cPanel for the shop
 subdomain and any shop's domain (§5hl); a Meilisearch server if the
 catalogue grows (§5hk); paid gallery themes (decision 19, undecided);
 Fitrah's remaining details (`docs/vendors/FITRAH.md`).
+
+---
+
+## 16. After the build: features from the iruali comparison (2026-09-29)
+
+The owner asked which features of the `iruali` marketplace could be added
+to the Bookstore, then said "Start" on the list. One PR each, in this order.
+
+| # | Feature | State |
+|---|---|---|
+| 1 | **Deals with timed sales**: % off until a date on the product form; badge, countdown, `/shop/deals`, a Deals shelf on the store's front, Deals in the Bookstore menu; the cart and checkout charge the sale price until it ends | **Built** (STATUS §5lb) |
+| 2 | **Buy the whole list**: a school's book list per grade, added to the cart in one tap | next |
+| 3 | **Buy again** from My orders | next |
+| 4 | **Product questions and answers**: a customer asks, the shop answers publicly, the office moderates | next |
+| 5 | Loyalty points | **needs an owner plan** — money rules (wallet, never on gift cards) |
+| 6 | Referral credit | **needs an owner plan** — money rules |
+| 7 | Save for later, compare, brand pages, helpful review votes, guest order tracking, a Bookstore API, two-factor sign-in | later |
+

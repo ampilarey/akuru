@@ -6,6 +6,7 @@ use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductImage;
 use App\Domains\Bookshop\Models\ProductVariant;
+use App\Domains\Bookshop\Support\SalePrice;
 use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
 
 /**
@@ -74,6 +75,12 @@ class ListVendorProductsAction
             ->orderByDesc('id');
     }
 
+    /** §5lb: a sale with an end still ahead — running or yet to start. */
+    private static function saleOpen(Product $p): bool
+    {
+        return (int) $p->sale_percent > 0 && $p->sale_ends_at !== null && $p->sale_ends_at->isFuture();
+    }
+
     /**
      * @return list<array<string, mixed>>
      */
@@ -105,6 +112,11 @@ class ListVendorProductsAction
             'price' => (string) $p->price,
             'compare_at_price' => $p->compare_at_price !== null ? (string) $p->compare_at_price : null,
             'cost' => $p->cost !== null ? (string) $p->cost : null,
+            // §5lb: a sale that has not ended yet, as the form's fields (local time); an ended one is gone.
+            'sale_percent' => self::saleOpen($p) ? (int) $p->sale_percent : null,
+            'sale_starts_at' => self::saleOpen($p) && $p->sale_starts_at !== null ? $p->sale_starts_at->format('Y-m-d\\TH:i') : null,
+            'sale_ends_at' => self::saleOpen($p) ? $p->sale_ends_at->format('Y-m-d\\TH:i') : null,
+            'sale_state' => ! self::saleOpen($p) ? null : (SalePrice::active($p) ? 'running' : 'scheduled'),
             'library_item_id' => $p->library_item_id,
             'currency' => $p->currency,
             'tax_class' => $p->tax_class->value,

@@ -10,6 +10,7 @@ use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductCategory;
 use App\Domains\Bookshop\Models\VendorCollection;
 use App\Domains\Bookshop\Support\Merchandise;
+use App\Domains\Bookshop\Support\SalePrice;
 use App\Domains\Bookshop\Support\ShopPresenter;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
@@ -29,7 +30,7 @@ class ListShopProductsAction
     public const SORTS = ['newest', 'best_selling', 'top_rated', 'price_asc', 'price_desc', 'name'];
 
     /** The query-string keys the listing understands. */
-    public const FILTERS = ['q', 'category', 'vendor', 'collection', 'brand', 'price_min', 'price_max', 'in_stock', 'language', 'age', 'grade', 'sort'];
+    public const FILTERS = ['q', 'category', 'vendor', 'collection', 'brand', 'price_min', 'price_max', 'in_stock', 'language', 'age', 'grade', 'deals', 'sort'];
 
     /**
      * @param  array<string, mixed>  $filters
@@ -74,10 +75,15 @@ class ListShopProductsAction
                 ->orWhereHas('variants', fn ($v) => $v->where('is_active', true)->where('stock', '>', 0))))
             ->when(($filters['language'] ?? '') !== '', fn ($query) => $query->where('details->language', 'like', '%'.$filters['language'].'%'))
             ->when(($filters['age'] ?? '') !== '', fn ($query) => $query->where('details->age_range', 'like', '%'.$filters['age'].'%'))
-            ->when(($filters['grade'] ?? '') !== '', fn ($query) => $query->where('details->grade', 'like', '%'.$filters['grade'].'%'));
+            ->when(($filters['grade'] ?? '') !== '', fn ($query) => $query->where('details->grade', 'like', '%'.$filters['grade'].'%'))
+            ->when(! empty($filters['deals']), fn ($query) => self::onSale($query));
 
         if ($picked !== [] && ! isset($filters['sort'])) {
             return $query->orderByRaw('field(id, '.implode(',', $picked).')');
+        }
+        // §5lb: the deals page shows the sales ending soonest first unless the visitor sorts.
+        if (! empty($filters['deals']) && ! isset($filters['sort'])) {
+            return $query->orderBy('sale_ends_at')->orderBy('id');
         }
 
         return match ($sort) {
@@ -97,6 +103,16 @@ class ListShopProductsAction
         return Product::query()
             ->where('status', ProductStatus::Active->value)
             ->whereHas('vendor', fn ($v) => $v->where('status', VendorStatus::Active->value));
+    }
+
+    /** Products whose timed sale is running now — the rule of `SalePrice::active`, as a query. */
+    public static function onSale(Builder $query): Builder
+    {
+        $now = now();
+
+        return $query->whereBetween('sale_percent', [1, SalePrice::MAX_PERCENT])
+            ->where('sale_ends_at', '>', $now)
+            ->where(fn ($w) => $w->whereNull('sale_starts_at')->orWhere('sale_starts_at', '<=', $now));
     }
 
     /**
