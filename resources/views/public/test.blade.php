@@ -142,7 +142,7 @@
                     <p><strong>Current Language:</strong> {{ app()->getLocale() }}</p>
                     <p><strong>Test Translation:</strong> {{ __('public.Akuru Institute') }}</p>
                     
-                    <div class="flex space-x-4">
+                    <div class="flex space-x-4 rtl:space-x-reverse">
                         <a href="{{ LaravelLocalization::getLocalizedURL('en') }}" 
                            class="px-4 py-2 bg-brandMaroon-600 text-white rounded-md hover:bg-brandMaroon-700">
                             English

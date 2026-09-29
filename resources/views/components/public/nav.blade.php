@@ -184,11 +184,11 @@
       .nav-m-about a[aria-current] { border-color: #C9A227; color: #7C2D37; }
       .nav-right { gap: .4rem; }
       .nav-translate { padding: .375rem .45rem; }
-      .nav-burger { padding: .35rem; margin-right: -.35rem; }
+      .nav-burger { padding: .35rem; margin-inline-end: -.35rem; }
       @media (min-width: 640px) {
         .nav-right { gap: .5rem; }
         .nav-translate { padding: .375rem .5rem; }
-        .nav-burger { padding: .5rem; margin-right: -.5rem; }
+        .nav-burger { padding: .5rem; margin-inline-end: -.5rem; }
       }
       /* The layout's 44px tap-target rule (button,a ≤768px) would inflate
          these compact header controls; exempt them explicitly. */
@@ -210,18 +210,18 @@
         </button>
 
         <div id="gt-dropdown"
-             class="hidden absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 w-48">
+             class="hidden absolute end-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 w-48">
 
           {{-- Pinned: column of 3 --}}
           <div class="p-2 space-y-1">
             <button onclick="translateTo('en')"
-                    class="gt-pin w-full text-left px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
+                    class="gt-pin w-full text-start px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
                     data-code="en">🇬🇧 English</button>
             <button onclick="translateTo('ar')"
-                    class="gt-pin w-full text-left px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
+                    class="gt-pin w-full text-start px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
                     data-code="ar">🇸🇦 العربية</button>
             <button onclick="translateTo('dv')"
-                    class="gt-pin w-full text-left px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
+                    class="gt-pin w-full text-start px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
                     data-code="dv">🇲🇻 ދިވެހި</button>
           </div>
 
@@ -237,7 +237,8 @@
         </div>
       </div>
       {{-- GT init element: off-screen so GT can initialise its hidden select --}}
-      <div id="google_translate_element" style="position:absolute;left:-9999px;top:-9999px;width:1px;height:1px;overflow:hidden;" aria-hidden="true"></div>
+      {{-- Clipped, not pushed off-screen: -9999px to one side is real sideways scroll in a right-to-left page (STATUS §5lp). --}}
+      <div id="google_translate_element" style="position:absolute;top:0;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap;" aria-hidden="true"></div>
 
       {{-- ── User menu (desktop, md+) ── --}}
       <div class="hidden md:block">
@@ -256,7 +257,7 @@
               </svg>
             </button>
             <div id="user-menu-dropdown"
-                 class="absolute right-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 min-w-44 py-1 hidden">
+                 class="absolute end-0 top-full mt-1 z-50 bg-white rounded-xl shadow-xl border border-gray-200 min-w-44 py-1 hidden">
               {{-- One door into the app for everyone (docs/SIGN_IN_PLAN.md ID3):
                    `/dashboard` sends each person to their own workspace's home —
                    the office, a teacher's day, the family, a shop, their learning.
@@ -382,7 +383,7 @@
           <a href="{{ route('public.wallet') }}" class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg">{{ __('public.My Wallet') }}</a>
           <form method="POST" action="{{ route('logout') }}" class="px-4 pt-1 pb-2">
             @csrf
-            <button type="submit" class="w-full text-left py-2.5 px-0 text-sm text-red-600 hover:text-red-700 flex items-center gap-2">
+            <button type="submit" class="w-full text-start py-2.5 px-0 text-sm text-red-600 hover:text-red-700 flex items-center gap-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
               Log out
             </button>
@@ -459,7 +460,7 @@ function filterGTLangs(q) {
     return;
   }
   list.innerHTML = filtered.map(function(l) {
-    return '<button onclick="translateTo(\'' + l.c + '\')" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700 transition-colors">' + l.l + '</button>';
+    return '<button onclick="translateTo(\'' + l.c + '\')" class="w-full text-start px-4 py-2 text-sm text-gray-700 hover:bg-brandBeige-50 hover:text-brandMaroon-700 transition-colors">' + l.l + '</button>';
   }).join('');
 }
 

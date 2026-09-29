@@ -295,7 +295,7 @@
             <div class="container mx-auto px-4">
                 <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
                     <h2 class="text-xl font-semibold text-brandMaroon-900" dir="auto">{{ $collection['name'] }} <span class="text-sm font-normal text-gray-500">· {{ $collection['vendor'] }}</span></h2>
-                    <a href="{{ $collection['url'] }}" class="text-sm text-brandMaroon-700 underline">{{ __('shop.see_all') }} →</a>
+                    <a href="{{ $collection['url'] }}" class="text-sm text-brandMaroon-700 underline">{{ __('shop.see_all') }} <span class="rtl-flip" aria-hidden="true">→</span></a>
                 </div>
                 <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
                     @foreach($collection['cards'] as $card)

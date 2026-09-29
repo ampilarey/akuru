@@ -57,7 +57,7 @@
                             </div>
                             <a href="{{ route('public.events.show', $event->slug ?: $event->id) }}" 
                                class="text-brandMaroon-600 hover:text-brandMaroon-700 font-medium text-sm">
-                                {{ __('public.Learn More') }} →
+                                {{ __('public.Learn More') }} <span class="rtl-flip" aria-hidden="true">→</span>
                             </a>
                         </div>
                     </div>

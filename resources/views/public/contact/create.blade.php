@@ -133,7 +133,7 @@
                         <div class="space-y-6">
                             <!-- Address -->
                             <div class="flex items-start">
-                                <div class="w-10 h-10 bg-brandMaroon-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                <div class="w-10 h-10 bg-brandMaroon-600 text-white rounded-full flex items-center justify-center me-4 flex-shrink-0">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path>
                                     </svg>
@@ -146,7 +146,7 @@
 
                             <!-- Phone -->
                             <div class="flex items-start">
-                                <div class="w-10 h-10 bg-brandMaroon-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                <div class="w-10 h-10 bg-brandMaroon-600 text-white rounded-full flex items-center justify-center me-4 flex-shrink-0">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z"></path>
                                     </svg>
@@ -159,7 +159,7 @@
 
                             <!-- Email -->
                             <div class="flex items-start">
-                                <div class="w-10 h-10 bg-brandMaroon-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                <div class="w-10 h-10 bg-brandMaroon-600 text-white rounded-full flex items-center justify-center me-4 flex-shrink-0">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M2.003 5.884L10 9.882l7.997-3.998A2 2 0 0016 4H4a2 2 0 00-1.997 1.884z"></path>
                                         <path d="M18 8.118l-8 4-8-4V14a2 2 0 002 2h12a2 2 0 002-2V8.118z"></path>
@@ -173,7 +173,7 @@
 
                             <!-- Viber -->
                             <div class="flex items-start">
-                                <div class="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center mr-4 flex-shrink-0">
+                                <div class="w-10 h-10 bg-purple-600 text-white rounded-full flex items-center justify-center me-4 flex-shrink-0">
                                     <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M11.993 0h-.036C5.5 0 .527 4.972.527 11.473c0 3.107 1.2 5.943 3.17 8.053V23l2.953-1.628a11.03 11.03 0 005.343 1.364h.036c6.457 0 11.43-4.972 11.43-11.472C23.459 4.813 18.487 0 11.993 0zm1.164 15.516s-.27-.031-.406-.186l-.92-.999c-.283.09-.576.135-.872.135-1.637 0-2.97-1.25-2.97-2.793 0-1.543 1.333-2.793 2.97-2.793s2.97 1.25 2.97 2.793c0 .64-.226 1.228-.606 1.7l.644.7c.15.161.176.396.056.583a.44.44 0 01-.366.193l-.5-.333zm3.454 1.04c-.18.504-.885 1.02-1.46 1.141-.383.08-.877.143-2.55-.548-2.143-.882-3.523-3.05-3.63-3.192-.107-.14-.873-1.162-.873-2.217s.55-1.553.76-1.77a.8.8 0 01.576-.27c.143 0 .286.003.41.01.132.007.309-.05.483.37.18.43.611 1.493.663 1.601.053.108.088.235.017.376-.07.14-.105.226-.211.347-.107.12-.225.269-.32.361-.107.103-.219.215-.094.421.125.207.557.92 1.196 1.49.82.73 1.513.956 1.725 1.063.212.107.334.09.457-.054.125-.143.536-.626.68-.84.143-.212.285-.177.481-.107.197.07 1.253.592 1.467.7.214.107.356.16.408.25.053.09.053.52-.127 1.024zm-6.01-5.12a1.49 1.49 0 110 2.98 1.49 1.49 0 010-2.98z"/></svg>
                                 </div>
                                 <div>

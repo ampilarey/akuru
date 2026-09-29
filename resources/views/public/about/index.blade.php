@@ -126,7 +126,7 @@
         <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
             @foreach($testimonials as $t)
             <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm relative">
-                <div class="text-5xl text-brandGold-300 font-serif absolute top-4 right-5 leading-none opacity-50">"</div>
+                <div class="text-5xl text-brandGold-300 font-serif absolute top-4 end-5 leading-none opacity-50">"</div>
                 <p class="text-gray-700 leading-relaxed mb-5 relative">"{{ $t->quote }}"</p>
                 <div class="flex items-center gap-3">
                     <div class="w-9 h-9 rounded-full bg-brandMaroon-100 flex items-center justify-center text-brandMaroon-700 font-bold shrink-0">

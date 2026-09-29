@@ -47,8 +47,7 @@
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
                         <span class="capitalize">{{ $course->level }}</span>
                     </div>
-                    <span class="flex items-center gap-2 text-sm font-medium px-3 py-1 rounded-full
-                        {{ $course->status === 'open' ? 'bg-green-100 text-green-800' : ($course->status === 'upcoming' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                    <span class="flex items-center gap-2 text-sm font-medium px-3 py-1 rounded-full {{ $course->status === 'open' ? 'bg-green-100 text-green-800' : ($course->status === 'upcoming' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
                         <span class="w-2 h-2 rounded-full {{ $course->status === 'open' ? 'bg-green-500' : ($course->status === 'upcoming' ? 'bg-yellow-500' : 'bg-red-500') }}"></span>
                         {{ ucfirst($course->status) }}
                     </span>
@@ -77,13 +76,13 @@
                            data-course-id="{{ $course->id }}">
                             {{ __('public.Enroll in this course') }}
                             @if($course->hasRegistrationFee())
-                                <span class="ml-2">({{ number_format($course->getRegistrationFeeAmount(), 2) }} MVR)</span>
+                                <span class="ms-2">({{ number_format($course->getRegistrationFeeAmount(), 2) }} MVR)</span>
                             @endif
-                            <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
+                            <svg class="w-5 h-5 ms-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                         </a>
                         <a href="{{ route('public.admissions.create', ['course' => $course->id]) }}"
                            class="text-sm text-gray-500 hover:text-brandMaroon-600 block">
-                            Or submit an inquiry →
+                            Or submit an inquiry <span class="rtl-flip" aria-hidden="true">→</span>
                         </a>
                     @endif
                 </div>
@@ -205,7 +204,7 @@
                         @foreach($faqs as $i => $faq)
                         <div class="border border-gray-200 rounded-xl overflow-hidden">
                             <button @click="open = (open === {{ $i }}) ? null : {{ $i }}"
-                                    class="w-full flex items-center justify-between p-4 text-left font-semibold text-gray-900 hover:bg-brandBeige-50 transition-colors">
+                                    class="w-full flex items-center justify-between p-4 text-start font-semibold text-gray-900 hover:bg-brandBeige-50 transition-colors">
                                 <span>{{ $faq['q'] }}</span>
                                 <svg class="w-5 h-5 text-brandMaroon-600 shrink-0 transition-transform duration-300" :class="open === {{ $i }} ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                             </button>
@@ -229,8 +228,7 @@
                         <div>
                             <dt class="text-xs font-medium text-gray-400 uppercase tracking-wider">Status</dt>
                             <dd class="mt-1">
-                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium
-                                    {{ $course->status === 'open' ? 'bg-green-100 text-green-800' : ($course->status === 'upcoming' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium {{ $course->status === 'open' ? 'bg-green-100 text-green-800' : ($course->status === 'upcoming' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
                                     <span class="w-2 h-2 rounded-full {{ $course->status === 'open' ? 'bg-green-500' : ($course->status === 'upcoming' ? 'bg-yellow-500' : 'bg-red-500') }}"></span>
                                     {{ ucfirst($course->status) }}
                                 </span>
@@ -314,7 +312,7 @@
     <div class="container mx-auto px-4">
         <div class="flex items-center justify-between mb-8">
             <h2 class="text-2xl font-bold text-gray-900">Related Courses</h2>
-            <a href="{{ route('public.courses.index') }}" class="text-sm text-brandMaroon-600 hover:underline font-medium">View all →</a>
+            <a href="{{ route('public.courses.index') }}" class="text-sm text-brandMaroon-600 hover:underline font-medium">View all <span class="rtl-flip" aria-hidden="true">→</span></a>
         </div>
         <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
             @foreach($relatedCourses as $rc)

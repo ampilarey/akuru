@@ -22,16 +22,16 @@
     .prayer-banner-summary { display: flex; align-items: stretch; gap: .25rem; min-height: 44px; }
     .prayer-banner-expand { flex: 1; min-width: 0; display: flex; align-items: center; justify-content: space-between;
         gap: .35rem; padding: .4rem .25rem .4rem .75rem; border: none; background: transparent; cursor: pointer;
-        font-family: inherit; text-align: left; color: #374151; min-height: 44px; }
+        font-family: inherit; text-align: start; color: #374151; min-height: 44px; }
     .prayer-banner-summary-left { display: flex; align-items: center; gap: .25rem; min-width: 0; }
-    .prayer-banner-island { flex-shrink: 0; align-self: center; margin-right: .4rem; padding: .25rem .55rem;
+    .prayer-banner-island { flex-shrink: 0; align-self: center; margin-inline-end: .4rem; padding: .25rem .55rem;
         border: 1px solid #E6D9C8; border-radius: 999px; background: #fff; font-family: inherit; font-size: .75rem;
         font-weight: 700; color: #7C2D37; cursor: pointer; white-space: nowrap; }
     .prayer-banner-next { font-size: .8125rem; color: #374151; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .prayer-banner-next strong { font-weight: 800; color: #7C2D37; }
     .prayer-banner-time { font-variant-numeric: tabular-nums; }
     .prayer-banner-cd { color: #6b7280; font-variant-numeric: tabular-nums; }
-    .prayer-banner-chevron { flex-shrink: 0; color: #6b7280; font-size: .75rem; padding-right: .2rem; }
+    .prayer-banner-chevron { flex-shrink: 0; color: #6b7280; font-size: .75rem; padding-inline-end: .2rem; }
     .prayer-banner-panel { border-top: 1px solid #E6D9C8; padding: .85rem 1rem 1rem; }
     .prayer-banner-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
     @media (min-width: 390px) { .prayer-banner-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
@@ -74,9 +74,9 @@
         .header-prayer--mobile .prayer-banner-expand,
         .header-prayer--mobile .prayer-banner-island { min-height: 28px; min-width: 0; }
     }
-    .header-prayer--mobile .prayer-banner-expand { padding-top: .1rem; padding-bottom: .1rem; padding-left: .6rem; }
+    .header-prayer--mobile .prayer-banner-expand { padding-top: .1rem; padding-bottom: .1rem; padding-inline-start: .6rem; }
     .header-prayer--mobile .prayer-banner-next { font-size: .72rem; }
-    .header-prayer--mobile .prayer-banner-island { font-size: .65rem; padding: .1rem .4rem; margin-right: .3rem; }
+    .header-prayer--mobile .prayer-banner-island { font-size: .65rem; padding: .1rem .4rem; margin-inline-end: .3rem; }
     /* Short island label (≤6 chars) so the pill stays one line on phones */
     .pt-loc-short { display: none; }
     @media (max-width: 520px) {

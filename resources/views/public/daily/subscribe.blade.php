@@ -28,7 +28,7 @@
       <fieldset style="border:0;padding:0;margin:0 0 .75rem">
         <legend style="font-size:.8rem;color:#6b7280;margin-bottom:.35rem">Types</legend>
         @foreach(['ayah','hadith','saying','reminder'] as $type)
-          <label style="display:inline-flex;align-items:center;gap:.35rem;margin-right:1rem;font-size:.9rem;color:#3D1219">
+          <label style="display:inline-flex;align-items:center;gap:.35rem;margin-inline-end:1rem;font-size:.9rem;color:#3D1219">
             <input type="checkbox" name="content_types[]" value="{{ $type }}" @checked($type === 'ayah' || $type === 'hadith')>
             {{ ucfirst($type) }}
           </label>

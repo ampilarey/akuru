@@ -182,7 +182,7 @@
                     <a href="{{ route('login') }}" class="text-sm text-brandMaroon-700 underline" data-testid="sign-in-to-save">{{ $product['available'] ? __('shop.sign_in_to_save') : __('shop.sign_in_to_be_told') }}</a>
                 @endguest
             </div>
-            <p class="mt-3"><a href="{{ route('public.shop.vendor', $product['vendor']['slug']) }}" class="text-sm text-brandMaroon-700 hover:underline">{{ __('shop.visit_shop') }} →</a></p>
+            <p class="mt-3"><a href="{{ route('public.shop.vendor', $product['vendor']['slug']) }}" class="text-sm text-brandMaroon-700 hover:underline">{{ __('shop.visit_shop') }} <span class="rtl-flip" aria-hidden="true">→</span></a></p>
 
             @if($product['ebook'])
                 {{-- B11 (§4): the printed book's Digital Library edition, one click away. --}}

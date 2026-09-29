@@ -47,6 +47,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-website-9', 'label' => 'Header: the Digital Library menu (Books, Articles, Research, Authors, Gift cards) on a computer and in the phone menu; About holds the institute pages', 'where' => '/en'],
                 ['key' => 'ft-website-10', 'label' => 'Site search finds courses, library books, articles and research, news and events, in EN, DV and AR', 'where' => '/en/search'],
                 ['key' => 'ft-website-11', 'label' => 'Events: open an event from the list, register from its page, add it to a calendar; gallery albums open from the list', 'where' => '/en/events'],
+                ['key' => 'ft-website-12', 'label' => 'The website in Dhivehi and Arabic reads right to left: logo on the right, menus, tiles, footer and the phone bar mirrored, "see all" arrows pointing the reading way; English unchanged', 'where' => '/dv'],
             ]],
             ['key' => 'ft-institute', 'title' => 'Institute (System admin)', 'items' => [
                 ['key' => 'ft-institute-1', 'label' => 'Website pages: create, edit, preview, publish', 'where' => '/admin/public-site/pages'],

@@ -112,13 +112,13 @@
 
             <div id="lb" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/95 p-4" onclick="if(event.target===this)closeLightbox()">
                 {{-- Close --}}
-                <button onclick="closeLightbox()" class="absolute top-4 right-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+                <button onclick="closeLightbox()" class="absolute top-4 end-4 w-10 h-10 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                 </button>
                 {{-- Counter --}}
                 <span id="lb-counter" class="absolute top-4 left-1/2 -translate-x-1/2 text-white/60 text-sm"></span>
                 {{-- Prev --}}
-                <button onclick="lbNav(-1)" class="absolute left-3 sm:left-6 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+                <button onclick="lbNav(-1)" class="absolute start-3 sm:start-6 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
                 </button>
                 {{-- Image --}}
@@ -132,7 +132,7 @@
                     </div>
                 </div>
                 {{-- Next --}}
-                <button onclick="lbNav(1)" class="absolute right-3 sm:right-6 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
+                <button onclick="lbNav(1)" class="absolute end-3 sm:end-6 w-11 h-11 flex items-center justify-center rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
                 </button>
             </div>

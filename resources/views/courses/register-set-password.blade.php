@@ -28,7 +28,7 @@
       <div style="padding:1.75rem">
         @if($errors->any())
         <div style="margin-bottom:1.25rem;padding:.875rem;background:#FEF2F2;border:1px solid #FECACA;border-radius:.5rem;font-size:.85rem;color:#991B1B">
-          <ul style="margin:0;padding-left:1.25rem">
+          <ul style="margin:0;padding-inline-start:1.25rem">
             @foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach
           </ul>
         </div>

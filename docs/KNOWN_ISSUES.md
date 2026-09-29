@@ -159,7 +159,10 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ## Found by the news editor slice R4 (2026-09-29)
 
-- **The public site is always left-to-right** (open, P2). The public layout
+- **The public site is always left-to-right** — **fixed (2026-09-29, STATUS
+  §5lp; the owner: "do it")**: the layout sets `dir` from the language, the
+  public views use logical classes, and `public-rtl.mjs` walks it. The record
+  below is the finding as it stood. (was: open, P2). The public layout
   (`resources/views/public/layouts/public.blade.php`, line 2) writes
   `dir="ltr"` whatever the language, so `/dv/...` and `/ar/...` pages lay
   out left-to-right. The Inertia shell and the reader do switch. Setting it

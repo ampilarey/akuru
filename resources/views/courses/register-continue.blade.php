@@ -20,7 +20,7 @@
                             :style="flow === 'parent'
                                 ? 'border:2px solid #7C2D37;background:#FDF2F2;color:#7C2D37'
                                 : 'border:1px solid #D1D5DB;background:white;color:#374151'"
-                            style="padding:1rem;border-radius:.5rem;text-align:left;transition:all .15s;cursor:pointer;display:block;width:100%">
+                            style="padding:1rem;border-radius:.5rem;text-align:start;transition:all .15s;cursor:pointer;display:block;width:100%">
                             <span style="font-weight:600;display:flex;align-items:center;gap:.4rem">
                                 <span x-show="flow === 'parent'" style="color:#7C2D37">✓</span>
                                 I am a parent/guardian enrolling my child
@@ -31,7 +31,7 @@
                             :style="flow === 'adult'
                                 ? 'border:2px solid #7C2D37;background:#FDF2F2;color:#7C2D37'
                                 : 'border:1px solid #D1D5DB;background:white;color:#374151'"
-                            style="padding:1rem;border-radius:.5rem;text-align:left;transition:all .15s;cursor:pointer;display:block;width:100%">
+                            style="padding:1rem;border-radius:.5rem;text-align:start;transition:all .15s;cursor:pointer;display:block;width:100%">
                             <span style="font-weight:600;display:flex;align-items:center;gap:.4rem">
                                 <span x-show="flow === 'adult'" style="color:#7C2D37">✓</span>
                                 I am 18+ enrolling myself
@@ -233,7 +233,7 @@
                         You will review the Terms &amp; Conditions and verify with OTP in the next step.
                     </p>
 
-                    <button type="submit" class="btn-primary w-full py-3 mt-4">Continue to Verify &amp; Confirm →</button>
+                    <button type="submit" class="btn-primary w-full py-3 mt-4">Continue to Verify &amp; Confirm <span class="rtl-flip" aria-hidden="true">→</span></button>
                 </form>
             </div>
         </div>
