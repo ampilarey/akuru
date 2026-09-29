@@ -1589,4 +1589,10 @@ return [
     'answer_publicly' => 'أجب علنًا',
     'questions_waiting_count' => ':count بانتظار الجواب',
     'notice_event_question' => 'عميل يطرح سؤالًا',
+    'save_for_later' => 'احفظ لوقت لاحق',
+    'saved_for_later_heading' => 'محفوظ لوقت لاحق (:count)',
+    'saved_unavailable' => 'غير متوفر الآن',
+    'move_to_cart' => 'انقل إلى السلة',
+    'saved_for_later_flash' => 'حُفظ لوقت لاحق. تجده تحت سلتك، ولا يُحسب فيها.',
+    'moved_to_cart_flash' => 'أُعيد إلى سلتك.',
 ];

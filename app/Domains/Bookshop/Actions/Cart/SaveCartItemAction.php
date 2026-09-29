@@ -39,6 +39,8 @@ class SaveCartItemAction
             ->where('product_variant_id', $variant?->id)
             // B9d: a quoted line keeps its quoted quantity; more of it is an ordinary line.
             ->whereNull('quote_item_id')
+            // §5lf: a line set aside for later is not added to.
+            ->whereNull('saved_at')
             ->first();
         $wanted = ($existing?->quantity ?? 0) + $quantity;
 
@@ -75,6 +77,46 @@ class SaveCartItemAction
         }
 
         return $this->set($cart, $item, $quantity);
+    }
+
+    /** §5lf: set a line aside — out of the basket, kept for later. */
+    public function saveForLater(Cart $cart, int $itemId): CartItem
+    {
+        $item = CartItem::query()->where('cart_id', $cart->id)->whereNull('saved_at')->findOrFail($itemId);
+        $item->update(['saved_at' => now()]);
+
+        return $item;
+    }
+
+    /**
+     * §5lf: back into the basket, re-checked like any add — for sale, in
+     * stock, the shop not on holiday. Into an ordinary line of the same
+     * thing if there is one; if it cannot go in, it stays saved.
+     */
+    public function moveToCart(Cart $cart, int $itemId): CartItem
+    {
+        $saved = CartItem::query()->where('cart_id', $cart->id)->whereNotNull('saved_at')->findOrFail($itemId);
+        // No longer sold: say so, and keep it saved (the basket's own check would drop the line).
+        if (! ListShopProductsAction::forSale()->whereKey($saved->product_id)->exists()) {
+            throw ValidationException::withMessages(['product' => __('shop.error_not_for_sale')]);
+        }
+        $existing = CartItem::query()->where('cart_id', $cart->id)->where('product_id', $saved->product_id)
+            ->where('product_variant_id', $saved->product_variant_id)->whereNull('quote_item_id')->whereNull('saved_at')->first();
+
+        if ($existing !== null) {
+            $item = $this->set($cart, $existing, (int) $existing->quantity + (int) $saved->quantity);
+            $saved->delete();
+
+            return $item;
+        }
+        $saved->saved_at = null;
+        try {
+            return $this->set($cart, $saved, (int) $saved->quantity);
+        } catch (ValidationException $e) {
+            $saved->refresh();
+
+            throw $e;
+        }
     }
 
     private function set(Cart $cart, CartItem $item, int $quantity): CartItem

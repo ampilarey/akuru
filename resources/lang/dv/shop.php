@@ -1589,4 +1589,10 @@ return [
     'answer_publicly' => 'ހާމަކޮށް ޖަވާބުދޭ',
     'questions_waiting_count' => ':count މަޑުކުރަނީ',
     'notice_event_question' => 'ކަސްޓަމަރަކު ސުވާލެއް ކުރުން',
+    'save_for_later' => 'ފަހުން ގަތުމަށް ރައްކާކުރޭ',
+    'saved_for_later_heading' => 'ފަހުން ގަތުމަށް ރައްކާކުރި (:count)',
+    'saved_unavailable' => 'މިވަގުތު ނުލިބޭ',
+    'move_to_cart' => 'ކާޓަށް ލާ',
+    'saved_for_later_flash' => 'ފަހުން ގަތުމަށް ރައްކާކުރެވިއްޖެ. އެ ހުރީ ކާޓުގެ ދަށުގައި، ކާޓުގައި ނުގުނޭ.',
+    'moved_to_cart_flash' => 'ކާޓަށް އަނބުރާ ލެވިއްޖެ.',
 ];

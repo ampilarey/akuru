@@ -4414,6 +4414,46 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lf. Save for later in the cart (2026-09-29)
+
+The owner's "Complete all one by one" on the rest of the iruali list
+(BOOKSHOP_PLAN §16, item 7).
+
+- **Save for later** on each cart line sets it aside, in a "Saved for
+  later" list under the cart. It shows today's price (a running sale's
+  included), and each line can be moved back or removed.
+- **A saved line is not in the basket.** It is:
+  - left out of the item count, the subtotal and the checkout;
+  - left out of the abandoned-cart reminders;
+  - kept after a checkout empties the basket.
+  - The rule is in one place: `Cart::items()` now holds only unsaved lines.
+    `savedItems()` and `allItems()` are new.
+- **Move to cart** checks the line again, the same way as any add:
+  - it must be for sale, in stock, and its shop not on holiday;
+  - it joins an ordinary line of the same product if there is one;
+  - if it cannot go in, it stays saved and the reason is shown;
+  - a product no longer sold is never dropped silently.
+  - Adding the same product again never adds to the saved line.
+- **A guest's saved lines come along** when they sign in, still saved.
+- Migration `2026_09_29_000008_shop_save_for_later` adds one nullable
+  `saved_at` column to `cart_items`.
+
+Tests:
+- `ShopSaveForLaterTest` (4):
+  - out of the count, the total and a wallet checkout, kept after it, and
+    moved back;
+  - it joins a line of the same product, and adding more leaves it alone;
+  - it stays saved when sold out or no longer sold;
+  - a guest's saved lines merge at sign-in, and another basket's lines are
+    404.
+
+Checklist: `ft-bookstore-15`.
+
+Full suite 2529 passed.
+
+Walk: `scripts/smoke/shop.mjs` 52/52, with two new steps. After the book
+list goes in, the puzzle is saved for later and moved back.
+
 ## 5le. Product questions and answers (2026-09-29)
 
 The fourth feature on the iruali list (BOOKSHOP_PLAN §16, item 4).

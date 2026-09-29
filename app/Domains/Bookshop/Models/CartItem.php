@@ -7,7 +7,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CartItem extends Model
 {
-    protected $fillable = ['cart_id', 'product_id', 'product_variant_id', 'quantity', 'quote_item_id'];
+    protected $fillable = ['cart_id', 'product_id', 'product_variant_id', 'quantity', 'quote_item_id', 'saved_at'];
+
+    protected function casts(): array
+    {
+        return ['saved_at' => 'datetime'];
+    }
 
     /** B9d: the quoted line this cart line came from, if any. */
     public function quoteItem(): BelongsTo
