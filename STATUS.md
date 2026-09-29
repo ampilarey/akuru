@@ -4414,6 +4414,92 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lu. The Bookstore's layout, after iruali (2026-09-29)
+
+The owner: "Can u enhance the layout of the bookstore and each vendor page.
+Pls take ideas from iruali repo." These ideas come from iruali's home,
+catalogue and product card (`resources/views/home.blade.php`,
+`catalog/index.blade.php`, `components/product-card.blade.php`), in
+Akuru's maroon and gold.
+
+**The store's front:**
+- **A hero card with two tiles beside it.** The card carries the name, a
+  line on what the store is, and **Shop now** and **Browse categories**.
+  The tiles are **Deals** (gold) and **School book lists** (maroon).
+  - When the office has hero slides (B7), they take the card, and the
+    page keeps its name in an `sr-only` heading.
+  - On a phone the tiles sit side by side under the card, and the book
+    illustration is left off.
+- **Categories as tiles**, each with an icon and how many. The icon is
+  chosen from the category's slug: books, Qur'an and Islamic studies,
+  workbooks, toys and games, or stationery.
+- **Shelves as rows that swipe** on a phone: about two cards on a phone,
+  four on a tablet, five on a desk. They cover deals, featured, best
+  sellers, recently viewed, new arrivals and the office's collections.
+  Each row has **See all** where there is one: the deals, or the list
+  sorted by best selling or newest.
+- **Shops as cards** with the logo or initial; **Sell in the Akuru
+  Bookstore** as iruali's closing card.
+- **The filters fold** under Filter and sort at every width, so the
+  shelves come first. The search stays in view.
+
+**A shop's page (no storefront):**
+- **iruali's seller head:** a card with the shop's initial, its name,
+  its tagline, "at Akuru Bookstore" with a shield, and how many products.
+  The count shows only when nothing is narrowed. The holiday notice is
+  on the card.
+- **Its categories as chips** under the store's links, "All categories"
+  first, the chosen one marked. On a phone the chosen chip is scrolled
+  into view.
+- The list is headed **All products** when nothing is narrowed.
+- A published storefront keeps its own look (B4/B5), untouched.
+
+**The store's listings** (category, brand, deals, search): a plain
+heading with its breadcrumb, then a strip of every category's chips with
+the current one marked.
+
+**Everywhere:**
+- **The store's links are one strip** that swipes on a phone, instead of
+  four rows of pills; they wrap on a desk.
+- **The product card:**
+  - a running sale shows as **−25%**;
+  - the title is kept to two lines;
+  - the price is larger;
+  - the picture zooms slightly on hover;
+  - a book outline stands in for a missing picture.
+
+**Other changes:** `PresentShopBarAction::categoryLinks()` feeds the
+chips (§5lt's sheet has the same list). Languages: EN/DV/AR. No new
+Blade file: the work is in `index` and `_card`.
+
+Tests:
+- `ShopLayoutTest` (7):
+  - the front's hero card, tiles, category tiles, rows and "See all",
+    folded filters, no chips;
+  - the office's slides take the card;
+  - a shop's card, its own chips, the chosen chip, the count leaving
+    when narrowed;
+  - the category page's strip;
+  - −25% on a sale card only;
+  - the one-strip links;
+  - Dhivehi.
+- The Bookshop, Website, Docs and Architecture suites: 426 passed.
+
+Checklist: `ft-bookstore-25`.
+
+Walks:
+- `shop.mjs` 79/79, with seven new steps:
+  - the hero card with the Deals tile level beside it (1280px);
+  - the category tiles with counts;
+  - the filters folded, the search visible;
+  - the Deals tile opens the deals;
+  - a shop's card;
+  - the links one strip, 68px, on a phone;
+  - no sideways scroll.
+- `public-rtl.mjs` 90/90: the card and tiles mirror in Dhivehi and Arabic.
+- `checkout.mjs` 35/35.
+- `polish.mjs` 32/32: the office's hero slide still shows and links.
+
 ## 5lt. The Bookstore's own tabs on a phone (2026-09-29)
 
 The owner: "in bookstore, in mobile there is a fixed buttons bar, home,

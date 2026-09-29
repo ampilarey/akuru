@@ -422,6 +422,31 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
     check('the cart is still in the shop\'s links too', await small.locator('[data-testid="shop-link-cart"]').isVisible());
 }
 
+// ------------------------------------------------------------ the layout (STATUS §5lu, after iruali)
+{
+    const desk = await newPage('shop-layout');
+    await desk.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });
+    const hero = await desk.locator('[data-testid="store-hero"], [data-testid="shop-hero"]').first().boundingBox();
+    const deals = await desk.locator('[data-testid="tile-deals"]').boundingBox();
+    check('the store opens on a hero card with the Deals tile beside it', hero !== null && deals !== null && Math.abs(deals.y - hero.y) < 2 && deals.x > hero.x, JSON.stringify({ hero, deals }));
+    check('the categories are tiles, each with how many', (await desk.locator('[data-testid="shop-categories"] a').count()) > 0 && /\d+ items?/.test(await desk.locator('[data-testid="shop-categories"] a').first().innerText()));
+    check('the filters fold on the front, the search in view', !(await desk.evaluate(() => document.querySelector('[data-testid="shop-more"]').open)) && await desk.locator('#shop-search').isVisible());
+    if (process.env.SMOKE_SHOTS) await desk.screenshot({ path: `${process.env.SMOKE_SHOTS}/shop-layout-front.png` });
+    await desk.locator('[data-testid="tile-deals"]').click();
+    await desk.waitForLoadState('networkidle');
+    check('the Deals tile opens the deals', new URL(desk.url()).pathname === '/en/shop/deals', desk.url());
+
+    await desk.goto(`${BASE}/en/shop/smoke-other-shop`, { waitUntil: 'networkidle' });
+    const head = await desk.locator('[data-testid="shop-head"]').innerText().catch(() => '');
+    check('a shop\'s page opens on its card: name, "at Akuru Bookstore", how many', head.includes('SMOKE-Other Shop') && head.includes('at Akuru Bookstore') && /\d+ items?/.test(head), head.replace(/\s+/g, ' '));
+
+    const phone = await newPage('shop-layout-phone', { width: 390, height: 844 });
+    await phone.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
+    const links = await phone.locator('[data-testid="shop-links"]').boundingBox();
+    check('on a phone the store\'s links are one strip, not four rows', links !== null && links.height < 70, `${Math.round(links?.height ?? -1)}px tall`);
+    check('the page itself does not run sideways', await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
+}
+
 // ------------------------------------------------------------ on a phone (STATUS §5kv)
 {
     const phone = await newPage('phone', { width: 390, height: 844 });
