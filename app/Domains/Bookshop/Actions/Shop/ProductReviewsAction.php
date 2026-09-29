@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductReview;
+use App\Domains\Bookshop\Models\ReviewVote;
 use App\Domains\Bookshop\Support\Merchandise;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -33,8 +34,10 @@ class ProductReviewsAction
         $published = ProductReview::query()->where('product_id', $productId)->where('status', ProductReview::PUBLISHED);
         $distribution = (clone $published)->selectRaw('rating, count(*) as n')->groupBy('rating')->pluck('n', 'rating');
         $count = (int) $distribution->sum();
-        $reviews = (clone $published)->latest()->limit(20)->get();
+        // §5lg: the most helpful first, then the newest.
+        $reviews = (clone $published)->orderByDesc('helpful_count')->latest()->orderByDesc('id')->limit(20)->get();
         $names = $this->names($reviews->pluck('user_id')->all());
+        $voted = $userId === null ? [] : ReviewVote::query()->where('user_id', $userId)->whereIn('product_review_id', $reviews->pluck('id'))->pluck('product_review_id')->map(fn ($id) => (int) $id)->all();
 
         return [
             'count' => $count,
@@ -48,10 +51,39 @@ class ProductReviewsAction
                 'date' => $r->created_at?->toDateString(),
                 'reply' => $r->vendor_reply,
                 'replied_at' => $r->replied_at?->toDateString(),
+                'helpful' => (int) $r->helpful_count,
+                'voted' => in_array((int) $r->id, $voted, true),
+                'can_vote' => $userId !== null && (int) $r->user_id !== $userId,
             ])->values()->all(),
             'can_review' => $userId !== null && $this->eligibleItem($userId, $productId) !== null,
             'pending_mine' => $userId !== null && ProductReview::query()->where('product_id', $productId)->where('user_id', $userId)->where('status', ProductReview::PENDING)->exists(),
         ];
+    }
+
+    /**
+     * §5lg: mark a published review helpful, or take the mark back. Not
+     * one's own review; the count follows every change.
+     *
+     * @return array{review: ProductReview, voted: bool}
+     */
+    public function toggleHelpful(int $userId, int $reviewId): array
+    {
+        $review = ProductReview::query()->where('status', ProductReview::PUBLISHED)->whereKey($reviewId)->with('product:id,slug')->firstOrFail();
+        if ((int) $review->user_id === $userId) {
+            throw ValidationException::withMessages(['review' => __('shop.error_vote_own_review')]);
+        }
+
+        $voted = DB::transaction(function () use ($review, $userId) {
+            $deleted = ReviewVote::query()->where('product_review_id', $review->id)->where('user_id', $userId)->delete();
+            if ($deleted === 0) {
+                ReviewVote::query()->create(['product_review_id' => $review->id, 'user_id' => $userId]);
+            }
+            $review->update(['helpful_count' => ReviewVote::query()->where('product_review_id', $review->id)->count()]);
+
+            return $deleted === 0;
+        });
+
+        return ['review' => $review, 'voted' => $voted];
     }
 
     /** A delivered line of this product, bought by this customer, not yet reviewed. */

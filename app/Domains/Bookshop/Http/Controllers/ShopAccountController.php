@@ -50,6 +50,15 @@ class ShopAccountController extends Controller
             ->with('success', __($review->status === 'pending' ? 'shop.review_pending_flash' : 'shop.review_thanks_flash'));
     }
 
+    /** §5lg: this review helped me — or, again, take it back. */
+    public function helpful(Request $request, int $review): RedirectResponse
+    {
+        $result = app(ProductReviewsAction::class)->toggleHelpful((int) $request->user()->id, $review);
+
+        return redirect()->to(route('public.shop.product', $result['review']->product->slug).'#review-'.$review)
+            ->with('success', __($result['voted'] ? 'shop.review_helpful_flash' : 'shop.review_unhelpful_flash'));
+    }
+
     /** §5le: ask the shop about a product; shown once it is answered. */
     public function question(Request $request, string $slug): RedirectResponse
     {

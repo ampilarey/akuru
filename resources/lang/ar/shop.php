@@ -1595,4 +1595,9 @@ return [
     'move_to_cart' => 'انقل إلى السلة',
     'saved_for_later_flash' => 'حُفظ لوقت لاحق. تجده تحت سلتك، ولا يُحسب فيها.',
     'moved_to_cart_flash' => 'أُعيد إلى سلتك.',
+    'helpful' => 'مفيد',
+    'found_helpful' => '{1} وجده شخص واحد مفيدًا|[2,*] وجده :count أشخاص مفيدًا',
+    'review_helpful_flash' => 'شكرًا — عُلّم كمفيد.',
+    'review_unhelpful_flash' => 'أُلغيت علامتك.',
+    'error_vote_own_review' => 'لا يمكنك تعليم مراجعتك كمفيدة.',
 ];

@@ -1599,4 +1599,9 @@ return [
     'move_to_cart' => 'Move to cart',
     'saved_for_later_flash' => 'Saved for later. It is below your cart, not counted in it.',
     'moved_to_cart_flash' => 'Moved back into your cart.',
+    'helpful' => 'Helpful',
+    'found_helpful' => '{1} 1 person found this helpful|[2,*] :count people found this helpful',
+    'review_helpful_flash' => 'Thanks — marked helpful.',
+    'review_unhelpful_flash' => 'Your helpful mark is taken back.',
+    'error_vote_own_review' => 'You cannot mark your own review helpful.',
 ];
