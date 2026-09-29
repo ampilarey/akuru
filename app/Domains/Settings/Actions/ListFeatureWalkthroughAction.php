@@ -35,7 +35,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-signin-9', 'label' => 'Linked accounts: prove another login and switch to it', 'where' => '/account/linked'],
             ]],
             ['key' => 'ft-website', 'title' => 'Public website (visitors)', 'items' => [
-                ['key' => 'ft-website-1', 'label' => 'Home, courses, news, events, gallery, achievements, contact; Research and Articles now open the Digital Library shelf', 'where' => '/en'],
+                ['key' => 'ft-website-1', 'label' => 'Home, courses, news, events, gallery, achievements, contact; old research and article addresses open the Digital Library', 'where' => '/en'],
                 ['key' => 'ft-website-2', 'label' => 'Course page: outcomes, instructor, FAQ, seats and price', 'where' => '/en/courses'],
                 ['key' => 'ft-website-3', 'label' => 'Register for a course for yourself: form, SMS code, confirm, complete', 'where' => '/en/courses'],
                 ['key' => 'ft-website-4', 'label' => 'Register a child for a course; the child then waits for the office to verify the parent', 'where' => '/en/courses'],
@@ -43,6 +43,9 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-website-6', 'label' => 'Admissions / apply form and the contact form reach the office', 'where' => '/en/apply'],
                 ['key' => 'ft-website-7', 'label' => 'Prayer times page and widget; daily content (ayah)', 'where' => '/en/prayer-times'],
                 ['key' => 'ft-website-8', 'label' => 'Certificate check by QR code', 'where' => '/verify/certificates/'],
+                ['key' => 'ft-website-9', 'label' => 'Header: the Digital Library menu (Books, Articles, Research, Authors, Gift cards) on a computer and in the phone menu; About holds the institute pages', 'where' => '/en'],
+                ['key' => 'ft-website-10', 'label' => 'Site search finds courses, library books, articles and research, news and events, in EN, DV and AR', 'where' => '/en/search'],
+                ['key' => 'ft-website-11', 'label' => 'Events: open an event from the list, register from its page, add it to a calendar; gallery albums open from the list', 'where' => '/en/events'],
             ]],
             ['key' => 'ft-institute', 'title' => 'Institute (System admin)', 'items' => [
                 ['key' => 'ft-institute-1', 'label' => 'Website pages: create, edit, preview, publish', 'where' => '/admin/public-site/pages'],
@@ -158,8 +161,12 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-library-3', 'label' => 'Buy an item with the wallet; My library', 'where' => '/my-library'],
                 ['key' => 'ft-library-4', 'label' => 'Gift cards: buy, redeem; promotions and offers', 'where' => '/library'],
                 ['key' => 'ft-library-5', 'label' => 'Writer: apply, upload a work, send for review, author page', 'where' => '/write'],
-                ['key' => 'ft-library-6', 'label' => 'Reviewer: review queue', 'where' => '/review'],
+                ['key' => 'ft-library-6', 'label' => 'Reviewer: declare no conflict of interest, read the paper, recommend accept, revise or reject; due dates shown', 'where' => '/review'],
                 ['key' => 'ft-library-7', 'label' => 'Office: approve and publish, campaigns, settings, insights, fraud log', 'where' => '/admin/library'],
+                ['key' => 'ft-library-8', 'label' => 'Research: the author chooses read online, download or both; teacher authors link to their profile; year filter on the research shelf', 'where' => '/library?content_type=research'],
+                ['key' => 'ft-library-9', 'label' => 'Peer review is required: research cannot be published without the required accepts; a revision starts a new round; the writer sees where review stands', 'where' => '/admin/library'],
+                ['key' => 'ft-library-10', 'label' => 'Reviewer pool: add and remove reviewers, due dates and reminders, overdue reports, CSV', 'where' => '/admin/library/reviewers'],
+                ['key' => 'ft-library-11', 'label' => 'Authors list on the shelf, and the website\'s old research papers imported into the library', 'where' => '/library#authors'],
             ]],
             ['key' => 'ft-bookstore', 'title' => 'Bookstore', 'items' => [
                 ['key' => 'ft-bookstore-1', 'label' => 'Shop, categories, product page, search', 'where' => '/shop'],
@@ -171,6 +178,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-bookstore-7', 'label' => 'Vendor: money and payouts, reviews, discount codes, insights', 'where' => '/vendor/money'],
                 ['key' => 'ft-bookstore-8', 'label' => 'Vendor: delivery methods, staff members, own domain', 'where' => '/vendor'],
                 ['key' => 'ft-bookstore-9', 'label' => 'Office: vendor applications, moderation, bank slips, payouts, themes', 'where' => '/admin/bookshop'],
+                ['key' => 'ft-bookstore-10', 'label' => 'Every open shop is listed on the shop page (Opening soon when it has nothing yet); on a phone the filters fold under Filter and sort', 'where' => '/shop'],
             ]],
             ['key' => 'ft-money', 'title' => 'Money checks', 'items' => [
                 ['key' => 'ft-money-1', 'label' => 'A payment grants access only after the bank confirms (not on return to the site)', 'where' => '/admin/enrollments/payments'],

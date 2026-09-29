@@ -4414,6 +4414,36 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kx. The feature-testing checklist catches up with R1–R5 and the fixes (2026-09-29)
+
+The owner asked whether the checklist (System → Feature testing,
+`ListFeatureWalkthroughAction`) had been updated for the latest work. It
+had only the news editor row (R4). Now 134 items: 8 new, 2 reworded. Keys
+stay stable, so a result already recorded stays with its feature.
+
+- **Public website:**
+  - `ft-website-9`: the Digital Library menu (R5);
+  - `ft-website-10`: site search including the library (R5);
+  - `ft-website-11`: events open, registration, calendar file and gallery
+    albums (§5ku).
+  - `ft-website-1` reworded: old research and article addresses open the
+    library.
+- **Digital Library:**
+  - `ft-library-8`: research delivery, teacher authors and the year filter
+    (R1);
+  - `ft-library-9`: peer review required, and rounds (R3a);
+  - `ft-library-10`: the reviewer pool, due dates and reminders (R3b);
+  - `ft-library-11`: the Authors list and the imported website research
+    (R2, R5).
+  - `ft-library-6` reworded for the reviewer's conflict-of-interest step
+    and due dates.
+- **Bookstore:** `ft-bookstore-10`: every open shop listed, *Opening soon*,
+  and the phone's *Filter and sort* (§5kv, §5kw).
+
+Tests: `FeatureTestingTest` 3/3; it counts the items from the list itself.
+Walked as the system admin: every new row is on the page, which reads
+"of 134".
+
 ## 5kw. Every open shop is listed on /shop (2026-09-29)
 
 The owner reported that the current shops, Fitrah for example, did not show
