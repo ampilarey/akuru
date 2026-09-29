@@ -246,13 +246,59 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
     check('ending the sale takes it off Deals', (await shopper.locator(`[data-product="${BOOK}"]`).count()) === 0 && (await shopper.locator('[data-testid="shop-empty"]').count()) + (await shopper.locator('[data-testid="shop-grid"] [data-product]').count()) > 0);
 }
 
+// ------------------------------------------------------------ a school's book list (STATUS §5lc)
+{
+    const PUZZLE = 'smoke-wooden-alphabet-puzzle';
+    vendor.on('dialog', (d) => d.accept());
+    const removeList = async () => {
+        if ((await vendor.locator('[data-testid="delete-collection-smoke-grade-3"]').count()) > 0) {
+            await vendor.click('[data-testid="delete-collection-smoke-grade-3"]');
+            await vendor.waitForSelector('[data-testid="collection-row-smoke-grade-3"]', { state: 'detached', timeout: 15000 }).catch(() => {});
+        }
+    };
+    await vendor.goto(`${BASE}/en/vendor/storefront/sections`, { waitUntil: 'networkidle' });
+    await vendor.click('[data-testid="tab-collections"]');
+    await removeList();
+    await vendor.fill('[data-testid="collection-name"]', 'SMOKE Grade 3 list');
+    await vendor.fill('[data-testid="collection-slug"]', 'smoke-grade-3');
+    await vendor.check('[data-testid="collection-book-list-on"]');
+    await vendor.fill('[data-testid="collection-school"]', 'SMOKE School');
+    await vendor.fill('[data-testid="collection-grade"]', 'Grade 3');
+    await vendor.check(`[data-testid="collection-product-${BOOK}"]`);
+    await vendor.check(`[data-testid="collection-product-${PUZZLE}"]`);
+    await vendor.fill(`[data-testid="collection-qty-${BOOK}"]`, '2');
+    await vendor.click('[data-testid="save-collection"]');
+    await vendor.waitForSelector('[data-testid="collection-row-smoke-grade-3"]', { timeout: 15000 }).catch(() => {});
+    const row = (await vendor.locator('[data-testid="collection-row-smoke-grade-3"]').innerText().catch(() => '')).replace(/\s+/g, ' ');
+    check('the shop makes a Grade 3 book list for its school, two of the workbook', /Book list · SMOKE School · Grade 3/.test(row), row);
+
+    const parent = await newPage('book-list');
+    await parent.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });
+    await parent.click('[data-testid="shop-link-book-lists"]');
+    const card = parent.locator('[data-book-list="fitrah/smoke-grade-3"]');
+    check('School book lists on the store\'s front has the school and grade', (await card.count()) === 1 && /SMOKE School/.test(await card.innerText()), (await card.innerText().catch(() => '')).replace(/\s+/g, ' '));
+    await Promise.all([parent.waitForURL(/\/shop\/fitrah\/smoke-grade-3$/), card.click()]);
+    await parent.waitForLoadState('networkidle');
+    const panel = (await parent.locator('[data-testid="book-list"]').innerText().catch(() => '')).replace(/\s+/g, ' ');
+    check('the list shows each item\'s quantity and what the list comes to', /2 ×/.test(panel) && /Arabic Letters Tracing Book/.test(panel) && /2 items: MVR/.test(panel), panel.slice(0, 200));
+    await parent.screenshot({ path: `${process.env.SMOKE_SHOTS ?? '/tmp'}/book-list.png` }).catch(() => {});
+    await Promise.all([parent.waitForURL(/\/shop\/cart$/), parent.click('[data-testid="book-list-add"]')]);
+    await parent.waitForLoadState('networkidle');
+    const book = await parent.locator(`[data-cart-line="${BOOK}"] input[name="quantity"]`).inputValue().catch(() => '');
+    check('one tap puts the whole list in the cart', (await parent.locator(`[data-cart-line="${PUZZLE}"]`).count()) === 1 && book === '2', `workbook × ${book}; ${(await parent.locator('[data-testid="flash-success"]').innerText().catch(() => '')).trim()}`);
+
+    await vendor.goto(`${BASE}/en/vendor/storefront/sections`, { waitUntil: 'networkidle' });
+    await vendor.click('[data-testid="tab-collections"]');
+    await removeList();
+}
+
 // ------------------------------------------------------------ the store's doors (STATUS §5ky)
 {
     const desk = await newPage('doors');
     await desk.goto(`${BASE}/en`, { waitUntil: 'networkidle' });
     await desk.click('[data-testid="nav-bookstore-more"]');
     const doors = (await desk.locator('[data-testid="nav-bookstore-menu"] a').allInnerTexts()).map((t) => t.trim());
-    check('the Bookstore caret opens its sections', ['Shops', 'Deals', 'Categories', 'My orders', 'Sell on Akuru', 'Shop owners: sign in'].every((t) => doors.includes(t)), doors.join(' · '));
+    check('the Bookstore caret opens its sections', ['Shops', 'Deals', 'School book lists', 'Categories', 'My orders', 'Sell on Akuru', 'Shop owners: sign in'].every((t) => doors.includes(t)), doors.join(' · '));
     await Promise.all([desk.waitForURL(/\/shop#shops$/), desk.click('[data-testid="nav-bookstore-shops"]')]);
     await desk.waitForLoadState('networkidle');
     check('Shops lands on the list of shops, in view', (await desk.locator('#shops [data-vendor="fitrah"]').isVisible()), desk.url().replace(BASE, ''));

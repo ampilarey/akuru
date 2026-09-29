@@ -4414,6 +4414,55 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lc. School book lists: buy the whole list in one tap (2026-09-29)
+
+The second feature on the iruali list (BOOKSHOP_PLAN §16, item 2).
+
+- **A shop makes a school's list** from its designer's Collections tab.
+  It picks a hand-picked collection, ticks "This is a school book list",
+  and gives the school, the grade, and how many of each item (1–99).
+  - Migration `2026_09_29_000006_shop_book_lists` adds `book_list`,
+    `school` and `grade` to `vendor_collections`, and `quantity` to its
+    pivot. Additive.
+  - A collection by rule cannot be a list: the list is the shop's choice.
+- **Parents find it** under **School book lists**:
+  - a section on the store's front, by school and then grade;
+  - an entry in the Bookstore menu and a chip in the store's row of links.
+  - When there are no lists yet, the section says so, because the menu
+    links to it.
+- **The list's page** (the collection's own address) shows:
+  - each item with its quantity and its line price, with a running sale
+    included;
+  - what the items that can be bought come to;
+  - **Add the whole list to the cart**.
+- **One tap** puts each item in the cart in its quantity.
+  - It goes through the same `SaveCartItemAction` as a single add, so the
+    stock, holiday and per-line checks are the same.
+  - An item that is sold out, or has options to choose, is skipped and
+    named on the cart page; the rest still go in.
+  - It works for a guest's cart as for a signed-in one.
+- The cart page now shows its success and warning messages. Before this
+  it showed neither, so "added to cart" was never seen there.
+
+Tests:
+- `ShopBookListsTest` (6): the list page, its quantities and total; one
+  tap for a guest, skipped items named, a second tap adds up; a signed-in
+  parent; what is not a list (a plain collection, an inactive list, a
+  suspended shop) is 404; the front's section, empty and filled; the
+  shop's form, including another shop's product refused and a rule
+  collection that cannot be a list.
+- `StoreMenuTest` updated.
+
+Checklist: `ft-bookstore-12`.
+
+Walk: `scripts/smoke/shop.mjs` 50/50, with four new steps:
+- Fitrah makes a Grade 3 list with two of the workbook;
+- a guest finds it under School book lists on the front and opens it;
+- the list shows "2 ×" and its total;
+- one tap puts both items in the cart, the workbook ×2.
+
+The walk then deletes the list.
+
 ## 5lb. Deals: timed sales and a deals page (2026-09-29)
 
 The first feature from the owner's "Start" on the iruali list

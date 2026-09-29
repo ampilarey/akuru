@@ -239,6 +239,8 @@ class VendorStorefrontController extends Controller
             'product_ids' => 'nullable|array', 'product_ids.*' => 'integer',
             'rule' => 'nullable|array', 'rule.tags' => 'nullable|array', 'rule.tags.*' => 'string|max:40', 'rule.category_id' => 'nullable|integer',
             'is_active' => 'nullable|boolean', 'sort_order' => 'nullable|integer|min:0|max:1000',
+            'book_list' => 'nullable|boolean', 'school' => 'nullable|string|max:120', 'grade' => 'nullable|string|max:40',
+            'quantities' => 'nullable|array', 'quantities.*' => 'nullable|integer|min:1|max:99',
         ]);
 
         $saved = app(ManageVendorCollectionsAction::class)->save($scope, $collection, $data);

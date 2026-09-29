@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Http\Controllers;
 
+use App\Domains\Bookshop\Actions\Cart\AddBookListToCartAction;
 use App\Domains\Bookshop\Actions\Cart\PresentCartAction;
 use App\Domains\Bookshop\Actions\Cart\SaveCartItemAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\ResolvesCart;
@@ -43,6 +44,19 @@ class ShopCartController extends Controller
         );
 
         return redirect()->route('public.shop.cart')->with('success', __('shop.added_to_cart_flash', ['title' => $item->product->title]));
+    }
+
+    /** §5lc: a school's whole book list into the cart in one tap. */
+    public function addList(Request $request, string $vendor, string $list): RedirectResponse
+    {
+        $actions = app(AddBookListToCartAction::class);
+        $bookList = $actions->find($vendor, $list);
+        abort_if($bookList === null, 404);
+
+        $result = $actions->execute($this->cart($request, create: true), $bookList);
+        $flash = redirect()->route('public.shop.cart')->with('success', __('shop.book_list_added_flash', ['count' => $result['added']]));
+
+        return $result['skipped'] === [] ? $flash : $flash->with('warning', __('shop.book_list_skipped_flash', ['titles' => implode(', ', $result['skipped'])]));
     }
 
     public function update(Request $request, int $item): RedirectResponse

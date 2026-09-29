@@ -30,6 +30,7 @@
       ['key' => 'all', 'label' => __('site.store_all'), 'href' => route('public.shop.index')],
       ['key' => 'shops', 'label' => __('site.shops'), 'href' => route('public.shop.index').'#shops'],
       ['key' => 'deals', 'label' => __('site.store_deals'), 'href' => route('public.shop.deals')],
+      ['key' => 'book-lists', 'label' => __('site.store_book_lists'), 'href' => route('public.shop.index').'#book-lists'],
       ['key' => 'categories', 'label' => __('site.shop_categories'), 'href' => route('public.shop.index').'#categories'],
       ['key' => 'my-orders', 'label' => __('site.my_orders'), 'href' => route('public.shop.orders')],
       ['key' => 'sell', 'label' => __('site.sell_on_akuru'), 'href' => route('vendor.apply')],

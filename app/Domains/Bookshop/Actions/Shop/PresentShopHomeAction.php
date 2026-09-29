@@ -98,7 +98,36 @@ class PresentShopHomeAction
             'new_arrivals' => $newArrivals,
             'categories' => $categories,
             'vendors' => $vendors,
+            'book_lists' => $this->bookLists(),
         ];
+    }
+
+    /**
+     * §5lc: every open shop's active book list with something for sale, by
+     * school then grade.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function bookLists(): array
+    {
+        return VendorCollection::query()
+            ->where('book_list', true)->whereNull('rule')->where('is_active', true)
+            ->whereHas('vendor', fn ($v) => $v->where('status', VendorStatus::Active->value))
+            ->with('vendor')
+            ->orderBy('school')->orderBy('grade')->orderBy('id')
+            ->limit(60)->get()
+            ->map(fn (VendorCollection $c) => [
+                'slug' => $c->slug,
+                'name' => $c->localizedName(),
+                'school' => $c->school,
+                'grade' => $c->grade,
+                'vendor' => $c->vendor->name,
+                'vendor_slug' => $c->vendor->slug,
+                'url' => route('public.shop.vendor.collection', [$c->vendor->slug, $c->slug]),
+                'count' => $c->forSaleQuery()->count(),
+            ])
+            ->filter(fn (array $l) => $l['count'] > 0)
+            ->values()->all();
     }
 
     /**

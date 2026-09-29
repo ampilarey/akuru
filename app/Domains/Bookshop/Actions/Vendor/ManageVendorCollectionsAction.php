@@ -14,7 +14,9 @@ use Illuminate\Validation\ValidationException;
  * its own products, hand-picked in an order, or by rule — a tag, a
  * category, or both. Shown by the Collection section and at
  * `/shop/<vendor>/<collection>`. The slug is fixed at creation; a few
- * words the shop's address already uses are not allowed as one.
+ * words the shop's address already uses are not allowed as one. Since
+ * §5lc a hand-picked collection can be a school's book list for a grade,
+ * with a quantity per item (1–99).
  */
 class ManageVendorCollectionsAction
 {
@@ -35,6 +37,11 @@ class ManageVendorCollectionsAction
                 'description' => $c->description,
                 'kind' => $c->isManual() ? 'manual' : 'rule',
                 'product_ids' => $c->products->pluck('id')->map(fn ($id) => (int) $id)->all(),
+                // §5lc: a school's book list for a grade, with how many of each.
+                'book_list' => (bool) $c->book_list,
+                'school' => $c->school,
+                'grade' => $c->grade,
+                'quantities' => (object) $c->products->mapWithKeys(fn ($p) => [(int) $p->id => (int) ($p->pivot->quantity ?? 1)])->all(),
                 'rule' => ((array) ($c->rule ?? [])) + ['tags' => [], 'category_id' => null],
                 'is_active' => (bool) $c->is_active,
                 'sort_order' => (int) $c->sort_order,
@@ -90,12 +97,17 @@ class ManageVendorCollectionsAction
                 'name_ar' => $text($data['name_ar'] ?? null, 120),
                 'description' => $text($data['description'] ?? null, 500),
                 'rule' => $rule,
+                // §5lc: only a hand-picked collection can be a book list — the list is the shop's choice.
+                'book_list' => $rule === null && ! empty($data['book_list']),
+                'school' => $rule === null && ! empty($data['book_list']) ? $text($data['school'] ?? null, 120) : null,
+                'grade' => $rule === null && ! empty($data['book_list']) ? $text($data['grade'] ?? null, 40) : null,
                 'is_active' => array_key_exists('is_active', $data) ? (bool) $data['is_active'] : true,
                 'sort_order' => is_numeric($data['sort_order'] ?? null) ? max(0, (int) $data['sort_order']) : $collection->sort_order,
             ]);
             $sync = [];
+            $quantities = (array) ($data['quantities'] ?? []);
             foreach ($productIds as $i => $id) {
-                $sync[$id] = ['sort_order' => $i];
+                $sync[$id] = ['sort_order' => $i, 'quantity' => max(1, min(99, (int) ($quantities[$id] ?? 1)))];
             }
             $collection->products()->sync($rule === null ? $sync : []);
 
