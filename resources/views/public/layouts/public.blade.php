@@ -106,7 +106,10 @@
     <style>
         /* Improve mobile touch targets */
         @media (max-width: 768px) {
-            button, a, input, select, textarea {
+            /* A checkbox or radio keeps its own size: stretched to 44px it
+               became a large empty square (the shop's "In stock only"). Its
+               label is the thing a thumb taps. */
+            button, a, input:not([type="checkbox"]):not([type="radio"]), select, textarea {
                 min-height: 44px;
                 min-width: 44px;
             }

@@ -183,6 +183,9 @@ return [
     'results' => 'ނަތީޖާ',
     'result_count' => ':count ތަކެތި',
     'no_results' => 'ތިޔަ ހޯއްދަވާ އެއްޗަކާ ގުޅޭ އެއްޗެއް އަދި ނެތް.',
+    // STATUS §5kv: the phone's fold over the filters, and a shop with nothing listed.
+    'filter_and_sort' => 'ފިލްޓަރު އަދި ތަރުތީބު',
+    'shop_nothing_listed' => 'މި ފިހާރައިން އަދި އެއްވެސް އެއްޗެއް ލިސްޓުކޮށްފައެއް ނުވޭ.',
     'sold_by' => 'ވިއްކަނީ',
     'on_sale' => 'ސޭލް',
     'stock_in_stock' => 'ސްޓޮކްގައި ހުރި',

@@ -187,6 +187,9 @@ return [
     'results' => 'Results',
     'result_count' => ':count items',
     'no_results' => 'Nothing matches your search yet.',
+    // STATUS §5kv: the phone's fold over the filters, and a shop with nothing listed.
+    'filter_and_sort' => 'Filter and sort',
+    'shop_nothing_listed' => 'This shop has not listed any products yet.',
     'sold_by' => 'Sold by',
     'on_sale' => 'Sale',
     'stock_in_stock' => 'In stock',

@@ -129,7 +129,7 @@ check('a category shows what is in it and nothing else', /\/shop\/c\/workbooks$/
 
 await guest.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });
 await guest.fill('#shop-search', 'puzzle');
-await guest.locator('[data-testid="shop-filters"] button[type=submit]').click();
+await guest.locator('[data-testid="shop-search-go"]').click();
 await guest.waitForLoadState('networkidle');
 const found = await cards(guest);
 check('search finds by name', found.length === 1 && found[0] === 'smoke-wooden-alphabet-puzzle', found.join(', ') || 'nothing');
@@ -183,5 +183,18 @@ await vendor.waitForLoadState('networkidle');
 await vendor.goto(`${BASE}/en/vendor`, { waitUntil: 'networkidle' });
 const portalLink = await vendor.locator('[data-testid="open-shop-page"]').getAttribute('href').catch(() => null);
 check('the vendor portal links to the shop\'s own page', portalLink === '/shop/fitrah', portalLink ?? 'no link');
+
+// ------------------------------------------------------------ on a phone (STATUS §5kv)
+{
+    const phone = await newPage('phone', { width: 390, height: 844 });
+    await phone.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
+    const folded = await phone.evaluate(() => !document.querySelector('[data-testid="shop-more"]').open);
+    const firstCard = await phone.locator('[data-testid="shop-grid"] [data-product]').first().boundingBox();
+    check('on a phone the filters fold under one button, and a product shows on the first screen', folded && (await phone.locator('#shop-search').isVisible()) && firstCard !== null && firstCard.y < 844, `fold closed: ${folded}, first product at ${Math.round(firstCard?.y ?? -1)}px`);
+    await phone.click('[data-testid="shop-more-toggle"]');
+    const box = await phone.locator('[data-testid="filter-in-stock"]').boundingBox();
+    check('tapping Filter and sort opens them, and "In stock only" is a normal checkbox', (await phone.locator('[data-testid="filter-sort"]').isVisible()) && box !== null && box.width < 30, `checkbox ${Math.round(box?.width ?? -1)}px wide`);
+    check('the shop page fits the phone', (await phone.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)) <= 0);
+}
 
 await finish();

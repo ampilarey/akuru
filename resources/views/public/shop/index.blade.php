@@ -75,62 +75,106 @@
 </section>
 @endif
 
+{{-- On a phone the search stays in view and the rest folds under "Filter and sort",
+     so the products are on the first screen (the owner's screenshot, STATUS §5kv). The
+     fold is served open, so the filters are there without script; the script folds
+     it on a phone unless a filter is already in use. --}}
+@php($activeFilters = collect(['category', 'language', 'price_min', 'price_max', 'in_stock'])
+    ->filter(fn ($key) => ! empty($filters[$key]) && ! (request()->routeIs('public.shop.category') && $key === 'category'))
+    ->count() + ((($filters['sort'] ?? 'newest') !== 'newest') ? 1 : 0))
 <section class="border-b py-4 {{ $storefront ? '' : 'bg-white' }}">
     <div class="container mx-auto px-4">
-        <form method="GET" action="{{ url()->current() }}" class="flex flex-wrap items-end gap-3" data-testid="shop-filters">
-            <div class="min-w-48 flex-1">
-                <label for="shop-search" class="mb-1 block text-xs text-gray-500">{{ __('shop.search') }}</label>
-                {{-- B7 (§4 "suggestions as you type"): a listbox under the box, from shop/suggest. --}}
-                <div class="relative">
-                    <input id="shop-search" type="search" name="q" value="{{ $filters['q'] ?? '' }}" class="form-input w-full" placeholder="{{ __('shop.search_shop') }}"
-                        autocomplete="off" role="combobox" aria-expanded="false" aria-controls="shop-suggest" aria-autocomplete="list" data-suggest-url="{{ route('public.shop.suggest') }}" data-testid="shop-search">
-                    <ul id="shop-suggest" role="listbox" class="absolute z-30 mt-1 hidden max-h-96 w-full overflow-y-auto rounded border bg-white text-sm shadow-lg" data-testid="shop-suggest"></ul>
+        <form method="GET" action="{{ url()->current() }}" data-testid="shop-filters">
+            <div class="flex items-end gap-2">
+                <div class="min-w-0 flex-1">
+                    <label for="shop-search" class="mb-1 block text-xs text-gray-500">{{ __('shop.search') }}</label>
+                    {{-- B7 (§4 "suggestions as you type"): a listbox under the box, from shop/suggest. --}}
+                    <div class="relative">
+                        <input id="shop-search" type="search" name="q" value="{{ $filters['q'] ?? '' }}" class="form-input w-full" placeholder="{{ __('shop.search_shop') }}"
+                            autocomplete="off" role="combobox" aria-expanded="false" aria-controls="shop-suggest" aria-autocomplete="list" data-suggest-url="{{ route('public.shop.suggest') }}" data-testid="shop-search">
+                        <ul id="shop-suggest" role="listbox" class="absolute z-30 mt-1 hidden max-h-96 w-full overflow-y-auto rounded border bg-white text-sm shadow-lg" data-testid="shop-suggest"></ul>
+                    </div>
                 </div>
+                <button type="submit" class="btn-primary shrink-0" aria-label="{{ __('shop.search') }}" data-testid="shop-search-go">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                </button>
             </div>
-            @if(! request()->routeIs('public.shop.category'))
-                <div>
-                    <label class="mb-1 block text-xs text-gray-500">{{ __('shop.category') }}</label>
-                    <select name="category" class="form-input" data-testid="filter-category">
-                        <option value="">{{ __('shop.all_categories') }}</option>
-                        @foreach($options['categories'] as $category)
-                            <option value="{{ $category['slug'] }}" @selected(($filters['category'] ?? '') === $category['slug'])>{{ $category['label'] }}</option>
-                        @endforeach
-                    </select>
+            <details class="shop-more mt-3" open data-active="{{ $activeFilters }}" data-testid="shop-more">
+                <summary class="shop-more-toggle md:hidden" data-testid="shop-more-toggle">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h18M6 12h12M10 19h4"/></svg>
+                    {{ __('shop.filter_and_sort') }}
+                    @if($activeFilters > 0)<span class="shop-more-count">{{ $activeFilters }}</span>@endif
+                </summary>
+                <div class="mt-3 grid grid-cols-2 items-end gap-3 md:mt-0 md:flex md:flex-wrap">
+                    @if(! request()->routeIs('public.shop.category'))
+                        <div class="col-span-2 md:col-span-1">
+                            <label class="mb-1 block text-xs text-gray-500">{{ __('shop.category') }}</label>
+                            <select name="category" class="form-input pe-9" data-testid="filter-category">
+                                <option value="">{{ __('shop.all_categories') }}</option>
+                                @foreach($options['categories'] as $category)
+                                    <option value="{{ $category['slug'] }}" @selected(($filters['category'] ?? '') === $category['slug'])>{{ $category['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+                    <div>
+                        <label class="mb-1 block text-xs text-gray-500">{{ __('shop.language') }}</label>
+                        <select name="language" class="form-input pe-9">
+                            <option value="">{{ __('shop.any_language') }}</option>
+                            @foreach(['English' => 'lang_english', 'Dhivehi' => 'lang_dhivehi', 'Arabic' => 'lang_arabic'] as $value => $key)
+                                <option value="{{ $value }}" @selected(($filters['language'] ?? '') === $value)>{{ __('shop.'.$key) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div>
+                        <label class="mb-1 block text-xs text-gray-500">{{ __('shop.sort') }}</label>
+                        <select name="sort" class="form-input pe-9" data-testid="filter-sort">
+                            @foreach($options['sorts'] as $sort)
+                                <option value="{{ $sort }}" @selected(($filters['sort'] ?? 'newest') === $sort)>{{ __('shop.sort_'.$sort) }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-span-2 md:col-span-1">
+                        <label class="mb-1 block text-xs text-gray-500">{{ __('shop.price') }}</label>
+                        <div class="flex gap-2">
+                            <input type="number" name="price_min" min="0" step="1" value="{{ $filters['price_min'] ?? '' }}" class="form-input md:w-24" placeholder="{{ __('shop.price_from') }}" aria-label="{{ __('shop.price_from') }}">
+                            <input type="number" name="price_max" min="0" step="1" value="{{ $filters['price_max'] ?? '' }}" class="form-input md:w-24" placeholder="{{ __('shop.price_to') }}" aria-label="{{ __('shop.price_to') }}">
+                        </div>
+                    </div>
+                    <label class="col-span-2 flex min-h-[44px] items-center gap-2 text-sm md:col-span-1">
+                        <input type="checkbox" name="in_stock" value="1" class="h-5 w-5 rounded border-gray-300" @checked(! empty($filters['in_stock'])) data-testid="filter-in-stock"> {{ __('shop.in_stock_only') }}
+                    </label>
+                    <div class="col-span-2 flex flex-wrap items-center gap-3 md:col-span-1">
+                        <button type="submit" class="btn-primary">{{ __('shop.filter') }}</button>
+                        <a href="{{ url()->current() }}" class="btn-secondary">{{ __('shop.clear_filters') }}</a>
+                        {{-- The list as a spreadsheet (CLAUDE.md: every listing), kept small: most shoppers never want it. --}}
+                        <a href="{{ route('public.shop.export', $filters) }}" class="text-sm text-gray-600 underline hover:text-brandMaroon-700" data-testid="shop-export">{{ __('shop.export_csv') }}</a>
+                    </div>
                 </div>
-            @endif
-            <div>
-                <label class="mb-1 block text-xs text-gray-500">{{ __('shop.language') }}</label>
-                <select name="language" class="form-input">
-                    <option value="">{{ __('shop.any_language') }}</option>
-                    @foreach(['English' => 'lang_english', 'Dhivehi' => 'lang_dhivehi', 'Arabic' => 'lang_arabic'] as $value => $key)
-                        <option value="{{ $value }}" @selected(($filters['language'] ?? '') === $value)>{{ __('shop.'.$key) }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="mb-1 block text-xs text-gray-500">{{ __('shop.price') }}</label>
-                <div class="flex gap-1">
-                    <input type="number" name="price_min" min="0" step="1" value="{{ $filters['price_min'] ?? '' }}" class="form-input w-24" placeholder="{{ __('shop.price_from') }}" aria-label="{{ __('shop.price_from') }}">
-                    <input type="number" name="price_max" min="0" step="1" value="{{ $filters['price_max'] ?? '' }}" class="form-input w-24" placeholder="{{ __('shop.price_to') }}" aria-label="{{ __('shop.price_to') }}">
-                </div>
-            </div>
-            <label class="flex items-center gap-2 pb-2 text-sm">
-                <input type="checkbox" name="in_stock" value="1" @checked(! empty($filters['in_stock']))> {{ __('shop.in_stock_only') }}
-            </label>
-            <div>
-                <label class="mb-1 block text-xs text-gray-500">{{ __('shop.sort') }}</label>
-                <select name="sort" class="form-input" data-testid="filter-sort">
-                    @foreach($options['sorts'] as $sort)
-                        <option value="{{ $sort }}" @selected(($filters['sort'] ?? 'newest') === $sort)>{{ __('shop.sort_'.$sort) }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <button type="submit" class="btn-primary">{{ __('shop.filter') }}</button>
-            <a href="{{ url()->current() }}" class="btn-secondary">{{ __('shop.clear_filters') }}</a>
-            <a href="{{ route('public.shop.export', $filters) }}" class="btn-secondary">{{ __('shop.export_csv') }}</a>
+            </details>
         </form>
     </div>
 </section>
+@push('styles')
+<style>
+    .shop-more > summary { list-style: none; }
+    .shop-more > summary::-webkit-details-marker { display: none; }
+    .shop-more-toggle { display: inline-flex; align-items: center; gap: .5rem; min-height: 44px; padding: 0 1rem; border: 1px solid #DCCFBE; border-radius: .6rem; background: #fff; font-size: .875rem; font-weight: 600; color: #3F3A36; cursor: pointer; }
+    .shop-more[open] > .shop-more-toggle { border-color: #7C2D37; color: #7C2D37; }
+    .shop-more-count { display: inline-flex; align-items: center; justify-content: center; min-width: 1.25rem; height: 1.25rem; padding: 0 .3rem; border-radius: 999px; background: #7C2D37; color: #fff; font-size: .75rem; }
+    @media (min-width: 768px) { .shop-more > summary { display: none; } }
+</style>
+@endpush
+@push('scripts')
+<script>
+(() => {
+    const more = document.querySelector('[data-testid="shop-more"]');
+    if (more && !window.matchMedia('(min-width: 768px)').matches && more.dataset.active === '0') {
+        more.open = false;
+    }
+})();
+</script>
+@endpush
 
 @if($home)
     {{-- B7 (§7): the office's hero slides, featured products and collections; best sellers; recently viewed. --}}
@@ -249,7 +293,8 @@
             <span class="text-sm font-normal text-gray-500" data-testid="result-count">{{ __('shop.result_count', ['count' => $products->total()]) }}</span>
         </h2>
         @if($products->total() === 0)
-            <p class="text-gray-500">{{ __('shop.no_results') }}</p>
+            {{-- A shop with nothing listed yet says so, rather than blaming the search. --}}
+            <p class="text-gray-500" data-testid="shop-empty">{{ $vendor && ! $collection && $activeFilters === 0 && empty($filters['q']) ? __('shop.shop_nothing_listed') : __('shop.no_results') }}</p>
         @endif
         <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4" data-testid="shop-grid">
             @foreach($products as $card)
