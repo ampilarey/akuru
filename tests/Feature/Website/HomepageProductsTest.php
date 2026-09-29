@@ -117,3 +117,18 @@ it('leads the hero with Akuru as a whole until the office adds its own slides', 
         ->and(__('site.hero_title', [], 'dv'))->not->toBe('site.hero_title')
         ->and(__('site.hero_title', [], 'ar'))->not->toBe('site.hero_title');
 });
+
+it('invents no courses, news or events when there are none', function () {
+    // The owner, 2026-09-29: three placeholder course cards showed on a site
+    // with no courses, and each led to "no course found".
+    $html = homeHtml();
+    preg_match('#data-testid="home-courses"(.*?)</section>#s', $html, $courses);
+
+    expect(substr_count($courses[1], 'href="'.route('public.courses.index').'"'))->toBe(0)
+        ->and($courses[1])->toContain('No open courses right now.')
+        ->and($html)->not->toContain('New Academic Year Starts')
+        ->and($html)->not->toContain('Quran Competition Results')
+        ->and($html)->not->toContain('Open House Day')
+        ->and($html)->toContain('No news yet.')
+        ->and($html)->toContain('No upcoming events scheduled.');
+});
