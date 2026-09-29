@@ -4414,6 +4414,53 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5le. Product questions and answers (2026-09-29)
+
+The fourth feature on the iruali list (BOOKSHOP_PLAN §16, item 4).
+
+**Asking.** A signed-in customer asks from the product page's new
+**Questions and answers** section; a guest is offered the sign-in.
+- The shop is told: in-app, and by email unless it turns that off under
+  a new notice event, "A customer asks a question".
+- A question shows on the product page only once the shop has answered
+  it. The asker sees how many of theirs are waiting.
+- To keep a page from being flooded:
+  - at most 3 unanswered questions per customer per product;
+  - at least 5 characters;
+  - throttled.
+
+**Answering.** The shop answers from its **Reviews** page, in a new
+Questions section, with the waiting ones first. It can edit an answer.
+- The asker is told once, on the first answer.
+- The answer shows under "Answer from <shop>".
+- The asker is shown as first name and initial, like a reviewer. The
+  helper for this (`CustomerNames`) is now shared with reviews.
+- CSV at `/vendor/questions/export`.
+- Each shop sees and answers only its own questions.
+
+**Office.** It can hide a question and its answer, with a required note
+the shop sees, or publish it again. This is a Questions section on
+`/admin/bookshop` next to Reviews, under `bookshop.manage`.
+
+**Data.** Migration `2026_09_29_000007_shop_product_questions` adds one
+new table, `product_questions`. Morph alias: `product_question`.
+
+Tests:
+- `ShopQuestionsTest` (4):
+  - ask, told, not shown until answered, answered, shown with the short
+    name, told once only, CSV;
+  - a guest, too short, a fourth waiting question;
+  - one shop cannot answer or see another's;
+  - the office hides with a note, the shop sees the note, the office
+    publishes again, and a shop owner cannot moderate.
+
+Checklist: `ft-bookstore-14`.
+
+Walk: `scripts/smoke/checkout.mjs` 33/33, with three new steps:
+- the customer asks on the tracing book's page;
+- Fitrah finds the question waiting on its Reviews page and answers it;
+- the product page shows the question and "Answer from Fitrah".
+
 ## 5ld. Buy again from My orders (2026-09-29)
 
 The third feature on the iruali list (BOOKSHOP_PLAN §16, item 3).

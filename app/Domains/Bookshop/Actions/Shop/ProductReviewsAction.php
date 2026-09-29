@@ -101,23 +101,13 @@ class ProductReviewsAction
     }
 
     /**
-     * "Aishath M." — first name and the initial of the last, through the
-     * auth model from config so Bookshop never imports Identity's (rule 3).
+     * "Aishath M." — see `CustomerNames` (shared with product questions since §5le).
      *
      * @param  list<int>  $userIds
      * @return array<int, string>
      */
     private function names(array $userIds): array
     {
-        $userModel = config('auth.providers.users.model');
-
-        return $userModel::query()->whereIn('id', array_unique($userIds))->pluck('name', 'id')
-            ->map(function ($name) {
-                $parts = preg_split('/\s+/', trim((string) $name)) ?: [];
-                $first = $parts[0] ?? '';
-                $last = count($parts) > 1 ? mb_substr((string) end($parts), 0, 1).'.' : '';
-
-                return trim($first.' '.$last);
-            })->all();
+        return CustomerNames::short($userIds);
     }
 }

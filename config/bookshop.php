@@ -190,13 +190,15 @@ return [
      */
     'notices' => [
         'customer_events' => ['order_paid', 'slip_decided', 'order_progress', 'order_cancelled', 'return_decided', 'refund', 'back_in_stock', 'cart_reminder', 'quote_ready'],
-        'vendor_events' => ['new_order', 'customer_cancelled', 'return_requested', 'low_stock', 'review', 'payout_decided', 'invoice', 'quote_requested'],
+        'vendor_events' => ['new_order', 'customer_cancelled', 'return_requested', 'low_stock', 'review', 'question', 'payout_decided', 'invoice', 'quote_requested'],
         'vendor_defaults' => [
             'new_order' => ['email' => true, 'sms' => false],
             'customer_cancelled' => ['email' => true, 'sms' => false],
             'return_requested' => ['email' => true, 'sms' => false],
             'low_stock' => ['email' => true, 'sms' => false],
             'review' => ['email' => false, 'sms' => false],
+            // §5le: a customer asks about a product — worth an email, since they wait for the answer.
+            'question' => ['email' => true, 'sms' => false],
             'payout_decided' => ['email' => true, 'sms' => false],
             'invoice' => ['email' => true, 'sms' => false],
             'quote_requested' => ['email' => true, 'sms' => false],

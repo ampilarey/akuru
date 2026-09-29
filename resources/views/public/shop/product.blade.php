@@ -266,6 +266,43 @@
         </ul>
     </section>
 
+    {{-- STATUS §5le: questions and answers — a customer asks, the shop answers in public. --}}
+    @php($qa = $product['questions'])
+    <section id="questions" class="mt-12 scroll-mt-24" data-testid="questions">
+        <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">{{ __('shop.questions_heading') }}</h2>
+        @if(session('question_asked'))
+            <p class="mb-3 rounded bg-green-50 p-2 text-sm text-green-800" data-testid="question-asked">{{ session('question_asked') }}</p>
+        @endif
+        @auth
+            <form method="POST" action="{{ route('public.shop.question', $product['slug']) }}" class="mb-6 max-w-xl rounded-lg border bg-brandBeige-50 p-4" data-testid="question-form">
+                @csrf
+                <label for="question-text" class="mb-2 block text-sm font-semibold">{{ __('shop.ask_question') }}</label>
+                <textarea id="question-text" name="question" rows="2" maxlength="1000" required class="form-input w-full" dir="auto" placeholder="{{ __('shop.question_placeholder') }}" data-testid="question-text">{{ old('question') }}</textarea>
+                @error('question')<p class="text-sm text-red-700">{{ $message }}</p>@enderror
+                <p class="mt-1 text-xs text-gray-500">{{ __('shop.question_hint', ['vendor' => $product['vendor']['name']]) }}</p>
+                <button type="submit" class="btn-primary mt-2" data-testid="submit-question">{{ __('shop.ask_button') }}</button>
+                @if($qa['waiting_mine'] > 0)<p class="mt-2 text-sm text-gray-600" data-testid="questions-waiting">{{ __('shop.questions_waiting_mine', ['count' => $qa['waiting_mine']]) }}</p>@endif
+            </form>
+        @else
+            <p class="mb-4 text-sm"><a href="{{ route('login') }}" class="font-semibold text-brandMaroon-700 underline">{{ __('shop.sign_in_to_ask') }}</a></p>
+        @endauth
+        @if(count($qa['questions']) === 0)
+            <p class="text-sm text-gray-500" data-testid="no-questions">{{ __('shop.no_questions') }}</p>
+        @endif
+        <ul class="space-y-4">
+            @foreach($qa['questions'] as $q)
+                <li class="border-b pb-3" data-testid="question-{{ $q['id'] }}">
+                    <p class="text-sm"><span class="font-semibold">{{ __('shop.question_q') }}</span> <span dir="auto">{{ $q['question'] }}</span></p>
+                    <p class="text-xs text-gray-500">{{ $q['name'] }} · {{ $q['date'] }}</p>
+                    <div class="mt-2 ms-4 rounded bg-gray-50 p-2 text-sm">
+                        <p class="text-xs font-semibold text-gray-600">{{ __('shop.answer_from', ['vendor' => $product['vendor']['name']]) }}</p>
+                        <p class="whitespace-pre-line" dir="auto">{{ $q['answer'] }}</p>
+                    </div>
+                </li>
+            @endforeach
+        </ul>
+    </section>
+
     @if(count($product['related']) > 0)
         <section class="mt-12">
             <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">{{ __('shop.related') }}</h2>

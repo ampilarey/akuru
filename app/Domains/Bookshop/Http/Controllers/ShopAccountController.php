@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\Shop\CustomerListsAction;
+use App\Domains\Bookshop\Actions\Shop\ProductQuestionsAction;
 use App\Domains\Bookshop\Actions\Shop\ProductReviewsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
@@ -47,6 +48,16 @@ class ShopAccountController extends Controller
 
         return redirect()->to(route('public.shop.product', $slug).'#reviews')
             ->with('success', __($review->status === 'pending' ? 'shop.review_pending_flash' : 'shop.review_thanks_flash'));
+    }
+
+    /** §5le: ask the shop about a product; shown once it is answered. */
+    public function question(Request $request, string $slug): RedirectResponse
+    {
+        $data = $request->validate(['question' => 'required|string|max:1000']);
+
+        app(ProductQuestionsAction::class)->ask((int) $request->user()->id, $slug, $data['question']);
+
+        return redirect()->to(route('public.shop.product', $slug).'#questions')->with('question_asked', __('shop.question_sent_flash'));
     }
 
     /** Every listing gets a CSV (conventions): the wishlist. */
