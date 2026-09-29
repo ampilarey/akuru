@@ -172,7 +172,12 @@
         @yield('content')
     </main>
     
-    <x-public.footer />
+    {{-- A shop's own pages set 'shop_footer' and get only the copyright line (STATUS §5kz). --}}
+    @hasSection('shop_footer')
+        <x-public.footer :compact="true" />
+    @else
+        <x-public.footer />
+    @endif
 
     @include('public.partials.prayer-banner-assets')
 

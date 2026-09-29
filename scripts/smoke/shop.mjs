@@ -205,6 +205,17 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
     check('the shop page offers shop owners their way in', /\/vendor$/.test(owners ?? ''), owners);
 }
 
+// ------------------------------------------------------------ a shop's own footer (STATUS §5kz)
+{
+    const visitor = await newPage('shop-footer');
+    await visitor.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
+    const compact = await visitor.locator('[data-testid="footer-compact"]').innerText().catch(() => '');
+    check('a shop\'s page ends with only the copyright line', /© \d{4} Akuru Institute/.test(compact) && (await visitor.locator('[data-footer-group]').count()) === 0, compact.trim());
+    check('and keeps the Akuru header', await visitor.locator('[data-testid="nav-bookstore"]').isVisible());
+    await visitor.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });
+    check('the store\'s front keeps the full footer', (await visitor.locator('[data-footer-group]').count()) === 5 && (await visitor.locator('[data-testid="footer-compact"]').count()) === 0);
+}
+
 // ------------------------------------------------------------ on a phone (STATUS §5kv)
 {
     const phone = await newPage('phone', { width: 390, height: 844 });

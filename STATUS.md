@@ -4414,6 +4414,39 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kz. A shop's own pages end with only the copyright line (2026-09-29)
+
+**The owner's decision.** Vendors complained that their page is meant to
+be theirs. The owner decided to keep the header on a desk and on a phone,
+and to replace the footer with only the line "© 2026 Akuru Institute. All
+rights reserved." This amends BOOKSHOP_PLAN decision 3 and §1 "One frame";
+both now record it.
+
+- **Which pages:**
+  - a shop's home (`/shop/{shop}`);
+  - its collections (`/shop/{shop}/{collection}`);
+  - its pages (`/shop/{shop}/p/{page}`);
+  - the storefront preview, which uses the same view.
+
+  The views set `@section('shop_footer')`. The layout then draws
+  `<x-public.footer :compact="true" />`: a thin wine band with the gold
+  rule and the copyright line in the visitor's language.
+- **Unchanged:** the Akuru header (desktop nav, phone menu), the phone's
+  bottom bar, the chat button and "at Akuru Bookstore". The store's front,
+  categories, product pages, cart and checkout keep the full footer.
+- No new Blade file. The compact footer is a mode of the existing footer
+  component, so the Blade baseline is unchanged.
+
+Tests: `tests/Feature/Bookshop/ShopFooterTest.php` (3):
+- a shop's page has the copyright line and no footer groups, and keeps the
+  header, the phone menu and the bottom bar;
+- home, the store's front, a product page and the library keep the full
+  footer;
+- the line in DV/AR.
+
+Full suite 2505 passed. Walk: `scripts/smoke/shop.mjs` 36/36, with three new steps. Screenshots at
+390px and 1280px show the shop's products ending in the one-line band.
+
 ## 5ky. The Bookstore's doors: a header menu, links on /shop, the shops in the footer (2026-09-29)
 
 The owner could not see a link to the shops' (vendors') pages from the

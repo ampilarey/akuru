@@ -1,3 +1,15 @@
+@props(['compact' => false])
+@if ($compact)
+{{-- STATUS §5kz, the owner's decision (2026-09-29): on a shop's own pages the
+     vendors asked for their brand to lead, so the Akuru footer shrinks to its
+     copyright line. The header, the cart and "at Akuru Bookstore" stay. --}}
+<footer class="shop-footer" data-testid="footer-compact" style="background:#3D1219">
+  <div style="height:3px;background:linear-gradient(90deg,#A8861F,#C9A227,#E8BC3C,#C9A227,#A8861F)"></div>
+  <div class="container mx-auto px-4 py-4">
+    <p style="color:rgba(255,255,255,0.75);font-size:.8rem;margin:0;text-align:center">© {{ date('Y') }} Akuru Institute. {{ __('site.rights_reserved') }}</p>
+  </div>
+</footer>
+@else
 <footer style="background:linear-gradient(160deg,#3D1219 0%,#491821 60%,#5A1F28 100%)">
   {{-- Gold top accent --}}
   <div style="height:4px;background:linear-gradient(90deg,#A8861F,#C9A227,#E8BC3C,#C9A227,#A8861F)"></div>
@@ -140,3 +152,4 @@
     (mq.addEventListener ? mq.addEventListener('change', sync) : mq.addListener(sync));
   })();
 </script>
+@endif
