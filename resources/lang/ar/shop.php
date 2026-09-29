@@ -183,6 +183,9 @@ return [
     'results' => 'النتائج',
     'result_count' => ':count منتجات',
     'no_results' => 'لا يوجد ما يطابق بحثك بعد.',
+    // STATUS §5kv: the phone's fold over the filters, and a shop with nothing listed.
+    'filter_and_sort' => 'تصفية وترتيب',
+    'shop_nothing_listed' => 'لم يعرض هذا المتجر أي منتجات بعد.',
     'sold_by' => 'يبيعه',
     'on_sale' => 'تخفيض',
     'stock_in_stock' => 'متوفر',

@@ -4414,6 +4414,54 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kv. A shop's page on a phone: the products first (2026-09-29)
+
+The owner sent a phone screenshot of `/shop/fitrah` and asked whether this
+is the right way, since the shop also shows the main layout.
+
+- **The main header and footer are by design.** BOOKSHOP_PLAN decision 3,
+  confirmed on 2026-09-25: a shop customises its page *inside the Akuru
+  frame*, so the site header, the cart, checkout and "at Akuru Bookstore"
+  stay (§1 "One frame", §6.6). Changing that is the owner's decision; it
+  is not a bug, and this slice does not change it.
+- **What was wrong on the phone, and is fixed:**
+  - **The filter form filled the first screen.** The search stays in view
+    with its own button. Category, language, sort, price, in stock and the
+    buttons now fold under *Filter and sort*, with a count of the filters
+    in use. The fold is served open, so it works without script; on a phone
+    the script closes it unless a filter is in use. On a desk it is one
+    row, as before.
+  - **"In stock only" was a large empty square.** The public layout's phone
+    rule gave every `input` a 44px minimum, so every checkbox and radio on
+    the public site grew to fill it. Checkboxes and radios are now
+    excluded; their labels carry the tap target.
+  - **The dropdown arrows sat on their text** ("Any language"). The three
+    selects are padded for the arrow.
+  - ***Export CSV* was a full button in front of shoppers.** It stays, as
+    every listing keeps its CSV, but as a small link after Clear.
+  - **A shop with nothing listed said "Nothing matches your search yet."**
+    It now says the shop has not listed any products yet. A search that
+    finds nothing still says no match.
+- The production page shows 0 items because Fitrah has no active products
+  on production; the SMOKE products are staging-only. That is the shop's
+  data, not code.
+
+Tests: `tests/Feature/Bookshop/ShopPhoneFiltersTest.php` (4):
+- the fold and its count;
+- the empty-shop and no-match messages;
+- filtering and sorting still work through the fold, and the CSV link stays;
+- the checkbox rule.
+
+Full suite 2496 passed.
+
+Walk: `scripts/smoke/shop.mjs` 27/27, three new phone steps:
+- the fold is closed and the first product is on the first screen (501px
+  down at 390×844);
+- *Filter and sort* opens the filters, and the checkbox is 20px, not 44px;
+- the page fits the phone.
+
+The walk's search step now presses the search button (`shop-search-go`).
+
 ## 5ku. Events and the gallery open from their own lists; visitors can register for an event (2026-09-29)
 
 Follow-up to R4, which found the fault on the news list (KNOWN_ISSUES).
