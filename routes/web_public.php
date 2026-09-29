@@ -96,6 +96,7 @@ Route::middleware('auth')->group(function () {
     Route::get('my-wishlist/export', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'exportWishlist'])->name('public.shop.wishlist.export');
     Route::post('shop/wishlist/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'toggleWishlist'])->name('public.shop.wishlist.toggle')->middleware('throttle:60,1,shop-wishlist');
     Route::post('shop/products/{slug}/notify', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'toggleStockAlert'])->name('public.shop.stock-alert')->middleware('throttle:30,1,shop-alert');
+    Route::post('shop/reviews/{review}/helpful', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'helpful'])->name('public.shop.review.helpful')->middleware('throttle:30,1,shop-review-vote')->whereNumber('review');
     Route::post('shop/products/{slug}/questions', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'question'])->name('public.shop.question')->middleware('throttle:10,1,shop-question');
     Route::post('shop/products/{slug}/reviews', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'review'])->name('public.shop.review')->middleware('throttle:10,1,shop-review');
     // B9d: bulk quotes for schools — asked from the cart, accepted back into it.

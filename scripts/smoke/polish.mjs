@@ -277,6 +277,16 @@ check(`and the featured book, wearing "${BADGE}" and its stars`, featuredCard.in
 await visitor.goto(`${BASE}/en/shop?sort=top_rated`, { waitUntil: 'networkidle' });
 check('Top rated puts the reviewed book first', ((await visitor.locator('[data-testid="shop-grid"] [data-product]').first().getAttribute('data-product').catch(() => '')) ?? '') === BOOK, await visitor.locator('[data-testid="shop-grid"] [data-product]').first().getAttribute('data-product').catch(() => ''));
 
+// STATUS §5lg: someone else finds the review helpful; the author cannot vote on their own.
+await vendor.goto(`${BASE}/en/shop/products/${BOOK}`, { waitUntil: 'networkidle' });
+await submit(vendor, `[data-testid="helpful-${reviewId}"]`);
+await vendor.waitForLoadState('networkidle');
+check('another signed-in person marks the review helpful', (await vendor.locator(`[data-testid="helpful-${reviewId}"]`).getAttribute('aria-pressed').catch(() => '')) === 'true' && (await inner(vendor, `[data-testid="helpful-${reviewId}"]`)).includes('(1)'), await inner(vendor, `[data-testid="helpful-${reviewId}"]`));
+await visitor.goto(`${BASE}/en/shop/products/${BOOK}`, { waitUntil: 'networkidle' });
+check('and a guest reads "1 person found this helpful"', (await inner(visitor, `[data-testid="helpful-count-${reviewId}"]`)).includes('1 person found this helpful'));
+await student.goto(`${BASE}/en/shop/products/${BOOK}`, { waitUntil: 'networkidle' });
+check('the author has no vote button on their own review', (await count(student, `[data-testid="helpful-${reviewId}"]`)) === 0);
+
 await office.reload({ waitUntil: 'networkidle' });
 await settle(office, '[data-testid="office-reviews"]');
 check('the office sees the review with the reply', (await inner(office, `[data-testid="office-review-${reviewId}"]`)).includes(REVIEW) && (await inner(office, `[data-testid="office-review-${reviewId}"]`)).includes(REPLY));

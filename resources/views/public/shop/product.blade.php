@@ -251,7 +251,7 @@
         @endif
         <ul class="space-y-4">
             @foreach($rv['reviews'] as $review)
-                <li class="border-b pb-3" data-testid="review-{{ $review['id'] }}">
+                <li id="review-{{ $review['id'] }}" class="scroll-mt-24 border-b pb-3" data-testid="review-{{ $review['id'] }}">
                     <p class="text-sm"><span class="text-amber-700" aria-label="{{ __('shop.rated_out_of', ['avg' => $review['rating']]) }}">{{ str_repeat('★', $review['rating']) }}{{ str_repeat('☆', 5 - $review['rating']) }}</span>
                         <span class="font-semibold">{{ $review['name'] }}</span> · <span class="text-gray-500">{{ $review['date'] }}</span> · <span class="text-xs text-green-700">{{ __('shop.verified_purchase') }}</span></p>
                     @if($review['body'])<p class="mt-1 whitespace-pre-line text-sm" dir="auto">{{ $review['body'] }}</p>@endif
@@ -261,6 +261,17 @@
                             <p class="whitespace-pre-line" dir="auto">{{ $review['reply'] }}</p>
                         </div>
                     @endif
+                    {{-- §5lg: was this helpful? --}}
+                    <div class="mt-2 flex items-center gap-2 text-xs text-gray-600">
+                        @if($review['can_vote'])
+                            <form method="POST" action="{{ route('public.shop.review.helpful', $review['id']) }}">
+                                @csrf
+                                <button type="submit" class="rounded-full border px-2 py-0.5 {{ $review['voted'] ? 'border-brandMaroon-600 bg-brandMaroon-50 text-brandMaroon-800' : 'hover:bg-gray-50' }}" aria-pressed="{{ $review['voted'] ? 'true' : 'false' }}" data-testid="helpful-{{ $review['id'] }}">👍 {{ __('shop.helpful') }} ({{ $review['helpful'] }})</button>
+                            </form>
+                        @elseif($review['helpful'] > 0)
+                            <span data-testid="helpful-count-{{ $review['id'] }}">{{ trans_choice('shop.found_helpful', $review['helpful'], ['count' => $review['helpful']]) }}</span>
+                        @endif
+                    </div>
                 </li>
             @endforeach
         </ul>

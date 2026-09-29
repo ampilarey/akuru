@@ -4414,6 +4414,36 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lg. Helpful review votes (2026-09-29)
+
+BOOKSHOP_PLAN §16, item 8.
+
+- **Helpful (N)** under each published review. A signed-in customer marks
+  someone else's review helpful, once, and can take the mark back.
+  - It is not offered on one's own review, and a hidden review is 404.
+  - A guest sees "N people found this helpful".
+- **The most helpful reviews come first** on the product page, then the
+  newest. Ties between reviews made in the same second are broken by id.
+- `reviews` joins the words no shop may be named (the vote's address is
+  `/shop/reviews/…`); the §5lb test holding the list to the routes caught it.
+- Data: migration `2026_09_29_000009_shop_review_votes`.
+  - It adds `helpful_count` to `product_reviews`, recounted on every vote.
+  - It adds a new table, `review_votes`, unique per review and person.
+  - Morph alias: `review_vote`.
+
+Tests:
+- `ShopReviewVotesTest` (2):
+  - vote, the order changes, the pressed state shows, a guest sees the
+    count, the vote is taken back;
+  - one's own review, a hidden review, and a guest are refused.
+
+Checklist: `ft-bookstore-16`.
+
+Walk: `scripts/smoke/polish.mjs` 32/32, with three new steps:
+- Fitrah's owner marks the student's review helpful;
+- a guest reads "1 person found this helpful";
+- the author has no button on their own review.
+
 ## 5lf. Save for later in the cart (2026-09-29)
 
 The owner's "Complete all one by one" on the rest of the iruali list

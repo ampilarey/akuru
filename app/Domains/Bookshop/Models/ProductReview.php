@@ -20,7 +20,7 @@ class ProductReview extends Model
     public const HIDDEN = 'hidden';
 
     protected $fillable = [
-        'product_id', 'vendor_id', 'order_id', 'order_item_id', 'user_id', 'rating', 'body', 'status',
+        'product_id', 'vendor_id', 'order_id', 'order_item_id', 'user_id', 'rating', 'body', 'helpful_count', 'status',
         'vendor_reply', 'replied_at', 'replied_by', 'moderated_at', 'moderated_by', 'moderation_note',
     ];
 
@@ -28,6 +28,7 @@ class ProductReview extends Model
     {
         return [
             'rating' => 'integer',
+            'helpful_count' => 'integer',
             'replied_at' => 'datetime',
             'moderated_at' => 'datetime',
         ];
