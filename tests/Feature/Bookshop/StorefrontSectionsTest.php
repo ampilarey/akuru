@@ -14,6 +14,7 @@ use App\Domains\Bookshop\Models\VendorStorefrontImage;
 use App\Domains\Bookshop\Models\VendorStorefrontVersion;
 use App\Domains\Identity\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Permission;
@@ -339,4 +340,22 @@ it('rolls back sections, menu and pages with the version, and caches the publish
         ->and($about->refresh()->published_sections[0]['settings']['heading'])->toBe('First answers')->and($about->draft_sections[0]['settings']['heading'])->toBe('First answers');
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor', 'fitrah'))->assertSee('Home FAQ v1')->assertSee('About v1')->assertDontSee('Sneaky');
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor.page', ['fitrah', 'about']))->assertSee('First answers');
+});
+
+it('gives a published storefront the store\'s links, its cart among them, and no bar fixed to a phone\'s foot (STATUS §5kz)', function () {
+    [, $owner] = sectionsShop();
+    publishTheme($owner);
+    sectionsAs($owner)->post(route('vendor.storefront.publish'))->assertSessionHasNoErrors();
+    Cache::flush();
+
+    $html = test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor', 'fitrah'))->assertOk()->getContent();
+
+    expect($html)->toContain('data-testid="storefront"')
+        ->toContain('data-testid="shop-links"')
+        ->toContain('data-testid="shop-link-cart"')
+        ->toContain('data-testid="footer-compact"')
+        ->not->toContain('data-testid="bottom-bar"')
+        ->not->toContain('data-testid="shop-bottom-bar"');
+    // The links sit under the storefront's head, before its products.
+    expect(strpos($html, 'data-testid="shop-links"'))->toBeLessThan(strpos($html, 'data-testid="shop-grid"'));
 });

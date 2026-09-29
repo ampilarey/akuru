@@ -181,6 +181,9 @@
 
     @include('public.partials.prayer-banner-assets')
 
+    {{-- A shop's own pages carry no fixed bar at the foot of a phone (STATUS §5kz):
+         the shop's brand runs to the copyright line. --}}
+    @sectionMissing('shop_footer')
     {{-- Phone bottom bar: Home · Courses · Library · Shop · Account (STATUS §5ki).
          Viber moved to the floating chat button, Call into the menu's About. --}}
     @php
@@ -221,6 +224,7 @@
     </style>
     {{-- Padding so footer content doesn't hide behind sticky bar on mobile --}}
     <div class="sm:hidden h-16"></div>
+    @endif
 
     {{-- Viber float button. On a phone it sits above the bottom bar, which
          no longer carries Viber (STATUS §5ki).
