@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Bookshop\Http\Controllers\CatalogueApiController;
 use App\Domains\Notifications\Http\Controllers\NotificationController;
 use App\Domains\Notifications\Http\Controllers\SmsApiController;
 use App\Domains\Website\Http\Controllers\PublicSite\PrayerTimesController;
@@ -20,6 +21,14 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('v1/prayer-times', [PrayerTimesController::class, 'json'])->middleware('throttle:60,1,api-prayer-times');
 Route::get('v1/prayer-times/islands', [PrayerTimesController::class, 'islands'])->middleware('throttle:60,1,api-prayer-islands');
+
+// STATUS §5ll: the Bookstore's public catalogue, read-only — what /shop shows, as JSON.
+Route::prefix('v1/bookstore')->middleware('throttle:60,1,api-bookstore')->group(function () {
+    Route::get('products', [CatalogueApiController::class, 'products'])->name('api.bookstore.products');
+    Route::get('products/{slug}', [CatalogueApiController::class, 'product'])->name('api.bookstore.product');
+    Route::get('shops', [CatalogueApiController::class, 'shops'])->name('api.bookstore.shops');
+    Route::get('categories', [CatalogueApiController::class, 'categories'])->name('api.bookstore.categories');
+});
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
