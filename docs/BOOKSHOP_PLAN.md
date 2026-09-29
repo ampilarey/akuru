@@ -479,5 +479,7 @@ to the Bookstore, then said "Start" on the list. One PR each, in this order.
 | 4 | **Product questions and answers**: a signed-in customer asks on the product page, the shop answers in public from its Reviews page, the office may hide one with a note | **Built** (STATUS §5le) |
 | 5 | Loyalty points | **needs an owner plan** — money rules (wallet, never on gift cards) |
 | 6 | Referral credit | **needs an owner plan** — money rules |
-| 7 | Save for later, compare, brand pages, helpful review votes, guest order tracking, a Bookstore API, two-factor sign-in | later |
+| 7 | **Save for later** in the cart: set aside, not counted or charged, moved back re-checked; kept through sign-in | **Built** (STATUS §5lf) |
+| 8 | Helpful review votes, brand pages, compare, guest order tracking, two-factor sign-in, a Bookstore API | next, one PR each |
+| 9 | Loyalty points and referral credit — built **off**, with the office's settings, through the Commerce wallet, never on gift cards; the owner sets the amounts and turns them on | after 8 |
 

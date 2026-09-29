@@ -119,6 +119,8 @@ return [
     'GET shop/{vendor}/{collection}' => 'A vendor\'s collection (B5, §5): its products for sale, in the vendor\'s order. Inactive collections are a 404. No per-person data.',
     'GET shop/cart' => 'The cart (BOOKSHOP_PLAN B2): a guest fills one before signing in, so it is reachable without a session. Shows only the basket the session\'s own token (or the signed-in person) owns.',
     'POST shop/cart' => 'Add to the cart (B2). A guest\'s, by the token minted into their own session; throttled. Nothing here can touch another basket.',
+    'POST shop/cart/{item}/save' => 'Set a cart line aside for later (STATUS §5lf). The line must belong to the caller\'s own basket (ResolvesCart); throttled.',
+    'POST shop/cart/{item}/move' => 'Move a saved line back into the basket (STATUS §5lf), re-checked like any add. The caller\'s own basket only; throttled.',
     'POST shop/cart/{item}' => 'Change or remove a cart line (B2). The line must belong to the caller\'s own basket (ResolveCartAction); throttled.',
     'GET research/export' => 'A permanent redirect to the Digital Library\'s CSV, research only (R2). No per-person data.',
     'GET research/{slug}' => 'A permanent redirect to the imported paper\'s Digital Library page (R2), 404 when there is none. No per-person data.',

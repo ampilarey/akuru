@@ -51,11 +51,13 @@ class ResolveCartAction
                 return $guest;
             }
 
-            foreach ($guest->items as $item) {
+            // §5lf: saved-for-later lines come across too, still set aside.
+            foreach ($guest->allItems as $item) {
                 $existing = CartItem::query()
                     ->where('cart_id', $own->id)
                     ->where('product_id', $item->product_id)
                     ->where('product_variant_id', $item->product_variant_id)
+                    ->when($item->saved_at === null, fn ($q) => $q->whereNull('saved_at'), fn ($q) => $q->whereNotNull('saved_at'))
                     ->first();
                 if ($existing !== null) {
                     $existing->update(['quantity' => $existing->quantity + $item->quantity]);
@@ -65,6 +67,7 @@ class ResolveCartAction
                         'product_id' => $item->product_id,
                         'product_variant_id' => $item->product_variant_id,
                         'quantity' => $item->quantity,
+                        'saved_at' => $item->saved_at,
                     ]);
                 }
             }

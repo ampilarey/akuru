@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Models\Cart;
 use App\Domains\Bookshop\Models\CartItem;
 use App\Domains\Bookshop\Support\CartPrice;
+use App\Domains\Bookshop\Support\SalePrice;
 use App\Domains\Bookshop\Support\ShopPresenter;
 use App\Domains\Bookshop\Support\Stock;
 use App\Domains\Media\Actions\ResolvePublicImageVariantAction;
@@ -24,7 +25,7 @@ class PresentCartAction
     public function execute(?Cart $cart): array
     {
         if ($cart === null) {
-            return ['groups' => [], 'subtotal' => '0.00', 'currency' => config('bookshop.currency', 'MVR'), 'count' => 0, 'problems' => [], 'empty' => true];
+            return ['groups' => [], 'subtotal' => '0.00', 'currency' => config('bookshop.currency', 'MVR'), 'count' => 0, 'problems' => [], 'empty' => true, 'saved' => []];
         }
 
         $items = $cart->items()->with(['product.vendor', 'product.images', 'product.variants', 'variant'])->get();
@@ -101,6 +102,39 @@ class PresentCartAction
             'count' => $count,
             'problems' => $problems,
             'empty' => $items->isEmpty(),
+            'saved' => $this->saved($cart),
         ];
+    }
+
+    /**
+     * §5lf: the lines set aside — today's price (a running sale's), and
+     * whether each can go back in now.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function saved(Cart $cart): array
+    {
+        $saved = $cart->savedItems()->with(['product.vendor', 'product.images', 'variant'])->get();
+        $forSale = ListShopProductsAction::forSale()->whereIn('id', $saved->pluck('product_id')->all())->pluck('id')->all();
+        $images = app(ResolvePublicImageVariantAction::class);
+
+        return $saved->filter(fn (CartItem $i) => $i->product !== null)->map(function (CartItem $item) use ($forSale, $images) {
+            $product = $item->product;
+            $available = in_array($product->id, $forSale, true) && ($item->variant === null || $item->variant->is_active)
+                ? Stock::available($product, $item->variant) : 0;
+            $first = $product->images->first();
+
+            return [
+                'id' => $item->id,
+                'slug' => $product->slug,
+                'title' => ShopPresenter::localized($product, 'title'),
+                'variant' => $item->variant?->name,
+                'vendor' => $product->vendor?->name,
+                'image' => $first !== null ? $images->execute((int) $first->media_file_id, ShopPresenter::CARD_WIDTH) : null,
+                'unit_price' => number_format(SalePrice::apply((float) ($item->variant?->price ?? $product->price), $product), 2, '.', ''),
+                'quantity' => (int) $item->quantity,
+                'can_move' => $available === null || $available > 0 || Stock::madeToOrder($product),
+            ];
+        })->values()->all();
     }
 }

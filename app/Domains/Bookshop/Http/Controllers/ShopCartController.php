@@ -59,6 +59,28 @@ class ShopCartController extends Controller
         return $result['skipped'] === [] ? $flash : $flash->with('warning', __('shop.book_list_skipped_flash', ['titles' => implode(', ', $result['skipped'])]));
     }
 
+    /** §5lf: set a line aside for later. */
+    public function saveForLater(Request $request, int $item): RedirectResponse
+    {
+        $cart = $this->cart($request);
+        abort_if($cart === null, 404);
+
+        app(SaveCartItemAction::class)->saveForLater($cart, $item);
+
+        return back()->with('success', __('shop.saved_for_later_flash'));
+    }
+
+    /** §5lf: a saved line back into the basket, re-checked like any add. */
+    public function moveToCart(Request $request, int $item): RedirectResponse
+    {
+        $cart = $this->cart($request);
+        abort_if($cart === null, 404);
+
+        app(SaveCartItemAction::class)->moveToCart($cart, $item);
+
+        return back()->with('success', __('shop.moved_to_cart_flash'));
+    }
+
     public function update(Request $request, int $item): RedirectResponse
     {
         $data = $request->validate(['quantity' => 'required|integer|min:0|max:'.(int) config('bookshop.checkout.max_quantity_per_line', 50)]);

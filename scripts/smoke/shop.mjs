@@ -287,6 +287,14 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
     const book = await parent.locator(`[data-cart-line="${BOOK}"] input[name="quantity"]`).inputValue().catch(() => '');
     check('one tap puts the whole list in the cart', (await parent.locator(`[data-cart-line="${PUZZLE}"]`).count()) === 1 && book === '2', `workbook × ${book}; ${(await parent.locator('[data-testid="flash-success"]').innerText().catch(() => '')).trim()}`);
 
+    // STATUS §5lf: save one for later, then move it back.
+    await Promise.all([parent.waitForLoadState('networkidle'), parent.click(`[data-cart-line="${PUZZLE}"] [data-testid="cart-save-later"]`)]);
+    await parent.waitForSelector('[data-testid="cart-saved"]', { timeout: 10000 }).catch(() => {});
+    check('Save for later moves a line under the cart, out of it', (await parent.locator(`[data-saved-line="${PUZZLE}"]`).count()) === 1 && (await parent.locator(`[data-cart-line="${PUZZLE}"]`).count()) === 0, (await parent.locator('[data-testid="cart-subtotal"]').innerText().catch(() => '')).trim());
+    await Promise.all([parent.waitForLoadState('networkidle'), parent.click(`[data-saved-line="${PUZZLE}"] [data-testid="saved-move"]`)]);
+    await parent.waitForSelector(`[data-cart-line="${PUZZLE}"]`, { timeout: 10000 }).catch(() => {});
+    check('and Move to cart puts it back', (await parent.locator(`[data-cart-line="${PUZZLE}"]`).count()) === 1 && (await parent.locator('[data-testid="cart-saved"]').count()) === 0);
+
     await vendor.goto(`${BASE}/en/vendor/storefront/sections`, { waitUntil: 'networkidle' });
     await vendor.click('[data-testid="tab-collections"]');
     await removeList();

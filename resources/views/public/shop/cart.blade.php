@@ -68,6 +68,8 @@
                                 <input id="qty-{{ $line['id'] }}" type="number" name="quantity" min="0" max="{{ config('bookshop.checkout.max_quantity_per_line', 50) }}" value="{{ $line['quantity'] }}" class="form-input w-20" data-testid="cart-qty" @if($line['quoted'] ?? false) readonly @endif>
                                 @unless($line['quoted'] ?? false)<button type="submit" class="btn-secondary text-sm">{{ __('shop.update') }}</button>@endunless
                                 <button type="submit" name="quantity" value="0" class="text-sm text-red-700 underline" data-testid="cart-remove">{{ __('shop.remove') }}</button>
+                                {{-- §5lf: set it aside instead of removing it. --}}
+                                <button type="submit" formaction="{{ route('public.shop.cart.save', $line['id']) }}" class="text-sm text-brandMaroon-700 underline" data-testid="cart-save-later">{{ __('shop.save_for_later') }}</button>
                             </form>
                             <div class="w-28 text-end font-semibold" data-testid="cart-line-total">{{ $cart['currency'] }} {{ $line['line_total'] }}</div>
                         </li>
@@ -133,6 +135,33 @@
                 </div>
             </div>
         @endunless
+    @endif
+
+    {{-- STATUS §5lf: lines set aside — not counted or charged until moved back. --}}
+    @if(count($cart['saved'] ?? []) > 0)
+        <section class="mt-8 rounded-lg border bg-white" data-testid="cart-saved">
+            <h2 class="border-b px-4 py-3 font-semibold text-brandMaroon-900">{{ __('shop.saved_for_later_heading', ['count' => count($cart['saved'])]) }}</h2>
+            <ul class="divide-y">
+                @foreach($cart['saved'] as $saved)
+                    <li class="flex flex-wrap items-center gap-4 p-4" data-saved-line="{{ $saved['slug'] }}">
+                        <a href="{{ route('public.shop.product', $saved['slug']) }}" class="block h-14 w-14 shrink-0 overflow-hidden rounded border bg-brandBeige-50">
+                            @if($saved['image'])<img src="{{ $saved['image'] }}" alt="" class="h-full w-full object-cover">@endif
+                        </a>
+                        <div class="min-w-0 flex-1">
+                            <a href="{{ route('public.shop.product', $saved['slug']) }}" class="font-medium text-brandMaroon-900 hover:underline" dir="auto">{{ $saved['title'] }}</a>
+                            @if($saved['variant'])<span class="block text-sm text-gray-600">{{ $saved['variant'] }}</span>@endif
+                            <span class="block text-sm text-gray-500">{{ $saved['quantity'] }} × {{ $cart['currency'] }} {{ $saved['unit_price'] }} · {{ __('shop.sold_by') }} {{ $saved['vendor'] }}</span>
+                            @unless($saved['can_move'])<span class="block text-xs text-amber-800">{{ __('shop.saved_unavailable') }}</span>@endunless
+                        </div>
+                        <form method="POST" action="{{ route('public.shop.cart.move', $saved['id']) }}" class="flex items-center gap-3">
+                            @csrf
+                            <button type="submit" class="btn-secondary text-sm" @disabled(! $saved['can_move']) data-testid="saved-move">{{ __('shop.move_to_cart') }}</button>
+                            <button type="submit" formaction="{{ route('public.shop.cart.update', $saved['id']) }}" name="quantity" value="0" class="text-sm text-red-700 underline" data-testid="saved-remove">{{ __('shop.remove') }}</button>
+                        </form>
+                    </li>
+                @endforeach
+            </ul>
+        </section>
     @endif
 </div>
 

@@ -1593,4 +1593,10 @@ return [
     'answer_publicly' => 'Answer publicly',
     'questions_waiting_count' => ':count waiting',
     'notice_event_question' => 'A customer asks a question',
+    'save_for_later' => 'Save for later',
+    'saved_for_later_heading' => 'Saved for later (:count)',
+    'saved_unavailable' => 'Not available right now',
+    'move_to_cart' => 'Move to cart',
+    'saved_for_later_flash' => 'Saved for later. It is below your cart, not counted in it.',
+    'moved_to_cart_flash' => 'Moved back into your cart.',
 ];
