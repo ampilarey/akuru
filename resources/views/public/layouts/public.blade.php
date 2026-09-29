@@ -87,10 +87,10 @@
     </style>
 
     <!-- Favicon -->
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32x32.png') }}?v=3">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon-16x16.png') }}?v=3">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}?v=3">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-32x32.png') }}?v=3">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/favicon-32x32.png') }}?v=4">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/favicon-16x16.png') }}?v=4">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}?v=4">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-32x32.png') }}?v=4">
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">

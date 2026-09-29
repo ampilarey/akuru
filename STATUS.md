@@ -4414,6 +4414,50 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5km. The owner's logo, as vectors, on every surface (2026-09-29)
+
+The owner chose between two designs — the one with a gold emblem, a wine
+"AKURU" and a wine "INSTITUTE" bar (easier to read on the white header and
+matching the site's wine-and-gold) — and uploaded its SVG to
+`public/images/logos/` (`Copy of logo for website.svg`). It is real vector
+artwork, so it replaces the 2026-09-24 files that had been traced from a
+200-pixel PNG (§5gc):
+
+- **`akuru-logo.svg`** — the design as drawn, with the design tool's white
+  360 × 180 background rectangle removed (twice over, it was in the file two
+  times) and the canvas cropped to the artwork, so it sits on any colour.
+- **`akuru-logo-on-dark.svg`** — white AKURU, gold bar with deep-wine
+  INSTITUTE, gold emblem: for the footer and the staff bar.
+- **`akuru-logo-white.svg`** — one colour; INSTITUTE is knocked out of the
+  bar with an SVG mask, so the background shows through the letters.
+- **`akuru-mark.svg`** — the emblem alone; `akuru-logo-800.png` re-rendered,
+  transparent.
+- **App icons** — the white emblem on wine, redrawn at 16, 32, 180, 192 and
+  512, and `favicon.ico` (16, 32, 48); the two favicons fill more of the
+  square so the emblem reads at 16 px.
+- `?v=3` → `?v=4` in the component, the public layout, `pwa.blade.php`,
+  `AppShell.jsx`, `PrintCards.jsx` and the manifest, so browsers drop the old
+  logo and icons. The uploaded file is deleted (a name with spaces, and now
+  duplicated by `akuru-logo.svg`).
+- The new artwork is more compact than the traced one, so the website header
+  logo grows from `h-10 sm:h-12` to `h-11 sm:h-14` and the footer's from
+  `h-12` to `h-16`.
+- A **logo pack** (all variants as SVG, transparent PNGs at 600–2400 wide, the
+  emblem in gold, white and wine, the app icons, a README with colours and
+  use) was sent to the owner; it is not kept in the repository.
+- The artwork's colours are wine `#6E1E25` and gold `#C9A227`; the site UI
+  keeps Wine `#7C2D37`. `docs/BRAND.md` and the folder's
+  `placeholder-info.txt` say so.
+
+**Tests.** `BrandAssetsTest`: the palette check now reads the artwork's
+colours (and that the on-dark and white files carry none of the wine, the
+white one its knockout mask); new — no logo carries a background rectangle,
+each has a viewBox, and the uploaded copy is gone. 9 passed.
+
+**Walked** at 1440 and 390: the header shows the new logo
+(`akuru-logo.svg?v=4`, no image 404s), the footer the on-dark version, and
+no page runs wider than the screen.
+
 ## 5kl. The home page invents no courses, news or events (2026-09-29)
 
 The owner, on production with no courses yet: the home page showed three
