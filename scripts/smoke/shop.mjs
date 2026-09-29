@@ -278,6 +278,27 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
     await c.screenshot({ path: `${process.env.SMOKE_SHOTS ?? '/tmp'}/compare.png`, fullPage: true }).catch(() => {});
 }
 
+// ------------------------------------------------------------ the catalogue API (STATUS §5ll)
+{
+    const api = await newPage('api');
+    const get = async (path) => {
+        const res = await api.request.get(`${BASE}/api/v1/bookstore/${path}`);
+        return { status: res.status(), body: res.ok() ? await res.json() : null };
+    };
+    const list = await get('products?brand=smoke-brand');
+    const puzzle = list.body?.data?.[0];
+    check('the API lists a brand\'s products as JSON, with the page\'s address', list.status === 200 && list.body.meta.total === 1 && puzzle?.slug === 'smoke-wooden-alphabet-puzzle' && /\/en\/shop\/products\/smoke-wooden-alphabet-puzzle$/.test(puzzle?.url ?? ''), `${list.status} · ${puzzle?.slug} · ${puzzle?.url}`);
+    const one = await get(`products/${BOOK}?lang=dv`);
+    check('one product comes with its shop and details, and no id or tax class', one.status === 200 && one.body.data.shop?.slug !== undefined && !('id' in one.body.data) && !('tax_class' in one.body.data), `${one.status} · ${Object.keys(one.body?.data ?? {}).join(',').slice(0, 160)}`);
+    const shops = await get('shops');
+    check('the shops list Fitrah with a count', shops.status === 200 && shops.body.data.some((s) => s.slug === 'fitrah' && s.products > 0), (shops.body?.data ?? []).map((s) => `${s.slug}:${s.products}`).join(', '));
+    const cats = await get('categories');
+    check('the categories list comes back', cats.status === 200 && cats.body.data.length > 0, `${cats.body?.data?.length ?? 0} categories`);
+    check('a product that is not for sale is a 404', (await get('products/no-such-product')).status === 404);
+    await api.goto(puzzle.url, { waitUntil: 'networkidle' });
+    check('the address the API gives opens that product\'s page', (await api.locator('h1').innerText().catch(() => '')).trim() === puzzle.title, `${api.url().replace(BASE, "")} · ${puzzle.title}`);
+}
+
 // ------------------------------------------------------------ a school's book list (STATUS §5lc)
 {
     const PUZZLE = 'smoke-wooden-alphabet-puzzle';

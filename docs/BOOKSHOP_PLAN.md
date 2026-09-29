@@ -485,6 +485,6 @@ to the Bookstore, then said "Start" on the list. One PR each, in this order.
 | 8c | **Compare**: up to four products per device, side by side | **Built** (STATUS §5li) |
 | 8d | **Track an order without signing in**: number + phone; status, steps, tracking, items; nothing private | **Built** (STATUS §5lj) |
 | 8e | **Two-step sign-in** for everyone who signs in (shops, office, teachers, customers): an authenticator app, eight one-use recovery codes, off unless the person turns it on | **Built** (STATUS §5lk) |
-| 8f | A Bookstore API | next |
+| 8f | **The catalogue API**: read-only JSON of what `/shop` shows — products (the listing's filters and sorts, paged), one product, the shops, the categories; `?lang=en|dv|ar`; 60 a minute | **Built** (STATUS §5ll) |
 | 9 | Loyalty points and referral credit — built **off**, with the office's settings, through the Commerce wallet, never on gift cards; the owner sets the amounts and turns them on | after 8 |
 

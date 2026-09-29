@@ -4414,6 +4414,70 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ll. The Bookstore catalogue API (2026-09-29)
+
+BOOKSHOP_PLAN §16, item 8f. What `/shop` already shows, as JSON, for an app
+or a school's own website to list: read-only, no sign-in, 60 requests a
+minute (`throttle:60,1,api-bookstore`).
+
+- **`GET /api/v1/bookstore/products`**
+  - Takes the listing's own filters: `q`, `category`, `shop`, `brand`,
+    `price_min`/`price_max`, `in_stock`, `language`, `age`, `grade`,
+    `deals`.
+  - Also takes `sort` (the listing's six) and `per_page` (at most 50).
+  - Returns `data`, `meta` (page, last page, per page, total) and `links`
+    (next, prev).
+- **`GET /api/v1/bookstore/products/{slug}`** returns one product: the card
+  fields plus description, category, brand, SKU, barcode, details, tags,
+  images, variants (name, price, in stock) and the e-book link. Anything not
+  for sale is a 404.
+- **`GET /api/v1/bookstore/shops`** returns the open shops, with how many
+  products each lists store-wide.
+- **`GET /api/v1/bookstore/categories`** returns the categories, each with
+  its parent's slug.
+- **Language:** `?lang=dv` or `?lang=ar` gives titles, summaries and
+  category names in that language where they have it. Every `url` is that
+  language's page, e.g. `/dv/shop/products/…`, built as the sitemap builds
+  them.
+- **What goes out is named field by field** in `PresentCatalogueApiAction`.
+  It is not passed through from the page presenters, so a field added to a
+  page never reaches the API by accident.
+- **Never included:** ids, exact stock counts (only `in_stock` / `few_left`
+  / `out_of_stock` / `made_to_order` / `available`), tax class, weight,
+  JSON-LD, related products, the shop's contact details, or anything about
+  orders or people.
+- **Visibility:** it lists the same products the listing does, `shop`
+  visibility only. A product kept for a shop's own page stays off the API
+  listing; its detail, like its page, opens by slug.
+- **Baselines:** the four routes are declared in `public_routes` as public
+  content.
+
+Tests:
+- `CatalogueApiTest` (4):
+  - the listing sorted, with its exact keys; a draft, a storefront-only
+    product, a suspended shop's product and the shop's email absent; search,
+    shop, brand and price filters; paging with a next link; `per_page` 500
+    and an unknown sort refused (422);
+  - one product in Dhivehi, with brand, SKU, details, variant and the
+    Dhivehi page's address; no id, tax class, weight, JSON-LD or related; a
+    draft, a suspended shop's product and an unknown slug are 404s;
+  - the open shops with their counts (the suspended one absent); the
+    categories in Dhivehi, with a child naming its parent;
+  - the 61st request in a minute is refused (429); a POST is 405.
+
+Checklist: `ft-bookstore-20`.
+
+Walk: `scripts/smoke/shop.mjs` 65/65, with six new steps against the seeded
+server:
+1. The brand filter returns the puzzle, with its `/en/` page address.
+2. One product comes with its shop, and no id or tax class.
+3. The shops list Fitrah with a count.
+4. The categories come back.
+5. An unknown slug is a 404.
+6. The address the API gave opens that product's page in the browser.
+
+No migration.
+
 ## 5lk. Two-step sign-in (2026-09-29)
 
 BOOKSHOP_PLAN §16, item 8e. It is for every account, not only the Bookstore's:
