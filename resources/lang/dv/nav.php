@@ -177,7 +177,6 @@ return [
     'enrolment_payments' => 'ފައިސާ ދެއްކުން',
     'cms_pages' => 'ސަފުހާތައް',
     'cms_courses' => 'ކޯސްތައް',
-    'cms_research' => 'ރިސާޗް',
     'cms_daily_content' => 'ދުވަހުގެ ކޮންޓެންޓް',
     'cms_daily_queue' => 'އެޕްރޫވަލް ކިޔު',
     'cms_subscriptions' => 'ސަބްސްކްރައިބަރުން',

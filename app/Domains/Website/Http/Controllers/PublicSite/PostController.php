@@ -99,9 +99,19 @@ class PostController extends Controller
         return $this->indexByType($request, 'news', 'public.news.index');
     }
 
-    public function articlesIndex(Request $request)
+    /**
+     * RESEARCH_ARTICLES_PLAN R2 (D4): articles are written in the Digital
+     * Library. The website page never had an editor and never held one.
+     */
+    public function articlesIndex()
     {
-        return $this->indexByType($request, 'article', 'public.articles.index');
+        return redirect()->route('public.library.index', ['content_type' => 'article'], 301);
+    }
+
+    /** Nothing was ever published at an article address; say so for good. */
+    public function articleGone()
+    {
+        abort(410);
     }
 
     private function indexByType(Request $request, string $type, string $view)
@@ -144,7 +154,6 @@ class PostController extends Controller
         }
 
         $expected = match ($request->route()?->getName()) {
-            'public.articles.show' => PostType::Article->value,
             'public.news.show' => PostType::News->value,
             default => null,
         };
@@ -184,9 +193,7 @@ class PostController extends Controller
             ->withCount('publishedPosts')
             ->get();
 
-        $viewName = $post->type === 'article' ? 'public.articles.show' : 'public.news.show';
-
-        return view($viewName, compact('post', 'relatedPosts', 'featuredPosts', 'recentPosts', 'categories'));
+        return view('public.news.show', compact('post', 'relatedPosts', 'featuredPosts', 'recentPosts', 'categories'));
     }
 
     public function category(PostCategory $category)

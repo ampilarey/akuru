@@ -53,10 +53,8 @@ return [
     'public/about/index.blade.php :: $page->body' => 'Same `pages.body` column and the same sanitised write path.',
     'public/courses/show.blade.php :: $course->body' => 'Admin PublicSite CourseController sanitises `body` with PROFILE_CMS on store and update.',
 
-    // --- Posts: one write path for news, articles and research --------------
-    'public/articles/show.blade.php :: $post->body' => 'SaveResearchPostAction is the only writer of `posts.body` and cleans it with PROFILE_CMS. News and articles read the same model.',
-    'public/news/show.blade.php :: $post->body' => 'As above — the same column and the same single writer.',
-    "public/research/show.blade.php :: \$item['body']" => 'As above, surfaced through PresentResearchPostAction.',
+    // --- Posts: news only since R2 (RESEARCH_ARTICLES_PLAN) ----------------
+    'public/news/show.blade.php :: $post->body' => 'Nothing in the application writes `posts.body` since R2 retired the research CMS (research and articles moved to the Digital Library). The news editor (R4) becomes its single writer and must clean it with PROFILE_CMS.',
 
     // --- Events -------------------------------------------------------------
     'public/events/show.blade.php :: $event->description' => 'SaveEventAction cleans `description` with PROFILE_CMS.',

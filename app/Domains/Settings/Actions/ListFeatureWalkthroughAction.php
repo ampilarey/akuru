@@ -35,7 +35,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-signin-9', 'label' => 'Linked accounts: prove another login and switch to it', 'where' => '/account/linked'],
             ]],
             ['key' => 'ft-website', 'title' => 'Public website (visitors)', 'items' => [
-                ['key' => 'ft-website-1', 'label' => 'Home, courses, news, articles, research, events, gallery, achievements, contact', 'where' => '/en'],
+                ['key' => 'ft-website-1', 'label' => 'Home, courses, news, events, gallery, achievements, contact; Research and Articles now open the Digital Library shelf', 'where' => '/en'],
                 ['key' => 'ft-website-2', 'label' => 'Course page: outcomes, instructor, FAQ, seats and price', 'where' => '/en/courses'],
                 ['key' => 'ft-website-3', 'label' => 'Register for a course for yourself: form, SMS code, confirm, complete', 'where' => '/en/courses'],
                 ['key' => 'ft-website-4', 'label' => 'Register a child for a course; the child then waits for the office to verify the parent', 'where' => '/en/courses'],
@@ -46,7 +46,7 @@ class ListFeatureWalkthroughAction
             ]],
             ['key' => 'ft-institute', 'title' => 'Institute (System admin)', 'items' => [
                 ['key' => 'ft-institute-1', 'label' => 'Website pages: create, edit, preview, publish', 'where' => '/admin/public-site/pages'],
-                ['key' => 'ft-institute-2', 'label' => 'Website courses, research posts, daily content calendar and approval queue', 'where' => '/admin/public-site/courses'],
+                ['key' => 'ft-institute-2', 'label' => 'Website courses, daily content calendar and approval queue (research is written in the Digital Library since R2)', 'where' => '/admin/public-site/courses'],
                 ['key' => 'ft-institute-3', 'label' => 'Leads, the enrolment funnel and daily subscriptions, each with CSV', 'where' => '/admin/public-site/leads'],
                 ['key' => 'ft-institute-4', 'label' => 'Instructors shown on the website', 'where' => '/admin/instructors'],
                 ['key' => 'ft-institute-5', 'label' => 'Prayer times: islands, groups, broadcasts, import', 'where' => '/admin/prayer-times/islands'],

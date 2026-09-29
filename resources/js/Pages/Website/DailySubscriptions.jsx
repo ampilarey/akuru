@@ -21,7 +21,7 @@ export default function DailySubscriptions({ metrics = { totals: {}, types: {}, 
             <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
                 {/* Daily content, research and prayer times are still Blade: full page loads. Leads is an Inertia visit. */}
                 <a href="/admin/public-site/daily-content" className="underline">{t.leads_link_daily || 'Daily content →'}</a>
-                <a href="/admin/public-site/research" className="underline">{t.subs_link_research || 'Research →'}</a>
+                <a href="/admin/library" className="underline">{t.subs_link_research || 'Research →'}</a>
                 <a href="/admin/prayer-times/islands" className="underline">{t.subs_link_prayer || 'Prayer times →'}</a>
                 <Link href="/admin/public-site/leads" className="underline" data-testid="subs-leads-link">{t.funnel_link_leads || 'Leads →'}</Link>
                 <a href="/admin/public-site/daily-subscriptions/export" className="ms-auto underline" data-testid="export-csv">{t.subs_export || 'Export CSV'}</a>

@@ -46,7 +46,6 @@ function adminPagesOpenedFromAParent(): array
         'admin.enrollments.payments' => 'opened from admin.enrollments.index',
         'admin.leads.index' => 'opened from the Website CMS hub (admin.pages.index)',
         'admin.funnel.index' => 'opened from the Website CMS hub (admin.pages.index)',
-        'admin.research.index' => 'opened from the Website CMS hub (admin.pages.index)',
         'admin.daily-content.index' => 'opened from the Website CMS hub (admin.pages.index)',
         'admin.daily-subscriptions.index' => 'opened from the Website CMS hub (admin.pages.index)',
         'admin.courses.index' => 'opened from the Website CMS hub (admin.pages.index)',

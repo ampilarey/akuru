@@ -177,7 +177,6 @@ return [
     'enrolment_payments' => 'Payments',
     'cms_pages' => 'Pages',
     'cms_courses' => 'Courses',
-    'cms_research' => 'Research',
     'cms_daily_content' => 'Daily content',
     'cms_daily_queue' => 'Approval queue',
     'cms_subscriptions' => 'Subscribers',

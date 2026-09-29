@@ -46,6 +46,8 @@ class LibraryItem extends Model
         'featured_at',
         'published_at',
         'writer_id',
+        // R2: the website research post this item was imported from.
+        'imported_post_id',
         'page_count',
         'reading_time',
         'difficulty',

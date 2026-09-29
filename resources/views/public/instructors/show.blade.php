@@ -6,7 +6,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-10 max-w-4xl">
     <nav class="text-sm text-gray-500 mb-6 flex gap-2 items-center flex-wrap">
-        <a href="{{ route('public.research.index') }}" class="hover:text-brandMaroon-600">{{ __('public.Research') }}</a>
+        <a href="{{ route('public.library.index', ['content_type' => 'research']) }}" class="hover:text-brandMaroon-600">{{ __('public.Research') }}</a>
         <span>›</span>
         <span class="text-gray-700">{{ $instructor['name'] }}</span>
     </nav>
@@ -28,15 +28,16 @@
     </header>
 
     <h2 class="text-2xl font-bold text-brandMaroon-900 mb-4">{{ __('public.Research') }}</h2>
-    <div class="space-y-4">
-        @forelse($posts as $post)
+    {{-- R2: what the teacher wrote is in the Digital Library. --}}
+    <div class="space-y-4" data-testid="instructor-works">
+        @forelse($works as $work)
             <article class="bg-white rounded-xl border border-gray-100 shadow-sm p-5">
                 <h3 class="text-xl font-semibold text-brandMaroon-900">
-                    <a href="{{ route('public.research.show', $post['slug']) }}" class="hover:underline">{{ $post['title'] }}</a>
+                    <a href="{{ route('public.library.show', $work['slug']) }}" class="hover:underline">{{ $work['title'] }}</a>
                 </h3>
-                <p class="text-sm text-gray-500">{{ $post['year'] }}</p>
-                @if($post['abstract'])
-                    <p class="text-gray-700 mt-2">{{ $post['abstract'] }}</p>
+                <p class="text-sm text-gray-500">{{ __('public.'.$work['content_type']) }}@if($work['published_at']) · {{ substr($work['published_at'], 0, 4) }}@endif</p>
+                @if($work['abstract'])
+                    <p class="text-gray-700 mt-2">{{ $work['abstract'] }}</p>
                 @endif
             </article>
         @empty

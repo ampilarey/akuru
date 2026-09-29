@@ -4,6 +4,7 @@ namespace App\Domains\Website\Actions;
 
 use App\Domains\Bookshop\Actions\Shop\ListShopSitemapEntriesAction;
 use App\Domains\Courses\Actions\ListPublicCourseSitemapEntriesAction;
+use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Website\Enums\DailyContentStatus;
 use App\Domains\Website\Enums\DailyContentType;
 use App\Domains\Website\Models\DailyContent;
@@ -42,9 +43,9 @@ class BuildPublicSitemapAction
 
         $static = [
             'courses' => ['0.8', 'weekly'],
-            'articles' => ['0.7', 'weekly'],
             'news' => ['0.8', 'weekly'],
-            'research' => ['0.7', 'weekly'],
+            // R2: research and articles are on the Digital Library's shelf.
+            'library' => ['0.8', 'weekly'],
             'prayer-times' => ['0.6', 'daily'],
             'events' => ['0.8', 'weekly'],
             'gallery' => ['0.7', 'weekly'],
@@ -55,16 +56,14 @@ class BuildPublicSitemapAction
             $xml .= $this->localizedGroup($base, $locales, $path, now()->subDay()->toDateString(), $priority, $changefreq);
         }
 
-        foreach (Post::query()->published()->articles()->latest('updated_at')->get(['slug', 'updated_at']) as $post) {
-            $xml .= $this->localizedGroup($base, $locales, 'articles/'.$post->slug, $this->lastmod($post->updated_at), '0.7', 'monthly');
-        }
-
         foreach (Post::query()->published()->news()->latest('updated_at')->get(['slug', 'updated_at']) as $post) {
             $xml .= $this->localizedGroup($base, $locales, 'news/'.$post->slug, $this->lastmod($post->updated_at), '0.7', 'monthly');
         }
 
-        foreach (Post::query()->published()->research()->latest('updated_at')->get(['slug', 'updated_at']) as $post) {
-            $xml .= $this->localizedGroup($base, $locales, 'research/'.$post->slug, $this->lastmod($post->updated_at), '0.7', 'monthly');
+        // R2 (F9): every published Digital Library item — the research and
+        // articles that were website posts are among them now.
+        foreach (app(ListLibraryItemsAction::class)->sitemapEntries() as $entry) {
+            $xml .= $this->localizedGroup($base, $locales, 'library/'.$entry['slug'], $entry['lastmod'], '0.7', 'monthly');
         }
 
         foreach (app(ListPublicCourseSitemapEntriesAction::class)->execute() as $course) {

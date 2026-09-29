@@ -99,7 +99,7 @@
                 </h2>
                 <div class="space-y-3">
                     @foreach($posts as $post)
-                    @php $postRoute = $post->type === 'article' ? route('public.articles.show', $post->slug) : route('public.news.show', $post->slug); @endphp
+                    @php $postRoute = route('public.news.show', $post->slug); @endphp
                     <a href="{{ $postRoute }}" class="flex items-start gap-4 p-4 card hover:shadow-md transition-shadow group">
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2 mb-0.5">

@@ -4,6 +4,7 @@ namespace App\Domains\Library\Providers;
 
 use App\Domains\Finance\Events\PaymentConfirmed;
 use App\Domains\Finance\Events\PaymentRefunded;
+use App\Domains\Library\Console\ImportWebsiteResearchCommand;
 use App\Domains\Library\Console\RemindReadersCommand;
 use App\Domains\Library\Console\SyncLibraryPagesCommand;
 use App\Domains\Library\Contracts\PdfPageTextExtractor;
@@ -31,7 +32,7 @@ class LibraryServiceProvider extends ServiceProvider
         Event::listen(PaymentRefunded::class, RevokeLibraryAccessOnPaymentRefunded::class);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([SyncLibraryPagesCommand::class, RemindReadersCommand::class]);
+            $this->commands([SyncLibraryPagesCommand::class, RemindReadersCommand::class, ImportWebsiteResearchCommand::class]);
         }
     }
 }

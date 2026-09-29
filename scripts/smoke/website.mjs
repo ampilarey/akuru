@@ -17,6 +17,9 @@
  *      open their own page; the School offers Apply;
  *   5. (W3) finds the footer grouped by product — open on a desk, folded on
  *      a phone and opened with a tap — and a stats row of real counts;
+ *   5b. (R2) /articles lands on the library's article shelf, an article
+ *      address is gone, and an old paper's address (SMOKE_OLD_PAPER) opens
+ *      its library page with Read and Download;
  *   6. no page runs wider than the screen at 360, 390, 1024, 1280 or 1440.
  *
  * Read-only.
@@ -92,8 +95,9 @@ check('the About menu is closed until asked for', !(await desk.locator('[data-te
 await desk.click('[data-testid="nav-about"]');
 const about = await desk.locator('[data-testid="nav-about-menu"] a').allInnerTexts();
 check('About opens and holds News, Research and Contact', ['News', 'Research', 'Contact'].every((t) => about.includes(t)), about.join(' · '));
-await Promise.all([desk.waitForURL(/\/research/), desk.click('[data-testid="nav-about-menu"] a:has-text("Research")')]);
-check('Research opens from About', path(desk.url()) === '/research', path(desk.url()));
+// R2: research lives in the Digital Library; the old address redirects to its shelf.
+await Promise.all([desk.waitForURL(/\/library/), desk.click('[data-testid="nav-about-menu"] a:has-text("Research")')]);
+check('Research opens from About, on the library\'s research shelf', path(desk.url()) === '/library' && new URL(desk.url()).searchParams.get('content_type') === 'research', path(desk.url()) + new URL(desk.url()).search);
 await desk.keyboard.press('Escape');
 await Promise.all([desk.waitForURL(/\/library/), desk.click('[data-testid="nav-library"]')]);
 check('Digital Library opens, and the header says where you are', path(desk.url()) === '/library' && (await desk.getAttribute('[data-testid="nav-library"]', 'aria-current')) === 'page', path(desk.url()));
@@ -153,6 +157,27 @@ check('on a phone the footer groups are folded', folded);
 await swipe.locator('[data-testid="footer-about"] summary').scrollIntoViewIfNeeded();
 await swipe.click('[data-testid="footer-about"] summary');
 check('a tap opens About, with Contact in it', await swipe.locator('[data-testid="footer-about"] a:has-text("Contact")').isVisible());
+
+// ------------------------------------------------------------ 5b. the old research and articles addresses (R2)
+{
+    const guest = await visitor(1440, 900);
+    const articles = await guest.goto(`${BASE}/en/articles`, { waitUntil: 'networkidle' });
+    check('/articles lands on the library\'s article shelf', articles.ok() && path(guest.url()) === '/library' && new URL(guest.url()).searchParams.get('content_type') === 'article', path(guest.url()) + new URL(guest.url()).search);
+    const gone = await guest.goto(`${BASE}/en/articles/anything`, { waitUntil: 'domcontentloaded' });
+    check('an article address says it is gone', gone.status() === 410, `HTTP ${gone.status()}`);
+    // An old paper's address. Which one exists depends on the deployment's
+    // import, so the walk is told: SMOKE_OLD_PAPER=<old slug>.
+    const oldPaper = process.env.SMOKE_OLD_PAPER;
+    if (oldPaper) {
+        await guest.goto(`${BASE}/en/research/${oldPaper}`, { waitUntil: 'networkidle' });
+        const onLibrary = path(guest.url()).startsWith('/library/');
+        const reads = (await guest.locator('a:has-text("Read online"), .prose').count()) > 0;
+        const downloads = (await guest.locator('[data-testid="library-download-link"]').count()) === 1;
+        check('an old paper\'s address opens its library page, to read and to download', onLibrary && reads && downloads, `${path(guest.url())} read: ${reads}, download: ${downloads}`);
+    } else {
+        check('an old paper\'s address opens its library page, to read and to download', true, 'skipped: set SMOKE_OLD_PAPER to an imported paper\'s old slug');
+    }
+}
 
 // ------------------------------------------------------------ 6. nothing runs wider than the screen
 for (const [width, height] of [[360, 740], [390, 844], [1024, 800], [1280, 800], [1440, 900]]) {

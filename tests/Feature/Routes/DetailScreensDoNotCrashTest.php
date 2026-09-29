@@ -44,10 +44,8 @@ uses(RefreshDatabase::class);
  *
  * **What that costs, stated plainly.** A screen whose row does not suit it
  * lands on its refusal branch, and then the sweep proves only that the route
- * does not throw — not that the page renders. `admin/public-site/research/{post}/edit`
- * is the live example: `PresentResearchPostAction` returns null for a post that
- * is not a research post, and the controller 404s on purpose, so the fixture
- * row exercises the guard clause rather than the form. Rendering is what the
+ * does not throw — not that the page renders. (The research CMS's edit screen
+ * was the live example until R2 retired it.) Rendering is what the
  * browser walk checks; this test is the floor beneath it, not a substitute.
  */
 

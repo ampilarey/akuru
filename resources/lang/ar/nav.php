@@ -173,7 +173,6 @@ return [
     'enrolment_payments' => 'المدفوعات',
     'cms_pages' => 'الصفحات',
     'cms_courses' => 'الدورات',
-    'cms_research' => 'الأبحاث',
     'cms_daily_content' => 'المحتوى اليومي',
     'cms_daily_queue' => 'قائمة الاعتماد',
     'cms_subscriptions' => 'المشتركون',

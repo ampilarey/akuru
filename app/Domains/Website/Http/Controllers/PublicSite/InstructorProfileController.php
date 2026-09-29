@@ -3,7 +3,7 @@
 namespace App\Domains\Website\Http\Controllers\PublicSite;
 
 use App\Domains\HR\Actions\ReadPublicInstructorProfileAction;
-use App\Domains\Website\Actions\ListResearchPostsAction;
+use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Http\Controllers\Controller;
 
 class InstructorProfileController extends Controller
@@ -17,9 +17,8 @@ class InstructorProfileController extends Controller
 
         return view('public.instructors.show', [
             'instructor' => $instructor,
-            'posts' => app(ListResearchPostsAction::class)->execute([
-                'instructor_id' => $instructor['id'],
-            ], true),
+            // R2: what the teacher wrote is in the Digital Library now.
+            'works' => app(ListLibraryItemsAction::class)->execute(['instructor' => $instructor['id']]),
         ]);
     }
 }
