@@ -4414,6 +4414,43 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lj. Track an order without signing in (2026-09-29)
+
+BOOKSHOP_PLAN §16, item 8d. Buying needs a sign-in. A gift's recipient, or
+someone at home, does not have one.
+
+- **`/shop/track`** asks for the order number and the phone it is going to.
+  It needs both: if either is wrong, the page shows the same "no order
+  matches".
+  - Phones are compared on their last seven digits, so "+960 771-2345" and
+    "7712345" match. Anything shorter than seven digits matches nothing.
+- **What it shows:** the shop, the status, the steps with their dates, the
+  carrier and tracking note, and what is in the order (titles and
+  quantities).
+- **What it never shows:** the name, the address, the money, the notes, the
+  gift message or the messages. Those stay behind the buyer's sign-in, and
+  the page says so.
+- **Throttled at 10 a minute** against guessing.
+- **Track an order** is in the store's row of links.
+- **No new Blade screen.** Tracking is a mode of the order page
+  (`$tracking`).
+- `track` joins the words no shop may be named.
+
+Tests:
+- `ShopTrackOrderTest` (3):
+  - the form alone; then the status, steps, tracking and items, with the
+    name, street, note and money absent; the phone written with a country
+    code and dashes also matches;
+  - a wrong phone, a wrong number and a too-short phone show nothing;
+  - the eleventh try in a minute is refused (429).
+
+Checklist: `ft-bookstore-19`.
+
+Walk: `scripts/smoke/checkout.mjs` 35/35, with two new steps at phone
+width. A guest opens Track an order from the store's links and tracks the
+wallet order with "+960 770-0000". The book and Fitrah show, and the name
+and street do not. A wrong phone shows nothing.
+
 ## 5li. Compare products (2026-09-29)
 
 BOOKSHOP_PLAN §16, item 8c.

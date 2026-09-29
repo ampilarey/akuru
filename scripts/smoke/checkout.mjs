@@ -182,6 +182,21 @@ const receipt = await text(customer);
 check('the receipt shows the lines, the total and who sold them', (await customer.locator('[data-testid="order-item"]').count()) === 1 && receipt.includes('Arabic Letters Tracing Book') && receipt.includes('Fitrah') && (await customer.locator('[data-testid="receipt-total"]').innerText()).includes('170.00'), receipt.slice(0, 160));
 check('and an empty cart afterwards', (await customer.goto(`${BASE}/en/shop/cart`, { waitUntil: 'networkidle' }), (await customer.locator('[data-testid="cart-empty"]').count()) === 1));
 
+// ------------------------------------------------------------ track without signing in (STATUS §5lj)
+{
+    const guest = await newPage('track', { width: 390, height: 844 });
+    await guest.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });
+    await Promise.all([guest.waitForURL(/\/shop\/track/), guest.click('[data-testid="shop-link-track"]')]);
+    await guest.fill('[data-testid="track-number"]', `${paidNumber}-FIT`);
+    await guest.fill('[data-testid="track-phone"]', '+960 770-0000');
+    await Promise.all([guest.waitForLoadState('networkidle'), guest.click('[data-testid="track-go"]')]);
+    const result = (await guest.locator('[data-testid="track-result"]').innerText().catch(() => '')).replace(/\s+/g, ' ');
+    check('a guest tracks the order by its number and phone, and sees its status and what is in it', result.includes('Arabic Letters Tracing Book') && result.includes('Fitrah') && !result.includes('M. Smoke Villa') && !result.includes('Smoke Customer'), result.slice(0, 160));
+    await guest.fill('[data-testid="track-phone"]', '7711111');
+    await Promise.all([guest.waitForLoadState('networkidle'), guest.click('[data-testid="track-go"]')]);
+    check('and a wrong phone shows nothing', (await guest.locator('[data-testid="track-none"]').count()) === 1 && (await guest.locator('[data-testid="track-result"]').count()) === 0);
+}
+
 // ------------------------------------------------------------ buy again (STATUS §5ld)
 
 await customer.goto(`${BASE}/en/my-orders/${paidNumber}-FIT`, { waitUntil: 'networkidle' });

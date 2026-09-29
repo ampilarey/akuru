@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Actions\Orders\CustomerOrderAction;
 use App\Domains\Bookshop\Actions\Orders\ListMyOrdersAction;
 use App\Domains\Bookshop\Actions\Orders\PresentOrderAction;
 use App\Domains\Bookshop\Actions\Orders\RequestReturnAction;
+use App\Domains\Bookshop\Actions\Orders\TrackOrderAction;
 use App\Domains\Bookshop\Enums\ReturnReason;
 use App\Domains\Bookshop\Http\Controllers\Concerns\ResolvesCart;
 use App\Http\Controllers\Controller;
@@ -30,6 +31,17 @@ class MyOrdersController extends Controller
         return view('public.shop.orders.index', [
             'orders' => app(ListMyOrdersAction::class)->execute((int) $request->user()->id),
         ]);
+    }
+
+    /** §5lj: track an order by its number and phone, signed in or not. */
+    public function track(Request $request)
+    {
+        $data = $request->validate(['number' => 'nullable|string|max:40', 'phone' => 'nullable|string|max:30']);
+        $order = ($data['number'] ?? null) && ($data['phone'] ?? null)
+            ? app(TrackOrderAction::class)->execute($data['number'], $data['phone'])
+            : null;
+
+        return view('public.shop.orders.show', ['tracking' => true, 'order' => $order, 'query' => $data]);
     }
 
     public function show(Request $request, string $number)

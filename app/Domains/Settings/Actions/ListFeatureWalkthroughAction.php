@@ -187,6 +187,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-bookstore-16', 'label' => 'Helpful review votes: a signed-in customer marks someone else\'s review helpful (and can take it back); the most helpful reviews come first', 'where' => '/shop'],
                 ['key' => 'ft-bookstore-17', 'label' => 'Brands: Shop by brand on the store\'s front, a brand\'s page with its products from every shop, a brand filter, and the product page links its brand', 'where' => '/shop'],
                 ['key' => 'ft-bookstore-18', 'label' => 'Compare: "Compare" on up to four product pages, then see them side by side (price, shop, stars, stock, details); fits a phone', 'where' => '/shop/compare'],
+                ['key' => 'ft-bookstore-19', 'label' => 'Track an order without signing in: order number + phone shows status, steps, tracking and items — never the address or money; a wrong phone shows nothing', 'where' => '/shop/track'],
             ]],
             ['key' => 'ft-money', 'title' => 'Money checks', 'items' => [
                 ['key' => 'ft-money-1', 'label' => 'A payment grants access only after the bank confirms (not on return to the site)', 'where' => '/admin/enrollments/payments'],

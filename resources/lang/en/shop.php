@@ -1617,4 +1617,11 @@ return [
     'availability' => 'Availability',
     'rating' => 'Rating',
     'view_product' => 'See the product',
+    'track_title' => 'Track an order',
+    'track_intro' => 'Enter the order number and the phone number it is going to. No sign-in needed — for a gift, or for someone at home.',
+    'track_number' => 'Order number',
+    'track_phone' => 'Phone number',
+    'track_button' => 'Track',
+    'track_none' => 'No order matches that number and phone. Check both and try again.',
+    'track_sign_in_for_more' => 'The buyer sees the receipt, the address and messages after signing in.',
 ];
