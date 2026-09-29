@@ -11,7 +11,9 @@ use App\Domains\ExamsGrades\Actions\SaveReportCardCommentAction;
 use App\Domains\ExamsGrades\Models\ReportCard;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Http\Controllers\Controller;
+use App\Support\Contracts\PdfConverterInterface;
 use App\Support\Csv;
+use App\Support\Http\DocumentResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -35,6 +37,7 @@ class ReportCardController extends Controller
                 'term_id' => $termId,
             ])->values(),
             'unpublished' => app(ListReportCardsAction::class)->unpublished()->values(),
+            'pdf_available' => app(PdfConverterInterface::class)->enabled(),
             'classId' => $classId,
             'termId' => $termId,
         ]);
@@ -108,10 +111,8 @@ class ReportCardController extends Controller
 
         $file = app(ReadGeneratedDocumentAction::class)->execute((int) $reportCard->document_id);
 
-        return response($file['contents'], 200, [
-            'Content-Type' => $file['mime'],
-            'Content-Disposition' => 'inline; filename="report-card-'.$reportCard->id.'.html"',
-        ]);
+        // STATUS §5lr: ?format=pdf where this host can print one (ADR-012, amended).
+        return DocumentResponse::make($file['contents'], $file['mime'], 'report-card-'.$reportCard->id, $request->query('format') === 'pdf');
     }
 
     public function transcript(Request $request): HttpResponse

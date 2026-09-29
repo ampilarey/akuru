@@ -22,6 +22,8 @@ use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Domains\People\Actions\AttachGuardianAction;
 use App\Support\Contracts\DocumentRendererInterface;
+use App\Support\Contracts\PdfConverterInterface;
+use App\Support\Services\ChromePdfConverter;
 use App\Support\Services\HtmlDocumentRenderer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -341,4 +343,87 @@ it('builds a cumulative transcript with optional gpa', function () {
         ->get(route('exams.transcript', ['student_id' => $ctx['student']->id]))
         ->assertOk()
         ->assertSee('Academic transcript');
+});
+
+/**
+ * STATUS §5lr (ADR-012, amended): a published report card as a PDF where
+ * the host can print one; as HTML, with no PDF offered, where it cannot.
+ */
+function publishedCardForPdf(): array
+{
+    $ctx = reportSetup();
+    app(GenerateReportCardsAction::class)->execute($ctx['class']->id, $ctx['term']->id, null, 'en', $ctx['admin']->id, false);
+    $card = ReportCard::query()->sole();
+    app(PublishReportCardsAction::class)->execute($ctx['class']->id, $ctx['term']->id);
+
+    return [$ctx, $card->fresh(), User::query()->findOrFail($ctx['guardian']->user_id)];
+}
+
+it('offers no PDF and serves the HTML where this host has no Chrome', function () {
+    config(['documents.pdf.chrome_path' => null]);
+    [$ctx, $card, $guardian] = publishedCardForPdf();
+
+    expect(app(PdfConverterInterface::class)->enabled())->toBeFalse();
+    $this->withoutLocalizationMiddleware()->actingAs($guardian)->get(route('portal.report-cards'))
+        ->assertInertia(fn (Assert $page) => $page->where('pdf_available', false));
+    $download = $this->withoutLocalizationMiddleware()->actingAs($guardian)->get(route('portal.report-cards.download', [$card, 'format' => 'pdf']))->assertOk();
+    expect($download->headers->get('Content-Type'))->toContain('text/html')->and($download->getContent())->toContain('Aisha Ali');
+});
+
+it('serves the report card as a PDF to the family and the office where the host can print one', function () {
+    $pdf = new class implements PdfConverterInterface
+    {
+        public array $seen = [];
+
+        public function enabled(): bool
+        {
+            return true;
+        }
+
+        public function fromHtml(string $html): string
+        {
+            $this->seen[] = $html;
+
+            return '%PDF-1.4 fake';
+        }
+    };
+    app()->instance(PdfConverterInterface::class, $pdf);
+    [$ctx, $card, $guardian] = publishedCardForPdf();
+
+    $this->withoutLocalizationMiddleware()->actingAs($guardian)->get(route('portal.report-cards'))
+        ->assertInertia(fn (Assert $page) => $page->where('pdf_available', true));
+    $download = $this->withoutLocalizationMiddleware()->actingAs($guardian)->get(route('portal.report-cards.download', [$card, 'format' => 'pdf']))->assertOk();
+    expect($download->headers->get('Content-Type'))->toBe('application/pdf')
+        ->and($download->headers->get('Content-Disposition'))->toContain('report-card-'.$card->id.'.pdf')
+        ->and($download->getContent())->toStartWith('%PDF')
+        ->and($pdf->seen[0])->toContain('Aisha Ali');
+
+    // Without ?format=pdf it is still the page itself.
+    expect($this->withoutLocalizationMiddleware()->actingAs($guardian)->get(route('portal.report-cards.download', $card))->headers->get('Content-Type'))->toContain('text/html');
+
+    auth()->logout();
+    $office = $this->withoutLocalizationMiddleware()->actingAs($ctx['admin'])->get(route('exams.report-cards.download', [$card, 'format' => 'pdf']))->assertOk();
+    expect($office->headers->get('Content-Type'))->toBe('application/pdf');
+    $this->withoutLocalizationMiddleware()->actingAs($ctx['admin'])->get(route('exams.report-cards.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('pdf_available', true));
+
+    // Another family's card stays shut, PDF or not.
+    $stranger = User::factory()->create();
+    auth()->logout();
+    $this->withoutLocalizationMiddleware()->actingAs($stranger)->get(route('portal.report-cards.download', [$card, 'format' => 'pdf']))->assertStatus(403);
+});
+
+it('prints Thaana and Arabic to a real PDF with headless Chrome, where one is installed', function () {
+    $chrome = getenv('DOCUMENTS_CHROME_PATH') ?: '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
+    if (! is_executable($chrome)) {
+        $this->markTestSkipped('No Chrome on this host; the converter stays disabled, as the other tests show.');
+    }
+    $converter = new ChromePdfConverter($chrome, 90);
+
+    $bytes = $converter->fromHtml('<!doctype html><html dir="rtl" lang="dv"><meta charset="utf-8"><body><h1>ރިޕޯޓް ކާޑު</h1><p>تقرير الطالب</p><script>document.body.innerHTML = "replaced"</script></body></html>');
+
+    expect($converter->enabled())->toBeTrue()->and($bytes)->toStartWith('%PDF')->and(strlen($bytes))->toBeGreaterThan(1000)
+        ->and(glob(storage_path('app/tmp/pdf/*')) ?: [])->toBe([]);
+    expect((new ChromePdfConverter(null))->enabled())->toBeFalse()
+        ->and((new ChromePdfConverter('/no/such/chrome'))->enabled())->toBeFalse();
 });

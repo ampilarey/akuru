@@ -370,7 +370,8 @@ check('the parent sees the published exam', portalRow !== '', portalRow || (awai
 check('with the mark', portalRow.includes(MARK), portalRow);
 
 await parent.goto(`${BASE}/en/portal/report-cards`, { waitUntil: 'networkidle' });
-const cardLink = parent.locator('tr', { hasText: TERM }).first().locator('a:has-text("Download HTML")');
+const cardTr = parent.locator('tr', { hasText: TERM }).first();
+const cardLink = cardTr.locator('a[data-testid^="report-card-open-"]');
 check('the parent sees the term\'s report card', (await cardLink.count()) > 0, (await text(parent)).slice(0, 160));
 
 if (await cardLink.count()) {
@@ -378,6 +379,18 @@ if (await cardLink.count()) {
     const opened = await parent.goto(new URL(href, BASE).href, { waitUntil: 'domcontentloaded' });
     const body = await parent.content();
     check('and can open it', opened.status() === 200 && body.includes(CHILD), `HTTP ${opened.status()}, ${body.length} bytes`);
+}
+
+// STATUS §5lr: where the host can print one (DOCUMENTS_CHROME_PATH), the card also comes as a PDF.
+await parent.goto(`${BASE}/en/portal/report-cards`, { waitUntil: 'networkidle' });
+const pdfLink = parent.locator('tr', { hasText: TERM }).first().locator('a[data-testid^="report-card-pdf-"]');
+if (await pdfLink.count()) {
+    const pdf = await parent.request.get(new URL(await pdfLink.getAttribute('href'), BASE).href);
+    const bytes = await pdf.body();
+    check('and the page no longer says the cards are not PDF', !(await text(parent)).includes('not PDF'));
+    check('the report card downloads as a PDF', pdf.status() === 200 && (pdf.headers()['content-type'] || '').includes('application/pdf') && bytes.subarray(0, 4).toString() === '%PDF', `HTTP ${pdf.status()}, ${bytes.length} bytes`);
+} else if (await cardLink.count()) {
+    check('no PDF is offered on a host without Chrome, only the page to print', (await cardTr.innerText()).includes('Open to print'));
 }
 
 await finish();

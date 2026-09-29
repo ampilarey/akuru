@@ -7,6 +7,8 @@ use App\Domains\ExamsGrades\Actions\GenerateTranscriptAction;
 use App\Domains\ExamsGrades\Actions\ListPublishedReportCardsForGuardianAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\Contracts\PdfConverterInterface;
+use App\Support\Http\DocumentResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -34,6 +36,7 @@ class PortalReportCardController extends Controller
                 'name' => trim(($child->first_name ?? '').' '.($child->last_name ?? '')),
             ])->values(),
             'studentId' => $studentId,
+            'pdf_available' => app(PdfConverterInterface::class)->enabled(),
             'cards' => app(ListPublishedReportCardsForGuardianAction::class)->execute(
                 (int) $request->user()->id,
                 $studentId,
@@ -50,10 +53,8 @@ class PortalReportCardController extends Controller
             (int) $request->user()->id,
         );
 
-        return response($file['contents'], 200, [
-            'Content-Type' => $file['mime'],
-            'Content-Disposition' => 'inline; filename="report-card-'.$reportCard.'.html"',
-        ]);
+        // STATUS §5lr: ?format=pdf where this host can print one (ADR-012, amended).
+        return DocumentResponse::make($file['contents'], $file['mime'], 'report-card-'.$reportCard, $request->query('format') === 'pdf');
     }
 
     public function transcript(Request $request): HttpResponse

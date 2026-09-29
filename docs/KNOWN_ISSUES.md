@@ -990,7 +990,7 @@ second box. (Former P0 SMS live-bind is **fixed** — see Fixed on main #86.)
 
 ### 3. “Report cards” are HTML with empty grades, not PDF
 
-**Fixed as a renderer decision** — HTML is the supported production output (ADR-012 amended). Empty cells without weights is the Weights issue (P1 #2), not a PDF bug. See **Fixed on main**.
+**Fixed as a renderer decision** — HTML is the supported production output (ADR-012 amended). Empty cells without weights is the Weights issue (P1 #2), not a PDF bug. See **Fixed on main**. **PDF since 2026-09-29** (STATUS §5lr): a download-time PDF where the host sets `DOCUMENTS_CHROME_PATH`.
 
 ### 4. Roster picker can still show two rows for the same identity with different numbers
 

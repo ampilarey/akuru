@@ -1,7 +1,7 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
-export default function ReportCards({ children, studentId, cards }) {
+export default function ReportCards({ children, studentId, cards, pdf_available = false }) {
     const transcript = useForm({
         student_id: studentId || '',
         locale: 'en',
@@ -10,7 +10,9 @@ export default function ReportCards({ children, studentId, cards }) {
     return (
         <AppShell title="Report cards">
             <p className="mb-4 rounded border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700">
-                These files are HTML, not PDF.
+                {pdf_available
+                    ? 'Download a report card as a PDF, or open it to read and print.'
+                    : 'These files are HTML, not PDF: open one to read and print it.'}
             </p>
             <div className="mb-4 flex flex-wrap gap-3">
                 <select
@@ -50,7 +52,8 @@ export default function ReportCards({ children, studentId, cards }) {
                                 <td className="px-3 py-2" data-label="Term">{card.term_name}</td>
                                 <td className="px-3 py-2" data-label="Published">{card.published_at || '—'}</td>
                                 <td className="table-actions px-3 py-2">
-                                    <a className="chip-link" href={`/portal/report-cards/${card.id}/download`}>Download HTML</a>
+                                    {pdf_available && <a className="chip-link" href={`/portal/report-cards/${card.id}/download?format=pdf`} data-testid={`report-card-pdf-${card.id}`}>Download PDF</a>}
+                                    <a className="chip-link" href={`/portal/report-cards/${card.id}/download`} data-testid={`report-card-open-${card.id}`}>{pdf_available ? 'Open' : 'Open to print'}</a>
                                 </td>
                             </tr>
                         ))}
