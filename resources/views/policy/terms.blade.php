@@ -17,7 +17,7 @@
         <div>
             <h2 class="text-lg font-semibold text-brandMaroon-800">2. Delivery Policy</h2>
             <p>Akuru Institute offers educational services delivered in the following ways:</p>
-            <ul class="list-disc ml-6 mt-2 space-y-1">
+            <ul class="list-disc ms-6 mt-2 space-y-1">
                 <li><strong>In-person classes</strong> are held at our premises in Malé, Maldives. Details (location, schedule) will be communicated via email/SMS after enrollment is confirmed.</li>
                 <li><strong>Online/remote classes</strong> (where applicable) will be accessible via a link sent to your registered email or mobile number after enrollment confirmation.</li>
                 <li>Enrollment confirmation is subject to admin approval. You will be notified within 1–2 business days of payment.</li>

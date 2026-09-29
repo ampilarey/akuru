@@ -32,7 +32,7 @@
                             <h3 class="font-semibold text-brandGray-900 mb-2">
                                 {{ $locale === 'en' ? 'English' : ($locale === 'ar' ? 'العربية' : 'ދިވެހި') }}
                                 @if(app()->getLocale() === $locale)
-                                    <span class="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded">CURRENT</span>
+                                    <span class="ms-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded">CURRENT</span>
                                 @endif
                             </h3>
                             <div class="space-y-2 text-sm">

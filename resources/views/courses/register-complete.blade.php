@@ -17,7 +17,7 @@
             {{-- What happens next --}}
             <div style="background:#FFFBF0;border:1px solid #FDE68A;border-radius:.625rem;padding:1rem 1.25rem;margin-bottom:1.25rem">
                 <p style="font-size:.8rem;font-weight:700;color:#92400E;margin:0 0 .5rem;text-transform:uppercase;letter-spacing:.05em">What happens next?</p>
-                <ol style="margin:0;padding-left:1.25rem;font-size:.85rem;color:#374151;line-height:1.9">
+                <ol style="margin:0;padding-inline-start:1.25rem;font-size:.85rem;color:#374151;line-height:1.9">
                     <li>Admin reviews your enrollment and payment</li>
                     <li>Once approved, you will receive a <strong>confirmation SMS</strong></li>
                     <li>Your enrollment status will change to <strong>Active</strong></li>
@@ -83,7 +83,7 @@
                     <p class="text-amber-800 font-medium text-sm mb-2">Payment verification is taking longer than expected.</p>
                     <p class="text-amber-700 text-xs mb-3">If you completed the payment at the bank, it will be confirmed automatically. You may also retry:</p>
                     <a href="{{ route('courses.register.payment.retry', ['ref' => $paymentRef]) }}"
-                       class="inline-block bg-brandMaroon-600 text-white text-xs py-2 px-4 rounded hover:bg-brandMaroon-700 mr-2">
+                       class="inline-block bg-brandMaroon-600 text-white text-xs py-2 px-4 rounded hover:bg-brandMaroon-700 me-2">
                         Retry payment
                     </a>
                     <a href="{{ route('public.courses.index') }}" class="inline-block text-xs text-gray-600 hover:underline py-2">
@@ -98,9 +98,9 @@
                 <table style="width:100%;font-size:.875rem;border-collapse:collapse">
                     <thead>
                         <tr style="border-bottom:2px solid #E5E7EB">
-                            <th style="text-align:left;padding:.5rem .25rem;color:#374151">Course</th>
-                            <th style="text-align:left;padding:.5rem .25rem;color:#374151">Enrollment Status</th>
-                            <th style="text-align:left;padding:.5rem .25rem;color:#374151">Payment</th>
+                            <th style="text-align:start;padding:.5rem .25rem;color:#374151">Course</th>
+                            <th style="text-align:start;padding:.5rem .25rem;color:#374151">Enrollment Status</th>
+                            <th style="text-align:start;padding:.5rem .25rem;color:#374151">Payment</th>
                         </tr>
                     </thead>
                     <tbody>

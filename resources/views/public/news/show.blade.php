@@ -60,7 +60,7 @@
 
         <!-- Summary -->
         @if($post->summary)
-            <div class="text-lg text-brandGray-700 mb-8 p-6 bg-brandMaroon-50 rounded-lg border-l-4 border-brandMaroon-600">
+            <div class="text-lg text-brandGray-700 mb-8 p-6 bg-brandMaroon-50 rounded-lg border-s-4 border-brandMaroon-600">
                 {{ $post->summary }}
             </div>
         @endif
@@ -72,7 +72,7 @@
 
         <!-- Social Share -->
         <div class="mt-8 pt-6 border-t border-brandGray-200">
-            <span class="text-sm font-medium text-brandGray-700 mr-3">{{ __('public.Share this article') }}:</span>
+            <span class="text-sm font-medium text-brandGray-700 me-3">{{ __('public.Share this article') }}:</span>
             <div class="flex gap-2 mt-2">
                 <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->url()) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm" aria-label="Share on Facebook">Facebook</a>
                 <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->url()) }}&text={{ urlencode($post->title) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-sky-500 text-white rounded hover:bg-sky-600 text-sm" aria-label="Share on Twitter">Twitter</a>

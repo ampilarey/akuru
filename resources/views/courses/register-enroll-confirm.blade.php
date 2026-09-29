@@ -66,9 +66,9 @@
             📋 Please read before proceeding
           </p>
 
-          <div style="font-size:.83rem;color:#374151;line-height:1.7;margin-bottom:1rem;max-height:10rem;overflow-y:auto;padding-right:.25rem">
+          <div style="font-size:.83rem;color:#374151;line-height:1.7;margin-bottom:1rem;max-height:10rem;overflow-y:auto;padding-inline-end:.25rem">
             <p style="margin:0 0 .5rem"><strong>Enrollment Terms:</strong></p>
-            <ul style="margin:0 0 .75rem;padding-left:1.25rem">
+            <ul style="margin:0 0 .75rem;padding-inline-start:1.25rem">
               <li>Enrollment is subject to seat availability and admin approval.</li>
               <li>Course fees are non-refundable unless the course is cancelled by Akuru Institute.</li>
               <li>You must attend the required number of sessions to receive a certificate.</li>
@@ -106,7 +106,7 @@
                 <span style="font-size:.8rem;font-weight:600;color:#111827">
                   {{ $c->type === 'mobile' ? '📱 Mobile' : '✉️ Email' }}
                 </span>
-                <span style="font-size:.8rem;color:#6B7280;margin-left:.375rem">{{ $c->masked }}</span>
+                <span style="font-size:.8rem;color:#6B7280;margin-inline-start:.375rem">{{ $c->masked }}</span>
               </div>
             </label>
             @endforeach

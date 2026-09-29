@@ -220,7 +220,7 @@ $bannerCount = count($bannerList);
           <span class="home-tile-icon"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon }}"/></svg></span>
           <strong>{{ $name }}</strong>
           <span class="home-tile-line">{{ $line }}</span>
-          <span class="home-tile-go">{{ $go }} →</span>
+          <span class="home-tile-go">{{ $go }} <span class="rtl-flip" aria-hidden="true">→</span></span>
         </a>
       @endforeach
     </div>
@@ -330,7 +330,7 @@ $bannerCount = count($bannerList);
         <span class="home-eyebrow">{{ __('site.digital_library') }}</span>
         <h2 class="home-h2">{{ __('site.new_in_library') }}</h2>
       </div>
-      <a href="{{ route('public.library.index') }}" class="home-more">{{ __('site.open_library') }} →</a>
+      <a href="{{ route('public.library.index') }}" class="home-more">{{ __('site.open_library') }} <span class="rtl-flip" aria-hidden="true">→</span></a>
     </div>
     <div class="home-row home-row--books">
       @foreach ($shelves['books'] as $i => $book)
@@ -370,7 +370,7 @@ $bannerCount = count($bannerList);
         <span class="home-eyebrow">{{ __('site.akuru_bookstore') }}</span>
         <h2 class="home-h2">{{ __('site.from_bookstore') }}</h2>
       </div>
-      <a href="{{ route('public.shop.index') }}" class="home-more">{{ __('site.visit_store') }} →</a>
+      <a href="{{ route('public.shop.index') }}" class="home-more">{{ __('site.visit_store') }} <span class="rtl-flip" aria-hidden="true">→</span></a>
     </div>
     <div class="home-row">
       @foreach ($shelves['products'] as $product)
@@ -393,7 +393,7 @@ $bannerCount = count($bannerList);
         </a>
       @endforeach
     </div>
-    <p class="mt-5 text-sm" style="color:#5E5650">{{ __('site.sell_prompt') }} <a href="{{ route('vendor.apply') }}" class="font-bold" style="color:#7C2D37">{{ __('site.sell_on_akuru') }} →</a></p>
+    <p class="mt-5 text-sm" style="color:#5E5650">{{ __('site.sell_prompt') }} <a href="{{ route('vendor.apply') }}" class="font-bold" style="color:#7C2D37">{{ __('site.sell_on_akuru') }} <span class="rtl-flip" aria-hidden="true">→</span></a></p>
   </div>
 </section>
 @endif
@@ -483,7 +483,7 @@ document.addEventListener('keydown',e=>{if(!document.getElementById('glb')||docu
         <span style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">Life at Akuru</span>
         <h2 style="font-size:clamp(1.75rem,3vw,2.25rem);font-weight:800;color:#111827;margin:.25rem 0 0">Our Gallery</h2>
       </div>
-      <a href="{{ route('public.gallery.index') }}" style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none">View all →</a>
+      <a href="{{ route('public.gallery.index') }}" style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none">View all <span class="rtl-flip" aria-hidden="true">→</span></a>
     </div>
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem">
       @foreach($galleryPhotos as $idx => $photo)
@@ -551,7 +551,7 @@ document.addEventListener('keydown',e=>{if(!document.getElementById('glb')||docu
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
             <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0">Latest News</h2>
-            <a href="{{ route('public.news.index') }}" style="font-size:.825rem;color:#7C2D37;font-weight:600;text-decoration:none">All news →</a>
+            <a href="{{ route('public.news.index') }}" style="font-size:.825rem;color:#7C2D37;font-weight:600;text-decoration:none">All news <span class="rtl-flip" aria-hidden="true">→</span></a>
           </div>
           <div style="display:flex;flex-direction:column;gap:.75rem">
             @forelse($posts as $post)
@@ -576,7 +576,7 @@ document.addEventListener('keydown',e=>{if(!document.getElementById('glb')||docu
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
             <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0">Upcoming Events</h2>
-            <a href="{{ route('public.events.index') }}" style="font-size:.825rem;color:#A8861F;font-weight:600;text-decoration:none">All events →</a>
+            <a href="{{ route('public.events.index') }}" style="font-size:.825rem;color:#A8861F;font-weight:600;text-decoration:none">All events <span class="rtl-flip" aria-hidden="true">→</span></a>
           </div>
           <div style="display:flex;flex-direction:column;gap:.75rem">
             @forelse($events as $event)

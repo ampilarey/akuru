@@ -46,7 +46,7 @@
                             </div>
                             <a href="{{ route('public.gallery.show', $gallery->id) }}" 
                                class="text-brandMaroon-600 hover:text-brandMaroon-700 font-medium text-sm">
-                                {{ __('public.View Gallery') }} →
+                                {{ __('public.View Gallery') }} <span class="rtl-flip" aria-hidden="true">→</span>
                             </a>
                         </div>
                     </div>

@@ -41,7 +41,7 @@
                         
                         <a href="{{ route('public.news.show', $post->slug) }}" 
                            class="text-brandMaroon-600 hover:text-brandMaroon-700 font-medium">
-                            {{ __('public.Read More') }} →
+                            {{ __('public.Read More') }} <span class="rtl-flip" aria-hidden="true">→</span>
                         </a>
                     </div>
                 </article>

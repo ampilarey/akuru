@@ -18,7 +18,7 @@
 
                 @auth
                     @if(! auth()->user()->password)
-                    <div class="mb-5 p-4 bg-brandMaroon-50 border border-brandMaroon-200 rounded-lg text-left">
+                    <div class="mb-5 p-4 bg-brandMaroon-50 border border-brandMaroon-200 rounded-lg text-start">
                         <p class="text-sm font-semibold text-brandMaroon-800 mb-1">Save time next time</p>
                         <p class="text-sm text-brandMaroon-700 mb-3">Create a password so you can log in directly without needing an OTP code.</p>
                         <a href="{{ route('account.set-password') }}"
@@ -26,7 +26,7 @@
                             Set password
                         </a>
                         <a href="{{ route('courses.register.complete') }}"
-                           class="inline-block ml-3 text-sm text-gray-500 hover:underline">
+                           class="inline-block ms-3 text-sm text-gray-500 hover:underline">
                             Skip
                         </a>
                     </div>

@@ -4414,6 +4414,67 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lp. The website reads right to left in Dhivehi and Arabic (2026-09-29)
+
+This was a KNOWN_ISSUES entry (P2, found by R4). The public layout wrote
+`dir="ltr"` whatever the language, so every `/dv` and `/ar` page was laid
+out left to right; the app shell and the reader already switched. The owner
+said "do it" on 2026-09-29.
+
+**The direction.** `public.layouts.public` sets `dir="rtl"` for `dv` and
+`ar`, and `ltr` otherwise, the same rule as `HandleInertiaRequests`.
+
+**Mirroring.** Physical classes on the views the public layout renders
+became their logical twins: `text-start`/`-end`, `ms`/`me`, `ps`/`pe`,
+`start`/`end`, `border-s`, `rounded-e`, and `rtl:space-x-reverse`. That was
+64 tokens in 17 views: the nav, courses, course, events, gallery,
+admissions, contact, news, about, payments, the course registration pages
+and policy. The one-sided inline CSS became logical too
+(`margin-inline-*`, `padding-inline-*`, `text-align: start`) in the nav,
+the prayer ribbon and the registration pages.
+
+**Deliberately left as they were:**
+- symmetric pairs (`left-0 right-0`) and centring (`left-1/2`);
+- the right-aligned Arabic and Dhivehi text of the daily content;
+- the hero's arrow buttons;
+- the floating Viber button.
+
+**The arrows.** A "see all →" arrow pointed backwards in a right-to-left
+page. The 17 visible arrows are wrapped in `.rtl-flip`, which one rule in
+the layout mirrors under `[dir="rtl"]`.
+
+**Found by the walk.** The hidden Google Translate holder sat at
+`left:-9999px`. That is harmless left to right, but right to left it is
+~10,000px of sideways scroll. It dragged every page wide, and the phone's
+bottom bar with it. It is now clipped in place (`clip-path: inset(50%)`)
+rather than pushed to one side.
+
+**Regression guard.** `RtlSafeClassesTest` now also scans every view the
+public layout renders, the layout itself and the public components.
+
+Tests:
+- `RtlSafeClassesTest` (2): the new public-site case is added alongside
+  the JSX one.
+- `PublicDirectionTest` (4): `en` is `ltr`, and `dv` and `ar` are `rtl`,
+  with the arrow rule present; the translate holder is not pushed
+  off-screen.
+
+Checklist: `ft-website-12`.
+
+Walk: new `scripts/smoke/public-rtl.mjs`, 90/90, added to `all.mjs`. It
+covers the home page, courses, shop, library, news and contact, in `dv`,
+`ar` and `en`, at desk (1280) and phone (390) width. For each it checks:
+- the direction, and the logo on the reading side;
+- nothing wider than the screen;
+- on a phone, the bottom bar spanning the screen.
+
+The first run failed 36 steps, all from the translate holder. The
+screenshots show the logo on the right, the menu and the product tiles
+running right to left, and the phone bar with Home on the right.
+
+Not changed: the text of the public pages. Some English remains on `/dv`
+and `/ar` (BACKLOG A10, native review).
+
 ## 5lo. A paused shop (2026-09-29)
 
 The Bookstore audit's finding 8 and a KNOWN_ISSUES entry. Suspending a shop

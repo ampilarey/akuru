@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="ltr">
+{{-- STATUS §5lp: Dhivehi and Arabic read right to left, as the app shell and the reader already do. --}}
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" dir="{{ in_array(app()->getLocale(), ['dv', 'ar'], true) ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
@@ -63,7 +64,7 @@
     })();
     </script>
 
-    <!-- Font overrides for translated languages — layout/direction unchanged -->
+    <!-- Font overrides for translated languages (direction is set on <html>, STATUS §5lp) -->
     <style>
       @font-face {
         font-family: 'Faruma';
@@ -125,6 +126,9 @@
             }
         }
         
+        /* STATUS §5lp: a "go on" arrow points the way the page reads. */
+        [dir="rtl"] .rtl-flip { display: inline-block; transform: scaleX(-1); }
+
         /* Smooth mobile menu animation */
         #mobileMenu {
             transition: max-height 0.3s ease-in-out;

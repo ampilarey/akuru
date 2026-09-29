@@ -56,7 +56,7 @@
                 <button type="button"
                         @click="tab = 'new'"
                         :class="tab === 'new' ? 'border-b-2 border-brandMaroon-600 text-brandMaroon-700 font-semibold' : 'text-gray-500 hover:text-gray-700'"
-                        class="pb-3 pr-6 text-sm transition">
+                        class="pb-3 pe-6 text-sm transition">
                     New registration
                 </button>
                 <button type="button"
@@ -116,13 +116,13 @@
                             <div class="grid sm:grid-cols-2 gap-3">
                                 <button type="button" @click="flowType = 'adult'"
                                         :class="flowType === 'adult' ? 'ring-2 ring-brandMaroon-500 bg-brandMaroon-50' : 'border border-gray-200'"
-                                        class="p-3 rounded-lg text-left hover:bg-gray-50 transition">
+                                        class="p-3 rounded-lg text-start hover:bg-gray-50 transition">
                                     <span class="font-medium text-sm block">I am enrolling myself</span>
                                     <span class="text-xs text-gray-500">Must be 18 or older</span>
                                 </button>
                                 <button type="button" @click="flowType = 'parent'"
                                         :class="flowType === 'parent' ? 'ring-2 ring-brandMaroon-500 bg-brandMaroon-50' : 'border border-gray-200'"
-                                        class="p-3 rounded-lg text-left hover:bg-gray-50 transition">
+                                        class="p-3 rounded-lg text-start hover:bg-gray-50 transition">
                                     <span class="font-medium text-sm block">I am a parent / guardian</span>
                                     <span class="text-xs text-gray-500">Enrolling a child</span>
                                 </button>
@@ -226,7 +226,7 @@
                     <button type="submit"
                             :disabled="!flowType"
                             class="btn-primary w-full py-3 disabled:opacity-50 disabled:cursor-not-allowed">
-                        Send verification code →
+                        Send verification code <span class="rtl-flip" aria-hidden="true">→</span>
                     </button>
                     <p class="text-xs text-gray-400 text-center mt-2">Your account will be created after OTP is verified.</p>
                 </form>

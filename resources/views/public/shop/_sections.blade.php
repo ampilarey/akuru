@@ -73,7 +73,7 @@
                 <div class="container mx-auto px-4">
                     <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
                         <h2 class="text-xl font-semibold" dir="auto">{{ $section['heading'] ?? $section['collection']['name'] }}</h2>
-                        @if($section['see_all'])<a href="{{ $section['collection']['url'] }}" class="sf-link text-sm underline">{{ __('shop.see_all') }} →</a>@endif
+                        @if($section['see_all'])<a href="{{ $section['collection']['url'] }}" class="sf-link text-sm underline">{{ __('shop.see_all') }} <span class="rtl-flip" aria-hidden="true">→</span></a>@endif
                     </div>
                     @if(count($section['cards']) === 0)
                         <p class="text-sm opacity-70">{{ __('shop.no_products_yet') }}</p>

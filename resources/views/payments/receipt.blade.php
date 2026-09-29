@@ -25,7 +25,7 @@
                     <p class="text-2xl font-bold text-brandMaroon-900">Akuru Institute</p>
                     <p class="text-sm text-gray-500">akuru.edu.mv</p>
                 </div>
-                <div class="text-right">
+                <div class="text-end">
                     <p class="text-lg font-bold text-gray-900">RECEIPT</p>
                     <p class="text-xs text-gray-500 font-mono mt-0.5">
                         #{{ $payment->local_id ?? $payment->merchant_reference ?? $payment->id }}
@@ -53,7 +53,7 @@
                     @if($mobile)<p class="text-sm text-gray-600">{{ $mobile }}</p>@endif
                     @if($email) <p class="text-sm text-gray-600">{{ $email }}</p>@endif
                 </div>
-                <div class="text-right">
+                <div class="text-end">
                     <p class="text-xs text-gray-500 uppercase tracking-wide mb-1">Date</p>
                     <p class="font-medium text-gray-800">
                         {{ ($payment->paid_at ?? $payment->updated_at)?->format('d M Y') }}
@@ -68,9 +68,9 @@
             <table class="w-full mb-6 text-sm">
                 <thead>
                     <tr class="border-b border-gray-200">
-                        <th class="text-left pb-2 text-gray-500 font-medium">Description</th>
-                        <th class="text-left pb-2 text-gray-500 font-medium">Student</th>
-                        <th class="text-right pb-2 text-gray-500 font-medium">Amount</th>
+                        <th class="text-start pb-2 text-gray-500 font-medium">Description</th>
+                        <th class="text-start pb-2 text-gray-500 font-medium">Student</th>
+                        <th class="text-end pb-2 text-gray-500 font-medium">Amount</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -82,7 +82,7 @@
                     <tr class="border-b border-gray-100">
                         <td class="py-3 text-gray-800">{{ $line['description'] }}</td>
                         <td class="py-3 text-gray-600">{{ $line['student'] ?? '—' }}</td>
-                        <td class="py-3 text-right text-gray-800 font-mono">
+                        <td class="py-3 text-end text-gray-800 font-mono">
                             {{ number_format($line['amount'], 2) }}
                         </td>
                     </tr>
@@ -90,8 +90,8 @@
                 </tbody>
                 <tfoot>
                     <tr>
-                        <td colspan="2" class="pt-4 text-right font-semibold text-gray-700">Total</td>
-                        <td class="pt-4 text-right font-bold text-brandMaroon-900 font-mono text-base">
+                        <td colspan="2" class="pt-4 text-end font-semibold text-gray-700">Total</td>
+                        <td class="pt-4 text-end font-bold text-brandMaroon-900 font-mono text-base">
                             {{ number_format($receipt['total'], 2) }} {{ $receipt['currency'] }}
                         </td>
                     </tr>

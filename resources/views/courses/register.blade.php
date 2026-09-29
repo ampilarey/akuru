@@ -28,11 +28,11 @@
                         <div class="flex gap-4">
                             <label class="inline-flex items-center">
                                 <input type="radio" name="contact_type" value="mobile" x-model="contactType" checked class="rounded border-gray-300">
-                                <span class="ml-2">Mobile</span>
+                                <span class="ms-2">Mobile</span>
                             </label>
                             <label class="inline-flex items-center">
                                 <input type="radio" name="contact_type" value="email" x-model="contactType" class="rounded border-gray-300">
-                                <span class="ml-2">Email</span>
+                                <span class="ms-2">Email</span>
                             </label>
                         </div>
                     </div>
