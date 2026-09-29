@@ -875,6 +875,53 @@ function CodSwitch({ on, t }) {
     );
 }
 
+/** STATUS §5lm: rewards — a share of what was paid for the goods back into the wallet once the return window passes. Off until turned on. */
+function Rewards({ rewards, t }) {
+    const s = rewards.settings;
+    const form = useForm({ on: s.on ? 1 : 0, percent: String(s.percent), min_order: String(s.min_order), max_per_order: String(s.max_per_order) });
+    const save = (on) => {
+        form.transform((data) => ({ ...data, on }));
+        form.post('/admin/bookshop/rewards', { preserveScroll: true });
+    };
+
+    return (
+        <section className="mt-8" data-testid="office-rewards">
+            <h2 className="mb-1 text-lg font-semibold">{t.rewards_label}</h2>
+            <p className="mb-2 max-w-3xl text-sm text-gray-600">{t.rewards_hint}</p>
+            <div className="space-y-3 rounded border bg-white p-3 text-sm">
+                <p data-testid="rewards-state">
+                    <span className={`rounded px-2 py-0.5 font-semibold ${s.on ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'}`}>{s.on ? t.rewards_is_on : t.rewards_is_off}</span>
+                    {s.on && s.since && <>{' '}<span className="ms-1 text-gray-600">{(t.rewards_since || '').replace(':date', s.since.slice(0, 10))}</span></>}
+                </p>
+                <div className="flex flex-wrap items-end gap-3">
+                    <label>{t.rewards_percent}
+                        <input type="number" step="0.1" min="0.1" max={rewards.max_percent} className="form-input mt-1 block w-24" value={form.data.percent} onChange={(e) => form.setData('percent', e.target.value)} data-testid="rewards-percent" />
+                    </label>
+                    <label>{t.rewards_min_order}
+                        <input type="number" step="1" min="0" className="form-input mt-1 block w-28" value={form.data.min_order} onChange={(e) => form.setData('min_order', e.target.value)} data-testid="rewards-min" />
+                    </label>
+                    <label>{t.rewards_max}
+                        <input type="number" step="1" min="1" className="form-input mt-1 block w-28" value={form.data.max_per_order} onChange={(e) => form.setData('max_per_order', e.target.value)} data-testid="rewards-max" />
+                    </label>
+                    <button type="button" className="btn-primary" disabled={form.processing} onClick={() => save(s.on ? 1 : 0)} data-testid="rewards-save">{t.save}</button>
+                    <button type="button" className="btn-secondary" disabled={form.processing} onClick={() => save(s.on ? 0 : 1)} data-testid="toggle-rewards">{s.on ? t.rewards_turn_off : t.rewards_turn_on}</button>
+                </div>
+                {['percent', 'min_order', 'max_per_order'].map((k) => form.errors[k] && <p key={k} className="text-red-700">{form.errors[k]}</p>)}
+                <p className="text-gray-600" data-testid="rewards-paid">
+                    {(t.rewards_paid || '').replace(':count', rewards.paid_count).replace(':total', rewards.paid_total)}
+                    {' '}<a href="/admin/bookshop/rewards/export" className="underline" data-testid="rewards-export">{t.export_csv}</a>
+                </p>
+                {rewards.latest.length > 0 && (
+                    <table className="w-full text-start text-xs">
+                        <thead><tr className="text-gray-500"><th className="text-start">{t.date}</th><th className="text-start">{t.rewards_col_order}</th><th className="text-end">%</th><th className="text-end">MVR</th></tr></thead>
+                        <tbody>{rewards.latest.map((r) => <tr key={`${r.order}-${r.at}`} className="border-t"><td>{r.at}</td><td dir="ltr">{r.order}</td><td className="text-end">{r.percent}</td><td className="text-end">{r.amount}</td></tr>)}</tbody>
+                    </table>
+                )}
+            </div>
+        </section>
+    );
+}
+
 function ShopOpenSwitch({ shopOpen, t }) {
     // B11 (§7): the whole bookstore open or closed; customers still reach their own orders while it is closed.
     const [message, setMessage] = useState(shopOpen.message || '');
@@ -1051,7 +1098,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], questions = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, shop_open = { open: true, message: null }, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], questions = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, rewards = null, shop_open = { open: true, message: null }, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -1090,6 +1137,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {home && <ShopHome home={home} t={t} />}
             {notices && <NoticeSwitches key={JSON.stringify(notices)} notices={notices} t={t} />}
             <CodSwitch on={cod_on} t={t} />
+            {rewards && <Rewards key={JSON.stringify(rewards.settings)} rewards={rewards} t={t} />}
             <ShopOpenSwitch shopOpen={shop_open} t={t} />
 
             <Catalogue catalogue={catalogue} t={t} />

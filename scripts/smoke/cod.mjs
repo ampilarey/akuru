@@ -122,6 +122,20 @@ await settle(vendor, '[data-testid="flash-success"]');
 await vendor.reload({ waitUntil: 'networkidle' });
 check('Fitrah takes cash on delivery, up to MVR 1000', (await vendor.locator('[data-testid="cod-enabled"]').isChecked()) && (await vendor.locator('[data-testid="cod-max"]').inputValue()) === '1000.00');
 
+// ------------------------------------------------------------ 1b. the office turns rewards on (STATUS §5lm)
+
+const office = await signIn(ADMIN);
+await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await settle(office, '[data-testid="office-rewards"]');
+check('rewards start off', (await inner(office, '[data-testid="rewards-state"]')).startsWith('Off'), await inner(office, '[data-testid="rewards-state"]'));
+await office.fill('[data-testid="rewards-percent"]', '2');
+await office.fill('[data-testid="rewards-min"]', '0');
+await office.fill('[data-testid="rewards-max"]', '50');
+await office.click('[data-testid="toggle-rewards"]');
+await settle(office, '[data-testid="flash-success"]');
+await office.waitForTimeout(400);
+check('the office turns rewards on at 2%, for orders paid from today', /^On\b.*\d{4}-\d{2}-\d{2}/.test(await inner(office, '[data-testid="rewards-state"]')) && (await office.locator('[data-testid="rewards-percent"]').inputValue()) === '2', await inner(office, '[data-testid="rewards-state"]'));
+
 // ------------------------------------------------------------ 2. the customer pays cash
 
 const student = await signIn(STUDENT);
@@ -168,6 +182,8 @@ await vendor.goto(`${BASE}/en/vendor/orders?status=delivered`, { waitUntil: 'net
 check('delivered, and paid', (await inner(vendor, 'main')).includes(orderNumber));
 await student.goto(`${BASE}/en/my-orders/${orderNumber}`, { waitUntil: 'networkidle' });
 check('the customer sees it delivered', (await inner(student, '[data-testid="order-status"]')).includes('Delivered'), await inner(student, '[data-testid="order-status"]'));
+// 2% of the MVR 240 puzzle — never the MVR 30 courier — once the return window passes.
+check('and that it earns about MVR 4.80 back in their wallet once the return window passes', (await student.locator('[data-testid="order-reward"]').getAttribute('data-reward').catch(() => '')) === 'coming' && (await inner(student, '[data-testid="order-reward"]')).includes('MVR 4.80'), await inner(student, '[data-testid="order-reward"]'));
 
 // ------------------------------------------------------------ 4. the money
 
@@ -179,7 +195,6 @@ check('the earning shows MVR 270.00 cash taken and MVR −24.00 owed to Akuru', 
 
 // ------------------------------------------------------------ 5. the office turns it off
 
-const office = await signIn(ADMIN);
 await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="office-cod"]');
 await office.click('[data-testid="toggle-cod"]');
@@ -188,6 +203,10 @@ check('the office turns cash on delivery off', (await inner(office, '[data-testi
 await student.goto(`${BASE}/en/shop/products/${PUZZLE}`, { waitUntil: 'networkidle' });
 await submit(student, '[data-testid="add-to-cart"]');
 await student.goto(`${BASE}/en/shop/checkout`, { waitUntil: 'networkidle' });
+await office.click('[data-testid="toggle-rewards"]');
+await settle(office, '[data-testid="flash-success"]');
+await office.waitForTimeout(400);
+check('the office turns rewards back off', (await inner(office, '[data-testid="rewards-state"]')).startsWith('Off'), await inner(office, '[data-testid="rewards-state"]'));
 check('and the checkout no longer offers it', (await count(student, '[data-testid="pay-cash_on_delivery"]')) === 0 && (await count(student, '[data-testid="place-order"]')) === 1);
 
 await finish();

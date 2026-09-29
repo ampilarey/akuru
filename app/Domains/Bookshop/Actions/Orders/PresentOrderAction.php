@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Orders;
 
+use App\Domains\Bookshop\Actions\Money\LoyaltyRewardsAction;
 use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Models\Order;
@@ -12,6 +13,7 @@ use App\Domains\Bookshop\Models\OrderReturn;
 use App\Domains\Bookshop\Models\ProductReview;
 use App\Domains\Bookshop\Support\OrderView;
 use App\Domains\Bookshop\Support\ShopPresenter;
+use Illuminate\Support\Carbon;
 
 /**
  * One order as its customer reads it (BOOKSHOP_PLAN §4 "My orders"): the
@@ -80,6 +82,8 @@ class PresentOrderAction
             'gift_message' => $order->gift_message,
             'checkout_number' => $order->checkout?->number,
             'payment_method' => $order->checkout?->payment_method->value,
+            // STATUS §5lm: the reward paid for this order, or what it should earn once its return window passes.
+            'reward' => $this->reward($order),
             'receipt' => [
                 'goods' => (string) $order->subtotal,
                 'discount' => (string) $order->discount,
@@ -91,6 +95,24 @@ class PresentOrderAction
                 'vendor_legal_name' => $order->vendor?->legal_name ?: $order->vendor?->name,
             ],
         ];
+    }
+
+    /** @return array{state: string, amount: string}|null */
+    private function reward(Order $order): ?array
+    {
+        $paid = $order->loyaltyReward()->first();
+        if ($paid !== null) {
+            return ['state' => 'paid', 'amount' => (string) $paid->amount];
+        }
+        $rewards = app(LoyaltyRewardsAction::class);
+        $settings = $rewards->settings();
+        if (! $settings['on'] || $settings['since'] === null || $order->paid_at === null || $order->paid_at->lt(Carbon::parse($settings['since']))
+            || in_array($order->status, [OrderStatus::Cancelled, OrderStatus::Expired], true)) {
+            return null;
+        }
+        $estimate = $rewards->estimate($order);
+
+        return $estimate > 0 ? ['state' => 'coming', 'amount' => number_format($estimate, 2, '.', '')] : null;
     }
 
     /**

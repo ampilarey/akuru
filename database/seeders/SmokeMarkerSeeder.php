@@ -1884,6 +1884,8 @@ class SmokeMarkerSeeder extends Seeder
         // keys restrict rather than cascade, so an order with an earning
         // row cannot be deleted from underneath it. Walk residue, not money.
         DB::table('vendor_earnings')->whereIn('order_id', $walkOrders)->delete();
+        // STATUS §5lm: a walk order's reward row restricts the same way (the wallet credit stays, as refunds' do).
+        DB::table('loyalty_rewards')->whereIn('order_id', $walkOrders)->delete();
         DB::table('orders')->whereIn('id', $walkOrders)->delete();
         DB::table('stock_reservations')->whereIn('bookshop_checkout_id', $walkCheckouts)->delete();
         DB::table('bookshop_checkouts')->whereIn('id', $walkCheckouts)->delete();
@@ -2030,6 +2032,8 @@ class SmokeMarkerSeeder extends Seeder
         // with the student's orders above.
         DB::table('vendors')->whereIn('id', [$fitrahId, $otherId])->update(['cod_enabled' => false, 'cod_max' => null]);
         DB::table('settings')->where('key', (string) config('bookshop.cod.setting_key'))->delete();
+        // STATUS §5lm (`cod.mjs`): the office turns rewards on and back off; the switch goes back to its default (off).
+        DB::table('settings')->where('key', (string) config('bookshop.loyalty.setting_key'))->delete();
 
         // B9c (`newsletter.mjs`): Fitrah's newsletter list starts empty (the
         // walk adds its Newsletter section; the storefront was reset above).

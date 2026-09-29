@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Providers;
 
+use App\Domains\Bookshop\Console\AwardRewardsCommand;
 use App\Domains\Bookshop\Console\ExpireCheckoutsCommand;
 use App\Domains\Bookshop\Console\GrantBookshopManagerCommand;
 use App\Domains\Bookshop\Console\IssueCommissionInvoicesCommand;
@@ -32,7 +33,7 @@ class BookshopServiceProvider extends ServiceProvider
         Event::listen(PaymentConfirmed::class, MarkCheckoutPaidOnPaymentConfirmed::class);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([ExpireCheckoutsCommand::class, MatureEarningsCommand::class, IssueCommissionInvoicesCommand::class, RemindAbandonedCartsCommand::class, SyncProductSearchIndexCommand::class, GrantBookshopManagerCommand::class]);
+            $this->commands([ExpireCheckoutsCommand::class, MatureEarningsCommand::class, IssueCommissionInvoicesCommand::class, RemindAbandonedCartsCommand::class, SyncProductSearchIndexCommand::class, GrantBookshopManagerCommand::class, AwardRewardsCommand::class]);
         }
     }
 }
