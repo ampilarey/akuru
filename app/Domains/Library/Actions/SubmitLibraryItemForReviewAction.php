@@ -6,7 +6,9 @@ use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
+use App\Domains\Library\Models\LibraryReviewAssignment;
 use App\Domains\Library\Models\WriterProfile;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -51,6 +53,12 @@ class SubmitLibraryItemForReviewAction
 
         $item->status = LibraryItemStatus::Submitted;
         $item->submitted_at = now();
+        // R3: research coming back after changes starts a new review round.
+        $reopened = collect();
+        if ($status === LibraryItemStatus::ChangesRequested && $item->content_type === LibraryContentType::Research) {
+            $item->review_round = max(1, (int) $item->review_round) + 1;
+            $reopened = $this->openRound($item);
+        }
         $item->save();
 
         LibraryItemReview::query()->create([
@@ -64,7 +72,32 @@ class SubmitLibraryItemForReviewAction
         $notify = app(NotifyLibraryUserAction::class);
         $notify->execute($userId, 'Submission received', '"'.$item->title.'" is in the editorial queue. You will hear when it is reviewed.', '/write');
         $notify->office('New library submission', $profile->display_name.' submitted "'.$item->title.'" for review.', '/admin/library');
+        foreach ($reopened as $reviewerId) {
+            $notify->execute((int) $reviewerId, 'Revised research to review', '"'.$item->title.'" is back from the writer for round '.$item->review_round.'.', '/review');
+        }
 
         return $item->refresh();
+    }
+
+    /**
+     * R3 (plan, "revision loop"): every reviewer who asked for revisions is
+     * asked again, in the new round; a reviewer who had not reported yet
+     * reads the revised text too. An earlier accept stays in its own round
+     * and no longer counts — the office may assign that reviewer again.
+     *
+     * @return Collection<int, int> the reviewers to tell
+     */
+    private function openRound(LibraryItem $item): Collection
+    {
+        $reviewers = collect();
+        foreach (LibraryReviewAssignment::query()->where('library_item_id', $item->id)->get() as $assignment) {
+            $revise = $assignment->status === 'done' && $assignment->recommendation === 'revise';
+            if ($revise || $assignment->status === 'assigned') {
+                $assignment->fill(['status' => 'assigned', 'recommendation' => null, 'round' => $item->review_round])->save();
+                $reviewers->push((int) $assignment->reviewer_user_id);
+            }
+        }
+
+        return $reviewers;
     }
 }

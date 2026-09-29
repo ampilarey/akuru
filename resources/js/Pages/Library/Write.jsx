@@ -4,6 +4,7 @@ import AppShell from '../../Layouts/AppShell';
 import BodyEditor from '../../Components/BodyEditor';
 import FormErrors from '../../Components/FormErrors';
 import { DeliveryChoice, TeacherAuthors, defaultDelivery } from '../../Components/LibraryAuthoring';
+import ReviewStateChip from '../../Components/ReviewStateChip';
 
 // The toolbar's labels, from the common tranche (EN/DV/AR).
 const editorLabels = (t) => ({
@@ -500,7 +501,7 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-3 py-2">{item.status?.replaceAll('_', ' ')}</td>
+                                        <td className="px-3 py-2">{item.status?.replaceAll('_', ' ')} {item.review_state && <ReviewStateChip state={item.review_state} t={t} />}</td>
                                         <td className="px-3 py-2 text-xs text-gray-600">{item.latest_comment || '—'}</td>
                                         <td className="px-3 py-2">{item.sales} ({item.revenue ? `MVR ${item.revenue}` : '—'})</td>
                                         <td className="px-3 py-2">

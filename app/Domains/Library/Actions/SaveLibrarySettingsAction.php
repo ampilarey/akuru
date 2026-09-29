@@ -51,6 +51,10 @@ class SaveLibrarySettingsAction
         if ($next['gift_card_expiry_months'] < 0 || $next['gift_card_expiry_months'] > 120) {
             $errors['gift_card_expiry_months'] = 'Gift cards expire after 0 (never) to 120 months.';
         }
+        // R3 (D2): peer review cannot be switched off by asking for none.
+        if ($next['research_reviews_required'] < 1 || $next['research_reviews_required'] > 10) {
+            $errors['research_reviews_required'] = 'Research needs from 1 to 10 reviewer accepts before it is published.';
+        }
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);
         }

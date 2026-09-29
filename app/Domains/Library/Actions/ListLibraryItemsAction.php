@@ -4,6 +4,7 @@ namespace App\Domains\Library\Actions;
 
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
+use Illuminate\Support\Collection;
 
 /**
  * L1 listing + basic search (LIBRARY_PLAN §28): published items for the
@@ -110,7 +111,22 @@ class ListLibraryItemsAction
             ->orderByDesc('id')
             ->limit(100)
             ->get()
-            ->map(fn (LibraryItem $item): array => $this->serialize($item))
+            ->pipe(fn ($items) => $this->withReviewStates($items, $publishedOnly));
+    }
+
+    /**
+     * R3: the office's list shows where each research item's peer review
+     * stands; the public shelf does not need it.
+     *
+     * @param  Collection<int, LibraryItem>  $items
+     * @return list<array<string, mixed>>
+     */
+    private function withReviewStates($items, bool $publishedOnly): array
+    {
+        $states = $publishedOnly ? [] : app(AssertResearchReviewedAction::class)->states($items);
+
+        return $items
+            ->map(fn (LibraryItem $item): array => $this->serialize($item) + ($publishedOnly ? [] : ['review_state' => $states[$item->id] ?? null]))
             ->values()
             ->all();
     }

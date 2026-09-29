@@ -70,10 +70,22 @@ it('walks the research peer-review loop: assign → revise → accept → publis
         ])->assertSessionHasNoErrors();
     expect($assignment->fresh()->recommendation)->toBe('revise');
 
-    // Still not publishable; reviewer then accepts on re-review.
+    // R3: a revision sends it back to the writer; nothing publishes it, and
+    // the reviewer cannot report again until the writer resubmits.
+    expect($item->fresh()->status->value)->toBe('changes_requested');
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->post(route('admin.library.items.review', $item->id), ['decision' => 'approved'])
         ->assertSessionHasErrors('item');
+    $this->withoutLocalizationMiddleware()->actingAs($reviewerUser)
+        ->post(route('review.store', $assignment->id), ['recommendation' => 'accept'])
+        ->assertSessionHasErrors('assignment');
+
+    // The writer resubmits: round 2, and the same reviewer is asked again.
+    $this->withoutLocalizationMiddleware()->actingAs($writerUser)
+        ->post(route('write.items.submit', $item->id))->assertSessionHasNoErrors();
+    expect($item->fresh()->review_round)->toBe(2)
+        ->and($assignment->fresh()->status)->toBe('assigned')
+        ->and($assignment->fresh()->round)->toBe(2);
     $this->withoutLocalizationMiddleware()->actingAs($reviewerUser)
         ->post(route('review.store', $assignment->id), ['recommendation' => 'accept'])
         ->assertSessionHasNoErrors();
@@ -89,7 +101,7 @@ it('walks the research peer-review loop: assign → revise → accept → publis
         ->assertSee('Al-Jazari');
 });
 
-it('publishes non-research without any reviewer and can bypass via config', function () {
+it('publishes non-research without any reviewer, and never research without one', function () {
     $writerUser = User::factory()->create();
     approveResearchWriter($writerUser);
     $admin = actingSystemAdmin(['library.manage']);
@@ -110,8 +122,9 @@ it('publishes non-research without any reviewer and can bypass via config', func
         ->assertSessionHasNoErrors();
     expect($article->fresh()->status->value)->toBe('published');
 
-    // With the requirement off, research publishes straight through too.
-    config()->set('library.research_review_required', false);
+    // R3 (D2): peer review cannot be turned off — not even by a config
+    // value of 0, which reads as 1.
+    config()->set('library.research_reviews_required', 0);
     $this->withoutLocalizationMiddleware()->actingAs($writerUser)
         ->post(route('write.items.store'), [
             'title' => 'Fast Research',
@@ -124,6 +137,6 @@ it('publishes non-research without any reviewer and can bypass via config', func
         ->post(route('write.items.submit', $research->id));
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->post(route('admin.library.items.review', $research->id), ['decision' => 'approved'])
-        ->assertSessionHasNoErrors();
-    expect($research->fresh()->status->value)->toBe('published');
+        ->assertSessionHasErrors('item');
+    expect($research->fresh()->status->value)->toBe('submitted');
 });

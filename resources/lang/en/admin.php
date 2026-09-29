@@ -78,7 +78,7 @@ return [
     'library_settings_gift_min' => 'Smallest gift card (MVR)',
     'library_settings_gift_max' => 'Largest gift card (MVR)',
     'library_settings_gift_expiry' => 'Bought gift cards expire after (months; 0 = never)',
-    'library_settings_review_required' => 'Research needs a peer reviewer\'s recommendation before it can be approved',
+    'library_settings_reviews_required' => 'Reviewer accepts a research item needs before it can be published (at least 1)',
     'library_settings_payouts_enabled' => 'Writers may request payouts',
     'library_settings_payouts_note' => 'Payouts stay off until the tax and accounting treatment of writer payouts is confirmed (ROADMAP §9.4); earnings accrue meanwhile.',
     'library_settings_default' => 'Default',

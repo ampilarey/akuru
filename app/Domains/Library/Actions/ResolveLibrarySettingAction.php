@@ -28,7 +28,8 @@ class ResolveLibrarySettingAction
         'gift_card_min' => ['library.gift_cards.min', 'int'],
         'gift_card_max' => ['library.gift_cards.max', 'int'],
         'gift_card_expiry_months' => ['library.gift_cards.expiry_months', 'int'],
-        'research_review_required' => ['library.research_review_required', 'bool'],
+        // R3: accepts a research item needs; replaced the on/off switch.
+        'research_reviews_required' => ['library.research_reviews_required', 'int'],
         'payouts_enabled' => ['library.payouts_enabled', 'bool'],
     ];
 

@@ -32,12 +32,29 @@ class AssignResearchReviewerAction
             throw ValidationException::withMessages(['reviewer_email' => 'No user with that email.']);
         }
 
-        $assignment = LibraryReviewAssignment::query()->firstOrCreate(
+        // R3: one assignment per reviewer per item, in the item's current
+        // round. Assigning again someone who reported in an earlier round
+        // asks them to read the revised text — their old accept no longer
+        // counts.
+        $round = max(1, (int) $item->review_round);
+        $assignment = LibraryReviewAssignment::query()->firstOrNew(
             ['library_item_id' => $item->id, 'reviewer_user_id' => $reviewer->id],
-            ['assigned_by' => $assignedBy, 'status' => 'assigned'],
         );
+        $fresh = ! $assignment->exists || (int) $assignment->round < $round;
+        if ($fresh) {
+            $assignment->fill(['assigned_by' => $assignedBy, 'status' => 'assigned', 'recommendation' => null, 'round' => $round])->save();
+        }
         $reviewer->assignRole('reviewer');
 
-        return $assignment;
+        if ($fresh) {
+            app(NotifyLibraryUserAction::class)->execute(
+                (int) $reviewer->id,
+                'Research to review',
+                'You have been asked to peer-review "'.$item->title.'" (round '.$round.').',
+                '/review',
+            );
+        }
+
+        return $assignment->refresh();
     }
 }

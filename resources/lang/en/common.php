@@ -206,4 +206,13 @@ return [
     'library_delivery_both' => 'Both: read online or download',
     'library_delivery_needs_pdf' => 'Downloading needs an original PDF attached below.',
     'library_teacher_authors' => 'Akuru teachers who are authors (linked to their profiles)',
+    // R3: where a research item's peer review stands.
+    'review_state_awaiting_reviewer' => 'Waiting for a peer reviewer',
+    'review_state_with_reviewer' => 'With peer reviewers — :accepts of :required accepts',
+    'review_state_revision_requested' => 'A reviewer asked for revisions',
+    'review_state_accepted' => 'Accepted by peer review — ready to publish',
+    'review_state_rejected' => 'Not accepted',
+    'review_state_round' => 'round :round',
+    'review_round' => 'Round :round',
+    'review_publish_blocked' => 'Waiting for the peer-review accepts',
 ];

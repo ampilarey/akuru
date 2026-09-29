@@ -33,9 +33,11 @@ return [
         'expiry_months' => (int) env('LIBRARY_GIFT_CARD_EXPIRY_MONTHS', 0),
     ],
 
-    // L7 (§12.2/§29): research cannot be approved without a peer-review
-    // recommendation while this is on.
-    'research_review_required' => env('LIBRARY_RESEARCH_REVIEW_REQUIRED', true),
+    // R3 (RESEARCH_ARTICLES_PLAN D2, D5): peer review is a must. How many
+    // reviewer accepts, in the current review round, a research item needs
+    // before it can be published. Never below 1 — there is no switch to
+    // turn review off (the owner, 2026-09-29).
+    'research_reviews_required' => max(1, (int) env('LIBRARY_RESEARCH_REVIEWS_REQUIRED', 1)),
 
     /*
      * L2b (§9.2, §30.3): reading-abuse detection.

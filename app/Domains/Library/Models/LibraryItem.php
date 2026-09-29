@@ -42,6 +42,8 @@ class LibraryItem extends Model
         'declared_at',
         'pdf_media_file_id',
         'status',
+        // R3: the peer-review round a research item is in.
+        'review_round',
         'featured',
         'featured_at',
         'published_at',

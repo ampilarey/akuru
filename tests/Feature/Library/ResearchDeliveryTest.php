@@ -45,6 +45,10 @@ function r1Item(array $data = [], bool $withPdf = true, ?string $publishedAt = n
         'language' => 'en',
         'abstract' => 'A study.',
     ], null, $withPdf ? r1Pdf() : null);
+    // R3: research is published only after peer review accepts it.
+    if ($item->content_type->value === 'research') {
+        peerAccept($item);
+    }
     app(PublishLibraryItemAction::class)->execute($item->id, User::factory()->create()->id);
     if ($publishedAt !== null) {
         $item->forceFill(['published_at' => $publishedAt])->save();

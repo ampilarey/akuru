@@ -4414,6 +4414,59 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kq. R3a: peer review is a must — the gate, rounds, readable status, notifications (2026-09-29)
+
+First half of `docs/RESEARCH_ARTICLES_PLAN.md` R3 (the owner's decision D2).
+The plan allows two PRs "if the reviewer inbox grows"; it did. R3b follows
+with the reviewer pool screen, due dates and reminders, the
+conflict-of-interest step and the fuller reviewer inbox.
+
+- **One gate.** `AssertResearchReviewedAction` decides whether research may
+  be published. `PublishLibraryItemAction` calls it, so the office's
+  Publish button, the editor's approval and anything later all hit it.
+  `ReviewLibraryItemSubmissionAction` calls it first so the refusal is
+  clear. The only research published without review is R2's import of the
+  website's already-public papers, which does not use the publisher.
+- **The switch is gone.** `research_review_required` (on/off) is replaced
+  by `research_reviews_required`: how many accepts, from 1 to 10, default
+  1. The settings screen, its action and the controller refuse 0; config
+  reads 0 as 1. `LIBRARY_RESEARCH_REVIEW_REQUIRED` in `.env` no longer does
+  anything; `LIBRARY_RESEARCH_REVIEWS_REQUIRED` sets the default. A stored
+  value of the old key is ignored.
+- **Rounds.** `library_items.review_round` and
+  `library_review_assignments.round` (new, default 1). An accept counts
+  only in its own round.
+  - A reviewer's *revise* sends the item back to the writer as
+    `changes_requested`.
+  - The writer's resubmission opens the next round. Reviewers who asked
+    for revisions are asked again, and a reviewer who had not reported
+    reads the revised text too.
+  - An earlier accept stays in its round. The office may assign that
+    reviewer again, which reopens them for the new round.
+  - Nobody reports while the item is back with the writer, and a closed
+    round takes no report.
+- **Readable status.** `review_state` — awaiting reviewer, with reviewers
+  (n of m accepts), revision requested, accepted and ready to publish,
+  rejected — as a chip on `/write`, on the office's submissions queue and
+  item list. The office's Approve and Publish buttons are disabled for
+  research until it is ready. The reviewer inbox shows the round.
+- **Notifications** (through `NotifyLibraryUserAction`):
+  - the reviewer, when assigned and when a revision comes back;
+  - the writer, on every recommendation, with the comment and never the
+    reviewer's name (§43.8, D6);
+  - the office, when the required accepts are reached, and when a reviewer
+    recommends rejecting.
+
+Strings EN/DV/AR (`common`, `admin`). Tests:
+`tests/Feature/Library/PeerReviewGateTest.php` (6), and a shared
+`peerAccept()` fixture in `tests/Support/LibraryTestHelpers.php`. Existing
+tests that published unreviewed research now record an accept first. The
+old "bypass via config" test now proves config cannot turn review off.
+Full suite 2470 passed. Walks: `peer-review.mjs` 16/16 (the button waits
+and says why; revise goes back to the writer; the writer resubmits; the
+reviewer sees round 2 and accepts; the office sees it ready and
+publishes); `library.mjs` 31/31.
+
 ## 5kp. R2: website research moves into the Digital Library; the old doors redirect (2026-09-29)
 
 Second slice of `docs/RESEARCH_ARTICLES_PLAN.md`.
