@@ -237,6 +237,7 @@ export default function VendorOrders({ t, vendor, orders, counts, filters }) {
 
     return (
         <AppShell title={t.orders_title}>
+            {vendor.paused && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="shop-paused">{t.shop_paused_banner}</p>}
             <FormErrors errors={errors} className="mb-4" />
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <header className="mb-4 flex flex-wrap items-end justify-between gap-3">

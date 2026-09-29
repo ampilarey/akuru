@@ -192,6 +192,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-bookstore-20', 'label' => 'The catalogue API: /api/v1/bookstore/products (with the listing\'s filters), /products/{slug}, /shops, /categories — JSON, in EN/DV/AR, nothing that is not for sale', 'where' => '/api/v1/bookstore/products'],
                 ['key' => 'ft-bookstore-21', 'label' => 'Rewards (office, off by default): set the share, smallest order and cap, turn on; a delivered order shows what it will earn, and the daily job pays it into the wallet after the return window', 'where' => '/admin/bookshop'],
                 ['key' => 'ft-bookstore-22', 'label' => 'Referral credit (office, off by default): set both amounts and the smallest first order, turn on; a customer\'s invite link on My orders; a friend\'s checkout says what a first order earns; both credited after it is delivered and past its return window', 'where' => '/my-orders'],
+                ['key' => 'ft-bookstore-23', 'label' => 'Pause a shop (office, Edit on the shop\'s row → Paused): its page and products leave the store, its owner keeps the portal with a banner and finishes the orders already paid; Active brings it back', 'where' => '/admin/bookshop'],
             ]],
             ['key' => 'ft-money', 'title' => 'Money checks', 'items' => [
                 ['key' => 'ft-money-1', 'label' => 'A payment grants access only after the bank confirms (not on return to the site)', 'where' => '/admin/enrollments/payments'],

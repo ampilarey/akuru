@@ -211,7 +211,13 @@ orders, checkouts, earnings, payouts) so a delete is refused while money
 hangs off the row. Not a Bookstore-only change, so not done in the audit
 (BOOKSHOP_PLAN §15 finding 7).
 
-### A suspended shop's owner cannot move its orders in flight — **open, by design; a "paused" state would soften it**
+### A suspended shop's owner cannot move its orders in flight — **softened (2026-09-29, STATUS §5lo): the office can now *pause* a shop instead**
+
+**Built**: `paused` beside `active` and `suspended`. A paused shop sells nothing
+— its page, products, cart adds, listing and API all lose it — but its
+people keep the portal, with a banner saying why, and finish the orders
+already paid. Suspended still shuts the portal, as a stop. The record below
+is the finding as it stood.
 
 Suspension shuts the portal (BOOKSHOP_PLAN §15 finding 8). Orders already
 paid at that moment can only be refunded or cancelled by the office from

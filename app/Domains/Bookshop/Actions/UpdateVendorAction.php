@@ -6,7 +6,7 @@ use App\Domains\Bookshop\Models\Vendor;
 
 /**
  * The office edits a vendor (BOOKSHOP_PLAN §7): details, commission rate,
- * status (active / suspended), notes. The slug and code never change here —
+ * status (active / paused / suspended), notes. The slug and code never change here —
  * one is the storefront's address, the other is printed on orders.
  */
 class UpdateVendorAction

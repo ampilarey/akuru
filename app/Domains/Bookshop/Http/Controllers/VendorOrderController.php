@@ -34,7 +34,7 @@ class VendorOrderController extends Controller
 
         return Inertia::render('Bookshop/VendorOrders', [
             't' => trans('shop'),
-            'vendor' => ['name' => $scope->vendorName, 'slug' => $scope->vendorSlug, 'role' => $scope->role->value],
+            'vendor' => ['name' => $scope->vendorName, 'slug' => $scope->vendorSlug, 'role' => $scope->role->value, 'paused' => $scope->paused],
             'orders' => $list['orders'],
             'counts' => $list['counts'],
             'filters' => $filters + ['status' => null, 'q' => null],

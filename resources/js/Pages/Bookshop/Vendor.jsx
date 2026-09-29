@@ -633,6 +633,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
         <AppShell title={t.portal_title}>
             <FormErrors errors={errors} className="mb-4" />
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
+            {vendor.paused && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="shop-paused">{t.shop_paused_banner}</p>}
 
             <header className="mb-6 flex flex-wrap items-end justify-between gap-3">
                 <div className="min-w-0">

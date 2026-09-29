@@ -23,6 +23,8 @@ final readonly class VendorScope
         public string $vendorName,
         public string $vendorSlug,
         public bool $agreementAccepted,
+        // STATUS §5lo: the office paused the shop — nothing sells; open orders are still the shop's to finish.
+        public bool $paused = false,
     ) {}
 
     public function isOwner(): bool
