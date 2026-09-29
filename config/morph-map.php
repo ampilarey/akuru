@@ -136,6 +136,7 @@ return [
     'product_review' => \App\Domains\Bookshop\Models\ProductReview::class,
     'product_question' => \App\Domains\Bookshop\Models\ProductQuestion::class,
     'review_vote' => \App\Domains\Bookshop\Models\ReviewVote::class,
+    'loyalty_reward' => \App\Domains\Bookshop\Models\LoyaltyReward::class,
     'wishlist_item' => \App\Domains\Bookshop\Models\WishlistItem::class,
     'stock_alert' => \App\Domains\Bookshop\Models\StockAlert::class,
     'stock_movement' => \App\Domains\Bookshop\Models\StockMovement::class,

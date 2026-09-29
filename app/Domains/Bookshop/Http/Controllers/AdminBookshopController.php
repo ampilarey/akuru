@@ -24,6 +24,7 @@ use App\Domains\Bookshop\Actions\ModerateQuestionAction;
 use App\Domains\Bookshop\Actions\ModerateReviewAction;
 use App\Domains\Bookshop\Actions\ModerateStorefrontAction;
 use App\Domains\Bookshop\Actions\Money\IssueCommissionInvoicesAction;
+use App\Domains\Bookshop\Actions\Money\LoyaltyRewardsAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Actions\Orders\RefundOrderAction;
 use App\Domains\Bookshop\Actions\SaveBookshopNoticeSwitchesAction;
@@ -79,6 +80,7 @@ class AdminBookshopController extends Controller
             'hosts' => ['shops' => app(DecideVendorHostAction::class)->list(), 'shop_host' => config('bookshop.hosts.shop_host'), 'check' => $request->session()->get('host_check')],
             'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges'))],
             'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
+            'rewards' => app(LoyaltyRewardsAction::class)->report() + ['max_percent' => (float) config('bookshop.loyalty.max_percent')],
             'shop_open' => ['open' => app(ShopOpenAction::class)->isOpen(), 'message' => app(ShopOpenAction::class)->message()],
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
@@ -463,6 +465,38 @@ class AdminBookshopController extends Controller
         app(CashOnDeliveryAction::class)->setOn((bool) $data['on']);
 
         return back()->with('success', __($data['on'] ? 'shop.cod_on_flash' : 'shop.cod_off_flash'));
+    }
+
+    /** STATUS §5lm: rewards on or off, and the office's numbers. */
+    public function saveRewards(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate([
+            'on' => 'required|boolean',
+            'percent' => 'required|numeric|min:0.1|max:'.(float) config('bookshop.loyalty.max_percent'),
+            'min_order' => 'required|numeric|min:0|max:100000',
+            'max_per_order' => 'required|numeric|min:1|max:100000',
+        ]);
+
+        app(LoyaltyRewardsAction::class)->save((bool) $data['on'], (float) $data['percent'], (float) $data['min_order'], (float) $data['max_per_order']);
+
+        return back()->with('success', __($data['on'] ? 'shop.rewards_on_flash' : 'shop.rewards_off_flash'));
+    }
+
+    /** Every listing gets a CSV (conventions): the rewards paid. */
+    public function exportRewards(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $rows = app(LoyaltyRewardsAction::class)->rows();
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['date', 'order', 'customer_id', 'goods_paid', 'percent', 'reward', 'currency']);
+            foreach ($rows as $row) {
+                Csv::put($out, $row);
+            }
+            fclose($out);
+        }, 'bookstore-rewards.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /** B9a: open or close the "Open a shop" form. */

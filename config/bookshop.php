@@ -238,6 +238,20 @@ return [
         'closed_message_key' => 'bookshop_closed_message',
     ],
 
+    /*
+     * STATUS §5lm: rewards — a share of what a customer paid for the goods
+     * back into their wallet once the order's return window has passed.
+     * Off until the office turns it on; the office sets the share, the
+     * smallest order that earns, and the most one order earns. Only orders
+     * paid after it was turned on earn. Delivery never earns.
+     */
+    'loyalty' => [
+        'enabled_by_default' => false,
+        'setting_key' => 'bookshop_loyalty',
+        'defaults' => ['percent' => 1.0, 'min_order' => 0.0, 'max_per_order' => 50.0],
+        'max_percent' => 10.0,
+    ],
+
     'cod' => [
         'enabled_by_default' => (bool) env('BOOKSHOP_COD_ENABLED', true),
         'setting_key' => 'bookshop_cod_enabled',

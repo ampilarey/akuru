@@ -4414,6 +4414,95 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lm. Bookstore rewards, built off (2026-09-29)
+
+BOOKSHOP_PLAN §16, item 9, the loyalty item. It is built the way the owner
+asked on 2026-09-25: **off**, with the office's settings, through the
+Commerce wallet, and never on gift cards. The owner sets the numbers and
+turns it on (OWNER_ACTIONS item 20).
+
+**What it is.** A share of what a customer paid for the goods goes back
+into their wallet as money they can spend on anything the wallet pays for.
+The ledger calls it a reward, and there are no separate points to convert.
+
+**When it is paid.**
+- Once the order is delivered **and its return window has passed** (the
+  shop's own window, at least 7 days).
+- So a return never has to take a reward back, and a refund made inside
+  the window comes off first.
+- A daily job pays it: `bookshop:award-rewards`, at 03:15 Maldives time,
+  after the earnings mature.
+
+**What earns.**
+- The goods: subtotal less the order's discount, less any refund done.
+- Delivery never earns.
+- Only orders paid after the office last turned rewards on earn, so
+  switching it on never pays for the past; turning it off and on again
+  starts the clock again.
+- An order below the smallest order earns nothing. One order earns at most
+  the cap.
+- The Bookstore sells no gift cards, and a reward is wallet money, not a
+  gift card (Rule 12).
+
+**The money.**
+- The only way in is `CreditWalletAction`, with `source_type`
+  `loyalty_reward` pointing at the `loyalty_rewards` row.
+- The row and its ledger credit are written in one transaction, and a row
+  lock keeps it to one per order (`order_id` is unique).
+- Rows are never edited after that, or deleted. The keys restrict
+  deletion, like the other money tables since §5ii.
+
+**The office** (`/admin/bookshop` → Rewards):
+- On or off, with "for orders paid since <date>".
+- The share (0.1–10%), the smallest order, and the most per order.
+- How many were paid and the total, the latest twenty, and a CSV of every
+  reward.
+
+**The customer.** A delivered order's page says "This order earns about MVR
+X back in your wallet once its return window has passed", then "MVR X of
+this order came back to your wallet as a reward". The wallet's ledger reads
+"Reward: Akuru Bookstore <order>".
+
+**Data and other changes:**
+- Migration `2026_09_29_000011_shop_loyalty_rewards` adds one table
+  (additive). The model `LoyaltyReward` has the morph alias
+  `loyalty_reward`.
+- The setting is one JSON key, `bookshop_loyalty`.
+- Languages: EN/DV/AR.
+- `SmokeMarkerSeeder` clears the walk orders' reward rows (their keys
+  restrict) and the setting.
+
+Tests:
+- `ShopRewardsTest` (3):
+  - off by default; the job pays nothing, the office sees Off, and the
+    order page says nothing. Turned on, it pays nothing for an order paid
+    before.
+  - Goods 400 less a 50 discount and a 100 refund earn 5.00 at 2%, with
+    delivery not counted. A 2000 order stops at the 10.00 cap; a 40 order
+    is under the minimum; an order on its way earns nothing.
+  - Nothing is paid inside the 7-day window; after it, both are paid once,
+    and a second run pays nothing. The wallet reads 15.00, the ledger has
+    two `loyalty_reward` credits tied to their rows, and the order page
+    goes from "coming" to "paid". The office sees 2 and 15.00, and the CSV
+    carries the row.
+  - Saving again keeps the start date; off then on restarts it. A 25%
+    share, a negative minimum and a zero cap are refused, and someone
+    without `bookshop.manage` gets 403 on the save and the CSV.
+
+Checklist: `ft-bookstore-21`.
+
+Walk: `scripts/smoke/cod.mjs` 14/14, with four new steps:
+1. Rewards start off.
+2. The office sets 2% and turns them on: "On for orders paid since
+   2026-09-29".
+3. After the cash order is delivered, the customer's order page says it
+   earns about MVR 4.80. That is 2% of the MVR 240 puzzle; the MVR 30
+   courier is not counted.
+4. The office turns rewards back off.
+
+The walk found "Onfor orders paid since…", with the words run together
+(the same slip as §5lk); a space was added.
+
 ## 5ll. The Bookstore catalogue API (2026-09-29)
 
 BOOKSHOP_PLAN §16, item 8f. What `/shop` already shows, as JSON, for an app

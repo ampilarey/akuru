@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Enums\OrderStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * One vendor's share of a checkout (BOOKSHOP_PLAN §4: one order number per
@@ -50,6 +51,12 @@ class Order extends Model
     public function returns(): HasMany
     {
         return $this->hasMany(OrderReturn::class)->orderBy('id');
+    }
+
+    /** STATUS §5lm: the reward this order earned, once its return window passed. */
+    public function loyaltyReward(): HasOne
+    {
+        return $this->hasOne(LoyaltyReward::class);
     }
 
     public function refunds(): HasMany

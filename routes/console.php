@@ -19,6 +19,8 @@ Schedule::command('bookshop:expire-checkouts')->everyTenMinutes();
 // BOOKSHOP_PLAN B6: earnings mature after the return window; Akuru's
 // commission tax invoices go out on the first of the month.
 Schedule::command('bookshop:mature-earnings')->dailyAt('03:10')->timezone('Indian/Maldives');
+// STATUS §5lm: rewards for orders past their return window (nothing while the office has them off).
+Schedule::command('bookshop:award-rewards')->dailyAt('03:15')->timezone('Indian/Maldives');
 Schedule::command('bookshop:issue-commission-invoices')->monthlyOn(1, '03:20')->timezone('Indian/Maldives');
 // BOOKSHOP_PLAN B9c: one reminder for a signed-in customer's cart left for a day.
 Schedule::command('bookshop:remind-abandoned-carts')->hourly();

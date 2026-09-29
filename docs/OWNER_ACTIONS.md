@@ -380,6 +380,23 @@ highlight can be made, kept privately like a note, and listed under My
 Library. (b) is about a day's slice once said. "Not yet" is a legible
 answer.
 
+### 20. Bookstore rewards — the numbers, and when to turn them on
+
+Rewards are built and **off** (STATUS §5lm). Once an order's return window
+has passed, a share of what the customer paid for the goods goes into their
+Akuru wallet. Delivery never earns, and discounts and refunds come off
+first.
+
+**What to decide**, all on `/admin/bookshop` → Rewards:
+- the share (default 1%, at most 10%);
+- the smallest order that earns (default MVR 0);
+- the most one order earns (default MVR 50);
+- when to press **Turn rewards on**.
+
+Only orders paid after that moment earn, so turning it on never pays for
+the past. The money comes out of Akuru's side: it is wallet credit Akuru
+funds, not the shop's. "Not yet" is a legible answer.
+
 ## Parked items and later ideas
 
 Everything deferred or left unbuilt on purpose — the BML secret, branch

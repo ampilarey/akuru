@@ -145,6 +145,12 @@
                 <dt class="text-xs text-gray-500">{{ __('shop.tax_included', ['amount' => $order['currency'].' '.$order['receipt']['tax']]) }}</dt><dd data-testid="receipt-tax"></dd>
             @endif
         </dl>
+        @if($order['reward'] ?? null)
+            {{-- STATUS §5lm: rewards into the wallet. --}}
+            <p class="mt-2 rounded bg-green-50 p-2 text-sm text-green-800" data-testid="order-reward" data-reward="{{ $order['reward']['state'] }}">
+                {{ __($order['reward']['state'] === 'paid' ? 'shop.reward_paid' : 'shop.reward_coming', ['amount' => $order['currency'].' '.$order['reward']['amount']]) }}
+            </p>
+        @endif
         <p class="mt-2 text-xs text-gray-500">{{ __('shop.prices_include_tax') }} {{ __('shop.payment_method') }}: {{ $order['payment_method'] ? __('shop.pay_'.$order['payment_method']) : __('shop.none') }}</p>
     </section>
 
