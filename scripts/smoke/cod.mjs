@@ -245,4 +245,26 @@ check('the office turns referral credit back off', (await inner(office, '[data-t
 check('the office turns rewards back off', (await inner(office, '[data-testid="rewards-state"]')).startsWith('Off'), await inner(office, '[data-testid="rewards-state"]'));
 check('and the checkout no longer offers it', (await count(student, '[data-testid="pay-cash_on_delivery"]')) === 0 && (await count(student, '[data-testid="place-order"]')) === 1);
 
+// ------------------------------------------------------------ 6. the office pauses Fitrah (STATUS §5lo)
+
+await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.click('[data-testid="vendor-edit-fitrah"]');
+await office.selectOption('[data-testid="vendor-editor-fitrah"] [data-testid="vendor-status"]', 'paused');
+await office.click('[data-testid="vendor-editor-fitrah"] [data-testid="vendor-save"]');
+await settle(office, '[data-testid="flash-success"]');
+await office.waitForTimeout(400);
+check('the office pauses Fitrah', (await inner(office, '[data-testid="vendor-status-fitrah"]')) === 'Paused', await inner(office, '[data-testid="vendor-status-fitrah"]'));
+const shopPage = await student.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'domcontentloaded' });
+const puzzlePage = await student.goto(`${BASE}/en/shop/products/${PUZZLE}`, { waitUntil: 'domcontentloaded' });
+check('a paused shop and its products are gone from the store', shopPage?.status() === 404 && puzzlePage?.status() === 404, `${shopPage?.status()} / ${puzzlePage?.status()}`);
+await vendor.goto(`${BASE}/en/vendor/orders`, { waitUntil: 'networkidle' });
+check('but its owner still opens the orders, and is told why nothing sells', (await count(vendor, '[data-testid="orders-heading"]')) === 1 && (await inner(vendor, '[data-testid="shop-paused"]')).includes('paused your shop'), (await inner(vendor, '[data-testid="shop-paused"]')).slice(0, 80));
+await office.click('[data-testid="vendor-edit-fitrah"]');
+await office.selectOption('[data-testid="vendor-editor-fitrah"] [data-testid="vendor-status"]', 'active');
+await office.click('[data-testid="vendor-editor-fitrah"] [data-testid="vendor-save"]');
+await settle(office, '[data-testid="flash-success"]');
+await office.waitForTimeout(400);
+const back = await student.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'domcontentloaded' });
+check('set active again, Fitrah is back in the store', (await inner(office, '[data-testid="vendor-status-fitrah"]')) === 'Active' && back?.status() === 200, `${await inner(office, '[data-testid="vendor-status-fitrah"]')} · ${back?.status()}`);
+
 await finish();

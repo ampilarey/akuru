@@ -1662,4 +1662,6 @@ return [
     'referral_counts' => 'Friends so far: :paid credited, :pending waiting.',
     'referral_checkout' => 'A friend invited you: :amount goes to your wallet once this first order (:min or more) is delivered and its return window has passed.',
     'referral_welcome_flash' => 'A friend invited you. Your first order earns you :amount in your wallet.',
+    'paused' => 'Paused',
+    'shop_paused_banner' => 'The office has paused your shop: its products are not for sale and it takes no new orders. Orders already placed are still yours to prepare, dispatch and deliver, and your money page carries on as before.',
 ];

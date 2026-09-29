@@ -4414,6 +4414,54 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lo. A paused shop (2026-09-29)
+
+The Bookstore audit's finding 8 and a KNOWN_ISSUES entry. Suspending a shop
+shut its owner out of the portal, so orders already paid could only be
+moved by the office. The owner said "do it" on 2026-09-29.
+
+A shop is now `active`, `paused` or `suspended` (`VendorStatus::Paused`).
+
+**Paused sells nothing.** Every public read already asked for `active`, so
+a paused shop's page, products, listing rows, suggestions, home-page tiles,
+sitemap entries and API rows are gone. A cart add is refused. A buyer still
+sees their own orders.
+
+**Its people keep the portal.** `ResolveVendorScopeAction` admits `active`
+and `paused` (`VendorStatus::portalOpen()`), and `VendorScope` carries
+`paused`. The portal and the orders page show a banner saying the shop is
+paused and that orders already placed are still theirs to prepare,
+dispatch and deliver. Money carries on as before.
+
+**Suspended still shuts the portal**, as a stop.
+
+**The office's control.** On `/admin/bookshop`, Edit on a shop's row now
+offers Active, Paused and Suspended, and the list shows each by name. The
+Edit and Save buttons carry test ids for the walk.
+
+Languages: EN/DV/AR (`paused`, `shop_paused_banner`).
+
+No migration: `vendors.status` is a string, and the seeder already puts
+Fitrah back to `active`.
+
+Tests:
+- `ShopPausedTest` (3):
+  - paused hides the product page, the shop page, the listing and the
+    API, and refuses a cart add, while the buyer still opens their order;
+  - the owner opens the portal and the orders page with `paused` true and
+    moves a paid order to processing; set active again, it sells and the
+    banner goes;
+  - suspended still gets 403 on the orders page, an unknown status is
+    refused, and the office list reads "paused".
+
+Checklist: `ft-bookstore-23`.
+
+Walk: `scripts/smoke/cod.mjs` 26/26, with four new steps:
+1. The office pauses Fitrah from its row.
+2. Fitrah's shop page and the puzzle are 404.
+3. Fitrah's owner still opens the orders page, under the banner.
+4. The office sets it active again, and the shop page is 200.
+
 ## 5ln. Bookstore referral credit, built off (2026-09-29)
 
 BOOKSHOP_PLAN §16, item 9b, the last item of the owner's iruali list. It is

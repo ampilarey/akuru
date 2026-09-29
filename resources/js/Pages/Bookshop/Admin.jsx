@@ -123,6 +123,7 @@ function VendorEditor({ vendor, t, onDone, sectionTypes = [] }) {
             <label className="text-sm">{t.status}
                 <select className="form-input w-full" value={form.data.status} onChange={set('status')} data-testid="vendor-status">
                     <option value="active">{t.active}</option>
+                    <option value="paused">{t.paused}</option>
                     <option value="suspended">{t.suspended}</option>
                 </select>
             </label>
@@ -148,7 +149,7 @@ function VendorEditor({ vendor, t, onDone, sectionTypes = [] }) {
             <StorefrontModeration vendor={vendor} t={t} sectionTypes={sectionTypes} />
             <FormErrors errors={form.errors} className="md:col-span-3" />
             <div className="flex gap-3 md:col-span-3">
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.save}</button>
+                <button type="submit" className="btn-primary" disabled={form.processing} data-testid="vendor-save">{t.save}</button>
                 <button type="button" className="text-sm underline" onClick={onDone}>{t.cancel}</button>
             </div>
         </form>
@@ -197,8 +198,8 @@ function FragmentRow({ vendor: v, t, sectionTypes, editing, onEdit, onDone }) {
                 <td className="p-2">{owner?.agreement_accepted_at ? t.accepted : t.not_yet}</td>
                 <td className="p-2 text-end">{v.effective_commission_rate}%</td>
                 <td className="p-2 text-end">{v.active_products_count} / {v.products_count}</td>
-                <td className="p-2">{v.status === 'active' ? t.active : t.suspended}</td>
-                <td className="p-2 text-end"><button type="button" className="text-blue-700 underline" onClick={onEdit}>{t.edit}</button></td>
+                <td className="p-2" data-testid={`vendor-status-${v.slug}`}>{t[v.status] || v.status}</td>
+                <td className="p-2 text-end"><button type="button" className="text-blue-700 underline" onClick={onEdit} data-testid={`vendor-edit-${v.slug}`}>{t.edit}</button></td>
             </tr>
             {editing && (
                 <tr><td colSpan={7}><VendorEditor vendor={v} t={t} onDone={onDone} sectionTypes={sectionTypes} /></td></tr>

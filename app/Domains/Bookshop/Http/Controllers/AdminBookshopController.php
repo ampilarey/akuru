@@ -128,7 +128,7 @@ class AdminBookshopController extends Controller
             'legal_name' => 'nullable|string|max:255',
             'tin' => 'nullable|string|max:40',
             'gst_registered' => 'nullable|boolean',
-            'status' => 'required|string|in:active,suspended',
+            'status' => 'required|string|in:active,paused,suspended',
             'commission_rate' => 'nullable|numeric|min:0|max:100',
             'contact_email' => 'nullable|email|max:255',
             'contact_phone' => 'nullable|string|max:40',

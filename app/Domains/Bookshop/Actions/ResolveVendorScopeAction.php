@@ -8,7 +8,7 @@ use App\Domains\Bookshop\Models\VendorMember;
 
 /**
  * The one door into the vendor portal: a person's membership of an active
- * vendor. A person in several vendors picks one (the portal's switcher
+ * vendor, or a paused one (STATUS §5lo: it finishes its orders). A person in several vendors picks one (the portal's switcher
  * keeps it in the session); without a pick, the oldest membership wins.
  * Returns null for anyone who is not a member of an active vendor — the
  * caller turns that into a 403.
@@ -20,7 +20,7 @@ class ResolveVendorScopeAction
         $memberships = VendorMember::query()
             ->with('vendor')
             ->where('user_id', $userId)
-            ->whereHas('vendor', fn ($q) => $q->where('status', VendorStatus::Active->value))
+            ->whereHas('vendor', fn ($q) => $q->whereIn('status', VendorStatus::portalOpen()))
             ->orderBy('id')
             ->get();
 
@@ -36,6 +36,7 @@ class ResolveVendorScopeAction
             vendorName: (string) $member->vendor->name,
             vendorSlug: (string) $member->vendor->slug,
             agreementAccepted: $member->agreement_accepted_at !== null,
+            paused: $member->vendor->status === VendorStatus::Paused,
         );
     }
 
@@ -49,13 +50,14 @@ class ResolveVendorScopeAction
         return VendorMember::query()
             ->with('vendor')
             ->where('user_id', $userId)
-            ->whereHas('vendor', fn ($q) => $q->where('status', VendorStatus::Active->value))
+            ->whereHas('vendor', fn ($q) => $q->whereIn('status', VendorStatus::portalOpen()))
             ->orderBy('id')
             ->get()
             ->map(fn (VendorMember $m) => [
                 'id' => (int) $m->vendor_id,
                 'name' => (string) $m->vendor->name,
                 'role' => $m->role->value,
+                'paused' => $m->vendor->status === VendorStatus::Paused,
             ])->values()->all();
     }
 }

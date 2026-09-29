@@ -53,6 +53,8 @@ class VendorPortalController extends Controller
                 'slug' => $scope->vendorSlug,
                 'role' => $scope->role->value,
                 'agreement_accepted' => $scope->agreementAccepted,
+                // STATUS §5lo: paused by the office — nothing sells; the open orders are still theirs.
+                'paused' => $scope->paused,
             ],
             'memberships' => app(ResolveVendorScopeAction::class)->memberships($scope->userId),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
