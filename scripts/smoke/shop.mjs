@@ -116,6 +116,9 @@ check('a product photo is shown as a card-size copy', Boolean(cardImage) && /-w4
 check('and it loads', await loads(guest, cardImage));
 check('the categories with something in them are listed', (await guest.locator('[data-testid="shop-categories"] a', { hasText: 'Workbooks' }).count()) === 1);
 check('the shops are listed', (await guest.locator('[data-testid="shop-vendors"] [data-vendor="fitrah"]').count()) === 1);
+// STATUS §5kw: every open shop is listed; one with nothing on sale says it is opening soon.
+const shopLines = await guest.locator('[data-testid="shop-vendor-count"]').allInnerTexts();
+check('every shop card says how many items it has, or that it is opening soon', shopLines.length > 0 && shopLines.every((t) => /\d+ items|Opening soon/.test(t.trim())), shopLines.map((t) => t.trim()).join(' · '));
 check('a draft is nowhere in the shop', !(await text(guest)).includes('SMOKE-Hidden-Draft'));
 const draft = await guest.request.get(`${BASE}/en/shop/products/smoke-hidden-draft`);
 check('and its address is not found', draft.status() === 404, `HTTP ${draft.status()}`);

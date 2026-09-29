@@ -258,12 +258,21 @@
         <section class="py-8" data-testid="shop-vendors">
             <div class="container mx-auto px-4">
                 <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">{{ __('shop.our_shops') }}</h2>
-                <div class="grid gap-3 md:grid-cols-3">
+                <div class="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
                     @foreach($home['vendors'] as $shop)
-                        <a href="{{ route('public.shop.vendor', $shop['slug']) }}" class="rounded-lg border bg-white p-4 hover:shadow-sm" data-vendor="{{ $shop['slug'] }}">
-                            <span class="block font-semibold text-brandMaroon-900">{{ $shop['name'] }}</span>
-                            @if($shop['tagline'])<span class="block text-sm text-gray-600">{{ $shop['tagline'] }}</span>@endif
-                            <span class="mt-1 block text-xs text-gray-500">{{ __('shop.result_count', ['count' => $shop['count']]) }}</span>
+                        <a href="{{ route('public.shop.vendor', $shop['slug']) }}" class="flex items-center gap-3 rounded-lg border bg-white p-4 hover:shadow-sm" data-vendor="{{ $shop['slug'] }}">
+                            @if($shop['logo'])
+                                <img src="{{ $shop['logo'] }}" alt="" class="h-14 w-14 shrink-0 rounded-lg object-cover" loading="lazy" data-testid="shop-vendor-logo">
+                            @else
+                                <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-brandBeige-100 text-xl font-bold text-brandMaroon-700" aria-hidden="true">{{ mb_substr($shop['display_name'], 0, 1) }}</span>
+                            @endif
+                            <span class="min-w-0">
+                                <span class="block font-semibold text-brandMaroon-900" dir="auto">{{ $shop['display_name'] }}</span>
+                                @if($shop['tagline'])<span class="block truncate text-sm text-gray-600" dir="auto">{{ $shop['tagline'] }}</span>@endif
+                                <span class="mt-1 block text-xs {{ $shop['count'] > 0 ? 'text-gray-500' : 'text-brandGold-700' }}" data-testid="shop-vendor-count">
+                                    {{ $shop['count'] > 0 ? __('shop.result_count', ['count' => $shop['count']]) : __('shop.opening_soon') }}
+                                </span>
+                            </span>
                         </a>
                     @endforeach
                 </div>

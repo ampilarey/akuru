@@ -179,6 +179,8 @@ return [
     'shop_by_category' => 'ބައިތަކުން ހޯއްދަވާ',
     'new_arrivals' => 'އާ ތަކެތި',
     'our_shops' => 'ފިހާރަތައް',
+    // STATUS §5kw: a shop in the list with nothing on sale yet.
+    'opening_soon' => 'ވަރަށް އަވަހަށް ހުޅުވޭނެ',
     'all_products' => 'ހުރިހާ ތަކެއްޗެއް',
     'results' => 'ނަތީޖާ',
     'result_count' => ':count ތަކެތި',

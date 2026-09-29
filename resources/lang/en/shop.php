@@ -183,6 +183,8 @@ return [
     'shop_by_category' => 'Shop by category',
     'new_arrivals' => 'New arrivals',
     'our_shops' => 'Shops',
+    // STATUS §5kw: a shop in the list with nothing on sale yet.
+    'opening_soon' => 'Opening soon',
     'all_products' => 'All products',
     'results' => 'Results',
     'result_count' => ':count items',

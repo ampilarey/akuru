@@ -4414,6 +4414,37 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kw. Every open shop is listed on /shop (2026-09-29)
+
+The owner reported that the current shops, Fitrah for example, did not show
+on the shop.
+
+- **Cause.** `PresentShopHomeAction` left out any shop with nothing for
+  sale (B7's "an empty shelf is not a shop window"). On production Fitrah
+  has no active products yet, so it was missing from *Shops* entirely.
+  `/shop/fitrah` itself always opened.
+- **Now:**
+  - every active shop is listed, those with products first;
+  - a shop with nothing on sale says ***Opening soon*** (EN/DV/AR) instead
+    of being hidden;
+  - each card shows the shop's published storefront logo and name, or its
+    initial, next to the tagline;
+  - the item count now counts only shop-visible products;
+  - a suspended shop stays hidden, as before.
+- The rest of the rule stands: a category with nothing in it, or a
+  featured product no longer for sale, still drops out.
+
+Tests: `tests/Feature/Bookshop/ShopListsEveryShopTest.php` (2):
+- the order, the count, *Opening soon*, the link, and a suspended shop
+  hidden;
+- the DV/AR words.
+
+Full suite 2498 passed.
+
+Walk: `scripts/smoke/shop.mjs` 28/28. The new step checks that every shop
+card shows its item count or *Opening soon*. It ran against a planted empty
+shop, which was removed afterwards: "4 items · 1 items · Opening soon".
+
 ## 5kv. A shop's page on a phone: the products first (2026-09-29)
 
 The owner sent a phone screenshot of `/shop/fitrah` and asked whether this
