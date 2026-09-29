@@ -26,12 +26,16 @@
                 @if($item['category'])
                     <span>{{ $item['category']['name'] }}</span>
                 @endif
-                @if($item['writer'])
+                {{-- R1: each author leads where they can — a teacher to their profile, a writer to their author page. --}}
+                @if($item['writer'] && ! collect($item['author_links'])->contains('name', $item['writer']['display_name']))
                     <a href="{{ route('public.library.author', $item['writer']['slug']) }}" class="text-brandMaroon-700 hover:underline" rel="author">{{ $item['writer']['display_name'] }}</a>
                 @endif
-                @foreach($item['authors'] as $author)
-                    @if(! $item['writer'] || $author !== $item['writer']['display_name'])
-                        <span>{{ $author }}</span>
+                @foreach($item['author_links'] as $author)
+                    @php($authorUrl = $author['url'] ?? (($item['writer'] && $author['name'] === $item['writer']['display_name']) ? route('public.library.author', $item['writer']['slug']) : null))
+                    @if($authorUrl)
+                        <a href="{{ $authorUrl }}" class="text-brandMaroon-700 hover:underline" rel="author" data-testid="author-{{ $author['kind'] }}">{{ $author['name'] }}</a>
+                    @else
+                        <span data-testid="author-name">{{ $author['name'] }}</span>
                     @endif
                 @endforeach
                 @if($item['published_at'])
@@ -79,7 +83,19 @@
             </div>
         @endif
 
-        @if($item['can_read'] && ($item['total_pages'] ?? 0) > 1)
+        {{-- R1 (D1): the file itself, where the author offers it. --}}
+        @if($item['can_download'])
+            <div class="mb-4 flex flex-wrap items-center gap-3 rounded-lg border bg-brandBeige-50 p-4" data-testid="library-download">
+                <a href="{{ route('public.library.download', $item['slug']) }}" class="btn-primary" download data-testid="library-download-link">{{ __('public.Download PDF') }}</a>
+                <span class="text-sm text-gray-600">{{ $item['reads_online'] ? __('public.Or read it online below.') : __('public.The author shares this as a file to keep.') }}</span>
+            </div>
+        @elseif($item['offers_download'] && ! $item['can_read'])
+            <p class="mb-4 text-sm text-gray-600" data-testid="library-download-later">{{ __('public.A PDF download comes with access to this item.') }}</p>
+        @endif
+
+        @if(! $item['reads_online'] && $item['can_download'])
+            {{-- Download only: nothing more to read here. --}}
+        @elseif($item['can_read'] && ($item['total_pages'] ?? 0) > 1)
             <div class="rounded-lg border bg-brandBeige-50 p-6 text-center">
                 <a href="{{ route('public.library.read', ['slug' => $item['slug'], 'page' => $item['continue_page'] ?? 1]) }}" class="btn-primary">
                     {{ ($item['continue_page'] ?? 1) > 1 ? __('public.Continue reading') : __('public.Read online') }}

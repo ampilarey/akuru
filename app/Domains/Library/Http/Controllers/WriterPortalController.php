@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Http\Controllers;
 
+use App\Domains\HR\Actions\ListPublicInstructorProfilesAction;
 use App\Domains\Library\Actions\ApplyAsWriterAction;
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListWriterDashboardAction;
@@ -13,6 +14,7 @@ use App\Domains\Library\Actions\SaveWriterItemAction;
 use App\Domains\Library\Actions\SaveWriterPublicProfileAction;
 use App\Domains\Library\Actions\SubmitLibraryItemForReviewAction;
 use App\Domains\Library\Enums\LibraryContentType;
+use App\Domains\Library\Enums\LibraryDelivery;
 use App\Domains\Library\Models\LibraryItem;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -36,6 +38,8 @@ class WriterPortalController extends Controller
                 'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),
                 'categories' => app(ListLibraryCategoriesAction::class)->execute(),
                 'languages' => ['en' => 'English', 'dv' => 'Dhivehi', 'ar' => 'Arabic'],
+                // R1: the teachers a writer may name as co-authors.
+                'teachers' => $this->teachers(),
             ],
         ]);
     }
@@ -152,6 +156,19 @@ class WriterPortalController extends Controller
     }
 
     /**
+     * R1: the website's teacher list, as the editor needs it — asked of HR.
+     *
+     * @return list<array{id: int, slug: string, name: string}>
+     */
+    private function teachers(): array
+    {
+        return array_map(
+            fn (array $row) => ['id' => $row['id'], 'slug' => $row['slug'], 'name' => $row['name']],
+            app(ListPublicInstructorProfilesAction::class)->execute(),
+        );
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function validatedItem(Request $request): array
@@ -179,6 +196,10 @@ class WriterPortalController extends Controller
             'tags.*' => 'string|max:60',
             'co_authors' => 'nullable|array|max:20',
             'co_authors.*' => 'nullable|string|max:120',
+            // R1: the institute's teachers as co-authors, and how readers get it (D1).
+            'co_author_teachers' => 'nullable|array|max:20',
+            'co_author_teachers.*' => 'integer',
+            'delivery' => 'nullable|in:'.implode(',', array_map(fn ($case) => $case->value, LibraryDelivery::cases())),
             'declarations' => 'nullable|array',
             'declarations.*' => 'nullable|boolean',
             'preview_enabled' => 'nullable|boolean',

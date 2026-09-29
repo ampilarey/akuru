@@ -4,6 +4,7 @@ namespace App\Domains\Library\Models;
 
 use App\Domains\Library\Enums\LibraryAccessType;
 use App\Domains\Library\Enums\LibraryContentType;
+use App\Domains\Library\Enums\LibraryDelivery;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -24,6 +25,7 @@ class LibraryItem extends Model
         'abstract',
         'content_type',
         'access_type',
+        'delivery',
         'price',
         'currency',
         'language',
@@ -60,6 +62,7 @@ class LibraryItem extends Model
         return [
             'content_type' => LibraryContentType::class,
             'access_type' => LibraryAccessType::class,
+            'delivery' => LibraryDelivery::class,
             'status' => LibraryItemStatus::class,
             'published_at' => 'datetime',
             'submitted_at' => 'datetime',

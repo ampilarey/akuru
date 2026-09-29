@@ -94,6 +94,7 @@ return [
     'library_insights_export' => 'CSV އެކްސްޕޯޓް',
     'library_insights_active_readers' => 'ކިޔާ މީހުން',
     'library_insights_pages_opened' => 'ހުޅުވި ޞަފްޙާ',
+    'library_insights_downloads' => 'ޑައުންލޯޑް ކުރި ފައިލް',
     'library_insights_completions' => 'ނިންމި ލިޔުން',
     'library_insights_purchases' => 'ގަތް އަދަދު',
     'library_insights_revenue' => 'އާމްދަނީ (MVR)',

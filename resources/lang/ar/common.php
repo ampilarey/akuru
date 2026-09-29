@@ -174,4 +174,11 @@ return [
     'review_accept' => 'Recommend accept',
     'review_revise' => 'Needs revision',
     'review_reject' => 'Recommend reject',
+    // R1: how readers get a research item or article, and teacher authors.
+    'library_delivery_legend' => 'كيف يحصل عليه القرّاء',
+    'library_delivery_reader' => 'القراءة عبر الإنترنت فقط (القارئ المحمي — لا يغادر الملف الخادم)',
+    'library_delivery_download' => 'تنزيل ملف PDF فقط',
+    'library_delivery_both' => 'كلاهما: القراءة عبر الإنترنت أو التنزيل',
+    'library_delivery_needs_pdf' => 'يتطلب التنزيل إرفاق ملف PDF الأصلي أدناه.',
+    'library_teacher_authors' => 'معلمو أكورو المؤلفون (مرتبطون بصفحاتهم)',
 ];

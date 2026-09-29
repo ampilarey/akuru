@@ -43,17 +43,27 @@ class SaveWriterItemAction
             }
         }
 
-        // §11.3 co-authors: the writer is always the first author; the names
-        // they add follow, their own never doubled. Only when the form carries
-        // the key, so a form without it leaves the author list alone.
-        if (array_key_exists('co_authors', $data)) {
+        // §11.3 co-authors: the writer is always the first author, as their
+        // own account so the item page links their author page; the
+        // institute's teachers they name follow (R1), then the other names —
+        // their own never doubled. Only when the form carries the keys, so a
+        // form without them leaves the author list alone.
+        if (array_key_exists('co_authors', $data) || array_key_exists('co_author_teachers', $data)) {
             $self = (string) $profile->display_name;
             $names = array_values(array_filter(
-                array_map(fn ($n) => trim((string) $n), is_array($data['co_authors']) ? $data['co_authors'] : []),
+                array_map(fn ($n) => trim((string) $n), is_array($data['co_authors'] ?? null) ? $data['co_authors'] : []),
                 fn ($n) => $n !== '' && $n !== $self,
             ));
-            $data['authors'] = array_merge($self !== '' ? [$self] : [], $names);
-            unset($data['co_authors']);
+            $teachers = array_values(array_unique(array_map('intval', array_filter(
+                is_array($data['co_author_teachers'] ?? null) ? $data['co_author_teachers'] : [],
+                'is_numeric',
+            ))));
+            $data['authors'] = array_merge(
+                $self !== '' ? [['name' => $self, 'user_id' => $userId]] : [],
+                array_map(fn (int $id) => ['instructor_profile_id' => $id], $teachers),
+                $names,
+            );
+            unset($data['co_authors'], $data['co_author_teachers']);
         }
 
         return app(SaveLibraryItemAction::class)->execute(

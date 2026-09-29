@@ -3,6 +3,7 @@ import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 import BodyEditor from '../../Components/BodyEditor';
 import FormErrors from '../../Components/FormErrors';
+import { DeliveryChoice, TeacherAuthors, defaultDelivery } from '../../Components/LibraryAuthoring';
 
 function ApplicationsQueue({ applications }) {
     const [notes, setNotes] = useState({});
@@ -205,6 +206,7 @@ function SubmissionsQueue({ submissions }) {
 }
 
 function ItemForm({ categories, options }) {
+    const t = usePage().props.i18n?.common || {};
     const form = useForm({
         title: '',
         subtitle: '',
@@ -219,6 +221,9 @@ function ItemForm({ categories, options }) {
         difficulty: '',
         tags_text: '',
         authors_text: '',
+        // R1: teacher authors, and how readers get it (D1).
+        teacher_ids: [],
+        delivery: '',
         pdf: null,
         cover: null,
     });
@@ -227,12 +232,17 @@ function ItemForm({ categories, options }) {
         <form
             onSubmit={(e) => {
                 e.preventDefault();
-                form.transform((data) => ({
+                form.transform(({ teacher_ids, delivery, ...data }) => ({
                     ...data,
                     tags: data.tags_text ? data.tags_text.split(',').map((tag) => tag.trim()).filter(Boolean) : [],
-                    authors: data.authors_text
-                        ? data.authors_text.split(',').map((name) => ({ name: name.trim() })).filter((author) => author.name)
-                        : [],
+                    // The institute's teachers first, then the other names.
+                    authors: [
+                        ...teacher_ids.map((id) => ({ instructor_profile_id: id })),
+                        ...(data.authors_text
+                            ? data.authors_text.split(',').map((name) => ({ name: name.trim() })).filter((author) => author.name)
+                            : []),
+                    ],
+                    delivery: delivery || defaultDelivery(data.content_type, data.access_type),
                 }));
                 form.post('/admin/library/items', {
                     preserveScroll: true,
@@ -258,6 +268,16 @@ function ItemForm({ categories, options }) {
             </select>
             <input className="form-input" placeholder="Authors (comma-separated)" value={form.data.authors_text} onChange={(e) => form.setData('authors_text', e.target.value)} />
             <input className="form-input" placeholder="Tags (comma-separated)" value={form.data.tags_text} onChange={(e) => form.setData('tags_text', e.target.value)} />
+
+            <TeacherAuthors className="md:col-span-4" teachers={options.teachers || []} value={form.data.teacher_ids} onChange={(ids) => form.setData('teacher_ids', ids)} t={t} />
+            <DeliveryChoice
+                className="md:col-span-4"
+                contentType={form.data.content_type}
+                value={form.data.delivery || defaultDelivery(form.data.content_type, form.data.access_type)}
+                onChange={(value) => form.setData('delivery', value)}
+                hasPdf={Boolean(form.data.pdf)}
+                t={t}
+            />
 
             <textarea className="form-input md:col-span-2" rows="2" placeholder="Abstract" value={form.data.abstract} onChange={(e) => form.setData('abstract', e.target.value)} />
             <label className="text-sm">

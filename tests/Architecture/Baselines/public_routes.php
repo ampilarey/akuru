@@ -136,6 +136,7 @@ return [
     'GET courses/register/resume' => 'GUARDED IN THE HANDLER: aborts 403 when there is no current user. The route list cannot show that, which is why it is written down here.',
     'GET courses/{course}/checkout' => 'GUARDED IN THE HANDLER: aborts 403 when there is no current user. The route list cannot show that, which is why it is written down here.',
     'GET library/{slug}' => 'GUARDED IN THE HANDLER: aborts 403 when there is no current user. The route list cannot show that, which is why it is written down here.',
+    'GET library/{slug}/download' => 'GUARDED IN THE ACTION (R1, RESEARCH_ARTICLES_PLAN D1): the PDF of a research item or article whose author chose download. `DownloadLibraryItemAction` asks `ResolveLibraryAccessAction` — a free public item to anyone, anything else redirects a visitor to sign in and a reader without a grant back to the item. Books and reader-only items are 404.',
     'POST library/{slug}/bookmark' => 'GUARDED IN THE HANDLER: aborts 403 when there is no current user. The route list cannot show that, which is why it is written down here.',
     'POST library/{slug}/checkout' => 'GUARDED IN THE HANDLER: aborts 403 when there is no current user. The route list cannot show that, which is why it is written down here.',
     'POST library/{slug}/note' => 'GUARDED IN THE HANDLER: aborts 403 when there is no current user. The route list cannot show that, which is why it is written down here.',

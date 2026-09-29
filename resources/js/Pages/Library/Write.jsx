@@ -3,6 +3,7 @@ import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 import BodyEditor from '../../Components/BodyEditor';
 import FormErrors from '../../Components/FormErrors';
+import { DeliveryChoice, TeacherAuthors, defaultDelivery } from '../../Components/LibraryAuthoring';
 
 // The toolbar's labels, from the common tranche (EN/DV/AR).
 const editorLabels = (t) => ({
@@ -99,6 +100,9 @@ function ItemEditor({ item, options, onDone, t }) {
         reading_time: item?.reading_time ?? '',
         tags_text: (item?.tags || []).join(', '),
         co_authors_text: (item?.co_authors || []).join(', '),
+        // R1: teachers named as co-authors, and how readers get it (D1).
+        co_author_teachers: item?.co_author_teachers || [],
+        delivery: item?.delivery || '',
         preview_enabled: Boolean(item?.preview_enabled),
         preview_pages: item?.preview_pages ?? '',
         declarations: {
@@ -124,14 +128,18 @@ function ItemEditor({ item, options, onDone, t }) {
             // Booleans travel as 1/0 in multipart form data; the server
             // validates them as booleans.
             const declarations = Object.fromEntries(Object.entries(data.declarations).map(([key, on]) => [key, on ? 1 : 0]));
-            const { tags_text, co_authors_text, ...rest } = data;
+            const { tags_text, co_authors_text, delivery, ...rest } = data;
 
             return {
                 ...rest,
+                delivery: delivery || defaultDelivery(data.content_type, data.access_type),
                 declarations,
                 preview_enabled: data.preview_enabled ? 1 : 0,
                 tags: split(tags_text),
-                co_authors: split(co_authors_text),
+                // An empty list is sent as '' — multipart drops an empty
+                // array, and then clearing every co-author would change nothing.
+                co_authors: split(co_authors_text).length ? split(co_authors_text) : '',
+                co_author_teachers: data.co_author_teachers.length ? data.co_author_teachers : '',
                 ...(item ? { _method: 'put' } : {}),
             };
         });
@@ -171,6 +179,15 @@ function ItemEditor({ item, options, onDone, t }) {
             <input className="form-input" type="number" min="1" placeholder="Reading time (min)" value={form.data.reading_time} onChange={(e) => form.setData('reading_time', e.target.value)} />
             <input className="form-input" placeholder="Keywords (comma-separated)" value={form.data.tags_text} onChange={(e) => form.setData('tags_text', e.target.value)} />
             <input className="form-input md:col-span-2" placeholder="Co-authors (comma-separated)" value={form.data.co_authors_text} onChange={(e) => form.setData('co_authors_text', e.target.value)} />
+            <TeacherAuthors className="md:col-span-4" teachers={options.teachers || []} value={form.data.co_author_teachers} onChange={(ids) => form.setData('co_author_teachers', ids)} t={t} />
+            <DeliveryChoice
+                className="md:col-span-4"
+                contentType={form.data.content_type}
+                value={form.data.delivery || defaultDelivery(form.data.content_type, form.data.access_type)}
+                onChange={(value) => form.setData('delivery', value)}
+                hasPdf={Boolean(form.data.pdf || item?.has_pdf)}
+                t={t}
+            />
             <textarea className="form-input md:col-span-2" rows="2" placeholder="Description" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
             <textarea className="form-input md:col-span-2" rows="2" placeholder="Abstract" value={form.data.abstract} onChange={(e) => form.setData('abstract', e.target.value)} />
             {/* B3: the body is written, not pasted — page breaks from the toolbar. */}

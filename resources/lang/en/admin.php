@@ -94,6 +94,7 @@ return [
     'library_insights_export' => 'Export CSV',
     'library_insights_active_readers' => 'Active readers',
     'library_insights_pages_opened' => 'Pages opened',
+    'library_insights_downloads' => 'Files downloaded',
     'library_insights_completions' => 'Items completed',
     'library_insights_purchases' => 'Purchases',
     'library_insights_revenue' => 'Revenue (MVR)',

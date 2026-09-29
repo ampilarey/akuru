@@ -32,14 +32,17 @@ class ListLibraryInsightsAction
         $days = self::PERIODS[$period];
         $since = $days === null ? null : now()->subDays($days)->startOfDay();
 
-        $events = LibraryReadingEvent::query()->when($since, fn ($query) => $query->where('library_reading_events.occurred_at', '>=', $since));
+        $allEvents = LibraryReadingEvent::query()->when($since, fn ($query) => $query->where('library_reading_events.occurred_at', '>=', $since));
+        // R1: pages opened and files downloaded are counted apart.
+        $events = (clone $allEvents)->where('library_reading_events.kind', 'page');
         $purchases = LibraryPurchase::query()->where('library_purchases.status', 'paid')->when($since, fn ($query) => $query->where('library_purchases.purchased_at', '>=', $since));
         $completions = LibraryReadingProgress::query()->whereNotNull('completed_at')->when($since, fn ($query) => $query->where('completed_at', '>=', $since));
         $searches = LibrarySearchLog::query()->when($since, fn ($query) => $query->where('created_at', '>=', $since));
 
         $headline = [
-            'active_readers' => (int) (clone $events)->distinct('user_id')->count('user_id'),
+            'active_readers' => (int) (clone $allEvents)->distinct('user_id')->count('user_id'),
             'pages_opened' => (int) (clone $events)->count(),
+            'downloads' => (int) (clone $allEvents)->where('library_reading_events.kind', 'download')->count(),
             'completions' => (int) (clone $completions)->count(),
             'purchases' => (int) (clone $purchases)->count(),
             'revenue' => (string) number_format((float) (clone $purchases)->sum('amount'), 2, '.', ''),

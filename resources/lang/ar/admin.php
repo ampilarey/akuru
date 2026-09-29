@@ -94,6 +94,7 @@ return [
     'library_insights_export' => 'تصدير CSV',
     'library_insights_active_readers' => 'القرّاء النشطون',
     'library_insights_pages_opened' => 'الصفحات المفتوحة',
+    'library_insights_downloads' => 'الملفات المنزّلة',
     'library_insights_completions' => 'أعمال مكتملة',
     'library_insights_purchases' => 'المشتريات',
     'library_insights_revenue' => 'الإيرادات (MVR)',

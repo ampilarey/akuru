@@ -11,6 +11,9 @@ class LibraryItemAuthor extends Model
         'library_item_id',
         'name',
         'user_id',
+        // R1: a teacher author, by their public profile (HR). Read through
+        // HR's actions, never its model.
+        'instructor_profile_id',
         'sort_order',
     ];
 

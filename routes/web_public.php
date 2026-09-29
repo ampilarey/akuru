@@ -121,6 +121,7 @@ Route::post('my-wallet/redeem', [WalletController::class, 'redeem'])->name('publ
 Route::get('gift-cards', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'index'])->name('public.gift-cards.index');
 Route::post('gift-cards', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'purchase'])->name('public.gift-cards.purchase')->middleware('throttle:10,1,gift-card-buy');
 Route::get('gift-cards/return', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'paymentReturn'])->name('public.gift-cards.return');
+Route::get('library/{slug}/download', [PublicLibraryController::class, 'download'])->name('public.library.download')->middleware('throttle:20,1,library-download');
 Route::get('library/{slug}/read', [LibraryReaderController::class, 'read'])->name('public.library.read');
 Route::post('library/{slug}/checkout', [LibraryCheckoutController::class, 'checkout'])->name('public.library.checkout')->middleware('throttle:10,1,library-checkout');
 Route::get('library/{slug}/payment-return', [LibraryCheckoutController::class, 'paymentReturn'])->name('public.library.payment-return');

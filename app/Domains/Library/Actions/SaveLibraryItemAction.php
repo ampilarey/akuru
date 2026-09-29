@@ -2,8 +2,10 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\HR\Actions\ReadPublicInstructorProfileAction;
 use App\Domains\Library\Enums\LibraryAccessType;
 use App\Domains\Library\Enums\LibraryContentType;
+use App\Domains\Library\Enums\LibraryDelivery;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryTag;
 use App\Domains\Media\Actions\StorePrivateMediaAction;
@@ -42,6 +44,12 @@ class SaveLibraryItemAction
         if ($accessType === null) {
             throw ValidationException::withMessages(['access_type' => 'Invalid access type.']);
         }
+
+        // Checked before anything is written, so an unknown teacher leaves no
+        // half-saved item behind.
+        $authorRows = array_key_exists('authors', $data) && is_array($data['authors'])
+            ? $this->authorRows($data['authors'])
+            : null;
 
         $slug = (string) ($data['slug'] ?? Str::slug($title));
         $exists = LibraryItem::query()
@@ -108,6 +116,12 @@ class SaveLibraryItemAction
                 ? (in_array($data['difficulty'], ListLibraryItemsAction::DIFFICULTIES, true) ? $data['difficulty'] : null)
                 : $item?->difficulty,
         ];
+
+        // R1 (D1): how readers get it — the author's choice for research and
+        // articles, the protected reader for everything else. A form that
+        // does not carry the field keeps what was chosen, unless the item has
+        // become a type that may not choose.
+        $payload['delivery'] = $this->delivery($data, $item, $contentType, $accessType);
 
         // §9.4 free preview. Written only when the caller says something about
         // it, so an edit form that does not carry these fields cannot silently
@@ -178,22 +192,78 @@ class SaveLibraryItemAction
 
         app(SyncLibraryItemPagesAction::class)->execute($item);
 
-        if (array_key_exists('authors', $data) && is_array($data['authors'])) {
+        if ($authorRows !== null) {
             $item->authors()->delete();
-            foreach (array_values($data['authors']) as $index => $author) {
-                $name = trim((string) ($author['name'] ?? $author));
-                if ($name === '') {
-                    continue;
-                }
-                $item->authors()->create([
-                    'name' => $name,
-                    'user_id' => is_array($author) ? ($author['user_id'] ?? null) : null,
-                    'sort_order' => $index,
-                ]);
+            foreach ($authorRows as $index => $row) {
+                $item->authors()->create($row + ['sort_order' => $index]);
             }
         }
 
         return $item->refresh();
+    }
+
+    private function delivery(array $data, ?LibraryItem $item, LibraryContentType $contentType, LibraryAccessType $accessType): LibraryDelivery
+    {
+        if (! LibraryDelivery::offeredFor($contentType->value)) {
+            return LibraryDelivery::Reader;
+        }
+        if (array_key_exists('delivery', $data) && $data['delivery'] !== null && $data['delivery'] !== '') {
+            $chosen = LibraryDelivery::tryFrom((string) $data['delivery']);
+            if ($chosen === null) {
+                throw ValidationException::withMessages(['delivery' => 'Choose how readers get it: read online, download, or both.']);
+            }
+
+            return $chosen;
+        }
+        $current = $item?->delivery;
+        if ($current instanceof LibraryDelivery && LibraryDelivery::offeredFor($item?->content_type?->value)) {
+            return $current;
+        }
+
+        return LibraryDelivery::defaultFor($contentType->value, $accessType->value);
+    }
+
+    /**
+     * R1: an author is a name (someone outside Akuru), a writer account
+     * (`user_id`), or one of the institute's teachers (`instructor_profile_id`).
+     * A teacher's name is taken from their profile — through HR's action, as
+     * the Library never reads HR's tables itself — and kept on the row, so a
+     * shelf or a citation needs nothing else.
+     *
+     * @param  array<int, mixed>  $authors
+     * @return list<array{name: string, user_id: ?int, instructor_profile_id: ?int}>
+     */
+    private function authorRows(array $authors): array
+    {
+        $rows = [];
+        $teachers = [];
+        foreach (array_values($authors) as $author) {
+            $instructorId = is_array($author) && is_numeric($author['instructor_profile_id'] ?? null)
+                ? (int) $author['instructor_profile_id']
+                : null;
+            if ($instructorId !== null) {
+                if (isset($teachers[$instructorId])) {
+                    continue;
+                }
+                $profile = app(ReadPublicInstructorProfileAction::class)->execute($instructorId, null, false);
+                if ($profile === null) {
+                    throw ValidationException::withMessages(['authors' => 'That teacher is not on the website\'s teacher list.']);
+                }
+                $teachers[$instructorId] = true;
+                $rows[] = ['name' => $profile['name'], 'user_id' => null, 'instructor_profile_id' => $instructorId];
+
+                continue;
+            }
+
+            $name = trim((string) (is_array($author) ? ($author['name'] ?? '') : $author));
+            if ($name === '') {
+                continue;
+            }
+            $userId = is_array($author) && is_numeric($author['user_id'] ?? null) ? (int) $author['user_id'] : null;
+            $rows[] = ['name' => $name, 'user_id' => $userId, 'instructor_profile_id' => null];
+        }
+
+        return $rows;
     }
 
     private function cleanBody(?string $body): ?string

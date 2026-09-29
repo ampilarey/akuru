@@ -46,6 +46,18 @@
                     @endforeach
                 </select>
             </div>
+            {{-- R1 (F12): research is found by the year it came out. --}}
+            @if(count($years ?? []) > 0)
+                <div>
+                    <label class="block text-xs text-gray-500 mb-1" for="library-year">{{ __('public.Year') }}</label>
+                    <select name="year" id="library-year" class="form-input" data-testid="library-year">
+                        <option value="">{{ __('public.All years') }}</option>
+                        @foreach($years as $year)
+                            <option value="{{ $year }}" @selected((string) ($filters['year'] ?? '') === (string) $year)>{{ $year }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
             {{-- §8.2 / §8.3 discovery: free or paid, language, price, and a sort. --}}
             <div>
                 <label class="block text-xs text-gray-500 mb-1">{{ __('public.Access') }}</label>

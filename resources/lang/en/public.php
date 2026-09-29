@@ -544,4 +544,8 @@ return [
     'Show everyone' => 'Show everyone',
     // The sign-in page says where each kind of person lands (SIGN_IN_PLAN ID3).
     'After you sign in you go straight to your own space: your children, your classes, your courses or your shop.' => 'After you sign in you go straight to your own space: your children, your classes, your courses or your shop.',
+    // R1: the Digital Library's download (RESEARCH_ARTICLES_PLAN D1).
+    'Or read it online below.' => 'Or read it online below.',
+    'The author shares this as a file to keep.' => 'The author shares this as a file to keep.',
+    'A PDF download comes with access to this item.' => 'A PDF download comes with access to this item.',
 ];

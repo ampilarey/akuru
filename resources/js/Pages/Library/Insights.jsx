@@ -32,6 +32,7 @@ export default function Insights({ insights, periods = [], t = {} }) {
     const tiles = [
         ['active_readers', t.library_insights_active_readers || 'Active readers'],
         ['pages_opened', t.library_insights_pages_opened || 'Pages opened'],
+        ['downloads', t.library_insights_downloads || 'Files downloaded'],
         ['completions', t.library_insights_completions || 'Items completed'],
         ['purchases', t.library_insights_purchases || 'Purchases'],
         ['revenue', t.library_insights_revenue || 'Revenue (MVR)'],
@@ -48,7 +49,7 @@ export default function Insights({ insights, periods = [], t = {} }) {
                 <a href="/admin/library" className="underline">{t.library_settings_back || 'Back to the Library office'}</a>
             </div>
 
-            <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-6" data-testid="insights-headline">
+            <div className="mb-6 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-7" data-testid="insights-headline">
                 {tiles.map(([key, label]) => (
                     <div key={key} className="rounded-lg border bg-white p-3">
                         <div className="text-xs uppercase text-gray-500">{label}</div>

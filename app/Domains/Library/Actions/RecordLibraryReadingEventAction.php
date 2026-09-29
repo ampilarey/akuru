@@ -26,6 +26,8 @@ class RecordLibraryReadingEventAction
         ?string $sessionId = null,
         ?string $ip = null,
         ?string $userAgent = null,
+        // R1: 'page' (a page opened in the reader) or 'download' (the file).
+        string $kind = 'page',
     ): ?LibraryReadingEvent {
         // Anonymous reading of free content is not a session to police, and an
         // event with no reader answers none of §30.3's questions.
@@ -40,6 +42,7 @@ class RecordLibraryReadingEventAction
             'user_id' => $userId,
             'library_item_id' => $libraryItemId,
             'page_number' => $pageNumber,
+            'kind' => in_array($kind, ['page', 'download'], true) ? $kind : 'page',
             'session_hash' => $this->pepper($sessionId),
             // Device identity is the pair, not either half: the same browser on
             // a new IP is the same device, and two people behind one office NAT

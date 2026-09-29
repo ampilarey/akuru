@@ -174,4 +174,11 @@ return [
     'review_accept' => 'Recommend accept',
     'review_revise' => 'Needs revision',
     'review_reject' => 'Recommend reject',
+    // R1: how readers get a research item or article, and teacher authors.
+    'library_delivery_legend' => 'ކިޔުންތެރިންނަށް ލިބޭނެ ގޮތް',
+    'library_delivery_reader' => 'އޮންލައިންކޮށް ކިޔުން ހަމައެކަނި (ރައްކާތެރި ރީޑަރ — ފައިލް ނުދޭ)',
+    'library_delivery_download' => 'PDF ޑައުންލޯޑް ކުރުން ހަމައެކަނި',
+    'library_delivery_both' => 'ދެގޮތްވެސް: އޮންލައިންކޮށް ކިޔުން ނުވަތަ ޑައުންލޯޑް',
+    'library_delivery_needs_pdf' => 'ޑައުންލޯޑް ކުރެވޭނީ ތިރީގައި އަސްލު PDF އެއް ހުށަހަޅައިގެންނެވެ.',
+    'library_teacher_authors' => 'ލިޔުންތެރިންކަމުގައިވާ އަކުރު މުދައްރިސުން (އެބޭފުޅުންގެ ޕްރޮފައިލާ ގުޅިފައި)',
 ];

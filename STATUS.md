@@ -4414,6 +4414,50 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ko. R1: the Digital Library can hold the institute's research (2026-09-29)
+
+First slice of `docs/RESEARCH_ARTICLES_PLAN.md`. Additive only (rule 9).
+
+- **Teacher authors.** `library_item_authors.instructor_profile_id` (FK to
+  `instructors`). An author row is a name, a writer account (`user_id`) or
+  one of the website's teachers. The teacher's name is read through HR's
+  `ReadPublicInstructorProfileAction` and kept on the row; the Library
+  imports no HR model (a test in the slice checks the folder). An unknown
+  teacher is refused before anything is written. The item page links a
+  teacher to `/instructors/{slug}`, a writer to their author page, and
+  leaves any other name plain. The writer's own row is now their account,
+  and the writer's editor and the office form list the teachers as
+  checkboxes.
+- **How readers get it (D1).** `library_items.delivery`, a string enum
+  `reader | download | both`. Only research and articles choose; books stay
+  in the protected reader. Default: open access reads and downloads, sold
+  or granted reads only; the migration backfills that. Three radios, "How
+  readers get it", in both forms.
+- **The download.** `GET library/{slug}/download` through
+  `DownloadLibraryItemAction`: the media id comes from the published item's
+  row, access through `ResolveLibraryAccessAction`. A visitor is sent to
+  sign in, a reader without a grant back to the item, a book or a
+  reader-only item is 404. Served as an attachment with `no-store`.
+  Pinned in `PrivateMediaReadersAreScopedTest` and declared in the public
+  routes baseline. A signed-in download is a reading event of the new kind
+  `download` (`library_reading_events.kind`, default `page`): the page-rate
+  detector ignores it and insights shows "Files downloaded" beside pages
+  opened.
+- **Year filter (F12).** `year` on the shelf; the research shelf shows a
+  Year dropdown with the years that hold published research.
+
+Strings EN/DV/AR (`public`, `common`, `admin`). Tests:
+`tests/Feature/Library/ResearchDeliveryTest.php` (10). Full suite 2468
+passed before the two architecture fixes, both then green. Walk:
+`scripts/smoke/library.mjs` gains section 9 — a writer sets *both* on a
+research draft and it is kept; the office adds a teacher, names them on an
+article with its PDF and publishes it; a stranger follows the teacher link
+to the profile and downloads the PDF without signing in; the research shelf
+filters by year. 31/31 locally.
+
+Next: R2, moving the website research into the library and redirecting
+the old addresses.
+
 ## 5kn. Plan: research and articles into the Digital Library, peer review a must, a news editor (2026-09-29)
 
 The owner asked whether research and educational articles come under the
