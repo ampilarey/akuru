@@ -22,28 +22,41 @@ matched none of this.
 All in `public/images/logos/`. Use the Blade component
 `<x-akuru-logo variant="default|on-dark|white" />` rather than a path.
 
+Since 2026-09-29 these come from the **owner's own vector artwork** (uploaded
+as `Copy of logo for website.svg`, the owner's pick of two designs: gold
+emblem, wine wordmark, wine "INSTITUTE" bar). The design tool's white
+background was removed and each file cropped to its artwork. The artwork's own
+colours are **wine `#6E1E25`** and **gold `#C9A227`**; the site's UI keeps
+Wine `#7C2D37` above — close, and the logo is the owner's to keep as drawn.
+
 | File | Colours | Background |
 |---|---|---|
-| `akuru-logo.svg` | wine wordmark, dark-gold mark and subtitle | white, beige |
-| `akuru-logo-on-dark.svg` | white wordmark, gold mark and subtitle | wine, dark gradients |
-| `akuru-logo-white.svg` | all white | any dark background |
-| `akuru-mark.svg` | the mark alone, dark gold | where the wordmark is already set in text |
-| `akuru-logo-800.png` | as `akuru-logo.svg` | email, structured data, anywhere SVG is refused |
+| `akuru-logo.svg` | gold emblem, wine AKURU, wine bar with white INSTITUTE | white, beige |
+| `akuru-logo-on-dark.svg` | gold emblem, white AKURU, gold bar with deep-wine INSTITUTE | wine, dark gradients (footer, staff bar) |
+| `akuru-logo-white.svg` | all white; INSTITUTE knocked out of the bar (an SVG mask) | any dark background, one-colour print |
+| `akuru-mark.svg` | the emblem alone, gold | where the wordmark is already set in text |
+| `akuru-logo-800.png` | as `akuru-logo.svg`, transparent | email, structured data, anywhere SVG is refused |
+
+A downloadable pack (every variant as SVG and as PNG at 600/1200/2400 wide,
+the emblem in gold, white and wine at 256/512/1024 high, and the app icons)
+was produced with the files; it is not kept in the repository — regenerate it
+from these SVGs when needed.
 
 ## App icons
 
 `public/images/`: `favicon-16x16.png`, `favicon-32x32.png`,
 `apple-touch-icon.png` (180), `pwa-192.png`, `pwa-512.png`; and
-`public/favicon.ico` (16, 32, 48). The white mark on wine, kept inside the
+`public/favicon.ico` (16, 32, 48). The white emblem on wine `#7C2D37` (redrawn
+from the new artwork on 2026-09-29; the two favicons fill more of the square so
+the emblem reads at 16 px), kept inside the
 maskable safe zone (a circle of 80% of the side) so a launcher that crops to a
-circle keeps it whole. Linked with `?v=3` so browsers drop the old icons.
+circle keeps it whole. Linked with `?v=4` so browsers drop the old icons and logos.
 
-## Provenance and limits
+## Provenance
 
-The only artwork in the repository was a 200 × 109 pixel PNG. The vectors were
-traced from it: ink coverage per pixel, interpolated bicubically to 12×,
-thresholded, and traced with potrace, one layer per colour. They are sharp on
-screen at any size and faithful to the shapes; at very large sizes the
-diagonal of the cap shows a faint texture inherited from the small original.
-**For print or signage, export vectors from the original design file** and
-drop them in under the same names — nothing else needs to change.
+2026-09-29: the logo files are the owner's vector artwork, so they are sharp at
+any size, for screen and print. The earlier files (2026-09-24) were traced
+from a 200 × 109 pixel PNG; they are replaced. To change the logo again,
+replace the four SVGs under the same names and bump `?v=` in the component,
+the layouts, `partials/pwa.blade.php`, `AppShell.jsx`, `PrintCards.jsx` and
+`manifest.webmanifest`.

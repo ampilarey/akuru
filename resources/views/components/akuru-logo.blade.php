@@ -14,7 +14,7 @@
         default => 'akuru-logo.svg',
     };
     $logoExists = file_exists(public_path('images/logos/'.$file));
-    $logoPath = asset('images/logos/'.$file).'?v=3';
+    $logoPath = asset('images/logos/'.$file).'?v=4';
 @endphp
 
 <div {{ $attributes->merge(['class' => "flex items-center {$class}"]) }}>

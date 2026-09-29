@@ -31,7 +31,7 @@
     <!-- Logo (always visible, links home) -->
     <div class="nav-logo shrink-0 flex items-center">
       <a href="{{ LaravelLocalization::localizeURL('/') }}" class="flex items-center" aria-label="{{ __('public.Home') }}">
-        <x-akuru-logo size="h-10 sm:h-12" />
+        <x-akuru-logo size="h-11 sm:h-14" />
       </a>
     </div>
 

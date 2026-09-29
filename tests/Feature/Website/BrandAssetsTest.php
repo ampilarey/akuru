@@ -22,13 +22,28 @@ it('serves every logo the component can ask for, under its exact name', function
     expect(file_exists(public_path('images/logos/akuru-logo.PNG')))->toBeFalse();
 });
 
-it('colours the logo with the brand palette and nothing from the old one', function () {
-    $logo = file_get_contents(public_path('images/logos/akuru-logo.svg'));
-    $onDark = file_get_contents(public_path('images/logos/akuru-logo-on-dark.svg'));
+it('colours the logo with the owner\'s artwork palette and nothing from the old one', function () {
+    // Since 2026-09-29 the files come from the owner's own vector artwork
+    // (docs/BRAND.md): wine #6E1E25 and gold #C9A227.
+    $logo = strtolower(file_get_contents(public_path('images/logos/akuru-logo.svg')));
+    $onDark = strtolower(file_get_contents(public_path('images/logos/akuru-logo-on-dark.svg')));
+    $white = strtolower(file_get_contents(public_path('images/logos/akuru-logo-white.svg')));
 
-    expect($logo)->toContain('#7C2D37')->toContain('#A8861F')
-        ->and($onDark)->toContain('#FFFFFF')->toContain('#C9A227')
-        ->and($logo.$onDark)->not->toContain('#0878D8')->not->toContain('#585858');
+    expect($logo)->toContain('#6e1e25')->toContain('#c9a227')
+        ->and($onDark)->toContain('#ffffff')->toContain('#c9a227')->not->toContain('#6e1e25')
+        // One colour: white, with INSTITUTE knocked out of its bar.
+        ->and($white)->not->toContain('#c9a227')->not->toContain('#6e1e25')->toContain('mask="url(#akuru-knockout)"')
+        ->and($logo.$onDark)->not->toContain('#0878d8')->not->toContain('#585858');
+});
+
+it('has no background of its own, so it sits on any colour', function () {
+    foreach (['akuru-logo.svg', 'akuru-logo-on-dark.svg', 'akuru-logo-white.svg', 'akuru-mark.svg'] as $file) {
+        $svg = file_get_contents(public_path('images/logos/'.$file));
+        // The design tool's export carried a white 360 x 180 rectangle behind everything.
+        expect($svg)->not->toContain('<rect x="-30"', $file)
+            ->and($svg)->toMatch('#<svg [^>]*viewBox="[\\d. ]+"#', $file);
+    }
+    expect(file_exists(public_path('images/logos/Copy of logo for website.svg')))->toBeFalse();
 });
 
 it('renders the right file for each background', function (string $variant, string $file) {

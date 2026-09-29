@@ -63,7 +63,7 @@ export default function AppShell({ title, children }) {
                 <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-2 sm:px-6">
                     <div className="flex min-w-0 items-center gap-3">
                         <a href="/dashboard" className="flex shrink-0 items-center gap-2.5 no-underline" data-testid="shell-home">
-                            <img src="/images/logos/akuru-logo-on-dark.svg?v=3" alt="Akuru Institute" className="h-8 w-auto object-contain" />
+                            <img src="/images/logos/akuru-logo-on-dark.svg?v=4" alt="Akuru Institute" className="h-8 w-auto object-contain" />
                             <span className="text-[.95rem] font-bold tracking-wide text-white">Akuru Institute</span>
                         </a>
                         {/* The workspace switcher: shown only to a person who holds more
