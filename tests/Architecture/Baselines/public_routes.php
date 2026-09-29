@@ -181,6 +181,8 @@ return [
     'GET otp/login' => 'Pre-auth by necessity — see OtpService for the per-contact limits.',
     'POST otp/request' => 'Pre-auth by necessity — throttled auth-otp-request.',
     'POST otp/resend' => 'Pre-auth by necessity — throttled auth-otp-request.',
+    'GET two-factor-challenge' => 'STATUS §5lk: the second sign-in step, pre-auth by necessity; redirects to the login unless the password or OTP step just passed.',
+    'POST two-factor-challenge' => 'STATUS §5lk: the second sign-in step, pre-auth by necessity; five wrong codes a minute per person, throttled.',
     'GET otp/verify' => 'Pre-auth by necessity — see OtpService for the per-contact limits.',
     'POST otp/verify' => 'Pre-auth by necessity — see OtpService for the per-contact limits.',
     'GET password/otp/request' => 'Pre-auth by necessity — see OtpService for the per-contact limits.',

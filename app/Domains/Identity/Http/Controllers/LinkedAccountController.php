@@ -5,6 +5,7 @@ namespace App\Domains\Identity\Http\Controllers;
 use App\Domains\Identity\Actions\LinkAccountAction;
 use App\Domains\Identity\Actions\ListLinkedAccountsAction;
 use App\Domains\Identity\Actions\SwitchAccountAction;
+use App\Domains\Identity\Actions\TwoFactorAction;
 use App\Domains\Identity\Actions\UnlinkAccountAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -23,6 +24,8 @@ class LinkedAccountController extends Controller
         return Inertia::render('Identity/LinkedAccounts', [
             'accounts' => app(ListLinkedAccountsAction::class)->execute((int) $request->user()->id),
             'me' => ['name' => $request->user()->name],
+            // STATUS §5lk: the way to two-step sign-in, from the page your name opens.
+            'two_factor' => app(TwoFactorAction::class)->status($request->user()) + ['label' => __('security.link'), 'on' => __('security.state_on'), 'off' => __('security.state_off')],
         ]);
     }
 

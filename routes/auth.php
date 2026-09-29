@@ -9,6 +9,7 @@ use App\Domains\Identity\Http\Controllers\Auth\OtpPasswordResetController;
 use App\Domains\Identity\Http\Controllers\Auth\PasswordController;
 use App\Domains\Identity\Http\Controllers\Auth\PasswordOtpController;
 use App\Domains\Identity\Http\Controllers\Auth\RegisteredUserController;
+use App\Domains\Identity\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Domains\Identity\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -26,6 +27,12 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+    // STATUS §5lk: the second step, for people who turned two-step sign-in on.
+    Route::get('two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.challenge');
+    Route::post('two-factor-challenge', [TwoFactorChallengeController::class, 'store'])
+        ->middleware('throttle:10,1,auth-two-factor')
+        ->name('two-factor.challenge.store');
 
     Route::get('forgot-password', [PasswordOtpController::class, 'showRequestForm'])
         ->name('password.request');

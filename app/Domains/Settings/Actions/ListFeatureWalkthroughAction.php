@@ -33,6 +33,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-signin-7', 'label' => 'Language switch EN / DV / AR; Dhivehi and Arabic read right to left', 'where' => '/dv'],
                 ['key' => 'ft-signin-8', 'label' => 'Alerts (notifications) and the profile page', 'where' => '/portal/notifications'],
                 ['key' => 'ft-signin-9', 'label' => 'Linked accounts: prove another login and switch to it', 'where' => '/account/linked'],
+                ['key' => 'ft-signin-10', 'label' => 'Two-step sign-in: turn it on with an authenticator app from My accounts; a password or OTP then asks for a code; a recovery code works once', 'where' => '/account/two-factor'],
             ]],
             ['key' => 'ft-website', 'title' => 'Public website (visitors)', 'items' => [
                 ['key' => 'ft-website-1', 'label' => 'Home, courses, news, events, gallery, achievements, contact; old research and article addresses open the Digital Library', 'where' => '/en'],

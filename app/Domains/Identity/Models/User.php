@@ -50,6 +50,9 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        // §5lk: never serialised, never shown after setup.
+        'two_factor_secret',
+        'two_factor_recovery_codes',
     ];
 
     /**
@@ -66,7 +69,18 @@ class User extends Authenticatable implements MustVerifyEmail
             'is_active' => 'boolean',
             'force_password_change' => 'boolean',
             'last_login_at' => 'datetime',
+            // §5lk: two-step sign-in — encrypted at rest with the app key.
+            'two_factor_secret' => 'encrypted',
+            'two_factor_recovery_codes' => 'encrypted:array',
+            'two_factor_confirmed_at' => 'datetime',
+            'two_factor_last_step' => 'integer',
         ];
+    }
+
+    /** §5lk: two-step sign-in is on (set up and confirmed with a first code). */
+    public function hasTwoFactor(): bool
+    {
+        return $this->two_factor_confirmed_at !== null && $this->two_factor_secret !== null;
     }
 
     /**

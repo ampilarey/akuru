@@ -34,6 +34,7 @@ return [
     'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php::checkoutLogin' => '`Hash::check` against the submitted password, rate-limited per key, with a deliberately generic failure that does not reveal whether the account exists.',
 
     // --- A one-time code was verified --------------------------------------
+    'app/Domains/Identity/Http/Controllers/Auth/TwoFactorChallengeController.php' => 'STATUS §5lk: the second step. Only after the password (LoginRequest) or the OTP (OtpLoginController) was proved — which put the person\'s id in the session for ten minutes — and TwoFactorAction::verify accepts a fresh app code or a recovery code. Five wrong codes a minute per person, and the route is throttled.',
     'app/Domains/Identity/Http/Controllers/Auth/OtpLoginController.php' => 'Immediately after `OtpService::verify()`, which throws on a wrong or expired code and rate-limits per contact and per code.',
     'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php::verify' => 'Both branches sit after `OtpService::verify()` for the contact the funnel is about. This is the step the two P0s below were skipping.',
 

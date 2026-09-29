@@ -122,8 +122,15 @@ class OtpLoginController extends Controller
 
         $user = $contact->user;
 
+        // STATUS §5lk: an OTP is one step; with two-step sign-in on, the app's code is the other.
+        if ($user->hasTwoFactor()) {
+            session()->forget(['otp_login_contact_id', 'otp_login_identifier']);
+
+            return TwoFactorChallengeController::begin($request, $user, true);
+        }
+
         Auth::login($user, true);
-        $user->update(['last_login_at' => now()]);
+        $user->forceFill(['last_login_at' => now()])->save();
 
         session()->forget(['otp_login_contact_id', 'otp_login_identifier']);
         $request->session()->regenerate();

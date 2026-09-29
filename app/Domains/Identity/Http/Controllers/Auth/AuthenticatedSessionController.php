@@ -24,7 +24,10 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
-        $request->authenticate();
+        if (! $request->authenticate()) {
+            // STATUS §5lk: the password was right; a code from their app finishes it.
+            return TwoFactorChallengeController::begin($request, $request->twoFactorUser, $request->boolean('remember'));
+        }
 
         $request->session()->regenerate();
 
