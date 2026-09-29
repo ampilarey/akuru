@@ -23,7 +23,7 @@ class HomeController extends Controller
         $locale = app()->getLocale();
 
         // Cache courses/posts/events/stats for 10 minutes; gallery+testimonials are fetched fresh
-        $cached = Cache::remember("homepage_data_v7_{$locale}", 600, function () use ($locale) {
+        $cached = Cache::remember("homepage_data_v8_{$locale}", 600, function () use ($locale) {
             return $this->buildHomepageData($locale);
         });
 
@@ -88,13 +88,8 @@ class HomeController extends Controller
             $course->setAttribute('conversion', $signals[$course->id] ?? null);
         }
 
-        if ($courses->isEmpty()) {
-            $courses = collect([
-                (object) ['title' => __('public.Quran Memorization'), 'short_desc' => __('public.Complete Quran memorization program'), 'duration_text' => '2-3 years', 'cover_image' => null, 'category' => null, 'slug' => 'quran'],
-                (object) ['title' => __('public.Arabic Language'), 'short_desc' => __('public.Learn Arabic from basics to fluency'), 'duration_text' => '1-2 years', 'cover_image' => null, 'category' => null, 'slug' => 'arabic'],
-                (object) ['title' => __('public.Islamic Studies'), 'short_desc' => __('public.Comprehensive Islamic education'), 'duration_text' => '1 year', 'cover_image' => null, 'category' => null, 'slug' => 'islamic'],
-            ]);
-        }
+        // No invented courses: an empty list shows the page's own "no open courses" line
+        // (the owner, 2026-09-29: placeholder cards led to "no course found").
 
         // News posts
         $posts = Post::published()
@@ -112,12 +107,6 @@ class HomeController extends Controller
             ->take(3)
             ->get();
 
-        if ($posts->isEmpty()) {
-            $posts = collect([
-                (object) ['title' => __('public.New Academic Year Starts'), 'body' => __('public.Registration is now open for the new academic year...'), 'published_at' => now()->subDays(30), 'slug' => 'news-1'],
-                (object) ['title' => __('public.Quran Competition Results'), 'body' => __('public.Congratulations to all participants...'), 'published_at' => now()->subDays(35), 'slug' => 'news-2'],
-            ]);
-        }
 
         // Events from DB
         $events = Event::published()
@@ -127,12 +116,6 @@ class HomeController extends Controller
             ->take(3)
             ->get();
 
-        if ($events->isEmpty()) {
-            $events = collect([
-                (object) ['title' => __('public.Open House Day'), 'start_date' => now()->addDays(30), 'location' => __('public.Main Campus')],
-                (object) ['title' => __('public.Quran Recitation Competition'), 'start_date' => now()->addDays(45), 'location' => __('public.Auditorium')],
-            ]);
-        }
 
         // Course/teacher counts stay local to this page. Students + years come from
         // trust settings (never invent a 500 / 5+ fallback).

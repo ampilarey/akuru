@@ -4414,6 +4414,24 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kl. The home page invents no courses, news or events (2026-09-29)
+
+The owner, on production with no courses yet: the home page showed three
+course cards, and each led to "no course found". `HomeController` filled an
+empty list with placeholders — three courses (with made-up slugs that 404),
+two news items ("New Academic Year Starts", "Quran Competition Results",
+slugs `news-1`/`news-2`) and two events ("Open House Day", "Quran Recitation
+Competition") — the same invented-number problem §5kk removed from the stats
+row. All three fallbacks are gone: an empty list shows the page's own line
+("No open courses right now. Leave your details…", "No news yet.", "No
+upcoming events scheduled."). The hero's fallback slides stay — they are
+words about Akuru, not records. The page's cache key moves to v8 so a cached
+copy with the placeholders is not served for the next ten minutes.
+
+**Tests.** `HomepageProductsTest` +1: with nothing in the database the
+course row links to no course, the empty lines show, and none of the
+placeholder titles appear. Website suite: 149 passed.
+
 ## 5kk. W3: the footer by product, and one row of real numbers (2026-09-29)
 
 The last of the three website slices (§5ki, §5kj).
