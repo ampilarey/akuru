@@ -415,6 +415,41 @@ Referral credit is built and **off** (STATUS §5ln). Once it is on:
 Only friends who come after that moment count. Like rewards (item 20), it
 is wallet credit Akuru funds. "Not yet" is a legible answer.
 
+### 22. PDF report cards — point the server at Chrome (kept for later, 2026-09-29)
+
+Report cards can download as PDF (STATUS §5lr). The PDF is printed by headless
+Chrome from the stored HTML, which keeps Thaana and Arabic right to left. It is
+offered **only** where the server knows where Chrome is. Until then the pages
+show **Open to print**, as before, and nothing breaks.
+
+- [ ] Find Chrome or Chromium on the host: `which chromium chromium-browser google-chrome`.
+      On shared cPanel hosting there may be none; ask the host whether it can be installed.
+- [ ] Add `DOCUMENTS_CHROME_PATH=/that/path` to production's `.env` (the one line, never the whole file)
+- [ ] `php artisan config:cache`
+- [ ] Open a published report card on `/exams/report-cards`: **PDF** is there, and it downloads
+
+"Not yet" is a legible answer: report cards stay HTML.
+
+### 23. Library notices by email and SMS — when to turn them on (kept for later, 2026-09-29)
+
+Built and **off** (STATUS §5lq). Once on, the important Library notices also go
+by email and/or SMS:
+- a writer application decided;
+- a submission decided;
+- a work published;
+- a new sale;
+- a payout decided;
+- a review requested;
+- a purchase ready.
+
+Reader reminders and office alerts stay in the app.
+
+- [ ] Item 3 first: email is queued, so it needs the queue worker
+- [ ] SMS reaches phones only where `SMS_LIVE` is on; otherwise it is logged
+- [ ] On `/admin/library/settings`, switch on **email**, **SMS**, or both
+
+"Not yet" is a legible answer.
+
 ## Parked items and later ideas
 
 Everything deferred or left unbuilt on purpose — the BML secret, branch

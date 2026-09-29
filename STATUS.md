@@ -4414,6 +4414,15 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ls. Two owner actions kept for later (2026-09-29)
+
+The owner said "keep this 2 for later" about the two things §5lq and §5lr
+leave to them. Both are now `docs/OWNER_ACTIONS.md` items:
+- **22:** set `DOCUMENTS_CHROME_PATH` so report cards offer PDF;
+- **23:** turn on the Library's email and SMS notices.
+
+Docs only; nothing is switched on.
+
 ## 5lr. Report cards as PDF (2026-09-29)
 
 BACKLOG C2: "Report cards as PDF (ADR-012: HTML is the supported output;
