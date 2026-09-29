@@ -136,6 +136,7 @@ const WALKS = [
     { name: 'mobile', writes: false, asks: 'Does this work on a phone?' },
     { name: 'nav', writes: false, asks: 'Can each kind of person find their way, without reading a wall of links?' },
     { name: 'website', writes: false, asks: 'Does the website lead with the four products, on a desk and on a phone?' },
+    { name: 'news', writes: true, asks: 'Can the office write the news, and does it reach /news and the home page?' },
     { name: 'identity', writes: false, asks: 'Does each person see only their own workspace — a vendor their shop, a parent their children, nobody the rest?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
 ];

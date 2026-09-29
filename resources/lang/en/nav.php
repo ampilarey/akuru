@@ -176,6 +176,7 @@ return [
     'panel_system' => 'System',
     'enrolment_payments' => 'Payments',
     'cms_pages' => 'Pages',
+    'cms_news' => 'News',
     'cms_courses' => 'Courses',
     'cms_daily_content' => 'Daily content',
     'cms_daily_queue' => 'Approval queue',

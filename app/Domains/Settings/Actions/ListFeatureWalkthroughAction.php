@@ -46,6 +46,8 @@ class ListFeatureWalkthroughAction
             ]],
             ['key' => 'ft-institute', 'title' => 'Institute (System admin)', 'items' => [
                 ['key' => 'ft-institute-1', 'label' => 'Website pages: create, edit, preview, publish', 'where' => '/admin/public-site/pages'],
+                // R4 (RESEARCH_ARTICLES_PLAN): the news editor.
+                ['key' => 'ft-institute-11', 'label' => 'Website news: write with a cover, schedule or publish, pin and feature, categories, CSV', 'where' => '/admin/public-site/news'],
                 ['key' => 'ft-institute-2', 'label' => 'Website courses, daily content calendar and approval queue (research is written in the Digital Library since R2)', 'where' => '/admin/public-site/courses'],
                 ['key' => 'ft-institute-3', 'label' => 'Leads, the enrolment funnel and daily subscriptions, each with CSV', 'where' => '/admin/public-site/leads'],
                 ['key' => 'ft-institute-4', 'label' => 'Instructors shown on the website', 'where' => '/admin/instructors'],

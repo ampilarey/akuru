@@ -49,6 +49,9 @@ function adminPagesOpenedFromAParent(): array
         'admin.daily-content.index' => 'opened from the Website CMS hub (admin.pages.index)',
         'admin.daily-subscriptions.index' => 'opened from the Website CMS hub (admin.pages.index)',
         'admin.courses.index' => 'opened from the Website CMS hub (admin.pages.index)',
+        // R4: the news editor and its categories.
+        'admin.news.index' => 'opened from the Website CMS hub (admin.pages.index)',
+        'admin.news.categories' => 'opened from admin.news.index',
         // Deliberately not in the menu: a list that accuses readers of
         // theft should take a decision to open, not sit in a nav bar.
         'admin.library.reading-alerts' => 'opened from the Library admin hub (admin.library.index)',

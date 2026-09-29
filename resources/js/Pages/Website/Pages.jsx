@@ -19,6 +19,8 @@ export default function Pages({ pages = [], pagination, total = 0, t = {} }) {
             <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
                 <a href="/admin/public-site/pages/export" className="underline" data-testid="export-csv">{t.pages_export || 'Export CSV'}</a>
                 <Link href="/admin/public-site/courses" className="underline">{t.leads_link_courses || 'Manage Courses →'}</Link>
+                {/* R4: the news editor, from the Website CMS hub. */}
+                <Link href="/admin/public-site/news" className="underline" data-testid="pages-news-link">{t.news_link || 'News →'}</Link>
                 <p className="text-gray-600" data-testid="pages-total">{(t.pages_total || ':count pages').replace(':count', total)}</p>
                 <Link href="/admin/public-site/pages/create" className="btn-primary ms-auto" data-testid="pages-new">{t.pages_new || 'Add New Page'}</Link>
             </div>

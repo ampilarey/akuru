@@ -172,6 +172,7 @@ return [
     'panel_system' => 'النظام',
     'enrolment_payments' => 'المدفوعات',
     'cms_pages' => 'الصفحات',
+    'cms_news' => 'الأخبار',
     'cms_courses' => 'الدورات',
     'cms_daily_content' => 'المحتوى اليومي',
     'cms_daily_queue' => 'قائمة الاعتماد',

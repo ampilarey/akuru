@@ -54,7 +54,8 @@ return [
     'public/courses/show.blade.php :: $course->body' => 'Admin PublicSite CourseController sanitises `body` with PROFILE_CMS on store and update.',
 
     // --- Posts: news only since R2 (RESEARCH_ARTICLES_PLAN) ----------------
-    'public/news/show.blade.php :: $post->body' => 'Nothing in the application writes `posts.body` since R2 retired the research CMS (research and articles moved to the Digital Library). The news editor (R4) becomes its single writer and must clean it with PROFILE_CMS.',
+    'public/news/show.blade.php :: $post->body' => 'SaveNewsPostAction (R4, the news editor) is the one writer of `posts.body` and cleans it with PROFILE_CMS.',
+    'Pages/Website/NewsPreview.jsx :: post.body' => 'As above: the office preview of the same column, cleaned by SaveNewsPostAction.',
 
     // --- Events -------------------------------------------------------------
     'public/events/show.blade.php :: $event->description' => 'SaveEventAction cleans `description` with PROFILE_CMS.',

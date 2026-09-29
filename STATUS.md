@@ -4414,6 +4414,44 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ks. R4: a news editor (2026-09-29)
+
+`docs/RESEARCH_ARTICLES_PLAN.md` R4 (the owner's decision D3). News stays a
+website post.
+
+- **Website CMS → News** (`/admin/public-site/news`, Inertia, EN/DV/AR,
+  gated with the rest of the website CMS):
+  - a list with draft, scheduled and published states, pinned and featured
+    marks, and a CSV;
+  - a form with title, address, summary, body in the rich text editor, a
+    cover image, category, tags, featured, pinned, publish date and a
+    search description;
+  - a preview that shows drafts too;
+  - categories at `/admin/public-site/news/categories`: add, order, hide.
+- `SaveNewsPostAction` is the one writer of `posts.body` and cleans it with
+  PROFILE_CMS. The cover is public media stored by path;
+  `StorePublicMediaAction` now also returns `path`.
+- Reached from the Website CMS menu (`cms_news`) and from the Pages hub.
+  The feature-testing list has a *Website news* row.
+- **Found and fixed on the way:**
+  - the public news page and the event page answered 500 whenever there was
+    one to show, because Laravel 12 reads `@context` in their JSON-LD as a
+    Blade directive (now `@@context`);
+  - the news list linked every item to `/en/news/en?<slug>`, a 404, by
+    passing the language where the slug belongs. Events and gallery have
+    the same fault; that fix follows in its own PR.
+- **Found and recorded, not changed:** the public layout is always
+  left-to-right, in Dhivehi and Arabic too (KNOWN_ISSUES).
+
+Tests: `tests/Feature/Website/NewsEditorTest.php` (5). The detail-screen
+sweep now covers the news preview and edit with a seeded post. Full suite
+2475 passed; the five bookkeeping failures it found (menu count, hub
+listing, raw-HTML baseline, detail sweep) were fixed and re-run green.
+Walk: new `scripts/smoke/news.mjs`, registered in `all.mjs`, 6/6: the
+office writes a news item with a cover and publishes it, saves a draft,
+the list tells them apart, and a visitor sees the published one on
+`/news`, on its own page with its cover, and on the home page.
+
 ## 5kr. R3b: the reviewer's side of peer review (2026-09-29)
 
 Second half of `docs/RESEARCH_ARTICLES_PLAN.md` R3.

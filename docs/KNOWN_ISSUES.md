@@ -157,6 +157,29 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the news editor slice R4 (2026-09-29)
+
+- **The public site is always left-to-right** (open, P2). The public layout
+  (`resources/views/public/layouts/public.blade.php`, line 2) writes
+  `dir="ltr"` whatever the language, so `/dv/...` and `/ar/...` pages lay
+  out left-to-right. The Inertia shell and the reader do switch. Setting it
+  from the locale is a one-line change, but it flips every public page at
+  once — the header, the product tiles, the footer, the bottom bar — so it
+  wants its own slice with a walk at phone and desk width in both scripts,
+  not a side-effect of the news editor. The owner may also have wanted LTR
+  on purpose (the site's Dhivehi and Arabic text is set `dir="auto"` where
+  it matters).
+- **Event, gallery and news links passed the language where the id
+  belongs** (news fixed in R4; events and gallery fixed in the follow-up
+  PR). `route('public.events.show', [app()->getLocale(), $event->id])`
+  builds `/en/events/en?5` — the locale is already a URL default, so the
+  first positional value filled `{event}`. Every event and gallery link on
+  their list pages, and the event registration form's action, led to a
+  404. News had the same fault, found by R4's walk.
+- **`@context` in JSON-LD is a Blade directive since Laravel 12** (fixed in
+  R4). The news and event pages answered 500 whenever there was one to
+  show; escaped as `@@context`.
+
 ## Found by the Bookstore audit (2026-09-26)
 
 ### Deleting a customer or a vendor would take their orders and money records with them — **fixed (2026-09-27, STATUS §5ii)**

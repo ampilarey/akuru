@@ -27,7 +27,7 @@ class StorePublicMediaAction
     /**
      * @param  list<string>  $allowedMimes
      * @param  array<string, mixed>  $meta
-     * @return array{id: int, url: string, mime: string, original_name: string, visibility: string}
+     * @return array{id: int, url: string, path: string, mime: string, original_name: string, visibility: string}
      */
     public function execute(
         UploadedFile $file,
@@ -70,6 +70,9 @@ class StorePublicMediaAction
         return [
             'id' => $media->id,
             'url' => $this->storage->url('public', $path),
+            // The path on the public disk, for views that build the URL
+            // themselves (`x-public.picture`, which also finds the WebP).
+            'path' => $path,
             'mime' => $media->mime,
             'original_name' => $media->original_name,
             'visibility' => $media->visibility,

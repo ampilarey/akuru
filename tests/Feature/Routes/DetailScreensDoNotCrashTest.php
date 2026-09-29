@@ -166,6 +166,8 @@ function detailDeclaredParams(): array
             'session' => $s['offering_session'],
         ],
         'catalog/player/{lesson}' => fn (array $s): array => ['lesson' => $s['lesson']],
+        'admin/public-site/news/{post}' => fn (array $s): array => ['post' => $s['news_post']],
+        'admin/public-site/news/{post}/edit' => fn (array $s): array => ['post' => $s['news_post']],
         // Mushaf page mapping (F5). `{pageNumber}` is a scalar the route looks
         // up against the mushaf, so reflection cannot resolve it and the pair
         // has to be declared together.
@@ -283,6 +285,12 @@ function detailSeededIds(): array
         'offering_session' => (int) $offeringSessionId,
         'mushaf' => (int) ($mushaf?->id ?? 0),
         'mushaf_page' => 1,
+        // R4: the news editor's preview and edit screens take a news post's id.
+        'news_post' => (int) \App\Domains\Website\Models\Post::query()->create([
+            'type' => 'news', 'title' => 'Sweep news', 'slug' => 'sweep-news-'.Str::random(6), 'summary' => 'A summary.',
+            'body' => '<p>Body.</p>', 'is_published' => true, 'published_at' => now()->subDay(),
+            'author_id' => User::query()->value('id'),
+        ])->id,
     ];
 }
 

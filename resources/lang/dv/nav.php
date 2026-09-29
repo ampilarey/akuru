@@ -176,6 +176,7 @@ return [
     'panel_system' => 'ސިސްޓަމް',
     'enrolment_payments' => 'ފައިސާ ދެއްކުން',
     'cms_pages' => 'ސަފުހާތައް',
+    'cms_news' => 'ޚަބަރު',
     'cms_courses' => 'ކޯސްތައް',
     'cms_daily_content' => 'ދުވަހުގެ ކޮންޓެންޓް',
     'cms_daily_queue' => 'އެޕްރޫވަލް ކިޔު',
