@@ -214,6 +214,16 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
     check('and keeps the Akuru header', await visitor.locator('[data-testid="nav-bookstore"]').isVisible());
     await visitor.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });
     check('the store\'s front keeps the full footer', (await visitor.locator('[data-footer-group]').count()) === 5 && (await visitor.locator('[data-testid="footer-compact"]').count()) === 0);
+
+    // On a phone nothing is fixed to the foot of a shop's page; the cart is in its links.
+    const small = await newPage('shop-phone-foot', { width: 390, height: 844 });
+    await small.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
+    const bars = (await small.locator('[data-testid="bottom-bar"]').count()) + (await small.locator('[data-testid="shop-bottom-bar"]').count());
+    const gap = await small.evaluate(() => document.documentElement.scrollHeight - document.querySelector('[data-testid="footer-compact"]').getBoundingClientRect().bottom - window.scrollY);
+    check('on a phone a shop\'s page has no fixed bar, and ends at its copyright line', bars === 0 && gap <= 1, `bars: ${bars}, space under the line: ${Math.round(gap)}px`);
+    check('the cart is one tap away in the shop\'s links', await small.locator('[data-testid="shop-link-cart"]').isVisible());
+    await small.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });
+    check('the store\'s own front keeps its phone bar', await small.locator('[data-testid="bottom-bar"]').isVisible());
 }
 
 // ------------------------------------------------------------ on a phone (STATUS §5kv)

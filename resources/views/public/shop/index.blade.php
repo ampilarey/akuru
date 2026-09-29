@@ -22,6 +22,23 @@
 @endif
 
 @section('content')
+@push('shop_links')
+{{-- STATUS §5ky, §5kz: the store's doors, on the store and on every shop's page
+     (a shop with a storefront too) — every shop, the categories, the cart, the
+     customer's orders, and the way in for a shop owner. On a shop's own page no
+     bar is fixed to the foot of a phone, so the cart is here. --}}
+@php($cartCount = app(\App\Domains\Bookshop\Actions\Cart\ResolveCartAction::class)->count(auth()->id(), session(\App\Domains\Bookshop\Actions\Cart\ResolveCartAction::SESSION_KEY)))
+<div class="{{ $storefront ? '' : 'bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100' }}">
+    <nav class="container mx-auto flex flex-wrap gap-2 px-4 pb-4 {{ $storefront ? 'pt-4' : '' }} text-sm" aria-label="{{ __('site.store_menu') }}" data-testid="shop-links">
+        <a href="{{ $home ? '#shops' : route('public.shop.index').'#shops' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 font-semibold text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-shops">{{ __('site.shops') }}</a>
+        <a href="{{ $home ? '#categories' : route('public.shop.index').'#categories' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.shop_categories') }}</a>
+        <a href="{{ route('public.shop.cart') }}" class="inline-flex items-center gap-1 rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-cart">{{ __('site.cart') }}@if($cartCount > 0)<span class="rounded-full bg-brandMaroon-600 px-1.5 text-xs font-semibold text-white" data-testid="shop-link-cart-count">{{ $cartCount }}</span>@endif</a>
+        <a href="{{ route('public.shop.orders') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.my_orders') }}</a>
+        <a href="{{ route('vendor.apply') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.sell_on_akuru') }}</a>
+        <a href="{{ route('vendor.index') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-owners">{{ __('site.shop_owner_signin') }}</a>
+    </nav>
+</div>
+@endpush
 @if($storefront)
 {{-- B4: the vendor's own look, inside the Akuru frame. --}}
 <div class="storefront {{ $storefront['theme']['shape']['button'] === 'outlined' ? 'sf-outlined' : '' }}" data-testid="storefront" data-preview="{{ ($preview ?? false) ? '1' : '0' }}" data-preset="{{ $storefront['theme']['preset'] ?? 'custom' }}">
@@ -30,6 +47,7 @@
 @endif
 @include('public.shop._storefront', ['part' => 'head'])
 @include('public.shop._nav')
+@stack('shop_links')
 @if($collection)
     <section class="container mx-auto px-4 pt-8" data-testid="collection-head">
         <nav class="mb-2 text-sm opacity-70"><a href="{{ $storefront['home_url'] }}" class="hover:underline">{{ $storefront['name'] }}</a> › <span>{{ $collection['name'] }}</span></nav>
@@ -75,17 +93,9 @@
         @elseif(! $heading)
             <p class="mt-2 text-lg text-brandGray-700">{{ __('shop.shop_intro') }}</p>
         @endif
-        {{-- STATUS §5ky: the store's doors, on its own page too — every shop, the
-             categories, the customer's orders, and the way in for a shop owner. --}}
-        <nav class="mt-4 flex flex-wrap gap-2 text-sm" aria-label="{{ __('site.store_menu') }}" data-testid="shop-links">
-            <a href="{{ $home ? '#shops' : route('public.shop.index').'#shops' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 font-semibold text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-shops">{{ __('site.shops') }}</a>
-            <a href="{{ $home ? '#categories' : route('public.shop.index').'#categories' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.shop_categories') }}</a>
-            <a href="{{ route('public.shop.orders') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.my_orders') }}</a>
-            <a href="{{ route('vendor.apply') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.sell_on_akuru') }}</a>
-            <a href="{{ route('vendor.index') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-owners">{{ __('site.shop_owner_signin') }}</a>
-        </nav>
     </div>
 </section>
+@stack('shop_links')
 @endif
 
 {{-- On a phone the search stays in view and the rest folds under "Filter and sort",
@@ -330,7 +340,10 @@
 </div>
 @endif
 
-@include('public.shop._bottom-bar')
+{{-- A shop's own pages carry no fixed phone bar (STATUS §5kz); the store's do. --}}
+@unless($vendor)
+    @include('public.shop._bottom-bar')
+@endunless
 @endsection
 
 @push('scripts')

@@ -33,5 +33,5 @@
 @endif
 </div>
 
-@include('public.shop._bottom-bar')
+{{-- A shop's own pages carry no fixed phone bar (STATUS §5kz). --}}
 @endsection

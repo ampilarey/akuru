@@ -4414,6 +4414,46 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5la. No bar fixed to the foot of a phone on a shop's own pages (2026-09-29)
+
+The owner sent a phone screenshot of `/shop/fitrah` after §5kz: the site's
+bottom bar (Home · Courses · Library · Shop · Account) was still fixed to
+the foot, with an empty strip under the copyright line.
+
+- **Two bars, two spacers.**
+  - The site's bar (z-50) sat over the store's own bar (Shop ·
+    Categories · Cart · Account, z-40).
+  - Each added a 4rem spacer, and together the spacers made the strip.
+- **Now, on a shop's own pages** (home, collections, pages): neither bar
+  is drawn and neither spacer is added.
+  - The layout wraps its bar in `@sectionMissing('shop_footer')`.
+  - The shop views include `_bottom-bar` only when no vendor is shown.
+  - The page ends at the copyright line: 0px under it, walked at 390px.
+- **The cart is still one tap away.** The store's row of links gains
+  **Cart** with its item count, between Categories and My orders.
+- **Storefront shops get the links too.** On Fitrah, which has a published
+  storefront, the row was not shown, because it sat in the plain page's
+  header only. It is now pushed once (`@push('shop_links')`) and stacked
+  under the storefront's head and menu, or under the plain header.
+- **Unchanged:** the store's front, categories, product pages and cart keep
+  both bars and the full footer.
+
+Tests:
+- `ShopFooterTest`: a shop's page has no bottom bar, no store bar and a
+  cart link; the other pages keep the bar.
+- `StorefrontSectionsTest` (+1): a published storefront has the links, the
+  cart, the compact footer and no bars, with the links above its products.
+
+Full suite 2506 passed.
+
+Walk: `scripts/smoke/shop.mjs` 39/39, with three new phone steps:
+- no fixed bar, and 0px under the line;
+- the cart link is visible;
+- the store's front keeps its bar.
+
+Screenshots at 390px show the links row with Cart at the top of Fitrah's
+page and the copyright line at the very bottom.
+
 ## 5kz. A shop's own pages end with only the copyright line (2026-09-29)
 
 **The owner's decision.** Vendors complained that their page is meant to

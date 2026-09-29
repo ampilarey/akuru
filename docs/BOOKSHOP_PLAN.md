@@ -58,7 +58,8 @@ Online Bookshop" stay. A customer always knows whose site they are on.
 **Changed by the owner, 2026-09-29 (STATUS §5kz):** at the vendors' request,
 a shop's own pages (its home, collections and pages) keep the header, on a
 desk and on a phone, but the Akuru footer shrinks to its copyright line so
-the shop's brand leads. The store's front, categories, product pages, cart
+the shop's brand leads, and no bar is fixed to the foot of a phone (§5la;
+the cart is in the shop's row of links). The store's front, categories, product pages, cart
 and checkout keep the full footer.
 
 ---
