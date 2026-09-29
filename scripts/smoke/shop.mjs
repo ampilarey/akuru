@@ -246,6 +246,22 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
     check('ending the sale takes it off Deals', (await shopper.locator(`[data-product="${BOOK}"]`).count()) === 0 && (await shopper.locator('[data-testid="shop-empty"]').count()) + (await shopper.locator('[data-testid="shop-grid"] [data-product]').count()) > 0);
 }
 
+// ------------------------------------------------------------ brands (STATUS §5lh)
+{
+    const b = await newPage('brands');
+    await b.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });
+    const chip = b.locator('[data-testid="shop-brands"] [data-brand="smoke-brand"]');
+    check('the store\'s front lists the brands with something for sale', (await chip.count()) === 1, (await b.locator('[data-testid="shop-brands"]').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 120));
+    await Promise.all([b.waitForURL(/\/shop\/brand\/smoke-brand$/), chip.click()]);
+    await b.waitForLoadState('networkidle');
+    const slugs = await b.locator('[data-testid="shop-grid"] [data-product]').evaluateAll((els) => els.map((e) => e.getAttribute('data-product')));
+    check('a brand\'s page shows only its products', slugs.length === 1 && slugs[0] === 'smoke-wooden-alphabet-puzzle', slugs.join(', '));
+    await b.goto(`${BASE}/en/shop/products/smoke-wooden-alphabet-puzzle`, { waitUntil: 'networkidle' });
+    check('the product page links its brand', /\/shop\/brand\/smoke-brand$/.test((await b.getAttribute('[data-testid="product-brand-link"]', 'href').catch(() => '')) ?? ''));
+    await b.goto(`${BASE}/en/shop?brand=smoke-brand`, { waitUntil: 'networkidle' });
+    check('and the listing filters by brand', (await b.locator('[data-testid="filter-brand"]').inputValue().catch(() => '')) === 'smoke-brand' && (await b.locator('[data-testid="shop-grid"] [data-product]').count()) === 1);
+}
+
 // ------------------------------------------------------------ a school's book list (STATUS §5lc)
 {
     const PUZZLE = 'smoke-wooden-alphabet-puzzle';

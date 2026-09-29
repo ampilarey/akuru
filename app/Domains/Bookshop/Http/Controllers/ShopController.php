@@ -61,6 +61,24 @@ class ShopController extends Controller
         ]);
     }
 
+    /** §5lh: one brand's products, from every shop. */
+    public function brand(Request $request, string $slug)
+    {
+        $options = $this->options();
+        $brand = collect($options['brands'])->firstWhere('slug', $slug);
+        abort_if($brand === null, 404);
+        $filters = ['brand' => $slug] + $this->filters($request);
+
+        return view('public.shop.index', [
+            'home' => null,
+            'products' => app(ListShopProductsAction::class)->execute($filters),
+            'filters' => $filters,
+            'options' => $options,
+            'vendor' => null,
+            'heading' => $brand['name'],
+        ]);
+    }
+
     /** §5lb: every timed sale running now, ending soonest first. */
     public function deals(Request $request)
     {

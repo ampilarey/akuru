@@ -1600,4 +1600,6 @@ return [
     'review_helpful_flash' => 'شكرًا — عُلّم كمفيد.',
     'review_unhelpful_flash' => 'أُلغيت علامتك.',
     'error_vote_own_review' => 'لا يمكنك تعليم مراجعتك كمفيدة.',
+    'all_brands' => 'كل العلامات',
+    'shop_by_brand' => 'تسوّق حسب العلامة',
 ];

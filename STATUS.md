@@ -4414,6 +4414,38 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lh. Brand pages and a brand filter (2026-09-29)
+
+BOOKSHOP_PLAN §16, item 8b. Brands already existed: the office keeps the
+list and shops pick one per product. The listing understood `?brand=`,
+but nothing on a page led there.
+
+- **`/shop/brand/{slug}`** shows an active brand's products for sale, from
+  every shop, with the usual filters and CSV. An unknown or inactive brand
+  is 404.
+- **Shop by brand** on the store's front lists the active brands that have
+  something for sale, with counts.
+- **A Brand select** in Filter and sort, when the office has named any.
+- **The product page's Brand** links to the brand's page when the brand is
+  active.
+- `brand` joins the words no shop may be named.
+
+Tests:
+- `ShopBrandsTest` (2):
+  - the brand page shows its products from two shops and not a draft,
+    without its own select; the listing filters and keeps the choice;
+  - the front lists only brands with something for sale that are active;
+    the product page links an active brand and not a retired one.
+
+Checklist: `ft-bookstore-17`.
+
+Walk: `scripts/smoke/shop.mjs` 56/56, with four new steps. The smoke
+seeder now gives the puzzle a brand, `SMOKE-Brand`. The walk checks:
+- the chip on the front;
+- the brand page with only the puzzle;
+- the product page's link;
+- the filtered listing.
+
 ## 5lg. Helpful review votes (2026-09-29)
 
 BOOKSHOP_PLAN §16, item 8.

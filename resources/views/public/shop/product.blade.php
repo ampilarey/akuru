@@ -204,7 +204,10 @@
                     <dl class="grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                         @foreach($facts as $key => $value)
                             <dt class="text-gray-500">{{ __('shop.'.$key) }}</dt>
-                            <dd class="text-gray-800" dir="auto">{{ $value }}</dd>
+                            <dd class="text-gray-800" dir="auto">
+                                {{-- §5lh: the brand opens its page. --}}
+                                @if($key === 'brand' && ($product['brand_slug'] ?? null))<a href="{{ route('public.shop.brand', $product['brand_slug']) }}" class="text-brandMaroon-700 underline" data-testid="product-brand-link">{{ $value }}</a>@else{{ $value }}@endif
+                            </dd>
                         @endforeach
                     </dl>
                 </div>

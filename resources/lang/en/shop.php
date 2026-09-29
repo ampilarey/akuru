@@ -1604,4 +1604,6 @@ return [
     'review_helpful_flash' => 'Thanks — marked helpful.',
     'review_unhelpful_flash' => 'Your helpful mark is taken back.',
     'error_vote_own_review' => 'You cannot mark your own review helpful.',
+    'all_brands' => 'All brands',
+    'shop_by_brand' => 'Shop by brand',
 ];

@@ -47,6 +47,7 @@ class PresentShopProductAction
             'category_slug' => $category?->slug,
             'category_name' => $category === null ? null : (($locale === 'dv' && $category->name_dv) ? $category->name_dv : (($locale === 'ar' && $category->name_ar) ? $category->name_ar : $category->name)),
             'brand' => $product->brand?->name,
+            'brand_slug' => $product->brand?->is_active ? $product->brand->slug : null,
             'sku' => $product->sku,
             'barcode' => $product->barcode,
             'weight_grams' => $product->weight_grams,

@@ -1921,6 +1921,9 @@ class SmokeMarkerSeeder extends Seeder
         // B1b (`shop.mjs`): a photo on the tracing book, a Dhivehi title on
         // the puzzle, and a draft the public shop must never show.
         DB::table('products')->where('slug', 'smoke-wooden-alphabet-puzzle')->update(['title_dv' => 'ލަކުޑި އަކުރު ޕަޒަލް']);
+        // §5lh (`shop.mjs`): a brand on the puzzle, for the brand page and filter.
+        DB::table('brands')->updateOrInsert(['slug' => 'smoke-brand'], ['name' => 'SMOKE-Brand', 'is_active' => true, 'created_at' => now(), 'updated_at' => now()]);
+        DB::table('products')->where('slug', 'smoke-wooden-alphabet-puzzle')->update(['brand_id' => DB::table('brands')->where('slug', 'smoke-brand')->value('id')]);
         $this->smokeProduct($fitrahId, 'smoke-hidden-draft', 'SMOKE-Hidden-Draft', 10, 'standard', null, 1, []);
         DB::table('products')->where('slug', 'smoke-hidden-draft')->update(['status' => 'draft']);
         $this->smokeProductPhoto('smoke-arabic-letters-tracing-book', database_path('seeders/fixtures/vendors/fitrah-logo.jpg'));
