@@ -107,6 +107,8 @@ return [
     'GET shop' => 'The public bookshop (BOOKSHOP_PLAN B1b): products for sale, filtered from the query string. Since B7 the home reads the session for the visitor\'s own recently viewed products and nothing else; no other person\'s data.',
     'POST shop/book-lists/{vendor}/{list}' => 'Add a school book list to the visitor\'s own cart (STATUS §5lc); a guest\'s cart by session token, like POST shop/cart. Scoped to the caller\'s basket by construction; throttled. No other person\'s data.',
     'GET shop/brand/{slug}' => 'A brand\'s page (STATUS §5lh): its products for sale, from every shop. Public catalogue content only. No per-person data.',
+    'GET shop/compare' => 'Compare products (STATUS §5li): the products this device chose, side by side, from its own session. Public catalogue content only.',
+    'POST shop/compare/{slug}' => 'Add a product to this device\'s comparison, or take it out (STATUS §5li). The session\'s own list only; throttled. No per-person data.',
     'GET shop/deals' => 'The public deals page (STATUS §5lb): products of active shops on a timed sale now. Public catalogue content only. No per-person data.',
     'GET shop/export' => 'The public bookshop listing as CSV (every listing gets one). Only what the page shows. No per-person data.',
     'GET shop/products/{slug}' => 'A product for sale. Drafts, archived products and suspended vendors\' products are a 404. The vendor\'s contact details are deliberately not shown. Since B7 it reads the session for the visitor\'s own recently viewed list, and, when signed in, only their own wishlist and back-in-stock state; published reviews show a first name and initial only.',

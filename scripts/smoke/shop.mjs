@@ -262,6 +262,22 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
     check('and the listing filters by brand', (await b.locator('[data-testid="filter-brand"]').inputValue().catch(() => '')) === 'smoke-brand' && (await b.locator('[data-testid="shop-grid"] [data-product]').count()) === 1);
 }
 
+// ------------------------------------------------------------ compare (STATUS §5li)
+{
+    const c = await newPage('compare', { width: 390, height: 844 });
+    for (const slug of [BOOK, 'smoke-wooden-alphabet-puzzle']) {
+        await c.goto(`${BASE}/en/shop/products/${slug}`, { waitUntil: 'networkidle' });
+        await Promise.all([c.waitForLoadState('networkidle'), c.click('[data-testid="compare-toggle"]')]);
+    }
+    check('Compare on two product pages puts them in this device\'s comparison', (await c.locator('[data-testid="compare-toggle"]').getAttribute('aria-pressed').catch(() => '')) === 'true');
+    await Promise.all([c.waitForURL(/\/shop\/compare$/), c.click('[data-testid="go-compare"]')]);
+    await c.waitForLoadState('networkidle');
+    const cols = await c.locator('[data-compare-product]').evaluateAll((els) => els.map((e) => e.getAttribute('data-compare-product')));
+    check('the comparison shows both side by side, with their prices', cols.length === 2 && (await c.locator('[data-compare-row="price"]').count()) === 1, cols.join(', '));
+    check('and on a phone the page does not run wider than the screen', (await c.evaluate(() => document.documentElement.scrollWidth - window.innerWidth)) <= 0);
+    await c.screenshot({ path: `${process.env.SMOKE_SHOTS ?? '/tmp'}/compare.png`, fullPage: true }).catch(() => {});
+}
+
 // ------------------------------------------------------------ a school's book list (STATUS §5lc)
 {
     const PUZZLE = 'smoke-wooden-alphabet-puzzle';

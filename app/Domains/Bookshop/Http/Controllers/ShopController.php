@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Http\Controllers;
 use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
 use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
+use App\Domains\Bookshop\Actions\Shop\CompareProductsAction;
 use App\Domains\Bookshop\Actions\Shop\CustomerListsAction;
 use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopHomeAction;
@@ -16,6 +17,7 @@ use App\Domains\Bookshop\Actions\Shop\SuggestAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -59,6 +61,28 @@ class ShopController extends Controller
             'vendor' => null,
             'heading' => $category['label'],
         ]);
+    }
+
+    /** §5li: the products this device is comparing, side by side. */
+    public function compare(Request $request)
+    {
+        return view('public.shop.index', [
+            'home' => null,
+            'products' => null,
+            'filters' => [],
+            'options' => $this->options(),
+            'vendor' => null,
+            'heading' => __('shop.compare_heading'),
+            'compare' => app(CompareProductsAction::class)->table($request->session()),
+        ]);
+    }
+
+    /** §5li: add a product to the comparison, or take it out. */
+    public function toggleCompare(Request $request, string $slug): RedirectResponse
+    {
+        $added = app(CompareProductsAction::class)->toggle($request->session(), $slug);
+
+        return back()->with('success', __($added ? 'shop.compare_added_flash' : 'shop.compare_removed_flash'));
     }
 
     /** §5lh: one brand's products, from every shop. */
@@ -157,6 +181,8 @@ class ShopController extends Controller
             // §5le: the answered questions, and how many of this customer's are waiting.
             'questions' => app(ProductQuestionsAction::class)->forProduct($product['id'], $userId),
             'in_wishlist' => $lists->inWishlist($userId, $product['id']),
+            // §5li: on this device's comparison?
+            'in_compare' => in_array($product['id'], app(CompareProductsAction::class)->ids($request->session()), true),
             'has_alert' => $lists->hasStockAlert($userId, $product['id']),
             'recently_viewed' => $recent,
         ]]);
