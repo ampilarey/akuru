@@ -17,6 +17,7 @@ use App\Domains\Commerce\Actions\CreditWalletAction;
 use App\Domains\Commerce\Actions\SaveDiscountCodeAction;
 use App\Domains\Identity\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
 use Spatie\Permission\Models\Role;
 
@@ -169,17 +170,16 @@ it('lets a shop set a sale from its product form, checks it, and ends it with an
 });
 
 it('never gives a shop an address the store already uses, /shop/deals among them', function () {
-    $literal = collect(\Illuminate\Support\Facades\Route::getRoutes()->getRoutes())
+    $literal = collect(Route::getRoutes()->getRoutes())
         ->map(fn ($route) => $route->uri())
         ->filter(fn (string $uri) => str_starts_with($uri, 'shop/'))
         ->map(fn (string $uri) => explode('/', $uri)[1])
         ->reject(fn (string $segment) => str_starts_with($segment, '{'))
         ->unique()->values()->all();
 
-    expect(array_diff($literal, \App\Domains\Bookshop\Actions\CreateVendorAction::RESERVED_SLUGS))->toBe([]);
+    expect(array_diff($literal, CreateVendorAction::RESERVED_SLUGS))->toBe([]);
 
     Role::findOrCreate('vendor', 'web');
     $created = app(CreateVendorAction::class)->execute(['name' => 'Deals', 'owner_name' => 'X', 'owner_email' => 'deals-owner@example.test'], User::factory()->create()->id);
     expect($created['slug'])->toBe('deals-shop');
 });
-
