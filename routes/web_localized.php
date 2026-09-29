@@ -633,6 +633,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/account/linked', [LinkedAccountController::class, 'store'])->name('account.linked.store');
     Route::delete('/account/linked/{account}', [LinkedAccountController::class, 'destroy'])->name('account.linked.destroy')->whereNumber('account');
     Route::post('/account/switch/{account}', [LinkedAccountController::class, 'switch'])->name('account.switch')->whereNumber('account');
+    // STATUS §5lk: the signed-in person's own two-step sign-in.
+    Route::get('/account/two-factor', [\App\Domains\Identity\Http\Controllers\TwoFactorController::class, 'show'])->name('account.two-factor');
+    Route::post('/account/two-factor/start', [\App\Domains\Identity\Http\Controllers\TwoFactorController::class, 'start'])->name('account.two-factor.start')->middleware('throttle:10,1,two-factor-setup');
+    Route::post('/account/two-factor/confirm', [\App\Domains\Identity\Http\Controllers\TwoFactorController::class, 'confirm'])->name('account.two-factor.confirm')->middleware('throttle:10,1,two-factor-setup');
+    Route::post('/account/two-factor/recovery-codes', [\App\Domains\Identity\Http\Controllers\TwoFactorController::class, 'recoveryCodes'])->name('account.two-factor.codes')->middleware('throttle:10,1,two-factor-setup');
+    Route::post('/account/two-factor/disable', [\App\Domains\Identity\Http\Controllers\TwoFactorController::class, 'disable'])->name('account.two-factor.disable')->middleware('throttle:10,1,two-factor-setup');
     // SPEC §50: the mobile app's push registration. Every route is the
     // signed-in person's own devices; the Actions scope by user id.
     Route::post('/account/devices', [\App\Domains\Notifications\Http\Controllers\DeviceController::class, 'store'])->name('account.devices.store');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Domains\Identity\Models\User;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,9 @@ use Illuminate\Validation\ValidationException;
 
 class LoginRequest extends FormRequest
 {
+    /** STATUS §5lk: who passed the password step and still owes a code. */
+    public ?User $twoFactorUser = null;
+
     /**
      * Determine if the user is authorized to make this request.
      */
@@ -40,9 +44,12 @@ class LoginRequest extends FormRequest
      * specific to *logging in*: rate limiting, the password check, the active
      * flag and the session.
      *
+     * False when the person has two-step sign-in on: the password was right,
+     * and the challenge (STATUS §5lk) signs them in.
+     *
      * @throws \Illuminate\Validation\ValidationException
      */
-    public function authenticate(): void
+    public function authenticate(): bool
     {
         $this->ensureIsNotRateLimited();
 
@@ -64,9 +71,19 @@ class LoginRequest extends FormRequest
             throw ValidationException::withMessages(['identifier' => 'Your account is inactive. Please contact support.']);
         }
 
-        $user->update(['last_login_at' => now()]);
-        Auth::login($user, $this->boolean('remember'));
         RateLimiter::clear($this->throttleKey());
+        // STATUS §5lk: with two-step sign-in on, the password alone does not sign
+        // in — the challenge does, after a code from the person's app.
+        if ($user->hasTwoFactor()) {
+            $this->twoFactorUser = $user;
+
+            return false;
+        }
+
+        $user->forceFill(['last_login_at' => now()])->save();
+        Auth::login($user, $this->boolean('remember'));
+
+        return true;
     }
 
     /**

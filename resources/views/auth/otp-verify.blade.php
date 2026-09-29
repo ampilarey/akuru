@@ -1,4 +1,28 @@
 <x-guest-layout>
+@if($twoFactor ?? false)
+    {{-- STATUS §5lk: the second step — a code from the authenticator app, or a recovery code. --}}
+    <div style="margin-bottom:1.75rem">
+        <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0 0 .375rem">{{ __('security.challenge_title') }}</h2>
+        <p style="font-size:.85rem;color:#6B7280;margin:0">{{ __('security.challenge_intro') }}</p>
+    </div>
+    <form method="POST" action="{{ route('two-factor.challenge.store') }}" style="display:flex;flex-direction:column;gap:1.25rem" data-testid="two-factor-form">
+        @csrf
+        <div>
+            <label class="auth-label" for="code">{{ __('security.code_label') }}</label>
+            <input id="code" class="auth-input" type="text" name="code" required autofocus maxlength="32"
+                   autocomplete="one-time-code" inputmode="text" dir="ltr"
+                   style="text-align:center;font-size:1.5rem;font-weight:700;letter-spacing:.3em;padding:.75rem" data-testid="two-factor-code">
+            @error('code')
+            <p class="auth-error" data-testid="two-factor-error">{{ $message }}</p>
+            @enderror
+            <p style="font-size:.75rem;color:#9CA3AF;margin-top:.375rem;text-align:center">{{ __('security.challenge_recovery_hint') }}</p>
+        </div>
+        <button type="submit" class="auth-btn" data-testid="two-factor-submit">{{ __('security.challenge_button') }}</button>
+    </form>
+    <div style="margin-top:1.25rem">
+        <a href="{{ route('login') }}" style="font-size:.82rem;color:#6B7280;text-decoration:none">← {{ __('security.challenge_back') }}</a>
+    </div>
+@else
 
     @if(session('success'))
     <div style="margin-bottom:1rem;padding:.75rem 1rem;background:#ECFDF5;border:1px solid #6EE7B7;border-radius:.5rem;font-size:.85rem;color:#065F46">
@@ -58,4 +82,5 @@
     });
     </script>
 
+@endif
 </x-guest-layout>

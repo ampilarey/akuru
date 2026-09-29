@@ -139,6 +139,7 @@ const WALKS = [
     { name: 'news', writes: true, asks: 'Can the office write the news, and does it reach /news and the home page?' },
     { name: 'events', writes: true, asks: 'Do the events and the gallery open from their own lists, and can a visitor register?' },
     { name: 'identity', writes: false, asks: 'Does each person see only their own workspace — a vendor their shop, a parent their children, nobody the rest?' },
+    { name: 'two-factor', writes: true, asks: 'Can a person turn on two-step sign-in, and does a password alone then stop at the code?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
 ];
 

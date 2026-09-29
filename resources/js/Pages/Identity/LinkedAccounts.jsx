@@ -1,11 +1,17 @@
-import { router, useForm } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
-export default function LinkedAccounts({ accounts = [], me }) {
+export default function LinkedAccounts({ accounts = [], me, two_factor = null }) {
     const form = useForm({ identifier: '', password: '' });
 
     return (
         <AppShell title="My accounts">
+            {two_factor && (
+                <Link href="/account/two-factor" className="mb-4 flex items-center justify-between gap-2 rounded-lg border bg-white p-3 text-sm hover:bg-gray-50" data-testid="two-factor-link">
+                    <span className="font-medium">{two_factor.label}</span>
+                    <span className={`rounded px-2 py-0.5 text-xs font-semibold ${two_factor.enabled ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'}`}>{two_factor.enabled ? two_factor.on : two_factor.off}</span>
+                </Link>
+            )}
             <p className="mb-4 text-sm text-gray-600">
                 Some people have two accounts here — a teacher who is also a parent, for
                 instance. Link them once and you can move between them without signing out.

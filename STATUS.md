@@ -4414,6 +4414,90 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lk. Two-step sign-in (2026-09-29)
+
+BOOKSHOP_PLAN §16, item 8e. It is for every account, not only the Bookstore's:
+a shop owner, the office, a teacher or a customer can turn it on for their
+own account. It is off unless the person turns it on, so nobody's sign-in
+changes until they do.
+
+- **Turning it on** (`/account/two-factor`, linked from My accounts):
+  - Two-step sign-in shows a QR code and the secret typed out, for any
+    authenticator app (Google, Microsoft, Authy…).
+  - A first code from the app turns it on. A wrong one leaves it off.
+  - Eight recovery codes are then shown **once**, and are not shown again
+    on reload.
+- **Signing in:**
+  - A right password, or a right OTP, no longer signs the person in. It
+    goes to `/two-factor-challenge` and holds who is signing in for ten
+    minutes.
+  - A code from the app, or a recovery code, finishes the sign-in, with
+    "remember me" kept from the password form.
+  - A code is never accepted twice: the last 30-second step used is kept,
+    and anything at or before it is refused.
+  - A recovery code is spent when used.
+  - Five wrong codes per person wait out a minute (on top of the route's
+    10 a minute).
+  - A challenge left for over ten minutes goes back to the sign-in.
+- **New recovery codes, or turning it off,** needs the password.
+- **Storage:**
+  - The secret and the recovery codes are stored encrypted (`encrypted`,
+    `encrypted:array` casts) and hidden from serialisation.
+  - The codes are worked out on the server (RFC 6238 in
+    `Identity/Support/Totp.php`, no package). The QR code is drawn in the
+    browser from the `otpauth://` address.
+  - Migration `2026_09_29_000010_users_two_factor` adds four nullable
+    columns to `users` (additive).
+- **Found and fixed on the way:** the password and OTP sign-ins called
+  `$user->update(['last_login_at' => …])`. `last_login_at` is not fillable,
+  so last sign-in was never recorded. The fix is `forceFill`, as
+  `SwitchAccountAction` already did.
+- **No new Blade screen.** The challenge is a mode of the OTP code page
+  (`$twoFactor`). The settings page is Inertia (`Identity/TwoFactor`).
+- **Languages:** EN/DV/AR in `lang/*/security.php`.
+- **Baselines:** `session_creations` (the challenge's `Auth::login`),
+  `public_routes` and `unguarded_write_routes` (the challenge;
+  `account/two-factor/*` is the signed-in person's own).
+
+Tests:
+- `TwoFactorTest` (6):
+  - turning it on: a wrong first code refused; eight codes flashed once;
+    the secret encrypted at rest and hidden;
+  - a right password stops at the challenge; a wrong code is refused; a
+    fresh code signs in and records last sign-in; the same code on the
+    next sign-in is refused, and the next step's is accepted;
+  - a recovery code works once (in capitals too); a wrong password never
+    reaches the challenge;
+  - five wrong codes, then a wait; a challenge over ten minutes old goes
+    back to the sign-in;
+  - an OTP sign-in goes to the challenge too; an account without it signs
+    in as before;
+  - new codes or turning it off with a wrong password are refused, and
+    with the right one go through.
+- The Auth and Identity suites: 126 passed.
+
+Checklist: `ft-signin-10`.
+
+Walk: `scripts/smoke/two-factor.mjs` 19/19, on a phone as the seeded
+learner. The walk works out the codes from the secret the page shows, as an
+app would:
+1. My accounts links to Two-step sign-in, marked Off.
+2. A wrong first code is refused. The right one shows eight codes, and they
+   are gone on reload.
+3. The password stops at the challenge, and they are not signed in yet. A
+   wrong code is refused, and the app's code signs them in.
+4. A recovery code signs them in, and the page counts seven.
+5. A wrong password does not turn it off; the right one does. A password
+   alone then signs in again.
+
+The walk found two things, both fixed:
+- The state read "On8 recovery codes left" to a screen reader; a space
+  was added.
+- The success message showed twice, once from the page and once from the
+  shell; the page's copy was removed.
+
+It ends with two-step sign-in off, as it began. Added to `all.mjs`.
+
 ## 5lj. Track an order without signing in (2026-09-29)
 
 BOOKSHOP_PLAN §16, item 8d. Buying needs a sign-in. A gift's recipient, or
