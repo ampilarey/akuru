@@ -147,25 +147,17 @@ Route::post('events/{event}/register', [\App\Domains\Website\Http\Controllers\Pu
 
 Route::get('news', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'newsIndex'])->name('public.news.index');
 Route::get('news/{post:slug}', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.news.show');
+// The events list and page used to catch every exception and print its
+// message as a 500 — a missing event read "Event detail error: No query
+// results for model…" instead of a 404. Errors now take the normal path.
 Route::get('events', function () {
-    try {
-        $events = \App\Domains\Website\Models\Event::published()->public()->with('registrations')->paginate(12);
-        $holidays = app(\App\Domains\Academics\Actions\ListCalendarHolidaysAction::class)->execute();
+    $events = \App\Domains\Website\Models\Event::published()->public()->with('registrations')->paginate(12);
+    $holidays = app(\App\Domains\Academics\Actions\ListCalendarHolidaysAction::class)->execute();
 
-        return view('public.events.index', compact('events', 'holidays'));
-    } catch (\Exception $e) {
-        return response('Events error: '.$e->getMessage(), 500);
-    }
+    return view('public.events.index', compact('events', 'holidays'));
 })->name('public.events.index');
-Route::get('events/{event}', function ($id) {
-    try {
-        $event = \App\Domains\Website\Models\Event::published()->public()->with('registrations')->findOrFail($id);
-
-        return view('public.events.show', compact('event'));
-    } catch (\Exception $e) {
-        return response('Event detail error: '.$e->getMessage(), 500);
-    }
-})->name('public.events.show');
+// By slug or id (Event::resolveRouteBinding); a draft or private event is a 404.
+Route::get('events/{event}', [\App\Domains\Website\Http\Controllers\PublicSite\EventController::class, 'show'])->name('public.events.show');
 Route::get('achievements', [\App\Domains\Website\Http\Controllers\PublicSite\AchievementController::class, 'index'])->name('public.achievements');
 Route::get('gallery', [GalleryController::class, 'index'])->name('public.gallery.index');
 Route::get('gallery/{gallery}', [GalleryController::class, 'show'])->name('public.gallery.show');

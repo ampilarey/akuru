@@ -143,6 +143,22 @@ class Event extends Model
         });
     }
 
+    /**
+     * An event's address is its slug on the public pages (the home page,
+     * the search, the .ics file) and its id in the office's screens and in
+     * older links. Both find it: digits are an id, anything else a slug.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        if ($field !== null) {
+            return parent::resolveRouteBinding($value, $field);
+        }
+
+        return ctype_digit((string) $value)
+            ? $this->newQuery()->whereKey((int) $value)->first()
+            : $this->newQuery()->where('slug', (string) $value)->first();
+    }
+
     // Accessors
     protected function slug(): Attribute
     {

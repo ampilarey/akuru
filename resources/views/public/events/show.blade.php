@@ -29,7 +29,7 @@
             <!-- Event Header -->
             <div class="mb-8">
                 <div class="flex items-center text-sm text-brandGray-500 mb-4">
-                    <a href="{{ route('public.events.index', app()->getLocale()) }}" class="hover:text-brandMaroon-600">
+                    <a href="{{ route('public.events.index') }}" class="hover:text-brandMaroon-600">
                         {{ __('public.Events') }}
                     </a>
                     <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
@@ -177,7 +177,7 @@ $eventTime = ($event->start_time && is_object($event->start_time)) ? $event->sta
                         @if(session('error'))
                             <p class="mb-3 text-sm text-red-700">{{ session('error') }}</p>
                         @endif
-                        <form method="POST" action="{{ route('public.events.register', [app()->getLocale(), $event->id]) }}" class="space-y-3">
+                        <form method="POST" action="{{ route('public.events.register', $event->slug ?: $event->id) }}" class="space-y-3">
                             @csrf
                             <input class="form-input w-full" name="name" value="{{ old('name') }}" placeholder="{{ __('public.Name') }}" required>
                             @error('name')<p class="text-xs text-red-600">{{ $message }}</p>@enderror

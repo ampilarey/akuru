@@ -4414,6 +4414,62 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ku. Events and the gallery open from their own lists; visitors can register for an event (2026-09-29)
+
+Follow-up to R4, which found the fault on the news list (KNOWN_ISSUES).
+
+- **The fault.** The public views built links as `route('x.show',
+  [app()->getLocale(), $id])`. The language is already a URL default, so
+  the language filled the `{id}` and the id became a query string. The
+  result was `/en/events/en?5` and `/en/gallery/en?3`:
+  - every card on `/events` and `/gallery` led to an error page;
+  - the event page's registration form posted to `/en/events/en/register?5`,
+    a 404, so **no visitor could register for an event from the website**.
+- **Fixed in:**
+  - the events list, the event page (breadcrumb, registration form);
+  - the gallery list and album page;
+  - the contact form and its two links;
+  - the admissions form and its thank-you page;
+  - the courses pages' admission links. These last "worked" only because
+    the stray language became a harmless `?en`.
+- **The event page read its address by id only.** The home page's
+  *Upcoming events*, the site search, the page's own *Add to calendar* link
+  and the .ics file's URL all used the slug, so each of them failed too.
+  `Event::resolveRouteBinding` now takes digits as an id and anything else
+  as the slug (unique). Numeric ids in the office's screens are unchanged.
+- **The events routes printed exceptions.** `/events` and `/events/{event}`
+  were closures that caught every exception and answered 500 with its
+  message: a missing event read *Event detail error: No query results for
+  model…*. The list closure now lets errors take the normal path. The page
+  route is `EventController::show`, which also 404s a draft or private
+  event and gives the page its related and featured events.
+
+Tests: `tests/Feature/Website/PublicSiteLinksTest.php` (6):
+- event cards link to the event and it opens;
+- slug and id both open it; missing, draft and private events are 404, not
+  500;
+- a visitor registers through the page's own form;
+- the calendar file is served at the page's link;
+- album cards link to the album, it opens, and its breadcrumb is right;
+- the contact and admissions forms post to their own addresses.
+
+Full suite 2492 passed.
+
+Walk: new `scripts/smoke/events.mjs`, registered in `all.mjs` as a writing
+walk, 8/8 against a planted event and album that were removed afterwards:
+- the event link carries the event;
+- the page opens;
+- a visitor registers and is told so;
+- *Add to calendar* downloads a VEVENT;
+- the album link carries the album and opens;
+- the breadcrumb returns to `/gallery`;
+- a missing event is a 404 page.
+
+The home page and the search link the event by slug and it opens.
+
+Not changed: `public/test.blade.php` and `public/lang-test.blade.php`
+still have the pattern, but no route renders them.
+
 ## 5kt. R5: the Digital Library in the header, and in the site search (2026-09-29)
 
 Last slice of `docs/RESEARCH_ARTICLES_PLAN.md`; the plan is now all shipped

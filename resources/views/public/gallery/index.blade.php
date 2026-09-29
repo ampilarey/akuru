@@ -30,7 +30,7 @@
                     
                     <div class="p-6">
                         <h2 class="text-xl font-semibold text-brandMaroon-600 mb-3">
-                            <a href="{{ route('public.gallery.show', [app()->getLocale(), $gallery->id]) }}" 
+                            <a href="{{ route('public.gallery.show', $gallery->id) }}" 
                                class="hover:text-brandMaroon-700">
                                 {{ $gallery->title }}
                             </a>
@@ -44,7 +44,7 @@
                             <div class="text-sm text-brandGray-500">
                                 {{ $gallery->items->count() }} {{ __('public.photos') }}
                             </div>
-                            <a href="{{ route('public.gallery.show', [app()->getLocale(), $gallery->id]) }}" 
+                            <a href="{{ route('public.gallery.show', $gallery->id) }}" 
                                class="text-brandMaroon-600 hover:text-brandMaroon-700 font-medium text-sm">
                                 {{ __('public.View Gallery') }} →
                             </a>

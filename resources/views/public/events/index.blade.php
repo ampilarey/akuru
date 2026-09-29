@@ -37,7 +37,7 @@
                         </div>
                         
                         <h2 class="text-xl font-semibold text-brandMaroon-600 mb-3">
-                            <a href="{{ route('public.events.show', [app()->getLocale(), $event->id]) }}" 
+                            <a href="{{ route('public.events.show', $event->slug ?: $event->id) }}" 
                                class="hover:text-brandMaroon-700">
                                 {{ $event->title }}
                             </a>
@@ -55,7 +55,7 @@
                                     <span>{{ $event->time }}</span>
                                 @endif
                             </div>
-                            <a href="{{ route('public.events.show', [app()->getLocale(), $event->id]) }}" 
+                            <a href="{{ route('public.events.show', $event->slug ?: $event->id) }}" 
                                class="text-brandMaroon-600 hover:text-brandMaroon-700 font-medium text-sm">
                                 {{ __('public.Learn More') }} →
                             </a>
