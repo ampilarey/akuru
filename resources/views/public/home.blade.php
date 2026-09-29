@@ -155,25 +155,96 @@ $bannerCount = count($bannerList);
 
 </section>
 
+{{-- The four products, straight under the hero (the 2026-09-28 website design, STATUS §5ki).
+     Also carries the home page's shared styles: section heads, and the rows that are a grid
+     on a desk and a sideways swipe on a phone. --}}
+@php
+  $homeTiles = [
+      ['courses', __('site.e_learning'), __('site.courses_tile'), __('site.browse_courses'), route('public.courses.index'),
+       'M4 5h16a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zm6 3.5v5l4-2.5-4-2.5zM8 21h8'],
+      ['library', __('site.digital_library'), __('site.library_tile'), __('site.open_library'), route('public.library.index'),
+       'M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3V4zm0 13a3 3 0 013-3h11'],
+      ['bookstore', __('site.bookstore'), __('site.bookstore_tile'), __('site.visit_store'), route('public.shop.index'),
+       'M5 8h14l-1 12H6L5 8zm4 0V6a3 3 0 016 0v2'],
+      ['school', __('site.school'), __('site.school_tile'), __('site.admissions'), route('public.admissions.create'),
+       'M3 10l9-5 9 5-9 5-9-5zm4 2v5c3 2 7 2 10 0v-5m4-2v5'],
+  ];
+@endphp
+<style>
+  .home-eyebrow { display: block; color: #7C2D37; font-weight: 700; font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; }
+  .home-h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 800; color: #111827; margin: .25rem 0 0; }
+  .home-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem; }
+  .home-more { color: #7C2D37; font-weight: 700; font-size: .9rem; text-decoration: none; display: inline-flex; align-items: center; gap: .25rem; }
+  .home-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; }
+  .home-row--books { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+  @media (max-width: 1023px) {
+    .home-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .home-row--books { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  }
+  /* A phone swipes a row sideways instead of stacking it, so the page is
+     half as long and the next section is always in reach. */
+  @media (max-width: 639px) {
+    .home-row, .home-row--books { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 1rem; gap: .75rem; margin: 0 -1rem; padding: 0 1rem .75rem; scrollbar-width: none; }
+    .home-row::-webkit-scrollbar { display: none; }
+    .home-row > * { flex: 0 0 78%; scroll-snap-align: start; }
+    .home-row--books > * { flex: 0 0 40%; }
+  }
+  /* A phone's hero is shorter, so the four products are in the first screen. */
+  @media (max-width: 639px) {
+    #akuru-hero .container { padding-top: 2rem !important; padding-bottom: 2.5rem !important; }
+    #akuru-hero h1 { margin-bottom: .75rem !important; }
+    #akuru-hero p { margin-bottom: 1.25rem !important; }
+  }
+  .home-tiles { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; margin-top: -3rem; }
+  .home-tile { display: flex; flex-direction: column; gap: .6rem; padding: 1.5rem; background: #fff; border: 1px solid #EDE4D8; border-radius: 1rem; box-shadow: 0 12px 30px rgba(60, 20, 27, .12); color: #1F1A17; text-decoration: none; transition: transform .2s, box-shadow .2s; }
+  .home-tile:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(60, 20, 27, .16); }
+  .home-tile-icon { width: 3rem; height: 3rem; border-radius: .75rem; background: #F6ECEE; color: #7C2D37; display: flex; align-items: center; justify-content: center; }
+  .home-tile strong { font-size: 1.2rem; }
+  .home-tile-line { font-size: .925rem; line-height: 1.5; color: #5E5650; }
+  .home-tile-go { margin-top: auto; font-size: .925rem; font-weight: 700; color: #7C2D37; }
+  @media (max-width: 1023px) { .home-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 639px) {
+    .home-tiles { gap: .75rem; margin-top: -1.5rem; }
+    .home-tile { padding: .9rem; gap: .35rem; box-shadow: 0 6px 18px rgba(60, 20, 27, .10); }
+    .home-tile-icon { width: 2.5rem; height: 2.5rem; }
+    .home-tile strong { font-size: 1rem; }
+    .home-tile-line { font-size: .8rem; }
+    .home-tile-go { display: none; }
+  }
+</style>
+<section style="background:#FFFFFF;padding:0 0 1.5rem" data-testid="home-products">
+  <div class="container mx-auto px-4">
+    <div class="home-tiles">
+      @foreach ($homeTiles as [$key, $name, $line, $go, $href, $icon])
+        <a href="{{ $href }}" class="home-tile" data-testid="home-tile-{{ $key }}">
+          <span class="home-tile-icon"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon }}"/></svg></span>
+          <strong>{{ $name }}</strong>
+          <span class="home-tile-line">{{ $line }}</span>
+          <span class="home-tile-go">{{ $go }} →</span>
+        </a>
+      @endforeach
+    </div>
+  </div>
+</section>
+
 @include('public.home._daily')
 
 {{-- ═══════════════════════════════════════════════════════════
   SECTION 2 — OPEN COURSES   bg: white
 ═══════════════════════════════════════════════════════════ --}}
-<section style="background:#FFFFFF;padding:3rem 0 4rem">
+<section style="background:#FFFFFF;padding:3rem 0 3.5rem" data-testid="home-courses-section">
   <div class="container mx-auto px-4">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:2.5rem">
+    <div class="home-head">
       <div>
-        <span style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">Enroll today</span>
-        <h2 style="font-size:clamp(1.75rem,3vw,2.5rem);font-weight:800;color:#111827;margin:.25rem 0 .5rem">Open Courses</h2>
-        <p style="color:#6b7280;font-size:.9rem">Secure your seat — limited places available</p>
+        <span class="home-eyebrow">{{ __('site.e_learning') }}</span>
+        <h2 class="home-h2">{{ __('site.open_courses') }}</h2>
       </div>
-      <a href="{{ route('public.courses.index') }}" style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none;display:flex;align-items:center;gap:.25rem">
-        View all <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+      <a href="{{ route('public.courses.index') }}" class="home-more" data-testid="home-all-courses">
+        {{ __('site.all_courses') }} <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
       </a>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:1.5rem">
-      @forelse($courses as $course)
+    <div class="home-row" data-testid="home-courses">
+      @forelse($courses->take(4) as $course)
       @php
         $isModel = is_object($course) && method_exists($course,'getAttribute');
         $cSlug  = $isModel ? ($course->slug ?? '') : '';
@@ -191,8 +262,8 @@ $bannerCount = count($bannerList);
         $cHref  = $cSlug ? route('public.courses.show',$cSlug) : route('public.courses.index');
         $cStatusStyle = $cStatus === 'open' ? 'background:#DCFCE7;color:#15803D' : 'background:#FEF9C3;color:#92400E';
         $cFeeColor = ($cFee && $cFee > 0) ? '#7C2D37' : '#15803D';
-        $cFeeText  = ($cFee && $cFee > 0) ? 'MVR '.number_format($cFee,0) : 'Free';
-        $cDateText = $cDate ? '📅 '.$cDate->format('d M Y') : 'Date TBC';
+        $cFeeText  = ($cFee && $cFee > 0) ? 'MVR '.number_format($cFee,0) : __('site.free');
+        $cDateText = $cDate ? $cDate->format('d M Y') : __('site.date_tbc');
       @endphp
       <a href="{{ $cHref }}"
          style="display:flex;flex-direction:column;background:#fff;border:1.5px solid #E5E7EB;border-radius:1rem;overflow:hidden;text-decoration:none;transition:box-shadow .25s,transform .25s"
@@ -210,7 +281,7 @@ $bannerCount = count($bannerList);
           {{-- Status + seats badges --}}
           <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">
             <span style="font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:9999px;{{ $cStatusStyle }}">
-              {{ $cStatus === 'open' ? '● Open' : '◷ Upcoming' }}
+              {{ $cStatus === 'open' ? '● '.__('site.open_badge') : '◷ Upcoming' }}
             </span>
             @if($cSeats)
             <span style="font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:9999px;{{ $cSeatsTone === 'full' ? 'background:#F3F4F6;color:#6B7280' : ($cSeatsTone === 'exact' ? 'background:#FEE2E2;color:#B91C1C' : 'background:#FEF3C7;color:#92400E') }}">{{ $cSeats }}</span>
@@ -236,47 +307,119 @@ $bannerCount = count($bannerList);
       </a>
       @empty
       <div style="grid-column:1/-1;text-align:center;padding:3rem;color:#9CA3AF">
-        No open courses right now. <a href="{{ route('public.admissions.create') }}" style="color:#7C2D37">Leave your details</a> and we'll notify you.
+        {{ __('site.no_courses') }} <a href="{{ route('public.admissions.create') }}" style="color:#7C2D37">{{ __('site.leave_details') }}</a>
       </div>
       @endforelse
-    </div>
-    <div style="text-align:center;margin-top:2.5rem">
-      <a href="{{ route('public.courses.index') }}"
-         style="display:inline-flex;align-items:center;gap:.5rem;background:#7C2D37;color:white;font-weight:700;padding:.875rem 2rem;border-radius:.75rem;text-decoration:none;transition:background .2s"
-         onmouseover="this.style.background='#6B2630'" onmouseout="this.style.background='#7C2D37'">
-        View All Courses
-        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4-4 4m4-4H3"/></svg>
-      </a>
     </div>
   </div>
 </section>
 
-{{-- ═══════════════════════════════════════════════════════════
-  SECTION 3 — WHY AKURU   bg: warm cream #F0E6D3
-═══════════════════════════════════════════════════════════ --}}
-<section style="background:#F0E6D3;padding:4rem 0">
+{{-- The Digital Library's and the Bookstore's newest, and the School (the 2026-09-28 website
+     design, STATUS §5ki). A shelf with nothing on it is left out rather than shown empty; its
+     tile under the hero still leads there. --}}
+@php
+  $coverTones = [['#7C2D37', '#fff'], ['#2F4A3A', '#fff'], ['#C9A227', '#2B1F04'], ['#33415F', '#fff'], ['#5A1F28', '#fff'], ['#8A6A2F', '#fff']];
+  $money = fn ($amount, $currency = 'MVR') => ($currency ?: 'MVR').' '.rtrim(rtrim(number_format((float) $amount, 2, '.', ','), '0'), '.');
+@endphp
+
+@if (! empty($shelves['books']))
+<section style="background:#FBF6EC;padding:3.5rem 0" data-testid="home-library">
   <div class="container mx-auto px-4">
-    <div style="text-align:center;margin-bottom:2.75rem">
-      <span style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">Why choose us</span>
-      <h2 style="font-size:clamp(1.75rem,3vw,2.5rem);font-weight:800;color:#111827;margin:.25rem 0 .5rem">Why Akuru Institute?</h2>
-      <p style="color:#6B7280;max-width:36rem;margin:0 auto;font-size:.9rem">Trusted by hundreds of families across the Maldives for quality Islamic education.</p>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:1.25rem;max-width:70rem;margin:0 auto">
-      @foreach([
-        ['M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z','Qualified Instructors','All our teachers hold recognised Islamic qualifications with years of teaching experience.'],
-        ['M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5','Structured Curriculum','Well-planned programmes for Quran, Arabic, and Islamic Studies — beginner to advanced.'],
-        ['M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z','Flexible Schedules','Morning, evening and weekend classes to fit around school, work, and family life.'],
-        ['M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z','All Ages Welcome','Classes for children, teenagers, and adults — everyone learns at the right pace.'],
-        ['M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z','Affordable Fees','Quality Islamic education accessible to all with fair, transparent fees.'],
-        ['M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4','Recognised Certificates','Earn certificates upon completion that recognise your achievement.'],
-      ] as [$icon,$title,$desc])
-      <div style="background:#FFFFFF;border-radius:.875rem;padding:1.5rem;border:1px solid rgba(124,45,55,.1);box-shadow:0 1px 4px rgba(0,0,0,.06)">
-        <div style="width:2.75rem;height:2.75rem;background:#FAECED;border-radius:.625rem;display:flex;align-items:center;justify-content:center;margin-bottom:1rem">
-          <svg width="20" height="20" fill="none" stroke="#7C2D37" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon }}"/></svg>
-        </div>
-        <h3 style="font-weight:700;color:#111827;margin-bottom:.375rem;font-size:.95rem">{{ $title }}</h3>
-        <p style="font-size:.82rem;color:#6B7280;line-height:1.55">{{ $desc }}</p>
+    <div class="home-head">
+      <div>
+        <span class="home-eyebrow">{{ __('site.digital_library') }}</span>
+        <h2 class="home-h2">{{ __('site.new_in_library') }}</h2>
       </div>
+      <a href="{{ route('public.library.index') }}" class="home-more">{{ __('site.open_library') }} →</a>
+    </div>
+    <div class="home-row home-row--books">
+      @foreach ($shelves['books'] as $i => $book)
+        @php [$tone, $ink] = $coverTones[$i % count($coverTones)]; @endphp
+        <a href="{{ $book['href'] }}" class="flex flex-col gap-2 no-underline" style="color:#1F1A17" data-testid="home-book">
+          <span class="block overflow-hidden rounded-lg" style="aspect-ratio:2/3;background:{{ $tone }};box-shadow:0 6px 16px rgba(0,0,0,.12)">
+            @if ($book['cover_url'])
+              <img src="{{ $book['cover_url'] }}" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">
+            @else
+              <span class="flex h-full items-end p-3 text-sm font-bold" style="color:{{ $ink }}">{{ $book['title'] }}</span>
+            @endif
+          </span>
+          <strong class="text-sm leading-snug" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ $book['title'] }}</strong>
+          <span class="text-xs" style="color:#5E5650">
+            @if ($book['by']){{ $book['by'] }} · @endif
+            @if ($book['free'])
+              <strong style="color:#15803D">{{ __('site.free') }}</strong>
+            @elseif ($book['price'] !== null)
+              {{ $money($book['price'], $book['currency']) }}
+            @endif
+          </span>
+        </a>
+      @endforeach
+    </div>
+  </div>
+</section>
+@endif
+
+@if (! empty($shelves['products']))
+<section style="background:#FFFFFF;padding:3.5rem 0" data-testid="home-bookstore">
+  <div class="container mx-auto px-4">
+    <div class="home-head">
+      <div>
+        <span class="home-eyebrow">{{ __('site.akuru_bookstore') }}</span>
+        <h2 class="home-h2">{{ __('site.from_bookstore') }}</h2>
+      </div>
+      <a href="{{ route('public.shop.index') }}" class="home-more">{{ __('site.visit_store') }} →</a>
+    </div>
+    <div class="home-row">
+      @foreach ($shelves['products'] as $product)
+        <a href="{{ $product['href'] }}" class="flex flex-col overflow-hidden rounded-2xl border no-underline" style="border-color:#EDE4D8;color:#1F1A17" data-testid="home-product">
+          <span class="flex items-center justify-center" style="aspect-ratio:1;background:#F5F1EA">
+            @if ($product['image'])
+              <img src="{{ $product['image'] }}" alt="{{ $product['image_alt'] }}" loading="lazy" style="width:100%;height:100%;object-fit:cover">
+            @else
+              <svg class="h-10 w-10" fill="none" stroke="#C9B79A" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M5 8h14l-1 12H6L5 8zm4 0V6a3 3 0 016 0v2"/></svg>
+            @endif
+          </span>
+          <span class="flex flex-col gap-1 p-4">
+            <span class="text-xs font-semibold" style="color:#6B625B">{{ $product['shop'] }}</span>
+            <strong class="leading-snug" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ $product['title'] }}</strong>
+            <span class="font-extrabold" style="color:#7C2D37">
+              @if ($product['compare_at_price'])<span class="font-medium line-through" style="color:#9CA3AF">{{ $money($product['compare_at_price'], $product['currency']) }}</span> @endif
+              {{ $money($product['price'], $product['currency']) }}
+            </span>
+          </span>
+        </a>
+      @endforeach
+    </div>
+    <p class="mt-5 text-sm" style="color:#5E5650">{{ __('site.sell_prompt') }} <a href="{{ route('vendor.apply') }}" class="font-bold" style="color:#7C2D37">{{ __('site.sell_on_akuru') }} →</a></p>
+  </div>
+</section>
+@endif
+
+<section style="background:#F3EBE0;padding:3.5rem 0" data-testid="home-school">
+  <div class="container mx-auto px-4 grid gap-8 lg:grid-cols-2 lg:items-center">
+    <div class="flex flex-col gap-4">
+      <span class="home-eyebrow">{{ __('site.akuru_school') }}</span>
+      <h2 class="home-h2" style="margin:0">{{ __('site.school_heading') }}</h2>
+      <p class="text-base leading-relaxed" style="color:#4F4741;margin:0">{{ __('site.school_body') }}</p>
+      <div class="flex flex-wrap gap-3">
+        <a href="{{ route('public.admissions.create') }}" class="inline-flex items-center rounded-lg px-5 py-3 font-bold text-white no-underline" style="background:#7C2D37" data-testid="home-school-apply">{{ __('site.apply_admission') }}</a>
+        <a href="{{ auth()->check() ? route('dashboard') : route('login') }}" class="inline-flex items-center rounded-lg border px-5 py-3 font-semibold no-underline" style="border-color:#C7B49A;background:#fff;color:#1F1A17">{{ __('site.parent_login') }}</a>
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-3 rounded-2xl bg-white p-4 sm:p-6" style="box-shadow:0 10px 30px rgba(60,20,27,.08)">
+      @foreach ([
+        ['school_attendance', 'M4 6h16v14H4V6zm0 4h16M8 3v4m8-4v4M9 15l2 2 4-4'],
+        ['school_results', 'M5 20V10m7 10V4m7 16v-7'],
+        ['school_homework', 'M4 20h4L19 9l-4-4L4 16v4z'],
+        ['school_fees', 'M3 7h18v12H3V7zm0 4h18M7 15h4'],
+      ] as [$key, $icon])
+        <div class="flex flex-col gap-2 rounded-xl p-3 sm:flex-row sm:gap-3 sm:p-4" style="background:#FBF8F3">
+          <svg class="h-6 w-6 shrink-0" fill="none" stroke="#7C2D37" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon }}"/></svg>
+          <span class="flex flex-col gap-1">
+            <strong class="text-sm sm:text-base">{{ __('site.'.$key) }}</strong>
+            <span class="text-xs sm:text-sm" style="color:#5E5650">{{ __('site.'.$key.'_line') }}</span>
+          </span>
+        </div>
       @endforeach
     </div>
   </div>
@@ -438,28 +581,6 @@ document.addEventListener('keydown',e=>{if(!document.getElementById('glb')||docu
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</section>
-
-{{-- ═══════════════════════════════════════════════════════════
-  SECTION 8 — CTA   bg: deep maroon gradient
-═══════════════════════════════════════════════════════════ --}}
-<section style="background:linear-gradient(135deg,#5A1F28 0%,#7C2D37 50%,#491821 100%);padding:4.5rem 0;text-align:center">
-  <div class="container mx-auto px-4">
-    <h2 style="font-size:clamp(1.75rem,4vw,2.75rem);font-weight:800;color:white;margin:0 0 1rem">Ready to Start Your Journey?</h2>
-    <p style="color:rgba(255,255,255,.72);font-size:1.05rem;max-width:36rem;margin:0 auto 2.5rem;line-height:1.65">Join hundreds of students who chose Akuru Institute for their Islamic education.</p>
-    <div style="display:flex;flex-wrap:wrap;gap:1rem;justify-content:center">
-      <a href="{{ route('public.courses.index') }}"
-         style="display:inline-flex;align-items:center;gap:.5rem;background:#C9A227;color:#3D1219;font-weight:700;padding:.875rem 2.25rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:opacity .2s"
-         onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">
-        {{ __('public.Enroll') }}
-      </a>
-      <a href="{{ route('public.contact.create') }}"
-         style="display:inline-flex;align-items:center;gap:.5rem;border:2px solid rgba(255,255,255,.35);color:white;font-weight:600;padding:.875rem 2.25rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:background .2s"
-         onmouseover="this.style.background='rgba(255,255,255,.1)'" onmouseout="this.style.background='transparent'">
-        {{ __('public.Contact Us') }}
-      </a>
     </div>
   </div>
 </section>

@@ -4414,6 +4414,52 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kj. W2: the home page shows the four products (2026-09-29)
+
+The second of the three website slices (§5ki). The home page now follows the
+approved design:
+
+- **Hero.** Still the office's CMS slides. Until the office adds its own, the
+  first fallback slide speaks for Akuru as a whole — "Learn, read and grow —
+  with one Akuru account", with Browse courses — then Qur'an and Arabic. On a
+  phone the hero is shorter, so the products start in the first screen.
+- **The four products** as cards straight under the hero (E-Learning, Digital
+  Library, Bookstore, School), a 2 × 2 grid on a phone.
+- **Open courses**: the first four, with the header's All courses link in
+  place of the big button; labels (Open, Free, the date) in EN/DV/AR.
+- **New in the library**: the six newest published books, through
+  `Library\Actions\ListLibraryItemsAction` — cover, title, writer, Free or
+  the price.
+- **From the bookstore**: the four newest items for sale, through
+  `Bookshop\Actions\Shop\ListShopProductsAction` (active product, active
+  shop, shop-wide) — photo, shop, title, price (with the "was" price), and
+  "Have a shop? Sell on Akuru" to the vendor application.
+- **Akuru School**: Apply for admission, Parent & student login, and what a
+  family sees (attendance, results, homework, fees).
+- A shelf with nothing on it is left out; its card under the hero still
+  leads there.
+- **Removed**, as the design has them no more: the six "Why Akuru?" cards and
+  the closing "Ready to Start Your Journey?" banner. Stats, gallery,
+  testimonials, news and events stay (the stats row is W3's).
+
+On a phone every row is a sideways swipe (scroll-snap) instead of a stack,
+with its first card clear of the edge; the page at 390px went from 7,396px
+to about 5,800px with more on it. Both shelves come from one Website action,
+`ComposeHomepageProductsAction`, cached ten minutes like the page's other
+lists (the page's own cache key moves to v7 for the new first slide).
+
+**Tests.** `HomepageProductsTest` (new, 5): the four cards and where they go,
+above the courses, and the removed sections gone; published books show with
+their links and prices and a draft never does; an item for sale shows with
+its shop and price, and a draft or a suspended shop's never does; empty
+shelves are left out and the School is always there; the new first slide,
+with its Dhivehi and Arabic.
+
+**Walked.** `website.mjs` grows to 41/41: the four cards under the hero; books
+and items on the page, a book opening its page and an item its product page;
+Apply opening Admissions; at 390px each row swipes with its first card clear
+of the edge and the product cards start inside the first screen.
+
 ## 5ki. W1: the website's header leads with the four products (2026-09-29)
 
 The owner asked what the website should change now that Akuru's core is four
