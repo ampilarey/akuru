@@ -167,3 +167,19 @@ it('lets a shop set a sale from its product form, checks it, and ends it with an
     $as()->post(route('vendor.products.update', $product->id), $input(['sale_percent' => '', 'sale_ends_at' => '']))->assertSessionHasNoErrors();
     expect($product->refresh()->sale_percent)->toBeNull()->and($product->sale_ends_at)->toBeNull();
 });
+
+it('never gives a shop an address the store already uses, /shop/deals among them', function () {
+    $literal = collect(\Illuminate\Support\Facades\Route::getRoutes()->getRoutes())
+        ->map(fn ($route) => $route->uri())
+        ->filter(fn (string $uri) => str_starts_with($uri, 'shop/'))
+        ->map(fn (string $uri) => explode('/', $uri)[1])
+        ->reject(fn (string $segment) => str_starts_with($segment, '{'))
+        ->unique()->values()->all();
+
+    expect(array_diff($literal, \App\Domains\Bookshop\Actions\CreateVendorAction::RESERVED_SLUGS))->toBe([]);
+
+    Role::findOrCreate('vendor', 'web');
+    $created = app(CreateVendorAction::class)->execute(['name' => 'Deals', 'owner_name' => 'X', 'owner_email' => 'deals-owner@example.test'], User::factory()->create()->id);
+    expect($created['slug'])->toBe('deals-shop');
+});
+

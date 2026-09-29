@@ -4445,12 +4445,19 @@ The first feature from the owner's "Start" on the iruali list
   menu in the header and in the store's row of links.
 - **A shop's page shows a new price at once**: saving a product now clears
   that shop's cached storefront.
+- **No shop can be called "deals".** Such a shop would get `/shop/deals` as
+  its address, and that address belongs to the store. So `deals` is now a
+  reserved word. So are five others the store already used and the list
+  had missed: `suggest`, `newsletter`, `quotes`, `wishlist`, and
+  `book-lists` for the next slice. A test now checks the reserved list
+  against the route list.
 
 Tests:
-- `ShopDealsTest` (5): when a sale runs; the card, product page and
+- `ShopDealsTest` (6): when a sale runs; the card, product page and
   variants; the deals page and the front's shelf; the cart and a wallet
   checkout at the sale price with a code on top, then the list price after
-  the end; the product form's checks and ending a sale.
+  the end; the product form's checks and ending a sale; the reserved words match the
+  routes.
 - `StoreMenuTest` updated for the Deals link.
 
 Checklist: `ft-bookstore-11`.
