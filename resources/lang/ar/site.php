@@ -113,4 +113,5 @@ return [
     'stat_items' => 'منتجات في المتجر',
     'akuru_in_numbers' => 'أكورو بالأرقام',
     'store_deals' => 'العروض',
+    'store_book_lists' => 'قوائم الكتب المدرسية',
 ];

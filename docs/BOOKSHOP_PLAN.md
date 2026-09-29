@@ -474,7 +474,7 @@ to the Bookstore, then said "Start" on the list. One PR each, in this order.
 | # | Feature | State |
 |---|---|---|
 | 1 | **Deals with timed sales**: % off until a date on the product form; badge, countdown, `/shop/deals`, a Deals shelf on the store's front, Deals in the Bookstore menu; the cart and checkout charge the sale price until it ends | **Built** (STATUS §5lb) |
-| 2 | **Buy the whole list**: a school's book list per grade, added to the cart in one tap | next |
+| 2 | **Buy the whole list**: a shop marks a hand-picked collection as a school's list for a grade, with a quantity per item; School book lists on the store's front and in the menu; the list's page shows what it comes to and adds it whole to the cart | **Built** (STATUS §5lc) |
 | 3 | **Buy again** from My orders | next |
 | 4 | **Product questions and answers**: a customer asks, the shop answers publicly, the office moderates | next |
 | 5 | Loyalty points | **needs an owner plan** — money rules (wallet, never on gift cards) |

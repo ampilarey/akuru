@@ -118,4 +118,5 @@ return [
     'stat_items' => 'Items in the store',
     'akuru_in_numbers' => 'Akuru in numbers',
     'store_deals' => 'Deals',
+    'store_book_lists' => 'School book lists',
 ];

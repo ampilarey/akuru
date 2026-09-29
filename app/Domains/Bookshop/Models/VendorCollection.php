@@ -11,16 +11,19 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 /**
  * A named group of a vendor's products (BOOKSHOP_PLAN §5 "Collections"):
  * hand-picked through the pivot, or by rule — a tag, a category, or both.
- * Shown by a section and at `/shop/<vendor>/<collection>`.
+ * Shown by a section and at `/shop/<vendor>/<collection>`. Since §5lc a
+ * hand-picked one can be a school's book list for a grade, with a quantity
+ * per item, bought whole in one tap.
  */
 class VendorCollection extends Model
 {
-    protected $fillable = ['vendor_id', 'slug', 'name', 'name_dv', 'name_ar', 'description', 'rule', 'is_active', 'sort_order'];
+    protected $fillable = ['vendor_id', 'slug', 'name', 'name_dv', 'name_ar', 'description', 'rule', 'book_list', 'school', 'grade', 'is_active', 'sort_order'];
 
     protected function casts(): array
     {
         return [
             'rule' => 'array',
+            'book_list' => 'boolean',
             'is_active' => 'boolean',
         ];
     }
@@ -32,7 +35,7 @@ class VendorCollection extends Model
 
     public function products(): BelongsToMany
     {
-        return $this->belongsToMany(Product::class, 'vendor_collection_products')->withPivot('sort_order')->orderByPivot('sort_order');
+        return $this->belongsToMany(Product::class, 'vendor_collection_products')->withPivot('sort_order', 'quantity')->orderByPivot('sort_order');
     }
 
     public function isManual(): bool

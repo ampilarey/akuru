@@ -401,7 +401,7 @@ function Pages({ d, t, activePage, setActivePage, onSaved }) {
 }
 
 function Collections({ d, t }) {
-    const blank = { id: null, name: '', name_dv: '', name_ar: '', slug: '', description: '', kind: 'manual', product_ids: [], rule: { tags: [], category_id: '' }, is_active: true };
+    const blank = { id: null, name: '', name_dv: '', name_ar: '', slug: '', description: '', kind: 'manual', product_ids: [], rule: { tags: [], category_id: '' }, is_active: true, book_list: false, school: '', grade: '', quantities: {} };
     const [form, setForm] = useState(blank);
     const set = (patch) => setForm({ ...form, ...patch });
     const chosen = form.product_ids.map(Number);
@@ -410,7 +410,7 @@ function Collections({ d, t }) {
         <div className="space-y-4">
             <form className="grid gap-3 rounded border bg-white p-3 md:grid-cols-3" data-testid="collection-form" onSubmit={(e) => {
                 e.preventDefault();
-                router.post(form.id ? `/vendor/storefront/collections/${form.id}` : '/vendor/storefront/collections', { ...form, rule: { tags: form.rule.tags, category_id: form.rule.category_id || null } }, { preserveScroll: true, onSuccess: () => setForm(blank) });
+                router.post(form.id ? `/vendor/storefront/collections/${form.id}` : '/vendor/storefront/collections', { ...form, book_list: form.kind === 'manual' && form.book_list ? 1 : 0, rule: { tags: form.rule.tags, category_id: form.rule.category_id || null } }, { preserveScroll: true, onSuccess: () => setForm(blank) });
             }}>
                 <h3 className="font-semibold md:col-span-3">{form.id ? t.edit_collection : t.new_collection}</h3>
                 <Field label={t.collection_name}><input className="form-input w-full" value={form.name} onChange={(e) => set({ name: e.target.value })} required data-testid="collection-name" /></Field>
@@ -424,6 +424,19 @@ function Collections({ d, t }) {
                         <option value="rule">{t.collection_rule}</option>
                     </select>
                 </Field>
+                {form.kind === 'manual' && (
+                    // STATUS §5lc: a school's book list, bought whole in one tap.
+                    <div className="grid gap-3 rounded border border-dashed p-2 md:col-span-3 md:grid-cols-3" data-testid="collection-book-list">
+                        <label className="flex items-center gap-2 text-sm md:col-span-3"><input type="checkbox" checked={Boolean(form.book_list)} onChange={(e) => set({ book_list: e.target.checked })} data-testid="collection-book-list-on" /> {t.book_list_toggle}</label>
+                        {form.book_list && (
+                            <>
+                                <Field label={t.book_list_school}><input className="form-input w-full" dir="auto" value={form.school || ''} onChange={(e) => set({ school: e.target.value })} required data-testid="collection-school" /></Field>
+                                <Field label={t.book_list_grade}><input className="form-input w-full" dir="auto" value={form.grade || ''} onChange={(e) => set({ grade: e.target.value })} required data-testid="collection-grade" /></Field>
+                                <p className="text-xs text-gray-500">{t.book_list_hint}</p>
+                            </>
+                        )}
+                    </div>
+                )}
                 {form.kind === 'manual' ? (
                     <Field label={t.collection_products} className="md:col-span-3">
                         <div className="max-h-48 overflow-y-auto rounded border p-2 text-sm" data-testid="collection-products">
@@ -434,6 +447,9 @@ function Collections({ d, t }) {
                                         <input type="checkbox" checked={on} onChange={(e) => set({ product_ids: e.target.checked ? [...chosen, p.id] : chosen.filter((id) => id !== p.id) })} data-testid={`collection-product-${p.slug}`} />
                                         {on && <span className="text-xs text-gray-500">{chosen.indexOf(p.id) + 1}.</span>}
                                         <span>{p.title}</span>
+                                        {on && form.book_list && (
+                                            <input type="number" min="1" max="99" className="form-input ms-auto w-16 py-0" aria-label={t.quantity} value={(form.quantities || {})[p.id] ?? 1} onChange={(e) => set({ quantities: { ...(form.quantities || {}), [p.id]: e.target.value } })} data-testid={`collection-qty-${p.slug}`} />
+                                        )}
                                     </label>
                                 );
                             })}
@@ -469,9 +485,10 @@ function Collections({ d, t }) {
                         <li key={c.id} className="flex flex-wrap items-center gap-2 p-2" data-testid={`collection-row-${c.slug}`}>
                             <span className="font-semibold" dir="auto">{c.name}</span>
                             <a href={`/shop/${d.vendorSlug}/${c.slug}`} target="_blank" rel="noreferrer" className="text-xs text-blue-700 underline">/{c.slug}</a>
+                            {c.book_list && <span className="rounded bg-amber-100 px-1 text-xs text-amber-900">{t.book_list_badge} · {c.school} · {c.grade}</span>}
                             <span className="text-xs text-gray-500">{c.kind === 'manual' ? t.collection_manual : t.collection_rule} · {t.result_count.replace(':count', c.for_sale_count)}{c.is_active ? '' : ` · ${t.inactive}`}</span>
                             <span className="ms-auto flex gap-2">
-                                <button type="button" className="btn-secondary px-2 py-1 text-xs" onClick={() => setForm({ ...c, slug: c.slug, rule: { tags: c.rule.tags || [], category_id: c.rule.category_id || '' } })} data-testid={`edit-collection-${c.slug}`}>{t.edit}</button>
+                                <button type="button" className="btn-secondary px-2 py-1 text-xs" onClick={() => setForm({ ...c, slug: c.slug, school: c.school || '', grade: c.grade || '', quantities: { ...(c.quantities || {}) }, rule: { tags: c.rule.tags || [], category_id: c.rule.category_id || '' } })} data-testid={`edit-collection-${c.slug}`}>{t.edit}</button>
                                 <button type="button" className="px-2 py-1 text-xs text-red-700 underline" onClick={() => { if (window.confirm(t.confirm_delete_collection)) router.delete(`/vendor/storefront/collections/${c.id}`, { preserveScroll: true }); }} data-testid={`delete-collection-${c.slug}`}>{t.delete}</button>
                             </span>
                         </li>

@@ -13,6 +13,13 @@
     </nav>
     <h1 class="mb-6 text-3xl font-bold text-brandMaroon-900" data-testid="cart-heading">{{ __('shop.cart_title') }}</h1>
 
+    @if(session('success'))
+        <p class="mb-3 rounded bg-green-50 p-2 text-sm text-green-800" data-testid="flash-success">{{ session('success') }}</p>
+    @endif
+    @if(session('warning'))
+        {{-- §5lc: a book list's items that could not go in, by name. --}}
+        <p class="mb-3 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-900" dir="auto" data-testid="flash-warning">{{ session('warning') }}</p>
+    @endif
     @if($errors->any())
         <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800" data-testid="cart-errors">
             @foreach($errors->all() as $message)<p>{{ $message }}</p>@endforeach

@@ -71,6 +71,8 @@ Route::get('shop/c/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopControll
 // (found by the B3 walk, 2026-09-26).
 Route::get('shop/cart', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'index'])->name('public.shop.cart');
 Route::post('shop/cart', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'add'])->name('public.shop.cart.add')->middleware('throttle:60,1,shop-cart');
+// §5lc: a school's whole book list, in one tap.
+Route::post('shop/book-lists/{vendor}/{list}', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'addList'])->name('public.shop.book-list.add')->middleware('throttle:20,1,shop-book-list');
 Route::post('shop/cart/{item}', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'update'])->name('public.shop.cart.update')->middleware('throttle:60,1,shop-cart')->whereNumber('item');
 Route::middleware('auth')->group(function () {
     Route::get('shop/checkout', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'show'])->name('public.shop.checkout');

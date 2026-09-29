@@ -32,6 +32,7 @@
     <nav class="container mx-auto flex flex-wrap gap-2 px-4 pb-4 {{ $storefront ? 'pt-4' : '' }} text-sm" aria-label="{{ __('site.store_menu') }}" data-testid="shop-links">
         <a href="{{ $home ? '#shops' : route('public.shop.index').'#shops' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 font-semibold text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-shops">{{ __('site.shops') }}</a>
         <a href="{{ route('public.shop.deals') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-deals">{{ __('site.store_deals') }}</a>
+        <a href="{{ $home ? '#book-lists' : route('public.shop.index').'#book-lists' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-book-lists">{{ __('site.store_book_lists') }}</a>
         <a href="{{ $home ? '#categories' : route('public.shop.index').'#categories' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.shop_categories') }}</a>
         <a href="{{ route('public.shop.cart') }}" class="inline-flex items-center gap-1 rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-cart">{{ __('site.cart') }}@if($cartCount > 0)<span class="rounded-full bg-brandMaroon-600 px-1.5 text-xs font-semibold text-white" data-testid="shop-link-cart-count">{{ $cartCount }}</span>@endif</a>
         <a href="{{ route('public.shop.orders') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.my_orders') }}</a>
@@ -97,6 +98,37 @@
     </div>
 </section>
 @stack('shop_links')
+@endif
+
+{{-- STATUS §5lc: a school's book list — what it asks for, what it comes to, and the whole list in one tap. --}}
+@if($collection['book_list'] ?? null)
+@php($bookList = $collection['book_list'])
+<section class="container mx-auto px-4 pt-6" data-testid="book-list">
+    <div class="rounded-lg border bg-white p-4 text-gray-900">
+        <p class="text-sm font-semibold text-brandMaroon-700" dir="auto">{{ __('shop.book_list_badge') }} · {{ $bookList['school'] }} · {{ $bookList['grade'] }}</p>
+        <table class="mt-3 w-full text-sm">
+            <thead class="sr-only"><tr><th>{{ __('shop.quantity') }}</th><th>{{ __('shop.product') }}</th><th>{{ __('shop.price') }}</th></tr></thead>
+            <tbody class="divide-y">
+                @foreach($bookList['lines'] as $line)
+                    <tr class="{{ $line['buyable'] ? '' : 'text-gray-400' }}" data-book-line="{{ $line['slug'] }}">
+                        <td class="w-12 py-1.5 pe-2 font-semibold">{{ $line['quantity'] }} ×</td>
+                        <td class="py-1.5" dir="auto"><a href="{{ route('public.shop.product', $line['slug']) }}" class="hover:underline">{{ $line['title'] }}</a>@unless($line['buyable']) <span class="text-xs">({{ __('shop.book_list_unavailable') }})</span>@endunless</td>
+                        <td class="py-1.5 text-end whitespace-nowrap">{{ $bookList['currency'] }} {{ $line['line_total'] }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+        <div class="mt-3 flex flex-wrap items-center justify-between gap-3 border-t pt-3">
+            <p class="font-semibold" data-testid="book-list-total">{{ __('shop.book_list_total', ['count' => $bookList['buyable']]) }} {{ $bookList['currency'] }} {{ $bookList['total'] }}</p>
+            @if($bookList['buyable'] > 0)
+                <form method="POST" action="{{ route('public.shop.book-list.add', [$vendor['slug'], $collection['slug']]) }}">
+                    @csrf
+                    <button type="submit" class="btn-primary" data-testid="book-list-add">{{ __('shop.book_list_add_all') }}</button>
+                </form>
+            @endif
+        </div>
+    </div>
+</section>
 @endif
 
 {{-- On a phone the search stays in view and the rest folds under "Filter and sort",
@@ -264,6 +296,26 @@
                     @foreach($home['categories'] as $category)
                         <a href="{{ route('public.shop.category', $category['slug']) }}" class="rounded-full border bg-white px-4 py-2 text-sm hover:border-brandMaroon-400">
                             {{ $category['name'] }} <span class="text-gray-500">({{ $category['count'] }})</span>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
+    {{-- STATUS §5lc: the schools' book lists — find your school and grade, buy the list. --}}
+    {{-- Shown even when empty: the Bookstore menu links here. --}}
+    @if(isset($home['book_lists']))
+        <section id="book-lists" class="scroll-mt-24 py-8 bg-brandBeige-50" data-testid="shop-book-lists">
+            <div class="container mx-auto px-4">
+                <h2 class="mb-1 text-xl font-semibold text-brandMaroon-900">{{ __('shop.book_lists_heading') }}</h2>
+                <p class="mb-3 text-sm text-gray-600">{{ count($home['book_lists']) > 0 ? __('shop.book_lists_intro') : __('shop.book_lists_none') }}</p>
+                <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    @foreach($home['book_lists'] as $list)
+                        <a href="{{ $list['url'] }}" class="rounded-lg border bg-white p-3 hover:border-brandMaroon-400" data-book-list="{{ $list['vendor_slug'] }}/{{ $list['slug'] }}">
+                            <span class="block font-semibold text-brandMaroon-900" dir="auto">{{ $list['school'] }}</span>
+                            <span class="block text-sm" dir="auto">{{ $list['grade'] }} · {{ $list['name'] }}</span>
+                            <span class="block text-xs text-gray-500">{{ __('shop.sold_by') }} {{ $list['vendor'] }} · {{ __('shop.result_count', ['count' => $list['count']]) }}</span>
                         </a>
                     @endforeach
                 </div>

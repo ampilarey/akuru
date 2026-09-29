@@ -113,4 +113,5 @@ return [
     'stat_items' => 'ފިހާރައިގައި ހުރި ތަކެތި',
     'akuru_in_numbers' => 'ނަންބަރުތަކުން އަކުރު',
     'store_deals' => 'ޑީލްތައް',
+    'store_book_lists' => 'ސްކޫލު ފޮތް ލިސްޓް',
 ];
