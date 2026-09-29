@@ -867,6 +867,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // STATUS §5lm: rewards into the wallet, off until the office turns them on.
         Route::post('rewards', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'saveRewards'])->name('admin.bookshop.rewards');
         Route::get('rewards/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportRewards'])->name('admin.bookshop.rewards.export');
+        // STATUS §5ln: referral credit, off until the office turns it on.
+        Route::post('referrals', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'saveReferrals'])->name('admin.bookshop.referrals');
+        Route::get('referrals/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportReferrals'])->name('admin.bookshop.referrals.export');
         // B11: the whole shop open or closed.
         Route::post('open', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setShopOpen'])->name('admin.bookshop.open');
         Route::get('applications/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportApplications'])->name('admin.bookshop.applications.export');

@@ -252,6 +252,19 @@ return [
         'max_percent' => 10.0,
     ],
 
+    /*
+     * STATUS §5ln: referral credit — a customer's share link; a friend's
+     * first Bookstore order through it; once that order is delivered and
+     * past its return window, wallet credit for both. Off until the office
+     * turns it on; the office sets both amounts and the smallest first order.
+     */
+    'referrals' => [
+        'enabled_by_default' => false,
+        'setting_key' => 'bookshop_referrals',
+        'defaults' => ['referrer_amount' => 25.0, 'friend_amount' => 25.0, 'min_order' => 100.0],
+        'max_amount' => 500.0,
+    ],
+
     'cod' => [
         'enabled_by_default' => (bool) env('BOOKSHOP_COD_ENABLED', true),
         'setting_key' => 'bookshop_cod_enabled',

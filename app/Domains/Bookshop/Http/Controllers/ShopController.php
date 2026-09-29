@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
+use App\Domains\Bookshop\Actions\Money\ReferralCreditAction;
 use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
 use App\Domains\Bookshop\Actions\Shop\CompareProductsAction;
 use App\Domains\Bookshop\Actions\Shop\CustomerListsAction;
@@ -83,6 +84,15 @@ class ShopController extends Controller
         $added = app(CompareProductsAction::class)->toggle($request->session(), $slug);
 
         return back()->with('success', __($added ? 'shop.compare_added_flash' : 'shop.compare_removed_flash'));
+    }
+
+    /** STATUS §5ln: a customer's share link — kept on this visit, then on to the store. */
+    public function referral(Request $request, string $code): RedirectResponse
+    {
+        $kept = app(ReferralCreditAction::class)->remember($request->session(), $code);
+        $to = redirect()->route('public.shop.index');
+
+        return $kept ? $to->with('success', __('shop.referral_welcome_flash', ['amount' => 'MVR '.number_format(app(ReferralCreditAction::class)->settings()['friend_amount'], 2)])) : $to;
     }
 
     /** §5lh: one brand's products, from every shop. */

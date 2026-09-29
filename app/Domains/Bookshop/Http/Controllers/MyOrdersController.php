@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\Cart\BuyAgainAction;
+use App\Domains\Bookshop\Actions\Money\ReferralCreditAction;
 use App\Domains\Bookshop\Actions\Orders\CustomerOrderAction;
 use App\Domains\Bookshop\Actions\Orders\ListMyOrdersAction;
 use App\Domains\Bookshop\Actions\Orders\PresentOrderAction;
@@ -30,6 +31,8 @@ class MyOrdersController extends Controller
 
         return view('public.shop.orders.index', [
             'orders' => app(ListMyOrdersAction::class)->execute((int) $request->user()->id),
+            // STATUS §5ln: their share link while referral credit is on.
+            'invite' => app(ReferralCreditAction::class)->invite((int) $request->user()->id),
         ]);
     }
 

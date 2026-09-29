@@ -1888,6 +1888,9 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('loyalty_rewards')->whereIn('order_id', $walkOrders)->delete();
         DB::table('orders')->whereIn('id', $walkOrders)->delete();
         DB::table('stock_reservations')->whereIn('bookshop_checkout_id', $walkCheckouts)->delete();
+        // STATUS §5ln: the walk's referrals and share codes (a referral's checkout key restricts).
+        DB::table('referrals')->whereIn('bookshop_checkout_id', $walkCheckouts)->orWhereIn('referrer_user_id', $walkPeople)->orWhereIn('referred_user_id', $walkPeople)->delete();
+        DB::table('referral_codes')->whereIn('user_id', $walkPeople)->delete();
         DB::table('bookshop_checkouts')->whereIn('id', $walkCheckouts)->delete();
         DB::table('cart_items')->whereIn('cart_id', DB::table('carts')->whereIn('user_id', $walkPeople)->pluck('id'))->delete();
         DB::table('carts')->whereIn('user_id', $walkPeople)->delete();
@@ -2034,6 +2037,7 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('settings')->where('key', (string) config('bookshop.cod.setting_key'))->delete();
         // STATUS §5lm (`cod.mjs`): the office turns rewards on and back off; the switch goes back to its default (off).
         DB::table('settings')->where('key', (string) config('bookshop.loyalty.setting_key'))->delete();
+        DB::table('settings')->where('key', (string) config('bookshop.referrals.setting_key'))->delete();
 
         // B9c (`newsletter.mjs`): Fitrah's newsletter list starts empty (the
         // walk adds its Newsletter section; the storefront was reset above).

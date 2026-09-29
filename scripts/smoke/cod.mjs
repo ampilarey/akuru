@@ -30,6 +30,8 @@ const ADMIN = process.env.SMOKE_ADMIN ?? 'superadmin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const VENDOR = process.env.SMOKE_VENDOR ?? 'vendor@akuru.edu.mv';
 const STUDENT = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
+// STATUS §5ln: a friend who has never ordered from the Bookstore.
+const FRIEND = process.env.SMOKE_PARENT ?? 'parent@akuru.edu.mv';
 const PUZZLE = 'smoke-wooden-alphabet-puzzle';
 
 const HERMETIC_ARGS = [
@@ -136,14 +138,42 @@ await settle(office, '[data-testid="flash-success"]');
 await office.waitForTimeout(400);
 check('the office turns rewards on at 2%, for orders paid from today', /^On\b.*\d{4}-\d{2}-\d{2}/.test(await inner(office, '[data-testid="rewards-state"]')) && (await office.locator('[data-testid="rewards-percent"]').inputValue()) === '2', await inner(office, '[data-testid="rewards-state"]'));
 
+// ------------------------------------------------------------ 1c. referral credit (STATUS §5ln)
+
+await settle(office, '[data-testid="office-referrals"]');
+check('referral credit starts off', (await inner(office, '[data-testid="referrals-state"]')).startsWith('Off'), await inner(office, '[data-testid="referrals-state"]'));
+await office.fill('[data-testid="referrals-referrer"]', '25');
+await office.fill('[data-testid="referrals-friend"]', '20');
+await office.fill('[data-testid="referrals-min"]', '100');
+await office.click('[data-testid="toggle-referrals"]');
+await settle(office, '[data-testid="flash-success"]');
+await office.waitForTimeout(400);
+check('the office turns referral credit on: MVR 25 to the customer, MVR 20 to the friend', /^On\b.*\d{4}-\d{2}-\d{2}/.test(await inner(office, '[data-testid="referrals-state"]')), await inner(office, '[data-testid="referrals-state"]'));
+// Fitrah's owner shops here too: their My orders carries their invite link.
+await vendor.goto(`${BASE}/en/my-orders`, { waitUntil: 'networkidle' });
+const inviteUrl = await vendor.locator('[data-testid="referral-link"]').inputValue().catch(() => '');
+check('a customer finds their invite link on My orders', /\/shop\/r\/[A-Z0-9]{8}$/.test(inviteUrl) && (await inner(vendor, '[data-testid="referral-invite"]')).includes('MVR 25.00'), inviteUrl);
+
 // ------------------------------------------------------------ 2. the customer pays cash
 
+// A friend who has never ordered opens it: the store, then their checkout, say what a first order earns.
+const friend = await signIn(FRIEND);
+await friend.goto(inviteUrl, { waitUntil: 'networkidle' });
+check('the friend opening it lands on the store, told what their first order earns', /\/shop$/.test(friend.url()) && (await inner(friend, 'body')).includes('A friend invited you'), friend.url().replace(BASE, ''));
+await friend.goto(`${BASE}/en/shop/products/${PUZZLE}`, { waitUntil: 'networkidle' });
+await submit(friend, '[data-testid="add-to-cart"]');
+await friend.goto(`${BASE}/en/shop/checkout`, { waitUntil: 'networkidle' });
+check('and their checkout says: MVR 20.00 to their wallet once this first order is delivered', (await inner(friend, '[data-testid="checkout-referral"]')).includes('MVR 20.00'), await inner(friend, '[data-testid="checkout-referral"]'));
+
+// The student has bought here before (the seeded order), so the same link earns them nothing.
 const student = await signIn(STUDENT);
+await student.goto(inviteUrl, { waitUntil: 'networkidle' });
 await student.goto(`${BASE}/en/shop/products/${PUZZLE}`, { waitUntil: 'networkidle' });
 await student.fill('[data-testid="quantity"]', '1');
 await submit(student, '[data-testid="add-to-cart"]');
 await student.goto(`${BASE}/en/shop/checkout`, { waitUntil: 'networkidle' });
 check('the checkout offers cash on delivery', (await count(student, '[data-testid="pay-cash_on_delivery"]')) === 1);
+check('the link earns nothing for someone who has ordered before', (await count(student, '[data-testid="checkout-referral"]')) === 0);
 const courier = student.locator('input[name="delivery[fitrah]"][data-delivery-kind="courier_male"]');
 if ((await courier.count()) > 0) {
     await courier.first().check();
@@ -183,6 +213,8 @@ check('delivered, and paid', (await inner(vendor, 'main')).includes(orderNumber)
 await student.goto(`${BASE}/en/my-orders/${orderNumber}`, { waitUntil: 'networkidle' });
 check('the customer sees it delivered', (await inner(student, '[data-testid="order-status"]')).includes('Delivered'), await inner(student, '[data-testid="order-status"]'));
 // 2% of the MVR 240 puzzle — never the MVR 30 courier — once the return window passes.
+await vendor.goto(`${BASE}/en/my-orders`, { waitUntil: 'networkidle' });
+check('and the inviter has no friend waiting from it', (await inner(vendor, '[data-testid="referral-counts"]')).includes('0 credited, 0 waiting'), await inner(vendor, '[data-testid="referral-counts"]'));
 check('and that it earns about MVR 4.80 back in their wallet once the return window passes', (await student.locator('[data-testid="order-reward"]').getAttribute('data-reward').catch(() => '')) === 'coming' && (await inner(student, '[data-testid="order-reward"]')).includes('MVR 4.80'), await inner(student, '[data-testid="order-reward"]'));
 
 // ------------------------------------------------------------ 4. the money
@@ -206,6 +238,10 @@ await student.goto(`${BASE}/en/shop/checkout`, { waitUntil: 'networkidle' });
 await office.click('[data-testid="toggle-rewards"]');
 await settle(office, '[data-testid="flash-success"]');
 await office.waitForTimeout(400);
+await office.click('[data-testid="toggle-referrals"]');
+await settle(office, '[data-testid="flash-success"]');
+await office.waitForTimeout(400);
+check('the office turns referral credit back off', (await inner(office, '[data-testid="referrals-state"]')).startsWith('Off'), await inner(office, '[data-testid="referrals-state"]'));
 check('the office turns rewards back off', (await inner(office, '[data-testid="rewards-state"]')).startsWith('Off'), await inner(office, '[data-testid="rewards-state"]'));
 check('and the checkout no longer offers it', (await count(student, '[data-testid="pay-cash_on_delivery"]')) === 0 && (await count(student, '[data-testid="place-order"]')) === 1);
 

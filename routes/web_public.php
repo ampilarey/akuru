@@ -65,6 +65,8 @@ Route::get('shop/products/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopC
 // §5lj: track an order without signing in — its number and phone, throttled against guessing.
 Route::get('shop/track', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'track'])->name('public.shop.track')->middleware('throttle:10,1,shop-track');
 Route::get('shop/compare', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'compare'])->name('public.shop.compare');
+// STATUS §5ln: a customer's share link.
+Route::get('shop/r/{code}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'referral'])->name('public.shop.referral')->where('code', '[A-Za-z0-9]{4,16}')->middleware('throttle:30,1,shop-referral');
 Route::post('shop/compare/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'toggleCompare'])->name('public.shop.compare.toggle')->middleware('throttle:60,1,shop-compare');
 Route::get('shop/brand/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'brand'])->name('public.shop.brand');
 Route::get('shop/c/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'category'])->name('public.shop.category');

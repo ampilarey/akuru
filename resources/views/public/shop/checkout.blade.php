@@ -32,6 +32,11 @@
         </div>
     @endif
 
+    @if($referral ?? null)
+        {{-- STATUS §5ln: this visit came through a friend's share link, and this is a first order. --}}
+        <p class="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-900" data-testid="checkout-referral">{{ __('shop.referral_checkout', ['amount' => 'MVR '.$referral['friend_amount'], 'min' => 'MVR '.$referral['min_order']]) }}</p>
+    @endif
+
     <form method="POST" action="{{ route('public.shop.checkout.store') }}" class="grid gap-6 md:grid-cols-5" data-testid="checkout-form">
         @csrf
         <div class="space-y-6 md:col-span-3">

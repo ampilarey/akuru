@@ -4414,6 +4414,102 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ln. Bookstore referral credit, built off (2026-09-29)
+
+BOOKSHOP_PLAN §16, item 9b, the last item of the owner's iruali list. It is
+built as asked: **off**, with the office's settings, through the Commerce
+wallet, and never on gift cards. The owner sets the amounts and turns it on
+(OWNER_ACTIONS item 21).
+
+**How it works:**
+1. **The invite link.** While it is on, My orders shows a signed-in
+   customer "Invite a friend": their link (`/shop/r/{code}`, an 8-character
+   code made the first time) and what it is worth. It also counts friends
+   credited and waiting.
+2. **The friend.** Opening the link keeps the code on that visit (the
+   session), and the store says what a first order earns. The checkout then
+   repeats it. The link route is throttled at 30 a minute.
+3. **Their first order.** Placing a checkout keeps a **pending** referral
+   against it when all of these hold:
+   - the visit came through a link;
+   - referral credit is on;
+   - the friend is not the link's owner;
+   - they have never had an order paid or cash-due;
+   - they have no referral already.
+
+   One per friend (`referred_user_id` is unique). A friend whose try went
+   unpaid, and who tries again, keeps the referral on the new checkout.
+4. **Paid.** Once every order in that checkout is settled, the referral is
+   decided. Settled means delivered and past the shop's return window, or
+   cancelled or expired.
+   - If the goods paid for reach the smallest first order, both are
+     credited through `CreditWalletAction`: two ledger rows with
+     `source_type` `referral`, each noted on the referral. The goods are
+     the subtotal less discount and refunds, never delivery.
+   - If not, the referral is **void**.
+   - The daily `bookshop:award-rewards` does it and prints "Referrals
+     paid: N".
+   - Only referrals made after it was last turned on are paid.
+
+**The office** (`/admin/bookshop` → Referral credit):
+- On or off, with "for friends from <date>".
+- The credit to the customer and to the friend (each 1–500) and the
+  smallest first order.
+- Paid and waiting counts and the total credited, the latest twenty, and a
+  CSV of every referral.
+
+**Data and other changes:**
+- Migration `2026_09_29_000012_shop_referrals` adds two tables, additive:
+  - `referral_codes` (one per customer);
+  - `referrals` (pending → paid or void). Its keys restrict deletion.
+- Morph aliases `referral` and `referral_code`.
+- The setting is one JSON key, `bookshop_referrals`.
+- `r` joins the words no shop may be named, and the share route is in
+  `public_routes`.
+- Languages: EN/DV/AR.
+- `SmokeMarkerSeeder` clears the walk people's referrals and codes and the
+  setting.
+
+Tests:
+- `ShopReferralsTest` (5):
+  - **Off:** no invite on My orders, nothing kept from a link, no
+    referral from a checkout, nothing paid.
+  - **The full path:**
+    - the invite shows MVR 25 and MVR 20;
+    - the link (in lower case too) keeps the code and says what a first
+      order earns, and the checkout says so;
+    - the real wallet checkout makes a pending referral and clears the
+      code;
+    - nothing is paid before delivery or inside the window, then it is
+      paid once;
+    - the referrer's wallet reads 25.00, with two `referral` ledger rows
+      tied to the referral, and the invite counts one credited.
+  - **Refused:** oneself; someone with an earlier paid order; a first order
+    under MVR 100 and a cancelled one are kept, then **void**, with no
+    credit; a friend already referred is not referred again.
+  - **Retry:** after an unpaid (expired) try, the referral moves to the
+    checkout that is delivered, and is paid.
+  - **Office:** a zero, an over-500 and a negative number are refused; the
+    save and the CSV work, and a stranger gets 403 on both.
+
+Checklist: `ft-bookstore-22`.
+
+Walk: `scripts/smoke/cod.mjs` 22/22, with eight new steps:
+1. Referral credit starts off.
+2. The office turns it on: "On for friends from 2026-09-29".
+3. Fitrah's owner finds their invite link on My orders.
+4. The parent, who has never ordered, opens it and lands on the store,
+   told what their first order earns.
+5. The parent's checkout says MVR 20.00 goes to their wallet.
+6. The student, who has a seeded delivered order, opens the same link and
+   gets no referral line.
+7. The inviter has none waiting.
+8. The office turns it back off.
+
+The first run of the walk used the student as the friend, and the checkout
+rightly refused: the student already had a delivered order. The walk now
+uses a never-ordered friend and keeps the student as the refusal.
+
 ## 5lm. Bookstore rewards, built off (2026-09-29)
 
 BOOKSHOP_PLAN §16, item 9, the loyalty item. It is built the way the owner
