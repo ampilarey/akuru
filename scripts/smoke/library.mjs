@@ -447,6 +447,98 @@ if (resubmitted) {
     }
 }
 
+// ----------------------------- 9. research the institute can hold (R1, STATUS §5ko)
+
+// RESEARCH_ARTICLES_PLAN R1: a writer chooses how readers get a research item
+// (the owner's decision D1); the office names one of Akuru's teachers as an
+// author and offers the PDF as a download; a reader downloads it; the
+// research shelf filters by year.
+{
+    const R1_TITLE = `SMOKE-Research ${STAMP}`;
+    const R1_ARTICLE = `SMOKE-Download-Article ${STAMP}`;
+    const R1_TEACHER = `SMOKE-Teacher ${STAMP}`;
+    const PDF = new URL('../../tests/Fixtures/pdf/three-pages-chromium.pdf', import.meta.url).pathname;
+
+    // a. The writer picks "both" on a research draft, and the choice stays.
+    const w = await signIn(APPLICANT);
+    await w.goto(`${BASE}/en/write`, { waitUntil: 'networkidle' });
+    const fresh = w.locator('button:has-text("New draft")').first();
+    if (await fresh.count()) {
+        await fresh.click();
+        await w.fill('[data-testid="draft-editor"] input[placeholder="Title"]', R1_TITLE);
+        await w.locator('[data-testid="draft-editor"] select').first().selectOption('research');
+        const offered = await w.locator('[data-testid="delivery-choice"]').isVisible();
+        await w.check('[data-testid="delivery-both"]');
+        await w.check('input[name="declarations[copyright]"]');
+        await w.click('button:has-text("Save draft")');
+        const saved = await settles(w, R1_TITLE);
+        await w.locator('tr').filter({ hasText: R1_TITLE }).first().locator('button:has-text("Edit")').click();
+        const kept = await w.locator('[data-testid="draft-editor"] [data-testid="delivery-both"]').isChecked();
+        check('a writer chooses how readers get a research item, and the choice is kept', offered && saved && kept, `offered: ${offered}, saved: ${saved}, kept: ${kept}`);
+    } else {
+        check('a writer chooses how readers get a research item, and the choice is kept', false, 'no New draft button');
+    }
+
+    // b. The office adds a teacher to the website, then an article naming
+    //    them, with its PDF offered as a download, and publishes it.
+    const office = await signIn(STAFF);
+    await office.goto(`${BASE}/en/admin/instructors/create`, { waitUntil: 'networkidle' });
+    await office.fill('#instructor-name', R1_TEACHER);
+    await Promise.all([office.waitForURL(/\/admin\/instructors(\?|$)/), office.click('[data-testid="instructor-save"]')]);
+    await office.goto(`${BASE}/en/admin/library`, { waitUntil: 'networkidle' });
+    const form = office.locator('form').filter({ has: office.locator('button:has-text("Save item")') });
+    await form.locator('input[placeholder="Title"]').fill(R1_ARTICLE);
+    const teacherBox = form.locator('[data-testid="teacher-authors"] label').filter({ hasText: R1_TEACHER }).locator('input');
+    const hasTeacher = (await teacherBox.count()) === 1;
+    if (hasTeacher) await teacherBox.check();
+    await form.locator('[data-testid="delivery-both"]').check();
+    await form.locator('input[type=file][accept="application/pdf"]').setInputFiles(PDF);
+    await form.locator('button:has-text("Save item")').click();
+    await settles(office, 'Library item saved');
+    const row = office.locator('tr').filter({ hasText: R1_ARTICLE }).first();
+    await row.locator('button:has-text("Publish")').click();
+    const published = await rowSettles(office, R1_ARTICLE, 'published');
+    check('the office names a teacher as author and publishes the article with its PDF', hasTeacher && published, `teacher listed: ${hasTeacher}, published: ${published}`);
+
+    // c. A stranger opens it: the teacher's name leads to their profile, and
+    //    the PDF downloads as a file.
+    const guest = await (await browser.newContext()).newPage();
+    await guest.goto(`${BASE}/en/library?q=${encodeURIComponent(R1_ARTICLE)}`, { waitUntil: 'networkidle' });
+    const card = guest.locator('a', { hasText: R1_ARTICLE }).first();
+    const itemPath = new URL(await card.getAttribute('href')).pathname;
+    await Promise.all([guest.waitForURL((url) => url.pathname === itemPath), card.click()]);
+    await guest.waitForLoadState('networkidle');
+    const teacherLink = guest.locator('[data-testid="author-teacher"]', { hasText: R1_TEACHER });
+    const profileHref = (await teacherLink.count()) ? await teacherLink.getAttribute('href') : null;
+    check('the item names the teacher, linked to their profile', profileHref !== null && /\/instructors\//.test(profileHref), profileHref ?? 'no teacher link on the item page');
+    if (profileHref) {
+        const profile = await guest.context().request.get(profileHref);
+        check('and the profile opens', profile.ok() && (await profile.text()).includes(R1_TEACHER), `HTTP ${profile.status()}`);
+    } else {
+        check('and the profile opens', false, 'no link to follow');
+    }
+    const link = guest.locator('[data-testid="library-download-link"]');
+    if (await link.count()) {
+        const [download] = await Promise.all([guest.waitForEvent('download'), link.click()]);
+        const failure = await download.failure();
+        check('a reader downloads the PDF, no sign-in needed', failure === null && download.suggestedFilename().endsWith('.pdf'), failure ?? download.suggestedFilename());
+    } else {
+        check('a reader downloads the PDF, no sign-in needed', false, 'no Download PDF button on the item page');
+    }
+
+    // d. The research shelf filters by year.
+    await guest.goto(`${BASE}/en/library?content_type=research`, { waitUntil: 'networkidle' });
+    const years = await guest.locator('[data-testid="library-year"] option').evaluateAll((els) => els.map((el) => el.value).filter(Boolean));
+    if (years.length) {
+        await guest.selectOption('[data-testid="library-year"]', years[0]);
+        await Promise.all([guest.waitForURL(/year=/), guest.locator('form').filter({ has: guest.locator('[data-testid="library-year"]') }).locator('button[type=submit]').click()]);
+        const chosen = new URL(guest.url()).searchParams.get('year');
+        check('the research shelf filters by year', chosen === years[0] && (await guest.locator('[data-testid="library-year"]').inputValue()) === years[0], `years ${years.join(', ')}; chose ${chosen}`);
+    } else {
+        check('the research shelf filters by year', false, 'no year filter on the research shelf');
+    }
+}
+
 const width = Math.max(...results.map(([step]) => step.length));
 for (const [step, ok, detail] of results) {
     console.log(`${ok ? 'ok  ' : 'FAIL'}  ${step.padEnd(width)}  ${detail}`);

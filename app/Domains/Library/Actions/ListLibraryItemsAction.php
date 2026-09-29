@@ -83,6 +83,8 @@ class ListLibraryItemsAction
             ->when($filters['author'] ?? null, fn ($query, $slug) => $query
                 ->whereHas('writer', fn ($sub) => $sub->where('slug', $slug)->where('status', 'active')))
             ->when($filters['content_type'] ?? null, fn ($query, $type) => $query->where('content_type', $type))
+            // R1 (F12): the year it was published — the research shelf's year filter.
+            ->when(is_numeric($filters['year'] ?? null), fn ($query) => $query->whereYear('published_at', (int) $filters['year']))
             ->when($filters['category'] ?? null, fn ($query, $slug) => $query
                 ->whereHas('category', fn ($sub) => $sub->where('slug', $slug)))
             ->when($filters['tag'] ?? null, fn ($query, $slug) => $query
@@ -106,6 +108,26 @@ class ListLibraryItemsAction
             ->limit(100)
             ->get()
             ->map(fn (LibraryItem $item): array => $this->serialize($item))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * R1 (F12): the years something of this type was published in, newest
+     * first — the choices in the shelf's year filter.
+     *
+     * @return list<int>
+     */
+    public function publishedYears(string $contentType): array
+    {
+        return LibraryItem::query()
+            ->where('status', 'published')
+            ->where('content_type', $contentType)
+            ->whereNotNull('published_at')
+            ->pluck('published_at')
+            ->map(fn ($date) => (int) $date->format('Y'))
+            ->unique()
+            ->sortDesc()
             ->values()
             ->all();
     }

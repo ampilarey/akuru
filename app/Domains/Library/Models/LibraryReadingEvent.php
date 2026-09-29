@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 class LibraryReadingEvent extends Model
 {
     protected $fillable = [
-        'user_id', 'library_item_id', 'page_number',
+        'user_id', 'library_item_id', 'page_number', 'kind',
         'session_hash', 'device_hash', 'academic_year_id', 'occurred_at',
     ];
 

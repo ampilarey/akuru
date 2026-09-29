@@ -108,6 +108,8 @@ class DetectLibraryReadingAbuseAction
     {
         return LibraryReadingEvent::query()
             ->where('user_id', $userId)
+            // R1: a download is one file, not a page turned; it never counts as pace.
+            ->where('kind', 'page')
             ->when($libraryItemId, fn ($q) => $q->where('library_item_id', $libraryItemId))
             ->where('occurred_at', '>=', now('Indian/Maldives')->subSeconds(max(1, $windowSeconds)))
             ->count();

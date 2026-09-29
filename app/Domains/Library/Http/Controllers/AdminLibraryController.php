@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Http\Controllers;
 
+use App\Domains\HR\Actions\ListPublicInstructorProfilesAction;
 use App\Domains\Library\Actions\DecideWriterApplicationAction;
 use App\Domains\Library\Actions\DecideWriterPayoutAction;
 use App\Domains\Library\Actions\FeatureLibraryItemAction;
@@ -19,6 +20,7 @@ use App\Domains\Library\Actions\SaveLibraryCategoryAction;
 use App\Domains\Library\Actions\SaveLibraryItemAction;
 use App\Domains\Library\Enums\LibraryAccessType;
 use App\Domains\Library\Enums\LibraryContentType;
+use App\Domains\Library\Enums\LibraryDelivery;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryReadingAlert;
 use App\Http\Controllers\Controller;
@@ -72,8 +74,21 @@ class AdminLibraryController extends Controller
             'options' => [
                 'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),
                 'access_types' => array_map(fn ($case) => $case->value, LibraryAccessType::cases()),
-            ],
+            ] + $this->authoringOptions(),
         ]);
+    }
+
+    /**
+     * R1: the website's teachers, who may be named as authors — asked of HR.
+     *
+     * @return array{teachers: list<array{id: int, slug: string, name: string}>}
+     */
+    private function authoringOptions(): array
+    {
+        return ['teachers' => array_map(
+            fn (array $row) => ['id' => $row['id'], 'slug' => $row['slug'], 'name' => $row['name']],
+            app(ListPublicInstructorProfilesAction::class)->execute(),
+        )];
     }
 
     public function storeItem(Request $request): RedirectResponse
@@ -300,8 +315,12 @@ class AdminLibraryController extends Controller
             'tags' => 'nullable|array',
             'tags.*' => 'string|max:60',
             'authors' => 'nullable|array',
-            'authors.*.name' => 'required_with:authors|string|max:255',
+            // R1: an author is a name, a writer account, or one of the
+            // institute's teachers (their name comes from their profile).
+            'authors.*.name' => 'required_without:authors.*.instructor_profile_id|nullable|string|max:255',
             'authors.*.user_id' => 'nullable|integer',
+            'authors.*.instructor_profile_id' => 'nullable|integer',
+            'delivery' => 'nullable|in:'.implode(',', array_map(fn ($case) => $case->value, LibraryDelivery::cases())),
             'pdf' => 'nullable|file|mimes:pdf|max:51200',
             'cover' => 'nullable|file|mimes:jpeg,jpg,png,webp|max:5120',
         ]);

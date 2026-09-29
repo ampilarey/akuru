@@ -3,6 +3,7 @@
 namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Commerce\Actions\ListPromotionCampaignsAction;
+use App\Domains\Library\Actions\DownloadLibraryItemAction;
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
 use App\Domains\Library\Actions\ListMyLibraryAction;
@@ -11,7 +12,9 @@ use App\Domains\Library\Actions\PresentWriterPublicProfileAction;
 use App\Domains\Library\Actions\RecordLibrarySearchAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -22,7 +25,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 class PublicLibraryController extends Controller
 {
     /** The query-string keys the shelf understands (§8.2/§8.3). */
-    private const FILTERS = ['q', 'content_type', 'category', 'tag', 'author', 'access', 'language', 'price_min', 'price_max', 'difficulty', 'reading', 'peer_reviewed', 'open_access', 'discounted', 'campaign', 'sort'];
+    private const FILTERS = ['q', 'content_type', 'category', 'tag', 'author', 'access', 'language', 'price_min', 'price_max', 'difficulty', 'reading', 'peer_reviewed', 'open_access', 'discounted', 'campaign', 'year', 'sort'];
 
     public function index(Request $request)
     {
@@ -42,6 +45,8 @@ class PublicLibraryController extends Controller
             'difficulties' => ListLibraryItemsAction::DIFFICULTIES,
             'reading_bands' => array_keys(ListLibraryItemsAction::READING_BANDS),
             'languages' => ['en' => 'English', 'dv' => 'Dhivehi', 'ar' => 'Arabic'],
+            // R1 (F12): the years research was published in, for the research shelf's year filter.
+            'years' => ($filters['content_type'] ?? null) === 'research' ? app(ListLibraryItemsAction::class)->publishedYears('research') : [],
             // §8.1: the office's picks and the reader's own half-read books,
             // on the front of the shelf and nowhere else — a filtered list
             // is an answer to a question, not a shop window.
@@ -91,6 +96,33 @@ class PublicLibraryController extends Controller
         }
 
         return view('public.library.show', ['item' => $item]);
+    }
+
+    /**
+     * R1 (D1): the PDF itself, where the author chose "download" or "both".
+     * The action makes the access decision; this only turns it into a reply.
+     */
+    public function download(Request $request, string $slug): HttpResponse|RedirectResponse
+    {
+        $result = app(DownloadLibraryItemAction::class)->execute(
+            $slug,
+            $request->user()?->id,
+            $request->hasSession() ? $request->session()->getId() : null,
+            $request->ip(),
+            $request->userAgent(),
+        );
+
+        return match ($result['status']) {
+            'ok' => response($result['file']['contents'], 200, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'attachment; filename="'.$result['filename'].'"',
+                'Cache-Control' => 'private, no-store',
+                'X-Content-Type-Options' => 'nosniff',
+            ]),
+            'login' => redirect()->guest(route('login')),
+            'locked' => redirect()->route('public.library.show', $slug),
+            default => abort(404),
+        };
     }
 
     /** B4 (§8.5, §18): the offers running now, each with what it covers. */

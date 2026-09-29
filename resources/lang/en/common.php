@@ -199,4 +199,11 @@ return [
     'review_accept' => 'Recommend accept',
     'review_revise' => 'Needs revision',
     'review_reject' => 'Recommend reject',
+    // R1: how readers get a research item or article, and teacher authors.
+    'library_delivery_legend' => 'How readers get it',
+    'library_delivery_reader' => 'Read online only (protected reader — the file never leaves)',
+    'library_delivery_download' => 'Download the PDF only',
+    'library_delivery_both' => 'Both: read online or download',
+    'library_delivery_needs_pdf' => 'Downloading needs an original PDF attached below.',
+    'library_teacher_authors' => 'Akuru teachers who are authors (linked to their profiles)',
 ];

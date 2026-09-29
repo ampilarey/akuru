@@ -320,4 +320,8 @@ return [
     'This page has no text — it may be a picture or a blank page.' => 'މި ސަފުހާގައި ލިޔުމެއް ނެތް — މިއީ ތަސްވީރެއް ނުވަތަ ހުސް ސަފުހާއެއް ކަމަށް ވެދާނެ.',
     // The sign-in page says where each kind of person lands (SIGN_IN_PLAN ID3).
     'After you sign in you go straight to your own space: your children, your classes, your courses or your shop.' => 'ލޮގިން ވުމާއެކު ސީދާ ދާނީ ތިޔަ ބޭފުޅާގެ އަމިއްލަ ބަޔަށް: ދަރިން، ކްލާސްތައް، ކޯސްތައް ނުވަތަ ފިހާރަ.',
+    // R1: the Digital Library's download (RESEARCH_ARTICLES_PLAN D1).
+    'Or read it online below.' => 'ނުވަތަ ތިރީގައި އޮންލައިންކޮށް ކިޔުއްވާ.',
+    'The author shares this as a file to keep.' => 'ލިޔުންތެރިޔާ މިއީ ބަހައްޓާލެވޭ ފައިލެއްގެ ގޮތުގައި ހިއްސާކުރައްވާފައިވާ އެއްޗެކެވެ.',
+    'A PDF download comes with access to this item.' => 'މި އެއްޗަށް އެކްސެސް ލިބުމުން PDF ޑައުންލޯޑް ކުރެވޭނެއެވެ.',
 ];

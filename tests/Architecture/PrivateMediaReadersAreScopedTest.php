@@ -53,6 +53,12 @@ it('pins every caller that can read a private file', function () {
         // grant is deliberate and documented — whoever may mark a recitation
         // may hear it — and it reaches recitations only, never arbitrary files.
         'app/Domains/Courses/Components/Quran/Actions/ServeRecitationAudioAction.php',
+        // R1 (RESEARCH_ARTICLES_PLAN D1): a research item's or article's PDF,
+        // as a download, where its author chose one. The media id comes from
+        // the published item's own row (found by slug), and the answer goes
+        // through `ResolveLibraryAccessAction` — a paid item only with an
+        // active grant. Books never: the reader is their copy protection.
+        'app/Domains/Library/Actions/DownloadLibraryItemAction.php',
         // B9: a writer applicant's identity document. Resolves the media id
         // from the application row and reaches those documents only; the
         // route that calls it is the office's (`library.manage`).

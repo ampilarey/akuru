@@ -77,10 +77,18 @@ class ListWriterDashboardAction
                 'preview_pages' => $item->preview_pages,
                 'tags' => $item->tags->pluck('name')->values()->all(),
                 // §11.3 co-authors: everyone named on the item but the writer.
-                'co_authors' => $item->authors->pluck('name')
+                'co_authors' => $item->authors
+                    ->whereNull('instructor_profile_id')
+                    ->pluck('name')
                     ->reject(fn ($name) => $name === $profile->display_name)
                     ->values()
                     ->all(),
+                // R1: the institute's teachers named as co-authors, by profile.
+                'co_author_teachers' => $item->authors->whereNotNull('instructor_profile_id')
+                    ->pluck('instructor_profile_id')->map(fn ($id) => (int) $id)->values()->all(),
+                // R1 (D1): how readers get it.
+                'delivery' => $item->delivery?->value,
+                'has_pdf' => $item->pdf_media_file_id !== null,
                 'status' => $item->status?->value,
                 'submitted_at' => $item->submitted_at?->toDateTimeString(),
                 'published_at' => $item->published_at?->toDateTimeString(),
