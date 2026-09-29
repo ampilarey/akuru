@@ -59,6 +59,7 @@ class GrantLibraryAccessOnPaymentConfirmed
                     'Your purchase is ready',
                     'Payment confirmed for "'.$item->title.'". You can read it now.',
                     '/library/'.$item->slug.'/read',
+                    'purchase_ready',
                 );
             }
         }

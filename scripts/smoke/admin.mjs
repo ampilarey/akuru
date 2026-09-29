@@ -348,6 +348,21 @@ await su.locator('[data-testid="library-settings"] input[name="refund_window_day
 await su.click('[data-testid="library-settings"] button[type=submit]');
 await su.waitForFunction(() => document.body.innerText.includes('Library settings saved.'), null, { timeout: 20000 }).catch(() => {});
 
+// STATUS §5lq: the important Library notices by email too — off by default; on, read back, off again.
+await su.goto(`${BASE}/en/admin/library/settings`, { waitUntil: 'networkidle' });
+await settle(su, '[data-testid="library-settings"]');
+const noticesBefore = await su.locator('[data-testid="library-setting-notices_email"]').isChecked();
+check('the Library settings offer email and SMS for the important notices, both off to start', !noticesBefore && !(await su.locator('[data-testid="library-setting-notices_sms"]').isChecked()) && (await text(su)).includes('Reader reminders and office alerts stay in the app'));
+await su.check('[data-testid="library-setting-notices_email"]');
+await su.click('[data-testid="library-settings"] button[type=submit]');
+await su.waitForFunction(() => document.body.innerText.includes('Library settings saved.'), null, { timeout: 20000 }).catch(() => {});
+await su.goto(`${BASE}/en/admin/library/settings`, { waitUntil: 'networkidle' });
+await settle(su, '[data-testid="library-settings"]');
+check('turned on, the email switch reads back on', await su.locator('[data-testid="library-setting-notices_email"]').isChecked());
+await su.uncheck('[data-testid="library-setting-notices_email"]');
+await su.click('[data-testid="library-settings"] button[type=submit]');
+await su.waitForFunction(() => document.body.innerText.includes('Library settings saved.'), null, { timeout: 20000 }).catch(() => {});
+
 // B14 (LIBRARY_PLAN §29, STATUS §5it): the Library over a period, with its CSV.
 await su.goto(`${BASE}/en/admin/library/insights?period=all`, { waitUntil: 'networkidle' });
 await settle(su, '[data-testid="insights-headline"]');

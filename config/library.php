@@ -80,4 +80,19 @@ return [
         // keeping a child's reading history indefinitely serves nothing.
         'retention_days' => (int) env('LIBRARY_EVENT_RETENTION_DAYS', 90),
     ],
+
+    /*
+     * STATUS §5lq: the notices that matter — a decision on a writer's
+     * application or submission, a publication, a sale, a payout, a peer
+     * review asked for, a purchase ready — may also go by email and by SMS.
+     * Both off until the office turns them on (/admin/library/settings).
+     * Reader nudges and office alerts stay in-app. Email is queued (it needs
+     * the queue worker); SMS logs instead of sending wherever SMS_LIVE is off.
+     */
+    'notices' => [
+        'email' => (bool) env('LIBRARY_NOTICES_EMAIL', false),
+        'sms' => (bool) env('LIBRARY_NOTICES_SMS', false),
+        'events' => ['writer_application_decided', 'submission_decided', 'published', 'new_sale', 'payout_decided', 'review_assigned', 'purchase_ready'],
+        'sms_max_length' => 300,
+    ],
 ];

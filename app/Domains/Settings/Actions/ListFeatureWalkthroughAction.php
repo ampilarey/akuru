@@ -169,6 +169,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-library-9', 'label' => 'Peer review is required: research cannot be published without the required accepts; a revision starts a new round; the writer sees where review stands', 'where' => '/admin/library'],
                 ['key' => 'ft-library-10', 'label' => 'Reviewer pool: add and remove reviewers, due dates and reminders, overdue reports, CSV', 'where' => '/admin/library/reviewers'],
                 ['key' => 'ft-library-11', 'label' => 'Authors list on the shelf, and the website\'s old research papers imported into the library', 'where' => '/library#authors'],
+                ['key' => 'ft-library-12', 'label' => 'Library notices by email and SMS (office, off by default, on the Library settings screen): decisions, publications, sales, payouts, review requests and a ready purchase go by email/SMS too; reader reminders stay in the app', 'where' => '/admin/library/settings'],
             ]],
             ['key' => 'ft-bookstore', 'title' => 'Bookstore', 'items' => [
                 ['key' => 'ft-bookstore-1', 'label' => 'Shop, categories, product page, search; the Bookstore menu in the header (Shops, Deals, School book lists, Categories, My orders, Sell on Akuru, Shop owners: sign in)', 'where' => '/shop'],

@@ -66,6 +66,7 @@ class AssignResearchReviewerAction
                 'Research to review',
                 'You have been asked to peer-review "'.$item->title.'" (round '.$round.'), due '.$due->timezone('Indian/Maldives')->toDateString().'.',
                 '/review',
+                'review_assigned',
             );
         }
 

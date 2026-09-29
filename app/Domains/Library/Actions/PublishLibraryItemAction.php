@@ -36,6 +36,7 @@ class PublishLibraryItemAction
                 'Published',
                 '"'.$item->title.'" is now on the library shelf.',
                 '/library/'.$item->slug,
+                'published',
             );
             // B11: and so do the readers who already read that writer.
             app(NotifyReadersOfNewWorkAction::class)->execute($item->refresh());

@@ -124,6 +124,8 @@ return [
     'emails/gift-card-code.blade.php',
     // BOOKSHOP_PLAN B8 — a bookstore notice by email (the in-app notice's words and link).
     'emails/bookshop-notice.blade.php',
+    // STATUS §5lq — a Digital Library notice by email (the in-app notice's words and link).
+    'emails/library-notice.blade.php',
 
     // errors — 2
     'errors/404.blade.php',

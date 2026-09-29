@@ -20,6 +20,8 @@ export default function Settings({ settings, t = {} }) {
     ];
     const switches = [
         ['payouts_enabled', t.library_settings_payouts_enabled || 'Writers may request payouts'],
+        ['notices_email', t.library_settings_notices_email || 'Send the important notices by email too'],
+        ['notices_sms', t.library_settings_notices_sms || 'Send the important notices by SMS too'],
     ];
 
     return (
@@ -46,13 +48,14 @@ export default function Settings({ settings, t = {} }) {
                 ))}
                 {switches.map(([key, label]) => (
                     <label key={key} className="flex items-start gap-2 text-sm md:col-span-2">
-                        <input type="checkbox" name={key} checked={Boolean(form.data[key])} onChange={(e) => form.setData(key, e.target.checked)} />
+                        <input type="checkbox" name={key} checked={Boolean(form.data[key])} onChange={(e) => form.setData(key, e.target.checked)} data-testid={`library-setting-${key}`} />
                         <span>
                             {label}
                             <span className="ms-2 text-xs text-gray-500">({t.library_settings_default || 'Default'}: {settings[key].default ? 'on' : 'off'})</span>
                         </span>
                     </label>
                 ))}
+                <p className="text-xs text-gray-600 md:col-span-2" data-testid="library-notices-note">{t.library_settings_notices_note || 'Important notices: a decision on an application or submission, a publication, a sale, a payout, a review asked for, a purchase ready. Reader reminders and office alerts stay in the app.'}</p>
                 <p className="text-xs text-amber-800 md:col-span-2">{t.library_settings_payouts_note || 'Payouts stay off until the tax and accounting treatment of writer payouts is confirmed (ROADMAP §9.4); earnings accrue meanwhile.'}</p>
                 <FormErrors errors={form.errors} />
                 <div className="flex items-center gap-3 md:col-span-2">

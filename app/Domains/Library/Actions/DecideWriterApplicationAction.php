@@ -66,6 +66,7 @@ class DecideWriterApplicationAction
                     ? 'Your application was approved. Open the writer portal to start a draft.'
                     : ($note !== null && trim($note) !== '' ? trim($note) : 'Your application was not accepted this time.'),
                 '/write',
+                'writer_application_decided',
             );
 
             return $application->refresh();
