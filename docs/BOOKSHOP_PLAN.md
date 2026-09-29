@@ -481,6 +481,7 @@ to the Bookstore, then said "Start" on the list. One PR each, in this order.
 | 6 | Referral credit | **needs an owner plan** — money rules |
 | 7 | **Save for later** in the cart: set aside, not counted or charged, moved back re-checked; kept through sign-in | **Built** (STATUS §5lf) |
 | 8 | **Helpful review votes**: once per person, not on one's own review, the most helpful first | **Built** (STATUS §5lg) |
-| 8b | Brand pages, compare, guest order tracking, two-factor sign-in, a Bookstore API | next, one PR each |
+| 8b | **Brand pages**: Shop by brand on the front, `/shop/brand/{slug}`, a brand filter, the product page links its brand | **Built** (STATUS §5lh) |
+| 8c | Compare, guest order tracking, two-factor sign-in, a Bookstore API | next, one PR each |
 | 9 | Loyalty points and referral credit — built **off**, with the office's settings, through the Commerce wallet, never on gift cards; the owner sets the amounts and turns them on | after 8 |
 

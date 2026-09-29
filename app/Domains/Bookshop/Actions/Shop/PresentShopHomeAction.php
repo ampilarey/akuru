@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Actions\Shop;
 
 use App\Domains\Bookshop\Enums\ProductVisibility;
 use App\Domains\Bookshop\Enums\VendorStatus;
+use App\Domains\Bookshop\Models\Brand;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductCategory;
 use App\Domains\Bookshop\Models\ShopHomeFeature;
@@ -12,6 +13,7 @@ use App\Domains\Bookshop\Models\VendorCollection;
 use App\Domains\Bookshop\Support\Merchandise;
 use App\Domains\Bookshop\Support\ShopPresenter;
 use App\Domains\Media\Actions\ResolvePublicImageVariantAction;
+use Closure;
 
 /**
  * The bookshop's front (BOOKSHOP_PLAN §4 "Home"): since B7 the office's
@@ -99,7 +101,22 @@ class PresentShopHomeAction
             'categories' => $categories,
             'vendors' => $vendors,
             'book_lists' => $this->bookLists(),
+            'brands' => $this->brands($shopWide),
         ];
+    }
+
+    /**
+     * §5lh: active brands with something for sale shop-wide, by name.
+     *
+     * @return list<array{slug: string, name: string, count: int}>
+     */
+    private function brands(Closure $shopWide): array
+    {
+        $counts = $shopWide()->selectRaw('brand_id, count(*) as aggregate')->whereNotNull('brand_id')->groupBy('brand_id')->pluck('aggregate', 'brand_id');
+
+        return Brand::query()->where('is_active', true)->whereIn('id', $counts->keys()->all())->orderBy('name')->get()
+            ->map(fn (Brand $b) => ['slug' => $b->slug, 'name' => $b->name, 'count' => (int) $counts->get($b->id, 0)])
+            ->values()->all();
     }
 
     /**

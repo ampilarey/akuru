@@ -185,6 +185,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-bookstore-14', 'label' => 'Questions and answers: a signed-in customer asks on a product page; the shop answers on its Reviews page; the answer shows on the product page; the office can hide one', 'where' => '/vendor/reviews'],
                 ['key' => 'ft-bookstore-15', 'label' => 'Save for later: a cart line is set aside under the cart (not counted or charged) and moved back in when wanted; a guest\'s saved lines come along at sign-in', 'where' => '/shop/cart'],
                 ['key' => 'ft-bookstore-16', 'label' => 'Helpful review votes: a signed-in customer marks someone else\'s review helpful (and can take it back); the most helpful reviews come first', 'where' => '/shop'],
+                ['key' => 'ft-bookstore-17', 'label' => 'Brands: Shop by brand on the store\'s front, a brand\'s page with its products from every shop, a brand filter, and the product page links its brand', 'where' => '/shop'],
             ]],
             ['key' => 'ft-money', 'title' => 'Money checks', 'items' => [
                 ['key' => 'ft-money-1', 'label' => 'A payment grants access only after the bank confirms (not on return to the site)', 'where' => '/admin/enrollments/payments'],

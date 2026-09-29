@@ -135,8 +135,8 @@
      so the products are on the first screen (the owner's screenshot, STATUS §5kv). The
      fold is served open, so the filters are there without script; the script folds
      it on a phone unless a filter is already in use. --}}
-@php($activeFilters = collect(['category', 'language', 'price_min', 'price_max', 'in_stock'])
-    ->filter(fn ($key) => ! empty($filters[$key]) && ! (request()->routeIs('public.shop.category') && $key === 'category'))
+@php($activeFilters = collect(['category', 'brand', 'language', 'price_min', 'price_max', 'in_stock'])
+    ->filter(fn ($key) => ! empty($filters[$key]) && ! (request()->routeIs('public.shop.category') && $key === 'category') && ! (request()->routeIs('public.shop.brand') && $key === 'brand'))
     ->count() + ((($filters['sort'] ?? 'newest') !== 'newest') ? 1 : 0))
 <section class="border-b py-4 {{ $storefront ? '' : 'bg-white' }}">
     <div class="container mx-auto px-4">
@@ -169,6 +169,18 @@
                                 <option value="">{{ __('shop.all_categories') }}</option>
                                 @foreach($options['categories'] as $category)
                                     <option value="{{ $category['slug'] }}" @selected(($filters['category'] ?? '') === $category['slug'])>{{ $category['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    @endif
+                    {{-- §5lh: by brand, when the office has named any. --}}
+                    @if(count($options['brands'] ?? []) > 0 && ! request()->routeIs('public.shop.brand'))
+                        <div>
+                            <label class="mb-1 block text-xs text-gray-500">{{ __('shop.brand') }}</label>
+                            <select name="brand" class="form-input pe-9" data-testid="filter-brand">
+                                <option value="">{{ __('shop.all_brands') }}</option>
+                                @foreach($options['brands'] as $brand)
+                                    <option value="{{ $brand['slug'] }}" @selected(($filters['brand'] ?? '') === $brand['slug'])>{{ $brand['name'] }}</option>
                                 @endforeach
                             </select>
                         </div>
@@ -297,6 +309,20 @@
                         <a href="{{ route('public.shop.category', $category['slug']) }}" class="rounded-full border bg-white px-4 py-2 text-sm hover:border-brandMaroon-400">
                             {{ $category['name'] }} <span class="text-gray-500">({{ $category['count'] }})</span>
                         </a>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
+    {{-- STATUS §5lh: the brands with something for sale. --}}
+    @if(count($home['brands'] ?? []) > 0)
+        <section class="py-8" data-testid="shop-brands">
+            <div class="container mx-auto px-4">
+                <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">{{ __('shop.shop_by_brand') }}</h2>
+                <div class="flex flex-wrap gap-2">
+                    @foreach($home['brands'] as $brand)
+                        <a href="{{ route('public.shop.brand', $brand['slug']) }}" class="rounded-full border bg-white px-4 py-2 text-sm hover:border-brandMaroon-400" data-brand="{{ $brand['slug'] }}">{{ $brand['name'] }} <span class="text-gray-500">({{ $brand['count'] }})</span></a>
                     @endforeach
                 </div>
             </div>
