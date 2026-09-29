@@ -22,10 +22,11 @@ it('heads the shelf with the full name and links it by the short one', function 
         ->assertSee('<title>Akuru Digital Library', false)
         ->assertDontSee('Knowledge Library');
 
-    // The public header (desktop and mobile) and the footer.
+    // The public header (desktop and phone menu), and the footer's group, headed by the name (STATUS §5kk).
     preg_match_all('#<a[^>]+href="[^"]*/library"[^>]*>((?:(?!</a>).)*)</a>#s', $shelf->getContent(), $anchors);
     $links = [array_filter($anchors[1], fn ($inner) => str_starts_with(trim(preg_replace('/\s+/', ' ', strip_tags($inner))), 'Digital Library'))];
-    expect(count($links[0]))->toBeGreaterThanOrEqual(3);
+    expect(count($links[0]))->toBeGreaterThanOrEqual(2)
+        ->and($shelf->getContent())->toMatch('#data-testid="footer-library" open>\s*<summary>Digital Library#');
 
     $this->withoutLocalizationMiddleware()->get(route('public.gift-cards.index'))
         ->assertOk()

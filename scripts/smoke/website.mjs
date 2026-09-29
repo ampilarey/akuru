@@ -15,7 +15,9 @@
  *      Library's newest books and the Bookstore's newest items — a grid on
  *      a desk, a sideways swipe on a phone — and a book and an item each
  *      open their own page; the School offers Apply;
- *   5. no page runs wider than the screen at 360, 390, 1024, 1280 or 1440.
+ *   5. (W3) finds the footer grouped by product — open on a desk, folded on
+ *      a phone and opened with a tap — and a stats row of real counts;
+ *   6. no page runs wider than the screen at 360, 390, 1024, 1280 or 1440.
  *
  * Read-only.
  *
@@ -140,7 +142,19 @@ check('on a phone each row swipes sideways, its first card clear of the edge', r
 const tilesTop = await swipe.evaluate(() => Math.round(document.querySelector('[data-testid="home-tile-courses"]').getBoundingClientRect().top));
 check('on a phone the products start within the first screen', tilesTop < 844, `${tilesTop}px down`);
 
-// ------------------------------------------------------------ 5. nothing runs wider than the screen
+// ------------------------------------------------------------ 5. the footer and the stats row (W3)
+await home.goto(`${BASE}/en`, { waitUntil: 'networkidle' });
+const groups = await home.evaluate(() => [...document.querySelectorAll('[data-footer-group]')].map((group) => [group.querySelector('summary').textContent.trim(), group.open]));
+check('on a desk the footer is five open groups, by product', JSON.stringify(groups.map(([name]) => name)) === JSON.stringify(['E-Learning', 'Digital Library', 'Bookstore', 'School', 'About']) && groups.every(([, open]) => open), JSON.stringify(groups));
+const stats = await home.locator('[data-testid^="home-stat-"]').evaluateAll((els) => els.map((el) => el.innerText.replace(/\s+/g, ' ').trim()));
+check('the stats row counts what each product holds', stats.length > 0 && stats.every((text) => /^\d[\d,]* \D/.test(text)) && !stats.some((text) => text.includes('%')), stats.join(' · '));
+const folded = await swipe.evaluate(() => [...document.querySelectorAll('[data-footer-group]')].every((group) => !group.open));
+check('on a phone the footer groups are folded', folded);
+await swipe.locator('[data-testid="footer-about"] summary').scrollIntoViewIfNeeded();
+await swipe.click('[data-testid="footer-about"] summary');
+check('a tap opens About, with Contact in it', await swipe.locator('[data-testid="footer-about"] a:has-text("Contact")').isVisible());
+
+// ------------------------------------------------------------ 6. nothing runs wider than the screen
 for (const [width, height] of [[360, 740], [390, 844], [1024, 800], [1280, 800], [1440, 900]]) {
     const page = await visitor(width, height);
     for (const at of ['/en', '/en/library', '/en/shop', '/en/courses']) {

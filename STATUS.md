@@ -4414,6 +4414,43 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kk. W3: the footer by product, and one row of real numbers (2026-09-29)
+
+The last of the three website slices (§5ki, §5kj).
+
+**Footer** (`components/public/footer.blade.php`, every public page): the old
+"Quick links" (thirteen in one list) and "Programs" columns are five groups —
+**E-Learning** (all courses and the four programmes), **Digital Library**
+(browse books, gift cards, write for Akuru), **Bookstore** (shop, sell on
+Akuru, delivery and returns), **School** (admissions, parent portal,
+careers) and **About** (about us, news, articles, research, events, gallery,
+daily reminders, prayer times, contact) — beside the brand and contacts. Each
+is a `<details>`: served open, so the links are there without script; a phone
+(under 768px) folds them behind their names, a tap opens one. The bottom
+line's words are in EN/DV/AR.
+
+**Stats row** (home page): was "51 Students taught · 16 Courses offered ·
+100% Qualified teachers", where 51 repeated the hero's trust figure, "100%"
+was not a measurement and the course count fell back to an invented **12**
+when there were none. Now one row of what each product holds, counted the
+way its shelf lists it: **Courses** (open and upcoming), **Books in the
+library** (published — `ListLibraryItemsAction::countPublished()`, new),
+**Items in the store** (for sale — `ListShopProductsAction::query()`). Each
+number links to its product; a count of nothing is left out, and with
+nothing to count the row is not shown. Students taught stays the hero's.
+
+**Tests.** `SiteFooterAndStatsTest` (new, 4): the five groups in order and
+their links; served open with the phone's fold script; books and items
+counted (a draft is not) and no course count when there are no courses —
+never "12", "Qualified teachers" or "Courses offered"; no row with nothing
+to count; the footer's strings in Dhivehi and Arabic. `DigitalLibraryNameTest`:
+the footer now names the Library in its group's heading rather than a link.
+
+**Walked.** `website.mjs` grows to 45/45: on a desk five open groups in
+order and the stats row reading "16 Courses · 84 Books in the library · 5
+Items in the store"; on a phone the groups folded, and a tap on About shows
+Contact.
+
 ## 5kj. W2: the home page shows the four products (2026-09-29)
 
 The second of the three website slices (§5ki). The home page now follows the
