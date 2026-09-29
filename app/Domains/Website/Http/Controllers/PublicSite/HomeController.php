@@ -107,7 +107,6 @@ class HomeController extends Controller
             ->take(3)
             ->get();
 
-
         // Events from DB
         $events = Event::published()
             ->public()
@@ -115,7 +114,6 @@ class HomeController extends Controller
             ->orderBy('start_date')
             ->take(3)
             ->get();
-
 
         // Course/teacher counts stay local to this page. Students + years come from
         // trust settings (never invent a 500 / 5+ fallback).
