@@ -28,7 +28,7 @@ const PAGES = [
     '/en/admin/instructors', '/en/admin/instructors/create',
     '/en/admin/public-site/pages', '/en/admin/public-site/pages/create',
     '/en/admin/public-site/courses', '/en/admin/public-site/courses/create', '/en/admin/public-site/courses/deleted',
-    '/en/admin/public-site/research', '/en/admin/public-site/research/create',
+    '/en/admin/public-site/news', '/en/admin/public-site/news/create', '/en/admin/public-site/news/categories',
     '/en/admin/public-site/daily-content', '/en/admin/public-site/daily-content/create', '/en/admin/public-site/daily-content/queue',
     '/en/admin/public-site/daily-subscriptions', '/en/admin/public-site/leads', '/en/admin/public-site/funnel',
     '/en/admin/prayer-times/islands', '/en/admin/prayer-times/groups', '/en/admin/prayer-times/groups/create',

@@ -27,11 +27,13 @@ class ComposeHomepageProductsAction
      */
     public function execute(string $locale): array
     {
-        return Cache::remember("homepage_products_v2_{$locale}", 600, fn (): array => [
+        return Cache::remember("homepage_products_v3_{$locale}", 600, fn (): array => [
             'books' => array_map(fn (array $item): array => [
                 'title' => $item['title'],
                 'href' => route('public.library.show', $item['slug']),
                 'cover_url' => $item['cover_url'],
+                // R5: book, article or research — the card says which.
+                'type' => $item['content_type'],
                 'by' => $item['writer']['display_name'] ?? ($item['authors'][0] ?? null),
                 'free' => in_array($item['access_type'], ['free_public', 'free_login'], true),
                 'price' => $item['price'],

@@ -4414,6 +4414,71 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kt. R5: the Digital Library in the header, and in the site search (2026-09-29)
+
+Last slice of `docs/RESEARCH_ARTICLES_PLAN.md`; the plan is now all shipped
+and its findings F1–F12 are closed.
+
+- **Header.** *Digital Library* keeps its link to the shelf and gains a
+  caret that opens its sections: Everything in the library · Books ·
+  Articles · Research · Authors · Gift cards. Each section is the shelf
+  filtered (`?content_type=book|article|research`); Authors lands on
+  `/library#authors`. The caret and About close each other, and Escape or
+  a click outside closes both. **About loses Research and Articles.** On a
+  phone, the library's row in the menu lists the same five sections as
+  small links under it.
+- **Footer.** The Digital Library group is Browse books · Articles ·
+  Research · Authors · Gift cards · Write for Akuru, each a filtered shelf;
+  About loses Research and Articles.
+- **Authors.** There was no page listing the writers, only each writer's
+  own page. The shelf's unfiltered front now ends with an *Authors* strip
+  (`ListLibraryAuthorsAction`): active writers with at least one published
+  work, most published first, each opening their page. No Blade screen was
+  added (the Blade baseline still only shrinks).
+- **Site search** (`/search`) gains a *Digital Library* group from
+  `ListLibraryItemsAction::execute(['q' => …])`, published only. Each result
+  shows its type (Book, Article or Research), year, authors, and price or
+  Free. The page was English-only and is now EN/DV/AR throughout. The
+  "News & Articles" group is *News*, since articles live in the library
+  (R2). `SearchController::index` went from 41 lines of code to under the
+  gate's 36 by splitting its three queries into private methods, and it
+  left the long-methods baseline.
+- **Home page.** Each card in *New in the library* says whether it is a
+  Book, an Article or Research. The cache key moved to
+  `homepage_products_v3_*` so no card is served without its type.
+- **Walk fixes on the way:**
+  - the three admin walks still opened the retired research CMS
+    (`/admin/public-site/research`) and now open the news editor, its form
+    and its categories;
+  - `admin.mjs` looked for "Walkthrough" on the page #568 renamed
+    *Feature testing*.
+
+Tests:
+- `tests/Feature/Website/SiteSearchLibraryTest.php` (5):
+  - search finds published books, articles and research with their type,
+    authors and price, and never a draft;
+  - the empty result points at courses and the library;
+  - DV/AR;
+  - the home card's type label;
+  - the Authors strip lists writers with published work, on the front of
+    the shelf only.
+- `SiteFrameTest` gains the library caret's six links and their filters and
+  the phone's five sub-links; About holds neither Research nor Articles.
+- `SiteFooterAndStatsTest` checks the library group's filtered links and
+  Authors.
+- Full suite: 2486 passed.
+
+Walks:
+- `scripts/smoke/website.mjs`, 54/54:
+  - the caret opens its sections;
+  - Authors lands on the list of writers;
+  - Research lands on the filtered shelf;
+  - About has neither;
+  - the phone menu lists the sections;
+  - a search for a library title finds it and opens its page.
+- `admin.mjs` 41/41.
+- `admin-pages.mjs` and `admin-mobile.mjs` 3/3 each.
+
 ## 5ks. R4: a news editor (2026-09-29)
 
 `docs/RESEARCH_ARTICLES_PLAN.md` R4 (the owner's decision D3). News stays a

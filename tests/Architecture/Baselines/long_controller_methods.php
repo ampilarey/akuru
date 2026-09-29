@@ -65,5 +65,4 @@ return [
     'app/Domains/Website/Http/Controllers/PublicSite/HomeController.php::buildHomepageData' => 78,
     'app/Domains/Website/Http/Controllers/PublicSite/PostController.php::index' => 61,
     'app/Domains/Website/Http/Controllers/PublicSite/PrayerTimesController.php::resolve' => 37,
-    'app/Domains/Website/Http/Controllers/PublicSite/SearchController.php::index' => 41,
 ];

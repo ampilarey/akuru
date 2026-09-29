@@ -343,6 +343,9 @@ $bannerCount = count($bannerList);
               <span class="flex h-full items-end p-3 text-sm font-bold" style="color:{{ $ink }}">{{ $book['title'] }}</span>
             @endif
           </span>
+          @if (! empty($book['type']))
+            <span class="text-xs font-semibold uppercase" style="letter-spacing:.06em;color:#7C2D37" data-testid="home-book-type">{{ __('site.type_'.$book['type']) }}</span>
+          @endif
           <strong class="text-sm leading-snug" style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden">{{ $book['title'] }}</strong>
           <span class="text-xs" style="color:#5E5650">
             @if ($book['by']){{ $book['by'] }} · @endif

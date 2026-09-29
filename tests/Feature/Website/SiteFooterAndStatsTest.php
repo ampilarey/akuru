@@ -30,16 +30,25 @@ it('groups the footer by product, with About last', function () {
     expect($groups[1])->toBe(['e-learning', 'library', 'bookstore', 'school', 'about']);
 
     foreach ([
-        'library' => ['public.library.index', 'public.gift-cards.index', 'write.index'],
+        'library' => ['public.gift-cards.index', 'write.index'],
         'bookstore' => ['public.shop.index', 'vendor.apply'],
         'school' => ['public.admissions.create', 'dashboard', 'public.careers'],
-        'about' => ['public.about', 'public.news.index', 'public.research.index', 'public.prayer-times', 'public.contact.create'],
+        'about' => ['public.about', 'public.news.index', 'public.prayer-times', 'public.contact.create'],
     ] as $group => $routes) {
         preg_match('#data-testid="footer-'.$group.'"(.*?)</details>#s', $html, $block);
         foreach ($routes as $name) {
             expect($block[1])->toContain('href="'.route($name).'"');
         }
     }
+
+    // R5: books, articles and research are the library's shelf, filtered — not About's.
+    preg_match('#data-testid="footer-library"(.*?)</details>#s', $html, $library);
+    foreach (['book', 'article', 'research'] as $type) {
+        expect($library[1])->toContain('href="'.e(route('public.library.index', ['content_type' => $type])).'"');
+    }
+    expect($library[1])->toContain('href="'.route('public.library.index').'#authors"');
+    preg_match('#data-testid="footer-about"(.*?)</details>#s', $html, $about);
+    expect($about[1])->not->toContain('research')->and($about[1])->not->toContain('articles');
 
     // Served open so the links are there without script; a phone folds them.
     expect(substr_count($html, 'data-footer-group data-testid="footer-'))->toBe(5)

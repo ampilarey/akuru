@@ -12,11 +12,20 @@
       ['key' => 'school', 'label' => __('site.school'), 'short' => __('site.school'), 'line' => __('site.school_line'), 'href' => route('public.admissions.create'), 'active' => request()->routeIs('public.admissions.*'),
        'icon' => 'M3 10l9-5 9 5-9 5-9-5zm4 2v5c3 2 7 2 10 0v-5m4-2v5'],
   ];
+  // R5 (RESEARCH_ARTICLES_PLAN): the Digital Library's own sections — books,
+  // articles and research are one shelf, filtered, and research is no longer
+  // under About.
+  $siteLibraryLinks = [
+      ['key' => 'all', 'label' => __('site.library_all'), 'href' => route('public.library.index')],
+      ['key' => 'books', 'label' => __('site.books'), 'href' => route('public.library.index', ['content_type' => 'book'])],
+      ['key' => 'articles', 'label' => __('site.articles'), 'href' => route('public.library.index', ['content_type' => 'article'])],
+      ['key' => 'research', 'label' => __('site.research'), 'href' => route('public.library.index', ['content_type' => 'research'])],
+      ['key' => 'authors', 'label' => __('site.authors'), 'href' => route('public.library.index').'#authors'],
+      ['key' => 'gift-cards', 'label' => __('site.gift_cards'), 'href' => route('public.gift-cards.index')],
+  ];
   $siteAboutLinks = collect([
       ['public.about', 'site.about_us'],
       ['public.news.index', 'site.news'],
-      ['public.articles.index', 'site.articles'],
-      ['public.research.index', 'site.research'],
       ['public.events.index', 'site.events'],
       ['public.gallery.index', 'site.gallery'],
       ['public.achievements', 'site.achievements'],
@@ -44,14 +53,33 @@
     <div class="nav-desktop items-center" data-testid="site-nav">
       <nav aria-label="{{ __('site.main_menu') }}" class="nav-links">
         @foreach ($siteProducts as $product)
-          <a href="{{ $product['href'] }}" data-testid="nav-{{ $product['key'] }}"
-             class="nav-link {{ $product['active'] ? 'is-active' : '' }}" @if ($product['active']) aria-current="page" @endif>
-            {{ $product['label'] }}
-          </a>
+          @if ($product['key'] === 'library')
+            {{-- R5: the product link still goes to the shelf; the caret opens its sections. --}}
+            <div class="nav-about nav-lib" id="nav-lib">
+              <a href="{{ $product['href'] }}" data-testid="nav-{{ $product['key'] }}"
+                 class="nav-link {{ $product['active'] ? 'is-active' : '' }}" @if ($product['active']) aria-current="page" @endif>
+                {{ $product['label'] }}
+              </a>
+              <button type="button" class="nav-lib-btn" aria-expanded="false" aria-controls="nav-library-menu" aria-label="{{ __('site.library_menu') }}"
+                      onclick="toggleNavMenu(event, 'nav-lib')" data-testid="nav-library-more">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+              </button>
+              <div id="nav-library-menu" class="nav-about-menu" data-testid="nav-library-menu">
+                @foreach ($siteLibraryLinks as $link)
+                  <a href="{{ $link['href'] }}" data-testid="nav-library-{{ $link['key'] }}">{{ $link['label'] }}</a>
+                @endforeach
+              </div>
+            </div>
+          @else
+            <a href="{{ $product['href'] }}" data-testid="nav-{{ $product['key'] }}"
+               class="nav-link {{ $product['active'] ? 'is-active' : '' }}" @if ($product['active']) aria-current="page" @endif>
+              {{ $product['label'] }}
+            </a>
+          @endif
         @endforeach
         <div class="nav-about" id="nav-about">
           <button type="button" class="nav-link nav-about-btn {{ $siteAboutActive ? 'is-active' : '' }}" aria-expanded="false" aria-controls="nav-about-menu"
-                  onclick="toggleAboutMenu(event)" data-testid="nav-about">
+                  onclick="toggleNavMenu(event, 'nav-about')" data-testid="nav-about">
             {{ __('site.about') }}
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
           </button>
@@ -93,6 +121,9 @@
       .nav-link:hover, .nav-link.is-active { color: #7C2D37; }
       .nav-link.is-active { border-bottom-color: #C9A227; }
       .nav-about { position: relative; }
+      .nav-lib { display: inline-flex; align-items: center; }
+      .nav-lib-btn { display: inline-flex; align-items: center; padding: .35rem .15rem; margin-inline-start: -.35rem; color: #5E5650; background: none; border: 0; cursor: pointer; border-radius: .4rem; }
+      .nav-lib-btn:hover, .nav-lib.is-open .nav-lib-btn { color: #7C2D37; }
       .nav-about-menu { display: none; position: absolute; top: 100%; inset-inline-start: -1rem; z-index: 60; min-width: 13rem; padding: .4rem; margin-top: .35rem; background: #fff; border: 1px solid #EDE4D8; border-radius: .75rem; box-shadow: 0 16px 40px rgba(60,20,27,.14); }
       .nav-about.is-open .nav-about-menu { display: block; }
       .nav-about-menu a { display: block; padding: .55rem .8rem; border-radius: .5rem; font-size: .875rem; color: #3F3A36; text-decoration: none; }
@@ -122,9 +153,11 @@
       .nav-m-search { display: flex; align-items: center; gap: .6rem; padding: 0 .9rem; height: 3rem; border: 1px solid #DCCFBE; border-radius: .75rem; background: #fff; }
       .nav-m-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font-size: 16px; padding: 0; box-shadow: none; }
       .nav-m-products { margin-top: .9rem; border: 1px solid #EDE4D8; border-radius: .9rem; overflow: hidden; background: #fff; }
-      .nav-m-products a { display: flex; align-items: center; gap: .8rem; padding: .8rem .9rem; color: #1F1A17; text-decoration: none; border-top: 1px solid #F1EAE0; }
-      .nav-m-products a:first-child { border-top: 0; }
-      .nav-m-products a[aria-current] { background: #FBF6EC; }
+      .nav-m-products > a { display: flex; align-items: center; gap: .8rem; padding: .8rem .9rem; color: #1F1A17; text-decoration: none; border-top: 1px solid #F1EAE0; }
+      .nav-m-products > a:first-child { border-top: 0; }
+      .nav-m-products > a[aria-current] { background: #FBF6EC; }
+      .nav-m-sub { display: flex; flex-wrap: wrap; gap: .4rem; padding: 0 .9rem .8rem; padding-inline-start: 4.2rem; }
+      .nav-m-sub a { display: inline-flex; align-items: center; min-height: 2.25rem; padding: 0 .7rem; border: 1px solid #EDE4D8; border-radius: 999px; font-size: .8125rem; font-weight: 600; color: #7C2D37; text-decoration: none; background: #FBF8F3; }
       .nav-m-icon { flex: 0 0 auto; width: 2.5rem; height: 2.5rem; border-radius: .6rem; background: #F6ECEE; color: #7C2D37; display: flex; align-items: center; justify-content: center; }
       .nav-m-heading { margin: 1.1rem .25rem .5rem; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6B625B; }
       .nav-m-about { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
@@ -297,6 +330,14 @@
               <span class="text-sm" style="color:#5E5650">{{ $product['line'] }}</span>
             </span>
           </a>
+          @if ($product['key'] === 'library')
+            {{-- R5: the library's sections, as small links under its row. --}}
+            <div class="nav-m-sub" data-testid="mobile-menu-library">
+              @foreach (array_slice($siteLibraryLinks, 1) as $link)
+                <a href="{{ $link['href'] }}">{{ $link['label'] }}</a>
+              @endforeach
+            </div>
+          @endif
         @endforeach
       </div>
 
@@ -480,29 +521,35 @@ function toggleUserMenu() {
 }
 
 // ── About menu (desktop) ─────────────────────────────────────────
-function toggleAboutMenu(e) {
+// The header's two dropdowns (About, and the Digital Library's sections, R5):
+// one open at a time; Escape and a click outside close them.
+var NAV_MENUS = ['nav-about', 'nav-lib'];
+function closeNavMenu(id, focus) {
+  var box = document.getElementById(id);
+  if (!box || !box.classList.contains('is-open')) return;
+  box.classList.remove('is-open');
+  box.querySelector('button').setAttribute('aria-expanded', 'false');
+  if (focus) box.querySelector('button').focus();
+}
+function toggleNavMenu(e, id) {
   e.stopPropagation();
-  var box = document.getElementById('nav-about');
+  var box = document.getElementById(id);
   var open = !box.classList.contains('is-open');
+  NAV_MENUS.forEach(function(other) { if (other !== id) closeNavMenu(other, false); });
   box.classList.toggle('is-open', open);
   box.querySelector('button').setAttribute('aria-expanded', open ? 'true' : 'false');
 }
+function toggleAboutMenu(e) { toggleNavMenu(e, 'nav-about'); }
 document.addEventListener('keydown', function(e) {
-  var box = document.getElementById('nav-about');
-  if (e.key === 'Escape' && box && box.classList.contains('is-open')) {
-    box.classList.remove('is-open');
-    box.querySelector('button').setAttribute('aria-expanded', 'false');
-    box.querySelector('button').focus();
-  }
+  if (e.key === 'Escape') NAV_MENUS.forEach(function(id) { closeNavMenu(id, true); });
 });
 
 // Close dropdowns on outside click
 document.addEventListener('click', function(e) {
-  var about = document.getElementById('nav-about');
-  if (about && !about.contains(e.target)) {
-    about.classList.remove('is-open');
-    about.querySelector('button').setAttribute('aria-expanded', 'false');
-  }
+  NAV_MENUS.forEach(function(id) {
+    var box = document.getElementById(id);
+    if (box && !box.contains(e.target)) closeNavMenu(id, false);
+  });
   if (!document.getElementById('gt-wrapper')?.contains(e.target))
     document.getElementById('gt-dropdown')?.classList.add('hidden');
   if (!document.getElementById('user-menu-wrapper')?.contains(e.target))
