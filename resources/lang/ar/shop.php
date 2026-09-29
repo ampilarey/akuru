@@ -179,6 +179,8 @@ return [
     'shop_by_category' => 'تسوق حسب القسم',
     'new_arrivals' => 'وصل حديثًا',
     'our_shops' => 'المتاجر',
+    // STATUS §5kw: a shop in the list with nothing on sale yet.
+    'opening_soon' => 'يفتح قريبًا',
     'all_products' => 'كل المنتجات',
     'results' => 'النتائج',
     'result_count' => ':count منتجات',
