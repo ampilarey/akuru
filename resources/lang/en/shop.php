@@ -1564,4 +1564,7 @@ return [
     'book_lists_heading' => 'School book lists',
     'book_lists_intro' => 'Find your school and grade, and buy the whole list in one tap.',
     'book_lists_none' => 'No school has a list here yet. Shops add them before the school year.',
+    'buy_again' => 'Buy again',
+    'buy_again_added_flash' => ':count items from your order are back in your cart, at today\'s prices.',
+    'buy_again_skipped_flash' => 'Not added (no longer sold, sold out, or its option is gone): :titles',
 ];

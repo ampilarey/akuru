@@ -2,11 +2,13 @@
 
 namespace App\Domains\Bookshop\Http\Controllers;
 
+use App\Domains\Bookshop\Actions\Cart\BuyAgainAction;
 use App\Domains\Bookshop\Actions\Orders\CustomerOrderAction;
 use App\Domains\Bookshop\Actions\Orders\ListMyOrdersAction;
 use App\Domains\Bookshop\Actions\Orders\PresentOrderAction;
 use App\Domains\Bookshop\Actions\Orders\RequestReturnAction;
 use App\Domains\Bookshop\Enums\ReturnReason;
+use App\Domains\Bookshop\Http\Controllers\Concerns\ResolvesCart;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
@@ -19,6 +21,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class MyOrdersController extends Controller
 {
+    use ResolvesCart;
+
     public function index(Request $request)
     {
         abort_unless($request->user() !== null, 403);
@@ -38,6 +42,20 @@ class MyOrdersController extends Controller
             'order' => $order,
             'reasons' => array_map(fn (ReturnReason $r) => $r->value, ReturnReason::cases()),
         ]);
+    }
+
+    /** §5ld: this order's items back into the cart, at today's prices. */
+    public function buyAgain(Request $request, string $number): RedirectResponse
+    {
+        abort_unless($request->user() !== null, 403);
+        $actions = app(BuyAgainAction::class);
+        $order = $actions->order((int) $request->user()->id, $number);
+        abort_if($order === null, 404);
+
+        $result = $actions->execute($this->cart($request, create: true), $order);
+        $flash = redirect()->route('public.shop.cart')->with('success', __('shop.buy_again_added_flash', ['count' => $result['added']]));
+
+        return $result['skipped'] === [] ? $flash : $flash->with('warning', __('shop.buy_again_skipped_flash', ['titles' => implode(', ', $result['skipped'])]));
     }
 
     /** B3: cancel before it leaves the shop; the money goes back. */

@@ -28,4 +28,10 @@ class OrderItem extends Model
     {
         return $this->belongsTo(Order::class);
     }
+
+    /** The product it was, if it still exists (§5ld "Buy again"). */
+    public function product(): BelongsTo
+    {
+        return $this->belongsTo(Product::class);
+    }
 }

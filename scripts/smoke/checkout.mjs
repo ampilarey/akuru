@@ -182,6 +182,16 @@ const receipt = await text(customer);
 check('the receipt shows the lines, the total and who sold them', (await customer.locator('[data-testid="order-item"]').count()) === 1 && receipt.includes('Arabic Letters Tracing Book') && receipt.includes('Fitrah') && (await customer.locator('[data-testid="receipt-total"]').innerText()).includes('170.00'), receipt.slice(0, 160));
 check('and an empty cart afterwards', (await customer.goto(`${BASE}/en/shop/cart`, { waitUntil: 'networkidle' }), (await customer.locator('[data-testid="cart-empty"]').count()) === 1));
 
+// ------------------------------------------------------------ buy again (STATUS §5ld)
+
+await customer.goto(`${BASE}/en/my-orders/${paidNumber}-FIT`, { waitUntil: 'networkidle' });
+await Promise.all([customer.waitForURL(/\/shop\/cart$/), customer.click('[data-testid="buy-again"]')]);
+await customer.waitForLoadState('networkidle');
+check('Buy again puts the order\'s items back in the cart', (await customer.locator('[data-cart-line="smoke-arabic-letters-tracing-book"]').count()) === 1 && /back in your cart/.test(await customer.locator('[data-testid="flash-success"]').innerText().catch(() => '')), (await customer.locator('[data-testid="flash-success"]').innerText().catch(() => '')).trim());
+await customer.click('[data-cart-line="smoke-arabic-letters-tracing-book"] [data-testid="cart-remove"]');
+await customer.waitForLoadState('networkidle');
+check('and it can be taken out again, leaving the cart empty', (await customer.locator('[data-testid="cart-empty"]').count()) === 1);
+
 // ------------------------------------------------------------ 3. by bank transfer
 
 await addToCart(customer, MAT, 1);
