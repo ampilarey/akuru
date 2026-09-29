@@ -4414,6 +4414,40 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kn. Plan: research and articles into the Digital Library, peer review a must, a news editor (2026-09-29)
+
+The owner asked whether research and educational articles come under the
+Digital Library, then for a re-audit and ideas, then — after answering
+three questions — for a plan another session will implement.
+`docs/RESEARCH_ARTICLES_PLAN.md` is that plan. Nothing is built.
+
+**The audit found** two research systems that do not talk to each other
+(website `posts` of type research with an office CMS and a public PDF
+download; library items of type research with peer review, a protected
+reader and paid access), "Research" shown three times to a visitor with
+different lists, a website Articles page and a News page with **no editor
+at all** (nothing was ever written there), the library's peer-review gate
+bypassable by a direct publish and switchable off, a one-email reviewer
+assignment with no pool, due date, reminder or conflict-of-interest step,
+no return to the reviewer after a revision, and library items missing from
+the sitemap and the site search. Twelve findings, each with its file.
+
+**The owner decided:** (1) a paper may be read in the reader, downloaded,
+or both — the author sets it; (2) peer review is a must, build what is
+missing; (3) build a news editor. Defaults recorded for the rest: retire the
+website Articles page, one accept required (office may raise it),
+single-blind as §43.8 already has it.
+
+**Five slices:** R1 the library learns teacher authors, a delivery choice
+and a year filter; R2 imports the website research into the library and
+redirects the old addresses (the `posts` rows stay, rule 9); R3 gates every
+publish path on review, replaces the on/off switch with a required count,
+adds a reviewer pool, due dates, reminders, COI, the revision round and
+readable review states; R4 the news editor; R5 a Digital Library dropdown
+in the header, library results in the site search.
+
+Docs: the plan; CLAUDE.md's document map lists it.
+
 ## 5km. The owner's logo, as vectors, on every surface (2026-09-29)
 
 The owner chose between two designs — the one with a gold emblem, a wine
