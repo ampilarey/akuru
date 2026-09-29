@@ -6,7 +6,7 @@
 @push('scripts')
 <script type="application/ld+json">
 {
-  "@context": "https://schema.org",
+  "@@context": "https://schema.org",
   "@type": "Event",
   "name": {{ json_encode($event->title) }},
   "description": {{ json_encode(Str::limit(strip_tags($event->short_description ?? $event->description ?? ''), 200)) }},

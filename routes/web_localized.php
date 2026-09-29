@@ -702,6 +702,17 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // Declared before the resources, or `pages/export` is swallowed by
         // `pages/{page}` and `courses/export` by `courses/{course}`.
         Route::get('pages/export', [AdminPageController::class, 'export'])->name('admin.pages.export');
+        // RESEARCH_ARTICLES_PLAN R4: the news editor, and its categories.
+        Route::get('news/export', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\NewsController::class, 'export'])->name('admin.news.export');
+        Route::get('news/categories', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\NewsController::class, 'categoriesIndex'])->name('admin.news.categories');
+        Route::post('news/categories', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\NewsController::class, 'storeCategory'])->name('admin.news.categories.store');
+        Route::put('news/categories/{category}', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\NewsController::class, 'updateCategory'])->name('admin.news.categories.update')->whereNumber('category');
+        Route::get('news/create', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\NewsController::class, 'create'])->name('admin.news.create');
+        Route::get('news', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\NewsController::class, 'index'])->name('admin.news.index');
+        Route::post('news', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\NewsController::class, 'store'])->name('admin.news.store');
+        Route::get('news/{post}/edit', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\NewsController::class, 'edit'])->name('admin.news.edit')->whereNumber('post');
+        Route::get('news/{post}', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\NewsController::class, 'show'])->name('admin.news.show')->whereNumber('post');
+        Route::put('news/{post}', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\NewsController::class, 'update'])->name('admin.news.update')->whereNumber('post');
         Route::get('courses/export', [AdminCourseController::class, 'export'])->name('admin.courses.export');
         Route::resource('pages', AdminPageController::class)->names([
             'index' => 'admin.pages.index',

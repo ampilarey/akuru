@@ -5,8 +5,11 @@
 
 @push('scripts')
 <script type="application/ld+json">
+{{-- `@@context` is escaped: Laravel 12 made `@context` a Blade directive, and the
+     bare word opened a block that never closed — the page answered 500 the
+     first time a news item existed (found by R4's test, STATUS §5ks). --}}
 {
-  "@context": "https://schema.org",
+  "@@context": "https://schema.org",
   "@type": "NewsArticle",
   "headline": {{ json_encode($post->title) }},
   "description": {{ json_encode($post->summary ?? Str::limit(strip_tags($post->body), 200)) }},
@@ -24,7 +27,7 @@
         <!-- Header -->
         <header class="mb-8">
             <div class="text-sm text-brandGray-500 mb-4">
-                <a href="{{ route('public.news.index', app()->getLocale()) }}" 
+                <a href="{{ route('public.news.index') }}" 
                    class="text-brandMaroon-600 hover:text-brandMaroon-700">
                     ← {{ __('public.Back to News') }}
                 </a>
@@ -80,7 +83,7 @@
         <!-- Footer -->
         <footer class="mt-12 pt-8 border-t border-brandGray-200">
             <div class="flex justify-between items-center">
-                <a href="{{ route('public.news.index', app()->getLocale()) }}" 
+                <a href="{{ route('public.news.index') }}" 
                    class="btn-secondary">
                     ← {{ __('public.Back to News') }}
                 </a>

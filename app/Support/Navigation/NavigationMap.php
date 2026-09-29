@@ -370,6 +370,8 @@ final class NavigationMap
             ['key' => 'panel_website', 'items' => [
                 ['key' => 'website_cms', 'href' => '/admin/public-site/pages', 'children' => [
                     ['key' => 'cms_pages', 'href' => '/admin/public-site/pages'],
+                    // R4: the news editor.
+                    ['key' => 'cms_news', 'href' => '/admin/public-site/news'],
                     ['key' => 'cms_courses', 'href' => '/admin/public-site/courses'],
                     ['key' => 'cms_daily_content', 'href' => '/admin/public-site/daily-content'],
                     ['key' => 'cms_daily_queue', 'href' => '/admin/public-site/daily-content/queue'],

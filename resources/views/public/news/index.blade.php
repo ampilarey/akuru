@@ -31,7 +31,7 @@
                         </div>
                         
                         <h2 class="text-xl font-semibold text-brandMaroon-600 mb-3">
-                            <a href="{{ route('public.news.show', [app()->getLocale(), $post->slug ?? $post->id]) }}" 
+                            <a href="{{ route('public.news.show', $post->slug) }}" 
                                class="hover:text-brandMaroon-700">
                                 {{ $post->title }}
                             </a>
@@ -39,7 +39,7 @@
                         
                         <p class="text-brandGray-600 mb-4">{{ $post->summary }}</p>
                         
-                        <a href="{{ route('public.news.show', [app()->getLocale(), $post->slug]) }}" 
+                        <a href="{{ route('public.news.show', $post->slug) }}" 
                            class="text-brandMaroon-600 hover:text-brandMaroon-700 font-medium">
                             {{ __('public.Read More') }} →
                         </a>
