@@ -85,6 +85,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-exams-3', 'label' => 'Grading scales, competencies, standards', 'where' => '/exams/scales'],
                 ['key' => 'ft-exams-4', 'label' => 'Report card templates and report cards (issue, download)', 'where' => '/exams/report-cards'],
                 ['key' => 'ft-exams-5', 'label' => 'Awards', 'where' => '/exams/awards'],
+                ['key' => 'ft-exams-6', 'label' => 'Report cards as PDF (office and family): Download PDF where the host has Chrome (DOCUMENTS_CHROME_PATH), otherwise Open to print', 'where' => '/exams/report-cards'],
             ]],
             ['key' => 'ft-finance', 'title' => 'School finance', 'items' => [
                 ['key' => 'ft-finance-1', 'label' => 'Fee items and fee structures', 'where' => '/finance/fee-structures'],

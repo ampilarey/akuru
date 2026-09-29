@@ -1,6 +1,6 @@
 # ADR-012: Document renderer for report cards and certificates
 
-**Status:** accepted (amended 2026-08-26)  
+**Status:** accepted (amended 2026-08-26; amended 2026-09-29 — PDF at download)  
 **Supersedes:** the S3.6 “Browsershot in production” bind recorded below, which never shipped.
 
 ## Context
@@ -60,3 +60,29 @@ certificates reuse the same interface and the same HTML default. A later
 PDF slice is a binding change plus UI copy (`Download PDF`), not a new
 interface. Chrome must be present on every host that should emit PDF
 before that bind is flipped.
+
+## Amendment 2026-09-29: PDF at download, where the host has Chrome (STATUS §5lr)
+
+Report cards can now be downloaded as PDF. This is **not** a swap of the
+renderer bind: `HtmlDocumentRenderer` stays, and the stored file is still
+the HTML record. Instead a second Support contract,
+`PdfConverterInterface`, turns that HTML into PDF when someone asks for
+it (`?format=pdf`).
+
+- `ChromePdfConverter` runs headless Chrome (`--print-to-pdf`), so Thaana
+  and Arabic come out right to left exactly as the HTML shows them. Dompdf
+  is still not the RTL path.
+- It is **enabled only when `DOCUMENTS_CHROME_PATH`** points at an
+  executable Chrome or Chromium on the host. Without it — CI, and any host
+  that has not set it — `enabled()` is false, the UI offers "Open to
+  print" as before, and a `?format=pdf` request gets the HTML.
+- `App\Support\Http\DocumentResponse` makes that choice for any
+  controller; UI copy says "Download PDF" only when the page was told PDF
+  is available (point 4 above still holds everywhere else).
+- Scripts are stripped before printing; the file is written to
+  `storage/app/tmp/pdf` with its own throwaway Chrome profile, checked to
+  begin `%PDF`, and removed afterwards. A failed conversion falls back to
+  the HTML rather than an error page.
+
+Other documents (awards, ID cards, receipts, payslips) can use the same
+converter and response helper in their own slices.

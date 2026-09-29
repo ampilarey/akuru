@@ -4414,6 +4414,57 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lr. Report cards as PDF (2026-09-29)
+
+BACKLOG C2: "Report cards as PDF (ADR-012: HTML is the supported output;
+PDF is a future renderer binding)". The owner said "do it" on 2026-09-29.
+
+**What changed.** A published report card can be downloaded as a PDF, by
+the office on `/exams/report-cards` and by the family on the portal's
+report cards page. The stored HTML stays the record: nothing in the
+database changes, and no card is re-rendered. The PDF is made from that
+HTML when someone asks for it (`?format=pdf`).
+
+**How** (ADR-012, amended 2026-09-29):
+- a new Support contract, `PdfConverterInterface`, bound to
+  `ChromePdfConverter`, which prints the HTML with headless Chrome, so
+  Thaana and Arabic come out right to left as the HTML shows them;
+- `App\Support\Http\DocumentResponse` answers a download as PDF when
+  one was asked for and the host can print, otherwise as the HTML; a
+  conversion that fails is reported and falls back to the HTML;
+- scripts are stripped before printing; each print uses a throwaway
+  Chrome profile under `storage/app/tmp/pdf`, is checked to begin `%PDF`,
+  and is cleaned up.
+
+**Only where the host has Chrome.** PDF is offered only when
+`DOCUMENTS_CHROME_PATH` names an executable Chrome or Chromium
+(`config/documents.php`). Without it the pages show "Open to print" as
+before and never say PDF. **Owner action:** to offer PDF on production,
+set `DOCUMENTS_CHROME_PATH` in `.env` to Chrome's path on the host and run
+`php artisan config:cache`; if the host has no Chrome, report cards stay
+HTML and nothing breaks.
+
+Tests (`ReportCardsTest`, three new):
+- no Chrome configured: `pdf_available` is false on both pages, and
+  `?format=pdf` returns the HTML;
+- a fake converter: the family and the office each get
+  `application/pdf` as an attachment, and a stranger gets 403;
+- a real Chrome print of a Dhivehi and an Arabic card (skipped where
+  Chrome is missing): a real PDF, and a disabled or missing path reads
+  as not enabled.
+
+Checklist: `ft-exams-6`.
+
+Walk: `scripts/smoke/exams.mjs`, run twice.
+- **With `DOCUMENTS_CHROME_PATH` set on the server: 30/30.** The family's
+  page offers the PDF, and its note no longer says "not PDF". The link
+  returns `application/pdf`, 52 KB, starting `%PDF`.
+- **Without it: 29/29.** No PDF link, and "Open to print".
+
+The walk caught one thing the tests had not. The two pages' notes said
+"HTML, not PDF" even when a PDF was on offer. They now follow
+`pdf_available`.
+
 ## 5lq. Library notices by email and SMS (2026-09-29)
 
 BACKLOG B11: "Email/SMS channels for library notifications (in-app only

@@ -1,7 +1,7 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Index({ classes, terms, cards, unpublished, classId, termId }) {
+export default function Index({ classes, terms, cards, unpublished, classId, termId, pdf_available = false }) {
     // The term being viewed, else the one actually running, else the first.
     // Defaulting straight to `terms[0]` opened the publish control on Term 2
     // while the table below listed Term 1 — the control and the evidence for
@@ -61,8 +61,9 @@ export default function Index({ classes, terms, cards, unpublished, classId, ter
             </div>
 
             <p className="mb-4 rounded border border-gray-200 bg-white px-4 py-2 text-sm text-gray-700">
-                Report cards are HTML documents (not PDF). Download opens an HTML file you can print.
-                ADR-012: HTML is the supported production output until a PDF renderer is bound behind DocumentRendererInterface.
+                {pdf_available
+                    ? 'Report cards are stored as HTML; PDF prints that HTML on this server when downloaded (ADR-012, amended).'
+                    : 'Report cards are HTML documents (not PDF). Open one to print it. ADR-012: PDF is offered only where the server has Chrome (DOCUMENTS_CHROME_PATH).'}
             </p>
 
             {unpublished.length > 0 && (
@@ -182,7 +183,10 @@ export default function Index({ classes, terms, cards, unpublished, classId, ter
                                     {card.revisions ? `${card.revisions} — ${card.last_revision_reason}` : '—'}
                                 </td>
                                 <td className="px-3 py-2">
-                                    {card.document_id ? <a className="text-[#7C2D37] underline" href={`/exams/report-cards/${card.id}/download`}>Download HTML</a> : '—'}
+                                    {card.document_id ? <span className="flex flex-wrap gap-3">
+                                        {pdf_available && <a className="text-[#7C2D37] underline" href={`/exams/report-cards/${card.id}/download?format=pdf`} data-testid={`report-card-pdf-${card.id}`}>PDF</a>}
+                                        <a className="text-[#7C2D37] underline" href={`/exams/report-cards/${card.id}/download`}>{pdf_available ? 'HTML' : 'Open to print'}</a>
+                                    </span> : '—'}
                                 </td>
                             </tr>
                         ))}
