@@ -35,6 +35,9 @@
         <a href="{{ $home ? '#book-lists' : route('public.shop.index').'#book-lists' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-book-lists">{{ __('site.store_book_lists') }}</a>
         <a href="{{ $home ? '#categories' : route('public.shop.index').'#categories' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.shop_categories') }}</a>
         <a href="{{ route('public.shop.cart') }}" class="inline-flex items-center gap-1 rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-cart">{{ __('site.cart') }}@if($cartCount > 0)<span class="rounded-full bg-brandMaroon-600 px-1.5 text-xs font-semibold text-white" data-testid="shop-link-cart-count">{{ $cartCount }}</span>@endif</a>
+        {{-- §5li: the comparison, once something is in it. --}}
+        @php($comparing = count(app(\App\Domains\Bookshop\Actions\Shop\CompareProductsAction::class)->ids(session()->driver())))
+        @if($comparing > 0)<a href="{{ route('public.shop.compare') }}" class="inline-flex items-center gap-1 rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-compare">{{ __('shop.compare_heading') }} <span class="rounded-full bg-brandMaroon-600 px-1.5 text-xs font-semibold text-white">{{ $comparing }}</span></a>@endif
         <a href="{{ route('public.shop.orders') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.my_orders') }}</a>
         <a href="{{ route('vendor.apply') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.sell_on_akuru') }}</a>
         <a href="{{ route('vendor.index') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-owners">{{ __('site.shop_owner_signin') }}</a>
@@ -131,6 +134,7 @@
 </section>
 @endif
 
+@if(! ($compare ?? null))
 {{-- On a phone the search stays in view and the rest folds under "Filter and sort",
      so the products are on the first screen (the owner's screenshot, STATUS §5kv). The
      fold is served open, so the filters are there without script; the script folds
@@ -245,6 +249,7 @@
 })();
 </script>
 @endpush
+@endif
 
 @if($home)
     {{-- B7 (§7): the office's hero slides, featured products and collections; best sellers; recently viewed. --}}
@@ -403,6 +408,64 @@
     @endif
 @endif
 
+@if($compare ?? null)
+{{-- STATUS §5li: the products this device is comparing, one column each. --}}
+<section class="py-8" data-testid="compare">
+    <div class="container mx-auto px-4">
+        @if(count($compare['columns']) === 0)
+            <p class="rounded-lg border bg-white p-6 text-gray-600" data-testid="compare-empty">{{ __('shop.compare_empty') }}</p>
+        @else
+            <div class="overflow-x-auto rounded-lg border bg-white">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr>
+                            <th class="sticky start-0 z-10 w-28 bg-white p-3 sm:w-40"></th>
+                            @foreach($compare['columns'] as $col)
+                                <th class="min-w-[9rem] p-3 text-start align-top font-normal" data-compare-product="{{ $col['slug'] }}">
+                                    <a href="{{ route('public.shop.product', $col['slug']) }}" class="block">
+                                        @if($col['image'])<img src="{{ $col['image'] }}" alt="{{ $col['image_alt'] }}" class="mb-2 aspect-square w-full max-w-[10rem] rounded object-cover" loading="lazy">@endif
+                                        <span class="font-semibold text-brandMaroon-900 hover:underline" dir="auto">{{ $col['title'] }}</span>
+                                    </a>
+                                    <form method="POST" action="{{ route('public.shop.compare.toggle', $col['slug']) }}" class="mt-1">
+                                        @csrf
+                                        <button type="submit" class="text-xs text-red-700 underline" data-testid="compare-remove-{{ $col['slug'] }}">{{ __('shop.remove') }}</button>
+                                    </form>
+                                </th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        @foreach($compare['rows'] as $row)
+                            <tr data-compare-row="{{ $row['key'] }}">
+                                <th class="sticky start-0 z-10 w-28 bg-gray-50 p-3 text-start font-medium text-gray-600 sm:w-40">{{ __('shop.'.$row['key']) }}</th>
+                                @foreach($row['values'] as $value)
+                                    <td class="p-3" dir="auto">{{ $value ?? '—' }}</td>
+                                @endforeach
+                            </tr>
+                        @endforeach
+                        <tr>
+                            <th class="sticky start-0 z-10 bg-white p-3"></th>
+                            @foreach($compare['columns'] as $col)
+                                <td class="p-3">
+                                    @if($col['available'] && ! $col['has_options'])
+                                        <form method="POST" action="{{ route('public.shop.cart.add') }}">
+                                            @csrf
+                                            <input type="hidden" name="product" value="{{ $col['slug'] }}">
+                                            <button type="submit" class="btn-primary text-sm" data-testid="compare-add-{{ $col['slug'] }}">{{ __('shop.add_to_cart') }}</button>
+                                        </form>
+                                    @else
+                                        <a href="{{ route('public.shop.product', $col['slug']) }}" class="text-sm text-brandMaroon-700 underline">{{ __('shop.view_product') }}</a>
+                                    @endif
+                                </td>
+                            @endforeach
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+</section>
+@else
 <section class="py-8">
     <div class="container mx-auto px-4">
         <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">
@@ -421,6 +484,7 @@
         <div class="mt-6">{{ $products->links() }}</div>
     </div>
 </section>
+@endif
 @if($storefront)
 </div>
 @endif

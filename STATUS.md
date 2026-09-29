@@ -4414,6 +4414,47 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5li. Compare products (2026-09-29)
+
+BOOKSHOP_PLAN §16, item 8c.
+
+- **Compare** on a product page adds the product to this device's
+  comparison, and pressing it again takes it out.
+  - It works signed in or not, and holds up to four products.
+  - A fifth is refused, with a link to the comparison.
+  - The list is kept in the session, like "recently viewed".
+- **`/shop/compare`** shows the products side by side.
+  - Rows: price (a running sale's), shop, stars, stock, category, brand,
+    and the book or educational details.
+  - Only the rows any of the products fills are shown; an empty cell reads
+    "—".
+  - Each column has Remove, and Add to cart when the product has no options
+    to choose; otherwise it links to the product.
+  - A product no longer for sale drops out.
+- **The store's row of links** shows "Compare (N)" once something is in the
+  comparison.
+- **It fits a phone.** The table scrolls sideways inside its box, and the
+  row labels stay pinned. The page itself never runs wider than the
+  screen: the walk checks this, and a screenshot at 390px confirms it.
+- **No new Blade screen.** Compare is a mode of the shop listing view
+  (`$compare`), which hides the filters and the grid.
+- `compare` joins the words no shop may be named.
+
+Tests:
+- `ShopCompareTest` (2):
+  - add two; the product page shows it is in; the table has only the filled
+    rows and a "—" where one lacks a value, with no filters, and has Add to
+    cart and the links-row chip; take one out;
+  - four at most, a product no longer for sale drops out, an unknown
+    product is 404.
+
+Checklist: `ft-bookstore-18`.
+
+Walk: `scripts/smoke/shop.mjs` 59/59, with three new steps at phone width:
+- two product pages add to the comparison;
+- the table has both products and their prices;
+- the page fits the screen.
+
 ## 5lh. Brand pages and a brand filter (2026-09-29)
 
 BOOKSHOP_PLAN §16, item 8b. Brands already existed: the office keeps the

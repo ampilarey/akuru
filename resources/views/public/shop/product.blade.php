@@ -67,6 +67,7 @@
             @if(session('success'))
                 <p class="mb-3 rounded bg-green-50 p-2 text-sm text-green-800" data-testid="flash-success">{{ session('success') }}</p>
             @endif
+            @error('compare')<p class="mb-3 rounded bg-amber-50 p-2 text-sm text-amber-900" data-testid="compare-error">{{ $message }} <a href="{{ route('public.shop.compare') }}" class="underline">{{ __('shop.compare_now') }}</a></p>@enderror
             @if(count($product['badges']) > 0)
                 <p class="mb-2 flex flex-wrap gap-1" data-testid="product-badges">
                     @foreach($product['badges'] as $badge)
@@ -170,9 +171,16 @@
                         @csrf
                         <button type="submit" class="btn-secondary" aria-pressed="{{ $product['in_wishlist'] ? 'true' : 'false' }}" data-testid="wishlist-toggle">{{ $product['in_wishlist'] ? '♥ '.__('shop.in_wishlist') : '♡ '.__('shop.add_to_wishlist') }}</button>
                     </form>
-                @else
-                    <a href="{{ route('login') }}" class="text-sm text-brandMaroon-700 underline" data-testid="sign-in-to-save">{{ $product['available'] ? __('shop.sign_in_to_save') : __('shop.sign_in_to_be_told') }}</a>
                 @endauth
+                {{-- §5li: compare with up to three others, signed in or not. --}}
+                <form method="POST" action="{{ route('public.shop.compare.toggle', $product['slug']) }}">
+                    @csrf
+                    <button type="submit" class="btn-secondary" aria-pressed="{{ $product['in_compare'] ? 'true' : 'false' }}" data-testid="compare-toggle">{{ $product['in_compare'] ? '✓ '.__('shop.in_compare') : '⇄ '.__('shop.add_to_compare') }}</button>
+                </form>
+                @if($product['in_compare'])<a href="{{ route('public.shop.compare') }}" class="text-sm font-semibold text-brandMaroon-700 underline" data-testid="go-compare">{{ __('shop.compare_now') }}</a>@endif
+                @guest
+                    <a href="{{ route('login') }}" class="text-sm text-brandMaroon-700 underline" data-testid="sign-in-to-save">{{ $product['available'] ? __('shop.sign_in_to_save') : __('shop.sign_in_to_be_told') }}</a>
+                @endguest
             </div>
             <p class="mt-3"><a href="{{ route('public.shop.vendor', $product['vendor']['slug']) }}" class="text-sm text-brandMaroon-700 hover:underline">{{ __('shop.visit_shop') }} →</a></p>
 

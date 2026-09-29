@@ -62,6 +62,8 @@ Route::get('shop/export', [\App\Domains\Bookshop\Http\Controllers\ShopController
 // B7: suggestions as you type.
 Route::get('shop/suggest', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'suggest'])->name('public.shop.suggest')->middleware('throttle:120,1,shop-suggest');
 Route::get('shop/products/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'product'])->name('public.shop.product');
+Route::get('shop/compare', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'compare'])->name('public.shop.compare');
+Route::post('shop/compare/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'toggleCompare'])->name('public.shop.compare.toggle')->middleware('throttle:60,1,shop-compare');
 Route::get('shop/brand/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'brand'])->name('public.shop.brand');
 Route::get('shop/c/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'category'])->name('public.shop.category');
 // B2: the cart is a guest's too (by session token), so it is public and
