@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Cache;
  * shows exactly what those shelves show — published items, and products for
  * sale from an active shop.
  *
- * Cached for ten minutes like the rest of the home page's lists.
+ * Cached for ten minutes like the rest of the home page's lists. Also
+ * counts both shelves for the page's stats row (W3, STATUS §5kk).
  */
 class ComposeHomepageProductsAction
 {
@@ -22,11 +23,11 @@ class ComposeHomepageProductsAction
     public const PRODUCTS = 4;
 
     /**
-     * @return array{books: list<array<string, mixed>>, products: list<array<string, mixed>>}
+     * @return array{books: list<array<string, mixed>>, products: list<array<string, mixed>>, counts: array{books: int, items: int}}
      */
     public function execute(string $locale): array
     {
-        return Cache::remember("homepage_products_v1_{$locale}", 600, fn (): array => [
+        return Cache::remember("homepage_products_v2_{$locale}", 600, fn (): array => [
             'books' => array_map(fn (array $item): array => [
                 'title' => $item['title'],
                 'href' => route('public.library.show', $item['slug']),
@@ -46,6 +47,11 @@ class ComposeHomepageProductsAction
                 'compare_at_price' => $card['on_sale'] ? $card['compare_at_price'] : null,
                 'currency' => $card['currency'],
             ], app(ListShopProductsAction::class)->execute(['sort' => 'newest'], self::PRODUCTS)->items()),
+            // The stats row (W3): what each shelf holds, counted the way it lists.
+            'counts' => [
+                'books' => app(ListLibraryItemsAction::class)->countPublished(),
+                'items' => app(ListShopProductsAction::class)->query()->count(),
+            ],
         ]);
     }
 }

@@ -110,6 +110,12 @@ class ListLibraryItemsAction
             ->all();
     }
 
+    /** How many items the public shelf holds (the website's stats row, STATUS §5kk). */
+    public function countPublished(): int
+    {
+        return LibraryItem::query()->where('status', 'published')->count();
+    }
+
     /**
      * @return array<string, mixed>
      */

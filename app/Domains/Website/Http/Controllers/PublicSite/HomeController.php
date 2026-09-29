@@ -139,7 +139,8 @@ class HomeController extends Controller
         $courseCount = Course::whereIn('status', ['open', 'upcoming'])->count();
         $teacherCount = class_exists(\App\Domains\People\Models\Teacher::class) ? \App\Domains\People\Models\Teacher::count() : 0;
         $stats = [
-            'courses' => $courseCount ?: 12,
+            // The stats row shows the real count, or leaves the number out (STATUS §5kk).
+            'courses' => $courseCount,
             'teachers' => $teacherCount ?: 25,
         ];
 

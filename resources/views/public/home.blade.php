@@ -427,19 +427,37 @@ $bannerCount = count($bannerList);
 
 {{-- ═══════════════════════════════════════════════════════════
   SECTION 4 — STATS   bg: brand maroon #7C2D37
+  One row, what each product holds, counted — never a made-up number, and a
+  count of nothing is left out (STATUS §5kk). Students taught is the hero's.
 ═══════════════════════════════════════════════════════════ --}}
-@if(isset($stats))
-<section style="background:#7C2D37;padding:3rem 0">
+@php
+  $statRow = array_filter([
+      [(int) ($stats['courses'] ?? 0), __('site.stat_courses'), route('public.courses.index'), 'courses'],
+      [(int) ($shelves['counts']['books'] ?? 0), __('site.stat_books'), route('public.library.index'), 'books'],
+      [(int) ($shelves['counts']['items'] ?? 0), __('site.stat_items'), route('public.shop.index'), 'items'],
+  ], fn ($stat) => $stat[0] > 0);
+@endphp
+@if ($statRow !== [])
+<section style="background:#7C2D37;padding:2.5rem 0" data-testid="home-stats" aria-label="{{ __('site.akuru_in_numbers') }}">
   <div class="container mx-auto px-4">
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:2rem;text-align:center">
-      @if(!empty($trust['students_taught']))
-      <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">{{ number_format((int) $trust['students_taught']) }}</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">{{ $trust['students_label'] }}</div></div>
-      @endif
-      <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">{{ $stats['courses'] }}</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">Courses offered</div></div>
-      <div><div style="font-size:2.75rem;font-weight:800;color:#C9A227;line-height:1">100%</div><div style="color:rgba(255,255,255,.65);font-size:.82rem;margin-top:.375rem">Qualified teachers</div></div>
+    <div class="home-stats">
+      @foreach ($statRow as [$count, $label, $href, $key])
+      <a href="{{ $href }}" class="home-stat" data-testid="home-stat-{{ $key }}">
+        <span class="home-stat-n">{{ number_format($count) }}</span>
+        <span class="home-stat-l">{{ $label }}</span>
+      </a>
+      @endforeach
     </div>
   </div>
 </section>
+<style>
+  .home-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem 4rem; text-align: center; }
+  .home-stat { display: flex; flex-direction: column; gap: .35rem; text-decoration: none; min-width: 7rem; }
+  .home-stat-n { font-size: clamp(2rem, 5vw, 2.75rem); font-weight: 800; color: #E8C766; line-height: 1; font-variant-numeric: tabular-nums; }
+  .home-stat-l { color: rgba(255,255,255,.8); font-size: .875rem; }
+  .home-stat:hover .home-stat-l { color: #fff; text-decoration: underline; }
+  @media (max-width: 639px) { .home-stats { gap: 1.25rem 2rem; } }
+</style>
 @endif
 
 {{-- ═══════════════════════════════════════════════════════════
