@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Http\Controllers;
 
+use App\Domains\Bookshop\Actions\Vendor\VendorQuestionsAction;
 use App\Domains\Bookshop\Actions\Vendor\VendorReviewsAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
 use App\Http\Controllers\Controller;
@@ -14,7 +15,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * BOOKSHOP_PLAN slice B7: the shop's reviews (`/vendor/reviews`) — read
- * them, reply in public. Thin: which reviews and who may reply are the
+ * them, reply in public. Since §5le its product questions too — answer them
+ * in public. Thin: which reviews and who may reply are the
  * Action's, through the `VendorScope`.
  */
 class VendorReviewController extends Controller
@@ -29,7 +31,36 @@ class VendorReviewController extends Controller
             't' => trans('shop'),
             'vendor' => ['name' => $scope->vendorName, 'slug' => $scope->vendorSlug, 'role' => $scope->role->value],
             'reviews' => app(VendorReviewsAction::class)->list($scope),
+            // §5le: the shop's product questions, on the same page.
+            'questions' => app(VendorQuestionsAction::class)->list($scope),
         ]);
+    }
+
+    /** §5le: answer a customer's question about a product, in public. */
+    public function answer(Request $request, int $question): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        $data = $request->validate(['answer' => 'required|string|max:2000']);
+
+        app(VendorQuestionsAction::class)->answer($scope, $question, $data['answer']);
+
+        return back()->with('success', __('shop.answer_saved_flash'));
+    }
+
+    /** §5le: the shop's questions as CSV. */
+    public function exportQuestions(Request $request): StreamedResponse
+    {
+        $scope = $this->authorizeVendor($request);
+        $rows = app(VendorQuestionsAction::class)->list($scope)['questions'];
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['date', 'product', 'question', 'answer', 'answered_at', 'status']);
+            foreach ($rows as $q) {
+                Csv::put($out, [$q['created_at'], $q['product'], $q['question'], $q['answer'], $q['answered_at'], $q['status']]);
+            }
+            fclose($out);
+        }, $scope->vendorSlug.'-questions.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     public function reply(Request $request, int $review): RedirectResponse

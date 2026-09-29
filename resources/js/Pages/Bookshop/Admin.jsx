@@ -946,6 +946,38 @@ function Reviews({ reviews, t }) {
     );
 }
 
+/** STATUS §5le: product questions and the shops' answers; hide either with a note, or publish again. */
+function Questions({ questions, t }) {
+    const [notes, setNotes] = useState({});
+    const act = (id, action) => router.post(`/admin/bookshop/questions/${id}/moderate`, { action, note: notes[id] || '' }, { preserveScroll: true });
+
+    return (
+        <section className="mt-8" data-testid="office-questions">
+            <h2 className="mb-2 text-lg font-semibold">{t.questions_heading}</h2>
+            {questions.length === 0 ? <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_questions}</p> : (
+                <ul className="divide-y rounded border bg-white text-sm">
+                    {questions.map((q) => (
+                        <li key={q.id} className="flex flex-wrap items-start gap-3 p-2" data-testid={`office-question-${q.id}`} data-question-status={q.status}>
+                            <div className="min-w-64 flex-1">
+                                <p><a href={`/shop/products/${q.product_slug}#questions`} target="_blank" rel="noreferrer" className="text-blue-700 underline">{q.product}</a> <span className="text-gray-500">· {q.vendor} · {q.created_at}</span></p>
+                                <p className="whitespace-pre-line" dir="auto">{t.question_q} {q.question}</p>
+                                {q.answer ? <p className="ms-3 text-xs text-gray-600" dir="auto">↳ {q.answer}</p> : <p className="ms-3 text-xs text-amber-800">{t.question_unanswered}</p>}
+                                {q.moderation_note && <p className="text-xs text-red-700">{t.office_note}: {q.moderation_note}</p>}
+                            </div>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <span className="text-xs">{t[`review_status_${q.status}`] || q.status}</span>
+                                <input className="form-input w-40" placeholder={t.note} value={notes[q.id] || ''} onChange={(e) => setNotes({ ...notes, [q.id]: e.target.value })} data-testid={`question-note-${q.id}`} />
+                                {q.status !== 'hidden' ? <button type="button" className="text-red-700 underline" onClick={() => act(q.id, 'hide')} data-testid={`question-hide-${q.id}`}>{t.hide}</button>
+                                    : <button type="button" className="text-blue-700 underline" onClick={() => act(q.id, 'publish')} data-testid={`question-publish-${q.id}`}>{t.publish}</button>}
+                            </div>
+                        </li>
+                    ))}
+                </ul>
+            )}
+        </section>
+    );
+}
+
 /** B7 (plan §7): the shop home — hero slides, featured products, featured collections, in the office's order. */
 function ShopHome({ home, t }) {
     const o = home.options;
@@ -1019,7 +1051,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, shop_open = { open: true, message: null }, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], questions = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, shop_open = { open: true, message: null }, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -1054,6 +1086,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             <Orders orders={orders} vendors={vendors} statuses={order_statuses} t={t} />
             <LowStockAll rows={low_stock} t={t} />
             <Reviews reviews={reviews} t={t} />
+            <Questions questions={questions} t={t} />
             {home && <ShopHome home={home} t={t} />}
             {notices && <NoticeSwitches key={JSON.stringify(notices)} notices={notices} t={t} />}
             <CodSwitch on={cod_on} t={t} />

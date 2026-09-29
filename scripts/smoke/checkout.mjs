@@ -253,4 +253,27 @@ await settle(vendor);
 await vendor.reload({ waitUntil: 'networkidle' });
 check('and the edit is kept', (await vendor.locator('[data-testid="delivery-name-0"]').inputValue().catch(() => '')) === 'Collect from Fitrah, Majeedhee Magu');
 
+// ------------------------------------------------------------ questions and answers (STATUS §5le)
+{
+    const BOOK = 'smoke-arabic-letters-tracing-book';
+    const ASK = `SMOKE-Q ${Date.now()}: is this for grade 1?`;
+    await customer.goto(`${BASE}/en/shop/products/${BOOK}`, { waitUntil: 'networkidle' });
+    await customer.fill('[data-testid="question-text"]', ASK);
+    await submit(customer, '[data-testid="submit-question"]');
+    await customer.waitForLoadState('networkidle');
+    check('a customer asks the shop a question on the product page', (await customer.locator('[data-testid="question-asked"]').count()) === 1 && !(await text(customer)).includes(ASK), (await customer.locator('[data-testid="question-asked"]').innerText().catch(() => '')).trim());
+
+    await vendor.goto(`${BASE}/en/vendor/reviews`, { waitUntil: 'networkidle' });
+    const row = vendor.locator('[data-testid^="vendor-question-"]', { hasText: ASK }).first();
+    check('the shop finds it waiting on its Reviews page', (await row.count()) === 1, (await vendor.locator('[data-testid="questions-waiting"]').innerText().catch(() => '')).trim());
+    await row.locator('textarea').fill('Yes, grade 1 and up.');
+    await row.locator('button[type=submit]').click();
+    await vendor.waitForLoadState('networkidle');
+    await vendor.waitForTimeout(500);
+
+    await customer.goto(`${BASE}/en/shop/products/${BOOK}`, { waitUntil: 'networkidle' });
+    const qa = (await customer.locator('[data-testid="questions"]').innerText().catch(() => '')).replace(/\s+/g, ' ');
+    check('and its answer shows on the product page with the question', qa.includes(ASK) && qa.includes('Yes, grade 1 and up.') && qa.includes('Answer from Fitrah'), qa.slice(0, 200));
+}
+
 await finish();

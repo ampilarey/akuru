@@ -888,6 +888,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('money/{what}/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportMoney'])->name('admin.bookshop.money.export')->where('what', 'payouts|tax-report|balances');
         // B7: review moderation and the shop home's merchandising.
         Route::post('reviews/{review}/moderate', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'moderateReview'])->name('admin.bookshop.reviews.moderate')->whereNumber('review');
+        Route::post('questions/{question}/moderate', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'moderateQuestion'])->name('admin.bookshop.questions.moderate')->whereNumber('question');
         Route::post('home', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'saveHomeFeature'])->name('admin.bookshop.home.store');
         Route::post('home/{feature}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'saveHomeFeature'])->name('admin.bookshop.home.update')->whereNumber('feature');
         Route::delete('home/{feature}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'removeHomeFeature'])->name('admin.bookshop.home.destroy')->whereNumber('feature');
@@ -983,6 +984,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('reviews', [\App\Domains\Bookshop\Http\Controllers\VendorReviewController::class, 'index'])->name('vendor.reviews.index');
         Route::get('reviews/export', [\App\Domains\Bookshop\Http\Controllers\VendorReviewController::class, 'export'])->name('vendor.reviews.export');
         Route::post('reviews/{review}/reply', [\App\Domains\Bookshop\Http\Controllers\VendorReviewController::class, 'reply'])->name('vendor.reviews.reply')->whereNumber('review');
+        // §5le: product questions, answered on the reviews page.
+        Route::post('questions/{question}/answer', [\App\Domains\Bookshop\Http\Controllers\VendorReviewController::class, 'answer'])->name('vendor.questions.answer')->whereNumber('question');
+        Route::get('questions/export', [\App\Domains\Bookshop\Http\Controllers\VendorReviewController::class, 'exportQuestions'])->name('vendor.questions.export');
         Route::post('discount-codes', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveDiscountCode'])->name('vendor.discount-codes.store');
         Route::post('discount-codes/{code}', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'saveDiscountCode'])->name('vendor.discount-codes.update')->whereNumber('code');
         Route::post('discount-codes/{code}/status', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'setDiscountCodeStatus'])->name('vendor.discount-codes.status')->whereNumber('code');

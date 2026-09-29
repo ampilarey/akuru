@@ -10,6 +10,7 @@ use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopHomeAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopProductAction;
 use App\Domains\Bookshop\Actions\Shop\PresentShopVendorAction;
+use App\Domains\Bookshop\Actions\Shop\ProductQuestionsAction;
 use App\Domains\Bookshop\Actions\Shop\ProductReviewsAction;
 use App\Domains\Bookshop\Actions\Shop\SuggestAction;
 use App\Http\Controllers\Controller;
@@ -135,6 +136,8 @@ class ShopController extends Controller
 
         return view('public.shop.product', ['product' => $product + [
             'reviews' => app(ProductReviewsAction::class)->forProduct($product['id'], $userId),
+            // §5le: the answered questions, and how many of this customer's are waiting.
+            'questions' => app(ProductQuestionsAction::class)->forProduct($product['id'], $userId),
             'in_wishlist' => $lists->inWishlist($userId, $product['id']),
             'has_alert' => $lists->hasStockAlert($userId, $product['id']),
             'recently_viewed' => $recent,

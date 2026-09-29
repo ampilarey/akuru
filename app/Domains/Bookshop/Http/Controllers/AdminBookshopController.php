@@ -20,6 +20,7 @@ use App\Domains\Bookshop\Actions\ListVendorMoneyReportAction;
 use App\Domains\Bookshop\Actions\ListVendorsAction;
 use App\Domains\Bookshop\Actions\ManageBookshopTeamAction;
 use App\Domains\Bookshop\Actions\ManageShopHomeAction;
+use App\Domains\Bookshop\Actions\ModerateQuestionAction;
 use App\Domains\Bookshop\Actions\ModerateReviewAction;
 use App\Domains\Bookshop\Actions\ModerateStorefrontAction;
 use App\Domains\Bookshop\Actions\Money\IssueCommissionInvoicesAction;
@@ -64,6 +65,7 @@ class AdminBookshopController extends Controller
             'refunds' => app(ListPendingRefundsAction::class)->execute(),
             'money' => app(ListVendorMoneyReportAction::class)->execute(),
             'reviews' => app(ModerateReviewAction::class)->list(),
+            'questions' => app(ModerateQuestionAction::class)->list(),
             'home' => app(ManageShopHomeAction::class)->list(),
             'low_stock' => app(ListLowStockAction::class)->execute(500),
             'notices' => NotifyBookshopUserAction::officeSwitches(),
@@ -305,6 +307,17 @@ class AdminBookshopController extends Controller
         app(ModerateReviewAction::class)->execute($review, $data['action'], (int) $request->user()->id, $data['note'] ?? null);
 
         return back()->with('success', __('shop.review_'.$data['action'].'_flash'));
+    }
+
+    /** §5le: hide a product question (and its answer) with a note, or publish it again. */
+    public function moderateQuestion(Request $request, int $question): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['action' => 'required|string|in:hide,publish', 'note' => 'nullable|string|max:500']);
+
+        app(ModerateQuestionAction::class)->execute($question, $data['action'], (int) $request->user()->id, $data['note'] ?? null);
+
+        return back()->with('success', __('shop.question_'.$data['action'].'_flash'));
     }
 
     /** B7 (§7): a hero slide, a featured product or a featured collection on the shop home. */
