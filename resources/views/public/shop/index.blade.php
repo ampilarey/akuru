@@ -16,6 +16,10 @@
 @if($storefront)
     @include('public.shop._theme')
 @endif
+{{-- STATUS §5kz: a shop's own pages end with the copyright line, not the Akuru footer. --}}
+@if($vendor)
+    @section('shop_footer', '1')
+@endif
 
 @section('content')
 @if($storefront)

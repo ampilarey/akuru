@@ -55,6 +55,11 @@ catalogue filtered to that vendor, dressed in their branding.
 **One frame.** Whatever a vendor customises, the Akuru Online Bookshop
 header, footer, cart, checkout, payment, policies and the line "at Akuru
 Online Bookshop" stay. A customer always knows whose site they are on.
+**Changed by the owner, 2026-09-29 (STATUS §5kz):** at the vendors' request,
+a shop's own pages (its home, collections and pages) keep the header, on a
+desk and on a phone, but the Akuru footer shrinks to its copyright line so
+the shop's brand leads. The store's front, categories, product pages, cart
+and checkout keep the full footer.
 
 ---
 
@@ -325,7 +330,7 @@ scope definition (`VendorScope`).
 |---|---|---|---|
 | 1 | Path now, subdomain later | as §2 | **confirmed 2026-09-25** |
 | 2 | One catalogue for all vendors | as §1 | **confirmed 2026-09-25** |
-| 3 | Vendors customise their storefront inside the Akuru frame | as §6 | **confirmed 2026-09-25** |
+| 3 | Vendors customise their storefront inside the Akuru frame | as §6 | **confirmed 2026-09-25**; footer on a shop's own pages reduced to the copyright line, header kept — owner, 2026-09-29 (STATUS §5kz) |
 | 4 | Tax: rates per class, prices inclusive, TIN on receipts, which vendors are registered | inclusive prices; standard / zero-rated / exempt classes at the current rates; a tax line only for GST-registered vendors; Akuru invoices its commission (audit) | **decided 2026-09-25: as recommended.** The rates live in the office settings, not in code, so a change in law is a settings edit. |
 | 5 | Default commission on goods; commission on delivery fees? | 10–15% on goods; none on delivery | **decided 2026-09-25: as recommended** — the default is set at **10%** (the low end of the range, for a first vendor), overridable per vendor by the office; no commission on delivery fees. |
 | 6 | Delivery zones and fees vendors start from; Akuru's office as a collection point? | Malé–Hulhumalé–Villimalé flat; atolls by courier at the vendor's fee or by boat with the fee paid to the carrier on arrival; yes to Akuru collection | **decided 2026-09-25: as recommended.** |

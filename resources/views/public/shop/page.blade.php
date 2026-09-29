@@ -10,6 +10,9 @@
 @endif
 @include('public.shop._theme')
 
+{{-- STATUS §5kz: a shop's own pages end with the copyright line, not the Akuru footer. --}}
+@section('shop_footer', '1')
+
 @section('content')
 <div class="storefront {{ $storefront['theme']['shape']['button'] === 'outlined' ? 'sf-outlined' : '' }}" data-testid="storefront" data-preview="{{ ($preview ?? false) ? '1' : '0' }}" data-preset="{{ $storefront['theme']['preset'] ?? 'custom' }}" data-page="{{ $page['slug'] }}">
 @if($preview ?? false)
