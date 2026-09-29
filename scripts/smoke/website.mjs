@@ -11,7 +11,11 @@
  *      Account — and it takes them where it says;
  *   3. opens the phone menu, searches from it, and finds the four products
  *      and About;
- *   4. no page runs wider than the screen at 360, 390, 1024, 1280 or 1440.
+ *   4. on the home page (W2) finds the four products under the hero, the
+ *      Library's newest books and the Bookstore's newest items — a grid on
+ *      a desk, a sideways swipe on a phone — and a book and an item each
+ *      open their own page; the School offers Apply;
+ *   5. no page runs wider than the screen at 360, 390, 1024, 1280 or 1440.
  *
  * Read-only.
  *
@@ -111,7 +115,32 @@ await phone.fill('#nav-m-q', 'Arabic');
 await Promise.all([phone.waitForURL(/\/search/), phone.press('#nav-m-q', 'Enter')]);
 check('searching from the menu opens the results', path(phone.url()) === '/search' && new URL(phone.url()).searchParams.get('q') === 'Arabic', phone.url());
 
-// ------------------------------------------------------------ 4. nothing runs wider than the screen
+// ------------------------------------------------------------ 4. the home page's sections (W2)
+const home = await visitor(1440, 900);
+await home.goto(`${BASE}/en`, { waitUntil: 'networkidle' });
+const tiles = await home.locator('[data-testid^="home-tile-"] strong').allInnerTexts();
+check('the four products sit under the hero', JSON.stringify(tiles) === JSON.stringify(['E-Learning', 'Digital Library', 'Bookstore', 'School']), tiles.join(' · '));
+const books = await home.locator('[data-testid="home-book"]').count();
+const items = await home.locator('[data-testid="home-product"]').count();
+check('the Library shows its newest books, the Bookstore its newest items', books > 0 && items > 0, `${books} books, ${items} items`);
+const bookHref = new URL(await home.locator('[data-testid="home-book"]').first().getAttribute('href')).pathname;
+await Promise.all([home.waitForLoadState('networkidle'), home.click('[data-testid="home-book"] >> nth=0')]);
+check('a book on the home page opens its own page', new URL(home.url()).pathname === bookHref, path(home.url()));
+await home.goBack({ waitUntil: 'networkidle' });
+await Promise.all([home.waitForLoadState('networkidle'), home.click('[data-testid="home-product"] >> nth=0')]);
+check('an item on the home page opens its product page', path(home.url()).startsWith('/shop/products/'), path(home.url()));
+await home.goBack({ waitUntil: 'networkidle' });
+await Promise.all([home.waitForURL(/\/admissions/), home.click('[data-testid="home-school-apply"]')]);
+check('the School offers Apply for admission', path(home.url()) === '/admissions', path(home.url()));
+
+const swipe = await visitor(390, 844);
+await swipe.goto(`${BASE}/en`, { waitUntil: 'networkidle' });
+const rows = await swipe.evaluate(() => [...document.querySelectorAll('.home-row')].map((row) => ({ scrolls: row.scrollWidth > row.clientWidth, first: Math.round(row.firstElementChild.getBoundingClientRect().left) })));
+check('on a phone each row swipes sideways, its first card clear of the edge', rows.length >= 3 && rows.every((row) => row.scrolls && row.first >= 12), JSON.stringify(rows));
+const tilesTop = await swipe.evaluate(() => Math.round(document.querySelector('[data-testid="home-tile-courses"]').getBoundingClientRect().top));
+check('on a phone the products start within the first screen', tilesTop < 844, `${tilesTop}px down`);
+
+// ------------------------------------------------------------ 5. nothing runs wider than the screen
 for (const [width, height] of [[360, 740], [390, 844], [1024, 800], [1280, 800], [1440, 900]]) {
     const page = await visitor(width, height);
     for (const at of ['/en', '/en/library', '/en/shop', '/en/courses']) {

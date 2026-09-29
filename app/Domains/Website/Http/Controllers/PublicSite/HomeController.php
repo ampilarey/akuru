@@ -5,6 +5,7 @@ namespace App\Domains\Website\Http\Controllers\PublicSite;
 use App\Domains\Courses\Actions\ComposeCourseConversionSignalsAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Website\Actions\ComposeHomepageDailyAction;
+use App\Domains\Website\Actions\ComposeHomepageProductsAction;
 use App\Domains\Website\Actions\ComposeHomepageTrustAction;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryAlbum;
@@ -22,7 +23,7 @@ class HomeController extends Controller
         $locale = app()->getLocale();
 
         // Cache courses/posts/events/stats for 10 minutes; gallery+testimonials are fetched fresh
-        $cached = Cache::remember("homepage_data_v6_{$locale}", 600, function () use ($locale) {
+        $cached = Cache::remember("homepage_data_v7_{$locale}", 600, function () use ($locale) {
             return $this->buildHomepageData($locale);
         });
 
@@ -41,8 +42,10 @@ class HomeController extends Controller
             ->get();
 
         $daily = app(ComposeHomepageDailyAction::class)->execute();
+        // The Digital Library's and the Bookstore's newest, for their rows (STATUS §5ki).
+        $shelves = app(ComposeHomepageProductsAction::class)->execute($locale);
 
-        return view('public.home', array_merge($cached, compact('galleryPhotos', 'testimonials', 'daily')));
+        return view('public.home', array_merge($cached, compact('galleryPhotos', 'testimonials', 'daily', 'shelves')));
     }
 
     private function buildHomepageData(string $locale): array
@@ -65,10 +68,11 @@ class HomeController extends Controller
             ->get();
 
         if ($heroBanners->isEmpty()) {
+            // Until the office adds its own slides: Akuru as a whole first (STATUS §5ki), then two courses.
             $heroBanners = collect([
-                (object) ['title' => __('public.Learn Quran with Expert Teachers'), 'subtitle' => __('public.Master the Holy Quran with our qualified instructors'), 'image_path' => 'hero-1.jpg', 'cta_text' => null, 'cta_url' => null],
-                (object) ['title' => __('public.Arabic Language Courses'), 'subtitle' => __('public.Learn Arabic from beginner to advanced levels'), 'image_path' => 'hero-2.jpg', 'cta_text' => null, 'cta_url' => null],
-                (object) ['title' => __('public.Islamic Studies Program'), 'subtitle' => __('public.Comprehensive Islamic education for all ages'), 'image_path' => 'hero-3.jpg', 'cta_text' => null, 'cta_url' => null],
+                (object) ['title' => __('site.hero_title'), 'subtitle' => __('site.hero_subtitle'), 'image_path' => 'hero-1.jpg', 'cta_text' => __('site.browse_courses'), 'cta_url' => null],
+                (object) ['title' => __('public.Learn Quran with Expert Teachers'), 'subtitle' => __('public.Master the Holy Quran with our qualified instructors'), 'image_path' => 'hero-2.jpg', 'cta_text' => null, 'cta_url' => null],
+                (object) ['title' => __('public.Arabic Language Courses'), 'subtitle' => __('public.Learn Arabic from beginner to advanced levels'), 'image_path' => 'hero-3.jpg', 'cta_text' => null, 'cta_url' => null],
             ]);
         }
 
