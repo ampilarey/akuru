@@ -29,7 +29,9 @@ it('names the bookstore in every language and in the menus', function () {
     $home->assertSee('<title>Akuru Bookstore', false)
         ->assertDontSee('Online Store')
         ->assertDontSee('Bookshop');
-    preg_match_all('#<a[^>]+href="[^"]*/shop"[^>]*>\s*Bookstore\s*</a>#', $home->getContent(), $links);
+    // The header's link and the phone menu's row (whose name sits in a <strong> beside a line of its own).
+    preg_match_all('#<a[^>]+href="[^"]*/shop"[^>]*>((?:(?!</a>).)*)</a>#s', $home->getContent(), $anchors);
+    $links = [array_filter($anchors[1], fn ($inner) => str_starts_with(trim(preg_replace('/\s+/', ' ', strip_tags($inner))), 'Bookstore'))];
     expect(count($links[0]))->toBeGreaterThanOrEqual(2);
 });
 
