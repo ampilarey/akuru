@@ -374,7 +374,7 @@
     <div class="container mx-auto px-4 text-center">
         <h2 class="text-3xl font-bold text-white mb-4">{{ __('public.Ready to Start Learning?') }}</h2>
         <p class="text-xl text-brandBeige-100 mb-6">{{ __('public.Apply now and begin your Islamic education journey') }}</p>
-        <a href="{{ route('public.admissions.create', app()->getLocale()) }}" class="btn-secondary bg-white text-brandMaroon-600 hover:bg-brandMaroon-50">
+        <a href="{{ route('public.admissions.create') }}" class="btn-secondary bg-white text-brandMaroon-600 hover:bg-brandMaroon-50">
             {{ __('public.Submit an inquiry') }}
         </a>
     </div>

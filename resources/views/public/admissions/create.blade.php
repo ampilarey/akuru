@@ -38,7 +38,7 @@
 
             <!-- Application Form -->
             <div class="bg-white rounded-lg shadow-lg p-8">
-                <form method="POST" action="{{ route('public.admissions.store', app()->getLocale()) }}" class="space-y-6">
+                <form method="POST" action="{{ route('public.admissions.store') }}" class="space-y-6">
                     @csrf
                     
                     <!-- Course Selection -->

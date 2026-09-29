@@ -76,7 +76,7 @@
 
             <!-- Action Buttons -->
             <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="{{ route('public.home', app()->getLocale()) }}" class="btn-primary">
+                <a href="{{ route('public.home') }}" class="btn-primary">
                     {{ __('public.Back to Home') }}
                 </a>
                 <a href="{{ route('public.courses.index') }}" class="btn-secondary">

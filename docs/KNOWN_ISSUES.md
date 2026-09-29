@@ -170,12 +170,16 @@ a question with a default, so "do nothing" is always a legible choice.
   on purpose (the site's Dhivehi and Arabic text is set `dir="auto"` where
   it matters).
 - **Event, gallery and news links passed the language where the id
-  belongs** (news fixed in R4; events and gallery fixed in the follow-up
-  PR). `route('public.events.show', [app()->getLocale(), $event->id])`
-  builds `/en/events/en?5` — the locale is already a URL default, so the
-  first positional value filled `{event}`. Every event and gallery link on
-  their list pages, and the event registration form's action, led to a
-  404. News had the same fault, found by R4's walk.
+  belongs** — **fixed** (news in R4; events, gallery, contact and
+  admissions in STATUS §5ku). `route('public.events.show',
+  [app()->getLocale(), $event->id])` builds `/en/events/en?5` — the locale
+  is already a URL default, so the first positional value filled
+  `{event}`. Every event and gallery link on their list pages, and the
+  event registration form's action, led to an error; nobody could register
+  for an event from the website. News had the same fault, found by R4's
+  walk. §5ku also found that the event page read its address by id only
+  while the home page, the search and the .ics file linked by slug, and
+  that the events route printed any exception's message as a 500.
 - **`@context` in JSON-LD is a Blade directive since Laravel 12** (fixed in
   R4). The news and event pages answered 500 whenever there was one to
   show; escaped as `@@context`.

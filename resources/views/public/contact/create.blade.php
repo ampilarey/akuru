@@ -54,7 +54,7 @@
                         </div>
                     @endif
 
-                    <form method="POST" action="{{ route('public.contact.store', app()->getLocale()) }}" class="space-y-6">
+                    <form method="POST" action="{{ route('public.contact.store') }}" class="space-y-6">
                         @csrf
                         {{-- Honeypot: hidden field, bots fill it, humans don't --}}
                         <div style="display:none" aria-hidden="true">
@@ -221,7 +221,7 @@
                             {{ __('public.Quick Links') }}
                         </h3>
                         <div class="space-y-3">
-                            <a href="{{ route('public.admissions.create', app()->getLocale()) }}" 
+                            <a href="{{ route('public.admissions.create') }}" 
                                class="block text-brandMaroon-600 hover:text-brandMaroon-800 transition-colors">
                                 {{ __('public.Apply for Admission') }}
                             </a>
@@ -229,7 +229,7 @@
                                class="block text-brandMaroon-600 hover:text-brandMaroon-800 transition-colors">
                                 {{ __('public.View Courses') }}
                             </a>
-                            <a href="{{ route('public.news.index', app()->getLocale()) }}" 
+                            <a href="{{ route('public.news.index') }}" 
                                class="block text-brandMaroon-600 hover:text-brandMaroon-800 transition-colors">
                                 {{ __('public.Latest News') }}
                             </a>

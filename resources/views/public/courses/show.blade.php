@@ -81,7 +81,7 @@
                             @endif
                             <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                         </a>
-                        <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}"
+                        <a href="{{ route('public.admissions.create', ['course' => $course->id]) }}"
                            class="text-sm text-gray-500 hover:text-brandMaroon-600 block">
                             Or submit an inquiry →
                         </a>
@@ -285,7 +285,7 @@
                            data-course-id="{{ $course->id }}">
                             Enroll Now
                         </a>
-                        <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}" class="text-xs text-center block mt-3 text-gray-400 hover:text-brandMaroon-600">Or submit an inquiry</a>
+                        <a href="{{ route('public.admissions.create', ['course' => $course->id]) }}" class="text-xs text-center block mt-3 text-gray-400 hover:text-brandMaroon-600">Or submit an inquiry</a>
                     @endif
 
                     <div class="mt-4">
@@ -391,7 +391,7 @@
             @endif
         </a>
     @elseif($course->status === 'upcoming')
-        <a href="{{ route('public.admissions.create', [app()->getLocale(), 'course' => $course->id]) }}"
+        <a href="{{ route('public.admissions.create', ['course' => $course->id]) }}"
            class="shrink-0 bg-amber-500 hover:bg-amber-600 text-white font-bold px-5 py-3 rounded-xl text-sm transition-colors">
             Notify Me
         </a>
