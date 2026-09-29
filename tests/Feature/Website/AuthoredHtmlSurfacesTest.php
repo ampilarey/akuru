@@ -4,7 +4,6 @@ use App\Domains\Library\Actions\SaveLibraryItemAction;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemPage;
 use App\Domains\Website\Actions\SaveEventAction;
-use App\Domains\Website\Actions\SaveResearchPostAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 /**
@@ -14,7 +13,8 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
  * lower-privileged routes into the same table are covered at once:
  *
  *   - `SaveLibraryItemAction`  — admin upload AND the writer portal
- *   - `SaveResearchPostAction` — research, articles and news share `posts`
+ *   - (research posts: retired in R2 — research is a Library item now; the
+ *     news editor of R4 will be the single writer of `posts.body`)
  *   - `SaveEventAction`        — events
  *   - `AnnouncementController` — three locale columns
  *
@@ -80,17 +80,6 @@ it('sanitises around the pagebreak marker rather than eating it', function () {
     // into one page. The existing reader test caught it; this pins it.
     expect(LibraryItemPage::query()->where('library_item_id', $item->id)->count())->toBe(3)
         ->and((string) LibraryItem::query()->findOrFail($item->id)->body)->not->toContain('onclick');
-});
-
-it('sanitises a post body, which research, articles and news all share', function () {
-    $author = App\Domains\Identity\Models\User::factory()->create();
-    $post = app(SaveResearchPostAction::class)->execute(
-        ['title' => 'A research note', 'body' => XSS_BODY],
-        null,
-        (int) $author->id,
-    );
-
-    expectCleaned($post->body);
 });
 
 it('sanitises an event description', function () {

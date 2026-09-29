@@ -4414,6 +4414,75 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5kp. R2: website research moves into the Digital Library; the old doors redirect (2026-09-29)
+
+Second slice of `docs/RESEARCH_ARTICLES_PLAN.md`.
+
+- **The import.** `php artisan library:import-website-research`
+  (`--dry-run` writes nothing; `--force` for production) makes one library
+  item per website research post:
+  - content type research, open access, read online and download;
+  - published with its own date if the post was live, otherwise a draft;
+  - the body sanitised on the way in, the citation note as citations;
+  - teacher authors kept as teachers (R1), named outsiders as names. A
+    teacher HR no longer lists is left off and named in the table;
+  - the public PDF copied into private media (`CopyPublicMediaToPrivateAction`,
+    new), and reader pages made. The public file stays.
+
+  `library_items.imported_post_id` (new, unique, no foreign key) remembers
+  the post, so a second run imports nothing twice. A slug the library
+  already uses gets `-paper`. The Library reads posts only through the new
+  Website `ListResearchPostsForImportAction`.
+- **The imported papers were never peer-reviewed.** They publish as the
+  institute's already-public papers. The shelf's *Peer-reviewed* filter
+  keeps them out, because that mark needs a reviewer's accept. They are
+  published directly, not through `PublishLibraryItemAction`: this is a
+  move, not a new publication.
+- **Old addresses.** `/research` goes to `/library?content_type=research`
+  (a year carries over), `/research/export` to the library CSV for
+  research, `/research/{slug}` to the imported item (404 if none or a
+  draft), `/articles` to the article shelf — all 301. `/articles/{slug}`
+  answers 410 Gone. The route names stay.
+- **Retired.** The website research CMS: its six admin routes, controller,
+  `SaveResearchPostAction`, `ListResearchPostsAction`,
+  `PresentResearchPostAction`, `Website/Research.jsx`,
+  `Website/ResearchForm.jsx`, the `cms_research` menu entry (EN/DV/AR), and
+  four Blade views (research index/show, articles index/show). The
+  `posts` rows and `PostType::Research` stay (rule 9).
+- **Elsewhere.** A teacher's profile lists their library works. The sitemap
+  lists every published library item instead of research and article
+  posts. The site search shows news only until R5 adds library results.
+  The daily-content screens' "Research" link opens the Library office.
+
+Tests: `tests/Feature/Website/ResearchMovedToLibraryTest.php` (7),
+replacing `ResearchPostTest` and `AdminResearchScreensTest`; baselines
+(Blade screens, raw HTML renders, public routes) and route-name lists
+shrink. Full suite: 2462 passed before the two expected updates (the
+sitemap no longer lists article posts; the CMS menu has seven entries),
+both then green. Walk: `website.mjs` 48/48, with the new steps for
+`/research`, `/articles`, a gone article and an old paper
+(`SMOKE_OLD_PAPER=smoke-old-paper`) opening its library page with Read
+and Download.
+
+**Verification evidence (local, the run after a first import of four
+walk-made posts):**
+
+```
++------+------------------------------+------------------------------+-----------+---------+--------+-------+------------------+------+
+| post | old slug                     | library slug                 | status    | authors | pdf    | pages | outcome          | note |
++------+------------------------------+------------------------------+-----------+---------+--------+-------+------------------+------+
+| 1    | smoke-research-1790536793668 | smoke-research-1790536793668 | published | 1       | yes    | 1     | already imported |      |
+| 2    | smoke-research-1790536888900 | smoke-research-1790536888900 | published | 1       | yes    | 1     | already imported |      |
+| 3    | smoke-research-1790538270740 | smoke-research-1790538270740 | draft     | 1       | yes    | 1     | already imported |      |
+| 4    | smoke-research-1790538291188 | smoke-research-1790538291188 | draft     | 1       | yes    | 1     | already imported |      |
+| 5    | smoke-old-paper              | smoke-old-paper              | published | 2       | copied | 1     | imported         |      |
++------+------------------------------+------------------------------+-----------+---------+--------+-------+------------------+------+
+4 already imported, 1 imported.
+```
+
+**Production:** after the pull, run the import once with `--force` and
+record its table here before the deploy counts as done.
+
 ## 5ko. R1: the Digital Library can hold the institute's research (2026-09-29)
 
 First slice of `docs/RESEARCH_ARTICLES_PLAN.md`. Additive only (rule 9).

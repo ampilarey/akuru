@@ -192,7 +192,8 @@ it('includes courses, articles, and events with hreflang in the XML sitemap', fu
         ->toContain('/en/courses/w15-sitemap-course')
         ->toContain('/dv/courses/w15-sitemap-course')
         ->toContain('/ar/courses/w15-sitemap-course')
-        ->toContain('/en/articles/w15-article-guide')
+        // R2: articles are Digital Library items; an article post is no longer listed.
+        ->not->toContain('/en/articles/w15-article-guide')
         ->toContain('/en/news/w15-news-item')
         ->toContain('/en/events/'.$event->id)
         ->toContain('hreflang="en"')

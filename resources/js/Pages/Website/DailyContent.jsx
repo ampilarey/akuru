@@ -65,7 +65,7 @@ export default function DailyContent({ items = [], filters = {}, month, t = {} }
             <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
                 <Link href="/admin/public-site/daily-content/queue" className="underline" data-testid="daily-queue-link">{t.daily_link_queue || 'Approval queue →'}</Link>
                 <Link href="/admin/public-site/daily-subscriptions" className="underline">{t.daily_link_subscriptions || 'Subscriptions →'}</Link>
-                <Link href="/admin/public-site/research" className="underline">{t.subs_link_research || 'Research →'}</Link>
+                <Link href="/admin/library" className="underline">{t.subs_link_research || 'Research →'}</Link>
                 {/* Prayer times are still Blade: a full page load. */}
                 <a href="/admin/prayer-times/islands" className="underline">{t.subs_link_prayer || 'Prayer times →'}</a>
                 <Link href="/admin/public-site/leads" className="underline">{t.funnel_link_leads || 'Leads →'}</Link>

@@ -167,8 +167,6 @@ return [
     'public/admissions/_custom-fields.blade.php',
     'public/admissions/create.blade.php',
     'public/admissions/thanks.blade.php',
-    'public/articles/index.blade.php',
-    'public/articles/show.blade.php',
     'public/careers/index.blade.php',
     'public/certificates/verify.blade.php',
     // L4 §15.3 gift card purchase — the public site is a Blade zone (recorded
@@ -216,8 +214,6 @@ return [
     'public/partials/prayer-banner-assets.blade.php',
     'public/partials/prayer-banner.blade.php',
     'public/prayer-times/index.blade.php',
-    'public/research/index.blade.php',
-    'public/research/show.blade.php',
     // BOOKSHOP_PLAN B1b — the public bookshop joins the public Blade zone
     // beside the Digital Library (plan §10: public pages are Blade, the
     // vendor and office screens Inertia). Two pages and three partials.

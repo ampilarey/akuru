@@ -83,6 +83,9 @@ class ListLibraryItemsAction
             ->when($filters['author'] ?? null, fn ($query, $slug) => $query
                 ->whereHas('writer', fn ($sub) => $sub->where('slug', $slug)->where('status', 'active')))
             ->when($filters['content_type'] ?? null, fn ($query, $type) => $query->where('content_type', $type))
+            // R2: everything one of the institute's teachers wrote, for their profile page.
+            ->when(is_numeric($filters['instructor'] ?? null), fn ($query) => $query
+                ->whereHas('authors', fn ($sub) => $sub->where('instructor_profile_id', (int) $filters['instructor'])))
             // R1 (F12): the year it was published — the research shelf's year filter.
             ->when(is_numeric($filters['year'] ?? null), fn ($query) => $query->whereYear('published_at', (int) $filters['year']))
             ->when($filters['category'] ?? null, fn ($query, $slug) => $query
@@ -128,6 +131,27 @@ class ListLibraryItemsAction
             ->map(fn ($date) => (int) $date->format('Y'))
             ->unique()
             ->sortDesc()
+            ->values()
+            ->all();
+    }
+
+    /**
+     * R2 (F9): every published item, for the website's sitemap — the
+     * research and articles that used to be website posts included.
+     *
+     * @return list<array{slug: string, lastmod: string, content_type: string}>
+     */
+    public function sitemapEntries(): array
+    {
+        return LibraryItem::query()
+            ->where('status', 'published')
+            ->orderByDesc('updated_at')
+            ->get(['slug', 'updated_at', 'content_type'])
+            ->map(fn (LibraryItem $item) => [
+                'slug' => (string) $item->slug,
+                'lastmod' => ($item->updated_at ?? now())->toDateString(),
+                'content_type' => (string) $item->content_type?->value,
+            ])
             ->values()
             ->all();
     }

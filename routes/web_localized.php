@@ -168,7 +168,6 @@ use App\Domains\Website\Http\Controllers\Admin\PublicSite\DailySubscriptionContr
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\FunnelController as AdminFunnelController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\LeadController as AdminLeadController;
 use App\Domains\Website\Http\Controllers\Admin\PublicSite\PageController as AdminPageController;
-use App\Domains\Website\Http\Controllers\Admin\PublicSite\ResearchPostController as AdminResearchPostController;
 use App\Domains\Website\Http\Controllers\EventAdminController;
 use App\Support\Http\Controllers\LocaleController;
 use Illuminate\Support\Facades\Route;
@@ -752,12 +751,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::put('daily-content/{dailyContent}', [AdminDailyContentController::class, 'update'])->name('admin.daily-content.update')->whereNumber('dailyContent');
         Route::post('daily-content/{dailyContent}/approve', [AdminDailyContentController::class, 'approve'])->name('admin.daily-content.approve')->whereNumber('dailyContent');
 
-        Route::get('research/export', [AdminResearchPostController::class, 'export'])->name('admin.research.export');
-        Route::get('research/create', [AdminResearchPostController::class, 'create'])->name('admin.research.create');
-        Route::get('research', [AdminResearchPostController::class, 'index'])->name('admin.research.index');
-        Route::post('research', [AdminResearchPostController::class, 'store'])->name('admin.research.store');
-        Route::get('research/{post}/edit', [AdminResearchPostController::class, 'edit'])->name('admin.research.edit')->whereNumber('post');
-        Route::put('research/{post}', [AdminResearchPostController::class, 'update'])->name('admin.research.update')->whereNumber('post');
+        // The website research CMS was retired in R2 (RESEARCH_ARTICLES_PLAN):
+        // research is written and reviewed in the Digital Library.
     });
 
     Route::prefix('admin/commerce')->middleware(['role:super_admin', 'can:commerce.manage'])->group(function () {

@@ -48,9 +48,10 @@ Route::post('funnel-events', [\App\Domains\Website\Http\Controllers\PublicSite\F
 // Search
 Route::get('search', [\App\Domains\Website\Http\Controllers\PublicSite\SearchController::class, 'index'])->name('public.search');
 
-// Articles (type=article posts)
+// Articles live in the Digital Library (RESEARCH_ARTICLES_PLAN R2): the
+// index redirects there, and an article address is gone — none was ever published.
 Route::get('articles', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'articlesIndex'])->name('public.articles.index');
-Route::get('articles/{post:slug}', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'show'])->name('public.articles.show');
+Route::get('articles/{slug}', [\App\Domains\Website\Http\Controllers\PublicSite\PostController::class, 'articleGone'])->name('public.articles.show');
 
 // BOOKSHOP_PLAN B1b: the Akuru Online Bookshop. `shop/{vendor}` is last and
 // refuses the words the shop itself uses, so a vendor can never be named
@@ -130,9 +131,10 @@ Route::post('library/{slug}/bookmark', [LibraryReaderController::class, 'bookmar
 Route::post('library/{slug}/note', [LibraryReaderController::class, 'note'])->name('public.library.note')->middleware('throttle:30,1,library-note');
 Route::get('library/{slug}', [PublicLibraryController::class, 'show'])->name('public.library.show');
 
+// Research lives in the Digital Library (R2): these three redirect there.
 Route::get('research/export', [ResearchPostController::class, 'export'])->name('public.research.export');
 Route::get('research', [ResearchPostController::class, 'index'])->name('public.research.index');
-Route::get('research/{post:slug}', [ResearchPostController::class, 'show'])->name('public.research.show');
+Route::get('research/{slug}', [ResearchPostController::class, 'show'])->name('public.research.show');
 Route::get('instructors/{slug}', [InstructorProfileController::class, 'show'])->name('public.instructors.show');
 Route::get('prayer-times', [PrayerTimesController::class, 'index'])->name('public.prayer-times');
 Route::post('prayer-times/sms-opt-out', [PrayerTimesController::class, 'smsOptOut'])

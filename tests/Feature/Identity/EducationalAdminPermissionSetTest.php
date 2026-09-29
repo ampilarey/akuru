@@ -86,7 +86,7 @@ it('admits the educational admin to the school office and refuses them the Insti
     }
 
     foreach ([
-        'admin.pages.index', 'admin.courses.index', 'admin.research.index', 'admin.daily-content.index', 'admin.leads.index',
+        'admin.pages.index', 'admin.courses.index', 'admin.daily-content.index', 'admin.leads.index',
         'admin.instructors.index', 'admin.prayer-times.islands', 'admin.prayer-times.groups.index',
         'admin.commerce.index', 'admin.library.index', 'admin.library.reading-alerts', 'admin.bookshop.index', 'admin.pronunciation.index',
         'admin.operations.index', 'admin.operations.features', 'admin.translations.index',

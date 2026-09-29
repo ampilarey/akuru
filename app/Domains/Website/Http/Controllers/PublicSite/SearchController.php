@@ -32,7 +32,9 @@ class SearchController extends Controller
                 ->get();
 
             $posts = Post::published()
-                ->whereIn('type', [PostType::Article->value, PostType::News->value])
+                // R2: articles live in the Digital Library; its results join
+                // the site search in R5.
+                ->where('type', PostType::News->value)
                 ->where(function ($query) use ($q) {
                     $query->where('title', 'like', "%{$q}%")
                         ->orWhere('summary', 'like', "%{$q}%")
