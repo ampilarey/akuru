@@ -28,6 +28,11 @@
                         </span>
                         <span class="font-semibold">{{ $order['currency'] }} {{ $order['total'] }}</span>
                     </a>
+                    {{-- §5ld: order the same again in one tap. --}}
+                    <form method="POST" action="{{ route('public.shop.orders.buy-again', $order['number']) }}" class="px-4 pb-3">
+                        @csrf
+                        <button type="submit" class="text-sm font-semibold text-brandMaroon-700 underline" data-testid="buy-again-{{ $order['number'] }}">{{ __('shop.buy_again') }}</button>
+                    </form>
                 </li>
             @endforeach
         </ul>

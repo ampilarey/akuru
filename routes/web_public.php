@@ -84,6 +84,7 @@ Route::middleware('auth')->group(function () {
     Route::get('my-orders/export', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'export'])->name('public.shop.orders.export');
     Route::get('my-orders/{number}', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'show'])->name('public.shop.orders.show');
     // B3: the customer cancels before dispatch, asks for a return, writes to the shop.
+    Route::post('my-orders/{number}/buy-again', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'buyAgain'])->name('public.shop.orders.buy-again')->middleware('throttle:20,1,shop-buy-again');
     Route::post('my-orders/{number}/cancel', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'cancel'])->name('public.shop.orders.cancel')->middleware('throttle:10,1,shop-cancel');
     Route::post('my-orders/{number}/returns', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'requestReturn'])->name('public.shop.orders.return')->middleware('throttle:10,1,shop-return');
     Route::post('my-orders/{number}/message', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'message'])->name('public.shop.orders.message')->middleware('throttle:20,1,shop-message');

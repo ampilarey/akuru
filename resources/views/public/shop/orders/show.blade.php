@@ -21,7 +21,14 @@
             <h1 class="text-3xl font-bold text-brandMaroon-900" data-testid="order-number">{{ __('shop.order_title', ['number' => $order['number']]) }}</h1>
             <p class="text-gray-700" data-testid="order-status" data-status="{{ $order['status'] }}">{{ __('shop.status_'.$order['status']) }} · {{ __('shop.order_placed') }} {{ $order['placed_at'] }}</p>
         </div>
-        <button type="button" class="btn-secondary no-print" onclick="window.print()">{{ __('shop.print') }}</button>
+        <div class="no-print flex flex-wrap gap-2">
+            {{-- §5ld: the same items back into the cart, at today's prices. --}}
+            <form method="POST" action="{{ route('public.shop.orders.buy-again', $order['number']) }}">
+                @csrf
+                <button type="submit" class="btn-primary" data-testid="buy-again">{{ __('shop.buy_again') }}</button>
+            </form>
+            <button type="button" class="btn-secondary" onclick="window.print()">{{ __('shop.print') }}</button>
+        </div>
     </div>
 
     @if($errors->any())

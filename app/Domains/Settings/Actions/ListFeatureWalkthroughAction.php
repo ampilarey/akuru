@@ -181,6 +181,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-bookstore-10', 'label' => 'Every open shop is listed on the shop page (Opening soon when it has nothing yet); on a phone the filters fold under Filter and sort', 'where' => '/shop'],
                 ['key' => 'ft-bookstore-11', 'label' => 'Timed sales: a shop sets % off until a date on its product form; the card shows the badge and a countdown, Deals lists them, and the cart and checkout charge the sale price until it ends', 'where' => '/shop/deals'],
                 ['key' => 'ft-bookstore-12', 'label' => 'School book lists: a shop marks a collection as a school\'s list for a grade with quantities; parents find it under School book lists and add the whole list to the cart in one tap', 'where' => '/shop#book-lists'],
+                ['key' => 'ft-bookstore-13', 'label' => 'Buy again: from My orders or an order\'s page, one tap puts its items back in the cart at today\'s prices; what is no longer sold is named', 'where' => '/my-orders'],
             ]],
             ['key' => 'ft-money', 'title' => 'Money checks', 'items' => [
                 ['key' => 'ft-money-1', 'label' => 'A payment grants access only after the bank confirms (not on return to the site)', 'where' => '/admin/enrollments/payments'],

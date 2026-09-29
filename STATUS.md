@@ -4414,6 +4414,37 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ld. Buy again from My orders (2026-09-29)
+
+The third feature on the iruali list (BOOKSHOP_PLAN §16, item 3).
+
+- **Buy again** is on each order in My orders and on the order's own page.
+  One tap puts that order's items back in the cart, in the quantities
+  ordered and with the same options, at **today's** prices.
+- It goes through `SaveCartItemAction`, the same as a single add.
+  An item is skipped and named on the cart page when:
+  - it is no longer for sale;
+  - it is sold out;
+  - its option is gone. The plain product is never swapped in for a
+    retired option.
+- **Own orders only.** The order is found by the signed-in customer's id;
+  anyone else's is 404. The route sits behind the sign-in like the rest of
+  My orders.
+- `OrderItem` gains its `product` relation. No migration.
+
+Tests:
+- `ShopBuyAgainTest` (3):
+  - two of three items go back at today's price, with the option kept,
+    and the retired one is named;
+  - a gone option and a sold-out item are skipped;
+  - someone else's order is 404, and a guest is sent to sign in.
+
+Checklist: `ft-bookstore-13`.
+
+Walk: `scripts/smoke/checkout.mjs` 30/30, with two new steps. On the
+wallet order's page, Buy again puts the tracing book back in the cart.
+Taking it out again empties the cart for the bank-transfer part.
+
 ## 5lc. School book lists: buy the whole list in one tap (2026-09-29)
 
 The second feature on the iruali list (BOOKSHOP_PLAN §16, item 2).
