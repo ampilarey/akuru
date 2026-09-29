@@ -216,27 +216,20 @@ if ((await text(writer)).includes('Apply to publish')) {
     await staff.goto(`${BASE}/en/admin/library`, { waitUntil: 'networkidle' });
     check('the research submission reaches the office', (await text(staff)).includes(TITLE), (await text(staff)).slice(0, 200));
 
+    // R3: the button itself says no — disabled until peer review accepts —
+    // and the chip says why. (The action refusing a direct request is pinned
+    // in PeerReviewGateTest.)
     const approveRow = rowWith(staff, TITLE, 'Approve');
     if (await approveRow.count()) {
-        await approveRow.locator('button:has-text("Approve")').first().click();
-        await staff.waitForTimeout(1500);
-
-        const refused = await settles(staff, 'peer reviewer', 3000);
-        const published = (await text(staff)).includes('published');
-
-        // Distinguishing a gate that did not fire from a gate that is switched
-        // off matters: only the first is a defect. The config default is on.
+        const approveButton = approveRow.locator('[data-testid="approve-publish"]').first();
+        const chip = await approveRow.locator('[data-testid="review-state"]').first().getAttribute('data-state').catch(() => null);
         check(
-            'publishing research without a peer review is refused',
-            refused,
-            refused
-                ? ''
-                : (published
-                    ? 'it published — either the gate failed or LIBRARY_RESEARCH_REVIEW_REQUIRED is off'
-                    : (await text(staff)).slice(0, 200)),
+            'publishing research without a peer review is refused: the button waits, and says why',
+            (await approveButton.isDisabled()) && chip === 'awaiting_reviewer',
+            `disabled: ${await approveButton.isDisabled()}, state: ${chip}`,
         );
     } else {
-        check('publishing research without a peer review is refused', false, 'no Approve button on the submission');
+        check('publishing research without a peer review is refused: the button waits, and says why', false, 'no Approve button on the submission');
     }
 
     // -------------------------------- 3. the office assigns a peer reviewer
@@ -283,10 +276,26 @@ if ((await text(writer)).includes('Apply to publish')) {
             check('the reviewer can ask for revisions', false, 'no "Needs revision" button');
         }
 
-        // ------------------------------------------ 5. and then accepts
+        // ------------------ 5. the revision goes back to the writer, who resubmits
+
+        await writer.goto(`${BASE}/en/write`, { waitUntil: 'networkidle' });
+        const back = writer.locator('tr').filter({ hasText: TITLE }).first();
+        const backState = await back.locator('[data-testid="review-state"]').getAttribute('data-state').catch(() => null);
+        check('the writer sees a reviewer asked for revisions', backState === 'revision_requested', String(backState));
+        const resubmit = back.locator('button:has-text("Submit for review")').first();
+        if (await resubmit.count()) {
+            await resubmit.click();
+            check('and resubmits the revised draft', await rowSettles(writer, TITLE, 'submitted'), (await text(writer)).slice(0, 160));
+        } else {
+            check('and resubmits the revised draft', false, 'no "Submit for review" button after the revision request');
+        }
+
+        // --------------------------- 6. the reviewer sees round 2, and accepts
 
         await reviewer.goto(`${BASE}/en/review`, { waitUntil: 'networkidle' });
-        const accept = reviewer.locator('button:has-text("Recommend accept")').first();
+        const card = reviewer.locator('div.rounded-lg').filter({ hasText: TITLE }).first();
+        check('the reviewer sees the revision as round 2', (await card.innerText()).includes('Round 2'), (await card.innerText()).slice(0, 120));
+        const accept = card.locator('button:has-text("Recommend accept")').first();
         if (await accept.count()) {
             await accept.click();
             // `settles(reviewer, 'accept')` passed here before this was
@@ -294,12 +303,12 @@ if ((await text(writer)).includes('Apply to publish')) {
             // so the needle was on the page whatever happened. The echoed
             // recommendation is the only place the answer actually appears.
             check(
-                'and can then recommend accept',
+                'and recommends accept',
                 await settles(reviewer, 'your recommendation: accept'),
                 (await text(reviewer)).slice(0, 200),
             );
         } else {
-            check('and can then recommend accept', false, 'no "Recommend accept" button');
+            check('and recommends accept', false, 'no "Recommend accept" button');
         }
 
         // ------------------- 6. now the office can publish, and a reader reads it
@@ -308,14 +317,18 @@ if ((await text(writer)).includes('Apply to publish')) {
         const nowRow = rowWith(staff, TITLE, 'Approve');
 
         if (await nowRow.count()) {
+            const ready = await nowRow.locator('[data-testid="review-state"]').first().getAttribute('data-state').catch(() => null);
+            check('the office sees it accepted and ready to publish', ready === 'accepted_awaiting_publish' && !(await nowRow.locator('[data-testid="approve-publish"]').first().isDisabled()), String(ready));
             await nowRow.locator('button:has-text("Approve")').first().click();
             await staff.waitForTimeout(2000);
 
             // The pair for step 2: the same button, the same item, and now it
             // works. Without this the refusal above would prove nothing.
+            // The flash, not the absence of "peer reviewer": other research
+            // waiting in the queue carries that phrase on its chip (R3).
             check(
                 'with an accept on file, the same approval goes through',
-                !(await text(staff)).includes('peer reviewer'),
+                await settles(staff, 'Submission reviewed.'),
                 (await text(staff)).slice(0, 200),
             );
         } else {

@@ -181,4 +181,13 @@ return [
     'library_delivery_both' => 'كلاهما: القراءة عبر الإنترنت أو التنزيل',
     'library_delivery_needs_pdf' => 'يتطلب التنزيل إرفاق ملف PDF الأصلي أدناه.',
     'library_teacher_authors' => 'معلمو أكورو المؤلفون (مرتبطون بصفحاتهم)',
+    // R3: where a research item's peer review stands.
+    'review_state_awaiting_reviewer' => 'بانتظار محكِّم',
+    'review_state_with_reviewer' => 'لدى المحكِّمين — :accepts من :required موافقات',
+    'review_state_revision_requested' => 'طلب محكِّم مراجعة النص',
+    'review_state_accepted' => 'قبله التحكيم — جاهز للنشر',
+    'review_state_rejected' => 'غير مقبول',
+    'review_state_round' => 'الجولة :round',
+    'review_round' => 'الجولة :round',
+    'review_publish_blocked' => 'بانتظار موافقات التحكيم',
 ];

@@ -8,6 +8,7 @@ use App\Domains\Library\Models\LibraryItem;
 /**
  * Business rule §43.3: admin must approve content — publishing stamps
  * approved_by. Unpublish returns to draft without clearing history.
+ * Research is refused until peer review has accepted it (R3).
  */
 class PublishLibraryItemAction
 {
@@ -15,6 +16,9 @@ class PublishLibraryItemAction
     {
         $item = LibraryItem::query()->findOrFail($itemId);
         if ($publish) {
+            // R3 (D2): research goes out only once peer review says so —
+            // whichever screen asked.
+            app(AssertResearchReviewedAction::class)->execute($item);
             $item->fill([
                 'status' => LibraryItemStatus::Published,
                 'published_at' => $item->published_at ?? now(),

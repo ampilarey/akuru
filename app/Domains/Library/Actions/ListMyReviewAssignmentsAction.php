@@ -33,6 +33,8 @@ class ListMyReviewAssignmentsAction
                 'id' => $assignment->id,
                 'status' => $assignment->status,
                 'recommendation' => $assignment->recommendation,
+                // R3: which review round this is (2 or more means a revision).
+                'round' => (int) $assignment->round,
                 'assigned_at' => $assignment->created_at?->toDateString(),
                 'item' => $item === null ? null : [
                     'title' => $item->title,

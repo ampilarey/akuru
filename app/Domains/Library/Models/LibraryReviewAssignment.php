@@ -12,5 +12,7 @@ class LibraryReviewAssignment extends Model
         'assigned_by',
         'status',
         'recommendation',
+        // R3: the review round this assignment belongs to.
+        'round',
     ];
 }

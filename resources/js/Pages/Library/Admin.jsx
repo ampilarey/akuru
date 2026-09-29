@@ -4,6 +4,7 @@ import AppShell from '../../Layouts/AppShell';
 import BodyEditor from '../../Components/BodyEditor';
 import FormErrors from '../../Components/FormErrors';
 import { DeliveryChoice, TeacherAuthors, defaultDelivery } from '../../Components/LibraryAuthoring';
+import ReviewStateChip from '../../Components/ReviewStateChip';
 
 function ApplicationsQueue({ applications }) {
     const [notes, setNotes] = useState({});
@@ -133,7 +134,11 @@ function PayoutsQueue({ payouts }) {
     );
 }
 
+// R3: research waits for its peer-review accepts before it can be published.
+const blockedByReview = (item) => item.content_type === 'research' && item.status !== 'published' && item.review_state?.state !== 'accepted_awaiting_publish';
+
 function SubmissionsQueue({ submissions }) {
+    const t = usePage().props.i18n?.common || {};
     const [comments, setComments] = useState({});
     const [reviewerEmails, setReviewerEmails] = useState({});
     if (submissions.length === 0) return null;
@@ -169,8 +174,9 @@ function SubmissionsQueue({ submissions }) {
                                 ))}
                                 {sub.content_type === 'research' && (
                                     <div className="mt-2 border-t pt-2">
+                                        <ReviewStateChip state={sub.review_state} t={t} />
                                         {(sub.reviews || []).map((rev, index) => (
-                                            <p key={index}>peer review: {rev.status}{rev.recommendation ? ` — ${rev.recommendation}` : ''}</p>
+                                            <p key={index}>peer review (round {rev.round}): {rev.status}{rev.recommendation ? ` — ${rev.recommendation}` : ''}</p>
                                         ))}
                                         <span className="mt-1 flex gap-1">
                                             <input
@@ -192,7 +198,7 @@ function SubmissionsQueue({ submissions }) {
                                     onChange={(e) => setComments({ ...comments, [sub.id]: e.target.value })}
                                 />
                                 <div className="flex flex-wrap gap-2">
-                                    <button type="button" className="btn-primary" onClick={() => review(sub.id, 'approved')}>Approve &amp; publish</button>
+                                    <button type="button" className="btn-primary disabled:cursor-not-allowed disabled:opacity-50" disabled={blockedByReview(sub)} title={blockedByReview(sub) ? (t.review_publish_blocked || 'Waiting for the peer-review accepts') : undefined} onClick={() => review(sub.id, 'approved')} data-testid="approve-publish">Approve &amp; publish</button>
                                     <button type="button" className="btn-secondary" onClick={() => review(sub.id, 'changes_requested')}>Request changes</button>
                                     <button type="button" className="text-sm text-red-600" onClick={() => review(sub.id, 'rejected')}>Reject</button>
                                 </div>
@@ -328,6 +334,8 @@ function CategoryForm() {
 }
 
 export default function Admin({ items, categories, options, sales = [], queues = { applications: [], submissions: [] }, payouts = { requests: [], writers: [] } }) {
+    const common = usePage().props.i18n?.common || {};
+
     return (
         <AppShell title="Digital Library admin">
             {/* Four controls on this page post through `router.post` with no
@@ -409,7 +417,7 @@ export default function Admin({ items, categories, options, sales = [], queues =
                                 <td className="px-3 py-2">{item.content_type?.replaceAll('_', ' ')}</td>
                                 <td className="px-3 py-2">{item.access_type?.replaceAll('_', ' ')}</td>
                                 <td className="px-3 py-2">{item.category?.name ?? '—'}</td>
-                                <td className="px-3 py-2">{item.status}</td>
+                                <td className="px-3 py-2">{item.status} {item.review_state && <ReviewStateChip state={item.review_state} t={common} />}</td>
                                 <td className="px-3 py-2">{item.published_at ?? '—'}</td>
                                 <td className="px-3 py-2 text-end whitespace-nowrap">
                                     {item.status === 'published' && (
@@ -424,7 +432,9 @@ export default function Admin({ items, categories, options, sales = [], queues =
                                     )}
                                     <button
                                         type="button"
-                                        className={item.status === 'published' ? 'text-sm text-red-600' : 'btn-primary'}
+                                        className={item.status === 'published' ? 'text-sm text-red-600' : 'btn-primary disabled:cursor-not-allowed disabled:opacity-50'}
+                                        disabled={blockedByReview(item)}
+                                        data-testid={`publish-${item.slug}`}
                                         onClick={() => router.post(`/admin/library/items/${item.id}/publish`, { publish: item.status !== 'published' }, { preserveScroll: true })}
                                     >
                                         {item.status === 'published' ? 'Unpublish' : 'Publish'}

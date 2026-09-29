@@ -181,4 +181,13 @@ return [
     'library_delivery_both' => 'ދެގޮތްވެސް: އޮންލައިންކޮށް ކިޔުން ނުވަތަ ޑައުންލޯޑް',
     'library_delivery_needs_pdf' => 'ޑައުންލޯޑް ކުރެވޭނީ ތިރީގައި އަސްލު PDF އެއް ހުށަހަޅައިގެންނެވެ.',
     'library_teacher_authors' => 'ލިޔުންތެރިންކަމުގައިވާ އަކުރު މުދައްރިސުން (އެބޭފުޅުންގެ ޕްރޮފައިލާ ގުޅިފައި)',
+    // R3: where a research item's peer review stands.
+    'review_state_awaiting_reviewer' => 'ޕިއަރ ރިވިއުއަރަކަށް އިންތިޒާރުކުރަނީ',
+    'review_state_with_reviewer' => 'ޕިއަރ ރިވިއުއަރުންގެ ގައިގާ — :required ގެ ތެރެއިން :accepts ގަބޫލުކުރެވިފައި',
+    'review_state_revision_requested' => 'ރިވިއުއަރަކު ބަދަލުތަކެއް ހުށަހަޅާފައި',
+    'review_state_accepted' => 'ޕިއަރ ރިވިއު ގަބޫލުކޮށްފި — ޝާއިޢުކުރެވޭނެ',
+    'review_state_rejected' => 'ގަބޫލުނުކުރެވޭ',
+    'review_state_round' => 'ބުރު :round',
+    'review_round' => 'ބުރު :round',
+    'review_publish_blocked' => 'ޕިއަރ ރިވިއުގެ ގަބޫލުކުރުމަށް އިންތިޒާރުކުރަނީ',
 ];

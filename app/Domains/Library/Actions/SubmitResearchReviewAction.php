@@ -2,6 +2,8 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Library\Enums\LibraryItemStatus;
+use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
 use App\Domains\Library\Models\LibraryReviewAssignment;
 use Illuminate\Validation\ValidationException;
@@ -10,8 +12,17 @@ use Illuminate\Validation\ValidationException;
  * L7 (§12.2): the assigned reviewer recommends accept / revise / reject
  * with comments. The comment lands in the SAME append-only editorial
  * trail the writer already reads (§43.8 — the writer sees editorial
- * feedback, never who else is reviewing). Re-reviews update the
- * recommendation and append a new trail row.
+ * feedback, never who else is reviewing).
+ *
+ * R3 (RESEARCH_ARTICLES_PLAN): a report belongs to the item's current
+ * review round, and only while the item is with the reviewers.
+ *
+ * - **revise** sends the item back to the writer as `changes_requested`;
+ *   their resubmission opens the next round (`SubmitLibraryItemForReviewAction`).
+ * - Every recommendation reaches the writer with the comment — never the
+ *   reviewer's name (§43.8, D6).
+ * - The office hears when the required accepts are reached ("ready to
+ *   publish"), and when a reviewer recommends rejecting.
  */
 class SubmitResearchReviewAction
 {
@@ -26,6 +37,15 @@ class SubmitResearchReviewAction
             throw ValidationException::withMessages(['assignment' => 'This review is not assigned to you.']);
         }
 
+        $item = LibraryItem::query()->findOrFail($assignment->library_item_id);
+        $status = $item->status instanceof LibraryItemStatus ? $item->status : LibraryItemStatus::tryFrom((string) $item->status);
+        if ($status !== LibraryItemStatus::Submitted) {
+            throw ValidationException::withMessages(['assignment' => 'This item is not with the reviewers right now — it is back with the writer, or already decided.']);
+        }
+        if ((int) $assignment->round !== max(1, (int) $item->review_round)) {
+            throw ValidationException::withMessages(['assignment' => 'That review round has closed; the writer has revised the text since.']);
+        }
+
         $assignment->fill(['status' => 'done', 'recommendation' => $recommendation])->save();
 
         LibraryItemReview::query()->create([
@@ -34,6 +54,36 @@ class SubmitResearchReviewAction
             'decision' => 'reviewer_'.$recommendation,
             'comment' => $comment,
         ]);
+
+        $notify = app(NotifyLibraryUserAction::class);
+        $said = $comment !== null && trim($comment) !== '' ? ' "'.trim($comment).'"' : '';
+
+        // A revision goes back to the writer now; the round closes.
+        if ($recommendation === 'revise') {
+            $item->status = LibraryItemStatus::ChangesRequested;
+            $item->save();
+        }
+
+        if ($item->writer?->user_id) {
+            $notify->execute(
+                (int) $item->writer->user_id,
+                match ($recommendation) {
+                    'accept' => 'A peer reviewer accepted your research',
+                    'revise' => 'A peer reviewer asked for revisions',
+                    default => 'A peer reviewer recommended not publishing',
+                },
+                '"'.$item->title.'":'.($said !== '' ? $said : ' no comment was left.').($recommendation === 'revise' ? ' Revise the draft and submit it again.' : ''),
+                '/write',
+            );
+        }
+
+        $gate = app(AssertResearchReviewedAction::class);
+        if ($recommendation === 'accept' && $gate->acceptsInRound($item) >= $gate->required()) {
+            $notify->office('Research ready to publish', '"'.$item->title.'" has the peer-review accepts it needs.', '/admin/library');
+        }
+        if ($recommendation === 'reject') {
+            $notify->office('A reviewer recommended rejecting', '"'.$item->title.'": decide it in the submissions queue.', '/admin/library');
+        }
 
         return $assignment->refresh();
     }

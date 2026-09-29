@@ -78,7 +78,7 @@ return [
     'library_settings_gift_min' => 'އެންމެ ކުޑަ ގިފްޓް ކާޑު (MVR)',
     'library_settings_gift_max' => 'އެންމެ ބޮޑު ގިފްޓް ކާޑު (MVR)',
     'library_settings_gift_expiry' => 'ގަންނަ ގިފްޓް ކާޑުގެ މުއްދަތު ހަމަވަނީ (މަސް؛ 0 = ދުވަހަކުވެސް ނޫން)',
-    'library_settings_review_required' => 'ރިސާޗް ފާސްކުރުމުގެ ކުރިން ޕިއަރ ރިވިއުއަރެއްގެ ލަފާ ބޭނުންވޭ',
+    'library_settings_reviews_required' => 'ރިސާޗެއް ޝާއިޢުކުރުމުގެ ކުރިން ބޭނުންވާ ރިވިއުއަރުންގެ ގަބޫލުކުރުން (މަދުވެގެން 1)',
     'library_settings_payouts_enabled' => 'ލިޔުންތެރިންނަށް ޕޭއައުޓަށް އެދެވޭނެ',
     'library_settings_payouts_note' => 'ލިޔުންތެރިންގެ ޕޭއައުޓްގެ ޓެކްސް އަދި އެކައުންޓިންގ ކަށަވަރުވަންދެން ޕޭއައުޓް ބަންދު (ROADMAP §9.4)؛ އެހާތަނަށް އާމްދަނީ ޖަމާވަމުންދާނެ.',
     'library_settings_default' => 'ޑިފޯލްޓް',

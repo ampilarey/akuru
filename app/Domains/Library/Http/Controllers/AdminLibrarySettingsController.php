@@ -33,7 +33,7 @@ class AdminLibrarySettingsController extends Controller
             'gift_card_min' => 'required|integer',
             'gift_card_max' => 'required|integer',
             'gift_card_expiry_months' => 'required|integer',
-            'research_review_required' => 'required|boolean',
+            'research_reviews_required' => 'required|integer|min:1|max:10',
             'payouts_enabled' => 'required|boolean',
         ]);
 

@@ -2,11 +2,9 @@
 
 namespace App\Domains\Library\Actions;
 
-use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
-use App\Domains\Library\Models\LibraryReviewAssignment;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -30,19 +28,10 @@ class ReviewLibraryItemSubmissionAction
             throw ValidationException::withMessages(['item' => 'Only submitted items can be reviewed.']);
         }
 
-        // L7 (§12.2/§29): research needs a peer reviewer's accept before the
-        // editor can publish, while the requirement is switched on.
-        if ($decision === 'approved'
-            && $item->content_type === LibraryContentType::Research
-            && app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('research_review_required')
-            && ! LibraryReviewAssignment::query()
-                ->where('library_item_id', $item->id)
-                ->where('status', 'done')
-                ->where('recommendation', 'accept')
-                ->exists()) {
-            throw ValidationException::withMessages([
-                'item' => 'Research needs a peer reviewer accept recommendation before publishing.',
-            ]);
+        // R3 (D2): research needs its peer-review accepts before approval;
+        // the publisher checks again, so no path skips it.
+        if ($decision === 'approved') {
+            app(AssertResearchReviewedAction::class)->execute($item);
         }
 
         if ($decision === 'approved') {

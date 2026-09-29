@@ -63,6 +63,8 @@ class ListWriterQueuesAction
             ->get()
             ->groupBy('library_item_id');
 
+        $reviewStates = app(AssertResearchReviewedAction::class)->states($submitted);
+
         $submissions = $submitted->map(fn (LibraryItem $item) => [
             'id' => $item->id,
             'title' => $item->title,
@@ -75,7 +77,10 @@ class ListWriterQueuesAction
             'reviews' => ($assignments->get($item->id) ?? collect())->map(fn (LibraryReviewAssignment $assignment) => [
                 'status' => $assignment->status,
                 'recommendation' => $assignment->recommendation,
+                'round' => (int) $assignment->round,
             ])->values()->all(),
+            // R3: where peer review stands, and whether it may be published.
+            'review_state' => $reviewStates[$item->id] ?? null,
             'history' => ($history->get($item->id) ?? collect())->map(fn (LibraryItemReview $review) => [
                 'decision' => $review->decision,
                 'comment' => $review->comment,

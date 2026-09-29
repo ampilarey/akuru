@@ -31,7 +31,7 @@ it('shows the deploy defaults until the office saves, then what the office saved
     settingsAs($admin)->from(route('admin.library.settings'))
         ->put(route('admin.library.settings.update'), [
             'refund_window_days' => 10, 'default_writer_commission' => 60, 'min_payout' => 200,
-            'gift_card_min' => 100, 'gift_card_max' => 2000, 'gift_card_expiry_months' => 12, 'research_review_required' => false, 'payouts_enabled' => false,
+            'gift_card_min' => 100, 'gift_card_max' => 2000, 'gift_card_expiry_months' => 12, 'research_reviews_required' => 2, 'payouts_enabled' => false,
         ])
         ->assertSessionHasNoErrors()
         ->assertRedirect(route('admin.library.settings'))
@@ -42,7 +42,7 @@ it('shows the deploy defaults until the office saves, then what the office saved
         ->and($resolve->execute('default_writer_commission'))->toBe(60)
         ->and($resolve->execute('min_payout'))->toBe(200)
         ->and($resolve->execute('gift_card_min'))->toBe(100)
-        ->and($resolve->execute('research_review_required'))->toBeFalse()
+        ->and($resolve->execute('research_reviews_required'))->toBe(2)
         ->and(Setting::query()->where('key', 'library.min_payout')->value('group'))->toBe('library');
 
     // A real reader of a knob sees the office's number, not the deploy's.
@@ -58,7 +58,7 @@ it('shows the deploy defaults until the office saves, then what the office saved
 
 it('refuses a share over a hundred and a gift-card floor above its ceiling', function () {
     $admin = actingSystemAdmin(['library.manage']);
-    $base = ['refund_window_days' => 7, 'default_writer_commission' => 70, 'min_payout' => 100, 'gift_card_min' => 50, 'gift_card_max' => 5000, 'gift_card_expiry_months' => 0, 'research_review_required' => true, 'payouts_enabled' => false];
+    $base = ['refund_window_days' => 7, 'default_writer_commission' => 70, 'min_payout' => 100, 'gift_card_min' => 50, 'gift_card_max' => 5000, 'gift_card_expiry_months' => 0, 'research_reviews_required' => 1, 'payouts_enabled' => false];
 
     settingsAs($admin)->put(route('admin.library.settings.update'), ['default_writer_commission' => 150] + $base)
         ->assertSessionHasErrors('default_writer_commission');
@@ -66,6 +66,11 @@ it('refuses a share over a hundred and a gift-card floor above its ceiling', fun
         ->assertSessionHasErrors('gift_card_max');
     settingsAs($admin)->put(route('admin.library.settings.update'), ['refund_window_days' => 'soon'] + $base)
         ->assertSessionHasErrors('refund_window_days');
+    // R3 (D2): peer review cannot be switched off by asking for no accepts.
+    settingsAs($admin)->put(route('admin.library.settings.update'), ['research_reviews_required' => 0] + $base)
+        ->assertSessionHasErrors('research_reviews_required');
+    expect(fn () => app(\App\Domains\Library\Actions\SaveLibrarySettingsAction::class)->execute(['research_reviews_required' => 0]))
+        ->toThrow(\Illuminate\Validation\ValidationException::class);
 
     expect(Setting::query()->where('key', 'like', 'library.%')->count())->toBe(0);
 });

@@ -78,7 +78,7 @@ return [
     'library_settings_gift_min' => 'أصغر بطاقة هدية (MVR)',
     'library_settings_gift_max' => 'أكبر بطاقة هدية (MVR)',
     'library_settings_gift_expiry' => 'تنتهي صلاحية بطاقات الهدايا المشتراة بعد (أشهر؛ 0 = لا تنتهي)',
-    'library_settings_review_required' => 'يحتاج البحث إلى توصية محكِّم قبل اعتماده',
+    'library_settings_reviews_required' => 'عدد موافقات المحكِّمين اللازمة قبل نشر البحث (واحدة على الأقل)',
     'library_settings_payouts_enabled' => 'يمكن للكتّاب طلب الدفعات',
     'library_settings_payouts_note' => 'تبقى الدفعات موقوفة حتى يُحسم التعامل الضريبي والمحاسبي لدفعات الكتّاب (ROADMAP §9.4)؛ وتتراكم الأرباح في هذه الأثناء.',
     'library_settings_default' => 'الافتراضي',

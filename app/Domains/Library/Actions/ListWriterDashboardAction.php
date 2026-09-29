@@ -53,6 +53,8 @@ class ListWriterDashboardAction
 
             $serialize = app(ListLibraryItemsAction::class);
             $itemModels->load(['tags', 'authors']);
+            // R3: where each research item's peer review stands.
+            $reviewStates = app(AssertResearchReviewedAction::class)->states($itemModels);
             $items = $itemModels->map(fn (LibraryItem $item) => [
                 'id' => $item->id,
                 'title' => $item->title,
@@ -90,6 +92,7 @@ class ListWriterDashboardAction
                 'delivery' => $item->delivery?->value,
                 'has_pdf' => $item->pdf_media_file_id !== null,
                 'status' => $item->status?->value,
+                'review_state' => $reviewStates[$item->id] ?? null,
                 'submitted_at' => $item->submitted_at?->toDateTimeString(),
                 'published_at' => $item->published_at?->toDateTimeString(),
                 'latest_comment' => $latestComments->get($item->id)?->comment,

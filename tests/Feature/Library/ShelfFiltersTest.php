@@ -16,7 +16,7 @@ uses(RefreshDatabase::class);
  * difficulty, the reading-time band, popular this week or month, and for
  * research whether a peer has reviewed it and whether it is open to all.
  */
-function filterShelfItem(string $title, array $extra = []): LibraryItem
+function filterShelfItem(string $title, array $extra = [], bool $publish = true): LibraryItem
 {
     $admin = User::factory()->create();
     $item = app(SaveLibraryItemAction::class)->execute(array_merge([
@@ -27,7 +27,7 @@ function filterShelfItem(string $title, array $extra = []): LibraryItem
         'created_by' => $admin->id,
     ], $extra));
 
-    return app(PublishLibraryItemAction::class)->execute($item->id, $admin->id)->fresh();
+    return $publish ? app(PublishLibraryItemAction::class)->execute($item->id, $admin->id)->fresh() : $item->fresh();
 }
 
 function filterShelfTitles(array $filters): array
@@ -93,10 +93,8 @@ it('ranks by what was read this week or this month', function () {
 });
 
 it('finds peer-reviewed and open-access research, and nothing that is not research', function () {
-    $reviewed = filterShelfItem('Reviewed paper', ['content_type' => 'research', 'access_type' => 'paid', 'price' => 50]);
-    $open = filterShelfItem('Open paper', ['content_type' => 'research', 'access_type' => 'free_public']);
-    filterShelfItem('Open article', ['content_type' => 'article', 'access_type' => 'free_public']);
-
+    $reviewed = filterShelfItem('Reviewed paper', ['content_type' => 'research', 'access_type' => 'paid', 'price' => 50], false);
+    // R3: research publishes only after an accept.
     LibraryReviewAssignment::query()->create([
         'library_item_id' => $reviewed->id,
         'reviewer_user_id' => User::factory()->create()->id,
@@ -104,6 +102,13 @@ it('finds peer-reviewed and open-access research, and nothing that is not resear
         'status' => 'done',
         'recommendation' => 'accept',
     ]);
+    app(PublishLibraryItemAction::class)->execute($reviewed->id, User::factory()->create()->id);
+    // An imported website paper (R2) is the one research item on the shelf
+    // with no review: it was already public, and is published by the move.
+    $open = filterShelfItem('Open paper', ['content_type' => 'research', 'access_type' => 'free_public'], false);
+    $open->forceFill(['status' => 'published', 'published_at' => now(), 'imported_post_id' => 99])->save();
+    filterShelfItem('Open article', ['content_type' => 'article', 'access_type' => 'free_public']);
+
     // A reviewer who has not reported yet does not make it peer-reviewed.
     LibraryReviewAssignment::query()->create([
         'library_item_id' => $open->id,

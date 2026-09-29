@@ -16,7 +16,7 @@ function AssignmentCard({ assignment, t }) {
                 <div>
                     <h2 className="text-lg font-semibold">{item?.title}</h2>
                     <p className="text-xs text-gray-500">
-                        Assigned {assignment.assigned_at} · item {item?.status?.replaceAll('_', ' ')}
+                        Assigned {assignment.assigned_at} · {(t.review_round || 'Round :round').replace(':round', assignment.round)} · item {item?.status?.replaceAll('_', ' ')}
                         {assignment.recommendation ? ` · your recommendation: ${assignment.recommendation}` : ''}
                     </p>
                 </div>
