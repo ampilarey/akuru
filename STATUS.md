@@ -4414,6 +4414,68 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lq. Library notices by email and SMS (2026-09-29)
+
+BACKLOG B11: "Email/SMS channels for library notifications (in-app only
+today)". The owner said "do it" on 2026-09-29.
+
+**The switches.** Two switches on `/admin/library/settings`: send the
+important notices by email too, and by SMS too. Both are **off by
+default**. They are stored like the other Library knobs, through
+`ResolveLibrarySettingAction` (`notices_email`, `notices_sms`), with
+config defaults `LIBRARY_NOTICES_EMAIL` and `LIBRARY_NOTICES_SMS`.
+
+**What counts as important** (`library.notices.events`):
+- a writer application decided;
+- a submission decided (changes asked or not accepted);
+- a work published;
+- a new sale;
+- a payout decided;
+- a peer review asked for;
+- a purchase ready to read.
+
+Each call site now names its event.
+
+**What stays in-app:**
+- **Reader nudges:** new work from a writer you read, and continue
+  reading.
+- **Office alerts:** new applications, submissions and reading alerts.
+- **Anyone who switched library notices off** gets neither email nor SMS.
+  The in-app preference stays the one switch a person has.
+
+**How it sends.** `NotifyLibraryUserAction` follows the Bookstore's
+pattern (B8):
+- email is `LibraryNoticeMail`, queued after the caller's transaction
+  commits;
+- SMS goes through Notifications' `SmsSenderInterface`, which logs instead
+  of sending wherever `SMS_LIVE` is off, and a live send is receipted;
+- a failure never fails the decision it describes.
+
+Both channels need production's queue worker (OWNER_ACTIONS item 3) to
+reach people.
+
+**Other changes:**
+- The new email view `emails/library-notice` is in the Blade baseline's
+  emails block.
+- Languages: EN/DV/AR.
+
+Tests:
+- `LibraryNoticeChannelsTest` (3):
+  - off: a decided application is in-app only, with no mail and no SMS;
+  - on: the settings screen reads both on. The decision queues the mail
+    (heading, link to `/write`) and sends one SMS ("Akuru Library: You
+    are now an Akuru writer…", reference
+    `library_writer_application_decided`). A reader nudge adds neither;
+  - email only: no SMS, and nothing to a person with no phone. Someone
+    who switched library notices off gets no mail.
+- The Library, Notifications, Settings and Architecture suites: 322 passed.
+
+Checklist: `ft-library-12`.
+
+Walk: `scripts/smoke/admin.mjs` 43/43, with two new steps. The switches
+show off with the note beside them; email turned on reads back on, and is
+then turned off again.
+
 ## 5lp. The website reads right to left in Dhivehi and Arabic (2026-09-29)
 
 This was a KNOWN_ISSUES entry (P2, found by R4). The public layout wrote

@@ -1029,4 +1029,7 @@ return [
     'news_category_hidden' => 'مخفي',
     'news_category_hide' => 'إخفاء',
     'news_category_show' => 'إظهار مجددًا',
+    'library_settings_notices_email' => 'أرسل الإشعارات المهمة بالبريد الإلكتروني أيضًا',
+    'library_settings_notices_sms' => 'أرسل الإشعارات المهمة برسالة نصية أيضًا',
+    'library_settings_notices_note' => 'الإشعارات المهمة: قرار بشأن طلب أو مشاركة، نشر، بيع، صرف مستحقات، طلب مراجعة، جاهزية مشترى. تذكيرات القراء وتنبيهات المكتب تبقى داخل التطبيق.',
 ];

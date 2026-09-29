@@ -1029,4 +1029,7 @@ return [
     'news_category_hidden' => 'hidden',
     'news_category_hide' => 'Hide',
     'news_category_show' => 'Offer again',
+    'library_settings_notices_email' => 'Send the important notices by email too',
+    'library_settings_notices_sms' => 'Send the important notices by SMS too',
+    'library_settings_notices_note' => 'Important notices: a decision on an application or submission, a publication, a sale, a payout, a review asked for, a purchase ready. Reader reminders and office alerts stay in the app.',
 ];

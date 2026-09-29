@@ -57,6 +57,7 @@ class ReviewLibraryItemSubmissionAction
                 $decision === 'rejected' ? 'Submission not accepted' : 'Changes requested',
                 '"'.$item->title.'": '.($comment !== null && trim($comment) !== '' ? trim($comment) : ($decision === 'rejected' ? 'the editor did not accept it.' : 'the editor asked for changes.')),
                 '/write',
+                'submission_decided',
             );
         }
 

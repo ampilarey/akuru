@@ -31,6 +31,9 @@ class ResolveLibrarySettingAction
         // R3: accepts a research item needs; replaced the on/off switch.
         'research_reviews_required' => ['library.research_reviews_required', 'int'],
         'payouts_enabled' => ['library.payouts_enabled', 'bool'],
+        // STATUS §5lq: the important notices by email and by SMS too.
+        'notices_email' => ['library.notices.email', 'bool'],
+        'notices_sms' => ['library.notices.sms', 'bool'],
     ];
 
     public function execute(string $key): int|bool

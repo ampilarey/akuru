@@ -61,6 +61,7 @@ class RecordWriterEarningForPurchaseAction
             'New sale',
             '"'.$item->title.'" sold for MVR '.number_format($paid, 2).'. Your share: MVR '.number_format($writerAmount, 2).'.',
             '/write',
+            'new_sale',
         );
 
         return WriterEarning::query()->create([

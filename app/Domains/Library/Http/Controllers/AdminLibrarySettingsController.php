@@ -35,6 +35,9 @@ class AdminLibrarySettingsController extends Controller
             'gift_card_expiry_months' => 'required|integer',
             'research_reviews_required' => 'required|integer|min:1|max:10',
             'payouts_enabled' => 'required|boolean',
+            // STATUS §5lq: the important notices by email and SMS too.
+            'notices_email' => 'sometimes|boolean',
+            'notices_sms' => 'sometimes|boolean',
         ]);
 
         app(SaveLibrarySettingsAction::class)->execute($data);

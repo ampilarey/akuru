@@ -48,6 +48,7 @@ class DecideWriterPayoutAction
                     $paid ? 'Payout paid' : 'Payout not paid',
                     'MVR '.number_format((float) $payout->amount, 2).($paid ? ' has been paid out.' : ' was not paid out; the earnings are available again.').($note !== null && trim($note) !== '' ? ' '.trim($note) : ''),
                     '/write',
+                    'payout_decided',
                 );
             }
 
