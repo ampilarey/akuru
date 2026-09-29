@@ -70,6 +70,13 @@ return [
     'akuru_bookstore' => 'Akuru Bookstore',
     'sell_prompt' => 'Have a shop?',
     'sell_on_akuru' => 'Sell on Akuru',
+    // STATUS §5ky: the Bookstore's menu.
+    'store_all' => 'Everything in the store',
+    'shops' => 'Shops',
+    'shop_categories' => 'Categories',
+    'my_orders' => 'My orders',
+    'shop_owner_signin' => 'Shop owners: sign in',
+    'store_menu' => 'Bookstore sections',
     'free' => 'Free',
     'open_badge' => 'Open',
     'date_tbc' => 'Date to be announced',

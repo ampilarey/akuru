@@ -169,7 +169,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-library-11', 'label' => 'Authors list on the shelf, and the website\'s old research papers imported into the library', 'where' => '/library#authors'],
             ]],
             ['key' => 'ft-bookstore', 'title' => 'Bookstore', 'items' => [
-                ['key' => 'ft-bookstore-1', 'label' => 'Shop, categories, product page, search', 'where' => '/shop'],
+                ['key' => 'ft-bookstore-1', 'label' => 'Shop, categories, product page, search; the Bookstore menu in the header (Shops, Categories, My orders, Sell on Akuru, Shop owners: sign in)', 'where' => '/shop'],
                 ['key' => 'ft-bookstore-2', 'label' => 'Cart and checkout: card, wallet, bank slip, cash on delivery', 'where' => '/shop/cart'],
                 ['key' => 'ft-bookstore-3', 'label' => 'My orders: tracking, cancel, returns; wishlist; bulk quotes', 'where' => '/my-orders'],
                 ['key' => 'ft-bookstore-4', 'label' => 'Vendor: agreement, products, bulk edit, CSV import and export', 'where' => '/vendor'],

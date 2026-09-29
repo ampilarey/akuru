@@ -4414,6 +4414,51 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ky. The Bookstore's doors: a header menu, links on /shop, the shops in the footer (2026-09-29)
+
+The owner could not see a link to the shops' (vendors') pages from the
+shop. The shops were listed only at the bottom of `/shop`, with nothing
+pointing at them, and the header's *Bookstore* was a plain link.
+
+- **Header:** *Bookstore* keeps its link to `/shop` and gains a caret, as
+  the Digital Library did in R5. The menu holds:
+  - Everything in the store;
+  - **Shops** (`/shop#shops`);
+  - Categories (`/shop#categories`);
+  - My orders;
+  - Sell on Akuru;
+  - **Shop owners: sign in** (`/vendor`).
+
+  The phone menu lists the same five under the Bookstore row. The header's
+  three menus close each other.
+- **`/shop` and every shop's page:** the same five doors sit as a row of
+  links under the heading. On a shop's page they lead back to the store's
+  lists.
+- **Anchors:** the shops and categories sections have `id="shops"` and
+  `id="categories"`, with a scroll margin for the sticky header.
+- **Footer:** the Bookstore group gains *Shops* and *Shop owners: sign in*.
+- **Language:** new `site.*` keys in EN/DV/AR.
+- **Checklist:** `ft-bookstore-1` now names the menu.
+- Together with §5kw, every open shop is now in the list, and the list is
+  reachable from every page.
+
+Tests: `tests/Feature/Website/StoreMenuTest.php` (4):
+- the caret's six links and their addresses, and the phone's five;
+- the links row on `/shop` and on a shop page, and the shops anchor;
+- the footer;
+- DV/AR.
+
+Full suite 2502 passed.
+
+Walks:
+- `scripts/smoke/shop.mjs` 33/33, with five new steps:
+  - the caret opens its sections;
+  - Shops lands on the list with Fitrah in view;
+  - a shop opens;
+  - its *Shops* link leads back;
+  - the owners' link goes to `/vendor`.
+- `website.mjs` 54/54.
+
 ## 5kx. The feature-testing checklist catches up with R1–R5 and the fixes (2026-09-29)
 
 The owner asked whether the checklist (System → Feature testing,

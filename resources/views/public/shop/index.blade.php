@@ -71,6 +71,15 @@
         @elseif(! $heading)
             <p class="mt-2 text-lg text-brandGray-700">{{ __('shop.shop_intro') }}</p>
         @endif
+        {{-- STATUS §5ky: the store's doors, on its own page too — every shop, the
+             categories, the customer's orders, and the way in for a shop owner. --}}
+        <nav class="mt-4 flex flex-wrap gap-2 text-sm" aria-label="{{ __('site.store_menu') }}" data-testid="shop-links">
+            <a href="{{ $home ? '#shops' : route('public.shop.index').'#shops' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 font-semibold text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-shops">{{ __('site.shops') }}</a>
+            <a href="{{ $home ? '#categories' : route('public.shop.index').'#categories' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.shop_categories') }}</a>
+            <a href="{{ route('public.shop.orders') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.my_orders') }}</a>
+            <a href="{{ route('vendor.apply') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.sell_on_akuru') }}</a>
+            <a href="{{ route('vendor.index') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-owners">{{ __('site.shop_owner_signin') }}</a>
+        </nav>
     </div>
 </section>
 @endif
@@ -227,7 +236,7 @@
     @endforeach
 
     @if(count($home['categories']) > 0)
-        <section id="categories" class="py-8" data-testid="shop-categories">
+        <section id="categories" class="scroll-mt-24 py-8" data-testid="shop-categories">
             <div class="container mx-auto px-4">
                 <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">{{ __('shop.shop_by_category') }}</h2>
                 <div class="flex flex-wrap gap-2">
@@ -255,7 +264,7 @@
     @endif
 
     @if(count($home['vendors']) > 0)
-        <section class="py-8" data-testid="shop-vendors">
+        <section id="shops" class="scroll-mt-24 py-8" data-testid="shop-vendors">
             <div class="container mx-auto px-4">
                 <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">{{ __('shop.our_shops') }}</h2>
                 <div class="grid gap-3 sm:grid-cols-2 md:grid-cols-3">

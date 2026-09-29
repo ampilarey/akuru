@@ -187,6 +187,24 @@ await vendor.goto(`${BASE}/en/vendor`, { waitUntil: 'networkidle' });
 const portalLink = await vendor.locator('[data-testid="open-shop-page"]').getAttribute('href').catch(() => null);
 check('the vendor portal links to the shop\'s own page', portalLink === '/shop/fitrah', portalLink ?? 'no link');
 
+// ------------------------------------------------------------ the store's doors (STATUS §5ky)
+{
+    const desk = await newPage('doors');
+    await desk.goto(`${BASE}/en`, { waitUntil: 'networkidle' });
+    await desk.click('[data-testid="nav-bookstore-more"]');
+    const doors = (await desk.locator('[data-testid="nav-bookstore-menu"] a').allInnerTexts()).map((t) => t.trim());
+    check('the Bookstore caret opens its sections', ['Shops', 'Categories', 'My orders', 'Sell on Akuru', 'Shop owners: sign in'].every((t) => doors.includes(t)), doors.join(' · '));
+    await Promise.all([desk.waitForURL(/\/shop#shops$/), desk.click('[data-testid="nav-bookstore-shops"]')]);
+    await desk.waitForLoadState('networkidle');
+    check('Shops lands on the list of shops, in view', (await desk.locator('#shops [data-vendor="fitrah"]').isVisible()), desk.url().replace(BASE, ''));
+    await Promise.all([desk.waitForURL(/\/shop\/fitrah$/), desk.click('#shops [data-vendor="fitrah"]')]);
+    check('a shop in the list opens its own page', /\/shop\/fitrah$/.test(desk.url()), desk.url().replace(BASE, ''));
+    await Promise.all([desk.waitForURL(/\/shop#shops$/), desk.click('[data-testid="shop-link-shops"]')]);
+    check('from a shop\'s page, Shops leads back to every shop', (await desk.locator('#shops').isVisible()), desk.url().replace(BASE, ''));
+    const owners = await desk.getAttribute('[data-testid="shop-link-owners"]', 'href');
+    check('the shop page offers shop owners their way in', /\/vendor$/.test(owners ?? ''), owners);
+}
+
 // ------------------------------------------------------------ on a phone (STATUS §5kv)
 {
     const phone = await newPage('phone', { width: 390, height: 844 });

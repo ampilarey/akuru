@@ -23,6 +23,22 @@
       ['key' => 'authors', 'label' => __('site.authors'), 'href' => route('public.library.index').'#authors'],
       ['key' => 'gift-cards', 'label' => __('site.gift_cards'), 'href' => route('public.gift-cards.index')],
   ];
+  // STATUS §5ky: the Bookstore's own doors — its shops, its categories, the
+  // customer's orders, and the way in for a shop owner (the owner could not
+  // find the shops, or the vendor pages, from the shop).
+  $siteStoreLinks = [
+      ['key' => 'all', 'label' => __('site.store_all'), 'href' => route('public.shop.index')],
+      ['key' => 'shops', 'label' => __('site.shops'), 'href' => route('public.shop.index').'#shops'],
+      ['key' => 'categories', 'label' => __('site.shop_categories'), 'href' => route('public.shop.index').'#categories'],
+      ['key' => 'my-orders', 'label' => __('site.my_orders'), 'href' => route('public.shop.orders')],
+      ['key' => 'sell', 'label' => __('site.sell_on_akuru'), 'href' => route('vendor.apply')],
+      ['key' => 'owners', 'label' => __('site.shop_owner_signin'), 'href' => route('vendor.index')],
+  ];
+  // Products with a caret menu: [links, the box's id, the test-id prefix, the caret's label].
+  $siteMenus = [
+      'library' => [$siteLibraryLinks, 'nav-lib', 'library', __('site.library_menu')],
+      'bookstore' => [$siteStoreLinks, 'nav-store', 'bookstore', __('site.store_menu')],
+  ];
   $siteAboutLinks = collect([
       ['public.about', 'site.about_us'],
       ['public.news.index', 'site.news'],
@@ -53,20 +69,21 @@
     <div class="nav-desktop items-center" data-testid="site-nav">
       <nav aria-label="{{ __('site.main_menu') }}" class="nav-links">
         @foreach ($siteProducts as $product)
-          @if ($product['key'] === 'library')
-            {{-- R5: the product link still goes to the shelf; the caret opens its sections. --}}
-            <div class="nav-about nav-lib" id="nav-lib">
+          @if (isset($siteMenus[$product['key']]))
+            @php([$menuLinks, $menuId, $menuTest, $menuLabel] = $siteMenus[$product['key']])
+            {{-- R5, §5ky: the product link still goes to its front; the caret opens its sections. --}}
+            <div class="nav-about nav-lib" id="{{ $menuId }}">
               <a href="{{ $product['href'] }}" data-testid="nav-{{ $product['key'] }}"
                  class="nav-link {{ $product['active'] ? 'is-active' : '' }}" @if ($product['active']) aria-current="page" @endif>
                 {{ $product['label'] }}
               </a>
-              <button type="button" class="nav-lib-btn" aria-expanded="false" aria-controls="nav-library-menu" aria-label="{{ __('site.library_menu') }}"
-                      onclick="toggleNavMenu(event, 'nav-lib')" data-testid="nav-library-more">
+              <button type="button" class="nav-lib-btn" aria-expanded="false" aria-controls="nav-{{ $menuTest }}-menu" aria-label="{{ $menuLabel }}"
+                      onclick="toggleNavMenu(event, '{{ $menuId }}')" data-testid="nav-{{ $menuTest }}-more">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
               </button>
-              <div id="nav-library-menu" class="nav-about-menu" data-testid="nav-library-menu">
-                @foreach ($siteLibraryLinks as $link)
-                  <a href="{{ $link['href'] }}" data-testid="nav-library-{{ $link['key'] }}">{{ $link['label'] }}</a>
+              <div id="nav-{{ $menuTest }}-menu" class="nav-about-menu" data-testid="nav-{{ $menuTest }}-menu">
+                @foreach ($menuLinks as $link)
+                  <a href="{{ $link['href'] }}" data-testid="nav-{{ $menuTest }}-{{ $link['key'] }}">{{ $link['label'] }}</a>
                 @endforeach
               </div>
             </div>
@@ -330,10 +347,10 @@
               <span class="text-sm" style="color:#5E5650">{{ $product['line'] }}</span>
             </span>
           </a>
-          @if ($product['key'] === 'library')
-            {{-- R5: the library's sections, as small links under its row. --}}
-            <div class="nav-m-sub" data-testid="mobile-menu-library">
-              @foreach (array_slice($siteLibraryLinks, 1) as $link)
+          @if (isset($siteMenus[$product['key']]))
+            {{-- R5, §5ky: the product's sections, as small links under its row. --}}
+            <div class="nav-m-sub" data-testid="mobile-menu-{{ $siteMenus[$product['key']][2] }}">
+              @foreach (array_slice($siteMenus[$product['key']][0], 1) as $link)
                 <a href="{{ $link['href'] }}">{{ $link['label'] }}</a>
               @endforeach
             </div>
@@ -521,9 +538,9 @@ function toggleUserMenu() {
 }
 
 // ── About menu (desktop) ─────────────────────────────────────────
-// The header's two dropdowns (About, and the Digital Library's sections, R5):
+// The header's dropdowns (About; the Digital Library's sections, R5; the Bookstore's, §5ky):
 // one open at a time; Escape and a click outside close them.
-var NAV_MENUS = ['nav-about', 'nav-lib'];
+var NAV_MENUS = ['nav-about', 'nav-lib', 'nav-store'];
 function closeNavMenu(id, focus) {
   var box = document.getElementById(id);
   if (!box || !box.classList.contains('is-open')) return;
