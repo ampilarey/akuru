@@ -43,9 +43,10 @@ class PresentCartAction
             $sellable = in_array($product->id, $forSale, true) && ($variant === null || $variant->is_active);
             $available = $sellable ? Stock::available($product, $variant) : 0;
             $short = $available !== null && $item->quantity > $available && ! Stock::madeToOrder($product);
-            // B9d: a quoted line pays the quoted price while the quote holds.
+            // B9d: a quoted line pays the quoted price while the quote holds; §5lb: a running sale's price.
             $quoted = CartPrice::quoted($item, $product, $variant);
-            $unitPrice = $quoted ?? (float) ($variant?->price ?? $product->price);
+            $listPrice = (float) ($variant?->price ?? $product->price);
+            $unitPrice = CartPrice::unit($item, $product, $variant);
             $lineTotal = round($unitPrice * $item->quantity, 2);
 
             if (! $sellable) {
@@ -73,6 +74,8 @@ class PresentCartAction
                 'variant' => $variant?->name,
                 'image' => $first !== null ? $images->execute((int) $first->media_file_id, ShopPresenter::CARD_WIDTH) : null,
                 'unit_price' => number_format($unitPrice, 2, '.', ''),
+                // §5lb: the list price struck through while a sale lowers it.
+                'was_price' => $quoted === null && $unitPrice < $listPrice ? number_format($listPrice, 2, '.', '') : null,
                 'quantity' => (int) $item->quantity,
                 'line_total' => number_format($lineTotal, 2, '.', ''),
                 'available' => $available,

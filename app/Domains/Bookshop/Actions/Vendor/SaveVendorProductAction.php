@@ -3,16 +3,19 @@
 namespace App\Domains\Bookshop\Actions\Vendor;
 
 use App\Domains\Bookshop\Actions\Shop\CustomerListsAction;
+use App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductImage;
 use App\Domains\Bookshop\Models\ProductVariant;
+use App\Domains\Bookshop\Support\SalePrice;
 use App\Domains\Bookshop\Support\ShopPresenter;
 use App\Domains\Bookshop\Support\StockLedger;
 use App\Domains\Media\Actions\ResolvePublicImageVariantAction;
 use App\Domains\Media\Actions\StorePublicMediaAction;
 use App\Support\Html\HtmlSanitizer;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -74,6 +77,8 @@ class SaveVendorProductAction
         });
         // B7: restocked or reactivated — tell anyone waiting for it.
         app(CustomerListsAction::class)->notifyIfBack((int) $product->id);
+        // §5lb: the shop's page shows the new price (or sale) at once, not after its cache runs out.
+        app(ResolveStorefrontAction::class)->forget((int) $product->vendor_id);
 
         return $product;
     }
@@ -100,7 +105,7 @@ class SaveVendorProductAction
             ->values()
             ->all();
 
-        return [
+        return $this->sale($data) + [
             'title' => $data['title'],
             'title_dv' => $data['title_dv'] ?? null,
             'title_ar' => $data['title_ar'] ?? null,
@@ -134,6 +139,31 @@ class SaveVendorProductAction
             'badge' => $this->short($data['badge'] ?? null),
             'badge_dv' => $this->short($data['badge_dv'] ?? null),
             'badge_ar' => $this->short($data['badge_ar'] ?? null),
+        ];
+    }
+
+    /**
+     * §5lb: the timed sale, when the form sent one. A CSV import or a bulk
+     * change does not, so a running sale is left as it is; an empty
+     * "% off" ends the sale.
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    private function sale(array $data): array
+    {
+        if (! array_key_exists('sale_percent', $data)) {
+            return [];
+        }
+        $percent = (int) ($data['sale_percent'] ?? 0);
+        if ($percent <= 0) {
+            return ['sale_percent' => null, 'sale_starts_at' => null, 'sale_ends_at' => null];
+        }
+
+        return [
+            'sale_percent' => $percent,
+            'sale_starts_at' => ($data['sale_starts_at'] ?? null) ?: null,
+            'sale_ends_at' => $data['sale_ends_at'],
         ];
     }
 
@@ -189,6 +219,23 @@ class SaveVendorProductAction
         $compare = $data['compare_at_price'] ?? null;
         if ($compare !== null && $compare !== '' && (float) $compare <= (float) $data['price']) {
             throw ValidationException::withMessages(['compare_at_price' => __('shop.error_compare_at')]);
+        }
+
+        // §5lb: 1–90% off, and an end in the future after the start.
+        $percent = (int) ($data['sale_percent'] ?? 0);
+        if ($percent === 0) {
+            return;
+        }
+        if ($percent < 1 || $percent > SalePrice::MAX_PERCENT) {
+            throw ValidationException::withMessages(['sale_percent' => __('shop.error_sale_percent')]);
+        }
+        $ends = ($data['sale_ends_at'] ?? null) ? Carbon::parse($data['sale_ends_at']) : null;
+        if ($ends === null || $ends->lte(now())) {
+            throw ValidationException::withMessages(['sale_ends_at' => __('shop.error_sale_ends')]);
+        }
+        $starts = ($data['sale_starts_at'] ?? null) ? Carbon::parse($data['sale_starts_at']) : null;
+        if ($starts !== null && $starts->gte($ends)) {
+            throw ValidationException::withMessages(['sale_ends_at' => __('shop.error_sale_order')]);
         }
     }
 

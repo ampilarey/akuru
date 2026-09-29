@@ -18,7 +18,8 @@ use Illuminate\Validation\ValidationException;
  */
 class CreateVendorAction
 {
-    public const RESERVED_SLUGS = ['products', 'c', 'export', 'cart', 'checkout', 'orders', 'search', 'slips'];
+    // Every literal address under /shop (a test holds this to the route list).
+    public const RESERVED_SLUGS = ['products', 'c', 'export', 'cart', 'checkout', 'orders', 'search', 'slips', 'deals', 'suggest', 'newsletter', 'quotes', 'wishlist', 'book-lists'];
 
     /**
      * @param  array<string, mixed>  $data

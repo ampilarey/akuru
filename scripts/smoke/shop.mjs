@@ -187,13 +187,72 @@ await vendor.goto(`${BASE}/en/vendor`, { waitUntil: 'networkidle' });
 const portalLink = await vendor.locator('[data-testid="open-shop-page"]').getAttribute('href').catch(() => null);
 check('the vendor portal links to the shop\'s own page', portalLink === '/shop/fitrah', portalLink ?? 'no link');
 
+// ------------------------------------------------------------ deals: a timed sale (STATUS §5lb)
+{
+    const editBook = async () => {
+        await vendor.goto(`${BASE}/en/vendor`, { waitUntil: 'networkidle' });
+        if ((await vendor.locator('[data-testid="accept-agreement"]').count()) > 0) {
+            await vendor.check('[data-testid="accept-agreement"]');
+            await vendor.click('[data-testid="agreement-form"] button[type=submit]');
+            await vendor.waitForSelector(`[data-testid="edit-${BOOK}"]`);
+        }
+        await vendor.click(`[data-testid="edit-${BOOK}"]`);
+        await vendor.waitForSelector('[data-testid="product-editor"]');
+        for (const alt of await vendor.locator('[data-testid^="image-alt-"]').all()) {
+            if (!(await alt.inputValue())) await alt.fill('SMOKE: front cover');
+        }
+    };
+    const save = async () => {
+        await vendor.click('[data-testid="save-product"]');
+        await vendor.waitForSelector('[data-testid="product-editor"]', { state: 'detached', timeout: 20000 }).catch(() => {});
+        await vendor.waitForLoadState('networkidle');
+    };
+    const pad = (n) => String(n).padStart(2, '0');
+    const inTwoDays = new Date(Date.now() + 2 * 86400000);
+    const local = `${inTwoDays.getFullYear()}-${pad(inTwoDays.getMonth() + 1)}-${pad(inTwoDays.getDate())}T${pad(inTwoDays.getHours())}:${pad(inTwoDays.getMinutes())}`;
+
+    await editBook();
+    check('the product form has a timed sale', await vendor.locator('[data-testid="product-sale"]').isVisible());
+    await vendor.fill('[data-testid="product-sale-percent"]', '20');
+    await vendor.fill('[data-testid="product-sale-ends"]', local);
+    await save();
+    const flag = await vendor.locator(`[data-testid="sale-${BOOK}"]`).innerText().catch(() => '');
+    check('the shop sets 20% off for two days, and its list says it is on sale', /On sale now/.test(flag) && /20% off/.test(flag), flag);
+
+    const shopper = await newPage('deals');
+    await shopper.goto(`${BASE}/en`, { waitUntil: 'networkidle' });
+    await shopper.click('[data-testid="nav-bookstore-more"]');
+    await Promise.all([shopper.waitForURL(/\/shop\/deals$/), shopper.click('[data-testid="nav-bookstore-deals"]')]);
+    await shopper.waitForLoadState('networkidle');
+    const card = shopper.locator(`[data-testid="shop-grid"] [data-product="${BOOK}"]`);
+    const cardText = (await card.innerText().catch(() => '')).replace(/\s+/g, ' ');
+    check('Deals in the Bookstore menu lists the product with its badge and the price struck through', (await card.count()) === 1 && /20% off/.test(cardText) && (await card.locator('.line-through').count()) === 1, cardText.slice(0, 160));
+    const first = await card.locator('[data-testid="card-sale-ends"]').innerText().catch(() => '');
+    await shopper.waitForTimeout(1500);
+    const second = await card.locator('[data-testid="card-sale-ends"]').innerText().catch(() => '');
+    check('its countdown ticks', /Sale ends in/.test(first) && first !== second, `${first} → ${second}`);
+    await shopper.screenshot({ path: `${process.env.SMOKE_SHOTS ?? '/tmp'}/deals.png` }).catch(() => {});
+    await shopper.goto(`${BASE}/en/shop/products/${BOOK}`, { waitUntil: 'networkidle' });
+    check('the product page shows the sale', await shopper.locator('[data-testid="product-sale"]').isVisible(), (await shopper.locator('[data-testid="product-price"]').innerText().catch(() => '')).replace(/\s+/g, ' '));
+    await shopper.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });
+    check('the store\'s front has a Deals shelf', await shopper.locator('[data-testid="shop-deals"]').isVisible());
+
+    // The sale ends when the shop empties "% off" — the walk leaves the book as it found it.
+    await editBook();
+    await vendor.fill('[data-testid="product-sale-percent"]', '');
+    await vendor.fill('[data-testid="product-sale-ends"]', '');
+    await save();
+    await shopper.goto(`${BASE}/en/shop/deals`, { waitUntil: 'networkidle' });
+    check('ending the sale takes it off Deals', (await shopper.locator(`[data-product="${BOOK}"]`).count()) === 0 && (await shopper.locator('[data-testid="shop-empty"]').count()) + (await shopper.locator('[data-testid="shop-grid"] [data-product]').count()) > 0);
+}
+
 // ------------------------------------------------------------ the store's doors (STATUS §5ky)
 {
     const desk = await newPage('doors');
     await desk.goto(`${BASE}/en`, { waitUntil: 'networkidle' });
     await desk.click('[data-testid="nav-bookstore-more"]');
     const doors = (await desk.locator('[data-testid="nav-bookstore-menu"] a').allInnerTexts()).map((t) => t.trim());
-    check('the Bookstore caret opens its sections', ['Shops', 'Categories', 'My orders', 'Sell on Akuru', 'Shop owners: sign in'].every((t) => doors.includes(t)), doors.join(' · '));
+    check('the Bookstore caret opens its sections', ['Shops', 'Deals', 'Categories', 'My orders', 'Sell on Akuru', 'Shop owners: sign in'].every((t) => doors.includes(t)), doors.join(' · '));
     await Promise.all([desk.waitForURL(/\/shop#shops$/), desk.click('[data-testid="nav-bookstore-shops"]')]);
     await desk.waitForLoadState('networkidle');
     check('Shops lands on the list of shops, in view', (await desk.locator('#shops [data-vendor="fitrah"]').isVisible()), desk.url().replace(BASE, ''));

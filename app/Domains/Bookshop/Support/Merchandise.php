@@ -81,7 +81,10 @@ final class Merchandise
         if (is_string($custom) && trim($custom) !== '') {
             $badges[] = ['kind' => 'custom', 'label' => trim($custom)];
         }
-        if ($product->compare_at_price !== null && (float) $product->compare_at_price > (float) $product->price) {
+        if (SalePrice::active($product)) {
+            // §5lb: a timed sale says how much is off.
+            $badges[] = ['kind' => 'sale', 'label' => __('shop.percent_off', ['percent' => (int) $product->sale_percent])];
+        } elseif ($product->compare_at_price !== null && (float) $product->compare_at_price > (float) $product->price) {
             $badges[] = ['kind' => 'sale', 'label' => __('shop.on_sale')];
         }
         if (in_array((int) $product->id, self::bestSellerIds(), true)) {

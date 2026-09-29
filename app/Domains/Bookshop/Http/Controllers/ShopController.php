@@ -60,6 +60,21 @@ class ShopController extends Controller
         ]);
     }
 
+    /** §5lb: every timed sale running now, ending soonest first. */
+    public function deals(Request $request)
+    {
+        $filters = ['deals' => '1'] + $this->filters($request);
+
+        return view('public.shop.index', [
+            'home' => null,
+            'products' => app(ListShopProductsAction::class)->execute($filters),
+            'filters' => $filters,
+            'options' => $this->options(),
+            'vendor' => null,
+            'heading' => __('shop.deals_heading'),
+        ]);
+    }
+
     public function vendor(Request $request, string $vendor)
     {
         $shop = app(PresentShopVendorAction::class)->execute($vendor);
@@ -169,6 +184,7 @@ class ShopController extends Controller
             'language' => 'nullable|string|max:40',
             'age' => 'nullable|string|max:20',
             'grade' => 'nullable|string|max:20',
+            'deals' => 'nullable|boolean',
             'sort' => 'nullable|string|in:'.implode(',', ListShopProductsAction::SORTS),
         ]);
 

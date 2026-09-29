@@ -10,8 +10,10 @@ use App\Domains\Bookshop\Models\ProductVariant;
  * The price a cart line is charged at (B2), and since B9d a school quote's:
  * a line that came from an accepted quote pays the quoted price while the
  * quote holds — the same product, variant and shop, not past its date.
- * Otherwise, and after it lapses, the list price. One rule for the cart
- * page and the checkout, so what is shown is what is charged.
+ * Otherwise, and after it lapses, the list price — or, since §5lb, the sale
+ * price while a timed sale runs. A quote wins over a sale: the school agreed
+ * that price. One rule for the cart page and the checkout, so what is shown
+ * is what is charged.
  */
 final class CartPrice
 {
@@ -20,7 +22,7 @@ final class CartPrice
         $list = (float) ($variant?->price ?? $product->price);
         $quoted = self::quoted($item, $product, $variant);
 
-        return $quoted ?? $list;
+        return $quoted ?? SalePrice::apply($list, $product);
     }
 
     public static function quoted(CartItem $item, Product $product, ?ProductVariant $variant): ?float

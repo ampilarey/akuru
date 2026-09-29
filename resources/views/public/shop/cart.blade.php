@@ -48,7 +48,7 @@
                             <div class="min-w-0 flex-1">
                                 <a href="{{ route('public.shop.product', $line['slug']) }}" class="font-medium text-brandMaroon-900 hover:underline" dir="auto">{{ $line['title'] }}</a>
                                 @if($line['variant'])<span class="block text-sm text-gray-600">{{ $line['variant'] }}</span>@endif
-                                <span class="block text-sm text-gray-500">{{ $cart['currency'] }} {{ $line['unit_price'] }}</span>
+                                <span class="block text-sm text-gray-500">{{ $cart['currency'] }} {{ $line['unit_price'] }}@if($line['was_price'] ?? null) <span class="line-through" data-testid="cart-was-price">{{ $line['was_price'] }}</span>@endif</span>
                                 {{-- B9d: a line from an accepted quote keeps its price and quantity while the quote holds. --}}
                                 @if($line['quoted'] ?? false)<span class="mt-1 inline-block rounded bg-green-100 px-2 py-0.5 text-xs text-green-800" data-testid="cart-quoted">{{ __('shop.quoted_price_badge') }}</span>@endif
                                 @if($line['quote_lapsed'] ?? false)<span class="block text-xs text-amber-800" data-testid="cart-quote-lapsed">{{ __('shop.quote_lapsed_note') }}</span>@endif

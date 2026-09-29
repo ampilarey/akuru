@@ -31,6 +31,7 @@
 <div class="{{ $storefront ? '' : 'bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100' }}">
     <nav class="container mx-auto flex flex-wrap gap-2 px-4 pb-4 {{ $storefront ? 'pt-4' : '' }} text-sm" aria-label="{{ __('site.store_menu') }}" data-testid="shop-links">
         <a href="{{ $home ? '#shops' : route('public.shop.index').'#shops' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 font-semibold text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-shops">{{ __('site.shops') }}</a>
+        <a href="{{ route('public.shop.deals') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-deals">{{ __('site.store_deals') }}</a>
         <a href="{{ $home ? '#categories' : route('public.shop.index').'#categories' }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.shop_categories') }}</a>
         <a href="{{ route('public.shop.cart') }}" class="inline-flex items-center gap-1 rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-cart">{{ __('site.cart') }}@if($cartCount > 0)<span class="rounded-full bg-brandMaroon-600 px-1.5 text-xs font-semibold text-white" data-testid="shop-link-cart-count">{{ $cartCount }}</span>@endif</a>
         <a href="{{ route('public.shop.orders') }}" class="inline-flex items-center rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.my_orders') }}</a>
@@ -152,8 +153,10 @@
                     <div>
                         <label class="mb-1 block text-xs text-gray-500">{{ __('shop.sort') }}</label>
                         <select name="sort" class="form-input pe-9" data-testid="filter-sort">
+                            {{-- §5lb: Deals comes ending soonest first unless the visitor sorts. --}}
+                            @if(! empty($filters['deals']))<option value="" @selected(! isset($filters['sort']))>{{ __('shop.sort_ending_soon') }}</option>@endif
                             @foreach($options['sorts'] as $sort)
-                                <option value="{{ $sort }}" @selected(($filters['sort'] ?? 'newest') === $sort)>{{ __('shop.sort_'.$sort) }}</option>
+                                <option value="{{ $sort }}" @selected(($filters['sort'] ?? (empty($filters['deals']) ? 'newest' : '')) === $sort)>{{ __('shop.sort_'.$sort) }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -218,11 +221,15 @@
         </section>
     @endif
 
-    @foreach([['featured', 'featured_heading', 'shop-featured'], ['best_sellers', 'best_sellers', 'shop-best-sellers'], ['recently_viewed', 'recently_viewed', 'shop-recently-viewed']] as [$key, $label, $testid])
+    {{-- §5lb: the deals ending soonest, before the featured shelf, with a way to all of them. --}}
+    @foreach([['deals', 'deals_heading', 'shop-deals'], ['featured', 'featured_heading', 'shop-featured'], ['best_sellers', 'best_sellers', 'shop-best-sellers'], ['recently_viewed', 'recently_viewed', 'shop-recently-viewed']] as [$key, $label, $testid])
         @if(count($home[$key] ?? []) > 0)
             <section class="py-8 {{ $key === 'featured' ? 'bg-brandBeige-50' : '' }}" data-testid="{{ $testid }}">
                 <div class="container mx-auto px-4">
-                    <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">{{ __('shop.'.$label) }}</h2>
+                    <div class="mb-3 flex items-baseline justify-between gap-3">
+                        <h2 class="text-xl font-semibold text-brandMaroon-900">{{ __('shop.'.$label) }}</h2>
+                        @if($key === 'deals')<a href="{{ route('public.shop.deals') }}" class="text-sm font-semibold text-brandMaroon-700 hover:underline" data-testid="shop-deals-all">{{ __('shop.all_deals') }}</a>@endif
+                    </div>
                     <div class="grid grid-cols-2 gap-4 md:grid-cols-4">
                         @foreach(array_slice($home[$key], 0, $key === 'featured' ? 12 : 8) as $card)
                             @include('public.shop._card', ['card' => $card])
@@ -326,7 +333,7 @@
         </h2>
         @if($products->total() === 0)
             {{-- A shop with nothing listed yet says so, rather than blaming the search. --}}
-            <p class="text-gray-500" data-testid="shop-empty">{{ $vendor && ! $collection && $activeFilters === 0 && empty($filters['q']) ? __('shop.shop_nothing_listed') : __('shop.no_results') }}</p>
+            <p class="text-gray-500" data-testid="shop-empty">{{ $vendor && ! $collection && $activeFilters === 0 && empty($filters['q']) ? __('shop.shop_nothing_listed') : (! empty($filters['deals']) && $activeFilters === 0 && empty($filters['q']) ? __('shop.no_deals_now') : __('shop.no_results')) }}</p>
         @endif
         <div class="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4" data-testid="shop-grid">
             @foreach($products as $card)

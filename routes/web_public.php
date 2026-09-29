@@ -57,6 +57,7 @@ Route::get('articles/{slug}', [\App\Domains\Website\Http\Controllers\PublicSite\
 // refuses the words the shop itself uses, so a vendor can never be named
 // "products", "c", "export", "cart", "checkout" or "slips".
 Route::get('shop', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'index'])->name('public.shop.index');
+Route::get('shop/deals', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'deals'])->name('public.shop.deals');
 Route::get('shop/export', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'export'])->name('public.shop.export');
 // B7: suggestions as you type.
 Route::get('shop/suggest', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'suggest'])->name('public.shop.suggest')->middleware('throttle:120,1,shop-suggest');

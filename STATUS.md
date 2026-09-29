@@ -4414,6 +4414,64 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lb. Deals: timed sales and a deals page (2026-09-29)
+
+The first feature from the owner's "Start" on the iruali list
+(BOOKSHOP_PLAN §16, item 1).
+
+- **A shop puts a product on sale** from its product form: "% off"
+  (1–90), "Starts" (optional) and "Ends" (required, in the future, after
+  the start). An empty "% off" ends the sale. A CSV import or a bulk change
+  sends no sale fields, so it leaves a running sale alone.
+  - Migration `2026_09_29_000005_shop_timed_sales`: three nullable columns
+    on `products` (`sale_percent`, `sale_starts_at`, `sale_ends_at`).
+    Additive; nothing backfilled.
+  - The product list marks a product "On sale now" or "Sale starts …".
+- **One rule, `SalePrice`**, for everything a customer sees and pays:
+  - the card shows the sale price, the list price struck through, a
+    "20% off" badge and a live countdown ("Sale ends in 1 d 05:12:33");
+  - the product page shows the same, and the variants' prices are
+    discounted too;
+  - the product's structured data carries `priceValidUntil`;
+  - `CartPrice::unit` charges the sale price in the cart and at checkout,
+    so what is shown is what is charged. The cart shows the list price
+    struck through.
+  - A school quote's price wins over a sale. A discount code applies on
+    top, to the sale price (BOOKSHOP_PLAN §8).
+  - When the sale ends, everything goes back to the list price by itself.
+- **Deals** at `/shop/deals`: everything on sale now, ending soonest first,
+  with the usual filters and CSV. The store's front gets a Deals shelf
+  (eight, ending soonest, with "All deals"), and Deals is in the Bookstore
+  menu in the header and in the store's row of links.
+- **A shop's page shows a new price at once**: saving a product now clears
+  that shop's cached storefront.
+- **No shop can be called "deals".** Such a shop would get `/shop/deals` as
+  its address, and that address belongs to the store. So `deals` is now a
+  reserved word. So are five others the store already used and the list
+  had missed: `suggest`, `newsletter`, `quotes`, `wishlist`, and
+  `book-lists` for the next slice. A test now checks the reserved list
+  against the route list.
+
+Tests:
+- `ShopDealsTest` (6): when a sale runs; the card, product page and
+  variants; the deals page and the front's shelf; the cart and a wallet
+  checkout at the sale price with a code on top, then the list price after
+  the end; the product form's checks and ending a sale; the reserved words match the
+  routes.
+- `StoreMenuTest` updated for the Deals link.
+
+Checklist: `ft-bookstore-11`.
+
+Full suite 2511 passed.
+
+Walk: `scripts/smoke/shop.mjs` 46/46, with seven new steps. The shop sets
+20% off for two days from its product form, and its list says "On sale
+now". A guest opens Deals from the Bookstore menu and sees the badge, the
+struck-through price (MVR 68.00, was 85.00) and a countdown that ticks.
+The product page shows the sale and the front has a Deals shelf. The shop
+then empties "% off" and the book leaves Deals. On Deals the sort box
+reads "Ending soonest".
+
 ## 5la. No bar fixed to the foot of a phone on a shop's own pages (2026-09-29)
 
 The owner sent a phone screenshot of `/shop/fitrah` after §5kz: the site's

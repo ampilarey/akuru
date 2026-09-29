@@ -343,7 +343,25 @@
         document.body.classList.remove('has-cookie-bar');
     }
     </script>
-    
+
+    {{-- STATUS §5lb: a timed sale's countdown, wherever the store shows one ([data-sale-ends]). --}}
+    <script>
+    (() => {
+        const clocks = document.querySelectorAll('[data-sale-ends]');
+        if (!clocks.length) return;
+        const pad = (n) => String(n).padStart(2, '0');
+        const tick = () => clocks.forEach((el) => {
+            const left = Math.floor((Date.parse(el.dataset.saleEnds) - Date.now()) / 1000);
+            if (!(left > 0)) { el.textContent = el.dataset.ended; return; }
+            const d = Math.floor(left / 86400), h = Math.floor(left % 86400 / 3600), m = Math.floor(left % 3600 / 60), s = left % 60;
+            const time = (d > 0 ? d + ' ' + el.dataset.days + ' ' : '') + pad(h) + ':' + pad(m) + ':' + pad(s);
+            el.textContent = el.dataset.template.replace('__TIME__', time);
+        });
+        tick();
+        setInterval(tick, 1000);
+    })();
+    </script>
+
     @stack('scripts')
 </body>
 </html>

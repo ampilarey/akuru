@@ -39,6 +39,10 @@ final class ProductRules
             'price' => 'required|numeric|min:0|max:1000000',
             'compare_at_price' => 'nullable|numeric|min:0|max:1000000',
             'cost' => 'nullable|numeric|min:0|max:1000000',
+            // §5lb: a timed sale — how much off, from when (optional) and until when. The range is checked in the action.
+            'sale_percent' => 'nullable|integer|min:0|max:100',
+            'sale_starts_at' => 'nullable|date',
+            'sale_ends_at' => 'nullable|date',
             'tax_class' => 'required|string|in:standard,zero_rated,exempt',
             'sku' => 'nullable|string|max:64',
             'barcode' => 'nullable|string|max:64',
