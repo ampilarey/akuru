@@ -62,7 +62,9 @@
             ]],
             ['bookstore', __('site.bookstore'), [
                 [__('site.shop'), route('public.shop.index')],
+                [__('site.shops'), route('public.shop.index').'#shops'],
                 [__('site.sell_on_akuru'), route('vendor.apply')],
+                [__('site.shop_owner_signin'), route('vendor.index')],
                 [__('site.delivery_returns'), route('public.page.show', 'delivery-and-returns')],
             ]],
             ['school', __('site.school'), [

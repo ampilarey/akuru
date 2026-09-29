@@ -66,6 +66,13 @@ return [
     'akuru_bookstore' => 'އަކުރު ފޮތްފިހާރަ',
     'sell_prompt' => 'ފިހާރައެއް އޮތްތޯ؟',
     'sell_on_akuru' => 'އަކުރުގައި ވިއްކާ',
+    // STATUS §5ky: the Bookstore's menu.
+    'store_all' => 'ފިހާރައިގައި ހުރިހާ އެއްޗެއް',
+    'shops' => 'ފިހާރަތައް',
+    'shop_categories' => 'ބާވަތްތައް',
+    'my_orders' => 'އަހަރެންގެ އޯޑަރުތައް',
+    'shop_owner_signin' => 'ފިހާރަ ވެރިން: ސައިން އިން',
+    'store_menu' => 'ފޮތްފިހާރައިގެ ބައިތައް',
     'free' => 'ހިލޭ',
     'open_badge' => 'ހުޅުވިފައި',
     'date_tbc' => 'ތާރީޚު ފަހުން',

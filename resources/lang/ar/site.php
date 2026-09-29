@@ -66,6 +66,13 @@ return [
     'akuru_bookstore' => 'متجر أكورو للكتب',
     'sell_prompt' => 'لديك متجر؟',
     'sell_on_akuru' => 'بِع على أكورو',
+    // STATUS §5ky: the Bookstore's menu.
+    'store_all' => 'كل ما في المتجر',
+    'shops' => 'المتاجر',
+    'shop_categories' => 'الفئات',
+    'my_orders' => 'طلباتي',
+    'shop_owner_signin' => 'أصحاب المتاجر: تسجيل الدخول',
+    'store_menu' => 'أقسام متجر الكتب',
     'free' => 'مجاني',
     'open_badge' => 'مفتوحة',
     'date_tbc' => 'الموعد يُعلن لاحقًا',
