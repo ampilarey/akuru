@@ -1,0 +1,40 @@
+<?php
+
+// The public website's frame: the header built around the four products
+// (E-Learning, Digital Library, Bookstore, School), its About menu and the
+// phone's bottom bar (STATUS §5ki, the 2026-09-28 website design).
+return [
+    'main_menu' => 'Main menu',
+    'quick_links' => 'Quick links',
+    'menu' => 'Menu',
+    'home' => 'Home',
+    'courses' => 'Courses',
+    'digital_library' => 'Digital Library',
+    'library' => 'Library',
+    'bookstore' => 'Bookstore',
+    'shop' => 'Shop',
+    'school' => 'School',
+    'about' => 'About',
+    'about_akuru' => 'About Akuru',
+    'about_us' => 'About us',
+    'news' => 'News',
+    'articles' => 'Articles',
+    'research' => 'Research',
+    'events' => 'Events',
+    'gallery' => 'Gallery',
+    'achievements' => 'Achievements',
+    'careers' => 'Careers',
+    'contact' => 'Contact',
+    'call_us' => 'Call us',
+    'account' => 'Account',
+    'login' => 'Login',
+    'enroll' => 'Enroll',
+    'search' => 'Search',
+    'search_placeholder' => 'Search courses, news and events',
+    'cart' => 'Cart',
+    'courses_line' => 'Qur’an, Arabic and Islamic studies',
+    'library_line' => 'E-books and articles',
+    'bookstore_line' => 'Books and school items',
+    'school_line' => 'Admissions and the parent portal',
+    'cookies_short' => 'We use cookies.',
+];

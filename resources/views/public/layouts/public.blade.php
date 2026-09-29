@@ -173,59 +173,49 @@
 
     @include('public.partials.prayer-banner-assets')
 
-    {{-- Sticky Mobile Bottom Bar (small screens only) --}}
-    <nav class="fixed bottom-0 left-0 right-0 z-50 sm:hidden bg-white border-t border-gray-200 shadow-lg safe-area-bottom">
-        <div class="grid grid-cols-5 divide-x divide-gray-100">
-            <a href="{{ route('public.courses.index') }}"
-               class="flex flex-col items-center justify-center py-2.5 gap-0.5 text-gray-600 hover:text-brandMaroon-600 active:bg-gray-50 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                </svg>
-                <span class="text-xs leading-none">Courses</span>
+    {{-- Phone bottom bar: Home · Courses · Library · Shop · Account (STATUS §5ki).
+         Viber moved to the floating chat button, Call into the menu's About. --}}
+    @php
+      $bottomTabs = [
+          ['home', __('site.home'), route('public.home'), request()->routeIs('public.home'), 'M4 11l8-7 8 7v9h-5v-6H9v6H4v-9z'],
+          ['courses', __('site.courses'), route('public.courses.index'), request()->routeIs('public.courses.*'), 'M4 5h16a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zm6 3.5v5l4-2.5-4-2.5zM8 21h8'],
+          ['library', __('site.library'), route('public.library.index'), request()->routeIs('public.library.*'), 'M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3V4zm0 13a3 3 0 013-3h11'],
+          ['shop', __('site.shop'), route('public.shop.index'), request()->routeIs('public.shop.*'), 'M5 8h14l-1 12H6L5 8zm4 0V6a3 3 0 016 0v2'],
+      ];
+    @endphp
+    <nav aria-label="{{ __('site.quick_links') }}" data-testid="bottom-bar"
+         class="fixed bottom-0 left-0 right-0 z-50 sm:hidden bg-white border-t border-gray-200 shadow-lg safe-area-bottom">
+        <div class="grid grid-cols-5">
+            @foreach ($bottomTabs as [$key, $label, $href, $active, $icon])
+            <a href="{{ $href }}" data-testid="bottom-{{ $key }}" @if ($active) aria-current="page" @endif
+               class="bottom-tab flex flex-col items-center justify-center py-2 gap-1 {{ $active ? 'is-active' : '' }}">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icon }}"/></svg>
+                <span class="text-xs leading-none">{{ $label }}</span>
             </a>
-            <a href="{{ route('public.courses.index') }}"
-               class="flex flex-col items-center justify-center py-2.5 gap-0.5 bg-brandMaroon-600 text-white hover:bg-brandMaroon-700 active:bg-brandMaroon-800 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                </svg>
-                <span class="text-xs leading-none">Apply</span>
-            </a>
-            <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}" target="_blank" rel="noopener"
-               class="viber-tab flex flex-col items-center justify-center py-2.5 gap-0.5 active:bg-gray-50 transition-colors">
-                <x-public.viber-icon class="w-5 h-5" />
-                <span class="text-xs leading-none">Viber</span>
-            </a>
-            <a href="tel:{{ $siteSettings['phone'] ?? '+9607972434' }}"
-               class="flex flex-col items-center justify-center py-2.5 gap-0.5 text-gray-600 hover:text-brandMaroon-600 active:bg-gray-50 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/>
-                </svg>
-                <span class="text-xs leading-none">Call</span>
-            </a>
+            @endforeach
             @auth
             {{-- Into the app, to the person's own home (SIGN_IN_PLAN ID3). --}}
             <a href="{{ route('dashboard') }}" data-testid="bottom-my-portal"
-               class="flex flex-col items-center justify-center py-2.5 gap-0.5 text-gray-600 hover:text-brandMaroon-600 active:bg-gray-50 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
-                </svg>
-                <span class="text-xs leading-none">{{ __('nav.my_portal') }}</span>
-            </a>
+               class="bottom-tab flex flex-col items-center justify-center py-2 gap-1">
             @else
-            <a href="{{ route('login') }}"
-               class="flex flex-col items-center justify-center py-2.5 gap-0.5 text-gray-600 hover:text-brandMaroon-600 active:bg-gray-50 transition-colors">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-                </svg>
-                <span class="text-xs leading-none">Login</span>
-            </a>
+            <a href="{{ route('login') }}" data-testid="bottom-login"
+               class="bottom-tab flex flex-col items-center justify-center py-2 gap-1 {{ request()->routeIs('login') ? 'is-active' : '' }}">
             @endauth
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M12 12a4 4 0 100-8 4 4 0 000 8zm-8 9c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>
+                <span class="text-xs leading-none">{{ __('site.account') }}</span>
+            </a>
         </div>
     </nav>
+    <style>
+        .bottom-tab { color: #5E5650; font-weight: 600; min-height: 3.5rem; }
+        .bottom-tab:hover, .bottom-tab.is-active { color: #7C2D37; }
+        .bottom-tab.is-active { font-weight: 700; box-shadow: inset 0 3px 0 #C9A227; }
+    </style>
     {{-- Padding so footer content doesn't hide behind sticky bar on mobile --}}
     <div class="sm:hidden h-16"></div>
 
-    {{-- Viber float button (hidden on mobile since the bottom bar has it).
+    {{-- Viber float button. On a phone it sits above the bottom bar, which
+         no longer carries Viber (STATUS §5ki).
          Brand colour #7360F2; plain scoped CSS because the deployed
          stylesheet is a committed Vite build. --}}
     <style>
@@ -244,14 +234,18 @@
         .viber-float:active { transform: scale(1.02); }
         /* Respect the OS "reduce motion" setting — the pulse is decorative. */
         @media (prefers-reduced-motion: reduce) { .viber-float { animation: none; } }
-        .viber-tab { color: #7360F2; }
-        .viber-tab:hover { color: #5B49D6; }
+        .viber-float { right: 1rem; bottom: 5.25rem; width: 3rem; height: 3rem; }
+        body.has-cookie-bar .viber-float { bottom: 8.5rem; }
+        @media (min-width: 640px) {
+            .viber-float, body.has-cookie-bar .viber-float { right: 1.5rem; bottom: 1.5rem; width: 3.5rem; height: 3.5rem; }
+            body.has-cookie-bar .viber-float { bottom: 4.5rem; }
+        }
     </style>
     <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}" target="_blank" rel="noopener"
-       class="viber-float hidden sm:flex fixed bottom-6 right-6 z-40 w-14 h-14 text-white rounded-full items-center justify-center"
+       class="viber-float flex fixed z-40 text-white rounded-full items-center justify-center" data-testid="viber-float"
        aria-label="{{ __('public.Chat with us on Viber') }}"
        title="{{ __('public.Chat with us on Viber') }}">
-        <x-public.viber-icon class="w-7 h-7" />
+        <x-public.viber-icon class="w-6 h-6 sm:w-7 sm:h-7" />
     </a>
 
     {{-- Google Analytics placeholder - Add your GA4 ID to .env as GA_MEASUREMENT_ID --}}
@@ -298,36 +292,43 @@
     }, true);
     </script>
 
-    {{-- Cookie Consent Banner --}}
-    <div id="cookieConsent" class="fixed bottom-0 left-0 right-0 z-50 hidden bg-white border-t border-gray-200 shadow-lg p-4 md:p-6">
-        <div class="container mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
-            <p class="text-sm text-gray-700">
-                {{ __('public.cookie_consent_message') }}
-                <a href="{{ route('public.page.show', 'privacy-policy') }}" class="text-brandMaroon-600 hover:underline">{{ __('public.Privacy Policy') }}</a>
+    {{-- Cookie consent: one line, above the phone's bottom bar (STATUS §5ki). --}}
+    <div id="cookieConsent" data-testid="cookie-bar" class="cookie-bar fixed left-0 right-0 z-50 hidden shadow-lg" style="background:#1F1A17;color:#EDE6E0">
+        <div class="container mx-auto flex items-center gap-3 px-4 py-2">
+            <p class="text-xs sm:text-sm flex-1 m-0">
+                <span class="sm:hidden">{{ __('site.cookies_short') }}</span>
+                <span class="hidden sm:inline">{{ __('public.cookie_consent_message') }}</span>
+                <a href="{{ route('public.page.show', 'privacy-policy') }}" class="underline" style="color:#E8C766">{{ __('public.Privacy Policy') }}</a>
             </p>
-            <div class="flex gap-3 shrink-0">
-                <button onclick="acceptCookies()" class="px-4 py-2 bg-brandMaroon-600 text-white rounded-lg hover:bg-brandMaroon-700 text-sm font-medium">
-                    {{ __('public.Accept') }}
-                </button>
-                <button onclick="dismissCookies()" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 text-sm">
-                    {{ __('public.Decline') }}
-                </button>
-            </div>
+            <button type="button" onclick="acceptCookies()" class="cookie-btn shrink-0 px-3 rounded-lg text-xs sm:text-sm font-bold" style="background:#C9A227;color:#2B1F04">
+                {{ __('public.Accept') }}
+            </button>
+            <button type="button" onclick="dismissCookies()" class="cookie-btn shrink-0 px-2 text-xs sm:text-sm" style="background:transparent;color:#EDE6E0">
+                {{ __('public.Decline') }}
+            </button>
         </div>
     </div>
+    <style>
+        .cookie-bar { bottom: 4rem; }
+        .cookie-bar .cookie-btn { min-height: 2.25rem; min-width: 0; }
+        @media (min-width: 640px) { .cookie-bar { bottom: 0; } }
+    </style>
     <script>
     (function(){
         if (!localStorage.getItem('cookieConsent')) {
             document.getElementById('cookieConsent').classList.remove('hidden');
+            document.body.classList.add('has-cookie-bar');
         }
     })();
     function acceptCookies() {
         localStorage.setItem('cookieConsent', 'accepted');
         document.getElementById('cookieConsent').classList.add('hidden');
+        document.body.classList.remove('has-cookie-bar');
     }
     function dismissCookies() {
         localStorage.setItem('cookieConsent', 'declined');
         document.getElementById('cookieConsent').classList.add('hidden');
+        document.body.classList.remove('has-cookie-bar');
     }
     </script>
     

@@ -1,3 +1,30 @@
+@php
+  // The website's frame is built around the four products (E-Learning,
+  // Digital Library, Bookstore, School); everything about the institute
+  // itself sits under About (the 2026-09-28 website design, STATUS §5ki).
+  $siteProducts = [
+      ['key' => 'courses', 'label' => __('site.courses'), 'short' => __('site.courses'), 'line' => __('site.courses_line'), 'href' => route('public.courses.index'), 'active' => request()->routeIs('public.courses.*'),
+       'icon' => 'M4 5h16a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V6a1 1 0 011-1zm6 3.5v5l4-2.5-4-2.5zM8 21h8'],
+      ['key' => 'library', 'label' => __('site.digital_library'), 'short' => __('site.library'), 'line' => __('site.library_line'), 'href' => route('public.library.index'), 'active' => request()->routeIs('public.library.*'),
+       'icon' => 'M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3V4zm0 13a3 3 0 013-3h11'],
+      ['key' => 'bookstore', 'label' => __('site.bookstore'), 'short' => __('site.shop'), 'line' => __('site.bookstore_line'), 'href' => route('public.shop.index'), 'active' => request()->routeIs('public.shop.*'),
+       'icon' => 'M5 8h14l-1 12H6L5 8zm4 0V6a3 3 0 016 0v2'],
+      ['key' => 'school', 'label' => __('site.school'), 'short' => __('site.school'), 'line' => __('site.school_line'), 'href' => route('public.admissions.create'), 'active' => request()->routeIs('public.admissions.*'),
+       'icon' => 'M3 10l9-5 9 5-9 5-9-5zm4 2v5c3 2 7 2 10 0v-5m4-2v5'],
+  ];
+  $siteAboutLinks = collect([
+      ['public.about', 'site.about_us'],
+      ['public.news.index', 'site.news'],
+      ['public.articles.index', 'site.articles'],
+      ['public.research.index', 'site.research'],
+      ['public.events.index', 'site.events'],
+      ['public.gallery.index', 'site.gallery'],
+      ['public.achievements', 'site.achievements'],
+      ['public.careers', 'site.careers'],
+      ['public.contact.create', 'site.contact'],
+  ])->map(fn ($l) => ['href' => route($l[0]), 'label' => __($l[1]), 'active' => request()->routeIs($l[0], str_replace('.index', '.*', $l[0]))])->all();
+  $siteAboutActive = collect($siteAboutLinks)->contains('active', true);
+@endphp
 <div style="height:3px;background:linear-gradient(90deg,#A8861F,#C9A227,#E8BC3C,#C9A227,#A8861F)"></div>
 <nav class="bg-white border-b border-gray-100 shadow-sm sticky top-0 z-50">
   <div class="container mx-auto flex items-center justify-between py-3 px-4">
@@ -13,66 +40,37 @@
       @include('public.partials.prayer-banner')
     </div>
 
-    <!-- Desktop Navigation -->
-    <div class="nav-desktop items-center">
-      <a href="{{ route('public.courses.index') }}" 
-         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
-        {{ __('public.Courses') }}
-      </a>
-      <a href="{{ route('public.news.index') }}" 
-         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
-        {{ __('public.News') }}
-      </a>
-      <a href="{{ route('public.articles.index') }}" 
-         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
-        Articles
-      </a>
-      <a href="{{ route('public.research.index') }}"
-         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
-        {{ __('public.Research') }}
-      </a>
-      <a href="{{ route('public.library.index') }}"
-         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
-        {{ __('public.Digital Library') }}
-      </a>
-      <a href="{{ route('public.shop.index') }}"
-         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
-        {{ __('shop.nav_shop') }}
-      </a>
-      <a href="{{ route('public.shop.cart') }}" data-testid="nav-cart"
-         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200" aria-label="{{ __('shop.cart_title') }}">
-        🛒
-      </a>
-      <a href="{{ route('public.events.index') }}" 
-         class="text-brandGray-600 hover:text-brandGold-600 transition-colors duration-200">
-        {{ __('public.Events') }}
-      </a>
-      <a href="{{ route('public.gallery.index') }}" 
-         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
-        {{ __('public.Gallery') }}
-      </a>
-      <a href="{{ route('public.achievements') }}" 
-         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
-        Achievements
-      </a>
-      <a href="{{ route('public.contact.create') }}" 
-         class="text-brandGray-600 hover:text-brandMaroon-600 transition-colors duration-200">
-        {{ __('public.Contact') }}
-      </a>
-      {{-- Prayer strip (Bake&Grill-style, Akuru colors) --}}
+    {{-- Desktop navigation: the four products, then About (STATUS §5ki). --}}
+    <div class="nav-desktop items-center" data-testid="site-nav">
+      <nav aria-label="{{ __('site.main_menu') }}" class="nav-links">
+        @foreach ($siteProducts as $product)
+          <a href="{{ $product['href'] }}" data-testid="nav-{{ $product['key'] }}"
+             class="nav-link {{ $product['active'] ? 'is-active' : '' }}" @if ($product['active']) aria-current="page" @endif>
+            {{ $product['label'] }}
+          </a>
+        @endforeach
+        <div class="nav-about" id="nav-about">
+          <button type="button" class="nav-link nav-about-btn {{ $siteAboutActive ? 'is-active' : '' }}" aria-expanded="false" aria-controls="nav-about-menu"
+                  onclick="toggleAboutMenu(event)" data-testid="nav-about">
+            {{ __('site.about') }}
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="nav-about-menu" class="nav-about-menu" data-testid="nav-about-menu">
+            @foreach ($siteAboutLinks as $link)
+              <a href="{{ $link['href'] }}" @if ($link['active']) aria-current="page" @endif>{{ $link['label'] }}</a>
+            @endforeach
+          </div>
+        </div>
+      </nav>
+      {{-- Prayer strip (Bake&Grill-style, Akuru colors) — unchanged by the redesign. --}}
       <div class="header-prayer nav-prayer" data-block="prayer_bar">
         @include('public.partials.prayer-banner')
       </div>
-      {{-- Search icon --}}
-      <a href="{{ route('public.search') }}" class="nav-icon text-brandGray-500 hover:text-brandMaroon-600 transition-colors" aria-label="Search">
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-        </svg>
+      <a href="{{ route('public.search') }}" class="nav-icon" aria-label="{{ __('site.search') }}" title="{{ __('site.search') }}" data-testid="nav-search">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
       </a>
-      <a href="{{ route('public.courses.index') }}"
-         class="nav-cta font-bold rounded-lg shadow-md transition-all hover:scale-105"
-         style="background:#C9A227;color:#491821">
-        {{ __('public.Enroll') }}
+      <a href="{{ route('public.shop.cart') }}" class="nav-icon" data-testid="nav-cart" aria-label="{{ __('shop.cart_title') }}" title="{{ __('site.cart') }}">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M3 4h2l2.4 11.2a1 1 0 001 .8h9.2a1 1 0 001-.8L20 8H6.2M9 20.5a1 1 0 100-2 1 1 0 000 2zm8 0a1 1 0 100-2 1 1 0 000 2z"/></svg>
       </a>
     </div>
 
@@ -88,23 +86,50 @@
          committed Vite build with no `xl:` variants compiled in. */
       .nav-logo { flex: 0 0 auto; }
       .nav-logo img { min-width: 0; }
-      .nav-desktop { display: none; min-width: 0; }
+      .nav-desktop, .nav-desktop-only { display: none; min-width: 0; }
       .nav-mobile-only { display: block; }
-      .nav-desktop > a { font-size: .8125rem; white-space: nowrap; }
-      .nav-desktop .nav-icon { flex: 0 0 auto; }
-      .nav-cta { padding: .5rem 1rem; }
+      .nav-links { display: flex; align-items: center; gap: 1.1rem; }
+      .nav-link { display: inline-flex; align-items: center; gap: .2rem; font-size: .9rem; font-weight: 600; color: #3F3A36; white-space: nowrap; background: none; border: 0; padding: .35rem 0; cursor: pointer; border-bottom: 2px solid transparent; }
+      .nav-link:hover, .nav-link.is-active { color: #7C2D37; }
+      .nav-link.is-active { border-bottom-color: #C9A227; }
+      .nav-about { position: relative; }
+      .nav-about-menu { display: none; position: absolute; top: 100%; inset-inline-start: -1rem; z-index: 60; min-width: 13rem; padding: .4rem; margin-top: .35rem; background: #fff; border: 1px solid #EDE4D8; border-radius: .75rem; box-shadow: 0 16px 40px rgba(60,20,27,.14); }
+      .nav-about.is-open .nav-about-menu { display: block; }
+      .nav-about-menu a { display: block; padding: .55rem .8rem; border-radius: .5rem; font-size: .875rem; color: #3F3A36; text-decoration: none; }
+      .nav-about-menu a:hover, .nav-about-menu a[aria-current] { background: #FBF6EC; color: #7C2D37; }
+      .nav-icon { flex: 0 0 auto; display: inline-flex; align-items: center; justify-content: center; width: 2.5rem; height: 2.5rem; border-radius: .6rem; color: #3F3A36; }
+      .nav-icon:hover { color: #7C2D37; background: #FBF6EC; }
+      .nav-cta { padding: .5rem 1.1rem; }
       /* The prayer pill is the one flexible item: it gives up width
          before anything else is pushed out of the row. */
-      .header-prayer:not(.header-prayer--mobile) { width: min(320px, 19vw); flex: 0 1 auto; }
+      .header-prayer:not(.header-prayer--mobile) { width: min(330px, 24vw); flex: 0 1 auto; }
       @media (min-width: 1280px) {
-        .nav-desktop { display: flex; gap: .7rem; }
+        .nav-desktop { display: flex; gap: .6rem; }
+        .nav-links { margin-inline-end: .5rem; }
+        .nav-desktop-only { display: inline-flex; }
         .nav-mobile-only, .nav-mobile-menu { display: none !important; }
       }
       @media (min-width: 1400px) {
-        .nav-desktop { gap: .85rem; }
-        .nav-desktop > a { font-size: .875rem; }
-        .nav-cta { padding: .5rem 1.25rem; }
+        .nav-links { gap: 1.5rem; }
+        .nav-link { font-size: .95rem; }
+        .nav-cta { padding: .5rem 1.35rem; }
       }
+      /* The phone menu: search, the four products, About, the account.
+         It scrolls on its own so a short screen reaches the bottom of it
+         above the bottom bar. */
+      #mobileMenu:not(.hidden) { max-height: calc(100dvh - 4.5rem); overflow-y: auto; }
+      @media (max-width: 639px) { #mobileMenu:not(.hidden) { max-height: calc(100dvh - 8.5rem); } }
+      .nav-m-search { display: flex; align-items: center; gap: .6rem; padding: 0 .9rem; height: 3rem; border: 1px solid #DCCFBE; border-radius: .75rem; background: #fff; }
+      .nav-m-search input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font-size: 16px; padding: 0; box-shadow: none; }
+      .nav-m-products { margin-top: .9rem; border: 1px solid #EDE4D8; border-radius: .9rem; overflow: hidden; background: #fff; }
+      .nav-m-products a { display: flex; align-items: center; gap: .8rem; padding: .8rem .9rem; color: #1F1A17; text-decoration: none; border-top: 1px solid #F1EAE0; }
+      .nav-m-products a:first-child { border-top: 0; }
+      .nav-m-products a[aria-current] { background: #FBF6EC; }
+      .nav-m-icon { flex: 0 0 auto; width: 2.5rem; height: 2.5rem; border-radius: .6rem; background: #F6ECEE; color: #7C2D37; display: flex; align-items: center; justify-content: center; }
+      .nav-m-heading { margin: 1.1rem .25rem .5rem; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6B625B; }
+      .nav-m-about { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; }
+      .nav-m-about a { display: flex; align-items: center; min-height: 2.75rem; padding: 0 .8rem; border: 1px solid #EDE4D8; border-radius: .6rem; background: #fff; font-size: .875rem; font-weight: 600; color: #3F3A36; text-decoration: none; }
+      .nav-m-about a[aria-current] { border-color: #C9A227; color: #7C2D37; }
       .nav-right { gap: .4rem; }
       .nav-translate { padding: .375rem .45rem; }
       .nav-burger { padding: .35rem; margin-right: -.35rem; }
@@ -237,9 +262,15 @@
         @endauth
       </div>
 
+      <a href="{{ route('public.courses.index') }}" data-testid="nav-enroll"
+         class="nav-cta nav-desktop-only font-bold rounded-lg shadow-md transition-all hover:scale-105"
+         style="background:#C9A227;color:#491821">
+        {{ __('site.enroll') }}
+      </a>
+
       {{-- ── Hamburger (mobile/tablet) ── --}}
       <button class="nav-burger nav-mobile-only text-brandGray-600 hover:text-brandMaroon-600 transition-colors"
-              onclick="toggleMobileMenu()" aria-label="Toggle mobile menu">
+              onclick="toggleMobileMenu()" aria-label="{{ __('site.menu') }}" aria-expanded="false" aria-controls="mobileMenu" data-testid="nav-burger">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
@@ -248,99 +279,65 @@
     </div>
   </div>
 
-  <!-- Mobile Navigation -->
-  <div id="mobileMenu" class="hidden nav-mobile-menu bg-white border-t shadow-lg">
-    <div class="container mx-auto py-4 px-4 space-y-1">
-      <!-- Mobile Navigation Links -->
-      <a href="{{ route('public.courses.index') }}" 
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-        {{ __('public.Courses') }}
-      </a>
-      <a href="{{ route('public.news.index') }}" 
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-        {{ __('public.News') }}
-      </a>
-      <a href="{{ route('public.research.index') }}"
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-        {{ __('public.Research') }}
-      </a>
-      <a href="{{ route('public.library.index') }}"
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-        {{ __('public.Digital Library') }}
-      </a>
-      <a href="{{ route('public.shop.index') }}"
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-        {{ __('shop.nav_shop') }}
-      </a>
-      <a href="{{ route('public.shop.cart') }}"
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-        {{ __('shop.cart_title') }}
-      </a>
-      <a href="{{ route('public.events.index') }}" 
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandGold-600 hover:bg-brandGold-50 rounded-lg transition-colors duration-200">
-        {{ __('public.Events') }}
-      </a>
-      <a href="{{ route('public.gallery.index') }}" 
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-        {{ __('public.Gallery') }}
-      </a>
-      <a href="{{ route('public.achievements') }}" 
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-        Achievements
-      </a>
-      <a href="{{ route('public.contact.create') }}" 
-         class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-        {{ __('public.Contact') }}
-      </a>
-      
-      <!-- Mobile Login/Portal/Logout -->
-      <div class="pt-2 border-t border-gray-200 mt-4">
+  {{-- Phone and tablet menu: search, the four products, About, the account (STATUS §5ki). --}}
+  <div id="mobileMenu" class="hidden nav-mobile-menu border-t shadow-lg" style="background:#FBF8F3" data-testid="mobile-menu">
+    <div class="container mx-auto py-4 px-4">
+      <form action="{{ route('public.search') }}" method="GET" role="search" class="nav-m-search">
+        <svg class="w-5 h-5 shrink-0" fill="none" stroke="#6B625B" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        <label for="nav-m-q" class="sr-only">{{ __('site.search') }}</label>
+        <input id="nav-m-q" type="search" name="q" placeholder="{{ __('site.search_placeholder') }}" autocomplete="off">
+      </form>
+
+      <div class="nav-m-products" data-testid="mobile-menu-products">
+        @foreach ($siteProducts as $product)
+          <a href="{{ $product['href'] }}" @if ($product['active']) aria-current="page" @endif>
+            <span class="nav-m-icon"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $product['icon'] }}"/></svg></span>
+            <span class="flex flex-col">
+              <strong class="text-base">{{ $product['label'] }}</strong>
+              <span class="text-sm" style="color:#5E5650">{{ $product['line'] }}</span>
+            </span>
+          </a>
+        @endforeach
+      </div>
+
+      <p class="nav-m-heading">{{ __('site.about_akuru') }}</p>
+      <div class="nav-m-about" data-testid="mobile-menu-about">
+        @foreach ($siteAboutLinks as $link)
+          <a href="{{ $link['href'] }}" @if ($link['active']) aria-current="page" @endif>{{ $link['label'] }}</a>
+        @endforeach
+        <a href="tel:{{ $siteSettings['phone'] ?? '+9607972434' }}">{{ __('site.call_us') }}</a>
+      </div>
+
+      <div class="pt-3 mt-4 border-t border-gray-200">
         @auth
-          <p class="px-4 py-1 text-xs text-gray-400">Signed in as {{ auth()->user()->navLabel() }}</p>
-          {{-- One door into the app for everyone (ID3), as above. --}}
+          <p class="px-1 py-1 text-xs text-gray-500">Signed in as {{ auth()->user()->navLabel() }}</p>
+          {{-- One door into the app for everyone (ID3). --}}
           <a href="{{ route('dashboard') }}" data-testid="nav-my-portal-mobile"
              class="block py-3 px-4 font-semibold text-white rounded-lg mb-1"
              style="background:linear-gradient(135deg,#7C2D37,#5A1F28)">
             {{ __('nav.my_portal') }}
           </a>
-          <a href="{{ route('my.enrollments') }}"
-             class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-            {{ __('nav.my_enrolments') }}
-          </a>
-          <a href="{{ route('public.library.my') }}"
-             class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-            {{ __('public.My Library') }}
-          </a>
-          <a href="{{ route('public.wallet') }}"
-             class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-            {{ __('public.My Wallet') }}
-          </a>
+          <a href="{{ route('my.enrollments') }}" class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg">{{ __('nav.my_enrolments') }}</a>
+          <a href="{{ route('public.library.my') }}" class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg">{{ __('public.My Library') }}</a>
+          <a href="{{ route('public.wallet') }}" class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg">{{ __('public.My Wallet') }}</a>
           <form method="POST" action="{{ route('logout') }}" class="px-4 pt-1 pb-2">
             @csrf
-            <button type="submit"
-                    class="w-full text-left py-2.5 px-0 text-sm text-red-600 hover:text-red-700 flex items-center gap-2">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                      d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-              </svg>
+            <button type="submit" class="w-full text-left py-2.5 px-0 text-sm text-red-600 hover:text-red-700 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
               Log out
             </button>
           </form>
-        @else
-          <a href="{{ route('login') }}"
-             class="block py-3 px-4 text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 rounded-lg transition-colors duration-200">
-            Login
-          </a>
         @endauth
-      </div>
-
-      <!-- Mobile Apply Now Button -->
-      <div class="pt-4">
-        <a href="{{ route('public.courses.index') }}"
-           class="block w-full py-3 px-4 text-center rounded-lg font-bold shadow-md transition-colors"
-           style="background:#C9A227;color:#491821">
-          {{ __('public.Enroll') }}
-        </a>
+        <div class="grid grid-cols-2 gap-2 pt-2">
+          @guest
+            <a href="{{ route('login') }}" class="flex items-center justify-center py-3 rounded-lg border font-semibold" style="border-color:#C7B49A;background:#fff;color:#1F1A17">{{ __('site.login') }}</a>
+          @endguest
+          <a href="{{ route('public.courses.index') }}"
+             class="@auth col-span-2 @endauth flex items-center justify-center py-3 rounded-lg font-bold shadow-md"
+             style="background:#C9A227;color:#491821">
+            {{ __('site.enroll') }}
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -482,8 +479,30 @@ function toggleUserMenu() {
   document.getElementById('gt-dropdown')?.classList.add('hidden');
 }
 
+// ── About menu (desktop) ─────────────────────────────────────────
+function toggleAboutMenu(e) {
+  e.stopPropagation();
+  var box = document.getElementById('nav-about');
+  var open = !box.classList.contains('is-open');
+  box.classList.toggle('is-open', open);
+  box.querySelector('button').setAttribute('aria-expanded', open ? 'true' : 'false');
+}
+document.addEventListener('keydown', function(e) {
+  var box = document.getElementById('nav-about');
+  if (e.key === 'Escape' && box && box.classList.contains('is-open')) {
+    box.classList.remove('is-open');
+    box.querySelector('button').setAttribute('aria-expanded', 'false');
+    box.querySelector('button').focus();
+  }
+});
+
 // Close dropdowns on outside click
 document.addEventListener('click', function(e) {
+  var about = document.getElementById('nav-about');
+  if (about && !about.contains(e.target)) {
+    about.classList.remove('is-open');
+    about.querySelector('button').setAttribute('aria-expanded', 'false');
+  }
   if (!document.getElementById('gt-wrapper')?.contains(e.target))
     document.getElementById('gt-dropdown')?.classList.add('hidden');
   if (!document.getElementById('user-menu-wrapper')?.contains(e.target))
@@ -513,11 +532,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (menu.classList.contains('hidden')) {
       menu.classList.remove('hidden');
-      menu.style.maxHeight = menu.scrollHeight + 'px';
       button.setAttribute('aria-expanded', 'true');
     } else {
       menu.classList.add('hidden');
-      menu.style.maxHeight = '0px';
       button.setAttribute('aria-expanded', 'false');
     }
   };
@@ -531,7 +548,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (!menu.contains(event.target) && !button.contains(event.target)) {
       menu.classList.add('hidden');
-      menu.style.maxHeight = '0px';
       button.setAttribute('aria-expanded', 'false');
     }
   });
@@ -545,7 +561,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (window.innerWidth >= 1280) { // desktop link row takes over
       menu.classList.add('hidden');
-      menu.style.maxHeight = '0px';
       button.setAttribute('aria-expanded', 'false');
     }
   });

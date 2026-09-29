@@ -23,7 +23,8 @@ it('heads the shelf with the full name and links it by the short one', function 
         ->assertDontSee('Knowledge Library');
 
     // The public header (desktop and mobile) and the footer.
-    preg_match_all('#<a[^>]+href="[^"]*/library"[^>]*>\s*Digital Library\s*</a>#', $shelf->getContent(), $links);
+    preg_match_all('#<a[^>]+href="[^"]*/library"[^>]*>((?:(?!</a>).)*)</a>#s', $shelf->getContent(), $anchors);
+    $links = [array_filter($anchors[1], fn ($inner) => str_starts_with(trim(preg_replace('/\s+/', ' ', strip_tags($inner))), 'Digital Library'))];
     expect(count($links[0]))->toBeGreaterThanOrEqual(3);
 
     $this->withoutLocalizationMiddleware()->get(route('public.gift-cards.index'))

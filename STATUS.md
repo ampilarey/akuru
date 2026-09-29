@@ -4414,6 +4414,62 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ki. W1: the website's header leads with the four products (2026-09-29)
+
+The owner asked what the website should change now that Akuru's core is four
+products — E-Learning, the Digital Library, the Bookstore and the School —
+approved a design (desktop and phone home page, drawn on a canvas) with one
+condition, "I need prayer time unchanged", and said "Build all". Three
+slices: **W1** the header and the phone's bars (this), **W2** the home page's
+sections, **W3** the footer and the stats row.
+
+**Desktop header** (`components/public/nav.blade.php`, from 1280px): Courses ·
+Digital Library · Bookstore · School, then **About ▾** holding About us, News,
+Articles, Research, Events, Gallery, Achievements, Careers and Contact — the
+nine links that used to sit in one flat row beside the products. The product
+you are in is underlined and carries `aria-current`. The prayer pill is the
+same partial in the same place (it gains width, since the row is shorter);
+search and the cart are icons (the cart was an emoji); Enroll moves to the end.
+School points at Admissions, the only public door the school has.
+
+**Phone and tablet menu**: a search box (the site search, `?q=`), the four
+products as rows with a line each, About Akuru as a grid with **Call us**
+added, then the account and Enroll. It scrolls on its own, so a short phone
+reaches its end above the bottom bar.
+
+**Phone bottom bar** (`public/layouts/public.blade.php`): **Home · Courses ·
+Library · Shop · Account** — was Courses · Apply · Viber · Call · Login, two of
+which were the same link. Account opens the person's own home when signed in
+(ID3's door, same test id), sign-in otherwise. Viber is the floating chat
+button, which a phone now shows too, above the bar; Call is in the menu.
+
+**Cookie bar**: one line on a phone ("We use cookies." + Privacy + Accept /
+Decline) sitting above the bottom bar instead of over it; the full sentence
+from 640px.
+
+New strings are one group, `lang/{en,dv,ar}/site.php`, in all three languages.
+
+**Tests.** `SiteFrameTest` (new, 7): the four product links and where they go;
+About holds its nine and the row no longer carries News or Gallery; the
+current product is marked in the header and the bar; the prayer bar is still
+rendered twice (desktop row, phone header); the bar is exactly Home, Courses,
+Library, Shop, Account with no Viber in it; the phone menu has the search
+form, four products, About and Call us; signed in, Account is the door into
+the app; Dhivehi and Arabic strings exist. `EveryDoorLeadsIntoTheShellTest`,
+`PublicPagesDoNotCrashTest` and the architecture suite: 80 passed.
+`BookstoreNameTest` and `DigitalLibraryNameTest` counted menu links by exact
+markup (`>Bookstore</a>`); the phone menu's rows carry the name in a
+`<strong>` beside its line, so they now count links by visible text. Full
+suite: 2447 passed.
+
+**Walked.** `scripts/smoke/website.mjs` (new, read-only, in `all.mjs`): 34/34 —
+the four products and the prayer times in the desk header; About opens,
+Research opens from it, Escape closes it; the phone bar's four tabs each go
+where they say and light up; the chat button shows on a phone; the menu
+opens with the products and About and its search lands on results; `/`,
+`/library`, `/shop` and `/courses` fit 360, 390, 1024, 1280 and 1440px.
+`identity.mjs` (the website's door into the app, from the phone menu): 47/47.
+
 ## 5kh. Feature testing: the owner's checklist in the System section (2026-09-28)
 
 The owner: "I want to start testing each and every feature one by one …
