@@ -397,6 +397,24 @@ Only orders paid after that moment earn, so turning it on never pays for
 the past. The money comes out of Akuru's side: it is wallet credit Akuru
 funds, not the shop's. "Not yet" is a legible answer.
 
+### 21. Bookstore referral credit — the amounts, and when to turn it on
+
+Referral credit is built and **off** (STATUS §5ln). Once it is on:
+- Each customer gets an invite link on My orders.
+- A friend who has never ordered from the Bookstore opens it and places
+  their first order.
+- Once that order is delivered and past its return window, both get
+  wallet credit.
+
+**What to decide**, all on `/admin/bookshop` → Referral credit:
+- the credit to the customer (default MVR 25);
+- the credit to the friend (default MVR 25);
+- the smallest first order that counts (default MVR 100);
+- when to press **Turn referral credit on**.
+
+Only friends who come after that moment count. Like rewards (item 20), it
+is wallet credit Akuru funds. "Not yet" is a legible answer.
+
 ## Parked items and later ideas
 
 Everything deferred or left unbuilt on purpose — the BML secret, branch

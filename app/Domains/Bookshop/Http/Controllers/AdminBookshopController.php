@@ -25,6 +25,7 @@ use App\Domains\Bookshop\Actions\ModerateReviewAction;
 use App\Domains\Bookshop\Actions\ModerateStorefrontAction;
 use App\Domains\Bookshop\Actions\Money\IssueCommissionInvoicesAction;
 use App\Domains\Bookshop\Actions\Money\LoyaltyRewardsAction;
+use App\Domains\Bookshop\Actions\Money\ReferralCreditAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Actions\Orders\RefundOrderAction;
 use App\Domains\Bookshop\Actions\SaveBookshopNoticeSwitchesAction;
@@ -81,6 +82,7 @@ class AdminBookshopController extends Controller
             'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges'))],
             'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
             'rewards' => app(LoyaltyRewardsAction::class)->report() + ['max_percent' => (float) config('bookshop.loyalty.max_percent')],
+            'referrals' => app(ReferralCreditAction::class)->report() + ['max_amount' => (float) config('bookshop.referrals.max_amount')],
             'shop_open' => ['open' => app(ShopOpenAction::class)->isOpen(), 'message' => app(ShopOpenAction::class)->message()],
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
@@ -497,6 +499,39 @@ class AdminBookshopController extends Controller
             }
             fclose($out);
         }, 'bookstore-rewards.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** STATUS §5ln: referral credit on or off, and the office's amounts. */
+    public function saveReferrals(Request $request): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $max = (float) config('bookshop.referrals.max_amount');
+        $data = $request->validate([
+            'on' => 'required|boolean',
+            'referrer_amount' => 'required|numeric|min:1|max:'.$max,
+            'friend_amount' => 'required|numeric|min:1|max:'.$max,
+            'min_order' => 'required|numeric|min:0|max:100000',
+        ]);
+
+        app(ReferralCreditAction::class)->save((bool) $data['on'], (float) $data['referrer_amount'], (float) $data['friend_amount'], (float) $data['min_order']);
+
+        return back()->with('success', __($data['on'] ? 'shop.referrals_on_flash' : 'shop.referrals_off_flash'));
+    }
+
+    /** Every listing gets a CSV (conventions): the referrals. */
+    public function exportReferrals(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $rows = app(ReferralCreditAction::class)->rows();
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['date', 'checkout', 'referrer_id', 'friend_id', 'status', 'goods_paid', 'referrer_credit', 'friend_credit', 'currency']);
+            foreach ($rows as $row) {
+                Csv::put($out, $row);
+            }
+            fclose($out);
+        }, 'bookstore-referrals.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
     }
 
     /** B9a: open or close the "Open a shop" form. */

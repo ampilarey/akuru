@@ -487,5 +487,5 @@ to the Bookstore, then said "Start" on the list. One PR each, in this order.
 | 8e | **Two-step sign-in** for everyone who signs in (shops, office, teachers, customers): an authenticator app, eight one-use recovery codes, off unless the person turns it on | **Built** (STATUS §5lk) |
 | 8f | **The catalogue API**: read-only JSON of what `/shop` shows — products (the listing's filters and sorts, paged), one product, the shops, the categories; `?lang=en|dv|ar`; 60 a minute | **Built** (STATUS §5ll) |
 | 9 | **Rewards** (the loyalty item): a share of the goods paid for back into the wallet after the return window; office sets share, smallest order, cap; built **off**, only orders paid after it is turned on earn | **Built, off** (STATUS §5lm; the owner's numbers: OWNER_ACTIONS item 20) |
-| 9b | Referral credit — built **off**, with the office's settings, through the Commerce wallet, never on gift cards | next |
+| 9b | **Referral credit**: a customer's invite link; a friend's first order through it; once delivered and past its return window, wallet credit for both; office sets both amounts and the smallest first order; built **off** | **Built, off** (STATUS §5ln; the owner's numbers: OWNER_ACTIONS item 21) |
 

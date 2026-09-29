@@ -13,6 +13,16 @@
         </div>
     </div>
 
+    @if($invite ?? null)
+        {{-- STATUS §5ln: a customer's share link, while referral credit is on. --}}
+        <section class="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm" data-testid="referral-invite">
+            <h2 class="font-semibold text-green-900">{{ __('shop.referral_title') }}</h2>
+            <p class="mb-2 text-green-900">{{ __('shop.referral_intro', ['you' => 'MVR '.$invite['referrer_amount'], 'friend' => 'MVR '.$invite['friend_amount'], 'min' => 'MVR '.$invite['min_order']]) }}</p>
+            <input type="text" readonly value="{{ $invite['url'] }}" dir="ltr" class="form-input w-full bg-white font-mono text-xs" aria-label="{{ __('shop.referral_link') }}" data-testid="referral-link">
+            <p class="mt-2 text-xs text-green-800" data-testid="referral-counts">{{ __('shop.referral_counts', ['paid' => $invite['paid'], 'pending' => $invite['pending']]) }}</p>
+        </section>
+    @endif
+
     @if(count($orders) === 0)
         <p class="rounded-lg border bg-white p-6 text-gray-600" data-testid="no-orders">{{ __('shop.no_orders') }}</p>
     @else

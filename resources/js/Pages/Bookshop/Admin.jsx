@@ -922,6 +922,53 @@ function Rewards({ rewards, t }) {
     );
 }
 
+/** STATUS §5ln: referral credit — both get wallet credit once a friend's first order is delivered and past its return window. Off until turned on. */
+function Referrals({ referrals, t }) {
+    const s = referrals.settings;
+    const form = useForm({ on: s.on ? 1 : 0, referrer_amount: String(s.referrer_amount), friend_amount: String(s.friend_amount), min_order: String(s.min_order) });
+    const save = (on) => {
+        form.transform((data) => ({ ...data, on }));
+        form.post('/admin/bookshop/referrals', { preserveScroll: true });
+    };
+
+    return (
+        <section className="mt-8" data-testid="office-referrals">
+            <h2 className="mb-1 text-lg font-semibold">{t.referrals_label}</h2>
+            <p className="mb-2 max-w-3xl text-sm text-gray-600">{t.referrals_hint}</p>
+            <div className="space-y-3 rounded border bg-white p-3 text-sm">
+                <p data-testid="referrals-state">
+                    <span className={`rounded px-2 py-0.5 font-semibold ${s.on ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'}`}>{s.on ? t.rewards_is_on : t.rewards_is_off}</span>
+                    {s.on && s.since && <>{' '}<span className="ms-1 text-gray-600">{(t.referrals_since || '').replace(':date', s.since.slice(0, 10))}</span></>}
+                </p>
+                <div className="flex flex-wrap items-end gap-3">
+                    <label>{t.referrals_referrer_amount}
+                        <input type="number" step="1" min="1" max={referrals.max_amount} className="form-input mt-1 block w-28" value={form.data.referrer_amount} onChange={(e) => form.setData('referrer_amount', e.target.value)} data-testid="referrals-referrer" />
+                    </label>
+                    <label>{t.referrals_friend_amount}
+                        <input type="number" step="1" min="1" max={referrals.max_amount} className="form-input mt-1 block w-28" value={form.data.friend_amount} onChange={(e) => form.setData('friend_amount', e.target.value)} data-testid="referrals-friend" />
+                    </label>
+                    <label>{t.referrals_min_order}
+                        <input type="number" step="1" min="0" className="form-input mt-1 block w-28" value={form.data.min_order} onChange={(e) => form.setData('min_order', e.target.value)} data-testid="referrals-min" />
+                    </label>
+                    <button type="button" className="btn-primary" disabled={form.processing} onClick={() => save(s.on ? 1 : 0)} data-testid="referrals-save">{t.save}</button>
+                    <button type="button" className="btn-secondary" disabled={form.processing} onClick={() => save(s.on ? 0 : 1)} data-testid="toggle-referrals">{s.on ? t.referrals_turn_off : t.referrals_turn_on}</button>
+                </div>
+                {['referrer_amount', 'friend_amount', 'min_order'].map((k) => form.errors[k] && <p key={k} className="text-red-700">{form.errors[k]}</p>)}
+                <p className="text-gray-600" data-testid="referrals-paid">
+                    {(t.referrals_paid || '').replace(':count', referrals.paid_count).replace(':pending', referrals.pending_count).replace(':total', referrals.paid_total)}
+                    {' '}<a href="/admin/bookshop/referrals/export" className="underline" data-testid="referrals-export">{t.export_csv}</a>
+                </p>
+                {referrals.latest.length > 0 && (
+                    <table className="w-full text-start text-xs">
+                        <thead><tr className="text-gray-500"><th className="text-start">{t.date}</th><th className="text-start">{t.referrals_col_checkout}</th><th className="text-start">{t.referrals_col_status}</th><th className="text-end">MVR</th></tr></thead>
+                        <tbody>{referrals.latest.map((r) => <tr key={`${r.checkout}-${r.at}`} className="border-t"><td>{r.at}</td><td dir="ltr">{r.checkout}</td><td>{t[`referral_status_${r.status}`] || r.status}</td><td className="text-end">{r.referrer_amount !== null ? `${r.referrer_amount} + ${r.friend_amount}` : '—'}</td></tr>)}</tbody>
+                    </table>
+                )}
+            </div>
+        </section>
+    );
+}
+
 function ShopOpenSwitch({ shopOpen, t }) {
     // B11 (§7): the whole bookstore open or closed; customers still reach their own orders while it is closed.
     const [message, setMessage] = useState(shopOpen.message || '');
@@ -1098,7 +1145,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], questions = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, rewards = null, shop_open = { open: true, message: null }, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], questions = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, rewards = null, referrals = null, shop_open = { open: true, message: null }, default_commission_rate, sign_in_url, section_types = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -1138,6 +1185,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {notices && <NoticeSwitches key={JSON.stringify(notices)} notices={notices} t={t} />}
             <CodSwitch on={cod_on} t={t} />
             {rewards && <Rewards key={JSON.stringify(rewards.settings)} rewards={rewards} t={t} />}
+            {referrals && <Referrals key={JSON.stringify(referrals.settings)} referrals={referrals} t={t} />}
             <ShopOpenSwitch shopOpen={shop_open} t={t} />
 
             <Catalogue catalogue={catalogue} t={t} />

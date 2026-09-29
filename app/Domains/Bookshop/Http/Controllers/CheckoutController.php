@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\Checkout\PrepareCheckoutAction;
 use App\Domains\Bookshop\Actions\Checkout\ServeBankTransferSlipAction;
 use App\Domains\Bookshop\Actions\Checkout\StartBookshopCheckoutAction;
 use App\Domains\Bookshop\Actions\Checkout\UploadBankTransferSlipAction;
+use App\Domains\Bookshop\Actions\Money\ReferralCreditAction;
 use App\Domains\Bookshop\Actions\Orders\PresentCheckoutAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\ResolvesCart;
 use App\Http\Controllers\Controller;
@@ -29,7 +30,12 @@ class CheckoutController extends Controller
             return redirect()->route('public.shop.cart');
         }
 
-        return view('public.shop.checkout', ['checkout' => $checkout, 'old' => $request->old()]);
+        return view('public.shop.checkout', [
+            'checkout' => $checkout,
+            'old' => $request->old(),
+            // STATUS §5ln: a friend's first order through a share link.
+            'referral' => app(ReferralCreditAction::class)->offerFor((int) $request->user()->id, $request->session()),
+        ]);
     }
 
     public function store(Request $request)
@@ -60,6 +66,9 @@ class CheckoutController extends Controller
             (int) $request->user()->id, $cart, $data,
             fn (string $number) => route('public.shop.checkout.status', $number),
         );
+
+        // STATUS §5ln: a friend's first order keeps the referral it came through.
+        app(ReferralCreditAction::class)->attach((int) $request->user()->id, $result['checkout'], $request->session());
 
         return $this->afterStart($result);
     }

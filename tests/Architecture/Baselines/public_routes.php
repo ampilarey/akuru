@@ -108,6 +108,7 @@ return [
     'POST shop/book-lists/{vendor}/{list}' => 'Add a school book list to the visitor\'s own cart (STATUS §5lc); a guest\'s cart by session token, like POST shop/cart. Scoped to the caller\'s basket by construction; throttled. No other person\'s data.',
     'GET shop/brand/{slug}' => 'A brand\'s page (STATUS §5lh): its products for sale, from every shop. Public catalogue content only. No per-person data.',
     'GET shop/compare' => 'Compare products (STATUS §5li): the products this device chose, side by side, from its own session. Public catalogue content only.',
+    'GET shop/r/{code}' => 'A share link (STATUS §5ln): keeps the code on this visit and goes on to the store; throttled. Pays nothing — credit is decided at a first order, off unless the office turns it on.',
     'POST shop/compare/{slug}' => 'Add a product to this device\'s comparison, or take it out (STATUS §5li). The session\'s own list only; throttled. No per-person data.',
     'GET shop/track' => 'Track an order without signing in (STATUS §5lj): only with its number AND the phone it is going to; shows status, steps, tracking note and item titles — never the address, name, money or messages. Throttled at 10 a minute against guessing.',
     'GET shop/deals' => 'The public deals page (STATUS §5lb): products of active shops on a timed sale now. Public catalogue content only. No per-person data.',
