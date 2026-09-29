@@ -215,4 +215,14 @@ return [
     'review_state_round' => 'round :round',
     'review_round' => 'Round :round',
     'review_publish_blocked' => 'Waiting for the peer-review accepts',
+    // R3b: the reviewer's side of peer review.
+    'review_due' => 'Due on :date',
+    'review_overdue' => 'Overdue — it was due on :date',
+    'review_due_label' => 'Report due on',
+    'review_coi_text' => 'Before you read it: do you have a conflict of interest with this paper — a personal, professional or financial tie to it or its authors? If you do, tell the office and do not review it.',
+    'review_coi_declare' => 'I have no conflict of interest',
+    'review_revision_note' => 'The writer says what changed',
+    'review_my_reports' => 'Your earlier reports on this paper',
+    'library_revision_note' => 'What changed (for the reviewers)',
+    'library_reviewers_link' => 'Reviewers',
 ];

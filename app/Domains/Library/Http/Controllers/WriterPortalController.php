@@ -150,7 +150,9 @@ class WriterPortalController extends Controller
 
     public function submit(Request $request, int $item): RedirectResponse
     {
-        app(SubmitLibraryItemForReviewAction::class)->execute((int) $request->user()->id, $item);
+        // R3b: on a revision, what changed — the reviewers read it.
+        $data = $request->validate(['note' => 'nullable|string|max:2000']);
+        app(SubmitLibraryItemForReviewAction::class)->execute((int) $request->user()->id, $item, $data['note'] ?? null);
 
         return back()->with('success', 'Submitted for review.');
     }

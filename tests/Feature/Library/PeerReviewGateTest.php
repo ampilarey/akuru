@@ -5,6 +5,7 @@ use App\Domains\Library\Actions\ApplyAsWriterAction;
 use App\Domains\Library\Actions\AssertResearchReviewedAction;
 use App\Domains\Library\Actions\AssignResearchReviewerAction;
 use App\Domains\Library\Actions\DecideWriterApplicationAction;
+use App\Domains\Library\Actions\DeclareReviewerNoConflictAction;
 use App\Domains\Library\Actions\ListWriterDashboardAction;
 use App\Domains\Library\Actions\ListWriterQueuesAction;
 use App\Domains\Library\Actions\PublishLibraryItemAction;
@@ -49,6 +50,14 @@ function r3Submitted(User $writer, string $title = 'Coral Study'): LibraryItem
     return app(SubmitLibraryItemForReviewAction::class)->execute($writer->id, $item->id);
 }
 
+/** R3b: a reviewer declares no conflict of interest before reporting. */
+function r3Report(int $userId, int $assignmentId, string $recommendation, ?string $comment = null): LibraryReviewAssignment
+{
+    app(DeclareReviewerNoConflictAction::class)->execute($userId, $assignmentId);
+
+    return app(SubmitResearchReviewAction::class)->execute($userId, $assignmentId, $recommendation, $comment);
+}
+
 function r3Reviewer(string $email): User
 {
     return User::factory()->create(['email' => $email, 'name' => 'Secret Reviewer '.$email]);
@@ -76,12 +85,12 @@ it('needs as many accepts as the office asks for, in the current round', functio
 
     $first = app(AssignResearchReviewerAction::class)->execute($item->id, r3Reviewer('one@akuru.test')->email, $admin->id);
     $second = app(AssignResearchReviewerAction::class)->execute($item->id, r3Reviewer('two@akuru.test')->email, $admin->id);
-    app(SubmitResearchReviewAction::class)->execute((int) $first->reviewer_user_id, $first->id, 'accept');
+    r3Report((int) $first->reviewer_user_id, $first->id, 'accept');
 
     expect(fn () => app(PublishLibraryItemAction::class)->execute($item->id, $admin->id))->toThrow(ValidationException::class)
         ->and(app(AssertResearchReviewedAction::class)->state($item->fresh()))->toMatchArray(['state' => 'with_reviewer', 'accepts' => 1, 'required' => 2]);
 
-    app(SubmitResearchReviewAction::class)->execute((int) $second->reviewer_user_id, $second->id, 'accept');
+    r3Report((int) $second->reviewer_user_id, $second->id, 'accept');
     expect(app(AssertResearchReviewedAction::class)->state($item->fresh())['state'])->toBe('accepted_awaiting_publish');
 
     app(PublishLibraryItemAction::class)->execute($item->id, $admin->id);
@@ -99,13 +108,13 @@ it('sends a revision back to the writer, opens round 2 on resubmission, and stop
     $r = app(AssignResearchReviewerAction::class)->execute($item->id, $reviser->email, $admin->id);
     $s = app(AssignResearchReviewerAction::class)->execute($item->id, $slow->email, $admin->id);
 
-    app(SubmitResearchReviewAction::class)->execute($accepter->id, $a->id, 'accept');
-    app(SubmitResearchReviewAction::class)->execute($reviser->id, $r->id, 'revise', 'Add the sample sizes.');
+    r3Report($accepter->id, $a->id, 'accept');
+    r3Report($reviser->id, $r->id, 'revise', 'Add the sample sizes.');
 
     expect($item->fresh()->status->value)->toBe('changes_requested')
         ->and(app(AssertResearchReviewedAction::class)->state($item->fresh())['state'])->toBe('revision_requested');
     // While it is back with the writer nobody reports on it.
-    expect(fn () => app(SubmitResearchReviewAction::class)->execute($slow->id, $s->id, 'accept'))->toThrow(ValidationException::class);
+    expect(fn () => r3Report($slow->id, $s->id, 'accept'))->toThrow(ValidationException::class);
 
     app(SubmitLibraryItemForReviewAction::class)->execute($writer->id, $item->id);
     $item->refresh();
@@ -120,13 +129,13 @@ it('sends a revision back to the writer, opens round 2 on resubmission, and stop
     expect(fn () => app(PublishLibraryItemAction::class)->execute($item->id, $admin->id))->toThrow(ValidationException::class);
 
     // A round-1 report cannot be sent into round 2 either.
-    expect(fn () => app(SubmitResearchReviewAction::class)->execute($accepter->id, $a->id, 'accept'))->toThrow(ValidationException::class);
+    expect(fn () => r3Report($accepter->id, $a->id, 'accept'))->toThrow(ValidationException::class);
 
     // Assigning the round-1 accepter again asks them to read the revision.
     app(AssignResearchReviewerAction::class)->execute($item->id, $accepter->email, $admin->id);
     expect($a->fresh()->only(['status', 'round']))->toBe(['status' => 'assigned', 'round' => 2]);
 
-    app(SubmitResearchReviewAction::class)->execute($reviser->id, $r->id, 'accept');
+    r3Report($reviser->id, $r->id, 'accept');
     app(PublishLibraryItemAction::class)->execute($item->id, $admin->id);
     expect($item->fresh()->status->value)->toBe('published');
 });
@@ -141,7 +150,7 @@ it('tells the reviewer, the writer and the office — and never tells the writer
     $titles = fn (User $user) => UserNotification::query()->where('user_id', $user->id)->orderBy('id')->pluck('title')->all();
     expect($titles($reviewer))->toBe(['Research to review']);
 
-    app(SubmitResearchReviewAction::class)->execute($reviewer->id, $assignment->id, 'revise', 'Tighten the method.');
+    r3Report($reviewer->id, $assignment->id, 'revise', 'Tighten the method.');
     $toWriter = UserNotification::query()->where('user_id', $writer->id)->where('title', 'A peer reviewer asked for revisions')->sole();
     expect($toWriter->message)->toContain('Tighten the method.')
         ->and($toWriter->message)->not->toContain('Secret Reviewer')
@@ -150,7 +159,7 @@ it('tells the reviewer, the writer and the office — and never tells the writer
     app(SubmitLibraryItemForReviewAction::class)->execute($writer->id, $item->id);
     expect($titles($reviewer))->toBe(['Research to review', 'Revised research to review']);
 
-    app(SubmitResearchReviewAction::class)->execute($reviewer->id, $assignment->id, 'accept', 'Good now.');
+    r3Report($reviewer->id, $assignment->id, 'accept', 'Good now.');
     expect($titles($admin))->toContain('Research ready to publish')
         ->and(UserNotification::query()->where('user_id', $writer->id)->where('title', 'A peer reviewer accepted your research')->sole()->message)->toContain('Good now.');
 });
@@ -167,7 +176,7 @@ it('shows the writer and the office where review stands', function () {
     $assignment = app(AssignResearchReviewerAction::class)->execute($item->id, r3Reviewer('x@akuru.test')->email, $admin->id);
     expect($state()['state'])->toBe('with_reviewer');
 
-    app(SubmitResearchReviewAction::class)->execute((int) $assignment->reviewer_user_id, $assignment->id, 'accept');
+    r3Report((int) $assignment->reviewer_user_id, $assignment->id, 'accept');
     expect($state()['state'])->toBe('accepted_awaiting_publish');
 
     $this->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.library.index'))

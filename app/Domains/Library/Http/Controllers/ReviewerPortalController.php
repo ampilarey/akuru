@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Http\Controllers;
 
+use App\Domains\Library\Actions\DeclareReviewerNoConflictAction;
 use App\Domains\Library\Actions\ListMyReviewAssignmentsAction;
 use App\Domains\Library\Actions\SubmitResearchReviewAction;
 use App\Http\Controllers\Controller;
@@ -21,6 +22,14 @@ class ReviewerPortalController extends Controller
         return Inertia::render('Library/Review', [
             'assignments' => app(ListMyReviewAssignmentsAction::class)->execute((int) $request->user()->id),
         ]);
+    }
+
+    /** R3b: "I have no conflict of interest with this paper." */
+    public function declare(Request $request, int $assignment): RedirectResponse
+    {
+        app(DeclareReviewerNoConflictAction::class)->execute((int) $request->user()->id, $assignment);
+
+        return back()->with('success', 'Thank you. The paper is open to review.');
     }
 
     public function store(Request $request, int $assignment): RedirectResponse

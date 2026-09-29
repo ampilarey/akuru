@@ -770,6 +770,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B12 (LIBRARY_PLAN §42): the commercial knobs, on a screen.
         Route::get('settings', [\App\Domains\Library\Http\Controllers\AdminLibrarySettingsController::class, 'edit'])->name('admin.library.settings');
         Route::put('settings', [\App\Domains\Library\Http\Controllers\AdminLibrarySettingsController::class, 'update'])->name('admin.library.settings.update');
+        // R3b (RESEARCH_ARTICLES_PLAN): the peer-reviewer pool.
+        Route::get('reviewers/export', [\App\Domains\Library\Http\Controllers\AdminLibraryReviewersController::class, 'export'])->name('admin.library.reviewers.export');
+        Route::get('reviewers', [\App\Domains\Library\Http\Controllers\AdminLibraryReviewersController::class, 'index'])->name('admin.library.reviewers');
+        Route::post('reviewers', [\App\Domains\Library\Http\Controllers\AdminLibraryReviewersController::class, 'store'])->name('admin.library.reviewers.store');
+        Route::delete('reviewers/{user}', [\App\Domains\Library\Http\Controllers\AdminLibraryReviewersController::class, 'destroy'])->name('admin.library.reviewers.destroy')->whereNumber('user');
         // B14 (LIBRARY_PLAN §29): the Library over a period.
         Route::get('insights/export', [\App\Domains\Library\Http\Controllers\AdminLibraryInsightsController::class, 'export'])->name('admin.library.insights.export');
         Route::get('insights', [\App\Domains\Library\Http\Controllers\AdminLibraryInsightsController::class, 'index'])->name('admin.library.insights');
@@ -976,6 +981,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::prefix('review')->middleware(['auth'])->group(function () {
         Route::get('/', [\App\Domains\Library\Http\Controllers\ReviewerPortalController::class, 'index'])->name('review.index');
         Route::post('{assignment}', [\App\Domains\Library\Http\Controllers\ReviewerPortalController::class, 'store'])->name('review.store')->whereNumber('assignment');
+        // R3b: the conflict-of-interest declaration, before the text is shown.
+        Route::post('{assignment}/declare', [\App\Domains\Library\Http\Controllers\ReviewerPortalController::class, 'declare'])->name('review.declare')->whereNumber('assignment');
     });
 
     // Prayer times and their broadcasts are website content (ADR-040 slice 2).

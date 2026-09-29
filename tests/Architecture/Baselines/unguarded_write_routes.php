@@ -109,4 +109,5 @@ return [
     'write/profile' => 'WriterPortalController@saveProfile — your own author page; SaveWriterPublicProfileAction refuses a caller without an active writer profile.',
     'write/payout-request' => 'WriterPortalController@requestPayout — your own balance; gated by library.payouts_enabled.',
     'review/{assignment}' => 'ReviewerPortalController@store — READ: SubmitResearchReviewAction refuses an assignment not assigned to you.',
+    'review/{assignment}/declare' => 'ReviewerPortalController@declare — READ: DeclareReviewerNoConflictAction refuses an assignment not assigned to you (R3b).',
 ];

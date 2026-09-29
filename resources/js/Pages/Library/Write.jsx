@@ -417,6 +417,8 @@ function EarningsCard({ earnings, itemSales = [], t = {} }) {
 export default function Write({ dashboard, options, earnings = null, item_sales = [] }) {
     const { flash = {}, i18n } = usePage().props;
     const t = i18n?.common || {};
+    // R3b: on a revision, the writer tells the reviewers what changed.
+    const [notes, setNotes] = useState({});
     const [editing, setEditing] = useState(null);
     const [editingProfile, setEditingProfile] = useState(false);
     const { profile, application, items, sales } = dashboard;
@@ -506,9 +508,18 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
                                         <td className="px-3 py-2">{item.sales} ({item.revenue ? `MVR ${item.revenue}` : '—'})</td>
                                         <td className="px-3 py-2">
                                             {['draft', 'changes_requested'].includes(item.status) && (
-                                                <span className="flex gap-2">
+                                                <span className="flex flex-wrap gap-2">
                                                     <button type="button" className="text-[#7C2D37] hover:underline" onClick={() => setEditing(item)}>{t.library_edit || 'Edit'}</button>
-                                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/write/items/${item.id}/submit`, {}, { preserveScroll: true })}>{t.library_submit_review || 'Submit for review'}</button>
+                                                    {item.status === 'changes_requested' && item.content_type === 'research' && (
+                                                        <input
+                                                            className="form-input w-56 text-xs"
+                                                            placeholder={t.library_revision_note || 'What changed (for the reviewers)'}
+                                                            value={notes[item.id] || ''}
+                                                            onChange={(e) => setNotes({ ...notes, [item.id]: e.target.value })}
+                                                            data-testid={`revision-note-${item.id}`}
+                                                        />
+                                                    )}
+                                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/write/items/${item.id}/submit`, notes[item.id] ? { note: notes[item.id] } : {}, { preserveScroll: true })}>{t.library_submit_review || 'Submit for review'}</button>
                                                 </span>
                                             )}
                                             {item.status === 'published' && <a className="text-[#7C2D37] hover:underline" href={`/library/${item.slug}`}>{t.library_view || 'View'}</a>}

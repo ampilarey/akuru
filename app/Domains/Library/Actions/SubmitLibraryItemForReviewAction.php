@@ -17,7 +17,7 @@ use Illuminate\Validation\ValidationException;
  */
 class SubmitLibraryItemForReviewAction
 {
-    public function execute(int $userId, int $itemId): LibraryItem
+    public function execute(int $userId, int $itemId, ?string $note = null): LibraryItem
     {
         $profile = WriterProfile::query()->where('user_id', $userId)->where('status', 'active')->first();
         if ($profile === null) {
@@ -65,7 +65,9 @@ class SubmitLibraryItemForReviewAction
             'library_item_id' => $item->id,
             'reviewer_user_id' => null,
             'decision' => 'submitted',
-            'comment' => null,
+            // R3b: on a resubmission, what the writer changed — the
+            // reviewers read it beside the revised text.
+            'comment' => $note !== null && trim($note) !== '' ? trim($note) : null,
         ]);
 
         // §41: the writer hears it arrived; the office hears there is work.
@@ -93,7 +95,11 @@ class SubmitLibraryItemForReviewAction
         foreach (LibraryReviewAssignment::query()->where('library_item_id', $item->id)->get() as $assignment) {
             $revise = $assignment->status === 'done' && $assignment->recommendation === 'revise';
             if ($revise || $assignment->status === 'assigned') {
-                $assignment->fill(['status' => 'assigned', 'recommendation' => null, 'round' => $item->review_round])->save();
+                $assignment->fill([
+                    'status' => 'assigned', 'recommendation' => null, 'round' => $item->review_round,
+                    // R3b: a new round, a new due date and fresh reminders.
+                    'due_at' => now()->addDays(LibraryReviewAssignment::DEFAULT_DUE_DAYS)->endOfDay(), 'reminded_at' => null,
+                ])->save();
                 $reviewers->push((int) $assignment->reviewer_user_id);
             }
         }

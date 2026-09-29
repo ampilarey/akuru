@@ -190,4 +190,14 @@ return [
     'review_state_round' => 'الجولة :round',
     'review_round' => 'الجولة :round',
     'review_publish_blocked' => 'بانتظار موافقات التحكيم',
+    // R3b: the reviewer's side of peer review.
+    'review_due' => 'موعد التسليم :date',
+    'review_overdue' => 'متأخر — كان موعده :date',
+    'review_due_label' => 'موعد تسليم التقرير',
+    'review_coi_text' => 'قبل أن تقرأه: هل لديك تعارض مصالح مع هذه الورقة — صلة شخصية أو مهنية أو مالية بها أو بمؤلفيها؟ إن وُجد فأبلغ المكتب ولا تحكِّمها.',
+    'review_coi_declare' => 'لا يوجد لديّ تعارض مصالح',
+    'review_revision_note' => 'ما يقول الكاتب إنه تغيّر',
+    'review_my_reports' => 'تقاريرك السابقة عن هذه الورقة',
+    'library_revision_note' => 'ما الذي تغيّر (للمحكِّمين)',
+    'library_reviewers_link' => 'المحكِّمون',
 ];

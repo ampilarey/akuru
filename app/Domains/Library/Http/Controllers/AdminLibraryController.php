@@ -12,6 +12,7 @@ use App\Domains\Library\Actions\ListLibraryPurchasesAction;
 use App\Domains\Library\Actions\ListLibraryReadingAlertsAction;
 use App\Domains\Library\Actions\ListWriterPayoutReportAction;
 use App\Domains\Library\Actions\ListWriterQueuesAction;
+use App\Domains\Library\Actions\ManageReviewerPoolAction;
 use App\Domains\Library\Actions\PublishLibraryItemAction;
 use App\Domains\Library\Actions\ReadWriterApplicationDocumentAction;
 use App\Domains\Library\Actions\ReviewLibraryItemSubmissionAction;
@@ -81,14 +82,21 @@ class AdminLibraryController extends Controller
     /**
      * R1: the website's teachers, who may be named as authors — asked of HR.
      *
-     * @return array{teachers: list<array{id: int, slug: string, name: string}>}
+     * @return array{teachers: list<array{id: int, slug: string, name: string}>, reviewers: list<array{email: string, name: string, open: int}>}
      */
     private function authoringOptions(): array
     {
-        return ['teachers' => array_map(
-            fn (array $row) => ['id' => $row['id'], 'slug' => $row['slug'], 'name' => $row['name']],
-            app(ListPublicInstructorProfilesAction::class)->execute(),
-        )];
+        return [
+            'teachers' => array_map(
+                fn (array $row) => ['id' => $row['id'], 'slug' => $row['slug'], 'name' => $row['name']],
+                app(ListPublicInstructorProfilesAction::class)->execute(),
+            ),
+            // R3b: the reviewer pool, for the assignment picker.
+            'reviewers' => array_map(
+                fn (array $row) => ['email' => $row['email'], 'name' => $row['name'], 'open' => $row['open']],
+                app(ManageReviewerPoolAction::class)->list(),
+            ),
+        ];
     }
 
     public function storeItem(Request $request): RedirectResponse
@@ -200,12 +208,15 @@ class AdminLibraryController extends Controller
         abort_unless($request->user()?->can('library.manage'), 403);
         $data = $request->validate([
             'reviewer_email' => 'required|email',
+            // R3b: when the report is due; 14 days when left empty.
+            'due_on' => 'nullable|date',
         ]);
 
         app(\App\Domains\Library\Actions\AssignResearchReviewerAction::class)->execute(
             $item,
             $data['reviewer_email'],
             (int) $request->user()->id,
+            $data['due_on'] ?? null,
         );
 
         return back()->with('success', 'Reviewer assigned.');
