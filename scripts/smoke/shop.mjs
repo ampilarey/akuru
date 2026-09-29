@@ -381,15 +381,45 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
     await visitor.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });
     check('the store\'s front keeps the full footer', (await visitor.locator('[data-footer-group]').count()) === 5 && (await visitor.locator('[data-testid="footer-compact"]').count()) === 0);
 
-    // On a phone nothing is fixed to the foot of a shop's page; the cart is in its links.
-    const small = await newPage('shop-phone-foot', { width: 390, height: 844 });
-    await small.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
-    const bars = (await small.locator('[data-testid="bottom-bar"]').count()) + (await small.locator('[data-testid="shop-bottom-bar"]').count());
-    const gap = await small.evaluate(() => document.documentElement.scrollHeight - document.querySelector('[data-testid="footer-compact"]').getBoundingClientRect().bottom - window.scrollY);
-    check('on a phone a shop\'s page has no fixed bar, and ends at its copyright line', bars === 0 && gap <= 1, `bars: ${bars}, space under the line: ${Math.round(gap)}px`);
-    check('the cart is one tap away in the shop\'s links', await small.locator('[data-testid="shop-link-cart"]').isVisible());
+    // STATUS §5lt: on a phone the Bookstore has a shop's tabs, not the site's bar — and a
+    // shop's own page has the same tabs, pointing into that shop.
+    const small = await newPage('shop-phone-tabs', { width: 390, height: 844 });
+    const tabs = async () => (await small.locator('[data-testid="shop-bottom-bar"] a').allInnerTexts()).map((t) => t.replace(/\d+/g, '').trim());
     await small.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });
-    check('the store\'s own front keeps its phone bar', await small.locator('[data-testid="bottom-bar"]').isVisible());
+    check('on a phone the store has a shop\'s tabs, not the site\'s bar',
+        (await small.locator('[data-testid="bottom-bar"]').count()) === 0 && await small.locator('[data-testid="shop-bottom-bar"]').isVisible()
+        && JSON.stringify(await tabs()) === JSON.stringify(['Home', 'Categories', 'Deals', 'Sign in', 'Cart']), JSON.stringify(await tabs()));
+    const barBox = await small.locator('[data-testid="shop-bottom-bar"]').boundingBox();
+    check('the tabs span the phone at its foot', barBox && barBox.x <= 0 && barBox.width >= 389 && Math.round(barBox.y + barBox.height) === 844, JSON.stringify(barBox));
+    await small.locator('[data-testid="bar-categories"]').click();
+    check('Categories opens a sheet of the store\'s categories', await small.locator('[data-testid="shop-sheet"]').isVisible() && (await small.locator('[data-testid="shop-sheet-categories"] a').count()) > 0,
+        `${await small.locator('[data-testid="shop-sheet-categories"] a').count()} categories`);
+    if (process.env.SMOKE_SHOTS) await small.screenshot({ path: `${process.env.SMOKE_SHOTS}/shop-tabs-sheet.png` });
+    await small.locator('[data-testid="shop-sheet-close"]').click();
+    check('and closes again', !(await small.locator('[data-testid="shop-sheet"]').isVisible()));
+    await small.locator('[data-testid="bar-deals"]').click();
+    await small.waitForLoadState('networkidle');
+    check('Deals goes to the store\'s deals, and is marked', new URL(small.url()).pathname === '/en/shop/deals' && (await small.locator('[data-testid="bar-deals"]').getAttribute('aria-current')) === 'page', small.url());
+
+    await small.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
+    check('a shop\'s page has the same tabs, the shop\'s own',
+        (await small.locator('[data-testid="shop-bottom-bar"][data-scope="shop"]').count()) === 1 && (await small.locator('[data-testid="bottom-bar"]').count()) === 0
+        && JSON.stringify(await tabs()) === JSON.stringify(['Shop', 'Categories', 'Deals', 'Sign in', 'Cart'])
+        && new URL(await small.locator('[data-testid="bar-home"]').getAttribute('href')).pathname === '/en/shop/fitrah', JSON.stringify(await tabs()));
+    if (process.env.SMOKE_SHOTS) await small.screenshot({ path: `${process.env.SMOKE_SHOTS}/shop-tabs-vendor.png` });
+    await small.locator('[data-testid="bar-categories"]').click();
+    check('its sheet leads back to the whole store', await small.locator('[data-testid="shop-sheet-whole-store"]').isVisible());
+    await small.locator('[data-testid="shop-sheet-close"]').click();
+    await small.locator('[data-testid="bar-deals"]').click();
+    await small.waitForLoadState('networkidle');
+    check('its Deals tab stays in the shop', new URL(small.url()).pathname === '/en/shop/fitrah' && new URL(small.url()).searchParams.get('deals') === '1'
+        && (await small.locator('[data-testid="bar-deals"]').getAttribute('aria-current')) === 'page', small.url());
+    // Nothing hides behind the bar: at the very bottom the copyright line sits above it.
+    await small.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
+    await small.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    const clear = await small.evaluate(() => document.querySelector('[data-testid="shop-bottom-bar"]').getBoundingClientRect().top - document.querySelector('[data-testid="footer-compact"]').getBoundingClientRect().bottom);
+    check('the copyright line clears the tabs, with no empty strip', clear > -1 && clear <= 2, `${clear.toFixed(1)}px between`);
+    check('the cart is still in the shop\'s links too', await small.locator('[data-testid="shop-link-cart"]').isVisible());
 }
 
 // ------------------------------------------------------------ on a phone (STATUS §5kv)

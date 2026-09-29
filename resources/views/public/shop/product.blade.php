@@ -348,7 +348,6 @@
     </section>
 @endif
 
-@include('public.shop._bottom-bar')
 @endsection
 
 @push('scripts')

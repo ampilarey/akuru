@@ -185,9 +185,12 @@
 
     @include('public.partials.prayer-banner-assets')
 
-    {{-- A shop's own pages carry no fixed bar at the foot of a phone (STATUS §5kz):
-         the shop's brand runs to the copyright line. --}}
-    @sectionMissing('shop_footer')
+    {{-- STATUS §5lt: on the Bookstore's pages, a shop's own included, a phone gets the store's
+         tab bar (Home · Categories · Deals · Account · Cart; a shop's own tabs on its pages)
+         instead of the site's. One bar and one spacer on every page. --}}
+    @if (request()->routeIs('public.shop.*'))
+    @include('public.shop._bottom-bar', ['shopVendor' => request()->routeIs('public.shop.vendor', 'public.shop.vendor.*') && isset($vendor) && is_array($vendor) ? $vendor : null])
+    @else
     {{-- Phone bottom bar: Home · Courses · Library · Shop · Account (STATUS §5ki).
          Viber moved to the floating chat button, Call into the menu's About. --}}
     @php

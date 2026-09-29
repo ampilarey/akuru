@@ -467,7 +467,7 @@
     </div>
 </section>
 @else
-<section class="py-8">
+<section id="shop-grid" class="scroll-mt-24 py-8">
     <div class="container mx-auto px-4">
         <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">
             {{ $home || ($storefront && ! $collection && count($storefront['sections']) > 0) ? __('shop.all_products') : __('shop.results') }}
@@ -490,10 +490,6 @@
 </div>
 @endif
 
-{{-- A shop's own pages carry no fixed phone bar (STATUS §5kz); the store's do. --}}
-@unless($vendor)
-    @include('public.shop._bottom-bar')
-@endunless
 @endsection
 
 @push('scripts')

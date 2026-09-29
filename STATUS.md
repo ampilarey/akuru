@@ -4414,6 +4414,69 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lt. The Bookstore's own tabs on a phone (2026-09-29)
+
+The owner: "in bookstore, in mobile there is a fixed buttons bar, home,
+course, library etc. this doesn't fit for bookstore. Can u make the tabs
+suitable for a shop. Look iruali. And same buttons in each vendor page."
+
+**Now, on every Bookstore page on a phone**, the site's bar (Home · Courses ·
+Library · Shop · Account) gives way to the store's tabs:
+- **Home**;
+- **Categories**, which opens a sheet;
+- **Deals**;
+- **Account**, which is My orders when signed in and Sign in otherwise;
+- **Cart**, with its count.
+
+This follows iruali's bar: five tabs with icons, the current one marked
+with a gold line, and room for the phone's home indicator.
+- **The sheet** lists every category with something for sale and how
+  many, and never an empty one. Under that come shops, school book
+  lists, order tracking, and Sell on Akuru or the wishlist. Without
+  script the tab is a plain link to the categories.
+- **On a shop's own pages** (home, collections, pages, a storefront
+  included) the same five tabs are the shop's:
+  - **Shop** goes to its home;
+  - **Categories** lists its collections and its categories only;
+  - **Deals** goes to `/shop/<shop>?deals=1`;
+  - the sheet ends with a link back to all of Akuru Bookstore.
+- **What it replaces.** This reverses §5la's "no bar on a shop's page", as
+  the owner asked. §5la's real fault, two bars and two spacers leaving an
+  empty strip, can't come back: the layout draws exactly one bar and one
+  spacer, the shop's on `public.shop.*` routes and the site's everywhere
+  else. The views no longer include a bar themselves. The copyright line
+  still ends a shop's page (§5kz), now directly above the tabs.
+- The bar switches at the same width as the site's bar (`sm`), so the
+  Viber button keeps its place above it.
+- New: `PresentShopBarAction`. Languages: EN/DV/AR.
+
+Tests:
+- `ShopTabBarTest` (5):
+  - the store's tabs and links, none of the site's bar, the sheet's
+    categories (never an empty one);
+  - the current tab marked on deals, cart and My orders, and the cart
+    count;
+  - a shop's tabs, sheet (its collections and categories only), deals and
+    collection;
+  - an empty shop says so;
+  - Dhivehi and Arabic.
+- `ShopFooterTest` and `StorefrontSectionsTest` are updated to the new rule.
+- The Bookshop, Website, Docs and Architecture suites: 419 passed.
+
+Checklist: `ft-bookstore-24`.
+
+Walk: `scripts/smoke/shop.mjs` 72/72, with nine new phone steps at 390px:
+- the tabs' names on the store, and no site bar;
+- the bar across the foot;
+- the sheet opens and closes;
+- Deals goes to the deals and is marked;
+- a shop's own tabs;
+- its sheet leads back to the store;
+- its Deals stays in the shop;
+- the copyright line clears the tabs with no strip.
+
+`public-rtl.mjs` accepts either bar.
+
 ## 5ls. Two owner actions kept for later (2026-09-29)
 
 The owner said "keep this 2 for later" about the two things §5lq and §5lr

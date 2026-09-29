@@ -33,5 +33,4 @@
     @endif
 </div>
 
-@include('public.shop._bottom-bar')
 @endsection

@@ -342,7 +342,7 @@ it('rolls back sections, menu and pages with the version, and caches the publish
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor.page', ['fitrah', 'about']))->assertSee('First answers');
 });
 
-it('gives a published storefront the store\'s links, its cart among them, and no bar fixed to a phone\'s foot (STATUS §5kz)', function () {
+it('gives a published storefront the store\'s links, its cart among them, and the shop\'s own phone tabs (STATUS §5kz, §5lt)', function () {
     [, $owner] = sectionsShop();
     publishTheme($owner);
     sectionsAs($owner)->post(route('vendor.storefront.publish'))->assertSessionHasNoErrors();
@@ -354,8 +354,9 @@ it('gives a published storefront the store\'s links, its cart among them, and no
         ->toContain('data-testid="shop-links"')
         ->toContain('data-testid="shop-link-cart"')
         ->toContain('data-testid="footer-compact"')
+        // §5lt: not the site's phone bar, but the shop's own tabs.
         ->not->toContain('data-testid="bottom-bar"')
-        ->not->toContain('data-testid="shop-bottom-bar"');
+        ->toContain('data-testid="shop-bottom-bar" data-scope="shop"');
     // The links sit under the storefront's head, before its products.
     expect(strpos($html, 'data-testid="shop-links"'))->toBeLessThan(strpos($html, 'data-testid="shop-grid"'));
 });

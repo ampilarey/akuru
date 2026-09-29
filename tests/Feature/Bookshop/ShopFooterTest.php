@@ -42,21 +42,24 @@ it('ends a shop\'s own page with only the copyright line, and keeps the header',
         ->toContain('data-testid="site-nav"')
         ->toContain('data-testid="nav-bookstore-more"')
         ->toContain('data-testid="mobile-menu"')
-        // No bar is fixed to the foot of a phone (the owner's screenshot, §5kz):
-        // neither the site's nor the store's.
+        // §5lt (the owner, 2026-09-29): the site's bar never, the shop's own tabs instead — one bar.
         ->not->toContain('data-testid="bottom-bar"')
-        ->not->toContain('data-testid="shop-bottom-bar"')
-        // The cart is one tap away in the store's links instead.
-        ->toContain('data-testid="shop-link-cart"')
+        ->toContain('data-testid="shop-bottom-bar" data-scope="shop"')
+        ->and(substr_count($html, 'data-testid="shop-bottom-bar"'))->toBe(1)
+        ->and($html)->toContain('data-testid="shop-link-cart"')
         ->toContain('href="'.route('public.shop.cart').'"');
 });
 
-it('keeps the full Akuru footer and the phone bar everywhere else, the shop\'s front and product pages included', function () {
+it('keeps the full Akuru footer everywhere else, with the store\'s tabs on its pages and the site\'s bar off them', function () {
     shopFooterVendor();
 
-    foreach ([route('public.home'), route('public.shop.index'), route('public.shop.product', 'quiet-book'), route('public.library.index')] as $url) {
+    foreach ([route('public.shop.index'), route('public.shop.product', 'quiet-book')] as $url) {
         expect(shopFooterPage($url))->toContain('data-footer-group')->not->toContain('data-testid="footer-compact"')
-            ->toContain('data-testid="bottom-bar"');
+            ->toContain('data-testid="shop-bottom-bar" data-scope="store"')->not->toContain('data-testid="bottom-bar"');
+    }
+    foreach ([route('public.home'), route('public.library.index')] as $url) {
+        expect(shopFooterPage($url))->toContain('data-footer-group')->not->toContain('data-testid="footer-compact"')
+            ->toContain('data-testid="bottom-bar"')->not->toContain('data-testid="shop-bottom-bar"');
     }
 });
 
