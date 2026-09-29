@@ -45,7 +45,20 @@ class PresentShopBarAction
     }
 
     /**
-     * @return list<array{name: string, url: string, count: int}>
+     * STATUS §5lu: the same list for the strip of category chips on the
+     * store's listing pages and on a shop's page.
+     *
+     * @return list<array{slug: string, name: string, url: string, count: int}>
+     */
+    public function categoryLinks(?string $vendorSlug): array
+    {
+        $shop = $vendorSlug === null ? null : Vendor::query()->where('slug', $vendorSlug)->where('status', VendorStatus::Active->value)->first();
+
+        return $vendorSlug !== null && $shop === null ? [] : $this->categories($shop);
+    }
+
+    /**
+     * @return list<array{slug: string, name: string, url: string, count: int}>
      */
     private function categories(?Vendor $shop): array
     {
@@ -68,6 +81,7 @@ class PresentShopBarAction
             ->orderBy('sort_order')->orderBy('name')
             ->get()
             ->map(fn (ProductCategory $c) => [
+                'slug' => $c->slug,
                 'name' => ($locale === 'dv' && $c->name_dv) ? $c->name_dv : (($locale === 'ar' && $c->name_ar) ? $c->name_ar : $c->name),
                 'url' => $shop ? route('public.shop.vendor', ['vendor' => $shop->slug, 'category' => $c->slug]) : route('public.shop.category', $c->slug),
                 'count' => (int) $counts->get($c->id, 0),
