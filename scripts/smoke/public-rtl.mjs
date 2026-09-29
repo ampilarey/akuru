@@ -69,7 +69,8 @@ async function open(size) {
 const measure = (page) => page.evaluate(() => {
     const logo = document.querySelector('header a[aria-label] img, header a[aria-label] svg, nav a[aria-label] img, nav a[aria-label] svg');
     const box = logo?.getBoundingClientRect();
-    const bar = document.querySelector('[data-testid="bottom-bar"]');
+    // The site's bar, or on the Bookstore its own tabs (STATUS §5lt).
+    const bar = document.querySelector('[data-testid="bottom-bar"]') ?? document.querySelector('[data-testid="shop-bottom-bar"]');
     const barBox = bar && getComputedStyle(bar).display !== 'none' ? bar.getBoundingClientRect() : null;
 
     return {
