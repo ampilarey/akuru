@@ -4,9 +4,62 @@
      the vendor's TIN only when the vendor is GST-registered (decision 4).
      B3: its progress and tracking, cancelling before dispatch, returns inside
      the window, refunds, and a message to the shop. --}}
-@section('title', __('shop.order_title', ['number' => $order['number']]) . ' - ' . __('shop.bookshop_title'))
+@section('title', (($tracking ?? false) ? __('shop.track_title') : __('shop.order_title', ['number' => $order['number']])) . ' - ' . __('shop.bookshop_title'))
 
 @section('content')
+@if($tracking ?? false)
+{{-- STATUS §5lj: track an order by its number and phone, without signing in — the
+     status, the steps and what is in it; never the address, the money or the messages. --}}
+<div class="container mx-auto max-w-3xl px-4 py-8" data-testid="track-order">
+    <nav class="mb-4 text-sm text-gray-500">
+        <a href="{{ route('public.shop.index') }}" class="hover:text-brandMaroon-600">{{ __('shop.bookshop_title') }}</a>
+        <span>›</span>
+        <span class="text-gray-700">{{ __('shop.track_title') }}</span>
+    </nav>
+    <h1 class="mb-2 text-3xl font-bold text-brandMaroon-900">{{ __('shop.track_title') }}</h1>
+    <p class="mb-4 text-sm text-gray-600">{{ __('shop.track_intro') }}</p>
+    <form method="GET" action="{{ route('public.shop.track') }}" class="mb-6 grid gap-3 rounded-lg border bg-white p-4 sm:grid-cols-3" data-testid="track-form">
+        <label class="block text-sm">{{ __('shop.track_number') }}
+            <input name="number" value="{{ $query['number'] ?? '' }}" required maxlength="40" dir="ltr" class="form-input mt-1 w-full" placeholder="AK-2026-000123-FIT" data-testid="track-number">
+        </label>
+        <label class="block text-sm">{{ __('shop.track_phone') }}
+            <input name="phone" value="{{ $query['phone'] ?? '' }}" required maxlength="30" dir="ltr" inputmode="tel" class="form-input mt-1 w-full" data-testid="track-phone">
+        </label>
+        <div class="self-end"><button type="submit" class="btn-primary w-full" data-testid="track-go">{{ __('shop.track_button') }}</button></div>
+    </form>
+    @if($query['number'] ?? null)
+        @if($order === null)
+            <p class="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="track-none">{{ __('shop.track_none') }}</p>
+        @else
+            <section class="rounded-lg border bg-white p-4" data-testid="track-result">
+                <p class="font-semibold text-brandMaroon-900">{{ __('shop.order_title', ['number' => $order['number']]) }}</p>
+                <p class="mb-3 text-sm text-gray-700" data-testid="order-status" data-status="{{ $order['status'] }}">{{ __('shop.status_'.$order['status']) }} · {{ __('shop.sold_by') }} {{ $order['vendor'] }} · {{ __('shop.order_placed') }} {{ $order['placed_at'] }}</p>
+                @if(! in_array($order['status'], ['pending_payment', 'expired', 'cancelled'], true))
+                    @php($stepKeys = ['paid', 'processing', $order['collection'] ? 'ready' : 'dispatched', 'delivered'])
+                    <ol class="mb-3 grid grid-cols-4 gap-1 text-center text-xs" data-testid="order-progress">
+                        @foreach($stepKeys as $step)
+                            @php($at = $order['steps'][$step] ?? null)
+                            <li class="rounded px-1 py-2 {{ $at ? 'bg-green-100 text-green-900' : 'bg-gray-100 text-gray-500' }}" data-step="{{ $step }}" data-done="{{ $at ? '1' : '0' }}">
+                                <span class="block font-semibold">{{ $step === 'delivered' && $order['collection'] ? __('shop.step_collected') : __('shop.progress_'.$step) }}</span>
+                                @if($at)<span class="block">{{ \Illuminate\Support\Str::of($at)->before(' ') }}</span>@endif
+                            </li>
+                        @endforeach
+                    </ol>
+                @endif
+                @if($order['carrier'] || $order['tracking_note'])
+                    <p class="mb-3 rounded-lg bg-brandBeige-50 p-3 text-sm" data-testid="tracking"><span class="font-semibold">{{ __('shop.tracking_note') }}:</span> {{ $order['carrier'] }} {{ $order['tracking_note'] }}</p>
+                @endif
+                <ul class="list-disc ps-5 text-sm">
+                    @foreach($order['items'] as $item)
+                        <li dir="auto">{{ $item['quantity'] }} × {{ $item['title'] }}@if($item['variant']) ({{ $item['variant'] }})@endif</li>
+                    @endforeach
+                </ul>
+                <p class="mt-3 text-xs text-gray-500">{{ __('shop.track_sign_in_for_more') }}</p>
+            </section>
+        @endif
+    @endif
+</div>
+@else
 <style media="print">header, footer, nav, .no-print { display: none !important; }</style>
 <div class="container mx-auto max-w-3xl px-4 py-8">
     <nav class="no-print mb-4 text-sm text-gray-500">
@@ -204,4 +257,5 @@
         </section>
     @endif
 </div>
+@endif
 @endsection

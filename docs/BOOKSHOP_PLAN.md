@@ -483,6 +483,7 @@ to the Bookstore, then said "Start" on the list. One PR each, in this order.
 | 8 | **Helpful review votes**: once per person, not on one's own review, the most helpful first | **Built** (STATUS §5lg) |
 | 8b | **Brand pages**: Shop by brand on the front, `/shop/brand/{slug}`, a brand filter, the product page links its brand | **Built** (STATUS §5lh) |
 | 8c | **Compare**: up to four products per device, side by side | **Built** (STATUS §5li) |
-| 8d | Guest order tracking, two-factor sign-in, a Bookstore API | next, one PR each |
+| 8d | **Track an order without signing in**: number + phone; status, steps, tracking, items; nothing private | **Built** (STATUS §5lj) |
+| 8e | Two-factor sign-in, a Bookstore API | next, one PR each |
 | 9 | Loyalty points and referral credit — built **off**, with the office's settings, through the Commerce wallet, never on gift cards; the owner sets the amounts and turns them on | after 8 |
 
