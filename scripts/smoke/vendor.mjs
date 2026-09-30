@@ -214,6 +214,25 @@ check('with its photo', Boolean(thumb) && thumb.includes('shop-products/'), thum
 const thumbLoads = thumb ? await vendor.request.get(thumb.startsWith('http') ? thumb : `${BASE}${thumb}`) : null;
 check('and the photo loads', thumbLoads?.status() === 200, thumbLoads ? `HTTP ${thumbLoads.status()}` : '');
 
+// COMMERCE_PARITY_PLAN P4: "For sale" asks the office first; the product waits, out of the store.
+const statusCell = vendor.locator(`[data-testid="status-${productSlug}"]`);
+check('the new product waits for the office\'s approval', (await statusCell.getAttribute('data-status').catch(() => null)) === 'pending_review' && /Waiting for approval/.test(await statusCell.innerText().catch(() => '')), await statusCell.innerText().catch(() => 'no status cell'));
+const hidden = await vendor.request.get(`${BASE}/en/shop/products/${productSlug}`);
+check('and is not in the store while it waits', hidden.status() === 404, `HTTP ${hidden.status()}`);
+// A reload, not a goto: the office tab is already on this page, and a hash change would not fetch it again.
+await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.reload({ waitUntil: 'networkidle' });
+const waiting = office.locator(`[data-testid="listing-${productSlug}"]`);
+await waiting.waitFor({ timeout: 20000 }).catch(() => {});
+check('the office sees it under Listings awaiting approval, with its shop and price', (await waiting.count()) === 1 && /Fitrah/.test(await waiting.innerText()) && /95\.00/.test(await waiting.innerText()), (await waiting.innerText().catch(() => 'not listed')).replace(/\s+/g, ' ').slice(0, 120));
+await waiting.locator('[data-testid^="listing-approve-"]').click().catch(() => {});
+await settle(office, '[data-testid="flash-success"]');
+check('approving it says so and empties the row', (await office.locator(`[data-testid="listing-${productSlug}"]`).count()) === 0 && /is on sale/.test(await office.locator('[data-testid="flash-success"]').innerText().catch(() => '')));
+const live = await vendor.request.get(`${BASE}/en/shop/products/${productSlug}`);
+check('and the product is in the store', live.status() === 200, `HTTP ${live.status()}`);
+const listingsCsv = await office.request.get(`${BASE}/en/admin/bookshop/listings/export`);
+check('the listings CSV has the decision', listingsCsv.status() === 200 && (await listingsCsv.text()).includes(PRODUCT), `HTTP ${listingsCsv.status()}`);
+
 // The office's rule, said to the vendor: a "was" price must be above the price.
 await vendor.click(`[data-testid="edit-${productSlug}"]`);
 const edit = vendor.locator('[data-testid="product-editor"]');

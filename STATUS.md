@@ -4414,6 +4414,80 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5md. Listings approved by the office (COMMERCE_PARITY_PLAN P4, 2026-09-30)
+
+The owner: "the admin approves every listing". Decision D4 sets which edits
+to a live product go back for approval. Title, summary, description,
+category, new photos and variant names do. Price, sale, stock, SKU and
+delivery do not. A shop the office marks *trusted* skips the queue, and
+products on sale before today stay on sale.
+
+- **Data** (additive):
+  - a new product status, `pending_review`;
+  - on `products`: `submitted_at`, `review_note`, `review_changes` (json:
+    what changed and from what), `reviewed_by` and `reviewed_at`;
+  - on `vendors`: `trusted`.
+  - The migration leaves every status as it is.
+- **The shop**:
+  - The form's *For sale* reads "For sale (the office approves first)", with
+    a hint on what goes back for review.
+  - A new product, or a draft or archived one put on sale, waits as *Waiting
+    for approval* and is not in the store.
+  - The bulk *Put on sale* and a CSV import follow the same rule.
+  - A declined listing is back in draft, with the office's note on the
+    product list.
+  - `ListingApprovalAction::gate` decides, from what is being saved.
+  - P2's ID-card gate still stands in front of it.
+- **The office**:
+  - *Listings awaiting approval* on `/admin/bookshop`, oldest first: photo,
+    shop, price, category, summary and description.
+  - For a live product sent back, the fields that changed, from → to.
+  - *Approve* puts it on sale, and tells anyone waiting on a back-in-stock
+    alert. *Decline* needs a note.
+  - `AdminListingController` handles the decisions and the CSV of the queue
+    with recent decisions. It is a controller of its own, so the office
+    controller does not grow.
+  - *Trusted shop* is a tick on the shop's editor.
+- **Notices**:
+  - The office is told in the app. A bulk submit is one notice, with the
+    count.
+  - The shop is told of each decision: in the app, and by email or SMS as
+    the shop chose under the new `listing_decided` event.
+- **Languages**: EN/DV/AR.
+
+Tests:
+- New `ListingApprovalTest`, 7 tests:
+  - a new product waits, is not in the store, and the office sees it and is
+    told;
+  - the shop cannot approve its own listing, and the office's approval puts
+    it on sale and tells the shop;
+  - declining needs a note, the note reaches the shop's list, and a listing
+    cannot be decided twice;
+  - a price or stock edit stays live, and a title edit goes back with its
+    from → to;
+  - new photos and new variant names go back;
+  - a trusted shop skips the queue, old products stay live, and the office
+    sets the flag;
+  - bulk submit, and the CSV;
+  - DV/AR.
+- Updated:
+  - `IdentityVerificationTest`: a verified shop's request now joins the
+    queue.
+  - `BulkOperationsTest`: a CSV-created product waits, and the stock-log
+    test's shop is trusted.
+  - `AuditFollowUpsTest`: that test's shop is trusted.
+- Bookshop, Identity and Architecture: green.
+
+Walks:
+- `vendor.mjs` 32/32, with six new steps:
+  - the new product says *Waiting for approval*;
+  - its page answers 404;
+  - the office sees it with shop and price;
+  - *Approve* clears it, and the product page answers 200;
+  - the listings CSV has it.
+- `checkout.mjs` 46/46: the seeded products were on sale before the rule and
+  stay on sale.
+
 ## 5mc. Learners: the ID card at registration, verified afterwards (COMMERCE_PARITY_PLAN P3, 2026-09-30)
 
 The owner: "course registrants upload both sides of their ID card". The

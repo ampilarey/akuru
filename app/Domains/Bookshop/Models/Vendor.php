@@ -23,6 +23,7 @@ class Vendor extends Model
         'tin',
         'gst_registered',
         'status',
+        'trusted',
         'commission_rate',
         'contact_email',
         'contact_phone',
@@ -52,6 +53,7 @@ class Vendor extends Model
         return [
             'status' => VendorStatus::class,
             'gst_registered' => 'boolean',
+            'trusted' => 'boolean',
             'commission_rate' => 'decimal:2',
             'settings' => 'array',
             'badges' => 'array',

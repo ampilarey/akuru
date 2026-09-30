@@ -138,6 +138,8 @@ decided on `/admin/bookshop`, the form closable by the office.)*
 
 ## 5. Vendor portal features
 
+*(COMMERCE_PARITY_PLAN P4, 2026-09-30, STATUS §5md: a shop's *For sale* is a request — the product waits as `pending_review`, out of the store, until the office approves it. A live product goes back to the queue when its title, summary, description, category, photos or variant names change; price, sale, stock, SKU and delivery changes stay live. A declined listing returns to draft with the office's note on the product list.)*
+
 **Products**
 - Create/edit: title (EN/DV/AR), slug, short and long description (rich text, sanitised), category, brand, tags, photos (drag to order; the first is the card image), price, compare-at price, cost (private, for margin reports), *(audit)* **tax class** (standard / zero-rated / exempt — books are commonly zero-rated or exempt while stationery is standard, so one GST flag per product was wrong; prices are always tax-inclusive and the receipt shows tax per line), SKU, barcode/ISBN, weight and dimensions, stock and low-stock threshold, track stock or not, "made to order" lead time, variants with their own SKU/price/stock/photo, status (draft / active / archived), visibility (shop-wide or storefront-only), optional link to a library item, book fields (author, publisher, year, pages, language) and educational fields (age range, grade, subject).
 - Bulk: CSV import/export of products and stock; duplicate a product.
@@ -228,6 +230,8 @@ Each section has: visibility (published / hidden / scheduled between dates), lan
 ---
 
 ## 7. Office features
+
+*(COMMERCE_PARITY_PLAN P4, STATUS §5md: **Listings awaiting approval** on `/admin/bookshop` — oldest first, with what changed since the last approval — *Approve* or *Decline* with a note; CSV. A shop the office marks **trusted** skips the queue.)*
 
 - **Vendors**: create with an owner account; profile; commission rate; status (active / suspended); members; storefront moderation; custom host (later); notes.
 - **Catalogue**: every product; unpublish; edit any; categories and brands (shared taxonomy); the age/grade/subject lists; featured on the shop home; collections on the shop home.

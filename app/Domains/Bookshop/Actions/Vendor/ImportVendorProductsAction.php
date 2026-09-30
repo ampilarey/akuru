@@ -354,7 +354,7 @@ class ImportVendorProductsAction
         }
         $choices = [
             'tax_class' => ['standard' => 'standard', 'zero_rated' => 'zero_rated', 'zero-rated' => 'zero_rated', 'zero rated' => 'zero_rated', 'exempt' => 'exempt'],
-            'status' => ['draft' => 'draft', 'active' => 'active', 'archived' => 'archived'],
+            'status' => ['draft' => 'draft', 'active' => 'active', 'archived' => 'archived', 'pending_review' => 'active'],
             'visibility' => ['shop' => 'shop', 'storefront' => 'storefront'],
         ];
         foreach ($choices as $field => $allowed) {

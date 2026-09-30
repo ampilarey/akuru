@@ -190,7 +190,8 @@ it('shows a shop its returns rate and the office the GST the shops collected, in
 
 it('links a printed book to its Digital Library edition, wants a few words for every photo, and opens the gallery in a lightbox', function () {
     Storage::fake('public');
-    [$fitrah, $owner] = followShop();
+    // Trusted (COMMERCE_PARITY_PLAN P4): this test is about the product page, not the office's approval.
+    [$fitrah, $owner] = followShop('fitrah', ['trusted' => true]);
     Role::findOrCreate('super_admin', 'web');
     $published = LibraryItem::query()->create(['title' => 'Tracing Book (e-book)', 'slug' => 'tracing-book-ebook', 'content_type' => 'book', 'access_type' => 'free_public', 'status' => 'published', 'published_at' => now()]);
     $draft = LibraryItem::query()->create(['title' => 'Unfinished', 'slug' => 'unfinished', 'content_type' => 'book', 'access_type' => 'free_public', 'status' => 'draft']);

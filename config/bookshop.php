@@ -200,6 +200,8 @@ return [
             // §5le: a customer asks about a product — worth an email, since they wait for the answer.
             'question' => ['email' => true, 'sms' => false],
             'payout_decided' => ['email' => true, 'sms' => false],
+            // COMMERCE_PARITY_PLAN P4: the office approves or declines a listing.
+            'listing_decided' => ['email' => true, 'sms' => false],
             'invoice' => ['email' => true, 'sms' => false],
             'quote_requested' => ['email' => true, 'sms' => false],
         ],

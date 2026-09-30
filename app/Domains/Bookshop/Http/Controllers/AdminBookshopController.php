@@ -12,6 +12,7 @@ use App\Domains\Bookshop\Actions\DecideVendorHostAction;
 use App\Domains\Bookshop\Actions\DecideVendorPayoutAction;
 use App\Domains\Bookshop\Actions\ListBankTransferSlipsAction;
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
+use App\Domains\Bookshop\Actions\ListingApprovalAction;
 use App\Domains\Bookshop\Actions\ListLowStockAction;
 use App\Domains\Bookshop\Actions\ListOrdersAction;
 use App\Domains\Bookshop\Actions\ListPendingRefundsAction;
@@ -90,7 +91,8 @@ class AdminBookshopController extends Controller
             'sign_in_url' => route('login'),
             'section_types' => array_keys(SectionTypes::TYPES),
             // COMMERCE_PARITY_PLAN P2: shop owners' identity cards, waiting first.
-            'identity_checks' => app(IdentityVerificationAction::class)->list('vendor'),
+            // …and P4's listings awaiting approval, oldest first.
+            'identity_checks' => app(IdentityVerificationAction::class)->list('vendor'), 'listings' => app(ListingApprovalAction::class)->queue(),
             'id_l' => trans('account'),
         ]);
     }
@@ -132,6 +134,7 @@ class AdminBookshopController extends Controller
             'legal_name' => 'nullable|string|max:255',
             'tin' => 'nullable|string|max:40',
             'gst_registered' => 'nullable|boolean',
+            'trusted' => 'nullable|boolean',
             'status' => 'required|string|in:active,paused,suspended',
             'commission_rate' => 'nullable|numeric|min:0|max:100',
             'contact_email' => 'nullable|email|max:255',

@@ -108,7 +108,8 @@ function opsImport(User $who, string $csv): array
 }
 
 it('logs every stock change: opening stock, an edit, a sale with its order, a cancellation put back — and never edits a line', function () {
-    [$fitrah, $owner] = opsShop();
+    // Trusted (COMMERCE_PARITY_PLAN P4): the book goes on sale without the office, so it can be bought here.
+    [$fitrah, $owner] = opsShop('fitrah', ['trusted' => true]);
     opsAs($owner)->post(route('vendor.products.store'), ['title' => 'Tracing Book', 'price' => '85', 'tax_class' => 'zero_rated', 'status' => 'active', 'visibility' => 'shop', 'stock' => 12, 'track_stock' => 1])->assertSessionHasNoErrors();
     $book = Product::query()->where('title', 'Tracing Book')->sole();
     opsAs($owner)->post(route('vendor.products.update', $book->id), ['title' => 'Tracing Book', 'price' => '85', 'tax_class' => 'zero_rated', 'status' => 'active', 'visibility' => 'shop', 'stock' => 10, 'track_stock' => 1])->assertSessionHasNoErrors();
@@ -214,7 +215,8 @@ it('exports the product sheet, checks an edited sheet without writing, then appl
         ->and($book->details)->toBe([])->and($book->category?->slug)->toBe('workbooks');
     expect($small->refresh()->stock)->toBe(7);
     $new = Product::query()->where('sku', 'FIT-NEW')->sole();
-    expect($new->vendor_id)->toBe($fitrah->id)->and($new->status->value)->toBe('active')->and($new->details)->toBe(['author' => 'Aisha'])->and($new->stock)->toBe(30);
+    // P4: a new product from a CSV asks the office, like the form does.
+    expect($new->vendor_id)->toBe($fitrah->id)->and($new->status->value)->toBe('pending_review')->and($new->details)->toBe(['author' => 'Aisha'])->and($new->stock)->toBe(30);
     expect(Product::query()->whereIn('sku', ['FIT-BAD', 'FIT-CAT', 'FIT-NOPRICE'])->count())->toBe(0);
     expect(StockMovement::query()->where('kind', 'import')->pluck('quantity')->sort()->values()->all())->toBe([5, 15]);
     expect(StockMovement::query()->where('product_id', $new->id)->value('kind'))->toBe('in');

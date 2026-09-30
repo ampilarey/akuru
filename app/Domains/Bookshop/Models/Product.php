@@ -49,6 +49,11 @@ class Product extends Model
         'low_stock_notified_at',
         'lead_days',
         'status',
+        'submitted_at',
+        'review_note',
+        'review_changes',
+        'reviewed_by',
+        'reviewed_at',
         'visibility',
         'featured',
         'badge',
@@ -82,6 +87,9 @@ class Product extends Model
             'low_stock_notified_at' => 'datetime',
             'tags' => 'array',
             'details' => 'array',
+            'submitted_at' => 'datetime',
+            'reviewed_at' => 'datetime',
+            'review_changes' => 'array',
         ];
     }
 

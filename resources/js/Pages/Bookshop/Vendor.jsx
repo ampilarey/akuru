@@ -46,7 +46,8 @@ function fromProduct(p) {
         sale_percent: text(p.sale_percent), sale_starts_at: text(p.sale_starts_at), sale_ends_at: text(p.sale_ends_at),
         sku: text(p.sku), barcode: text(p.barcode), weight_grams: text(p.weight_grams), dimensions: text(p.dimensions),
         track_stock: Boolean(p.track_stock), stock: text(p.stock), low_stock_at: text(p.low_stock_at), lead_days: text(p.lead_days),
-        status: p.status, visibility: p.visibility,
+        // P4: a listing waiting for the office is still a request to sell.
+        status: p.status === 'pending_review' ? 'active' : p.status, visibility: p.visibility,
         details: { ...(p.details || {}) },
         variants: (p.variants || []).map((v) => ({ id: v.id, name: v.name, sku: text(v.sku), price: text(v.price), stock: text(v.stock), is_active: Boolean(v.is_active) })),
     };
@@ -62,7 +63,7 @@ function Field({ label, hint, children, className = '' }) {
     );
 }
 
-function ProductEditor({ product, options, t, onDone }) {
+function ProductEditor({ product, options, t, onDone, trusted = false }) {
     const form = useForm(product ? fromProduct(product) : blankProduct());
     const [showTranslations, setShowTranslations] = useState(Boolean(product?.title_dv || product?.title_ar));
     const set = (name) => (e) => form.setData(name, e.target.type === 'checkbox' ? e.target.checked : e.target.value);
@@ -102,9 +103,9 @@ function ProductEditor({ product, options, t, onDone }) {
                 <Field label={t.product_title} className="md:col-span-2">
                     <input className="form-input w-full" value={form.data.title} onChange={set('title')} data-testid="product-title" required />
                 </Field>
-                <Field label={t.status}>
+                <Field label={t.status} hint={trusted ? null : t.listing_approval_hint}>
                     <select className="form-input w-full" value={form.data.status} onChange={set('status')} data-testid="product-status">
-                        {options.statuses.map((s) => <option key={s} value={s}>{t[`status_${s}`] || s}</option>)}
+                        {options.statuses.filter((s) => s !== 'pending_review').map((s) => <option key={s} value={s}>{s === 'active' && !trusted ? t.status_active_request : (t[`status_${s}`] || s)}</option>)}
                     </select>
                 </Field>
                 <Field label={t.summary} className="md:col-span-2">
@@ -602,7 +603,11 @@ function ProductList({ products, t, onEdit, selected, setSelected }) {
                             {p.track_stock ? p.stock : t.not_tracked}
                             {p.low_stock && <span className="ms-1 rounded bg-amber-100 px-1 text-xs text-amber-800">{t.low_stock}</span>}
                         </td>
-                        <td className="p-2" data-label={t.status}>{t[`status_${p.status}`] || p.status}</td>
+                        <td className="p-2" data-label={t.status} data-testid={`status-${p.slug}`} data-status={p.status}>
+                            {p.status === 'pending_review' ? <span className="rounded bg-amber-100 px-1 text-amber-900">{t.status_pending_review}</span> : (t[`status_${p.status}`] || p.status)}
+                            {/* P4: the office's note on a declined listing. */}
+                            {p.status === 'draft' && p.review_note && <span className="mt-1 block text-xs text-red-800" data-testid={`declined-${p.slug}`}>{t.listing_declined_note}: {p.review_note}</span>}
+                        </td>
                         <td className="table-actions p-2 sm:text-end">
                             <button type="button" className="text-blue-700 underline" onClick={() => onEdit(p)} data-testid={`edit-${p.slug}`}>{t.edit}</button>
                             <button type="button" className="ms-3 text-blue-700 underline" onClick={() => router.post(`/vendor/products/${p.id}/duplicate`, {}, { preserveScroll: true })} data-testid={`duplicate-${p.slug}`}>{t.duplicate}</button>
@@ -705,6 +710,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                                 options={options}
                                 t={t}
                                 onDone={() => setEditing(null)}
+                                trusted={Boolean(vendor.trusted)}
                             />
                         )}
                         {selected.length > 0 && (
