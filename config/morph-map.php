@@ -201,6 +201,8 @@ return [
     'student_gate_card' => \App\Domains\Academics\Models\StudentGateCard::class,
     'linked_account' => \App\Domains\Identity\Models\LinkedAccount::class,
     'account_link_event' => \App\Domains\Identity\Models\AccountLinkEvent::class,
+    // COMMERCE_PARITY_PLAN P2: an ID card sent for verification.
+    'identity_verification' => \App\Domains\Identity\Models\IdentityVerification::class,
     'book_title' => \App\Domains\Circulation\Models\BookTitle::class,
     'book_copy' => \App\Domains\Circulation\Models\BookCopy::class,
     'loan' => \App\Domains\Circulation\Models\Loan::class,
