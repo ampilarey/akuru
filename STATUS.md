@@ -4414,6 +4414,75 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ma. Customers sign in on the phone number (COMMERCE_PARITY_PLAN P1, 2026-09-30)
+
+The owner: "customer can order with only mobile and OTP, when he logs in he
+will be asked to set up a password, next time he will use the password only".
+The Bake & Grill fork, at `/sign-in`:
+
+- **The number first.** A number whose account has a password gets the
+  password box, which posts to the ordinary login (it already takes a phone,
+  with its throttle and two-step sign-in). Any other number is sent a
+  six-digit code.
+- **Nothing is written before the code.** A new number's code lives in the
+  cache (`OtpService::sendForNewRegistration`), as course registration's does.
+- **A correct code proves the number**, so it becomes a verified mobile
+  contact, a real sign-in:
+  - an account whose number was already verified is signed in;
+  - a registration begun and never finished is completed;
+  - a §5ly guest account with that number is claimed, with its orders and
+    purchases (BACKLOG C12 closed);
+  - otherwise a new account is made with the name given.
+- **Then a password, required.** The code lands on *Set your password*. The
+  new `customer_password` middleware on checkout, *My orders*, the Library
+  purchase and gift cards sends a code account there until it has one (Bake &
+  Grill only suggested it; plan §6 no. 3). A §5ly guest is not sent: it has no
+  number to sign in with. After that the number takes the password only, and
+  a code is refused ("use Forgot password"), which is the existing reset flow.
+- **Where the customer is sent afterwards:** setting the password returns them
+  to where they were going. That page can be the Blade checkout, so the
+  Inertia form now makes a full visit, since a plain redirect opened it
+  inside Inertia's modal (found by the walk).
+- **The entry points** now go to `/sign-in?next=…`:
+  - "Sign in with your mobile number" on the cart, a Library item and gift
+    cards;
+  - the Bookstore bar's Account tab.
+
+  `next` is a path on this site only.
+- **With SMS off:** production without live SMS says codes are not on yet and
+  sends no code; elsewhere codes go to the log, as walks read them.
+- The admin OTP route is untouched.
+- **Rule 3:** Identity asks Notifications through the new
+  `LiveSmsAllowedAction`, since it may not read `LiveSms` directly.
+- **Baselines:** `session_creations`, `public_routes`,
+  `unguarded_write_routes`, and the Blade baseline for the pre-auth page.
+- **Languages:** EN/DV/AR.
+
+Tests:
+- `PhoneSignInTest`, 10 tests, covers:
+  - a new number: code, account, forced password, then checkout;
+  - a password number never gets a code;
+  - a code account signs in again by code until it has a password;
+  - a guest account is claimed;
+  - a wrong code is refused;
+  - a bad number is refused;
+  - verify without a send is refused;
+  - `next` stays on this site;
+  - a guest is not forced;
+  - DV/AR.
+- `ShopTabBarTest` updated.
+- Identity, Auth, Commerce, Bookshop, Library and Architecture: green.
+
+Walks:
+- New `scripts/smoke/customer-sign-in.mjs`, 9/9: a phone, cart → sign-in → new
+  number → code from the log → wrong code refused → right code → set a
+  password → the checkout with the book; next time the password only; the
+  student's number goes to the password box.
+- `checkout.mjs` 46/46.
+
+**Owner:** OWNER_ACTIONS item 24, turn SMS on. Until then production customers
+use a password or the guest form.
+
 ## 5lz. Audit and plan: customers, sellers and fulfilment the Bake & Grill way (2026-09-30)
 
 The owner's eight-point brief after §5ly: sellers and writers upload both

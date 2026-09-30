@@ -2,8 +2,7 @@
 
 **Status:** audited 2026-09-30 against this repository and the owner's
 Bake & Grill repository (read-only, `/home/user/ampilarey/bakeandgrill`);
-decisions made by the owner the same day (§4). Nothing here is built yet.
-Slices P1–P8 in §5, one PR each, in that order.
+decisions made by the owner the same day (§4). Slices P1–P8 in §5, one PR each, in that order. **P1 shipped 2026-09-30 (STATUS §5ma).**
 
 **Owner's brief (2026-09-30):** "1) how seller and authors are registered,
 they must upload both sides of the id cards, when the account is verified
@@ -173,7 +172,7 @@ Order: P1 → P2 → P3 → P4 → P5 → P6 → P7 → P8. P1 unblocks nothing 
 code but is the gate for the owner's SMS switch; P2 carries the identity
 table the later ones read.
 
-### P1 — Customers sign in on the phone number (one PR)
+### P1 — Customers sign in on the phone number — **shipped 2026-09-30, STATUS §5ma**
 
 The Bake & Grill fork, in Identity. Nothing here weakens the 2026-09-14
 fixes: the admin OTP route stays admin-only and untouched.

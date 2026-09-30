@@ -84,7 +84,7 @@ Route::post('shop/book-lists/{vendor}/{list}', [\App\Domains\Bookshop\Http\Contr
 Route::post('shop/cart/{item}/save', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'saveForLater'])->name('public.shop.cart.save')->middleware('throttle:60,1,shop-cart')->whereNumber('item');
 Route::post('shop/cart/{item}/move', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'moveToCart'])->name('public.shop.cart.move')->middleware('throttle:60,1,shop-cart')->whereNumber('item');
 Route::post('shop/cart/{item}', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'update'])->name('public.shop.cart.update')->middleware('throttle:60,1,shop-cart')->whereNumber('item');
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'customer_password'])->group(function () {
     Route::get('shop/checkout', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'show'])->name('public.shop.checkout');
     Route::post('shop/checkout', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'store'])->name('public.shop.checkout.store')->middleware('throttle:10,1,shop-checkout');
     Route::get('shop/checkout/{number}', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'status'])->name('public.shop.checkout.status');
@@ -136,11 +136,11 @@ Route::get('my-wallet', [WalletController::class, 'show'])->name('public.wallet'
 Route::post('my-wallet/redeem', [WalletController::class, 'redeem'])->name('public.wallet.redeem')->middleware('throttle:10,1,wallet-redeem');
 // L4 §15.3: buy a gift card. BML only; no discount, no wallet (§15.4).
 Route::get('gift-cards', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'index'])->name('public.gift-cards.index');
-Route::post('gift-cards', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'purchase'])->name('public.gift-cards.purchase')->middleware('throttle:10,1,gift-card-buy');
+Route::post('gift-cards', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'purchase'])->name('public.gift-cards.purchase')->middleware(['throttle:10,1,gift-card-buy', 'customer_password']);
 Route::get('gift-cards/return', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'paymentReturn'])->name('public.gift-cards.return');
 Route::get('library/{slug}/download', [PublicLibraryController::class, 'download'])->name('public.library.download')->middleware('throttle:20,1,library-download');
 Route::get('library/{slug}/read', [LibraryReaderController::class, 'read'])->name('public.library.read');
-Route::post('library/{slug}/checkout', [LibraryCheckoutController::class, 'checkout'])->name('public.library.checkout')->middleware('throttle:10,1,library-checkout');
+Route::post('library/{slug}/checkout', [LibraryCheckoutController::class, 'checkout'])->name('public.library.checkout')->middleware(['throttle:10,1,library-checkout', 'customer_password']);
 Route::get('library/{slug}/payment-return', [LibraryCheckoutController::class, 'paymentReturn'])->name('public.library.payment-return');
 Route::post('library/{slug}/progress', [LibraryReaderController::class, 'progress'])->name('public.library.progress')->middleware('throttle:60,1,library-progress');
 Route::post('library/{slug}/bookmark', [LibraryReaderController::class, 'bookmark'])->name('public.library.bookmark')->middleware('throttle:30,1,library-bookmark');

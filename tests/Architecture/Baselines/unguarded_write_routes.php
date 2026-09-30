@@ -21,6 +21,8 @@ return [
     'logout' => 'AuthenticatedSessionController@destroy — ends your own session.',
     'register' => 'RegisteredUserController@store — public; throttled (auth-register).',
     'guest-checkout' => 'GuestCheckoutController@store — public by design (STATUS §5ly): creates the caller\'s own new account; refuses a number that already signs in; throttled.',
+    'sign-in' => 'PhoneSignInController@check — pre-auth by necessity (P1); throttled, codes capped by OtpService.',
+    'sign-in/code' => 'PhoneSignInController@verify — OTP-proved (P1); throttled.',
     'contact' => 'ContactController@store — public contact form.',
     'admissions' => 'AdmissionController@store — public admission application.',
     'apply' => 'AdmissionController@store — same controller, second public path.',

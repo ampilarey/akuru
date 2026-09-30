@@ -54,7 +54,7 @@
             {{-- STATUS §5ly: buy without signing in first. --}}
             @include('public.partials.guest-checkout', ['for' => 'gift_card'])
             <p class="mt-4 text-sm text-gray-600">{{ __('account.guest_have_account') }}
-                <a href="{{ route('login') }}" class="font-semibold text-brandMaroon-700 underline">{{ __('public.Sign in') }}</a>
+                <a href="{{ route('phone.sign-in', ['next' => request()->getRequestUri()]) }}" class="font-semibold text-brandMaroon-700 underline">{{ __('account.phone_sign_in_link') }}</a>
             </p>
         </div>
     @endif

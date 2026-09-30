@@ -440,6 +440,22 @@ Reader reminders and office alerts stay in the app.
 
 "Not yet" is a legible answer.
 
+### 24. Turn SMS on (COMMERCE_PARITY_PLAN P1, 2026-09-30)
+
+Customers now sign in on their mobile number: a password if the account has
+one, otherwise **a code by SMS**. On production the code only reaches a phone
+when SMS is live; until then the sign-in page says codes are not on yet and
+customers use a password or the guest form. Every later purchase notice
+(P5) needs it too. Each message costs money (Dhiraagu's rate).
+
+- [ ] In production's `.env` (cPanel File Manager), from your `akurusms`
+      setup: `SMS_LIVE=true`, `SMS_USE_DHIRAAGU=true`, `DHIRAAGU_SMS_USERNAME`,
+      `DHIRAAGU_SMS_PASSWORD` (never paste them into a chat or the repository)
+- [ ] `php artisan config:cache`
+- [ ] Open `/en/sign-in`, give your own number, and check the code arrives
+- [ ] Sign in with it, set a password, and sign in again: the second time it
+      asks for the password, not a code
+
 ## Parked items and later ideas
 
 Everything deferred or left unbuilt on purpose — the BML secret, branch

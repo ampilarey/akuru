@@ -69,7 +69,7 @@ it('gives the Bookstore a shop\'s tabs instead of the site\'s bar', function () 
         ->and(substr_count($html, 'data-testid="shop-bottom-bar"'))->toBe(1)
         ->and($bar)->toContain('data-testid="bar-home"')->toContain('href="'.route('public.shop.index').'"')
         ->toContain('data-testid="bar-categories"')->toContain('data-testid="bar-deals"')->toContain('href="'.route('public.shop.deals').'"')
-        ->toContain('data-testid="bar-account"')->toContain('href="'.route('login').'"')->toContain(__('shop.bar_sign_in'))
+        ->toContain('data-testid="bar-account"')->toContain('href="'.e(route('phone.sign-in', ['next' => parse_url(route('public.shop.orders'), PHP_URL_PATH)])).'"')->toContain(__('shop.bar_sign_in'))
         ->toContain('data-testid="bar-cart"')->toContain('href="'.route('public.shop.cart').'"')
         // Nothing of the site's bar.
         ->not->toContain(route('public.courses.index'))->not->toContain(route('public.library.index'));

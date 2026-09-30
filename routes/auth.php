@@ -9,6 +9,7 @@ use App\Domains\Identity\Http\Controllers\Auth\OtpLoginController;
 use App\Domains\Identity\Http\Controllers\Auth\OtpPasswordResetController;
 use App\Domains\Identity\Http\Controllers\Auth\PasswordController;
 use App\Domains\Identity\Http\Controllers\Auth\PasswordOtpController;
+use App\Domains\Identity\Http\Controllers\Auth\PhoneSignInController;
 use App\Domains\Identity\Http\Controllers\Auth\RegisteredUserController;
 use App\Domains\Identity\Http\Controllers\Auth\TwoFactorChallengeController;
 use App\Domains\Identity\Http\Controllers\Auth\VerifyEmailController;
@@ -28,6 +29,17 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+    // COMMERCE_PARITY_PLAN P1: customers sign in on the phone number — a
+    // password if the account has one, otherwise a code by SMS. Codes are
+    // capped per number by OtpService; these cap one address.
+    Route::get('sign-in', [PhoneSignInController::class, 'show'])->name('phone.sign-in');
+    Route::post('sign-in', [PhoneSignInController::class, 'check'])
+        ->middleware('throttle:10,1,phone-sign-in')
+        ->name('phone.sign-in.check');
+    Route::post('sign-in/code', [PhoneSignInController::class, 'verify'])
+        ->middleware('throttle:10,1,phone-sign-in-code')
+        ->name('phone.sign-in.verify');
 
     // STATUS §5ly: buy without signing in — a name and a mobile number make an
     // account and sign it in (Bake & Grill's guest checkout). Per number and
