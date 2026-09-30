@@ -14,5 +14,6 @@ the file. File names are lowercase and exact: a Linux server does not find
 `akuru-logo.PNG` when asked for `akuru-logo.png`.
 
 Since 2026-09-29 they are the owner's own vector artwork (gold emblem, wine
-wordmark), sharp at any size for screen and print. To change the logo,
-replace these files under the same names (docs/BRAND.md).
+wordmark), sharp at any size for screen and print; rebuilt 2026-09-30 from
+the revised artwork. To change the logo, upload the new SVG here and run
+scripts/brand/logo-pack.mjs on it: it writes all five files (docs/BRAND.md).

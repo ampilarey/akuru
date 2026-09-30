@@ -43,7 +43,8 @@ it('has no background of its own, so it sits on any colour', function () {
         expect($svg)->not->toContain('<rect x="-30"', $file)
             ->and($svg)->toMatch('#<svg [^>]*viewBox="[\\d. ]+"#', $file);
     }
-    expect(file_exists(public_path('images/logos/Copy of logo for website.svg')))->toBeFalse();
+    // The owner's uploads are built into these files and removed (names with spaces, and duplicates).
+    expect(glob(public_path('images/logos/Copy of*')))->toBe([]);
 });
 
 it('renders the right file for each background', function (string $variant, string $file) {
@@ -90,4 +91,18 @@ it('gives search engines the logo, not an app icon', function () {
     $jsonLd = app(\App\Domains\Website\Actions\ComposeOrganizationJsonLdAction::class)->execute();
 
     expect(json_encode($jsonLd))->toContain('images\/logos\/akuru-logo-800.png');
+});
+
+it('carries the revised wordmark of 2026-09-30, and the site asks for it anew', function () {
+    // The revised artwork's AKURU "A" (STATUS §5lv); the old one began "M 38.640625".
+    foreach (['akuru-logo.svg', 'akuru-logo-on-dark.svg', 'akuru-logo-white.svg'] as $file) {
+        expect(file_get_contents(public_path('images/logos/'.$file)))->toContain('M 38.96875 -0.65625')->not->toContain('M 38.640625 -0.65625');
+    }
+    // The emblem did not change, so neither did the mark or the icons.
+    expect(file_get_contents(public_path('images/logos/akuru-mark.svg')))->not->toContain('#6e1e25')->toContain('viewBox="4.5 1.625 93 145.875"');
+
+    expect((string) $this->blade('<x-akuru-logo />'))->toContain('akuru-logo.svg?v=5')
+        ->and(file_get_contents(resource_path('js/Layouts/AppShell.jsx')))->toContain('akuru-logo-on-dark.svg?v=5');
+    [$width] = getimagesize(public_path('images/logos/akuru-logo-800.png'));
+    expect($width)->toBe(800);
 });

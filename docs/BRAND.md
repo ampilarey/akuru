@@ -37,10 +37,19 @@ Wine `#7C2D37` above — close, and the logo is the owner's to keep as drawn.
 | `akuru-mark.svg` | the emblem alone, gold | where the wordmark is already set in text |
 | `akuru-logo-800.png` | as `akuru-logo.svg`, transparent | email, structured data, anywhere SVG is refused |
 
-A downloadable pack (every variant as SVG and as PNG at 600/1200/2400 wide,
-the emblem in gold, white and wine at 256/512/1024 high, and the app icons)
-was produced with the files; it is not kept in the repository — regenerate it
-from these SVGs when needed.
+**2026-09-30 (STATUS §5lv):** the owner uploaded a revised artwork, with the
+AKURU wordmark redrawn slightly bolder and as wide as the INSTITUTE bar; the
+emblem is unchanged. All five files above were rebuilt from it.
+
+**Building the files.** `scripts/brand/logo-pack.mjs` takes the SVG the design
+tool exports and writes all five files above: it drops the white background,
+crops to the ink, and makes the on-dark, white (with the INSTITUTE knockout)
+and emblem versions by colour. With `--pack <dir>` it also writes the
+downloadable pack: every variant as SVG and as transparent PNG at 600, 1200 and
+2400 wide, and the emblem in gold, white and wine at 512 and 1024. The pack is
+not kept in the repository.
+
+    SMOKE_CHROMIUM=<chromium> node scripts/brand/logo-pack.mjs "public/images/logos/<upload>.svg" --pack <dir>
 
 ## App icons
 
@@ -56,7 +65,16 @@ circle keeps it whole. Linked with `?v=4` so browsers drop the old icons and log
 
 2026-09-29: the logo files are the owner's vector artwork, so they are sharp at
 any size, for screen and print. The earlier files (2026-09-24) were traced
-from a 200 × 109 pixel PNG; they are replaced. To change the logo again,
-replace the four SVGs under the same names and bump `?v=` in the component,
-the layouts, `partials/pwa.blade.php`, `AppShell.jsx`, `PrintCards.jsx` and
-`manifest.webmanifest`.
+from a 200 × 109 pixel PNG; they are replaced. 2026-09-30: rebuilt from the
+revised artwork (the wordmark only).
+
+To change the logo again:
+1. upload the new SVG to `public/images/logos/`;
+2. run `scripts/brand/logo-pack.mjs` on it;
+3. delete the upload;
+4. bump the logo's `?v=` in the component, `AppShell.jsx` and `PrintCards.jsx`
+   (now `?v=5`).
+
+If the emblem changed too, the app icons must be redrawn as well. Then bump
+their `?v=` in the public layout, `partials/pwa.blade.php` and
+`manifest.webmanifest` (still `?v=4`).

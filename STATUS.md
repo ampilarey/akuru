@@ -4414,6 +4414,63 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lv. The revised logo, on every surface (2026-09-30)
+
+The owner uploaded a revised SVG straight to `main`
+(`public/images/logos/Copy of logo for website (1).svg`): "a slightly
+small change. Can u update the logo pack and update throughout the
+website."
+
+**What changed in the artwork.** Only the **AKURU wordmark**: it is
+redrawn a little bolder and set as wide as the INSTITUTE bar. The
+emblem's three paths are identical to the old ones, compared path by
+path. So the app icons and the favicon, which are the emblem alone,
+stay as they are.
+
+**Rebuilt from it:** `akuru-logo.svg`, `akuru-logo-on-dark.svg`,
+`akuru-logo-white.svg`, `akuru-mark.svg` and `akuru-logo-800.png`.
+- The build follows §5km:
+  - the design tool's two white background rectangles are dropped;
+  - each file is cropped to its ink (the same crops as before:
+    `4.5 1.625 290.125 145.875`, and the emblem `93` wide);
+  - on-dark has white AKURU and a gold bar with deep-wine INSTITUTE;
+  - white is one colour, with INSTITUTE knocked out of the bar by a mask.
+- The upload is deleted.
+- **New: `scripts/brand/logo-pack.mjs`.** The last time, the files were
+  made by hand. This script takes the export and writes all five files
+  (with `--pack <dir>`, the owner's pack too). The next change of logo is
+  one command, and `docs/BRAND.md` says so.
+- **Everywhere the site shows it:**
+  - `?v=4` → `?v=5` for the logo in `<x-akuru-logo>`, which every Blade
+    header, footer and sign-in page uses;
+  - in `AppShell.jsx` (the staff bar);
+  - in `PrintCards.jsx` (the gate cards).
+  - So browsers fetch the new logo rather than a cached one. The icons
+    keep `?v=4`, since they did not change.
+  - Structured data uses `akuru-logo-800.png`, rebuilt.
+- **The owner's pack:** each variant as SVG and transparent PNG at 600,
+  1200 and 2400 wide, the emblem in gold, white and wine, the app icons
+  and a README. It was sent in the conversation and is not kept in the
+  repository.
+
+**Also fixed:** `scripts/smoke/website.mjs` still expected the site's
+phone bar on `/shop`, which §5lt replaced with the store's tabs. The walk
+now checks that the store's tabs take over there.
+
+Tests: `BrandAssetsTest`, 10 passed:
+- new: the three wordmark files carry the revised "A" and not the old
+  one;
+- the mark keeps its crop;
+- the component and the staff bar ask for `?v=5`;
+- the PNG is 800 wide;
+- no `Copy of…` upload is left in the folder.
+
+Walks, with screenshots at 1280 and 390:
+- `website.mjs` 54/54;
+- `admin-layout.mjs` 15/15;
+- the header asks for `akuru-logo.svg?v=5` and no logo request fails;
+- the footer and the sign-in page show the on-dark logo.
+
 ## 5lu. The Bookstore's layout, after iruali (2026-09-29)
 
 The owner: "Can u enhance the layout of the bookstore and each vendor page.

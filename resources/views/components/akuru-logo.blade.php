@@ -2,7 +2,7 @@
 
 @php
     // The Akuru Institute logo in the brand palette (docs/BRAND.md): a vector
-    // per background, traced from the original artwork on 2026-09-24.
+    // per background, built from the owner's artwork by scripts/brand/logo-pack.mjs.
     //   default  — wine wordmark, gold mark: on white or the site beige
     //   on-dark  — white wordmark, brand-gold mark: on the wine gradients
     //   white    — one colour: any dark background where gold would clash
@@ -14,7 +14,7 @@
         default => 'akuru-logo.svg',
     };
     $logoExists = file_exists(public_path('images/logos/'.$file));
-    $logoPath = asset('images/logos/'.$file).'?v=4';
+    $logoPath = asset('images/logos/'.$file).'?v=5';
 @endphp
 
 <div {{ $attributes->merge(['class' => "flex items-center {$class}"]) }}>

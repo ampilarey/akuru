@@ -43,7 +43,7 @@ export default function PrintCards({ class_name: className = '', pupils = [] }) 
                     >
                         <Qr code={p.card.code} />
                         <div className="min-w-0">
-                            <img src="/images/logos/akuru-logo.svg?v=4" alt="Akuru Institute" className="mb-2 h-8" />
+                            <img src="/images/logos/akuru-logo.svg?v=5" alt="Akuru Institute" className="mb-2 h-8" />
                             <p className="truncate text-lg font-bold">{p.name}</p>
                             <p className="text-sm text-gray-600">{className}{p.student_number ? ` · ${p.student_number}` : ''}</p>
                             <p className="mt-2 font-mono text-xs tracking-wider text-gray-700">{p.card.readable}</p>
