@@ -118,11 +118,17 @@ const phone = await visitor(390, 844);
 await phone.goto(`${BASE}/en`, { waitUntil: 'networkidle' });
 const tabs = (await phone.locator('[data-testid="bottom-bar"] a').allInnerTexts()).map((t) => t.trim());
 check('the phone bar is Home, Courses, Library, Shop, Account', JSON.stringify(tabs) === JSON.stringify(['Home', 'Courses', 'Library', 'Shop', 'Account']), tabs.join(' · '));
-for (const [tab, to] of [['bottom-library', '/library'], ['bottom-shop', '/shop'], ['bottom-courses', '/courses'], ['bottom-home', '/']]) {
+for (const [tab, to] of [['bottom-library', '/library'], ['bottom-courses', '/courses'], ['bottom-home', '/']]) {
     await Promise.all([phone.waitForLoadState('networkidle'), phone.click(`[data-testid="${tab}"]`)]);
     await phone.waitForLoadState('networkidle');
     check(`the bar's ${tab.replace('bottom-', '')} goes to ${to}, and lights up`, path(phone.url()) === to && (await phone.getAttribute(`[data-testid="${tab}"]`, 'aria-current')) === 'page', path(phone.url()));
 }
+// STATUS §5lt: Shop opens the Bookstore, where the store's own tabs take the site bar's place.
+await Promise.all([phone.waitForLoadState('networkidle'), phone.click('[data-testid="bottom-shop"]')]);
+await phone.waitForLoadState('networkidle');
+check('the bar\'s shop goes to /shop, where the store\'s own tabs take over', path(phone.url()) === '/shop'
+    && (await phone.locator('[data-testid="bottom-bar"]').count()) === 0 && await phone.locator('[data-testid="shop-bottom-bar"]').isVisible(), path(phone.url()));
+await phone.goto(`${BASE}/en`, { waitUntil: 'networkidle' });
 check('the chat button shows on a phone, clear of the bar', await phone.locator('[data-testid="viber-float"]').isVisible());
 
 // ------------------------------------------------------------ 3. the phone menu
