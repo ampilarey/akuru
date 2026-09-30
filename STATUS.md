@@ -4414,6 +4414,43 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lz. Audit and plan: customers, sellers and fulfilment the Bake & Grill way (2026-09-30)
+
+The owner's eight-point brief after §5ly: sellers and writers upload both
+sides of their ID and are verified before they can sell; customers sign
+in with a mobile number and a code, set a password once, then use the
+password; course learners upload both sides of their ID; every customer
+and selling feature of Bake & Grill; office approval of every listing;
+SMS and email to customer, seller and office on every purchase; and
+inventory or delivery by Akuru for a charge.
+
+**Audited** this repository and the Bake & Grill repository (read-only):
+thirteen findings with their code in `docs/COMMERCE_PARITY_PLAN.md` §2.
+The ones that matter most: a shop applies with no ID at all and a writer
+with one optional file (F1–F2); a customer cannot sign in with a code,
+OTP being admin-only since the 2026-09-14 fixes (F4); "set a password"
+can be skipped forever (F5); registration takes an ID number, never an
+image (F6); a shop puts a product on sale by itself (F8); the office
+hears nothing on a paid order and a writer nothing on a sale (F9–F10);
+SMS is not live on production (F11); Akuru never holds stock and never
+delivers (F12).
+
+**The owner decided** (plan §4): ID images kept for the life of the
+account (D1); a learner's ID never blocks enrolment, the office verifies
+afterwards and certificates are withheld until then (D2); a child uploads
+the child's own card (D3); the rest as recommended — D4 which edits go
+back for approval, D5 Akuru's handling fee from the shop's earnings and
+its delivery fee from the customer, D6 everyone told by in-app, email
+and SMS, D7 SMS live as the prerequisite.
+
+**The plan**: eight slices, P1–P8, one PR each, in `docs/COMMERCE_PARITY_PLAN.md`
+§5, each with its data, Actions, routes, screens, tests, walk and docs
+so a fresh session can build it. Also recorded (§6): six things the
+reference itself gets wrong, for a session on that repository — its BML
+webhook check will refuse every real webhook, as ours did until §5lw.
+
+BACKLOG C13; CLAUDE.md's document map lists the plan. No code changed.
+
 ## 5ly. Buy without signing in: guest checkout for the Bookstore and the Digital Library (2026-09-30)
 
 The owner, after §5lx: "could not complete the check out, it ask to sign in,
