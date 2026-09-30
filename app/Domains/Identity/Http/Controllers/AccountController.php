@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Inertia\Inertia;
 use Inertia\Response;
+use Symfony\Component\HttpFoundation\Response as HttpResponse;
 
 class AccountController extends Controller
 {
@@ -33,7 +34,7 @@ class AccountController extends Controller
         ]);
     }
 
-    public function setPassword(Request $request): RedirectResponse
+    public function setPassword(Request $request): RedirectResponse|HttpResponse
     {
         $user = $request->user();
         if (! $user) {
@@ -76,7 +77,12 @@ class AccountController extends Controller
         // Back to the person's own home (ID3, finding F6): this used to be the
         // marketing home, telling someone who was signed in that they could
         // "now log in".
-        return redirect()->intended(route('dashboard'))
-            ->with('success', trans('account.password_saved'));
+        // COMMERCE_PARITY_PLAN P1: a customer sent here from the checkout goes
+        // back to it. The checkout is a Blade page, so the Inertia form needs a
+        // full visit (a plain redirect would open it inside Inertia's modal).
+        $request->session()->flash('success', trans('account.password_saved'));
+        $to = (string) $request->session()->pull('url.intended', route('dashboard'));
+
+        return $request->header('X-Inertia') ? Inertia::location($to) : redirect()->to($to);
     }
 }

@@ -36,6 +36,7 @@ return [
     // --- A one-time code was verified --------------------------------------
     'app/Domains/Identity/Http/Controllers/Auth/TwoFactorChallengeController.php' => 'STATUS §5lk: the second step. Only after the password (LoginRequest) or the OTP (OtpLoginController) was proved — which put the person\'s id in the session for ten minutes — and TwoFactorAction::verify accepts a fresh app code or a recovery code. Five wrong codes a minute per person, and the route is throttled.',
     'app/Domains/Identity/Http/Controllers/Auth/OtpLoginController.php' => 'Immediately after `OtpService::verify()`, which throws on a wrong or expired code and rate-limits per contact and per code.',
+    'app/Domains/Identity/Http/Controllers/Auth/PhoneSignInController.php' => 'COMMERCE_PARITY_PLAN P1: after `PhoneSignInAction::verify`, which calls `OtpService::verify` (a verified contact) or `OtpService::verifyForNewRegistration` (a new number) for the number this session asked about — both throw on a wrong or expired code and cap tries per code and per window. The number comes from the session the send step wrote, never the form. Two-step sign-in, when on, still asks for the app code.',
     'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php::verify' => 'Both branches sit after `OtpService::verify()` for the contact the funnel is about. This is the step the two P0s below were skipping.',
 
     // --- The session is the account's own creation -------------------------

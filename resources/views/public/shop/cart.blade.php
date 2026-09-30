@@ -130,7 +130,7 @@
                 {{-- STATUS §5ly: no sign-in needed — a name and a mobile number, or sign in to an account. --}}
                 @include('public.partials.guest-checkout', ['for' => 'shop'])
                 <p class="mt-4 text-sm text-gray-600">{{ __('account.guest_have_account') }}
-                    <a href="{{ route('login') }}" class="font-semibold text-brandMaroon-700 underline" data-testid="cart-sign-in-link">{{ __('shop.sign_in_password') }}</a>
+                    <a href="{{ route('phone.sign-in', ['next' => parse_url(route('public.shop.checkout'), PHP_URL_PATH)]) }}" class="font-semibold text-brandMaroon-700 underline" data-testid="cart-sign-in-link">{{ __('account.phone_sign_in_link') }}</a>
                 </p>
             </div>
         @endunless

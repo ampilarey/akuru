@@ -40,7 +40,7 @@
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icons['deals'] }}"/></svg>
             <span>{{ __('shop.bar_deals') }}</span>
         </a>
-        <a href="{{ auth()->check() ? route('public.shop.orders') : route('login') }}" class="shop-tab {{ $tabs['account'] ? 'is-active' : '' }}" data-testid="bar-account" @if($tabs['account']) aria-current="page" @endif>
+        <a href="{{ auth()->check() ? route('public.shop.orders') : route('phone.sign-in', ['next' => parse_url(route('public.shop.orders'), PHP_URL_PATH)]) }}" class="shop-tab {{ $tabs['account'] ? 'is-active' : '' }}" data-testid="bar-account" @if($tabs['account']) aria-current="page" @endif>
             <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="{{ $icons['account'] }}"/></svg>
             <span>{{ auth()->check() ? __('shop.bar_account') : __('shop.bar_sign_in') }}</span>
         </a>

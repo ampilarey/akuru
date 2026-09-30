@@ -42,6 +42,9 @@ return [
     'auth/login.blade.php',
     'auth/otp-login.blade.php',
     'auth/otp-verify.blade.php',
+    // COMMERCE_PARITY_PLAN P1: the customer's phone sign-in — pre-auth, a sibling
+    // of the login and OTP pages in the guest layout, which is Blade.
+    'auth/phone-sign-in.blade.php',
     'auth/passwords/confirm.blade.php',
     'auth/passwords/email.blade.php',
     'auth/passwords/otp-request.blade.php',

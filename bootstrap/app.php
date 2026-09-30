@@ -49,6 +49,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
             'verified_contact' => \App\Http\Middleware\EnsureVerifiedContact::class,
             'convert_enroll_403' => \App\Http\Middleware\ConvertEnroll403ToRedirect::class,
+            // COMMERCE_PARITY_PLAN P1: a code sign-in sets a password before buying.
+            'customer_password' => \App\Http\Middleware\RequireCustomerPassword::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
