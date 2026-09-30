@@ -217,6 +217,14 @@ if (p.url().includes('register/continue')) {
     if (await el.count()) { await el.selectOption({ index: 1 }).catch(() => {}); }
   }
 
+  // COMMERCE_PARITY_PLAN P3: both sides of the learner's ID card, asked here and
+  // never holding the enrolment up — the office checks it afterwards.
+  const card = review.locator('[data-testid="learner-id-card"]');
+  check('the review step asks for both sides of the ID card', (await card.count()) === 1 && (await review.locator('input[name="id_front"]').count()) === 1 && (await review.locator('input[name="id_back"]').count()) === 1);
+  const idImage = { name: 'smoke-id.png', mimeType: 'image/png', buffer: await p.screenshot({ clip: { x: 0, y: 0, width: 80, height: 80 } }) };
+  await review.locator('input[name="id_front"]').setInputFiles(idImage).catch(() => {});
+  await review.locator('input[name="id_back"]').setInputFiles(idImage).catch(() => {});
+
   await review.locator('button[type=submit]:visible').first().click().catch(() => {});
   await p.waitForLoadState('networkidle');
   check('the review step is accepted', !p.url().includes('register/continue'), p.url());
@@ -289,6 +297,45 @@ if (await proceed.count()) {
   }
 } else {
   check('a free course finishes without asking for money', true);
+}
+
+// COMMERCE_PARITY_PLAN P3: the office sees the card on the enrolment page and verifies it there.
+if (LOCAL && results.some(([s, ok]) => s === 'the enrolment completes' && ok)) {
+  const learnerId = execSync(
+    `cd /home/user/akuru && php artisan tinker --execute="echo (int) \\App\\Domains\\Identity\\Models\\IdentityVerification::query()->where('purpose','learner')->latest('id')->value('student_id');"`,
+    { encoding: 'utf8' },
+  ).trim();
+  const enrolment = execSync(
+    `cd /home/user/akuru && php artisan tinker --execute="echo (int) \\App\\Domains\\Courses\\Models\\CourseEnrollment::query()->where('unified_student_id', ${Number(learnerId) || 0})->latest('id')->value('id');"`,
+    { encoding: 'utf8' },
+  ).trim();
+  check('the card is filed against the learner the enrolment made', Number(enrolment) > 0, `student ${learnerId}, enrolment ${enrolment}`);
+
+  const oc = await b.newContext();
+  oc.setDefaultNavigationTimeout(60000);
+  await oc.route('**/*', (r) => (r.request().url().startsWith(BASE) ? r.continue() : r.abort()));
+  const o = await oc.newPage();
+  o.on('pageerror', (e) => problems.push('office pageerror ' + String(e).slice(0, 110)));
+  o.on('response', (r) => { if (r.status() >= 500) problems.push('office HTTP ' + r.status() + ' ' + r.url()); });
+  await o.goto(`${BASE}/en/login`, { waitUntil: 'domcontentloaded' });
+  await o.fill('input[name="identifier"]', process.env.SMOKE_ADMIN ?? 'superadmin@akuru.edu.mv');
+  await o.fill('input[name="password"]', process.env.SMOKE_PASSWORD ?? 'password');
+  await Promise.all([o.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), o.click('button[type=submit]')]);
+
+  await o.goto(`${BASE}/en/admin/enrollments/${enrolment}`, { waitUntil: 'networkidle' });
+  const checks = o.locator('[data-testid="identity-checks"]');
+  await checks.waitFor({ timeout: 20000 }).catch(() => {});
+  check('the enrolment page shows the card, waiting', (await checks.count()) === 1 && (await o.locator('[data-testid^="identity-front-"]').count()) === 1);
+  const front = await o.locator('[data-testid^="identity-front-"]').first().getAttribute('href').catch(() => null);
+  const image = front ? await o.request.get(front.startsWith('http') ? front : `${BASE}${front}`) : null;
+  check('the office can open the front', image?.status() === 200 && /image/.test(image?.headers()['content-type'] ?? ''), front ?? 'no link');
+  await o.locator('[data-testid^="identity-verify-"]').first().click().catch(() => {});
+  await o.waitForLoadState('networkidle');
+  await o.waitForTimeout(500);
+  check('verifying it takes it off the waiting list', (await o.locator('[data-testid^="identity-verify-"]').count()) === 0, (await o.locator('[data-testid="identity-checks"]').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 90));
+
+  await o.goto(`${BASE}/en/admin/enrollments?id_card=verified`, { waitUntil: 'networkidle' });
+  check('the enrolments list filters by ID card', (await o.locator('body').innerText()).includes('Smoke'));
 }
 
 const width = Math.max(...results.map(([s]) => s.length));

@@ -5,11 +5,14 @@ namespace App\Domains\Admissions\Http\Controllers;
 use App\Domains\Courses\Actions\ActivateEnrollmentAction;
 use App\Domains\Courses\Actions\ListAdminEnrollmentsAction;
 use App\Domains\Courses\Actions\ReadAdminEnrollmentAction;
+use App\Domains\Courses\Actions\RejectEnrollmentAction;
+use App\Domains\Courses\Actions\SetEnrollmentAccessWindowAction;
 use App\Domains\Courses\Actions\SuspendEnrollmentAction;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Actions\ListAdminPaymentsAction;
 use App\Domains\Finance\Actions\ListManualPaymentMethodsAction;
 use App\Domains\Finance\Actions\RecordManualPaymentAction;
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Http\Controllers\Controller;
 use App\Mail\EnrollmentStatusMail;
@@ -30,7 +33,7 @@ use Inertia\Response;
  */
 class AdminEnrollmentController extends Controller
 {
-    private const FILTERS = ['search', 'course_id', 'status', 'payment_status'];
+    private const FILTERS = ['search', 'course_id', 'status', 'payment_status', 'id_card'];
 
     public function index(Request $request): Response
     {
@@ -41,6 +44,7 @@ class AdminEnrollmentController extends Controller
             'statuses' => ListAdminEnrollmentsAction::STATUSES,
             'payment_statuses' => ListAdminEnrollmentsAction::PAYMENT_STATUSES,
             't' => trans('admin'),
+            'id_l' => trans('account'),
         ]);
     }
 
@@ -53,6 +57,9 @@ class AdminEnrollmentController extends Controller
             'payment_methods' => app(ListManualPaymentMethodsAction::class)->execute(),
             'can_record_payment' => (bool) $request->user()?->can('payments.record'),
             't' => trans('admin'),
+            // COMMERCE_PARITY_PLAN P3: the learner's ID card, checked here after enrolment.
+            'identity' => app(IdentityVerificationAction::class)->forStudents([(int) $enrollment->unified_student_id])[(int) $enrollment->unified_student_id] ?? null,
+            'id_l' => trans('account'),
         ]);
     }
 
@@ -75,7 +82,7 @@ class AdminEnrollmentController extends Controller
 
     public function reject(CourseEnrollment $enrollment)
     {
-        app(\App\Domains\Courses\Actions\RejectEnrollmentAction::class)->execute($enrollment, (int) auth()->id());
+        app(RejectEnrollmentAction::class)->execute($enrollment, (int) auth()->id());
 
         $this->notifyUser($enrollment, 'rejected');
         $this->sendRejectionSms($enrollment);
@@ -131,7 +138,7 @@ class AdminEnrollmentController extends Controller
     public function setAccessWindow(Request $request, CourseEnrollment $enrollment)
     {
         try {
-            app(\App\Domains\Courses\Actions\SetEnrollmentAccessWindowAction::class)->execute(
+            app(SetEnrollmentAccessWindowAction::class)->execute(
                 $enrollment,
                 $request->only(['access_starts_at', 'access_ends_at']),
                 (int) auth()->id(),
@@ -160,7 +167,7 @@ class AdminEnrollmentController extends Controller
             Csv::put($handle, [
                 'ID', 'Course', 'Student Name', 'Enrolled By (Mobile/Email)',
                 'Status', 'Payment Status', 'Amount (MVR)', 'Payment Ref',
-                'Enrolled At', 'Created At', 'Last Decision', 'Decided By', 'Decided At',
+                'Enrolled At', 'Created At', 'Last Decision', 'Decided By', 'Decided At', 'ID Card',
             ]);
 
             foreach ($enrollments as $e) {
@@ -198,6 +205,8 @@ class AdminEnrollmentController extends Controller
             $e->decision ?? '',
             $e->decider?->name ?? '',
             $e->decided_at?->format('Y-m-d H:i') ?? '',
+            // COMMERCE_PARITY_PLAN P3: the learner's ID card.
+            app(IdentityVerificationAction::class)->learnerStatus((int) $e->unified_student_id)['status'],
         ];
     }
 

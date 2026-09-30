@@ -41,7 +41,7 @@
                     </div>
                 </div>
 
-                <form method="POST" action="{{ route('courses.register.enroll') }}">
+                <form method="POST" action="{{ route('courses.register.enroll') }}" enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="flow" x-model="flow">
                     {{-- Always submit the correct id_type regardless of radio/disabled state --}}
@@ -202,6 +202,25 @@
                             </div>
                         </div>
                     </div>
+
+                    {{-- COMMERCE_PARITY_PLAN P3: the learner's ID card, both sides — a child's own card. The office checks it after enrolment. --}}
+                    <fieldset class="mt-2 pt-4 border-t border-gray-100" data-testid="learner-id-card">
+                        <legend class="block text-sm font-medium text-gray-700 mb-1">
+                            <span x-show="flow === 'adult'">{{ __('account.id_learner_title') }}</span>
+                            <span x-show="flow === 'parent'" x-cloak>{{ __('account.id_learner_child_title') }}</span>
+                        </legend>
+                        <p class="text-xs text-gray-500 mb-2">{{ __('account.id_learner_hint') }}</p>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            <label class="block text-sm">{{ __('account.id_front') }}
+                                <input type="file" name="id_front" accept="image/jpeg,image/png,image/webp,application/pdf" class="mt-1 block w-full text-sm" data-testid="learner-id-front">
+                            </label>
+                            <label class="block text-sm">{{ __('account.id_back') }}
+                                <input type="file" name="id_back" accept="image/jpeg,image/png,image/webp,application/pdf" class="mt-1 block w-full text-sm" data-testid="learner-id-back">
+                            </label>
+                        </div>
+                        @error('id_front')<p class="text-sm text-red-600 mt-1" role="alert" data-testid="learner-id-error">{{ $message }}</p>@enderror
+                        @error('id_back')<p class="text-sm text-red-600 mt-1" role="alert">{{ $message }}</p>@enderror
+                    </fieldset>
 
                     {{-- Email (optional, used for confirmation receipt) --}}
                     <div class="mt-2 pt-4 border-t border-gray-100">

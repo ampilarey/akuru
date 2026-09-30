@@ -1810,6 +1810,13 @@ Fields:
 
 ## 23. Student Enrollment
 
+> **The learner's ID card (COMMERCE_PARITY_PLAN P3, 2026-09-30, STATUS §5mc).**
+> Registration asks for both sides of the learner's ID card, and a child's
+> own card when a parent enrols a child. The cards are stored as
+> `identity_verifications` rows with purpose `learner` and the student's id.
+> The enrolment never waits for it: the office verifies the card on the
+> enrolment page afterwards, and a course certificate waits until it has.
+
 ### course_enrollments Table
 
 Fields:

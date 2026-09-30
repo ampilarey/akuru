@@ -1,6 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import { IdentityStatus } from '../../Components/IdentityCard';
 
 /**
  * The office's enrolment list (docs/ADMIN_PANEL.md; C9 slice 4, STATUS
@@ -24,9 +25,9 @@ const PAYMENT_TONES = {
 };
 const humanize = (value) => (value || '').replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
 
-export default function Enrollments({ enrollments = [], pagination, total = 0, courses = [], filters = {}, statuses = [], payment_statuses: paymentStatuses = [], t = {} }) {
+export default function Enrollments({ enrollments = [], pagination, total = 0, courses = [], filters = {}, statuses = [], payment_statuses: paymentStatuses = [], t = {}, id_l = {} }) {
     const { flash = {} } = usePage().props;
-    const [form, setForm] = useState({ search: filters.search || '', course_id: filters.course_id || '', status: filters.status || '', payment_status: filters.payment_status || '' });
+    const [form, setForm] = useState({ search: filters.search || '', course_id: filters.course_id || '', status: filters.status || '', payment_status: filters.payment_status || '', id_card: filters.id_card || '' });
     const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
     const active = Object.fromEntries(Object.entries(form).filter(([, v]) => v !== ''));
     const query = new URLSearchParams(active).toString();
@@ -77,6 +78,14 @@ export default function Enrollments({ enrollments = [], pagination, total = 0, c
                         {paymentStatuses.map((s) => <option key={s} value={s}>{paymentLabel(s)}</option>)}
                     </select>
                 </label>
+                {/* COMMERCE_PARITY_PLAN P3: by the learner's ID card. */}
+                <label className="text-xs text-gray-600">
+                    {id_l.id_col || 'ID card'}
+                    <select className="form-input mt-1 block" name="id_card" value={form.id_card || ''} onChange={set('id_card')} data-testid="enrolments-id-filter">
+                        <option value="">{t.enrolments_all || 'All'}</option>
+                        {['pending', 'verified', 'rejected', 'none'].map((s) => <option key={s} value={s}>{id_l[`id_status_${s}`] || s}</option>)}
+                    </select>
+                </label>
                 <button type="submit" className="btn-primary">{t.enrolments_filter || 'Filter'}</button>
                 {filtered && <Link href="/admin/enrollments" className="btn-secondary">{t.enrolments_clear || 'Clear'}</Link>}
             </form>
@@ -92,18 +101,20 @@ export default function Enrollments({ enrollments = [], pagination, total = 0, c
                             <th className="px-3 py-2">{t.enrolments_col_course || 'Course'}</th>
                             <th className="px-3 py-2">{t.enrolments_col_status || 'Status'}</th>
                             <th className="px-3 py-2">{t.enrolments_col_payment || 'Payment'}</th>
+                            <th className="px-3 py-2">{id_l.id_col || 'ID card'}</th>
                             <th className="px-3 py-2">{t.enrolments_col_date || 'Date'}</th>
                             <th className="px-3 py-2"><span className="sr-only">{t.enrolments_col_action || 'Action'}</span></th>
                         </tr>
                     </thead>
                     <tbody>
-                        {enrollments.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan="6">{t.enrolments_none || 'No enrollments found.'}</td></tr>}
+                        {enrollments.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan="7">{t.enrolments_none || 'No enrollments found.'}</td></tr>}
                         {enrollments.map((e) => (
                             <tr key={e.id} className="border-t align-top" data-testid="enrolment-row">
                                 <td className="px-3 py-2 font-medium text-gray-900">{e.student || '—'}</td>
                                 <td className="px-3 py-2 text-gray-700">{e.course || '—'}</td>
                                 <td className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_TONES[e.status] || 'bg-gray-100 text-gray-700'}`} data-testid="enrolment-status">{statusLabel(e.status)}</span></td>
                                 <td className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${PAYMENT_TONES[e.payment_status] || 'bg-gray-100 text-gray-600'}`} data-testid="enrolment-payment">{paymentLabel(e.payment_status)}</span></td>
+                                <td className="px-3 py-2"><IdentityStatus status={e.id_card || 'none'} l={id_l} /></td>
                                 <td className="whitespace-nowrap px-3 py-2 text-gray-500">{e.date}</td>
                                 <td className="whitespace-nowrap px-3 py-2 text-end">
                                     {/* The one-enrolment page is still Blade (C9 slice 5): a plain link, a full page load. */}

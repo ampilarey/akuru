@@ -6,6 +6,7 @@ use App\Domains\Courses\Enums\CertificateKind;
 use App\Domains\Courses\Models\Assessment;
 use App\Domains\Courses\Models\CertificateTemplate;
 use App\Domains\Courses\Models\CourseEnrollment;
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Offerings\Actions\GetOfferingAttendancePercentAction;
 use App\Domains\Offerings\Actions\GetOfferingCertificateRulesAction;
 use App\Domains\Progress\Actions\ListAssessmentScoresAction;
@@ -33,8 +34,13 @@ class CheckCertificateEligibilityAction
             }
         }
 
+        // COMMERCE_PARITY_PLAN P3 (decision D2): a course certificate waits for the
+        // office to verify the learner's ID card; the enrolment itself never did.
+        $idReason = ($courseId ?? $template->course_id) !== null && ! app(IdentityVerificationAction::class)->learnerVerified($studentId)
+            ? __('account.id_certificate_waits') : null;
+
         if ($template->kind === CertificateKind::Manual) {
-            return ['eligible' => true, 'reasons' => []];
+            return ['eligible' => $idReason === null, 'reasons' => $idReason === null ? [] : [$idReason]];
         }
 
         $courseId = $courseId ?? $template->course_id;
@@ -126,6 +132,10 @@ class CheckCertificateEligibilityAction
                     ? 'Required assessment is awaiting teacher marking.'
                     : 'Assessment score is below the minimum.';
             }
+        }
+
+        if ($idReason !== null) {
+            $reasons[] = $idReason;
         }
 
         return ['eligible' => $reasons === [], 'reasons' => $reasons];

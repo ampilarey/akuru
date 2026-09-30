@@ -266,7 +266,7 @@ fixes: the admin OTP route stays admin-only and untouched.
 - **Docs**: BOOKSHOP_PLAN §3 and LIBRARY_PLAN §11.1 amended; STATUS;
   `docs/vendors/FITRAH.md` note that her portal now asks for the card.
 
-### P3 — Learners: the ID card at registration, verified afterwards (one PR)
+### P3 — Learners: the ID card at registration, verified afterwards — **shipped 2026-09-30, STATUS §5mc**
 
 - **Funnel**: `CourseRegistrationController::continueForm` / `enroll` (the
   profile step, adult and parent flows) take `id_front` and `id_back` per

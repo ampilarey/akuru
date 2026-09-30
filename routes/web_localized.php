@@ -194,6 +194,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/my-account', [MyAccountController::class, 'index'])->name('account.home');
     Route::get('/my-enrollments/export', [MyAccountController::class, 'export'])->name('my.enrollments.export');
     Route::get('/my-enrollments', [MyAccountController::class, 'enrolments'])->name('my.enrollments');
+    // COMMERCE_PARITY_PLAN P3: a learner's ID card, sent again after the office rejected it. Not under
+    // my-enrollments: ConvertEnroll403ToRedirect turns any 403 on a POST path holding "enroll" into a redirect.
+    Route::post('/my-account/id-card/{student}', [MyAccountController::class, 'idCard'])->name('account.id-card')->whereNumber('student')->middleware('throttle:10,60,learner-id-card');
     // A teacher's own home (E1b), distinct from the school-wide staff overview.
     Route::get('/portal/teacher', [TeacherHomeController::class, 'index'])->name('portal.teacher');
     Route::get('/portal/overview/export', [StaffOverviewController::class, 'export'])->name('portal.overview.export');

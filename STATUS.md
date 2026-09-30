@@ -4414,6 +4414,71 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mc. Learners: the ID card at registration, verified afterwards (COMMERCE_PARITY_PLAN P3, 2026-09-30)
+
+The owner: "course registrants upload both sides of their ID card". The
+owner's decisions:
+- D2: collect the card at registration, verify it on the enrolment page, and
+  withhold the certificate until it is verified.
+- D3: "for child need child id".
+
+- **The funnel** (`register/continue`, Blade):
+  - The review step has an *ID card, both sides* fieldset (*Your child's own
+    ID card* in the parent flow).
+  - `LearnerIdCardAction` stores the two sides when the form is posted. It
+    keeps their ids in the session through the second code round, then files
+    them against the learner the enrolment made or found: purpose `learner`,
+    with `student_id`, through P2's `IdentityVerificationAction`.
+  - The card is required unless the office already has one for that learner
+    (waiting or verified). A second course does not ask again.
+  - The enrolment itself never waits for the card (D2).
+- **The office**:
+  - `/admin/enrollments/{id}` shows the card with *Verify* and *Reject*;
+    rejecting needs a note.
+  - `IdentityCheckController` lets super admin, admin and headmaster open a
+    learner's card, the same roles as the enrolment screens.
+  - The enrolments list has an *ID card* column and a filter (waiting,
+    verified, rejected, none sent), and the CSV has an *ID Card* column.
+- **Certificates**:
+  - `CheckCertificateEligibilityAction` adds "Your certificate is ready once
+    the office has checked the ID card" for every course certificate, the
+    manual kind included.
+  - `IssueCertificateAction` and `ResolveCourseCertificateStatusAction` both
+    read it, so issuing refuses, and the learner sees why.
+- **The family**:
+  - *My enrolments* has an *ID card* column.
+  - A rejected card shows the office's note and a form to send both sides
+    again (`POST /my-account/id-card/{student}`). The form only works for a
+    learner this login enrolled.
+  - The route is not under `my-enrollments/`: `ConvertEnroll403ToRedirect`
+    turns any 403 on a POST path containing "enroll" into a redirect, which
+    would hide the refusal.
+- **Languages**: EN/DV/AR, in `account.id_learner_*`, `id_certificate_waits`
+  and `id_col`.
+
+Tests:
+- New `LearnerIdentityTest`, 7 tests:
+  - the funnel asks for the card, and files it against the enrolment's
+    learner;
+  - each child has their own card;
+  - the enrolment page shows the card, and the office can open it but the
+    family cannot;
+  - the certificate is withheld until the card is verified;
+  - after a rejection the family can send the card again, and only for their
+    own learner;
+  - a second course does not ask again;
+  - the list filter and the CSV;
+  - DV/AR.
+- Admissions, Courses, Portal and Identity: 692 green. Architecture: green.
+
+Walks:
+- `register.mjs` 20/20, with five new steps:
+  - the review step asks for both sides, and they are uploaded;
+  - the card is filed against the new learner;
+  - the enrolment page shows it, waiting;
+  - the office opens the front;
+  - *Verify* clears it, and the list filters by ID card.
+
 ## 5mb. Shops and writers: both sides of the ID card, verified by the office (COMMERCE_PARITY_PLAN P2, 2026-09-30)
 
 The owner: sellers and authors "must upload both sides of the ID card; when
