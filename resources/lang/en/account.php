@@ -61,4 +61,15 @@ return [
     'password_save' => 'Save password',
     'password_later' => 'Not now',
     'password_saved' => 'Your password is saved. Next time you can sign in with it, or with a code as before.',
+    // STATUS §5ly: buy without signing in (Bookstore, Digital Library, gift cards).
+    'guest_title' => 'Continue as a guest',
+    'guest_intro' => 'No account or password needed: your name and mobile number are enough. We use the number for this order only.',
+    'guest_name' => 'Your name',
+    'guest_phone' => 'Mobile number',
+    'guest_continue' => 'Continue',
+    'guest_have_account' => 'Already have an account?',
+    'guest_has_account' => 'This number already has an account. Please sign in with it instead.',
+    'guest_invalid_phone' => 'Enter a mobile number of at least seven digits.',
+    'guest_too_many' => 'Too many tries with this number. Please wait an hour, or sign in.',
+    'guest_welcome' => 'You are continuing as a guest. Keep this browser signed in to come back to your purchase, or set a password from My account.',
 ];

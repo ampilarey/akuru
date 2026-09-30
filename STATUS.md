@@ -4414,6 +4414,95 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ly. Buy without signing in: guest checkout for the Bookstore and the Digital Library (2026-09-30)
+
+The owner, after §5lx: "could not complete the check out, it ask to sign in,
+but customer should be able to buy in book store and digital library without
+sign in, can u check the bake and grill repo, make same way".
+
+**How Bake & Grill does it** (read-only, `CustomerAuthController::guestSession`,
+`POST /guest-session`):
+- It takes a name and a mobile number.
+- It is rate-limited per number and address, ten an hour.
+- If the number already has an account, it refuses: "verify with a code or
+  log in".
+- Otherwise it creates the customer and signs them in.
+
+**Akuru now does the same.** A "Continue as a guest" form (name + mobile)
+appears on the three pages that sell to the public:
+- the cart, in place of the sign-in box;
+- a paid Library item, for a visitor;
+- the gift cards page.
+
+**What the form does** (`POST guest-checkout`, `GuestCheckoutController` →
+`StartGuestAccountAction`):
+- It makes a new account (the number on `users.phone`, no email, the
+  "nobody knows this password" `force_password_change` state) and signs it in
+  on a long-lived remembered session.
+- The guest's cart comes with them.
+- It then sends them on to where they were going:
+  - the checkout, with the name and number already filled in;
+  - back to the Library item, now with its Buy button;
+  - back to the gift cards page, its Pay button open.
+- The destination is picked from `shop | library | gift_card` and a slug.
+  It is never a URL from the form.
+- A number that already signs in (a verified mobile contact) is refused with
+  "This number already has an account. Please sign in with it instead."
+- Ten tries per number and address an hour, as Bake & Grill; the route adds
+  30 a minute per address.
+
+**The decision, and what it costs.** No code is sent: SMS is not live on
+production, and Bake & Grill sends none either. So the typed number is kept
+on the account but is **not** made a sign-in (no `user_contacts` row).
+- A verified mobile contact is a login; a number typed into a checkout form
+  is not.
+- Taking the number's contact row would also stop its real owner from
+  registering it later.
+- The consequence: someone else typing the same number gets a new guest
+  account of their own, never the first buyer's orders. The walk checks this.
+- The cost: a guest who clears their browser, or changes phone, cannot sign
+  back in to that account yet.
+  - A Bookstore guest can still track an order by its number and phone (§5lj).
+  - A Library guest's purchase stays on that account, reachable from the
+    browser they bought in.
+  - Proving the number by code once SMS is live closes this: BACKLOG C12.
+
+The cart's "Sign in with a code by SMS" button is gone: OTP sign-in is for
+administrators only (`OtpLoginController::requestOtp`), so it told a customer
+"OTP login is only available for admin accounts". Its three unused keys went
+with it.
+
+**Architecture baselines, each with its reason:**
+- `session_creations` — the session is the account's own creation, as for
+  registration;
+- `public_routes` — authentication itself;
+- `unguarded_write_routes`;
+- the Blade baseline, for the one partial the three pages share.
+
+Languages: EN/DV/AR (`account.guest_*`).
+
+Tests:
+- `tests/Feature/Identity/GuestCheckoutTest.php`, 7 tests:
+  - cart → checkout with the basket and the fields filled in;
+  - a known number is refused and nothing is made;
+  - an unproved number blocks nobody;
+  - the Library item round trip;
+  - no destination from the form;
+  - a bad number, and the limit;
+  - DV/AR.
+- `BookshopCartTest` and `GiftCardPurchaseTest` updated.
+- Architecture, Bookshop and Library: green.
+
+Walk: `scripts/smoke/checkout.mjs` 46/46, with eight new steps (the
+seeder gives the student a verified number and cleans up the guests' orders):
+- on a phone, a guest gives a name and a number and lands on the checkout,
+  prefilled;
+- they collect from Fitrah by bank transfer, never signing in;
+- another browser typing the same number does not see that order;
+- the student's number is sent to sign in;
+- a paid Library item's guest form returns to the item, able to buy;
+- the gift cards page opens its Pay button.
+
 ## 5lx. Collecting an order needs only a name and a number (2026-09-30)
 
 The owner, testing a real BML payment with a MVR 10 book, got "Fill in

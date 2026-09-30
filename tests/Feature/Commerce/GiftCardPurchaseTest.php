@@ -53,11 +53,11 @@ function fakeBml(bool $initiates = true): void
     });
 }
 
-it('shows the gift card page to a visitor, with buying behind sign-in', function () {
+it('shows the gift card page to a visitor, with buying behind a guest form or sign-in', function () {
     $this->withoutLocalizationMiddleware()->get(route('public.gift-cards.index'))
         ->assertOk()
         ->assertSee('Give the gift of reading')
-        ->assertSee('Sign in to buy a gift card.')
+        ->assertSee('data-testid="guest-checkout"', false)
         ->assertSee('MVR 100')
         ->assertSee('MVR 1,000');
 

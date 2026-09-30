@@ -20,6 +20,7 @@ return [
     'login' => 'AuthenticatedSessionController@store — public; throttled.',
     'logout' => 'AuthenticatedSessionController@destroy — ends your own session.',
     'register' => 'RegisteredUserController@store — public; throttled (auth-register).',
+    'guest-checkout' => 'GuestCheckoutController@store — public by design (STATUS §5ly): creates the caller\'s own new account; refuses a number that already signs in; throttled.',
     'contact' => 'ContactController@store — public contact form.',
     'admissions' => 'AdmissionController@store — public admission application.',
     'apply' => 'AdmissionController@store — same controller, second public path.',

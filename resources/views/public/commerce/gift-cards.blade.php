@@ -51,8 +51,11 @@
 
     @if(! $signedIn)
         <div class="mb-6 rounded-lg border bg-brandBeige-50 p-6 text-center">
-            <p class="mb-3 text-gray-700">{{ __('public.Sign in to buy a gift card.') }}</p>
-            <a href="{{ route('login') }}" class="btn-primary">{{ __('public.Sign in') }}</a>
+            {{-- STATUS §5ly: buy without signing in first. --}}
+            @include('public.partials.guest-checkout', ['for' => 'gift_card'])
+            <p class="mt-4 text-sm text-gray-600">{{ __('account.guest_have_account') }}
+                <a href="{{ route('login') }}" class="font-semibold text-brandMaroon-700 underline">{{ __('public.Sign in') }}</a>
+            </p>
         </div>
     @endif
 

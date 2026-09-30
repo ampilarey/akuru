@@ -54,8 +54,9 @@ it('lets a guest add to a cart that is theirs by session, and shows it grouped b
         ->and($cart->items()->where('product_id', $book->id)->value('quantity'))->toBe(3);
 
     $page = shopAs()->get(route('public.shop.cart'))->assertOk();
-    $page->assertSee('Fitrah')->assertSee('Other-shop')->assertSee('MVR 495.00')->assertSee('Sign in to check out');
-    $page->assertSee(route('login'))->assertSee(route('otp.login.form'));
+    $page->assertSee('Fitrah')->assertSee('Other-shop')->assertSee('MVR 495.00');
+    // STATUS §5ly: a guest goes on with a name and a number, or signs in.
+    $page->assertSee(__('account.guest_title'))->assertSee(route('guest-checkout'))->assertSee(route('login'));
     $page->assertDontSee('Check out</a>', false);
 
     // Another browser sees nothing of it.

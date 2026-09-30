@@ -40,6 +40,7 @@ return [
 
     // --- The session is the account's own creation -------------------------
     'app/Domains/Identity/Http/Controllers/Auth/RegisteredUserController.php' => 'Signs in the account this request just created, with the password it just set. There is nobody else it could be.',
+    'app/Domains/Identity/Http/Controllers/Auth/GuestCheckoutController.php' => 'STATUS §5ly, guest checkout: signs in the account this request just created — `StartGuestAccountAction` only ever returns the id of a `User` it inserted in the same call, never an existing one, and refuses a number that already signs in (a verified mobile contact). The typed number is stored on the account but gets no contact row, so it grants no later sign-in. Ten tries per number and address an hour, thirty a minute per address.',
 
     // --- Proof carried forward from a verified step ------------------------
     // The two P0s. `pending_user_id` says which account the funnel is about
