@@ -4414,6 +4414,76 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lw. BML Connect as it really is: no webhook secret, the API key signs (2026-09-30)
+
+The owner set up BML. They created the merchant app (domain
+`https://akuru.edu.mv`) and sent a screenshot of its page: an
+Application ID, an API key (a JWT, `eyJ…`) and a public key
+(`pk_production_…`). **There is no webhook secret.** OWNER_ACTIONS item
+2 had warned that the site's webhook check had never been checked
+against BML's own scheme. It was wrong twice over:
+
+1. **The signature.** The site expected an HMAC-SHA256 of the body in
+   `X-BML-Signature`, with a shared secret. BML Connect sends
+   `X-Signature-Nonce`, `X-Signature-Timestamp` and
+   `X-Signature = sha256(nonce . timestamp . apiKey)`. With no secret to
+   configure, every real webhook would have been refused, and payments
+   would have waited up to ten minutes for `payments:reconcile`.
+2. **The API key header.** `auth_mode=auto` sends a JWT key as
+   `Authorization: Bearer <key>`. BML's own PHP SDK
+   (`bankofmaldives/bml-connect-php`, `src/Client.php`) sends
+   `'Authorization' => $this->apiKey`, with no `Bearer`. The default is
+   now `raw`.
+
+**The fix, with money safety first (rule 12):**
+- `BmlPaymentProvider::verifyCallback` checks BML's own signature with the
+  API key, in constant time, when the three headers are present.
+- BML's signature does not cover the body. So a verified webhook is
+  confirmed **only by asking BML's API**:
+  - `PaymentService::handleCallback` finds the payment by `localId`, or by
+    BML's `transactionId` stored at creation;
+  - it calls `finalizeByReference`, which queries
+    `GET /v2/transactions/{id}` and refuses an answer about another
+    payment (#362).
+  - A body saying `CONFIRMED` is never believed on its own.
+- **Unchanged:**
+  - a configured `BML_WEBHOOK_SECRET` still wins, and BML-style headers
+    do not bypass it;
+  - an unsigned webhook is still refused unless
+    `BML_WEBHOOK_ALLOW_UNSIGNED`.
+- **Admin → System settings** counts BML ready to confirm with the API
+  key alone. Its old "no webhook secret — payments will not confirm"
+  warning was the premise this corrects.
+
+**Docs:**
+- `docs/Payments-BML.md`:
+  - a *Webhook signature* section;
+  - the production base URL;
+  - the line that said an empty secret skipped the check is corrected;
+    it has been false since §5bp.
+- `OWNER_ACTIONS` item 2 is rewritten as the steps that remain: keys in
+  `.env`, `config:cache`, cron, one small real payment.
+- `.env.example`.
+
+Tests:
+- `BmlConnectSignatureTest` (6, production-shaped: no secret, unsigned
+  refused):
+  - a BML-signed webhook plus BML's API saying CONFIRMED confirms the
+    payment and activates the enrolment, having asked BML by transaction
+    id with the raw key;
+  - a CONFIRMED body with BML's API saying otherwise confirms nothing;
+  - a webhook with only `transactionId` finds its payment;
+  - a wrong key or no signature gets 400 and never asks BML;
+  - BML's answer about another payment is refused;
+  - a configured shared secret stays authoritative.
+- `IntegrationStatusBadgesTest` is updated to the new rule.
+- Finance, Bookshop, Commerce, Courses, Settings and Architecture: 850
+  passed.
+
+Not walked in a browser: this is a server-to-server path, and there are
+no real BML keys in this environment. **The owner's first small real
+payment is the walk** (OWNER_ACTIONS item 2).
+
 ## 5lv. The revised logo, on every surface (2026-09-30)
 
 The owner uploaded a revised SVG straight to `main`

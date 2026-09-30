@@ -236,6 +236,7 @@ class BmlPaymentProvider implements PaymentProviderInterface
         // IMPORTANT: Use raw request body for signature verification before any JSON decoding.
         $rawBody = $request->getContent();
         $secret = config('bml.webhook_secret');
+        $bmlSigned = false;
 
         if (is_string($secret) && $secret !== '') {
             $headerName = config('bml.webhook_signature_header', 'X-BML-Signature');
@@ -252,6 +253,15 @@ class BmlPaymentProvider implements PaymentProviderInterface
 
                 return new PaymentVerificationResult(false, null, null, null, [], 'Invalid signature');
             }
+        } elseif ($this->carriesBmlSignature($request)) {
+            // STATUS §5lw: BML Connect's own scheme — no shared secret, the
+            // merchant's API key: X-Signature = sha256(nonce . timestamp . apiKey).
+            if (! $this->verifyBmlSignature($request)) {
+                Log::warning('BML webhook: refused, BML signature does not match');
+
+                return new PaymentVerificationResult(false, null, null, null, [], 'Invalid signature');
+            }
+            $bmlSigned = true;
         } elseif (! config('bml.webhook_allow_unsigned', false)) {
             // Refusing is the safe default: an unverifiable webhook confirms
             // payments for free. Set BML_WEBHOOK_SECRET, or opt in explicitly
@@ -267,6 +277,16 @@ class BmlPaymentProvider implements PaymentProviderInterface
         $merchantRef = $payload['localId'] ?? $payload['reference'] ?? $payload['merchantReference'] ?? $payload['merchant_reference'] ?? null;
         $providerRef = $payload['id'] ?? $payload['transactionId'] ?? $payload['transaction_id'] ?? null;
         $status = $payload['state'] ?? $payload['status'] ?? $payload['transactionStatus'] ?? null;
+
+        // BML's signature covers the nonce and timestamp, not the body: the
+        // callback is BML's, but what it says is confirmed by asking BML.
+        if ($bmlSigned) {
+            if (! $merchantRef && ! $providerRef) {
+                return new PaymentVerificationResult(false, null, null, null, $payload, 'Missing reference');
+            }
+
+            return new PaymentVerificationResult(true, $merchantRef ? (string) $merchantRef : null, $providerRef ? (string) $providerRef : null, $status ? (string) $status : null, $payload, null, false, true);
+        }
 
         if (! $merchantRef) {
             return new PaymentVerificationResult(false, null, null, null, $payload, 'Missing reference');
@@ -345,6 +365,28 @@ class BmlPaymentProvider implements PaymentProviderInterface
      * Verify HMAC signature using raw request body.
      * Uses hash_equals to prevent timing attacks.
      */
+    /** BML Connect's three signature headers are all there. */
+    protected function carriesBmlSignature(Request $request): bool
+    {
+        return filled($request->header('X-Signature')) && filled($request->header('X-Signature-Nonce')) && filled($request->header('X-Signature-Timestamp'));
+    }
+
+    /**
+     * STATUS §5lw: BML Connect signs a webhook with the merchant's API key —
+     * X-Signature = sha256(X-Signature-Nonce . X-Signature-Timestamp . apiKey),
+     * hex — and gives no separate webhook secret.
+     */
+    protected function verifyBmlSignature(Request $request): bool
+    {
+        $apiKey = trim((string) config('bml.api_key'));
+        if ($apiKey === '') {
+            return false;
+        }
+        $expected = hash('sha256', $request->header('X-Signature-Nonce').$request->header('X-Signature-Timestamp').$apiKey);
+
+        return hash_equals($expected, strtolower(trim((string) $request->header('X-Signature'))));
+    }
+
     protected function verifyRawSignature(string $rawBody, string $signature, string $secret): bool
     {
         $algo = config('bml.webhook_hmac_algo', 'sha256');

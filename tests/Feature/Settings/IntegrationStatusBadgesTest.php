@@ -88,11 +88,11 @@ it('reads the BML key from config/bml.php rather than a key that does not exist'
     ])->assertOk()->assertInertia(fn (Assert $page) => $page->where('bml_configured', false));
 });
 
-it('warns when BML can take a payment but never confirm one', function () {
-    // The trap the webhook fix (§5bp) creates: an api_key is enough to send a
-    // family to the payment page, but with no webhook secret the payment can
-    // never be confirmed, so they pay and get nothing. The page says so in
-    // every language the panel speaks.
+it('counts BML ready to confirm payments with its API key alone, as BML signs with it (§5lw)', function () {
+    // Until §5lw this said an api_key without a webhook secret could take a
+    // payment but never confirm one. BML Connect gives no webhook secret: it
+    // signs with the API key, which the site now checks, and it confirms the
+    // payment by asking BML. So a key is enough; with no key there is nothing.
     settingsPage([
         'bml.api_key' => 'a-real-key',
         'bml.base_url' => 'https://api.example.mv',
@@ -100,14 +100,14 @@ it('warns when BML can take a payment but never confirm one', function () {
         'bml.webhook_allow_unsigned' => false,
     ])->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('bml_configured', true)
-        ->where('bml_webhook_ready', false)
-        ->where('t.system_settings_bml_no_webhook', 'No webhook secret — payments will not confirm.'));
+        ->where('bml_webhook_ready', true));
 
     settingsPage([
-        'bml.api_key' => 'a-real-key',
+        'bml.api_key' => null,
         'bml.base_url' => 'https://api.example.mv',
-        'bml.webhook_secret' => 'a-secret',
-    ])->assertOk()->assertInertia(fn (Assert $page) => $page->where('bml_webhook_ready', true));
+        'bml.webhook_secret' => null,
+        'bml.webhook_allow_unsigned' => false,
+    ])->assertOk()->assertInertia(fn (Assert $page) => $page->where('bml_configured', false)->where('bml_webhook_ready', false));
 
     foreach (['dv', 'ar'] as $locale) {
         expect(trans('admin.system_settings_bml_no_webhook', [], $locale))->not->toBe('No webhook secret — payments will not confirm.');

@@ -23,7 +23,8 @@ Set in `.env`:
 | `BML_APP_ID` | Application / client ID from BML |
 | `BML_API_KEY` | API key / client secret from BML |
 | `BML_MERCHANT_ID` | Optional merchant ID |
-| `BML_WEBHOOK_SECRET` | Secret for webhook signature verification (HMAC) |
+| `BML_WEBHOOK_SECRET` | **Leave empty for BML.** BML gives no webhook secret; it signs with the API key (see *Webhook signature*). Only for a gateway that HMAC-signs the body under `X-BML-Signature` |
+| `BML_AUTH_MODE` | How the API key is sent. Default `raw` (`Authorization: <key>`), as BML's own PHP SDK sends it |
 | `BML_WEBHOOK_URL` | Full URL BML will call (e.g. `https://yourdomain.com/webhooks/bml`) |
 | `BML_RETURN_URL` | Optional; if not set, return URL is built per payment |
 | `BML_PROVIDER` | Optional: `card`, `bmlpay`, etc.; omit to let user choose on BML page |
@@ -86,7 +87,7 @@ BML_WEBHOOK_SECRET=
 ```
 
 - Replace `YOUR-NGROK-OR-STAGING-URL` with your actual base (e.g. `https://abc123.ngrok.io` or `https://staging.akuru.mv`).
-- If BML does **not** provide a webhook secret in UAT, leave `BML_WEBHOOK_SECRET` empty; the app will still accept webhooks (signature check is skipped when secret is empty).
+- BML does **not** provide a webhook secret: leave `BML_WEBHOOK_SECRET` empty. The site checks BML's own signature with your API key (see *Webhook signature* below). An **unsigned** webhook is refused unless `BML_WEBHOOK_ALLOW_UNSIGNED=true`, which is for a local test only and never where real money moves. (This line used to say an empty secret skipped the check; that has not been true since §5bp.)
 
 ### 4. Configure BML UAT portal
 
@@ -197,6 +198,22 @@ For production, use cron: `* * * * * php /path/to/artisan schedule:run`.
 | Item | Where | Value |
 |------|--------|--------|
 | Webhook URL | BML merchant portal → Webhooks | `https://yourdomain.com/webhooks/bml` (HTTPS required in production) |
-| Webhook secret | Same / API settings | Copy to `.env` as `BML_WEBHOOK_SECRET` |
+| Webhook secret | — | BML Connect has none; leave `BML_WEBHOOK_SECRET` empty (STATUS §5lw) |
 | Redirect URL allowlist | If BML requires allowed redirect domains | Add your domain (e.g. `yourdomain.com`) |
 | App ID / API Key | BML portal | Set `BML_APP_ID`, `BML_API_KEY` in `.env` |
+
+## Webhook signature (STATUS §5lw, 2026-09-30)
+
+BML Connect gives a merchant app an **Application ID**, an **API key (secret)** and a **public key** — no webhook secret. It signs each webhook with the API key:
+
+    X-Signature-Nonce:     <random>
+    X-Signature-Timestamp: <time>
+    X-Signature:           sha256(nonce . timestamp . apiKey), hex
+
+The site recomputes that with `BML_API_KEY` and compares in constant time. Because the signature covers the nonce and timestamp but **not the body**, a verified webhook is treated as a trustworthy *nudge*, not as the answer: the site finds the payment (by `localId`, or by BML's `transactionId` stored when the payment was created) and asks BML's API (`GET /v2/transactions/{id}`) for its state, and confirms only if BML says `CONFIRMED` **about that payment**. A body that says `CONFIRMED` is never believed on its own.
+
+The same server-side check runs from the return page and from `payments:reconcile` every ten minutes, so a lost webhook only delays a confirmation.
+
+Production base URL: `https://api.merchants.bankofmaldives.com.mv/public` (UAT: `https://api.uat.merchants.bankofmaldives.com.mv/public`). The API key is sent as `Authorization: <key>`, as BML's own PHP SDK (`bankofmaldives/bml-connect-php`) sends it; `BML_AUTH_MODE` can change that if BML ever asks.
+
+Tests: `tests/Feature/Finance/BmlConnectSignatureTest.php`.
