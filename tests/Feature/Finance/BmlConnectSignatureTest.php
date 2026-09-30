@@ -157,7 +157,7 @@ it('keeps a configured shared secret authoritative: BML-style headers do not byp
 
 it('tells BML where to send the webhook when it creates the transaction, and sends the key as BML\'s SDK does', function () {
     bmlConnectLive();
-    config(['bml.webhook_url' => 'https://akuru.edu.mv/webhooks/bml']);
+    config(['app.url' => 'https://akuru.edu.mv', 'bml.webhook_url' => 'https://akuru.edu.mv/webhooks/bml']);
     [$payment] = bmlPendingCoursePayment();
     Http::fake(['bml.test/*' => Http::response(['id' => 'bml-txn-new', 'url' => 'https://pay.bml.test/checkout/abc', 'state' => 'CREATED'])]);
 
@@ -168,4 +168,15 @@ it('tells BML where to send the webhook when it creates the transaction, and sen
         && $r['webhook'] === 'https://akuru.edu.mv/webhooks/bml'
         && $r->hasHeader('Authorization', BML_TEST_KEY));
     expect($payment->fresh()->bml_transaction_id)->toBe('bml-txn-new');
+});
+
+it('leaves the webhook out when it points at another host than this site, which BML would refuse', function () {
+    bmlConnectLive();
+    config(['app.url' => 'https://test.akuru.edu.mv', 'bml.webhook_url' => 'https://akuru.edu.mv/webhooks/bml']);
+    [$payment] = bmlPendingCoursePayment();
+    Http::fake(['bml.test/*' => Http::response(['id' => 'bml-txn-t', 'url' => 'https://pay.bml.test/checkout/t', 'state' => 'CREATED'])]);
+
+    app(BmlPaymentProvider::class)->initiate($payment);
+
+    Http::assertSent(fn (HttpRequest $r) => str_ends_with($r->url(), '/v2/transactions') && ! isset($r['webhook']));
 });

@@ -4442,6 +4442,10 @@ against BML's own scheme. It was wrong twice over:
    have arrived. BML asked the owner to confirm that the webhook is the
    primary method, which is how this was found. The request now carries
    `webhook` = `BML_WEBHOOK_URL`, or `APP_URL/webhooks/bml` (https only).
+   It is sent **only when the webhook is on this site's own host**. The
+   owner's Bake & Grill install found that BML refuses to create a
+   transaction (a bare 4xx) when the webhook's host differs from the
+   merchant app's domain, for example a test site with the live URL.
 
 **The fix, with money safety first (rule 12):**
 - `BmlPaymentProvider::verifyCallback` checks BML's own signature with the
@@ -4474,9 +4478,10 @@ against BML's own scheme. It was wrong twice over:
 - `.env.example`.
 
 Tests:
-- `BmlConnectSignatureTest` (7, production-shaped: no secret, unsigned
+- `BmlConnectSignatureTest` (8, production-shaped: no secret, unsigned
   refused):
   - the create request carries `webhook` and the raw key;
+  - a webhook on another host is left out;
   - a BML-signed webhook plus BML's API saying CONFIRMED confirms the
     payment and activates the enrolment, having asked BML by transaction
     id with the raw key;

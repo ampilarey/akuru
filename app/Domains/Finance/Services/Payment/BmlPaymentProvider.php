@@ -71,9 +71,18 @@ class BmlPaymentProvider implements PaymentProviderInterface
         // STATUS §5lw: where BML sends the payment's webhook. BML Connect takes
         // it per transaction (the merchant app has no webhook setting), so
         // without this field no webhook ever arrives.
+        // Only on this site's own domain: BML refuses to create a transaction
+        // whose webhook is on another host than the merchant app's domain (a
+        // test site with the live URL gets a bare 4xx — learned on the owner's
+        // Bake & Grill install). The return page and payments:reconcile still
+        // confirm without it.
         $webhookUrl = config('bml.webhook_url') ?: rtrim((string) config('app.url'), '/').'/webhooks/bml';
-        if (str_starts_with($webhookUrl, 'https://')) {
+        $appHost = parse_url((string) config('app.url'), PHP_URL_HOST);
+        $webhookHost = parse_url((string) $webhookUrl, PHP_URL_HOST);
+        if (str_starts_with($webhookUrl, 'https://') && $appHost && $webhookHost && strcasecmp($appHost, $webhookHost) === 0) {
             $payload['webhook'] = $webhookUrl;
+        } else {
+            Log::info('BML: webhook left out of the transaction (not https, or not this site\'s host)', ['app_host' => $appHost, 'webhook_host' => $webhookHost]);
         }
 
         try {
