@@ -26,5 +26,11 @@ class SaveBookshopNoticeSwitchesAction
                 'Bookstore notices: '.str_replace('_', ' ', $key),
             );
         }
+        // COMMERCE_PARITY_PLAN P5: where the office's own copy of a purchase notice goes.
+        foreach (['office_contact_email' => 'bookshop_office_email', 'office_contact_phone' => 'bookshop_office_phone'] as $field => $setting) {
+            if (array_key_exists($field, $switches)) {
+                app(SetSettingAction::class)->execute($setting, trim((string) $switches[$field]), 'string', 'bookshop', 'Bookstore office '.($field === 'office_contact_email' ? 'email' : 'phone').' for purchase notices');
+            }
+        }
     }
 }

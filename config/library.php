@@ -85,13 +85,18 @@ return [
      * STATUS §5lq: the notices that matter — a decision on a writer's
      * application or submission, a publication, a sale, a payout, a peer
      * review asked for, a purchase ready — may also go by email and by SMS.
-     * Both off until the office turns them on (/admin/library/settings).
+     * Both on since COMMERCE_PARITY_PLAN P5; the office can turn them off (/admin/library/settings).
      * Reader nudges and office alerts stay in-app. Email is queued (it needs
      * the queue worker); SMS logs instead of sending wherever SMS_LIVE is off.
      */
     'notices' => [
-        'email' => (bool) env('LIBRARY_NOTICES_EMAIL', false),
-        'sms' => (bool) env('LIBRARY_NOTICES_SMS', false),
+        // COMMERCE_PARITY_PLAN P5: on unless the office turns them off.
+        'email' => (bool) env('LIBRARY_NOTICES_EMAIL', true),
+        'sms' => (bool) env('LIBRARY_NOTICES_SMS', true),
+        // P5: a sale also reaches the office's own address and number (/admin/library/settings).
+        'office_events' => ['new_sale'],
+        'office_email' => env('LIBRARY_OFFICE_EMAIL', ''),
+        'office_phone' => env('LIBRARY_OFFICE_PHONE', ''),
         'events' => ['writer_application_decided', 'submission_decided', 'published', 'new_sale', 'payout_decided', 'review_assigned', 'purchase_ready'],
         'sms_max_length' => 300,
     ],

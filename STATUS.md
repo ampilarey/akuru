@@ -4414,6 +4414,68 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5me. Every purchase tells the customer, the seller and the office (COMMERCE_PARITY_PLAN P5, 2026-09-30)
+
+The owner: "SMS and email to vendor, customer and admin on every purchase".
+
+- **Bookstore**:
+  - A paid order (card, wallet, or a confirmed slip) tells:
+    - the customer, with the tracking link in the SMS;
+    - each shop;
+    - the office.
+  - Each is told in the app, by email and by SMS.
+  - `NotifyBookshopUserAction::office()` takes an event. For the purchase
+    events (`order_paid`, `slip_received`, `order_cancelled`,
+    `return_requested`) it also emails the office's own address and texts
+    the office's own number.
+  - The address and number are set under *Notices* on `/admin/bookshop`,
+    over `BOOKSHOP_OFFICE_EMAIL` / `_PHONE`. With neither set, the office
+    hears in the app only.
+  - A cancellation and a return request now reach the office too.
+- **Defaults flipped**:
+  - Customer SMS, shop SMS and the shop's new-order SMS are on.
+  - Two new office switches, *email the office* and *text the office*, are
+    on.
+  - The office can turn any of them off.
+- **Digital Library**:
+  - A sale tells the reader, the writer and the office.
+    `AnnounceLibrarySaleAction` is called once per purchase, from the BML
+    webhook and from the wallet path. The wallet path used to tell the
+    reader nothing.
+  - The office's address and number are on `/admin/library/settings`
+    (`office_email` / `office_phone`, validated).
+  - Library notice email and SMS are now on by default.
+- **Delivery**:
+  - Every SMS goes through the SMS contract and its receipt log, and every
+    email through the queued mail, as before.
+  - Real delivery needs the queue worker (OWNER_ACTIONS item 3) and live
+    SMS (item 24).
+  - OWNER_ACTIONS item 23 is rewritten: set the two offices' email and
+    phone.
+- **Languages**: EN/DV/AR.
+
+Tests:
+- New `PurchaseNoticesTest`, 4 tests:
+  - a paid order reaches all three in the app, by email and by SMS, and the
+    customer's SMS carries the tracking link;
+  - with no office number there is no office SMS and no error;
+  - the office's SMS switch silences it;
+  - a wrong number is refused;
+  - a wallet Library sale reaches reader, writer and office in the app, by
+    email and by SMS;
+  - DV/AR.
+- Updated for the new defaults: `BulkOperationsTest` (shops and customers
+  are now texted by default) and `LibraryNoticeChannelsTest` (the office
+  turns the channels off rather than on).
+- Bookshop, Library and Architecture: green.
+
+Walk:
+- `checkout.mjs` 48/48, with two new steps:
+  - the wallet-paid order's texts are read from `sms_receipts`: the
+    customer, the shop and the office;
+  - the office's notice settings show its own email and phone.
+- `SmokeMarkerSeeder` sets synthetic office contacts for both offices.
+
 ## 5md. Listings approved by the office (COMMERCE_PARITY_PLAN P4, 2026-09-30)
 
 The owner: "the admin approves every listing". Decision D4 sets which edits

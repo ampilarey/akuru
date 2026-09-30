@@ -128,6 +128,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->requestsCycle($class);
         $this->vendorCycle();
         $this->verifiedIdentityCards();
+        $this->officePurchaseContacts();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1839,6 +1840,20 @@ class SmokeMarkerSeeder extends Seeder
      * card verified, as a real one would before selling or submitting — the
      * shop's picture stands in for the card. Planted once; later runs keep it.
      */
+    /**
+     * COMMERCE_PARITY_PLAN P5: the offices' own address and number, so the
+     * checkout walk can read the office's copy of a purchase notice in the
+     * SMS log. Synthetic, like everything here — never run on production.
+     */
+    private function officePurchaseContacts(): void
+    {
+        $set = app(\App\Domains\Settings\Actions\SetSettingAction::class);
+        $set->execute('bookshop_office_email', 'bookshop-office@akuru.edu.mv', 'string', 'bookshop', 'Bookstore office email for purchase notices');
+        $set->execute('bookshop_office_phone', '7000999', 'string', 'bookshop', 'Bookstore office phone for purchase notices');
+        $set->execute('library.office_email', 'library-office@akuru.edu.mv', 'string', 'library', 'Library: office email');
+        $set->execute('library.office_phone', '7000998', 'string', 'library', 'Library: office phone');
+    }
+
     private function verifiedIdentityCards(): void
     {
         $card = database_path('seeders/fixtures/vendors/fitrah-logo.jpg');

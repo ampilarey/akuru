@@ -111,6 +111,8 @@ class StartLibraryCheckoutAction
             // L6: wallet sales accrue the writer's earning too — wallet is
             // payment, not discount (§16.2).
             app(RecordWriterEarningForPurchaseAction::class)->execute($purchase->id);
+            // COMMERCE_PARITY_PLAN P5: the reader and the office hear of it, as a card sale does.
+            app(AnnounceLibrarySaleAction::class)->execute($purchase);
 
             return [
                 'purchase' => $purchase->refresh(),

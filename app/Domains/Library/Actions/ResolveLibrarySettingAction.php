@@ -19,7 +19,7 @@ class ResolveLibrarySettingAction
     /**
      * Key → [config path, type]. The type says how a stored string reads back.
      *
-     * @var array<string, array{0: string, 1: 'int'|'bool'}>
+     * @var array<string, array{0: string, 1: 'int'|'bool'|'string'}>
      */
     public const KNOBS = [
         'refund_window_days' => ['library.refund_window_days', 'int'],
@@ -34,23 +34,28 @@ class ResolveLibrarySettingAction
         // STATUS §5lq: the important notices by email and by SMS too.
         'notices_email' => ['library.notices.email', 'bool'],
         'notices_sms' => ['library.notices.sms', 'bool'],
+        // COMMERCE_PARITY_PLAN P5: the office's own address and number for a sale.
+        'office_email' => ['library.notices.office_email', 'string'],
+        'office_phone' => ['library.notices.office_phone', 'string'],
     ];
 
-    public function execute(string $key): int|bool
+    public function execute(string $key): int|bool|string
     {
         [$configPath, $type] = self::KNOBS[$key] ?? throw new \InvalidArgumentException("Unknown library setting [{$key}].");
 
         $value = app(GetSettingAction::class)->execute('library.'.$key, config($configPath));
 
-        return $type === 'bool'
-            ? filter_var($value, FILTER_VALIDATE_BOOLEAN)
-            : (int) $value;
+        return match ($type) {
+            'bool' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
+            'string' => trim((string) $value),
+            default => (int) $value,
+        };
     }
 
     /**
      * Every knob with its current value and its config default, for the screen.
      *
-     * @return array<string, array{value: int|bool, default: int|bool, type: string}>
+     * @return array<string, array{value: int|bool|string, default: int|bool|string, type: string}>
      */
     public function all(): array
     {
@@ -59,7 +64,11 @@ class ResolveLibrarySettingAction
             $default = config($configPath);
             $out[$key] = [
                 'value' => $this->execute($key),
-                'default' => $type === 'bool' ? filter_var($default, FILTER_VALIDATE_BOOLEAN) : (int) $default,
+                'default' => match ($type) {
+                    'bool' => filter_var($default, FILTER_VALIDATE_BOOLEAN),
+                    'string' => trim((string) $default),
+                    default => (int) $default,
+                },
                 'type' => $type,
             ];
         }

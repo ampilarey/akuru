@@ -108,6 +108,8 @@ decided on `/admin/bookshop`, the form closable by the office.)*
 
 ## 4. Customer features (the "all e-commerce features" list)
 
+*(COMMERCE_PARITY_PLAN P5, 2026-09-30, STATUS §5me: a paid order tells the customer (with the tracking link), each shop and the office — in the app, by email and by SMS, all on by default. A bank slip, a cancellation and a return reach the office's own email and phone too, set under *Notices* on `/admin/bookshop`.)*
+
 **Browse and find**
 - Home: hero, featured products, collections, categories, vendors, new arrivals, best sellers.
 - Listing with filters — category, vendor, price range, in stock, language of a book, age/grade (educational), brand — and sorts — newest, price low/high, best selling, top rated, name. Filters combine and survive in the URL (shareable).
