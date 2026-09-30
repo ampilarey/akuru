@@ -102,6 +102,7 @@ one vendor (a switcher in the portal). Public vendor onboarding (apply →
 approve, like writers) is a later slice; v1 vendors are created by the
 office with an owner account. *(Built in B9a, STATUS §5hg: `/vendor/apply`,
 decided on `/admin/bookshop`, the form closable by the office.)*
+*(COMMERCE_PARITY_PLAN P2, 2026-09-30, STATUS §5mb: the application takes the owner's ID card, front and back; approval verifies it. A shop whose owner has no verified card — an office-made one such as Fitrah — may set up but cannot put a product on sale or ask for a payout; the portal asks for the card and the office verifies it under *Identity cards* on `/admin/bookshop`.)*
 
 ---
 

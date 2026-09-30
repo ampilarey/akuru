@@ -782,6 +782,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('discount-codes', [AdminCommerceController::class, 'storeDiscount'])->name('admin.commerce.discount-codes.store');
     });
 
+    // COMMERCE_PARITY_PLAN P2/P3: identity cards — the office opens one side
+    // and decides; the controller checks the card's purpose against the person.
+    Route::get('admin/identity-checks/{verification}/{side}', [\App\Domains\Identity\Http\Controllers\IdentityCheckController::class, 'document'])
+        ->name('identity.document')->whereNumber('verification')->where('side', 'front|back');
+    Route::post('admin/identity-checks/{verification}', [\App\Domains\Identity\Http\Controllers\IdentityCheckController::class, 'decide'])
+        ->name('identity.decide')->whereNumber('verification')->middleware('throttle:60,1,identity-decide');
+
     Route::prefix('admin/library')->middleware(['role:super_admin', 'can:library.manage'])->group(function () {
         Route::get('/', [AdminLibraryController::class, 'index'])->name('admin.library.index');
         // B12 (LIBRARY_PLAN §42): the commercial knobs, on a screen.
@@ -832,6 +839,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::prefix('write')->middleware(['auth'])->group(function () {
         Route::get('/', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'index'])->name('write.index');
         Route::post('apply', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'apply'])->name('write.apply');
+        // COMMERCE_PARITY_PLAN P2: an approved writer's ID card, front and back.
+        Route::post('identity', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'identity'])->name('write.identity')->middleware('throttle:10,60,write-identity');
         Route::post('items', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'storeItem'])->name('write.items.store');
         Route::put('items/{item}', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'updateItem'])->name('write.items.update')->whereNumber('item');
         Route::post('items/{item}/submit', [\App\Domains\Library\Http\Controllers\WriterPortalController::class, 'submit'])->name('write.items.submit')->whereNumber('item');
@@ -914,6 +923,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B9a: "Open a shop" — anyone signed in may apply.
         Route::get('apply', [\App\Domains\Bookshop\Http\Controllers\VendorApplyController::class, 'index'])->name('vendor.apply');
         Route::post('apply', [\App\Domains\Bookshop\Http\Controllers\VendorApplyController::class, 'store'])->name('vendor.apply.store')->middleware('throttle:5,60,vendor-apply');
+        // COMMERCE_PARITY_PLAN P2: the owner's ID card, front and back.
+        Route::post('identity', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'identity'])->name('vendor.identity')->middleware('throttle:10,60,vendor-identity');
         Route::post('agreement', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'acceptAgreement'])->name('vendor.agreement');
         Route::post('switch', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'switchVendor'])->name('vendor.switch');
         Route::post('members', [\App\Domains\Bookshop\Http\Controllers\VendorPortalController::class, 'addMember'])->name('vendor.members.store');

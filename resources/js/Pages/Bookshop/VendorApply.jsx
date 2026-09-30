@@ -1,4 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
+import { IdentityCardFields } from '../../Components/IdentityCard';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 
@@ -24,9 +25,9 @@ function Status({ application, t }) {
     );
 }
 
-export default function VendorApply({ t, open, application, shops = [], agreement_url, defaults }) {
+export default function VendorApply({ t, open, application, shops = [], agreement_url, defaults, id_l = {} }) {
     const { flash = {}, errors } = usePage().props;
-    const form = useForm({ shop_name: '', legal_name: '', tin: '', contact_email: defaults.contact_email || '', contact_phone: defaults.contact_phone || '', island: '', what_they_sell: '', link: '', agreement: false });
+    const form = useForm({ shop_name: '', legal_name: '', tin: '', contact_email: defaults.contact_email || '', contact_phone: defaults.contact_phone || '', island: '', what_they_sell: '', link: '', agreement: false, id_front: null, id_back: null });
     const set = (name) => (e) => form.setData(name, e.target.value);
     const waiting = application?.status === 'pending';
 
@@ -49,7 +50,7 @@ export default function VendorApply({ t, open, application, shops = [], agreemen
             ) : waiting ? null : (
                 <form
                     className="grid max-w-3xl gap-4 rounded-lg border bg-white p-4 md:grid-cols-2"
-                    onSubmit={(e) => { e.preventDefault(); form.post('/vendor/apply'); }}
+                    onSubmit={(e) => { e.preventDefault(); form.post('/vendor/apply', { forceFormData: true }); }}
                     data-testid="apply-form"
                 >
                     <label className="text-sm">{t.apply_shop_name}<input className="form-input w-full" value={form.data.shop_name} onChange={set('shop_name')} required maxLength={120} data-testid="apply-shop-name" /></label>
@@ -62,6 +63,7 @@ export default function VendorApply({ t, open, application, shops = [], agreemen
                         <textarea className="form-input w-full" rows={4} value={form.data.what_they_sell} onChange={set('what_they_sell')} required minLength={20} maxLength={2000} placeholder={t.apply_what_hint} data-testid="apply-what" />
                     </label>
                     <label className="text-sm md:col-span-2">{t.apply_link}<input className="form-input w-full" type="url" value={form.data.link} onChange={set('link')} placeholder="https://" data-testid="apply-link" /></label>
+                    <IdentityCardFields form={form} l={id_l} />
                     <label className="flex items-start gap-2 text-sm md:col-span-2">
                         <input type="checkbox" checked={form.data.agreement} onChange={(e) => form.setData('agreement', e.target.checked)} required data-testid="apply-agreement" />
                         <span>{t.apply_agreement} <a href={agreement_url} target="_blank" rel="noreferrer" className="text-blue-700 underline">{t.vendor_agreement}</a></span>

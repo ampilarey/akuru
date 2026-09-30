@@ -7,6 +7,7 @@ use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductVariant;
 use App\Domains\Bookshop\Support\StockLedger;
+use App\Domains\Bookshop\Support\VendorIdentity;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -28,6 +29,9 @@ class BulkVendorProductsAction
     {
         if (! in_array($status, self::STATUSES, true)) {
             throw ValidationException::withMessages(['status' => __('shop.error_bulk_status')]);
+        }
+        if ($status === 'active') {
+            VendorIdentity::require($scope->vendorId);
         }
         $ids = array_values(array_unique(array_map('intval', $ids)));
         $changed = Product::query()->where('vendor_id', $scope->vendorId)->whereIn('id', $ids)->where('status', '!=', $status)

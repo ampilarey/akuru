@@ -2,7 +2,7 @@
 
 **Status:** audited 2026-09-30 against this repository and the owner's
 Bake & Grill repository (read-only, `/home/user/ampilarey/bakeandgrill`);
-decisions made by the owner the same day (§4). Slices P1–P8 in §5, one PR each, in that order. **P1 shipped 2026-09-30 (STATUS §5ma).**
+decisions made by the owner the same day (§4). Slices P1–P8 in §5, one PR each, in that order. **P1 shipped 2026-09-30 (STATUS §5ma); P2 the same day (§5mb).**
 
 **Owner's brief (2026-09-30):** "1) how seller and authors are registered,
 they must upload both sides of the id cards, when the account is verified
@@ -227,7 +227,7 @@ fixes: the admin OTP route stays admin-only and untouched.
   code to the owner's phone, and the per-message cost); STATUS;
   BACKLOG C12 struck.
 
-### P2 — Seller identity: front and back, verified by the office (one PR)
+### P2 — Seller identity: front and back, verified by the office — **shipped 2026-09-30, STATUS §5mb**
 
 - **Data** (Identity owns it; one table for every purpose, rule 11):
   `identity_verifications` — `user_id`, `purpose` (`vendor` | `writer` |

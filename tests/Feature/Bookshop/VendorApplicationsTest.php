@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Models\VendorMember;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Models\UserNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -29,6 +30,9 @@ function applyInput(array $overrides = []): array
         'contact_email' => 'noor@example.test', 'contact_phone' => '7771234', 'island' => 'Hulhumalé',
         'what_they_sell' => 'Exercise books, pencils and Dhivehi alphabet charts for primary pupils.',
         'link' => 'https://instagram.com/noor.stationery', 'agreement' => 1,
+        // COMMERCE_PARITY_PLAN P2: the owner's ID card, both sides.
+        'id_front' => UploadedFile::fake()->image('id-front.png', 600, 400),
+        'id_back' => UploadedFile::fake()->image('id-back.png', 600, 400),
     ];
 }
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
+import { IdentityChecks } from '../../Components/IdentityCard';
 
 /**
  * BOOKSHOP_PLAN slice B1a — the office's side of the Akuru Bookstore:
@@ -571,6 +572,13 @@ function ApplicationRow({ a, t }) {
             <p className="text-gray-700">{a.applicant} · {a.contact_email} · {a.contact_phone} · {a.island}{a.legal_name && ` · ${a.legal_name}`}{a.tin && ` · TIN ${a.tin}`}</p>
             <p className="mt-1 whitespace-pre-line text-gray-700" dir="auto">{a.what_they_sell}</p>
             {a.link && <a href={a.link} target="_blank" rel="noreferrer nofollow" className="text-blue-700 underline">{a.link}</a>}
+            {/* COMMERCE_PARITY_PLAN P2: the owner's ID card; approving verifies it. */}
+            {a.identity && (
+                <p className="mt-1 flex gap-3 text-sm">
+                    <a href={a.identity.front_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`application-id-front-${a.id}`}>ID front</a>
+                    <a href={a.identity.back_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`application-id-back-${a.id}`}>ID back</a>
+                </p>
+            )}
             {a.status === 'pending' ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                     <input className="form-input w-24" type="number" min="0" max="100" step="0.5" placeholder={t.commission_rate} value={rate} onChange={(e) => setRate(e.target.value)} aria-label={t.commission_rate} data-testid={`application-rate-${a.id}`} />
@@ -1146,7 +1154,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], questions = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, rewards = null, referrals = null, shop_open = { open: true, message: null }, default_commission_rate, sign_in_url, section_types = [] }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], questions = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, rewards = null, referrals = null, shop_open = { open: true, message: null }, default_commission_rate, sign_in_url, section_types = [], identity_checks = [], id_l = {} }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -1159,6 +1167,8 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
             {money && money.requests.length > 0 && <Money money={money} t={t} />}
             {applications.some((a) => a.status === 'pending') && <Applications applications={applications} open={applications_open} t={t} />}
+            {/* COMMERCE_PARITY_PLAN P2: shop owners' identity cards. */}
+            <div id="identity" className="mt-8"><IdentityChecks rows={identity_checks} l={id_l} /></div>
 
             <InviteVendor t={t} defaultRate={default_commission_rate} />
 

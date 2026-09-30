@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
+use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Actions\ResolveVendorScopeAction;
 use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
 use App\Domains\Bookshop\Actions\Vendor\AcceptVendorAgreementAction;
@@ -18,6 +19,8 @@ use App\Domains\Bookshop\Actions\Vendor\SaveVendorShopSettingsAction;
 use App\Domains\Bookshop\Enums\DeliveryKind;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
 use App\Domains\Bookshop\Support\ProductSheet;
+use App\Domains\Bookshop\Support\VendorIdentity;
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
@@ -69,7 +72,23 @@ class VendorPortalController extends Controller
             'newsletter' => $scope->agreementAccepted ? app(ListVendorSubscribersAction::class)->summary($scope) : null,
             'options' => app(ListCatalogueOptionsAction::class)->execute(),
             'filters' => $filters + ['q' => null, 'status' => null, 'low' => null, 'category' => null],
+            // COMMERCE_PARITY_PLAN P2: where the owner's ID card stands (owners only upload it).
+            'identity' => $scope->isOwner() && ! VendorIdentity::verified($scope->vendorId)
+                ? app(IdentityVerificationAction::class)->status($scope->userId, 'vendor') : null,
+            'id_l' => trans('account'),
         ]);
+    }
+
+    /** COMMERCE_PARITY_PLAN P2: an owner sends both sides of the ID card for the office to check. */
+    public function identity(Request $request): RedirectResponse
+    {
+        $scope = $this->authorizeVendor($request, needsAgreement: false);
+        abort_unless($scope->isOwner(), 403);
+        $request->validate(IdentityVerificationAction::fileRules());
+        app(IdentityVerificationAction::class)->submit($scope->userId, 'vendor', $request->file('id_front'), $request->file('id_back'));
+        app(NotifyBookshopUserAction::class)->office(__('account.id_notice_title'), __('account.id_notice_body', ['name' => $scope->vendorName]), '/admin/bookshop#identity');
+
+        return back()->with('success', __('account.id_sent_flash'));
     }
 
     /**

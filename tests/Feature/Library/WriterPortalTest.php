@@ -10,6 +10,7 @@ use App\Domains\Library\Models\LibraryPurchase;
 use App\Domains\Library\Models\WriterApplication;
 use App\Domains\Library\Models\WriterProfile;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
@@ -36,6 +37,8 @@ it('walks apply → approve → draft → review loop → publish', function () 
             'display_name' => 'Ustadh Ali',
             'expertise' => 'Fiqh',
             'agreement_accepted' => '1',
+            'id_front' => UploadedFile::fake()->image('id-front.png', 600, 400),
+            'id_back' => UploadedFile::fake()->image('id-back.png', 600, 400),
         ])->assertSessionHasNoErrors();
     $application = WriterApplication::query()->firstOrFail();
     expect($application->status)->toBe('pending')

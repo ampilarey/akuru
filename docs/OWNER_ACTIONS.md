@@ -456,6 +456,19 @@ customers use a password or the guest form. Every later purchase notice
 - [ ] Sign in with it, set a password, and sign in again: the second time it
       asks for the password, not a code
 
+### 25. Verify Fitrah's ID card (COMMERCE_PARITY_PLAN P2, 2026-09-30)
+
+A shop now sells only once the office has checked the owner's ID card, both
+sides. Fitrah was made by the office, so no card is on file: her products
+already on sale stay on sale, but she cannot put a new one on sale or ask for
+a payout until you verify.
+
+- [ ] Fitrah's owner opens **My shop** (`/vendor`) and uses *Verify your
+      identity* at the top: a photo of the front and the back
+- [ ] You open `/admin/bookshop` → **Identity cards**, look at both sides, and
+      press **Verified** (or **Reject** with a note saying what to fix)
+- [ ] The same for any writer approved before today, on `/admin/library`
+
 ## Parked items and later ideas
 
 Everything deferred or left unbuilt on purpose — the BML secret, branch

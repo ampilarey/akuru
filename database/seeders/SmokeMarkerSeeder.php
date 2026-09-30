@@ -127,6 +127,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->consentCycle($studentId, $admin);
         $this->requestsCycle($class);
         $this->vendorCycle();
+        $this->verifiedIdentityCards();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1833,6 +1834,27 @@ class SmokeMarkerSeeder extends Seeder
      * walk's own products and invited vendors go, and the three sample
      * products are put back as they were.
      */
+    /**
+     * COMMERCE_PARITY_PLAN P2: the walks' shop owner and writer have their ID
+     * card verified, as a real one would before selling or submitting — the
+     * shop's picture stands in for the card. Planted once; later runs keep it.
+     */
+    private function verifiedIdentityCards(): void
+    {
+        $card = database_path('seeders/fixtures/vendors/fitrah-logo.jpg');
+        $identity = app(\App\Domains\Identity\Actions\IdentityVerificationAction::class);
+        $officeId = (int) DB::table('users')->where('email', 'superadmin@akuru.edu.mv')->value('id');
+        foreach (['vendor@akuru.edu.mv' => 'vendor', 'vendor-other@akuru.edu.mv' => 'vendor', 'student@akuru.edu.mv' => 'writer'] as $email => $purpose) {
+            $userId = (int) DB::table('users')->where('email', $email)->value('id');
+            if ($userId === 0 || ! is_file($card) || $identity->status($userId, $purpose)['status'] === 'verified') {
+                continue;
+            }
+            $file = fn () => new \Illuminate\Http\UploadedFile($card, 'smoke-id.jpg', 'image/jpeg', null, true);
+            $row = $identity->submit($userId, $purpose, $file(), $file());
+            $identity->decide($row->id, $officeId ?: $userId, true, null, false);
+        }
+    }
+
     private function vendorCycle(): void
     {
         $this->call(BookshopCatalogueSeeder::class);

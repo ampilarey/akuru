@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Library\Models\WriterBankDetail;
 use App\Domains\Library\Models\WriterEarning;
 use App\Domains\Library\Models\WriterPayout;
@@ -25,6 +26,9 @@ class RequestWriterPayoutAction
             ]);
         }
 
+        if (! app(IdentityVerificationAction::class)->isVerified($userId, 'writer')) {
+            throw ValidationException::withMessages(['payout' => __('account.id_needed_writer')]);
+        }
         $profile = WriterProfile::query()->where('user_id', $userId)->where('status', 'active')->first();
         if ($profile === null) {
             throw ValidationException::withMessages(['writer' => 'An approved writer profile is required.']);

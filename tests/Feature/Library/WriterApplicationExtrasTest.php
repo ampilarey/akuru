@@ -27,30 +27,31 @@ it('takes the extras with the application, shows them to the office only, and ca
             'display_name' => 'Ustadha Aminath',
             'previous_publications' => "Sun letters — Haveeru, 2019\nMoon letters — self-published, 2021",
             'photo' => UploadedFile::fake()->image('portrait.jpg', 400, 400),
-            'id_document' => UploadedFile::fake()->image('id-card.png', 600, 400),
+            // COMMERCE_PARITY_PLAN P2: both sides of the ID card, kept by Identity.
+            'id_front' => UploadedFile::fake()->image('id-front.png', 600, 400),
+            'id_back' => UploadedFile::fake()->image('id-back.png', 600, 400),
             'agreement_accepted' => '1',
         ])->assertSessionHasNoErrors();
 
     $application = WriterApplication::query()->firstOrFail();
     expect($application->previous_publications)->toContain('Moon letters')
-        ->and($application->photo_media_file_id)->not->toBeNull()
-        ->and($application->id_document_media_file_id)->not->toBeNull();
+        ->and($application->photo_media_file_id)->not->toBeNull();
 
     $queued = app(ListWriterQueuesAction::class)->execute()['applications'][0];
     expect($queued['previous_publications'])->toContain('Sun letters')
         ->and($queued['photo_url'])->not->toBeNull()
-        ->and($queued['has_id_document'])->toBeTrue()
+        ->and($queued['identity']['status'])->toBe('pending')
         ->and($queued)->not->toHaveKey('id_document_media_file_id');
 
-    // The office opens the document from the queue; the applicant, or anyone
-    // else, cannot reach it — the route is the office's.
+    // The office opens both sides from the queue; the applicant cannot — the route is the office's.
     $this->withoutLocalizationMiddleware()->actingAs($office)
-        ->get(route('admin.library.applications.document', $application->id))
+        ->get($queued['identity']['front_url'])
         ->assertOk()
         ->assertHeader('Content-Type', 'image/png')
         ->assertHeader('Cache-Control', 'no-store, private');
+    $this->withoutLocalizationMiddleware()->actingAs($office)->get($queued['identity']['back_url'])->assertOk();
     $this->withoutLocalizationMiddleware()->actingAs($applicant)
-        ->get(route('admin.library.applications.document', $application->id))
+        ->get($queued['identity']['front_url'])
         ->assertForbidden();
 
     $this->withoutLocalizationMiddleware()->actingAs($office)
@@ -60,29 +61,22 @@ it('takes the extras with the application, shows them to the office only, and ca
     expect((int) $profile->photo_media_file_id)->toBe((int) $application->photo_media_file_id);
 });
 
-it('refuses a portrait that is not an image and a document of the wrong kind, and has nothing to open when none was given', function () {
+it('refuses a portrait that is not an image, an ID card of the wrong kind, and an application without both sides', function () {
     Storage::fake('public');
     Storage::fake('local');
     $applicant = User::factory()->create();
-    $office = actingSystemAdmin(['library.manage']);
 
     $this->withoutLocalizationMiddleware()->actingAs($applicant)
         ->post(route('write.apply'), [
             'display_name' => 'Ustadha Aminath',
             'photo' => UploadedFile::fake()->create('not-a-portrait.pdf', 10, 'application/pdf'),
-            'id_document' => UploadedFile::fake()->create('notes.txt', 10, 'text/plain'),
+            'id_front' => UploadedFile::fake()->create('notes.txt', 10, 'text/plain'),
+            'id_back' => UploadedFile::fake()->image('id-back.png', 600, 400),
             'agreement_accepted' => '1',
-        ])->assertSessionHasErrors(['photo', 'id_document']);
-    expect(WriterApplication::query()->count())->toBe(0);
+        ])->assertSessionHasErrors(['photo', 'id_front']);
 
     $this->withoutLocalizationMiddleware()->actingAs($applicant)
         ->post(route('write.apply'), ['display_name' => 'Ustadha Aminath', 'agreement_accepted' => '1'])
-        ->assertSessionHasNoErrors();
-    $application = WriterApplication::query()->firstOrFail();
-    expect($application->photo_media_file_id)->toBeNull()
-        ->and(app(ListWriterQueuesAction::class)->execute()['applications'][0]['has_id_document'])->toBeFalse();
-
-    $this->withoutLocalizationMiddleware()->actingAs($office)
-        ->get(route('admin.library.applications.document', $application->id))
-        ->assertNotFound();
+        ->assertSessionHasErrors(['id_front', 'id_back']);
+    expect(WriterApplication::query()->count())->toBe(0);
 });

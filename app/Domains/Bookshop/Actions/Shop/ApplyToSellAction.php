@@ -5,8 +5,10 @@ namespace App\Domains\Bookshop\Actions\Shop;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Models\VendorApplication;
 use App\Domains\Bookshop\Models\VendorMember;
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Settings\Actions\SetSettingAction;
 use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -62,7 +64,7 @@ class ApplyToSellAction
     /**
      * @param  array<string, mixed>  $data
      */
-    public function execute(int $userId, array $data): VendorApplication
+    public function execute(int $userId, array $data, ?UploadedFile $idFront = null, ?UploadedFile $idBack = null): VendorApplication
     {
         if (! $this->isOpen()) {
             throw ValidationException::withMessages(['shop_name' => __('shop.error_applications_closed')]);
@@ -72,6 +74,12 @@ class ApplyToSellAction
         }
         if (empty($data['agreement'])) {
             throw ValidationException::withMessages(['agreement' => __('shop.error_agreement_required')]);
+        }
+        // COMMERCE_PARITY_PLAN P2: both sides of the owner's ID card, checked by the office.
+        if ($idFront !== null && $idBack !== null) {
+            app(IdentityVerificationAction::class)->submit($userId, 'vendor', $idFront, $idBack);
+        } elseif (IdentityVerificationAction::enforced()) {
+            throw ValidationException::withMessages(['id_front' => __('validation.required', ['attribute' => __('account.id_front')])]);
         }
 
         $application = VendorApplication::query()->create([

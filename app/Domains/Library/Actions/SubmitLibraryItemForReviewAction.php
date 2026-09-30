@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
@@ -22,6 +23,10 @@ class SubmitLibraryItemForReviewAction
         $profile = WriterProfile::query()->where('user_id', $userId)->where('status', 'active')->first();
         if ($profile === null) {
             throw ValidationException::withMessages(['writer' => 'An approved writer profile is required.']);
+        }
+        // COMMERCE_PARITY_PLAN P2: a work goes to review only once the writer's ID card is verified.
+        if (! app(IdentityVerificationAction::class)->isVerified($userId, 'writer')) {
+            throw ValidationException::withMessages(['writer' => __('account.id_needed_writer')]);
         }
 
         $item = LibraryItem::query()->findOrFail($itemId);

@@ -5,6 +5,7 @@ import BodyEditor from '../../Components/BodyEditor';
 import FormErrors from '../../Components/FormErrors';
 import { DeliveryChoice, TeacherAuthors, defaultDelivery } from '../../Components/LibraryAuthoring';
 import ReviewStateChip from '../../Components/ReviewStateChip';
+import { IdentityCardFields, IdentityCardUpload } from '../../Components/IdentityCard';
 
 // The toolbar's labels, from the common tranche (EN/DV/AR).
 const editorLabels = (t) => ({
@@ -22,7 +23,7 @@ const editorLabels = (t) => ({
     source: t.library_editor_source,
 });
 
-function ApplyForm({ t }) {
+function ApplyForm({ t, idL }) {
     const form = useForm({
         display_name: '',
         bio: '',
@@ -33,7 +34,8 @@ function ApplyForm({ t }) {
         // portrait for the author page, an identity document for the office.
         previous_publications: '',
         photo: null,
-        id_document: null,
+        id_front: null,
+        id_back: null,
         agreement_accepted: false,
     });
 
@@ -58,11 +60,8 @@ function ApplyForm({ t }) {
                 <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('photo', e.target.files[0] ?? null)} data-testid="apply-photo" />
                 {form.errors.photo && <p className="text-red-600">{form.errors.photo}</p>}
             </label>
-            <label className="grid gap-1 text-sm">
-                <span>{t.library_apply_id_document || 'ID document (optional; seen only by the office)'}</span>
-                <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" onChange={(e) => form.setData('id_document', e.target.files[0] ?? null)} data-testid="apply-id-document" />
-                {form.errors.id_document && <p className="text-red-600">{form.errors.id_document}</p>}
-            </label>
+            {/* COMMERCE_PARITY_PLAN P2: both sides of the ID card, checked by the office. */}
+            <IdentityCardFields form={form} l={idL} />
             <label className="flex items-start gap-2 text-sm">
                 <input type="checkbox" checked={form.data.agreement_accepted} onChange={(e) => form.setData('agreement_accepted', e.target.checked)} />
                 <span>
@@ -414,7 +413,7 @@ function EarningsCard({ earnings, itemSales = [], t = {} }) {
     );
 }
 
-export default function Write({ dashboard, options, earnings = null, item_sales = [] }) {
+export default function Write({ dashboard, options, earnings = null, item_sales = [], identity = null, id_l = {} }) {
     const { flash = {}, i18n } = usePage().props;
     const t = i18n?.common || {};
     // R3b: on a revision, the writer tells the reviewers what changed.
@@ -431,6 +430,7 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
             <FormErrors errors={usePage().props.errors} className="mb-4" />
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
 
+            {profile && <IdentityCardUpload identity={identity} href="/write/identity" l={id_l} blurb={id_l.id_writer_blurb} />}
             {!profile && (
                 <div className="mb-6">
                     {application?.status === 'pending' && (
@@ -439,7 +439,7 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
                     {application?.status === 'rejected' && (
                         <p className="mb-4 rounded bg-red-50 p-3 text-red-700">Your last application was not approved{application.decision_note ? ` — ${application.decision_note}` : ''}. You may apply again.</p>
                     )}
-                    {application?.status !== 'pending' && <ApplyForm t={t} />}
+                    {application?.status !== 'pending' && <ApplyForm t={t} idL={id_l} />}
                 </div>
             )}
 

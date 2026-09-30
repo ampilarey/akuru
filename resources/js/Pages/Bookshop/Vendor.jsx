@@ -3,6 +3,7 @@ import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import WorkspaceTiles from '../../Components/WorkspaceTiles';
 import FormErrors from '../../Components/FormErrors';
+import { IdentityCardUpload } from '../../Components/IdentityCard';
 
 /**
  * BOOKSHOP_PLAN slice B1a — the vendor portal. A member accepts the Vendor
@@ -616,7 +617,7 @@ function ProductList({ products, t, onEdit, selected, setSelected }) {
     );
 }
 
-export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], products_page = null, members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, discount_codes = [], notice_settings = null, newsletter = null, options, filters }) {
+export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], products_page = null, members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, discount_codes = [], notice_settings = null, newsletter = null, options, filters, identity = null, id_l = {} }) {
     const { flash = {}, errors } = usePage().props;
     const [editing, setEditing] = useState(null);
     const [search, setSearch] = useState(filters.q || '');
@@ -633,6 +634,8 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
         <AppShell title={t.portal_title}>
             <FormErrors errors={errors} className="mb-4" />
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
+            {/* COMMERCE_PARITY_PLAN P2: the owner's ID card, until the office has checked it. */}
+            <IdentityCardUpload identity={identity} href="/vendor/identity" l={id_l} blurb={id_l.id_vendor_blurb} />
             {vendor.paused && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="shop-paused">{t.shop_paused_banner}</p>}
 
             <header className="mb-6 flex flex-wrap items-end justify-between gap-3">

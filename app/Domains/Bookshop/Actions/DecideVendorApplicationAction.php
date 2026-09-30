@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Actions;
 
 use App\Domains\Bookshop\Models\VendorApplication;
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -45,6 +46,8 @@ class DecideVendorApplicationAction
             'decided_at' => $a->decided_at?->toDateTimeString(),
             'decision_note' => $a->decision_note,
             'vendor' => $a->vendor ? ['name' => $a->vendor->name, 'slug' => $a->vendor->slug] : null,
+            // COMMERCE_PARITY_PLAN P2: the owner's ID card, both sides.
+            'identity' => app(IdentityVerificationAction::class)->officeRow((int) $a->user_id, 'vendor'),
         ])->values()->all();
     }
 
@@ -82,6 +85,8 @@ class DecideVendorApplicationAction
                 ], $officeUserId);
                 $vendorId = $created['vendor_id'];
             }
+            // COMMERCE_PARITY_PLAN P2: approving is verifying the owner's card that came with it.
+            app(IdentityVerificationAction::class)->decideLatest((int) $application->user_id, 'vendor', $officeUserId, $approve, $note);
             $application->fill([
                 'status' => $approve ? VendorApplication::APPROVED : VendorApplication::DECLINED,
                 'decided_by' => $officeUserId,
