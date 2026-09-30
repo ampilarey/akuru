@@ -9,6 +9,7 @@ use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductImage;
 use App\Domains\Bookshop\Models\ProductVariant;
 use App\Domains\Bookshop\Support\SalePrice;
+use App\Domains\Bookshop\Support\VendorIdentity;
 use App\Domains\Bookshop\Support\ShopPresenter;
 use App\Domains\Bookshop\Support\StockLedger;
 use App\Domains\Media\Actions\ResolvePublicImageVariantAction;
@@ -50,6 +51,10 @@ class SaveVendorProductAction
             $this->guardPrices($data);
 
             $isNew = ! $product->exists;
+            // COMMERCE_PARITY_PLAN P2: a product goes on sale only once the owner's ID is verified.
+            if (($data['status'] ?? 'draft') === 'active' && ($isNew || $product->status?->value !== 'active')) {
+                VendorIdentity::require($scope->vendorId);
+            }
             $before = $isNew ? 0 : (int) $product->stock;
             $product->fill($this->columns($data));
             $product->vendor_id = $scope->vendorId;

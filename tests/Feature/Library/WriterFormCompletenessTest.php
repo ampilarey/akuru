@@ -14,6 +14,7 @@ use App\Domains\Library\Models\WriterPayout;
 use App\Domains\Library\Models\WriterProfile;
 use App\Domains\Notifications\Models\UserNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
@@ -176,7 +177,7 @@ it('tells the writer, the office and the reader what happened (§41)', function 
     // Application → the office hears; decision → the applicant hears.
     $applicant = User::factory()->create();
     $this->withoutLocalizationMiddleware()->actingAs($applicant)
-        ->post(route('write.apply'), ['display_name' => 'New Writer', 'agreement_accepted' => '1'])
+        ->post(route('write.apply'), ['display_name' => 'New Writer', 'agreement_accepted' => '1', 'id_front' => UploadedFile::fake()->image('f.png', 600, 400), 'id_back' => UploadedFile::fake()->image('b.png', 600, 400)])
         ->assertSessionHasNoErrors();
     expect(notificationsFor($office))->toBe(['New writer application']);
     $application = WriterApplication::query()->where('user_id', $applicant->id)->firstOrFail();

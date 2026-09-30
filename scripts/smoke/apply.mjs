@@ -118,6 +118,11 @@ await parent.click('[data-testid="apply-submit"]');
 await settle(parent, '[data-testid="flash-success"]');
 check('without the agreement it is refused', (await count(parent, '[data-testid="flash-success"]')) === 0 && (await count(parent, '[data-testid="application-status"]')) === 0);
 await parent.check('[data-testid="apply-agreement"]');
+// COMMERCE_PARITY_PLAN P2: the owner's ID card, both sides (a corner of the page stands in).
+check('the form asks for both sides of the ID card', (await count(parent, '[data-testid="id-front"]')) === 1 && (await count(parent, '[data-testid="id-back"]')) === 1);
+const idImage = { name: 'smoke-id.png', mimeType: 'image/png', buffer: await parent.screenshot({ clip: { x: 0, y: 0, width: 80, height: 80 } }) };
+await parent.setInputFiles('[data-testid="id-front"]', idImage);
+await parent.setInputFiles('[data-testid="id-back"]', idImage);
 await parent.click('[data-testid="apply-submit"]');
 await settle(parent, '[data-testid="application-status"]');
 check('sent: the application waits for the office, and the form is gone', (await parent.locator('[data-testid="application-status"]').getAttribute('data-status').catch(() => '')) === 'pending' && (await count(parent, '[data-testid="apply-form"]')) === 0);
@@ -130,6 +135,9 @@ await settle(office, '[data-testid="office-applications"]');
 const row = office.locator('[data-testid^="application-"][data-status="pending"]').filter({ hasText: SHOP }).first();
 const appId = ((await row.getAttribute('data-testid').catch(() => '')) || '').replace('application-', '');
 check('the office sees it, with what they sell and how to reach them', appId !== '' && (await row.innerText()).includes('Hulhumalé') && (await row.innerText()).includes('7770000'), (await row.innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 160));
+const front = await office.locator(`[data-testid="application-id-front-${appId}"]`).getAttribute('href').catch(() => null);
+const opened = front ? await office.request.get(front.startsWith('http') ? front : `${BASE}${front}`) : null;
+check('the office opens the ID card from the application', opened !== null && opened.ok() && String(opened.headers()['content-type']).startsWith('image/'), opened ? `HTTP ${opened.status()}` : 'no ID link');
 await office.fill(`[data-testid="application-rate-${appId}"]`, '8');
 await office.fill(`[data-testid="application-code-${appId}"]`, 'SWA');
 await office.click(`[data-testid="application-approve-${appId}"]`);
@@ -146,6 +154,7 @@ check('the application shows approved, with the way into the portal', (await par
 await Promise.all([parent.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), parent.click('[data-testid="open-portal"]')]);
 await settle(parent, '[data-testid="vendor-name"]');
 check('the portal is their shop, as owner, the agreement already accepted', (await inner(parent, '[data-testid="vendor-name"]')) === SHOP && (await count(parent, '[data-testid="accept-agreement"]')) === 0 && (await count(parent, '[data-testid="new-product"]')) === 1, await inner(parent, 'header'));
+check('approving the application verified the ID: the portal does not ask for it', (await count(parent, '[data-testid="identity-card"]')) === 0);
 const shopPage = await parent.request.get(`${BASE}/en/shop/${SLUG}`);
 check('and its public page is live', shopPage.status() === 200, `HTTP ${shopPage.status()}`);
 

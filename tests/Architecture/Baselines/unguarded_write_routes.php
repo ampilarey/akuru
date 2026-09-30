@@ -113,6 +113,7 @@ return [
     // no longer editable; `SubmitResearchReviewAction` refuses an assignment
     // whose reviewer_user_id is not yours.
     'write/apply' => 'WriterPortalController@apply — your own writer application.',
+    'write/identity' => 'WriterPortalController@identity — your own ID card, stored against your own user id (COMMERCE_PARITY_PLAN P2).',
     'write/items' => 'WriterPortalController@storeItem — creates under your own writer profile.',
     'write/items/{item}' => 'WriterPortalController@updateItem — READ: SaveWriterItemAction enforces own-items-only and editable states.',
     'write/items/{item}/submit' => 'WriterPortalController@submit — own-items-only in the Action.',

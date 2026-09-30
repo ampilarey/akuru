@@ -3,11 +3,13 @@
 namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\HR\Actions\ListPublicInstructorProfilesAction;
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Library\Actions\ApplyAsWriterAction;
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
 use App\Domains\Library\Actions\ListWriterDashboardAction;
 use App\Domains\Library\Actions\ListWriterEarningsSummaryAction;
 use App\Domains\Library\Actions\ListWriterItemSalesAction;
+use App\Domains\Library\Actions\NotifyLibraryUserAction;
 use App\Domains\Library\Actions\RequestWriterPayoutAction;
 use App\Domains\Library\Actions\SaveWriterBankDetailsAction;
 use App\Domains\Library\Actions\SaveWriterItemAction;
@@ -41,6 +43,9 @@ class WriterPortalController extends Controller
                 // R1: the teachers a writer may name as co-authors.
                 'teachers' => $this->teachers(),
             ],
+            // COMMERCE_PARITY_PLAN P2: where the writer's ID card stands.
+            'identity' => app(IdentityVerificationAction::class)->status((int) $request->user()->id, 'writer'),
+            'id_l' => trans('account'),
         ]);
     }
 
@@ -88,6 +93,16 @@ class WriterPortalController extends Controller
         return back()->with('success', 'Author page updated.');
     }
 
+    /** COMMERCE_PARITY_PLAN P2: an approved writer sends both sides of the ID card. */
+    public function identity(Request $request): RedirectResponse
+    {
+        $request->validate(IdentityVerificationAction::fileRules());
+        app(IdentityVerificationAction::class)->submit((int) $request->user()->id, 'writer', $request->file('id_front'), $request->file('id_back'));
+        app(NotifyLibraryUserAction::class)->office(__('account.id_notice_title'), __('account.id_notice_body', ['name' => (string) $request->user()->name]), '/admin/library#identity');
+
+        return back()->with('success', __('account.id_sent_flash'));
+    }
+
     public function apply(Request $request): RedirectResponse
     {
         $data = $request->validate([
@@ -100,11 +115,10 @@ class WriterPortalController extends Controller
             // types again; these rules are the early, friendlier refusal.
             'previous_publications' => 'nullable|string|max:5000',
             'photo' => 'nullable|image|mimes:jpeg,png,webp|max:4096',
-            'id_document' => 'nullable|file|mimes:jpeg,jpg,png,webp,pdf|max:8192',
             'agreement_accepted' => 'accepted',
-        ]);
+        ] + IdentityVerificationAction::fileRules());
 
-        app(ApplyAsWriterAction::class)->execute((int) $request->user()->id, $data, $request->file('photo'), $request->file('id_document'));
+        app(ApplyAsWriterAction::class)->execute((int) $request->user()->id, $data, $request->file('photo'), $request->file('id_front'), $request->file('id_back'));
 
         return back()->with('success', 'Application submitted — we will review it soon.');
     }

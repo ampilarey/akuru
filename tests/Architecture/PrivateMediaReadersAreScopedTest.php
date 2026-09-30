@@ -53,6 +53,12 @@ it('pins every caller that can read a private file', function () {
         // grant is deliberate and documented — whoever may mark a recitation
         // may hear it — and it reaches recitations only, never arbitrary files.
         'app/Domains/Courses/Components/Quran/Actions/ServeRecitationAudioAction.php',
+        // COMMERCE_PARITY_PLAN P2/P3: one side of an identity card. The media
+        // id is read from the verification row (never the request), and the
+        // route that calls it checks the card's purpose against the person:
+        // a shop's card for `bookshop.manage`, a writer's for `library.manage`,
+        // a learner's for the enrolments office.
+        'app/Domains/Identity/Actions/IdentityVerificationAction.php',
         // R1 (RESEARCH_ARTICLES_PLAN D1): a research item's or article's PDF,
         // as a download, where its author chose one. The media id comes from
         // the published item's own row (found by slug), and the answer goes

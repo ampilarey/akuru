@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
@@ -40,6 +41,8 @@ class ListWriterQueuesAction
                     ? app(ResolvePublicMediaUrlAction::class)->execute((int) $application->photo_media_file_id)
                     : null,
                 'has_id_document' => $application->id_document_media_file_id !== null,
+                // COMMERCE_PARITY_PLAN P2: the card's two sides, for the office's routes.
+                'identity' => app(IdentityVerificationAction::class)->officeRow((int) $application->user_id, 'writer'),
                 'applied_at' => $application->created_at?->toDateString(),
             ])->values()->all();
 

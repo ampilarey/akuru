@@ -38,6 +38,7 @@ use App\Domains\Bookshop\Actions\UpdateVendorAction;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Support\InsightsReport;
 use App\Domains\Bookshop\Support\SectionTypes;
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Carbon\Carbon;
@@ -88,6 +89,9 @@ class AdminBookshopController extends Controller
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'sign_in_url' => route('login'),
             'section_types' => array_keys(SectionTypes::TYPES),
+            // COMMERCE_PARITY_PLAN P2: shop owners' identity cards, waiting first.
+            'identity_checks' => app(IdentityVerificationAction::class)->list('vendor'),
+            'id_l' => trans('account'),
         ]);
     }
 

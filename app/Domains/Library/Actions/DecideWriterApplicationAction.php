@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Library\Models\WriterApplication;
 use App\Domains\Library\Models\WriterProfile;
 use Illuminate\Support\Facades\DB;
@@ -27,6 +28,8 @@ class DecideWriterApplicationAction
                 throw ValidationException::withMessages(['application' => 'This application has already been decided.']);
             }
 
+            // COMMERCE_PARITY_PLAN P2: approving is verifying the ID card that came with it.
+            app(IdentityVerificationAction::class)->decideLatest((int) $application->user_id, 'writer', $decidedBy, $approve, $note ?? ($approve ? null : 'Application not accepted.'));
             $application->fill([
                 'status' => $approve ? 'approved' : 'rejected',
                 'decided_by' => $decidedBy,

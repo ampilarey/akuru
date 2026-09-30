@@ -65,4 +65,7 @@ return [
     'app/Domains/Website/Http/Controllers/PublicSite/HomeController.php::buildHomepageData' => 78,
     'app/Domains/Website/Http/Controllers/PublicSite/PostController.php::index' => 61,
     'app/Domains/Website/Http/Controllers/PublicSite/PrayerTimesController.php::resolve' => 37,
+    // COMMERCE_PARITY_PLAN P2: a prop list, one line longer for the office's identity cards.
+    'app/Domains/Bookshop/Http/Controllers/AdminBookshopController.php::index' => 37,
+    'app/Domains/Library/Http/Controllers/AdminLibraryController.php::index' => 38,
 ];

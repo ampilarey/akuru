@@ -2,9 +2,9 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Library\Models\WriterApplication;
 use App\Domains\Library\Models\WriterProfile;
-use App\Domains\Media\Actions\StorePrivateMediaAction;
 use App\Domains\Media\Actions\StorePublicMediaAction;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
@@ -33,7 +33,7 @@ class ApplyAsWriterAction
     /**
      * @param  array<string, mixed>  $data
      */
-    public function execute(int $userId, array $data, ?UploadedFile $photo = null, ?UploadedFile $idDocument = null): WriterApplication
+    public function execute(int $userId, array $data, ?UploadedFile $photo = null, ?UploadedFile $idFront = null, ?UploadedFile $idBack = null): WriterApplication
     {
         if (WriterProfile::query()->where('user_id', $userId)->exists()) {
             throw ValidationException::withMessages(['application' => 'You are already an approved writer.']);
@@ -50,9 +50,12 @@ class ApplyAsWriterAction
         if ($photo !== null) {
             $photoId = app(StorePublicMediaAction::class)->execute($photo, $userId, self::PHOTO_MIMES, ['alt' => $name], 'writer-portraits')['id'];
         }
-        $idDocumentId = null;
-        if ($idDocument !== null) {
-            $idDocumentId = app(StorePrivateMediaAction::class)->execute($idDocument, $userId, self::ID_DOCUMENT_MIMES, self::ID_DOCUMENT_MAX_BYTES)['id'];
+        // COMMERCE_PARITY_PLAN P2: both sides of the ID card, kept by Identity and
+        // checked by the office (the old single `id_document` is read for old rows only).
+        if ($idFront !== null && $idBack !== null) {
+            app(IdentityVerificationAction::class)->submit($userId, 'writer', $idFront, $idBack);
+        } elseif (IdentityVerificationAction::enforced()) {
+            throw ValidationException::withMessages(['id_front' => __('validation.required', ['attribute' => __('account.id_front')])]);
         }
 
         $application = WriterApplication::query()->create([
@@ -64,7 +67,6 @@ class ApplyAsWriterAction
             'motivation' => $data['motivation'] ?? null,
             'previous_publications' => $data['previous_publications'] ?? null,
             'photo_media_file_id' => $photoId,
-            'id_document_media_file_id' => $idDocumentId,
             'agreement_accepted_at' => now(),
             'status' => 'pending',
         ]);

@@ -4414,6 +4414,72 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mb. Shops and writers: both sides of the ID card, verified by the office (COMMERCE_PARITY_PLAN P2, 2026-09-30)
+
+The owner: sellers and authors "must upload both sides of the ID card; when
+the account is verified they can use the service". Images kept for the life
+of the account (decision D1).
+
+- **One table for every purpose (rule 11):** `identity_verifications` (user,
+  purpose `vendor` | `writer` | `learner`, the child's `student_id` for P3,
+  front and back as private media, status, who decided, when, the note).
+  One row per submission, so a rejected card and the one after it both stay.
+  Other domains go through `IdentityVerificationAction`; they never read the
+  table.
+- **Applications** (`/vendor/apply`, `/write`) require both sides (images or
+  PDF, 8 MB each). The office sees them on the application and approving
+  verifies them, silently — the approval is the notice. The writer's old
+  single, optional `id_document` is read for old applications only.
+- **Sellers from before the rule** (an office-made shop such as Fitrah, a
+  writer approved before today) see *Verify your identity* at the top of
+  their portal, upload both sides, and wait; the office verifies or rejects
+  with a note (which they read, and which asks them to send it again).
+- **Until verified:** a shop cannot put a product on sale (the product form,
+  bulk actions) or ask for a payout; a writer cannot submit a work or ask
+  for a payout. Everything else — drafts, the storefront, delivery — works.
+  Products already on sale stay on sale.
+- **The office:** *Identity cards* on `/admin/bookshop` (shops) and
+  `/admin/library` (writers), waiting first, both sides opening in a new
+  tab. `IdentityCheckController` decides who may see a card from the row's
+  purpose: a shop's card is the Bookstore office's, a writer's the
+  Library's, never each other's. Pinned in the private-media readers test.
+- **Tests:** `config/identity.php` has the switch, on everywhere. phpunit.xml
+  turns it off for the tests written before the rule, as it allows unsigned
+  BML webhooks for the older payment tests. The identity tests turn it back
+  on.
+- **Walks:** `SmokeMarkerSeeder` plants verified cards for the walks' shop
+  owners and writer, the way a real seller would have one.
+- **Baselines:** the private-media reader, two office prop lists one line
+  longer, and the writer's upload route.
+- **Languages:** EN/DV/AR, in `account.id_*`.
+
+Tests:
+- New `IdentityVerificationTest`, 6 tests:
+  - a shop application needs both sides;
+  - only the Bookstore office opens a shop's card, and approval verifies it;
+  - an unverified shop cannot sell until it sends a card and the office
+    verifies it;
+  - live products stay live;
+  - a rejection needs a note, and the note reaches the person;
+  - a writer must send both sides, and a Library office opens them (the
+    Bookstore office cannot);
+  - an old writer without a card cannot submit;
+  - DV/AR.
+- Updated for the new fields: `VendorApplicationsTest`, `WriterPortalTest`,
+  `WriterFormCompletenessTest`; `WriterApplicationExtrasTest` rewritten.
+- Library, Bookshop, Identity and Architecture: green.
+
+Walks:
+- `apply.mjs` 17/17 (three new steps: the form asks for both sides, the office
+  opens the card from the application, and approval means the portal does not
+  ask).
+- `library.mjs` 31/31 (the writer uploads both sides; the office opens the
+  front).
+- `vendor.mjs` 26/26.
+- Walked by hand on a phone: an owner whose card was rejected sees the card
+  with the office's note, sends both sides, and waits; the office verifies it
+  under *Identity cards*; the portal stops asking.
+
 ## 5ma. Customers sign in on the phone number (COMMERCE_PARITY_PLAN P1, 2026-09-30)
 
 The owner: "customer can order with only mobile and OTP, when he logs in he

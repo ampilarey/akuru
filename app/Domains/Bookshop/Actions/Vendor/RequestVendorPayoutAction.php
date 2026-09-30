@@ -10,6 +10,7 @@ use App\Domains\Bookshop\Enums\PayoutStatus;
 use App\Domains\Bookshop\Models\VendorBankDetail;
 use App\Domains\Bookshop\Models\VendorEarning;
 use App\Domains\Bookshop\Models\VendorPayout;
+use App\Domains\Bookshop\Support\VendorIdentity;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -30,6 +31,7 @@ class RequestVendorPayoutAction
         if (! $scope->isOwner()) {
             throw new AuthorizationException(__('shop.owner_only'));
         }
+        VendorIdentity::require($scope->vendorId, 'payout');
         if (! config('bookshop.money.payouts_enabled')) {
             throw ValidationException::withMessages(['payout' => __('shop.error_payouts_closed')]);
         }

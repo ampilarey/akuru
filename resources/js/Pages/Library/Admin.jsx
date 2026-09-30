@@ -3,6 +3,7 @@ import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 import BodyEditor from '../../Components/BodyEditor';
 import FormErrors from '../../Components/FormErrors';
+import { IdentityChecks } from '../../Components/IdentityCard';
 import { DeliveryChoice, TeacherAuthors, defaultDelivery } from '../../Components/LibraryAuthoring';
 import ReviewStateChip from '../../Components/ReviewStateChip';
 
@@ -44,6 +45,13 @@ function ApplicationsQueue({ applications }) {
                                 {app.previous_publications && <p className="mt-1 whitespace-pre-line">{app.previous_publications}</p>}
                                 {app.has_id_document && (
                                     <a className="mt-1 inline-block text-[#7C2D37] underline" href={`/admin/library/applications/${app.id}/document`} target="_blank" rel="noopener" data-testid="application-id-document">ID document</a>
+                                )}
+                                {/* COMMERCE_PARITY_PLAN P2: both sides; approving the application verifies them. */}
+                                {app.identity && (
+                                    <span className="mt-1 flex gap-2">
+                                        <a className="text-[#7C2D37] underline" href={app.identity.front_url} target="_blank" rel="noopener" data-testid="application-id-front">ID front</a>
+                                        <a className="text-[#7C2D37] underline" href={app.identity.back_url} target="_blank" rel="noopener" data-testid="application-id-back">ID back</a>
+                                    </span>
                                 )}
                             </td>
                             <td className="px-3 py-2">
@@ -349,7 +357,7 @@ function CategoryForm() {
     );
 }
 
-export default function Admin({ items, categories, options, sales = [], queues = { applications: [], submissions: [] }, payouts = { requests: [], writers: [] } }) {
+export default function Admin({ items, categories, options, sales = [], queues = { applications: [], submissions: [] }, payouts = { requests: [], writers: [] }, identity_checks = [], id_l = {} }) {
     const common = usePage().props.i18n?.common || {};
 
     return (
@@ -365,6 +373,8 @@ export default function Admin({ items, categories, options, sales = [], queues =
                 in §5cn were the ones using `useForm`; these have only the
                 shared `errors` prop. */}
             <FormErrors errors={usePage().props.errors} className="mb-4" />
+            {/* COMMERCE_PARITY_PLAN P2: writers' identity cards. */}
+            {identity_checks.some((r) => r.status === 'pending') && <div id="identity" className="mb-6"><IdentityChecks rows={identity_checks} l={id_l} /></div>}
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <CategoryForm />
                 {/* Wraps on a phone: six buttons in one row were 649 px wide and made Safari zoom the page out (STATUS §5jq). */}
@@ -462,6 +472,7 @@ export default function Admin({ items, categories, options, sales = [], queues =
                     </tbody>
                 </table>
             </div>
+                    {!identity_checks.some((r) => r.status === 'pending') && <div id="identity" className="mt-8"><IdentityChecks rows={identity_checks} l={id_l} /></div>}
         </AppShell>
     );
 }

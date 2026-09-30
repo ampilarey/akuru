@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\ResolveVendorScopeAction;
 use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ class VendorApplyController extends Controller
             'shops' => app(ResolveVendorScopeAction::class)->memberships($userId),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'defaults' => ['contact_email' => $request->user()->email, 'contact_phone' => $request->user()->phone],
+            'id_l' => trans('account'),
         ]);
     }
 
@@ -44,9 +46,9 @@ class VendorApplyController extends Controller
             'what_they_sell' => 'required|string|min:20|max:2000',
             'link' => 'nullable|url|max:255',
             'agreement' => 'accepted',
-        ]);
+        ] + IdentityVerificationAction::fileRules());
 
-        app(ApplyToSellAction::class)->execute((int) $request->user()->id, $data);
+        app(ApplyToSellAction::class)->execute((int) $request->user()->id, $data, $request->file('id_front'), $request->file('id_back'));
 
         return redirect()->route('vendor.apply')->with('success', __('shop.application_sent_flash'));
     }

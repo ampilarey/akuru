@@ -3,6 +3,7 @@
 namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\HR\Actions\ListPublicInstructorProfilesAction;
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Library\Actions\DecideWriterApplicationAction;
 use App\Domains\Library\Actions\DecideWriterPayoutAction;
 use App\Domains\Library\Actions\FeatureLibraryItemAction;
@@ -71,6 +72,9 @@ class AdminLibraryController extends Controller
             'sales' => app(ListLibraryPurchasesAction::class)->salesSummary(),
             'queues' => app(ListWriterQueuesAction::class)->execute(),
             'payouts' => app(ListWriterPayoutReportAction::class)->execute(),
+            // COMMERCE_PARITY_PLAN P2: writers' identity cards, waiting first.
+            'identity_checks' => app(IdentityVerificationAction::class)->list('writer'),
+            'id_l' => trans('account'),
             'filters' => $filters,
             'options' => [
                 'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),
