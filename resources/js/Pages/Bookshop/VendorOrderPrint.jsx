@@ -18,8 +18,8 @@ export default function VendorOrderPrint({ t, order }) {
                 <p className="text-xs uppercase tracking-wide text-gray-500">{t.label_to}</p>
                 <p className="text-2xl font-bold" dir="auto">{a.recipient_name}</p>
                 <p className="text-xl">{a.phone}</p>
-                <p className="text-lg" dir="auto">{a.street}</p>
-                <p className="text-lg font-semibold" dir="auto">{a.island}, {a.atoll}</p>
+                {a.street && <p className="text-lg" dir="auto">{a.street}</p>}
+                {(a.island || a.atoll) && <p className="text-lg font-semibold" dir="auto">{[a.island, a.atoll].filter(Boolean).join(', ')}</p>}
                 {a.notes && <p className="text-sm">{a.notes}</p>}
                 <div className="mt-4 flex justify-between text-sm">
                     <span>{t.label_from}: {order.vendor.name}{order.vendor.phone ? ` · ${order.vendor.phone}` : ''}</span>

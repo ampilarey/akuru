@@ -291,4 +291,23 @@ check('and the edit is kept', (await vendor.locator('[data-testid="delivery-name
     check('and its answer shows on the product page with the question', qa.includes(ASK) && qa.includes('Yes, grade 1 and up.') && qa.includes('Answer from Fitrah'), qa.slice(0, 200));
 }
 
+// ------------------------------------------------------------ collecting needs only a name and a number (STATUS §5lx)
+{
+    await addToCart(customer, BOOK, 1);
+    await customer.goto(`${BASE}/en/shop/checkout`, { waitUntil: 'networkidle' });
+    check('the checkout says a collection needs only a name and a number', (await customer.locator('[data-testid="collect-hint"]').count()) === 1);
+    if (await customer.locator('[data-testid="new-address"]').count()) await customer.check('[data-testid="new-address"]');
+    await customer.fill('[data-testid="recipient-name"]', 'Smoke Collector');
+    await customer.fill('[data-testid="phone"]', '7700001');
+    for (const f of ['atoll', 'island', 'street']) await customer.fill(`[data-testid="${f}"]`, '');
+    await customer.locator('[data-testid="delivery-fitrah"] input[data-delivery-kind="collect_vendor"]').check();
+    await customer.check('[data-testid="pay-wallet"]');
+    await submit(customer, '[data-testid="place-order"]');
+    await customer.waitForLoadState('networkidle');
+    check('collecting from the shop with only a name and a mobile number goes through', /\/shop\/checkout\/AK-/.test(customer.url()) && (await customer.locator('[data-testid="checkout-errors"]').count()) === 0,
+        customer.url().replace(BASE, '') + ' ' + (await customer.locator('[data-testid="checkout-errors"]').innerText().catch(() => '')).trim());
+    const summary = await text(customer);
+    check('and its summary shows the name and number, with no empty address', summary.includes('Smoke Collector') && !summary.includes(', ,'), summary.slice(0, 200));
+}
+
 await finish();

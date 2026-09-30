@@ -410,6 +410,8 @@ return [
     'error_only_n_left' => 'المتاح من :title هو :count فقط.',
     'error_cart_empty' => 'سلتك فارغة.',
     'error_choose_delivery' => 'اختر طريقة توصيل :vendor.',
+    'error_collect_contact' => 'اكتب اسم ورقم جوال الشخص الذي سيستلم.',
+    'collect_contact_hint' => 'ستستلم من المتجر أو من أكورو؟ يكفي الاسم ورقم الجوال.',
     'error_address' => 'أكمل عنوان التوصيل.',
     'error_slip_not_expected' => 'هذا الشراء لا ينتظر تحويلًا بنكيًا.',
     'error_slip_decided' => 'تم البت في هذا الإيصال من قبل.',

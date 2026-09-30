@@ -414,6 +414,8 @@ return [
     'error_only_n_left' => 'Only :count of :title are available.',
     'error_cart_empty' => 'Your cart is empty.',
     'error_choose_delivery' => 'Choose how :vendor should deliver.',
+    'error_collect_contact' => 'Give the name and mobile number of the person collecting.',
+    'collect_contact_hint' => 'Collecting from the shop or from Akuru? Only the name and mobile number are needed.',
     'error_address' => 'Fill in the delivery address.',
     'error_slip_not_expected' => 'This checkout is not waiting for a bank transfer.',
     'error_slip_decided' => 'This slip has already been decided.',

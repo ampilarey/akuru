@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Actions\Checkout;
 use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
 use App\Domains\Bookshop\Enums\CheckoutPaymentMethod;
 use App\Domains\Bookshop\Enums\CheckoutStatus;
+use App\Domains\Bookshop\Enums\DeliveryKind;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Models\BookshopCheckout;
 use App\Domains\Bookshop\Models\Cart;
@@ -56,9 +57,8 @@ class StartBookshopCheckoutAction
     public function execute(int $userId, Cart $cart, array $data, ?\Closure $returnUrl = null): array
     {
         $method = CheckoutPaymentMethod::from((string) ($data['payment_method'] ?? 'card'));
-        $address = $this->address($userId, $data);
 
-        $result = DB::transaction(function () use ($userId, $cart, $data, $method, $address) {
+        $result = DB::transaction(function () use ($userId, $cart, $data, $method) {
             $items = $cart->items()->with(['product.vendor', 'variant'])->lockForUpdate()->get();
             if ($items->isEmpty()) {
                 throw ValidationException::withMessages(['cart' => __('shop.error_cart_empty')]);
@@ -133,6 +133,12 @@ class StartBookshopCheckoutAction
                 $chosen[$vendorId] = $option;
                 $deliveryTotal += (float) $option['fee'];
             }
+
+            // STATUS §5lx: the address, now that the delivery is known. When every
+            // shop's order is collected (from the shop or from Akuru), a name and a
+            // mobile number are all that is needed — no atoll, island or street.
+            $collectOnly = collect($chosen)->every(fn (array $o) => in_array((string) $o['kind'], [DeliveryKind::CollectVendor->value, DeliveryKind::CollectAkuru->value], true));
+            $address = $this->address($userId, $data, $collectOnly);
 
             $total = round($subtotal - $discount + $deliveryTotal, 2);
             $effective = $total <= 0 ? CheckoutPaymentMethod::None : $method;
@@ -284,7 +290,7 @@ class StartBookshopCheckoutAction
      * @param  array<string, mixed>  $data
      * @return array<string, ?string>
      */
-    private function address(int $userId, array $data): array
+    private function address(int $userId, array $data, bool $collectOnly = false): array
     {
         if (! empty($data['address_id'])) {
             $saved = CustomerAddress::query()->where('user_id', $userId)->find((int) $data['address_id']);
@@ -295,21 +301,21 @@ class StartBookshopCheckoutAction
             return $saved->snapshot();
         }
 
-        $fields = ['recipient_name', 'phone', 'atoll', 'island', 'street'];
+        $fields = $collectOnly ? ['recipient_name', 'phone'] : ['recipient_name', 'phone', 'atoll', 'island', 'street'];
         foreach ($fields as $field) {
             if (trim((string) ($data[$field] ?? '')) === '') {
-                throw ValidationException::withMessages([$field => __('shop.error_address')]);
+                throw ValidationException::withMessages([$field => __($collectOnly ? 'shop.error_collect_contact' : 'shop.error_address')]);
             }
         }
         $snapshot = [
             'recipient_name' => trim((string) $data['recipient_name']),
             'phone' => trim((string) $data['phone']),
-            'atoll' => trim((string) $data['atoll']),
-            'island' => trim((string) $data['island']),
-            'street' => trim((string) $data['street']),
+            'atoll' => trim((string) ($data['atoll'] ?? '')) ?: null,
+            'island' => trim((string) ($data['island'] ?? '')) ?: null,
+            'street' => trim((string) ($data['street'] ?? '')) ?: null,
             'notes' => trim((string) ($data['address_notes'] ?? '')) ?: null,
         ];
-        if (! empty($data['save_address'])) {
+        if (! empty($data['save_address']) && $snapshot['street'] !== null) {
             CustomerAddress::query()->create(['user_id' => $userId, 'label' => trim((string) ($data['address_label'] ?? '')) ?: null, 'is_default' => ! CustomerAddress::query()->where('user_id', $userId)->exists()] + $snapshot);
         }
 

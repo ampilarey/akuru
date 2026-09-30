@@ -4414,6 +4414,48 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5lx. Collecting an order needs only a name and a number (2026-09-30)
+
+The owner, testing a real BML payment with a MVR 10 book, got "Fill in
+the delivery address" with **Collect from the shop** selected.
+`StartBookshopCheckoutAction` checked the address before it looked at
+the delivery. So a collection still demanded an atoll, an island and a
+street.
+
+**Now:**
+- The address is checked **after** the delivery is chosen, inside the
+  same transaction.
+- When every shop's order is collected (`collect_vendor` or
+  `collect_akuru`), only the recipient's name and mobile are required. A
+  missing one reads "Give the name and mobile number of the person
+  collecting."
+- A delivery still needs the whole address.
+- A collection-only address is not saved to the address book, since it
+  has nowhere to deliver to.
+- The empty parts are stored as `null`.
+- The checkout carries a hint under "Deliver to": "Collecting from the
+  shop or from Akuru? Only the name and mobile number are needed."
+- **No more ", , ".** Every place that printed "street, island, atoll"
+  now prints only the parts that exist:
+  - the order page, the checkout summary and the saved addresses;
+  - the shop's order screen and the packing label.
+  - The masked view shows no "•••" street when there is none.
+- Languages: EN/DV/AR.
+
+Tests:
+- `BookshopCheckoutTest`: the refusal test now uses a Malé courier for
+  "missing island", plus a collection missing a phone. It gains a test
+  where a collection with no atoll, island or street goes through, is
+  stored with `null`s, saves nothing to the address book, and shows no
+  ", ,".
+- Bookshop and Architecture: 248 passed.
+
+Walk: `scripts/smoke/checkout.mjs` 38/38, with three new steps:
+- the hint is shown;
+- a wallet order collected from Fitrah, with only a name and a number,
+  goes through;
+- its summary has the name and no empty address.
+
 ## 5lw. BML Connect as it really is: no webhook secret, the API key signs (2026-09-30)
 
 The owner set up BML. They created the merchant app (domain
