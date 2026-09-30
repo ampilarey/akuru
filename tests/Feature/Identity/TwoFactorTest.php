@@ -117,6 +117,9 @@ it('takes a recovery code once, and never a wrong password', function () {
 });
 
 it('waits after five wrong codes, and forgets a challenge left for ten minutes', function () {
+    // The wait is counted in whole seconds: a clock that ticks between the
+    // fifth try and the sixth read "59" on a slow runner (CI, 2026-09-30).
+    $this->freezeTime();
     $user = twoFactorUser();
     turnOnTwoFactor($user);
 
