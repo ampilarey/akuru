@@ -226,6 +226,21 @@ class PaymentService
             abort(400, 'Invalid callback');
         }
 
+        // STATUS §5lw: BML's own signature proves the sender, not the body —
+        // so find the payment it is about and ask BML's API, which is what
+        // finalizeByReference does (and it refuses an answer about another payment).
+        if ($result->confirmWithProvider) {
+            $ref = $result->merchantReference;
+            if (! $ref && $result->providerReference) {
+                $ref = Payment::query()->where('bml_transaction_id', $result->providerReference)->value('merchant_reference');
+            }
+            if ($ref) {
+                $this->finalizeByReference((string) $ref);
+            }
+
+            return;
+        }
+
         if (! $result->merchantReference) {
             return;
         }

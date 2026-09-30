@@ -49,39 +49,29 @@ until somebody can get in. Item 7 is the real prize and this is its door.
 
 ---
 
-### 2. Set `BML_WEBHOOK_SECRET` — no payment confirms without it
+### 2. Connect BML — **updated 2026-09-30 (STATUS §5lw): no webhook secret needed**
 
-The webhook **fails closed** by design: with no secret configured and no
-explicit opt-out, it refuses every callback. That is the safe direction and it
-means money does not move until you do this.
+The owner's BML merchant app (created 2026-09-30, domain `https://akuru.edu.mv`) shows an
+Application ID, an API key and a public key — **BML gives no webhook secret**. It signs
+webhooks with the API key, which the site now checks, and then confirms each payment by
+asking BML's API. What is left is putting the keys on the server (never in a chat, never in
+the repository):
 
-- [ ] Set `BML_WEBHOOK_SECRET` on the host
-- [ ] **Confirm with BML** that they sign HMAC-`sha256` over the **raw body**
-      under the `X-BML-Signature` header
+- [ ] In production's `.env` (cPanel File Manager):
+      `BML_BASE_URL=https://api.merchants.bankofmaldives.com.mv/public`,
+      `BML_APP_ID=` the Application ID, `BML_API_KEY=` the API key (secret),
+      `BML_ENVIRONMENT=production`, `BML_WEBHOOK_URL=https://akuru.edu.mv/webhooks/bml`;
+      leave `BML_WEBHOOK_SECRET` empty; the public key (`pk_production_…`) is not needed
+- [ ] `php artisan config:cache`
+- [ ] The cron line for the scheduler (`payments:reconcile` every ten minutes catches a lost webhook)
+- [ ] **One real payment of a small amount** (a test course at MVR 1): it should confirm by
+      itself within seconds; if it stays pending, the lines with `BML` in
+      `storage/logs/payments-*.log` say why (keys blanked out before sharing)
 
-The second line matters more than it looks. The implementation's assumption
-about their scheme has never been checked against BML's own documentation. If
-they sign something else — a canonical string, a different header, a different
-digest — the signature check will reject every genuine callback and every
-payment will sit pending.
-
-**The chain below the secret is now proven** (STATUS §5dx): a correctly signed
-callback, on a host where unsigned callbacks are refused, confirms the payment
-**and** lets the student into the course they paid for. Before this, the
-signature and the enrolment were tested separately and the join between them
-was not.
-
-That does **not** make the scheme above correct — if BML signs something else,
-that test passes and your host still rejects every genuine callback. It means
-the part after the signature check is sound, so the second checkbox above is
-the one carrying the risk.
-
-**Watch on the first real transaction** (#362): return-URL finalisation now
-refuses a provider result that does not name the payment it is answering about.
-If BML's get-transaction response carries no merchant reference, finalisation
-will decline rather than confirm and payments will wait for the webhook. That
-is correct under rule 12 — the webhook is the authority — but you should know
-it is the new behaviour.
+**Watch on the first real transaction** (#362): return-URL finalisation refuses a provider
+result that does not name the payment it is answering about. BML's Get Transaction returns
+`localId`, so this should pass; if it does not, payments wait for the webhook, which is correct
+under rule 12.
 
 ---
 

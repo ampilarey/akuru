@@ -52,7 +52,9 @@ class ResolveIntegrationStatusAction
         // Initiating is not confirming. Since the webhook fails closed, a
         // deployment with an api_key but no webhook secret takes money and
         // never grants access — worth saying out loud on this screen.
+        // §5lw: BML signs with the API key, so a configured key is enough.
         $bmlWebhookReady = ! empty(config('bml.webhook_secret'))
+            || ! empty(config('bml.api_key'))
             || (bool) config('bml.webhook_allow_unsigned', false);
 
         $links = [];

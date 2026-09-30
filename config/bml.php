@@ -16,12 +16,13 @@ return [
 
     /*
     | Auth mode for BML API header.
-    | raw          → Authorization: {API_KEY}
-    | bearer_jwt   → Authorization: Bearer {API_KEY}   (use when API_KEY is a JWT)
+    | raw          → Authorization: {API_KEY}   (the default: BML's own PHP SDK
+    |                sends exactly this, `'Authorization' => $this->apiKey`)
+    | bearer_jwt   → Authorization: Bearer {API_KEY}
     | bearer_basic → Authorization: Bearer base64(API_KEY:APP_ID)
     | auto         → detect by API_KEY prefix (eyJ = JWT, otherwise bearer_basic)
     */
-    'auth_mode' => env('BML_AUTH_MODE', 'auto'),
+    'auth_mode' => env('BML_AUTH_MODE', 'raw'),
 
     /*
     | Payment expiry (minutes). Enrollments older than this should be retried.
@@ -35,6 +36,13 @@ return [
 
     /*
     | Webhook (PRIMARY method for payment confirmation). Redirect is not authoritative.
+    |
+    | BML Connect gives no webhook secret: it signs with the API key —
+    | X-Signature = sha256(X-Signature-Nonce . X-Signature-Timestamp . apiKey).
+    | The site checks that by itself, and because it does not cover the body,
+    | confirms the payment by asking BML's API (STATUS §5lw). Leave
+    | BML_WEBHOOK_SECRET empty for BML; set it only for a gateway that signs
+    | the body with a shared HMAC key (the X-BML-Signature path below).
     */
     'webhook_secret' => env('BML_WEBHOOK_SECRET', env('BML_CALLBACK_SECRET')),
     'webhook_url' => env('BML_WEBHOOK_URL', env('BML_CALLBACK_URL')),
