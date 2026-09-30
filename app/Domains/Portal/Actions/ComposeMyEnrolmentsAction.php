@@ -4,6 +4,7 @@ namespace App\Domains\Portal\Actions;
 
 use App\Domains\Courses\Actions\ListEnrolmentsMadeByAction;
 use App\Domains\Finance\Actions\ListCoursePaymentsForUserAction;
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 
 /**
  * *My enrolments* (docs/SIGN_IN_PLAN.md ID2b): every enrolment a login made,
@@ -27,6 +28,13 @@ class ComposeMyEnrolmentsAction
             fn (array $row): array => $row + ['receipt_href' => $row['payment_id'] !== null ? ($receipts[$row['payment_id']] ?? null) : null],
             app(ListEnrolmentsMadeByAction::class)->execute($userId),
         );
+
+        // COMMERCE_PARITY_PLAN P3: each learner's ID card, so a rejected one can be sent again.
+        $cards = app(IdentityVerificationAction::class)->forStudents(array_values(array_unique(array_filter(array_column($enrolments, 'student_id')))));
+        $enrolments = array_map(fn (array $row): array => $row + [
+            'id_card' => $row['student_id'] !== null ? ($cards[$row['student_id']]['status'] ?? 'none') : null,
+            'id_card_note' => $row['student_id'] !== null ? ($cards[$row['student_id']]['note'] ?? null) : null,
+        ], $enrolments);
 
         return ['enrolments' => $enrolments, 'payments' => $payments];
     }

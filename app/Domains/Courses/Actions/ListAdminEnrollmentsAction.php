@@ -4,6 +4,7 @@ namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -36,6 +37,14 @@ class ListAdminEnrollmentsAction
         if (in_array($paymentStatus = (string) ($filters['payment_status'] ?? ''), self::PAYMENT_STATUSES, true)) {
             $query->where('payment_status', $paymentStatus);
         }
+        // COMMERCE_PARITY_PLAN P3: by the learner's ID card — waiting, verified, rejected, or none sent.
+        $idCard = (string) ($filters['id_card'] ?? '');
+        if (in_array($idCard, ['pending', 'verified', 'rejected'], true)) {
+            $query->whereIn('unified_student_id', app(IdentityVerificationAction::class)->learnerIdsWithStatus($idCard));
+        } elseif ($idCard === 'none') {
+            $sent = array_merge(...array_map(fn ($s) => app(IdentityVerificationAction::class)->learnerIdsWithStatus($s), ['pending', 'verified', 'rejected']));
+            $query->whereNotIn('unified_student_id', $sent === [] ? [0] : $sent);
+        }
         $search = trim((string) ($filters['search'] ?? ''));
         if ($search !== '') {
             $query->where(function (Builder $q) use ($search) {
@@ -58,6 +67,7 @@ class ListAdminEnrollmentsAction
     public function execute(array $filters): array
     {
         $page = $this->query($filters)->paginate(self::PER_PAGE)->withQueryString();
+        $cards = app(IdentityVerificationAction::class)->forStudents(collect($page->items())->pluck('unified_student_id')->filter()->map(fn ($id) => (int) $id)->all());
 
         return [
             'enrollments' => collect($page->items())->map(fn (CourseEnrollment $e) => [
@@ -67,6 +77,7 @@ class ListAdminEnrollmentsAction
                 'status' => (string) $e->status,
                 'payment_status' => $e->payment_status !== null ? (string) $e->payment_status : null,
                 'date' => $e->created_at?->format('d M Y'),
+                'id_card' => $cards[(int) $e->unified_student_id]['status'] ?? 'none',
             ])->values()->all(),
             'pagination' => [
                 'current_page' => $page->currentPage(),

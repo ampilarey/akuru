@@ -2,6 +2,7 @@
 
 namespace App\Domains\Portal\Http\Controllers;
 
+use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Portal\Actions\ComposeAccountHomeAction;
 use App\Domains\Portal\Actions\ComposeMyEnrolmentsAction;
 use App\Http\Controllers\Controller;
@@ -54,6 +55,19 @@ class MyAccountController extends Controller
             'browse_href' => '/learn/catalog',
             't' => trans('account'),
         ]);
+    }
+
+    /** COMMERCE_PARITY_PLAN P3: send a learner's ID card again — only for a learner this login enrolled. */
+    public function idCard(Request $request, int $student): RedirectResponse
+    {
+        $user = $request->user();
+        abort_unless($user !== null, 403);
+        $mine = collect(app(ComposeMyEnrolmentsAction::class)->execute((int) $user->id)['enrolments'])->contains('student_id', $student);
+        abort_unless($mine, 403);
+        $request->validate(IdentityVerificationAction::fileRules());
+        app(IdentityVerificationAction::class)->submit((int) $user->id, 'learner', $request->file('id_front'), $request->file('id_back'), $student);
+
+        return back()->with('success', __('account.id_sent_flash'));
     }
 
     public function export(Request $request): StreamedResponse

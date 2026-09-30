@@ -55,6 +55,60 @@ class IdentityVerificationAction
         ]);
     }
 
+    /** P3: store one side now (a form that finishes later), for `submitStored`. */
+    public function storeSide(UploadedFile $file, int $userId): int
+    {
+        return (int) app(StorePrivateMediaAction::class)->execute($file, $userId, self::MIMES, self::MAX_BYTES)['id'];
+    }
+
+    /** P3: a card whose two sides were stored earlier by `storeSide`. */
+    public function submitStored(int $userId, string $purpose, int $frontId, int $backId, ?int $studentId = null): IdentityVerification
+    {
+        $this->guardPurpose($purpose);
+
+        return IdentityVerification::query()->create([
+            'user_id' => $userId, 'purpose' => $purpose, 'student_id' => $studentId,
+            'front_media_file_id' => $frontId, 'back_media_file_id' => $backId,
+            'status' => IdentityVerification::PENDING,
+        ]);
+    }
+
+    /**
+     * P3: a learner's card, whoever uploaded it (the learner, or a parent for a child).
+     *
+     * @return array{status: string, id: ?int, note: ?string, decided_at: ?string}
+     */
+    public function learnerStatus(int $studentId): array
+    {
+        $rows = IdentityVerification::query()->where('purpose', 'learner')->where('student_id', $studentId)->orderByDesc('id')->get();
+        $row = $rows->firstWhere('status', IdentityVerification::VERIFIED) ?? $rows->first();
+
+        return ['status' => $row?->status ?? 'none', 'id' => $row?->id, 'note' => $row?->status === IdentityVerification::REJECTED ? $row->note : null, 'decided_at' => $row?->decided_at?->toDateString()];
+    }
+
+    /**
+     * P3: the learners whose current card is in this state, for the enrolments filter.
+     *
+     * @return list<int>
+     */
+    public function learnerIdsWithStatus(string $status): array
+    {
+        $current = [];
+        foreach (IdentityVerification::query()->where('purpose', 'learner')->whereNotNull('student_id')->orderBy('id')->get(['student_id', 'status']) as $v) {
+            if (($current[$v->student_id] ?? null) !== IdentityVerification::VERIFIED) {
+                $current[$v->student_id] = $v->status;
+            }
+        }
+
+        return array_values(array_map('intval', array_keys(array_filter($current, fn ($s) => $s === $status))));
+    }
+
+    /** P3: the learner's card verified, or the rule off. */
+    public function learnerVerified(int $studentId): bool
+    {
+        return ! self::enforced() || $this->learnerStatus($studentId)['status'] === IdentityVerification::VERIFIED;
+    }
+
     /**
      * Where the person stands: `none`, `pending`, `verified` or `rejected`.
      * Verified once is verified: a later card waiting does not undo it.

@@ -34,6 +34,7 @@ class ListEnrolmentsMadeByAction
                 'id' => (int) $enrollment->id,
                 'course' => (string) ($enrollment->course?->title ?? '—'),
                 'student' => (string) ($enrollment->student?->full_name ?? '—'),
+                'student_id' => $enrollment->unified_student_id !== null ? (int) $enrollment->unified_student_id : null,
                 'own' => $enrollment->student !== null && (int) $enrollment->student->user_id === $userId,
                 'state' => $this->state($enrollment),
                 'payment' => match ((string) $enrollment->payment_status) {

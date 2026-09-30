@@ -123,4 +123,11 @@ return [
     'id_decided_title_rejected' => 'Your identity card was not accepted',
     'id_decided_body_verified' => 'Thank you — the office has checked your ID card.',
     'id_decided_body_rejected' => 'The office could not accept your ID card: :note. Please send it again.',
+    // COMMERCE_PARITY_PLAN P3: a learner's ID card.
+    'id_learner_title' => 'Your ID card, both sides',
+    'id_learner_child_title' => 'Your child\'s own ID card, both sides',
+    'id_learner_hint' => 'A photo of the front and the back (or the passport photo page and its back cover). Enrolment goes ahead; the office checks the card afterwards, and the certificate waits for that check. If the office already has this card, you can leave these empty.',
+    'id_learner_needed' => 'Add both sides of the ID card.',
+    'id_certificate_waits' => 'Your certificate is ready once the office has checked the ID card.',
+    'id_col' => 'ID card',
 ];

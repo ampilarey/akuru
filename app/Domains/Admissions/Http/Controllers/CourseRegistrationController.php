@@ -3,6 +3,7 @@
 namespace App\Domains\Admissions\Http\Controllers;
 
 use App\Domains\Admissions\Actions\AnnounceFreeEnrollmentsAction;
+use App\Domains\Admissions\Actions\LearnerIdCardAction;
 use App\Domains\Admissions\Models\RegistrationFlow;
 use App\Domains\Admissions\Services\Enrollment\EnrollmentService;
 use App\Domains\Courses\Models\Course;
@@ -716,6 +717,12 @@ class CourseRegistrationController extends PublicRegistrationController
                 ->with('info', 'You already have a pending payment for this course. Please complete it below.');
         }
 
+        // COMMERCE_PARITY_PLAN P3: the learner's ID card, both sides (a child's own); never holds the enrolment up.
+        $learnerId = $flow === 'adult' ? $user->student?->id : ($request->input('student_mode') === 'existing' ? (int) ($data['student_id'] ?? 0) : null);
+        if ($idErrors = app(LearnerIdCardAction::class)->stash((int) $user->id, $learnerId ?: null, $request->file('id_front'), $request->file('id_back'))) {
+            return back()->withInput()->withErrors($idErrors);
+        }
+
         // Store all form data in session
         session([
             'enroll_pending_data' => $data,
@@ -951,14 +958,14 @@ class CourseRegistrationController extends PublicRegistrationController
                 $e->loadMissing('course');
                 $courseTitle = $e->course?->title ?? '';
                 $status = $this->humanEnrollmentStatus($e);
-                $msg = $courseTitle
-                    ? "You are already enrolled in \"{$courseTitle}\" — {$status}."
-                    : "You are already enrolled — {$status}.";
+                $msg = $courseTitle ? "You are already enrolled in \"{$courseTitle}\" — {$status}." : "You are already enrolled — {$status}.";
             }
 
             return redirect()->route('my.enrollments')->with('info', $msg);
         }
 
+        // COMMERCE_PARITY_PLAN P3: file the stashed ID card against the learner the enrolment made.
+        app(LearnerIdCardAction::class)->attach((int) $user->id, $result->createdEnrollments[0]->unified_student_id ?? null);
         // Free enrollments announce now; paid ones announce from the webhook
         // once the money is real (rule 12 — never announce before
         // confirmation). Which enrollments qualify, and telling anyone about

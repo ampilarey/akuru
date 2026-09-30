@@ -1,6 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import { IdentityChecks, IdentityStatus } from '../../Components/IdentityCard';
 
 /**
  * One enrolment, as the office decides on it (docs/ADMIN_PANEL.md; C9 slice
@@ -45,7 +46,7 @@ function Decision({ enrollment, action, label, confirm, tone, testId }) {
     );
 }
 
-export default function Enrollment({ enrollment, payment_methods: paymentMethods = [], can_record_payment: canRecordPayment = false, t = {} }) {
+export default function Enrollment({ enrollment, payment_methods: paymentMethods = [], can_record_payment: canRecordPayment = false, t = {}, identity = null, id_l = {} }) {
     const { flash = {}, errors = {} } = usePage().props;
     const [starts, setStarts] = useState(enrollment.access_starts_at || '');
     const [ends, setEnds] = useState(enrollment.access_ends_at || '');
@@ -102,6 +103,13 @@ export default function Enrollment({ enrollment, payment_methods: paymentMethods
                     )}
                 </section>
             )}
+
+            {/* COMMERCE_PARITY_PLAN P3: the learner's ID card, verified here; the certificate waits for it. */}
+            <div className="mb-6" data-testid="enrolment-identity">
+                {identity ? <IdentityChecks rows={[identity]} l={id_l} title={id_l.id_col} /> : (
+                    <section className="rounded-lg border bg-white p-5"><h2 className="mb-1 text-base font-semibold text-gray-800">{id_l.id_col}</h2><p className="text-sm text-gray-600"><IdentityStatus status="none" l={id_l} /></p></section>
+                )}
+            </div>
 
             {enrollment.payment && (
                 <section className="mb-6 rounded-lg border bg-white p-5" data-testid="enrolment-payment">
