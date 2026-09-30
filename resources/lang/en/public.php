@@ -475,7 +475,6 @@ return [
 
     // Library paid content (L3) — DV/AR first pass pending native review (operator item)
     'Buy for' => 'Buy for',
-    'Sign in to buy and read this item.' => 'Sign in to buy and read this item.',
     'Access opens as soon as the bank confirms your payment.' => 'Access opens as soon as the bank confirms your payment.',
     'Payment confirmed' => 'Payment confirmed',
     'Your access is ready.' => 'Your access is ready.',
