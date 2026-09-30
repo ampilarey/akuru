@@ -4,6 +4,7 @@ use App\Domains\Identity\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Domains\Identity\Http\Controllers\Auth\ConfirmablePasswordController;
 use App\Domains\Identity\Http\Controllers\Auth\EmailVerificationNotificationController;
 use App\Domains\Identity\Http\Controllers\Auth\EmailVerificationPromptController;
+use App\Domains\Identity\Http\Controllers\Auth\GuestCheckoutController;
 use App\Domains\Identity\Http\Controllers\Auth\OtpLoginController;
 use App\Domains\Identity\Http\Controllers\Auth\OtpPasswordResetController;
 use App\Domains\Identity\Http\Controllers\Auth\PasswordController;
@@ -27,6 +28,13 @@ Route::middleware('guest')->group(function () {
         ->name('login');
 
     Route::post('login', [AuthenticatedSessionController::class, 'store']);
+
+    // STATUS §5ly: buy without signing in — a name and a mobile number make an
+    // account and sign it in (Bake & Grill's guest checkout). Per number and
+    // address the controller allows ten an hour; this caps one address.
+    Route::post('guest-checkout', [GuestCheckoutController::class, 'store'])
+        ->middleware('throttle:30,1,guest-checkout')
+        ->name('guest-checkout');
 
     // STATUS §5lk: the second step, for people who turned two-step sign-in on.
     Route::get('two-factor-challenge', [TwoFactorChallengeController::class, 'create'])->name('two-factor.challenge');

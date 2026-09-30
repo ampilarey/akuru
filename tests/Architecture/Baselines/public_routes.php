@@ -181,6 +181,7 @@ return [
     'GET login' => 'Pre-auth by necessity — see OtpService for the per-contact limits.',
     'GET otp/login' => 'Pre-auth by necessity — see OtpService for the per-contact limits.',
     'POST otp/request' => 'Pre-auth by necessity — throttled auth-otp-request.',
+    'POST guest-checkout' => 'Authentication itself (STATUS §5ly): makes a new account from a name and a mobile number and signs it in — never an existing one; see session_creations.php. Touches no money: the checkouts it leads to are the signed-in ones, unchanged. Throttled 30,1 per address and ten per number and address an hour in the controller.',
     'POST otp/resend' => 'Pre-auth by necessity — throttled auth-otp-request.',
     'GET two-factor-challenge' => 'STATUS §5lk: the second sign-in step, pre-auth by necessity; redirects to the login unless the password or OTP step just passed.',
     'POST two-factor-challenge' => 'STATUS §5lk: the second sign-in step, pre-auth by necessity; five wrong codes a minute per person, throttled.',

@@ -32,7 +32,9 @@ class CheckoutController extends Controller
 
         return view('public.shop.checkout', [
             'checkout' => $checkout,
-            'old' => $request->old(),
+            // STATUS §5ly: a first visit starts from the account's name and
+            // number — a guest just typed them in to get here.
+            'old' => $request->old() ?: ['recipient_name' => (string) $request->user()->name, 'phone' => (string) $request->user()->phone],
             // STATUS §5ln: a friend's first order through a share link.
             'referral' => app(ReferralCreditAction::class)->offerFor((int) $request->user()->id, $request->session()),
         ]);

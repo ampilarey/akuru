@@ -1858,7 +1858,19 @@ class SmokeMarkerSeeder extends Seeder
         // sets them from the template). Money stays: the wallet ledger is
         // append-only (rule 12), so the walk's wallet payment is a real
         // debit and the top-up below brings the balance back.
-        $walkPeople = DB::table('users')->whereIn('email', ['student@akuru.edu.mv', 'vendor@akuru.edu.mv'])->pluck('id');
+        $walkPeople = DB::table('users')->whereIn('email', ['student@akuru.edu.mv', 'vendor@akuru.edu.mv'])
+            // STATUS §5ly: the guests the walk bought as (no email, named by the walk).
+            ->orWhere(fn ($q) => $q->whereNull('email')->whereIn('name', ['Smoke Guest', 'Someone Else', 'Smoke Reader', 'Smoke Giver']))
+            ->pluck('id');
+        // STATUS §5ly: a number that signs in to an account, for the walk's
+        // "this number already has an account" step.
+        $studentId = DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id');
+        if ($studentId !== null) {
+            DB::table('user_contacts')->updateOrInsert(
+                ['type' => 'mobile', 'value' => '+9607000001'],
+                ['user_id' => $studentId, 'is_primary' => false, 'verified_at' => now(), 'updated_at' => now(), 'created_at' => now()],
+            );
+        }
         $walkCheckouts = DB::table('bookshop_checkouts')->whereIn('user_id', $walkPeople)->pluck('id');
         foreach (DB::table('bank_transfer_slips')->whereIn('bookshop_checkout_id', $walkCheckouts)->pluck('media_file_id') as $mediaId) {
             $media = DB::table('media_files')->where('id', $mediaId)->first(['disk', 'path']);

@@ -212,6 +212,9 @@ return [
     'public/news/index.blade.php',
     'public/news/show.blade.php',
     'public/page/show.blade.php',
+    // Not a screen: STATUS §5ly's "Continue as a guest" form, one partial
+    // for the three public Blade pages that sell (cart, Library item, gift cards).
+    'public/partials/guest-checkout.blade.php',
     'public/partials/json_ld.blade.php',
     'public/partials/prayer-banner-assets.blade.php',
     'public/partials/prayer-banner.blade.php',

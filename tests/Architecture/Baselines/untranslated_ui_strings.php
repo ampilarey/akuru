@@ -143,7 +143,6 @@ return [
     'public.Send us a Message',
     'public.Server Error',
     'public.Sign in',
-    'public.Sign in to buy and read this item.',
     'public.Sign in to read this item for free.',
     'public.Social Media',
     'public.Something went wrong on our end. Please try again later.',

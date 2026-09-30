@@ -117,8 +117,12 @@
                         @endif
                     </p>
                 @endif
-                <p class="mb-3 text-gray-700">{{ $item['currency'] }} {{ $item['promotion'] ? number_format($item['promotion']['price'], 2) : $item['price'] }} — {{ __('public.Sign in to buy and read this item.') }}</p>
-                <a href="{{ route('login') }}" class="btn-primary">{{ __('public.Sign in') }}</a>
+                <p class="mb-1 text-gray-700" data-testid="item-guest-price">{{ $item['currency'] }} {{ $item['promotion'] ? number_format($item['promotion']['price'], 2) : $item['price'] }}</p>
+                {{-- STATUS §5ly: buy without signing in first. --}}
+                @include('public.partials.guest-checkout', ['for' => 'library', 'slug' => $item['slug']])
+                <p class="mt-4 text-sm text-gray-600">{{ __('account.guest_have_account') }}
+                    <a href="{{ route('login') }}" class="font-semibold text-brandMaroon-700 underline">{{ __('public.Sign in') }}</a>
+                </p>
             </div>
         @elseif($item['requires_login'])
             <div class="rounded-lg border bg-brandBeige-50 p-6 text-center">

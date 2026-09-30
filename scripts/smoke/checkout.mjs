@@ -12,6 +12,8 @@
  *      shop, and both are on My orders with a receipt;
  *   3. orders again by bank transfer: the account to pay into, uploads a slip,
  *      and the page says the office is looking;
+ *   4. (STATUS §5ly) buys without signing in: a name and a mobile number on
+ *      the cart, a Library item and the gift cards page;
  *
  * then the office confirms the slip and the student's page says paid; then
  * Fitrah's owner sets the shop's delivery methods from the template.
@@ -136,7 +138,7 @@ const customer = await newPage('customer');
 await addToCart(customer, BOOK, 2);
 check('a guest adds two tracing books from the product page and lands on the cart', /\/shop\/cart$/.test(customer.url()) && (await customer.locator(`[data-cart-line="${BOOK}"]`).count()) === 1, customer.url().replace(BASE, ''));
 const guestCart = await text(customer);
-check('the cart shows the line, its total, and asks the guest to sign in', guestCart.includes('MVR 170.00') && guestCart.includes('Sign in to check out') && (await customer.locator('[data-testid="cart-sign-in"] a').count()) === 2, guestCart.slice(0, 160));
+check('the cart shows the line, its total, and offers to go on as a guest or sign in', guestCart.includes('MVR 170.00') && guestCart.includes('Continue as a guest') && (await customer.locator('[data-testid="cart-sign-in"] [data-testid="guest-checkout"]').count()) === 1 && (await customer.locator('[data-testid="cart-sign-in-link"]').count()) === 1, guestCart.slice(0, 160));
 
 const phone = await newPage('phone', { width: 390, height: 844 });
 await phone.goto(`${BASE}/en/shop`, { waitUntil: 'networkidle' });
@@ -308,6 +310,77 @@ check('and the edit is kept', (await vendor.locator('[data-testid="delivery-name
         customer.url().replace(BASE, '') + ' ' + (await customer.locator('[data-testid="checkout-errors"]').innerText().catch(() => '')).trim());
     const summary = await text(customer);
     check('and its summary shows the name and number, with no empty address', summary.includes('Smoke Collector') && !summary.includes(', ,'), summary.slice(0, 200));
+}
+
+// ------------------------------------------------------------ buy without signing in (STATUS §5ly)
+{
+    const guest = await newPage('guest-buyer', { width: 390, height: 844 });
+    await addToCart(guest, BOOK, 1);
+    const number = `7${String(Date.now()).slice(-6)}`;
+    await guest.fill('[data-testid="guest-name"]', 'Smoke Guest');
+    await guest.fill('[data-testid="guest-phone"]', number);
+    await submit(guest, '[data-testid="guest-continue"]');
+    await guest.waitForLoadState('networkidle');
+    check('a guest gives a name and a mobile number and goes straight to the checkout', /\/shop\/checkout$/.test(guest.url()) && (await guest.locator('[data-testid="checkout-heading"]').count()) === 1, guest.url().replace(BASE, ''));
+    check('with the basket, and the name and number already filled in', (await text(guest)).includes('Arabic Letters Tracing Book')
+        && (await guest.locator('[data-testid="recipient-name"]').inputValue()) === 'Smoke Guest' && (await guest.locator('[data-testid="phone"]').inputValue()) === `+960${number}`);
+    await guest.locator('[data-testid="delivery-fitrah"] input[data-delivery-kind="collect_vendor"]').check();
+    await guest.check('[data-testid="pay-bank_transfer"]');
+    await submit(guest, '[data-testid="place-order"]');
+    await guest.waitForLoadState('networkidle');
+    const guestNumber = ((await guest.locator('[data-testid="checkout-number"]').innerText().catch(() => '')).match(/AK-\d{4}-\d{6}/) ?? [''])[0];
+    check('and places the order without ever signing in', /\/shop\/checkout\/AK-/.test(guest.url()) && guestNumber !== '' && (await guest.locator('[data-testid="bank-account"]').count()) === 1,
+        guest.url().replace(BASE, '') + ' ' + (await guest.locator('[data-testid="checkout-errors"]').innerText().catch(() => '')).trim());
+
+    // The same number again, from another browser: a new guest, not that buyer.
+    const other = await newPage('guest-again');
+    await addToCart(other, MAT, 1);
+    await other.fill('[data-testid="guest-name"]', 'Someone Else');
+    await other.fill('[data-testid="guest-phone"]', number);
+    await submit(other, '[data-testid="guest-continue"]');
+    await other.goto(`${BASE}/en/my-orders`, { waitUntil: 'networkidle' });
+    check('someone else typing that number does not see the guest\'s orders', guestNumber !== '' && !(await text(other)).includes(guestNumber));
+
+    // A number that signs in to an account is sent to sign in.
+    const known = await newPage('guest-known');
+    await addToCart(known, MAT, 1);
+    await known.fill('[data-testid="guest-name"]', 'Smoke Student');
+    await known.fill('[data-testid="guest-phone"]', '7000001');
+    await submit(known, '[data-testid="guest-continue"]');
+    await known.waitForLoadState('networkidle');
+    const refusal = (await known.locator('[data-testid="guest-error"]').innerText().catch(() => '')).trim();
+    check('a number that already has an account is asked to sign in', /\/shop\/cart$/.test(known.url()) && refusal.includes('already has an account'), refusal || known.url().replace(BASE, ''));
+}
+
+// ------------------------------------------------------------ the Library and gift cards, without signing in (STATUS §5ly)
+{
+    const reader = await newPage('guest-reader');
+    await reader.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
+    const hrefs = await reader.locator('a[href*="/library/"]').evaluateAll((links) => [...new Set(links.map((a) => a.href))].filter((h) => /\/library\/[a-z0-9-]+$/.test(h) && !/\/(authors|promotions|export)$/.test(h)));
+    let found = false;
+    for (const href of hrefs.slice(0, 40)) {
+        await reader.goto(href, { waitUntil: 'domcontentloaded' });
+        if ((await reader.locator('[data-testid="guest-checkout"]').count()) === 1) { found = true; break; }
+    }
+    check('a paid Library item offers the guest form to a visitor', found, found ? reader.url().replace(BASE, '') : `none among ${hrefs.length} items`);
+    if (found) {
+        const itemUrl = reader.url();
+        await reader.fill('[data-testid="guest-name"]', 'Smoke Reader');
+        await reader.fill('[data-testid="guest-phone"]', `9${String(Date.now()).slice(-6)}`);
+        await submit(reader, '[data-testid="guest-continue"]');
+        await reader.waitForLoadState('networkidle');
+        check('and comes back to the item, signed in, able to buy it', reader.url() === itemUrl && (await reader.locator('[data-testid="guest-checkout"]').count()) === 0
+            && (await reader.locator('form[action*="/checkout"]').count()) >= 1, reader.url().replace(BASE, ''));
+    }
+
+    const giver = await newPage('guest-giver');
+    await giver.goto(`${BASE}/en/gift-cards`, { waitUntil: 'networkidle' });
+    await giver.fill('[data-testid="guest-name"]', 'Smoke Giver');
+    await giver.fill('[data-testid="guest-phone"]', `9${String(Date.now() + 7).slice(-6)}`);
+    await submit(giver, '[data-testid="guest-continue"]');
+    await giver.waitForLoadState('networkidle');
+    check('the gift cards page does the same, and its Pay button opens', /\/gift-cards$/.test(giver.url()) && (await giver.locator('[data-testid="guest-checkout"]').count()) === 0
+        && !(await giver.locator('[data-testid="gift-card-form"] button[type=submit]').isDisabled()), giver.url().replace(BASE, ''));
 }
 
 await finish();

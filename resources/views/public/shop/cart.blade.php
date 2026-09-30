@@ -127,12 +127,11 @@
 
         @unless($signed_in)
             <div class="mt-6 rounded-lg border border-brandMaroon-200 bg-brandBeige-50 p-4" data-testid="cart-sign-in">
-                <p class="font-semibold text-brandMaroon-900">{{ __('shop.sign_in_to_checkout') }}</p>
-                <p class="mb-3 text-sm text-gray-600">{{ __('shop.sign_in_intro') }}</p>
-                <div class="flex flex-wrap gap-3">
-                    <a href="{{ route('login') }}" class="btn-primary">{{ __('shop.sign_in_password') }}</a>
-                    <a href="{{ route('otp.login.form') }}" class="btn-secondary">{{ __('shop.sign_in_otp') }}</a>
-                </div>
+                {{-- STATUS §5ly: no sign-in needed — a name and a mobile number, or sign in to an account. --}}
+                @include('public.partials.guest-checkout', ['for' => 'shop'])
+                <p class="mt-4 text-sm text-gray-600">{{ __('account.guest_have_account') }}
+                    <a href="{{ route('login') }}" class="font-semibold text-brandMaroon-700 underline" data-testid="cart-sign-in-link">{{ __('shop.sign_in_password') }}</a>
+                </p>
             </div>
         @endunless
     @endif
