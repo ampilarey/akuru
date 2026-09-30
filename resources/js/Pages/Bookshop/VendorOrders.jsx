@@ -185,7 +185,7 @@ function OrderCard({ order, t, open, onToggle }) {
                         <div data-testid="vendor-order-address">
                             <p className="font-semibold">{t.deliver_to}</p>
                             <p>{address.recipient_name} · {address.phone}</p>
-                            <p>{address.street}, {address.island}, {address.atoll}</p>
+                            {[address.street, address.island, address.atoll].some(Boolean) && <p>{[address.street, address.island, address.atoll].filter(Boolean).join(', ')}</p>}
                             {address.notes && <p className="text-gray-600">{address.notes}</p>}
                             {address.masked && <p className="text-xs text-gray-500">{t.contact_masked}</p>}
                         </div>

@@ -76,7 +76,8 @@ final class OrderView
             'phone' => $phone === '' ? '' : substr($phone, 0, 2).str_repeat('•', max(0, strlen($phone) - 4)).substr($phone, -2),
             'atoll' => $address['atoll'] ?? null,
             'island' => $address['island'] ?? null,
-            'street' => '•••',
+            // A collection has no street to hide (STATUS §5lx).
+            'street' => empty($address['street']) ? null : '•••',
             'notes' => null,
             'masked' => true,
         ];

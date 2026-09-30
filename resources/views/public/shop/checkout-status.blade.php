@@ -91,7 +91,7 @@
 
     <div class="mt-4 rounded-lg border bg-brandBeige-50 p-3 text-sm">
         <span class="font-semibold">{{ __('shop.deliver_to') }}:</span>
-        {{ $checkout['address']['recipient_name'] ?? '' }} · {{ $checkout['address']['phone'] ?? '' }} · {{ $checkout['address']['street'] ?? '' }}, {{ $checkout['address']['island'] ?? '' }}, {{ $checkout['address']['atoll'] ?? '' }}
+        {{ collect([$checkout['address']['recipient_name'] ?? null, $checkout['address']['phone'] ?? null, collect([$checkout['address']['street'] ?? null, $checkout['address']['island'] ?? null, $checkout['address']['atoll'] ?? null])->filter()->implode(', ')])->filter()->implode(' · ') }}
     </div>
 </div>
 @endsection

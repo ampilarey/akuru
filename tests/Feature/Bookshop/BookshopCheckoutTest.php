@@ -219,8 +219,11 @@ it('refuses a short wallet, a missing delivery choice, a missing address and an 
         ->assertSessionHasErrors();
     checkoutAs($user)->post(route('public.shop.checkout.store'), addressInput(['delivery' => ['fitrah' => 'nope'], 'payment_method' => 'card']))
         ->assertSessionHasErrors('delivery');
-    checkoutAs($user)->post(route('public.shop.checkout.store'), addressInput(['delivery' => ['fitrah' => 't0'], 'payment_method' => 'card', 'island' => '']))
+    // A delivery needs the whole address (t2: Malé courier); a collection (t0) only a name and a number (§5lx).
+    checkoutAs($user)->post(route('public.shop.checkout.store'), addressInput(['delivery' => ['fitrah' => 't2'], 'payment_method' => 'card', 'island' => '']))
         ->assertSessionHasErrors('island');
+    checkoutAs($user)->post(route('public.shop.checkout.store'), addressInput(['delivery' => ['fitrah' => 't0'], 'payment_method' => 'card', 'phone' => '']))
+        ->assertSessionHasErrors(['phone' => __('shop.error_collect_contact')]);
 
     // Another customer's live reservation makes the last copy unavailable.
     $other = User::factory()->create();
@@ -439,4 +442,24 @@ it('lists my orders with a CSV, and the office lists every order with a CSV', fu
     $officeCsv = checkoutAs($office)->get(route('admin.bookshop.orders.export'))->assertOk()->streamedContent();
     expect($officeCsv)->toContain($number)->toContain($user->email);
     checkoutAs($user)->get(route('admin.bookshop.orders.export'))->assertForbidden();
+});
+
+it('asks a customer collecting their order for a name and a number only, and shows no empty address (STATUS §5lx)', function () {
+    fakeBookshopBml();
+    $fitrah = checkoutVendor('fitrah');
+    $book = checkoutProduct($fitrah, 'Collected book', 10);
+    $user = User::factory()->create();
+    basketFor($user, [[$book, 1]]);
+
+    checkoutAs($user)->get(route('public.shop.checkout'))->assertOk()->assertSee(__('shop.collect_contact_hint'));
+
+    // Collect from the shop (t0) with no atoll, island or street: accepted, nothing saved to the address book.
+    checkoutAs($user)->post(route('public.shop.checkout.store'), ['recipient_name' => 'Aishath', 'phone' => '7700000', 'save_address' => 1, 'delivery' => ['fitrah' => 't0'], 'payment_method' => 'card'])
+        ->assertSessionHasNoErrors();
+    $order = Order::query()->sole();
+    expect($order->address_snapshot)->toMatchArray(['recipient_name' => 'Aishath', 'phone' => '7700000', 'atoll' => null, 'island' => null, 'street' => null])
+        ->and(CustomerAddress::query()->count())->toBe(0);
+
+    // The order page shows the name and number, and no dangling commas.
+    checkoutAs($user)->get(route('public.shop.orders.show', $order->number))->assertOk()->assertSee('Aishath')->assertDontSee(', ,');
 });

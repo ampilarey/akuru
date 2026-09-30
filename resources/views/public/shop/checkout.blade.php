@@ -48,7 +48,7 @@
                         <input type="radio" name="address_id" value="{{ $address['id'] }}" @checked((string) $oldAddress === (string) $address['id']) data-testid="saved-address">
                         <span>
                             <span class="font-medium">{{ $address['label'] ?: $address['recipient_name'] }}</span>
-                            <span class="block text-gray-600">{{ $address['recipient_name'] }} · {{ $address['phone'] }} · {{ $address['street'] }}, {{ $address['island'] }}, {{ $address['atoll'] }}</span>
+                            <span class="block text-gray-600">{{ collect([$address['recipient_name'], $address['phone'], collect([$address['street'], $address['island'], $address['atoll']])->filter()->implode(', ')])->filter()->implode(' · ') }}</span>
                         </span>
                     </label>
                 @endforeach
@@ -58,6 +58,7 @@
                     </label>
                 @endif
                 <div class="grid gap-3 md:grid-cols-2" data-testid="address-fields">
+                    <p class="text-sm text-gray-600 md:col-span-2" data-testid="collect-hint">{{ __('shop.collect_contact_hint') }}</p>
                     <label class="text-sm md:col-span-2">{{ __('shop.recipient_name') }}<input name="recipient_name" value="{{ $old['recipient_name'] ?? '' }}" class="form-input w-full" data-testid="recipient-name"></label>
                     <label class="text-sm">{{ __('shop.phone') }}<input name="phone" value="{{ $old['phone'] ?? '' }}" class="form-input w-full" inputmode="tel" data-testid="phone"></label>
                     <label class="text-sm">{{ __('shop.atoll') }}<input name="atoll" value="{{ $old['atoll'] ?? '' }}" class="form-input w-full" data-testid="atoll"></label>
