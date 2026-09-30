@@ -4,6 +4,7 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
+use App\Domains\Finance\Services\Payment\BmlPaymentProvider;
 use App\Domains\Identity\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\Request as HttpRequest;
@@ -152,4 +153,19 @@ it('keeps a configured shared secret authoritative: BML-style headers do not byp
     bmlWebhook(['transactionId' => 'bml-txn-1', 'localId' => $reference, 'state' => 'CONFIRMED'])->assertStatus(400);
 
     expect($payment->fresh()->status)->toBe('pending');
+});
+
+it('tells BML where to send the webhook when it creates the transaction, and sends the key as BML\'s SDK does', function () {
+    bmlConnectLive();
+    config(['bml.webhook_url' => 'https://akuru.edu.mv/webhooks/bml']);
+    [$payment] = bmlPendingCoursePayment();
+    Http::fake(['bml.test/*' => Http::response(['id' => 'bml-txn-new', 'url' => 'https://pay.bml.test/checkout/abc', 'state' => 'CREATED'])]);
+
+    app(BmlPaymentProvider::class)->initiate($payment);
+
+    // BML Connect takes the webhook per transaction; the merchant app has no setting for it.
+    Http::assertSent(fn (HttpRequest $r) => str_ends_with($r->url(), '/v2/transactions') && $r->method() === 'POST'
+        && $r['webhook'] === 'https://akuru.edu.mv/webhooks/bml'
+        && $r->hasHeader('Authorization', BML_TEST_KEY));
+    expect($payment->fresh()->bml_transaction_id)->toBe('bml-txn-new');
 });

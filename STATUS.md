@@ -4435,6 +4435,14 @@ against BML's own scheme. It was wrong twice over:
    `'Authorization' => $this->apiKey`, with no `Bearer`. The default is
    now `raw`.
 
+3. **The webhook address was never sent.** The create-transaction request
+   carried `amount`, `currency`, `localId`, `redirectUrl` and the terms
+   link, but no `webhook`. BML Connect takes the webhook per transaction,
+   and the merchant app has no webhook setting, so no webhook would ever
+   have arrived. BML asked the owner to confirm that the webhook is the
+   primary method, which is how this was found. The request now carries
+   `webhook` = `BML_WEBHOOK_URL`, or `APP_URL/webhooks/bml` (https only).
+
 **The fix, with money safety first (rule 12):**
 - `BmlPaymentProvider::verifyCallback` checks BML's own signature with the
   API key, in constant time, when the three headers are present.
@@ -4466,8 +4474,9 @@ against BML's own scheme. It was wrong twice over:
 - `.env.example`.
 
 Tests:
-- `BmlConnectSignatureTest` (6, production-shaped: no secret, unsigned
+- `BmlConnectSignatureTest` (7, production-shaped: no secret, unsigned
   refused):
+  - the create request carries `webhook` and the raw key;
   - a BML-signed webhook plus BML's API saying CONFIRMED confirms the
     payment and activates the enrolment, having asked BML by transaction
     id with the raw key;

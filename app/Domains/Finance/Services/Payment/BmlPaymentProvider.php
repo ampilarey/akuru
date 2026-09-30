@@ -68,6 +68,14 @@ class BmlPaymentProvider implements PaymentProviderInterface
             $payload['provider'] = $provider;
         }
 
+        // STATUS §5lw: where BML sends the payment's webhook. BML Connect takes
+        // it per transaction (the merchant app has no webhook setting), so
+        // without this field no webhook ever arrives.
+        $webhookUrl = config('bml.webhook_url') ?: rtrim((string) config('app.url'), '/').'/webhooks/bml';
+        if (str_starts_with($webhookUrl, 'https://')) {
+            $payload['webhook'] = $webhookUrl;
+        }
+
         try {
             $headers = array_merge(
                 $this->authHeaders($apiKey, $appId),
