@@ -140,6 +140,8 @@ decided on `/admin/bookshop`, the form closable by the office.)*
 
 ## 5. Vendor portal features
 
+*(COMMERCE_PARITY_PLAN P6a, STATUS §5mf: the office can set a shop so that Akuru packs and/or delivers for it. That shop's Akuru-packed orders show read-only, with the handling fee; its product list shows how many it has handed to Akuru.)*
+
 *(COMMERCE_PARITY_PLAN P4, 2026-09-30, STATUS §5md: a shop's *For sale* is a request — the product waits as `pending_review`, out of the store, until the office approves it. A live product goes back to the queue when its title, summary, description, category, photos or variant names change; price, sale, stock, SKU and delivery changes stay live. A declined listing returns to draft with the office's note on the product list.)*
 
 **Products**
@@ -246,6 +248,8 @@ Each section has: visibility (published / hidden / scheduled between dates), lan
 ---
 
 ## 8. Money, unchanged rules
+
+*(COMMERCE_PARITY_PLAN P6a, 2026-10-01, STATUS §5mf, ADR-042: where Akuru packs, its handling fee comes off the shop's earning as a line of its own and shows on the monthly invoice as *Handling by Akuru*; where Akuru delivers, the courier fee the customer pays is Akuru's and never reaches the shop. Both are fixed on the order when it is placed.)*
 
 - Access or fulfilment for anything paid depends on the **BML webhook**, never the return URL (rule 12). Card checkouts become *paid* on the webhook; wallet checkouts immediately.
 - Wallet and ledgers are append-only; refunds are reversals.

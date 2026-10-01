@@ -55,6 +55,9 @@ class ListVendorsAction
                 'tin' => $vendor->tin,
                 'gst_registered' => $vendor->gst_registered,
                 'trusted' => (bool) $vendor->trusted,
+                // P6a.
+                'fulfilment' => $vendor->fulfilment ?? 'vendor', 'delivery_by' => $vendor->delivery_by ?? 'vendor',
+                'akuru_handling_fee' => $vendor->akuru_handling_fee !== null ? (string) $vendor->akuru_handling_fee : null,
                 'badges' => (array) ($vendor->badges ?? []),
                 'storefront_published_at' => $vendor->storefront?->published_at?->toDateTimeString(),
                 // B5 (§6.6): what the office moderates.

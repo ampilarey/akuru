@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Checkout;
 
+use App\Domains\Bookshop\Actions\AkuruStockAction;
 use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
 use App\Domains\Bookshop\Actions\Money\RecordVendorEarningAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
@@ -48,6 +49,8 @@ class MarkCheckoutPaidAction
             foreach ($checkout->orders as $order) {
                 /** @var Order $order */
                 $short = $this->takeStock($order);
+                // P6a: an order Akuru packs leaves Akuru's shelf.
+                app(AkuruStockAction::class)->draw($order);
                 $order->status = $short === [] ? OrderStatus::Paid : OrderStatus::NeedsAttention;
                 $order->paid_at = now();
                 $order->save();

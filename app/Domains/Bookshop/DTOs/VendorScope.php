@@ -25,6 +25,8 @@ final readonly class VendorScope
         public bool $agreementAccepted,
         // STATUS §5lo: the office paused the shop — nothing sells; open orders are still the shop's to finish.
         public bool $paused = false,
+        // COMMERCE_PARITY_PLAN P6a: the office, working an order Akuru packs for this shop.
+        public bool $office = false,
     ) {}
 
     public function isOwner(): bool

@@ -34,6 +34,10 @@ class FulfilVendorOrderAction
     {
         $order = DB::transaction(function () use ($scope, $orderId, $to, $data) {
             $order = Order::query()->where('vendor_id', $scope->vendorId)->whereKey($orderId)->lockForUpdate()->firstOrFail();
+            // COMMERCE_PARITY_PLAN P6a: an order Akuru packs is the office's to move, and only such an order is.
+            if (($order->fulfilled_by === 'akuru') !== $scope->office) {
+                throw ValidationException::withMessages(['status' => __($scope->office ? 'shop.error_not_akuru_order' : 'shop.error_akuru_packs')]);
+            }
             if (! in_array($to, OrderView::nextSteps($order), true)) {
                 throw ValidationException::withMessages(['status' => __('shop.error_step')]);
             }

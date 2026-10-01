@@ -14,4 +14,6 @@ enum DeliveryKind: string
     case CourierMale = 'courier_male';
     case CourierAtolls = 'courier_atolls';
     case Boat = 'boat';
+    // COMMERCE_PARITY_PLAN P6a: Akuru's own courier, for a shop whose delivery Akuru does; the fee is Akuru's.
+    case AkuruCourier = 'akuru_courier';
 }

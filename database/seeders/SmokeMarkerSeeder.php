@@ -1971,6 +1971,12 @@ class SmokeMarkerSeeder extends Seeder
         $this->smokeProduct($fitrahId, 'smoke-wooden-alphabet-puzzle', 'Wooden Alphabet Puzzle', 240, 'standard', $category('educational-toys'), 12, ['age_range' => '3–6', 'subject' => 'Thaana letters']);
         $this->smokeProduct($fitrahId, 'smoke-kids-prayer-mat', 'Kids Prayer Mat', 180, 'standard', $category('islamic-studies'), 3, ['age_range' => '3–10'], lowStockAt: 5);
         $this->smokeProduct($otherId, 'smoke-other-secret', 'SMOKE-Other-Secret', 99, 'standard', null, 1, []);
+        // COMMERCE_PARITY_PLAN P6a (`akuru.mjs`): a shop Akuru packs and delivers for,
+        // with part of its stock handed over.
+        $akuruShopId = $this->smokeVendor('smoke-akuru-packs', 'SAK', ['name' => 'SMOKE-Akuru Packs', 'fulfilment' => 'akuru', 'delivery_by' => 'akuru'], $otherOwnerId);
+        DB::table('vendor_members')->where('vendor_id', $akuruShopId)->update(['agreement_accepted_at' => now()]);
+        $this->smokeProduct($akuruShopId, 'smoke-akuru-packed-notebook', 'SMOKE Akuru-Packed Notebook', 50, 'zero_rated', null, 20, []);
+        DB::table('products')->where('slug', 'smoke-akuru-packed-notebook')->update(['stock_at_akuru' => 10]);
 
         // B1b (`shop.mjs`): a photo on the tracing book, a Dhivehi title on
         // the puzzle, and a draft the public shop must never show.

@@ -53,9 +53,12 @@ class ReverseVendorEarningAction
         $delivery = round((float) $earning->delivery_fee * $keep, 2);
         $earning->commission = $commission;
         $earning->commission_tax = $tax;
+        // P6a: an order undone in full was never packed — no handling; a partial refund keeps it.
+        $handling = $fraction >= 1 ? 0.0 : round((float) $earning->akuru_handling_fee, 2);
+        $earning->akuru_handling_fee = $handling;
         // B9b: cash the shop took at the door stays with it, so it is owed back whatever is refunded.
         $cash = round((float) $earning->cash_collected, 2);
-        $earning->net = round(($fraction >= 1 ? 0 : (float) $earning->commission_base * $keep + $delivery - $commission - $tax) - $cash, 2);
+        $earning->net = round(($fraction >= 1 ? 0 : (float) $earning->commission_base * $keep + $delivery - $commission - $tax - $handling) - $cash, 2);
         if ($fraction >= 1 && $cash <= 0) {
             $earning->status = EarningStatus::Reversed;
         }

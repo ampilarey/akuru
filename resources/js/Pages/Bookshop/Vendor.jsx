@@ -602,6 +602,7 @@ function ProductList({ products, t, onEdit, selected, setSelected }) {
                         <td className="p-2 sm:text-end" data-label={t.stock}>
                             {p.track_stock ? p.stock : t.not_tracked}
                             {p.low_stock && <span className="ms-1 rounded bg-amber-100 px-1 text-xs text-amber-800">{t.low_stock}</span>}
+                            {p.stock_at_akuru > 0 && <span className="ms-1 block text-xs text-sky-800" data-testid={`at-akuru-${p.slug}`}>{(t.akuru_at_akuru_count || '').replace(':count', p.stock_at_akuru)}</span>}
                         </td>
                         <td className="p-2" data-label={t.status} data-testid={`status-${p.slug}`} data-status={p.status}>
                             {p.status === 'pending_review' ? <span className="rounded bg-amber-100 px-1 text-amber-900">{t.status_pending_review}</span> : (t[`status_${p.status}`] || p.status)}

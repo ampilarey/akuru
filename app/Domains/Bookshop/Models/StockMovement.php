@@ -13,7 +13,8 @@ use LogicException;
  */
 class StockMovement extends Model
 {
-    public const KINDS = ['in', 'sale', 'cancel', 'return', 'adjustment', 'import'];
+    // P6a: stock handed to Akuru to pack, and handed back — a change of place, not of count.
+    public const KINDS = ['in', 'sale', 'cancel', 'return', 'adjustment', 'import', 'received_at_akuru', 'returned_to_vendor'];
 
     public $timestamps = false;
 

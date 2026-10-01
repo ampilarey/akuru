@@ -97,6 +97,7 @@ final class NavigationMap
             // B10b: a Bookstore admin runs the Bookstore office screen.
             'bookshop_manager' => [
                 ['key' => 'bookshop', 'href' => '/admin/bookshop'],
+                ['key' => 'akuru_fulfilment', 'href' => '/admin/bookshop/akuru'],
                 ['key' => 'shop', 'href' => '/shop'],
             ],
             // The Institute workspace (STATUS §5id): the business side's doors.
@@ -393,6 +394,8 @@ final class NavigationMap
                 ['key' => 'commerce', 'href' => '/admin/commerce'],
                 ['key' => 'library_office', 'href' => '/admin/library'],
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
+                // COMMERCE_PARITY_PLAN P6a: the orders Akuru packs, and its charges.
+                ['key' => 'akuru_fulfilment', 'href' => '/admin/bookshop/akuru', 'can' => ['bookshop.manage']],
             ]],
             ['key' => 'panel_system', 'items' => [
                 ['key' => 'manage_users', 'href' => '/admin/users'],

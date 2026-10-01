@@ -135,6 +135,7 @@ class AdminBookshopController extends Controller
             'tin' => 'nullable|string|max:40',
             'gst_registered' => 'nullable|boolean',
             'trusted' => 'nullable|boolean',
+            'fulfilment' => 'nullable|string|in:vendor,akuru', 'delivery_by' => 'nullable|string|in:vendor,akuru', 'akuru_handling_fee' => 'nullable|numeric|min:0|max:10000',
             'status' => 'required|string|in:active,paused,suspended',
             'commission_rate' => 'nullable|numeric|min:0|max:100',
             'contact_email' => 'nullable|email|max:255',

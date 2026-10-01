@@ -17,7 +17,7 @@ class VendorEarning extends Model
 {
     protected $fillable = [
         'vendor_id', 'order_id', 'gross', 'discount', 'discount_funding', 'delivery_fee', 'commission_rate',
-        'commission_base', 'commission', 'commission_tax_rate', 'commission_tax', 'net', 'cash_collected', 'refunded', 'paid_amount', 'status',
+        'commission_base', 'commission', 'commission_tax_rate', 'commission_tax', 'akuru_handling_fee', 'net', 'cash_collected', 'refunded', 'paid_amount', 'status',
         'order_paid_at', 'available_at', 'paid_at', 'open_payout_id', 'last_payout_id',
     ];
 
@@ -32,6 +32,7 @@ class VendorEarning extends Model
             'commission' => 'decimal:2',
             'commission_tax_rate' => 'decimal:2',
             'commission_tax' => 'decimal:2',
+            'akuru_handling_fee' => 'decimal:2',
             'net' => 'decimal:2',
             'cash_collected' => 'decimal:2',
             'refunded' => 'decimal:2',

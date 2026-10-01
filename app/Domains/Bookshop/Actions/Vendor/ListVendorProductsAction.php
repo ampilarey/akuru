@@ -126,6 +126,8 @@ class ListVendorProductsAction
             'dimensions' => $p->dimensions,
             'track_stock' => $p->track_stock,
             'stock' => (int) $p->stock,
+            // P6a: what the shop has handed to Akuru to pack.
+            'stock_at_akuru' => (int) $p->stock_at_akuru,
             'low_stock_at' => $p->low_stock_at,
             'low_stock' => $p->track_stock && $p->low_stock_at !== null && $p->stock <= $p->low_stock_at,
             'lead_days' => $p->lead_days,

@@ -16,6 +16,8 @@ class UpdateVendorAction
         'contact_email', 'contact_phone', 'address', 'opening_hours', 'office_notes', 'badges',
         // COMMERCE_PARITY_PLAN P4: a trusted shop's listings skip the office's queue.
         'trusted',
+        // P6a: whether Akuru packs and/or delivers for the shop, and its own handling fee.
+        'fulfilment', 'delivery_by', 'akuru_handling_fee',
     ];
 
     public const BADGES = ['verified', 'akuru_partner'];

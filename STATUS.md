@@ -4414,6 +4414,83 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mf. Akuru packs and delivers for a shop, and charges for it (COMMERCE_PARITY_PLAN P6a, 2026-10-01)
+
+The owner: "inventory and delivery handled by the vendor or by Akuru, with an extra
+charge when Akuru does it". P6 is split as the plan allows: P6a here is the data, the
+money, Akuru's courier, the stock at Akuru and the office's packing queue; P6b, drivers
+with proof of delivery, follows. ADR-042 records the fee model.
+
+- **Data** (additive; every default is the old behaviour):
+  - on `vendors`: `fulfilment` and `delivery_by` (`vendor` | `akuru`), and an
+    `akuru_handling_fee` override;
+  - on `orders`: `fulfilled_by`, `akuru_handling_fee` and `delivery_revenue_to`, all
+    fixed when the order is placed;
+  - `vendor_earnings.akuru_handling_fee`, `vendor_commission_invoices.handling` and
+    `products.stock_at_akuru`;
+  - two new stock-log kinds, `received_at_akuru` and `returned_to_vendor`;
+  - a new delivery kind, `akuru_courier`.
+- **Checkout**:
+  - For a shop Akuru delivers for, *Delivered by Akuru* replaces the shop's own Malé
+    courier, at Akuru's fee (default MVR 30). The fee is Akuru's.
+  - For a shop Akuru packs for, *Collect from Akuru* replaces collecting from the shop.
+  - The shop's free-delivery threshold does not touch Akuru's fee.
+- **Money**:
+  - The earning leaves out an Akuru courier fee and takes off the handling fee (default
+    MVR 15, or the shop's own).
+  - The monthly invoice adds *Handling by Akuru*.
+  - An order cancelled in full charges no handling.
+  - The shop's money page shows the handling on each earning.
+- **Stock at Akuru**:
+  - The office records what a shop hands over or takes back. `stock` stays the shop's
+    count; the log says where the stock went.
+  - A paid Akuru-packed order draws from Akuru's shelf, and a cancellation puts it back.
+  - The shop's product list shows "At Akuru: N".
+- **The office**:
+  - `/admin/bookshop/akuru`, linked from the Bookstore office: orders to pack, oldest
+    first, with recipient, address and items, moved through processing, dispatched and
+    delivered.
+  - The shops Akuru works for, with each counted product's stock and what Akuru holds,
+    and a form to record a hand-over.
+  - The three charges, and a CSV.
+  - The shop's editor sets packing, delivery and its own handling fee.
+- **The shop**:
+  - An Akuru-packed order shows "Akuru packs and delivers this order. Handling: MVR N",
+    with no step buttons.
+  - `FulfilVendorOrderAction` refuses the shop such an order, and refuses the office any
+    other (`ResolveVendorScopeAction::forOffice`, `VendorScope::$office`).
+- **Fixed on the way**: drawing Akuru's shelf below zero is an error in MySQL, because the
+  column is unsigned. The draw caps at zero with a `CASE`. Without the cap, the error would
+  have rolled back a wallet payment.
+- **Languages**: EN/DV/AR.
+
+Tests:
+- New `AkuruFulfilmentTest`, 6 tests:
+  - the courier and collection options;
+  - the fee maths: no courier fee for the shop, handling taken off, the net, and the
+    invoice line and total;
+  - the office's queue moves the order through to delivered while the shop is refused,
+    sees it read-only, and the customer is told; the office is refused a shop-packed
+    order;
+  - stock handed over is drawn by a sale and put back by a cancellation, with no handling
+    charged on the cancelled order;
+  - charges and the per-shop settings;
+  - the CSV;
+  - DV/AR.
+- Bookshop and Architecture: 265 green.
+
+Walks:
+- New `akuru.mjs`, 8/8:
+  - the checkout offers *Delivered by Akuru* at MVR 30.00 and no shop courier;
+  - wallet-paid;
+  - the office's page lists the order, and the shelf reads 9 of 10;
+  - processing, dispatched and delivered take it off the queue;
+  - the CSV says delivered;
+  - the customer's order says Delivered.
+- `checkout.mjs` 48/48 and `fulfilment.mjs` 21/21: the shops that pack their own are
+  unchanged.
+- `SmokeMarkerSeeder` adds `SMOKE-Akuru Packs`, with ten notebooks on Akuru's shelf.
+
 ## 5me. Every purchase tells the customer, the seller and the office (COMMERCE_PARITY_PLAN P5, 2026-09-30)
 
 The owner: "SMS and email to vendor, customer and admin on every purchase".
