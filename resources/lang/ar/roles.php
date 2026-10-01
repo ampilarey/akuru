@@ -15,4 +15,5 @@ return [
     'bookshop_manager' => 'مدير المكتبة',
     'none' => 'بدون دور',
     'driver' => 'سائق',
+    'lender' => 'معير كتب',
 ];

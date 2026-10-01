@@ -10,7 +10,9 @@
  * book and themselves; the office pauses the lender with a note the lender
  * reads, resumes them, takes the book down with a note; the lenders CSV.
  * L3: a book offered free to keep — the Free books chip and badge, asked
- * for, accepted without a date, handed over and gone for good.
+ * for, accepted without a date, handed over and gone for good. L4: the
+ * office's roles screen shows Lender ticked; unticking empties the shelf and
+ * the lender reads why; ticking brings it back.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/lending.mjs
@@ -261,6 +263,33 @@ await Promise.all([
 await settle(office, `[data-testid="lender-pause-${lenderId}"]`);
 await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
 check('the office resumes them: the book is back', (await count(guest, `[data-lending-book="${slug}"]`)) === 1);
+// ------------------------------------------------------------ 8b. L4: the Lender role on Manage users
+
+await office.goto(`${BASE}/en/admin/users?search=${encodeURIComponent(LENDER)}`, { waitUntil: 'networkidle' });
+// The search is a substring match (smoke-web-parent@ contains parent@): take the row whose email element is exactly the lender's.
+const emailCell = new RegExp(`^✉\\s*${LENDER.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}$`);
+const lenderUserRow = office.locator('tbody tr').filter({ has: office.locator('p', { hasText: emailCell }) }).first();
+const rolesLink = lenderUserRow.locator('a[href*="/admin/users/"][href$="/roles"]');
+check('Manage users finds the lender and offers their Roles door', (await rolesLink.count()) === 1);
+await rolesLink.click();
+await settle(office, '[data-testid="roles-form"]');
+check('the roles screen shows Lender, ticked by their registration', (await office.locator('[data-testid="role-lender"]').count()) === 1 && (await office.locator('[data-testid="role-lender"]').isChecked()));
+await office.uncheck('[data-testid="role-lender"]');
+await Promise.all([office.waitForResponse((r) => r.url().includes('/roles') && r.request().method() === 'PUT', { timeout: 20000 }).catch(() => {}), office.click('[data-testid="roles-save"]')]);
+await settle(office);
+await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
+await lender.reload({ waitUntil: 'networkidle' });
+check('unticking Lender pauses the lender by the office: the shelf empties and the lender reads why', (await count(guest, `[data-lending-book="${slug}"]`)) === 0 && (await count(lender, '[data-testid="office-paused-note"]')) === 1 && (await lender.locator('[data-testid="office-paused-note"]').innerText()).includes('Lender role'));
+await office.reload({ waitUntil: 'networkidle' });
+await settle(office, '[data-testid="roles-form"]');
+await office.check('[data-testid="role-lender"]');
+const [resumePut] = await Promise.all([office.waitForResponse((r) => r.url().includes('/roles') && r.request().method() === 'PUT', { timeout: 20000 }).catch(() => null), office.click('[data-testid="roles-save"]')]);
+await settle(office);
+await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
+check('ticking it again resumes them: the book is back', (await count(guest, `[data-lending-book="${slug}"]`)) === 1, `PUT ${resumePut?.status() ?? 'none'}: ${resumePut ? JSON.stringify(resumePut.request().postDataJSON?.() ?? resumePut.request().postData()) : ''}`.slice(0, 160));
+
+await office.goto(`${BASE}/en/admin/lending`, { waitUntil: 'networkidle' });
+await settle(office, '[data-testid="books"]');
 const bookRow = office.locator('[data-testid="books"] [data-testid^="book-"]').filter({ hasText: TITLE }).first();
 const bookId = (await bookRow.getAttribute('data-testid'))?.replace('book-', '');
 await office.fill(`[data-testid="book-note-${bookId}"]`, 'SMOKE-Copyrighted photocopy.');

@@ -1907,6 +1907,11 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('lending_books')->whereIn('lender_id', $lenderIds)->delete();
         DB::table('lenders')->whereIn('id', $lenderIds)->delete();
         DB::table('identity_verifications')->whereIn('user_id', $ids)->where('purpose', 'lender')->delete();
+        // L4: the role the registration grants goes too, so the roles screen is checked afresh.
+        $lenderRole = DB::table('roles')->where('name', 'lender')->where('guard_name', 'web')->value('id');
+        if ($lenderRole !== null) {
+            DB::table('model_has_roles')->where('role_id', $lenderRole)->whereIn('model_id', $ids)->delete();
+        }
     }
 
     private function vendorCycle(): void

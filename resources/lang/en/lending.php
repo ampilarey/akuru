@@ -197,6 +197,7 @@ return [
     'notice_office_resumed_body' => 'The office has resumed your lending.',
     'notice_office_removed_title' => 'The office took a book down',
     'notice_office_removed_body' => '“:title” — :note',
+    'office_role_removed_note' => 'The office removed your Lender role on Manage users.',
     'office_pause_lender' => 'Pause lender',
     'office_resume_lender' => 'Resume',
     'office_note_placeholder' => 'Why (the person reads this)',

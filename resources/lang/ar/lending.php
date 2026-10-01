@@ -191,6 +191,7 @@ return [
     'notice_office_resumed_body' => 'استأنف المكتب إعاراتك.',
     'notice_office_removed_title' => 'أزال المكتب كتابًا',
     'notice_office_removed_body' => '«:title» — :note',
+    'office_role_removed_note' => 'أزال المكتب دور المعير عنك في إدارة المستخدمين.',
     'office_pause_lender' => 'إيقاف المعير',
     'office_resume_lender' => 'استئناف',
     'office_note_placeholder' => 'السبب (يقرؤه الشخص)',

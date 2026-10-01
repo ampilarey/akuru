@@ -4414,6 +4414,40 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5my. The Lender role (LENDING_AND_USED_BOOKS_PLAN L4, 2026-10-01)
+
+The owner, on *Manage users › Roles*, with Writer and Vendor ticked for a
+person who lends: "still no lender role". Lending had no role on purpose
+(anyone registers at `/my-lending`), so the roles screen — the office's
+list of the jobs a person does — said nothing about it.
+
+- **A `lender` role**, carrying no permission. Registering on My lending
+  grants it, so the roles screen shows *Lender* ticked beside *Vendor*
+  and *Writer*; a migration grants it to anyone already registered.
+- **The office's hand through the role.** Unticking *Lender* for a
+  registered lender pauses them as the office does (books off the shelf,
+  `office_paused`, a note they read: "The office removed your Lender role
+  on Manage users"); ticking it again resumes them. For a person who never
+  registered the role is only an invitation: they get a *Lending*
+  workspace (home: My lending, plus the shelf) and no lender row until
+  they register.
+- **The gates do not move**: a lender's books still need the office's ID
+  check (D5), and a lender is still not a vendor.
+- `RoleLabels::KNOWN` + `lender`; `roles.php`, `nav.php` ×3; a `lending`
+  workspace for the role with a `lender` bar (*My lending*, *Books to
+  borrow or keep*).
+
+Tests: new `LenderRoleTest` — no role before registering and the screen
+offers it; the role after; a verified lender's book on the shelf; the
+office unticks → paused by the office with the note, shelf empty, cannot
+self-resume, told; ticks → resumed, book back; an invited person gets the
+role, no row, and the Lending workspace lands on My lending. Lending,
+Identity, Nav, Admin, Architecture suites green.
+
+Walk: `lending.mjs` grows from 42 to **46/46** with the office's roles screen — *Lender* ticked for
+the registered lender; untick → the shelf empties and the lender reads
+why; tick → back.
+
 ## 5mx. Lending: the owner's two decisions (2026-10-01)
 
 Asked after L3, the owner: "1. Need approval 2. No money". Both are what

@@ -6,6 +6,8 @@ use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Lending\Models\Lender;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * A person becomes a lender, or changes how they appear (L1): the name
@@ -23,12 +25,23 @@ class RegisterLenderAction
     {
         $text = fn (mixed $v, int $max) => is_string($v) && trim($v) !== '' ? mb_substr(trim($v), 0, $max) : null;
 
-        return Lender::query()->updateOrCreate(['user_id' => $userId], [
+        $lender = Lender::query()->updateOrCreate(['user_id' => $userId], [
             'display_name' => (string) $text($data['display_name'] ?? null, 120),
             'island' => $text($data['island'] ?? null, 120),
             'about' => $text($data['about'] ?? null, 1000),
             'id_required' => (bool) ($data['id_required'] ?? false),
         ]);
+        // L4: the person wears the `lender` role from here, so Manage users
+        // shows it beside Vendor and Writer; the office may take it away.
+        $userModel = config('auth.providers.users.model');
+        $user = $userModel::query()->whereKey($userId)->first();
+        if ($user !== null && ! $user->hasRole('lender')) {
+            Role::findOrCreate('lender', 'web');
+            $user->assignRole('lender');
+            app(PermissionRegistrar::class)->forgetCachedPermissions();
+        }
+
+        return $lender;
     }
 
     /** L2: the lender pauses or resumes themselves — unless the office paused them. */

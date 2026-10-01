@@ -227,4 +227,7 @@ return [
     // COMMERCE_PARITY_PLAN P6b.
     'deliveries' => 'އަހަރެންގެ ޑެލިވަރީތައް',
     'workspace_deliveries' => 'ޑެލިވަރީ',
+    'my_lending' => 'އަހަރެންގެ ދޫކުރުން',
+    'lending_shelf' => 'ދަރަންޏަށް ނުވަތަ ގެންދެވޭ ފޮތްތައް',
+    'workspace_lending' => 'ފޮތް ދޫކުރުން',
 ];
