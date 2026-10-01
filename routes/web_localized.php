@@ -895,6 +895,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('complaints', [\App\Domains\Bookshop\Http\Controllers\AdminComplaintController::class, 'index'])->name('admin.bookshop.complaints');
         Route::get('complaints/export', [\App\Domains\Bookshop\Http\Controllers\AdminComplaintController::class, 'export'])->name('admin.bookshop.complaints.export');
         Route::post('complaints/{complaint}/reply', [\App\Domains\Bookshop\Http\Controllers\AdminComplaintController::class, 'reply'])->name('admin.bookshop.complaints.reply')->whereNumber('complaint');
+        // COMMERCE_PARITY_PLAN P7b: SMS offers to customers who asked for them.
+        Route::get('campaigns', [\App\Domains\Bookshop\Http\Controllers\AdminSmsCampaignController::class, 'index'])->name('admin.bookshop.campaigns');
+        Route::get('campaigns/export', [\App\Domains\Bookshop\Http\Controllers\AdminSmsCampaignController::class, 'export'])->name('admin.bookshop.campaigns.export');
+        Route::post('campaigns', [\App\Domains\Bookshop\Http\Controllers\AdminSmsCampaignController::class, 'send'])->name('admin.bookshop.campaigns.send')->middleware('throttle:10,1,shop-campaign-send');
+        Route::post('campaigns/settings', [\App\Domains\Bookshop\Http\Controllers\AdminSmsCampaignController::class, 'settings'])->name('admin.bookshop.campaigns.settings');
         // COMMERCE_PARITY_PLAN P4: listings awaiting the office's approval.
         Route::post('listings/{product}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'decide'])->name('admin.bookshop.listings.decide')->whereNumber('product');
         Route::get('listings/export', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'export'])->name('admin.bookshop.listings.export');

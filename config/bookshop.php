@@ -239,6 +239,15 @@ return [
     ],
 
     /*
+     * COMMERCE_PARITY_PLAN P7b: SMS offers. What one message costs and the
+     * month's budget, until the office sets its own on the campaigns page.
+     */
+    'campaigns' => [
+        'sms_rate' => (float) env('BOOKSHOP_SMS_RATE', 0.25),
+        'monthly_budget' => (float) env('BOOKSHOP_SMS_MONTHLY_BUDGET', 500),
+    ],
+
+    /*
      * B9a: public vendor onboarding (§3 "apply → approve"). Whether the
      * "Open a shop" form is open is the office's switch (Settings,
      * `/admin/bookshop`); this is its value until the office sets one.

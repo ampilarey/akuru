@@ -45,6 +45,7 @@ return [
     'confirm-password' => 'ConfirmablePasswordController@store — proves your own password.',
     'funnel-events' => 'FunnelEventController@store — public analytics beacon.',
     'daily/sms-opt-out' => 'DailyUnsubscribeController@smsOptOut — unsubscribe must work without a login.',
+    'shop/sms-opt-out' => 'ShopSmsController@keyword — COMMERCE_PARITY_PLAN P7b: a STOP reply to the Bookstore\'s SMS offers; unsubscribe without a login. It only ever stops offers.',
     'prayer-times/sms-opt-out' => 'PrayerTimesController@smsOptOut — same: unsubscribe without a login.',
     'payments/bml/callback' => 'PaymentController@callback — BML webhook; authenticity is the signature, not a session (rule 12).',
 

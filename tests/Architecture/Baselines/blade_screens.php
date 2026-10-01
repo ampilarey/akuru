@@ -251,6 +251,8 @@ return [
     'public/shop/wishlist.blade.php',
     // BOOKSHOP_PLAN B9c — leave a shop's newsletter, from the link in its emails (no sign-in).
     'public/shop/newsletter.blade.php',
+    // COMMERCE_PARITY_PLAN P7b — stop the Bookstore's SMS offers, from the link in every offer (no sign-in); the newsletter page's twin.
+    'public/shop/sms-stop.blade.php',
     // BOOKSHOP_PLAN B9d — a customer's bulk quotes, asked from the Blade cart
     // and accepted back into it; siblings of My orders for the same reason.
     'public/shop/quotes/index.blade.php',

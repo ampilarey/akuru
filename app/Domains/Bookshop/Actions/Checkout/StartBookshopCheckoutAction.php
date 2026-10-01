@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Actions\Checkout;
 
 use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
+use App\Domains\Bookshop\Actions\ShopSmsCampaignAction;
 use App\Domains\Bookshop\Enums\CheckoutPaymentMethod;
 use App\Domains\Bookshop\Enums\CheckoutStatus;
 use App\Domains\Bookshop\Enums\DeliveryKind;
@@ -257,6 +258,10 @@ class StartBookshopCheckoutAction
         });
 
         $checkout = $result;
+        // COMMERCE_PARITY_PLAN P7b: offers by SMS, only to someone who ticked the box — at the order's number.
+        if (! empty($data['sms_offers'])) {
+            app(ShopSmsCampaignAction::class)->optIn($userId, (string) ($checkout->orders()->first()?->address_snapshot['phone'] ?? ''));
+        }
         // B9e: a step of each shop's funnel.
         app(RecordShopEventAction::class)->checkout($checkout->orders()->get());
         if (in_array($checkout->payment_method, [CheckoutPaymentMethod::Wallet, CheckoutPaymentMethod::None], true)) {
