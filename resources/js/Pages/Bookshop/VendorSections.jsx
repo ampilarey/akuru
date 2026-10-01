@@ -560,6 +560,11 @@ export default function VendorSections({ t, vendor, designer, preview_url, publi
         <AppShell title={t.sections_title}>
             <FormErrors errors={errors} className="mb-4" />
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
+            {d.draft_dirty && !d.moderation.held && (
+                <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="draft-not-live">
+                    <strong>{t.draft_not_live}</strong>{!isOwner && <> {t.draft_owner_publishes}</>}
+                </p>
+            )}
             {d.moderation.held && <p className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-red-800" data-testid="moderation-held"><strong>{t.storefront_held}</strong> {d.moderation.note}</p>}
             {!d.moderation.held && d.moderation.note && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-amber-900" data-testid="moderation-note"><strong>{t.changes_required}</strong> {d.moderation.note}</p>}
             {d.moderation.locked_types.length > 0 && <p className="mb-4 text-sm text-red-800" data-testid="locked-types">{t.locked_types_notice.replace(':types', d.moderation.locked_types.map((k) => t[`section_${k}`] || k).join(', '))}</p>}

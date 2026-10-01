@@ -176,6 +176,11 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
         <AppShell title={t.designer_title}>
             <FormErrors errors={errors} className="mb-4" />
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
+            {d.draft_dirty && (
+                <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="draft-not-live">
+                    <strong>{t.draft_not_live}</strong>{!isOwner && <> {t.draft_owner_publishes}</>}
+                </p>
+            )}
             <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold" data-testid="designer-heading">{t.designer_title} · {vendor.name}</h1>

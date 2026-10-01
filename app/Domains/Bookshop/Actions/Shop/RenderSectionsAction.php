@@ -44,7 +44,7 @@ class RenderSectionsAction
             }
             $settings = (array) ($section['settings'] ?? []);
             $data = match ($section['type']) {
-                'hero' => $this->hero($vendor, $settings),
+                'hero' => $this->hero($vendor, $settings, $draft),
                 'announcement' => $this->announcement($vendor, $settings, $draft),
                 'featured_products' => ['cards' => $this->cards($this->ownProducts($vendor)->whereIn('id', (array) ($settings['products'] ?? [])), (array) ($settings['products'] ?? [])), 'layout' => $settings['layout'] ?? 'grid'],
                 'collection' => $this->collection($vendor, $settings),
@@ -130,12 +130,13 @@ class RenderSectionsAction
     /**
      * @return array<string, mixed>
      */
-    private function hero(Vendor $vendor, array $settings): array
+    private function hero(Vendor $vendor, array $settings, bool $draft): array
     {
         return [
             'subheading' => $this->text($settings, 'subheading'),
             'images' => array_values(array_filter(array_map(fn ($id) => $this->image($id, ResolveStorefrontAction::BANNER_WIDTH), (array) ($settings['images'] ?? [])))),
-            'buttons' => $this->links($vendor, (array) ($settings['buttons'] ?? []), true),
+            // §5mo: a button to a product since taken off sale, or to a page not yet published, is left off the public page like any other link.
+            'buttons' => $this->links($vendor, (array) ($settings['buttons'] ?? []), $draft),
             'align' => $settings['align'] ?? 'start',
         ];
     }
@@ -237,6 +238,10 @@ class RenderSectionsAction
         $alts = VendorStorefrontImage::query()->where('vendor_id', $vendor->id)->whereIn('media_file_id', $ids)->pluck('alt', 'media_file_id');
         $out = [];
         foreach ($ids as $id) {
+            // §5mo: an image removed from the library since the section was saved shows nothing, as the library promises.
+            if (! $alts->has((int) $id)) {
+                continue;
+            }
             $large = $images->execute((int) $id, self::IMAGE_WIDTH);
             if ($large !== null) {
                 $out[] = ['card' => $images->execute((int) $id, ShopPresenter::CARD_WIDTH), 'large' => $large, 'alt' => $alts->get((int) $id) ?? ''];

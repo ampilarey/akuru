@@ -4414,6 +4414,86 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mo. Storefront freshness: every edit without a publish step is live at once (2026-10-01)
+
+The owner: "some vendors told me the edits they make don't come live". An audit
+of the storefront designer (B4/B5), the pages, collections and image library,
+the shop's settings and the office's vendor edits, against the published
+storefront's cache (§10, ten minutes per shop and language).
+
+**What was wrong.** The cache was cleared only by a publish, a roll-back, a
+moderation step, a CSS decision and a product save. But the cached home also
+draws in things that have **no publish step** and are meant to be live the
+moment they are saved:
+
+| Edit | Where it shows on the cached page | Cleared before? |
+|---|---|---|
+| a collection's name, products, rule, on/off, deletion | the Collection section, the menu | no |
+| a page's title, deletion | the page itself, the menu | no |
+| an image's alt text, removal from the library | the gallery, the story image | no |
+| the returns window and conditions (shop settings) | Delivery & returns | no |
+| the delivery methods | Delivery & returns | no |
+| the office's edit of a shop's name, tagline, badges | the storefront head | no |
+
+So a vendor renamed a collection, opened the shop page, and saw the old name
+for up to ten minutes — "my edit didn't come live". `StorefrontSectionsTest`
+cleared the cache by hand in two places (a deleted page, a deactivated
+collection) to pass, which is how the gap stayed hidden.
+
+Three smaller findings alongside:
+- a publish cleared the cache **inside** its transaction, so a visitor between
+  the clear and the commit re-cached the old copy for ten more minutes;
+- the hero's buttons were always resolved as the draft, so a button to a product
+  since taken off sale stayed on the public page and led to a 404; the gallery
+  kept showing an image removed from the library;
+- the designer's only word on an unpublished draft was a small grey "the draft
+  differs from what is published"; it did not count a page's draft, and told
+  staff (who cannot publish) nothing.
+
+**Fixed:**
+- `ManageVendorCollectionsAction` (save, delete), `ManageVendorPagesAction`
+  (update, delete), `UploadStorefrontImagesAction` (describe, remove),
+  `SaveVendorShopSettingsAction`, `SaveVendorDeliveryMethodsAction` and
+  `UpdateVendorAction` clear the shop's storefront cache.
+- `PublishStorefrontAction` clears it after the commit, for publish and
+  roll-back alike.
+- `RenderSectionsAction`: the hero resolves its links like every other section;
+  the gallery skips images the library no longer holds.
+- Both designer screens show an amber notice while the saved draft differs from
+  what is published — *Your saved changes are a draft. Customers will see them
+  when you publish.* — and, to staff, *Only the shop owner can publish.* The
+  sections screen counts a page's draft too. EN/DV/AR.
+
+**Not a defect, but the other way an edit "does not come live":** under P4's
+decision D4 a live product edited in what it *is* goes back to the office and
+is **off the shelf until approved**. Recorded as audit finding 27 and under
+*What the owner still owns* in `docs/BOOKSHOP_PLAN.md`, with the alternative
+(keep the last approved version on sale while the edit waits) costed at a day.
+Until the office marks a shop *trusted*, it should check
+`/admin/bookshop#listings` daily.
+
+Also noted (finding 26): `public/.htaccess` sends `no-store` on every response,
+assets included — not a cause of staleness, but a cost on every visit. Left for
+a later slice.
+
+Tests:
+- `StorefrontSectionsTest`: the two hand-clears are gone; two new tests —
+  every edit above shows on the live page at once (collection renamed and
+  deactivated, image alt and removal, returns window and conditions, delivery
+  methods, page title and deletion, the office's rename, a product off sale
+  taking its hero button); and the designer's "not live" flag, a page's draft
+  included, in three languages.
+- Storefront suites (designer, sections, CSS, gallery): 19 green.
+- Architecture, Nav, Admin, Routes and Bookshop: see below.
+
+Walk:
+- `sections.mjs`, now 25/25: after the draft saves the designer says it is not
+  live yet; after the publish the notice goes; after the publish the owner
+  renames the collection and a guest sees the new name at once, with no
+  publish. The walk also waited on "a flash" that the image upload had already
+  left on the page, so "the draft saves" passed before the save landed; it now
+  waits for the save's own words.
+
 ## 5mn. Pre-orders (COMMERCE_PARITY_PLAN P8d, 2026-10-01)
 
 This is the last slice of P8. Deposits moved to P8c (§5mm), so P8d covers

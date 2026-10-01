@@ -475,6 +475,12 @@ recommendation; **note** is a design fact worth knowing, not a defect.
 | 19 | **Queued mail**: every Bookstore email is a queued mailable; production has no queue worker (OWNER_ACTIONS item 3). Customers and shops get in-app notices only until it runs. | note (owner action) | Already recorded; repeated here because the Bookstore now sends eight kinds of email. |
 | 20 | A **discount code on a quoted line** (B9d) applies on top of the quoted price. | note | Both are the shop's own money to give; if a shop objects, exclude quoted lines from vendor-funded codes. |
 | 21 | `contain: paint` on a storefront with live CSS (B10c) clips anything a shop positions outside its own box. | note | Intended — it is what keeps the frame safe; documented in ADR-039. |
+| 22 | **Edits with no publish step did not reach the live page for up to ten minutes** (2026-10-01, the owner: "vendors say the edits they make don't come live"). The published storefront is cached per shop and language (§10) and only a publish or a moderation step cleared it — but a collection's name, products or on/off, a page's title or deletion, an image's alt text or removal, the returns window and conditions, the delivery methods and the office's edits to a shop's name, tagline and badges are all drawn into that cached page and have no publish step. `StorefrontSectionsTest` even cleared the cache by hand in two places to pass. | **high** (confusion: a save that looks ignored) | **Fixed 2026-10-01** (STATUS §5mo): every one of those saves clears the shop's cache; the two hand-clears are gone from the test and a new test covers each path. |
+| 23 | **Publish cleared the cache inside its transaction**: a visitor arriving between the clear and the commit re-cached the old copy for another ten minutes, so a publish could "not take". | medium (rare) | **Fixed 2026-10-01**: cleared after the commit. |
+| 24 | **Hero buttons were always drawn as the draft**, so a button to a product since taken off sale stayed on the public page and led to a 404; and a **gallery kept showing an image removed from the library**, against the library's own promise. | low | **Fixed 2026-10-01**: the hero resolves its links like every other section; the gallery skips what the library no longer holds. |
+| 25 | The designer's only word on an unpublished draft was a small grey "the draft differs from what is published", and it ignored the pages' drafts; a staff member (who cannot publish) got no hint that an owner must. | medium (confusion) | **Fixed 2026-10-01**: an amber notice on both designer screens — *Your saved changes are a draft. Customers will see them when you publish.* — that counts a page's draft too, and tells staff *Only the shop owner can publish.* EN/DV/AR. |
+| 26 | `public/.htaccess` sends `Cache-Control: no-cache, no-store` on **every** response, including the built CSS, JS and images ("Prevent caching issues in development"). It rules out the browser as a cause of stale pages — and makes every visit re-download every asset. | note (performance) | Left as is in this slice; one line to scope it to HTML when the owner wants the speed. |
+| 27 | A **live product edited in what it is** (title, description, category, photos, variant names) goes back to the office's queue (P4, decision D4) and **leaves the shelf while it waits** — the vendor sees "Waiting for approval", the customer sees nothing. This is the owner's decision working as decided, but it is the other way a shop's edit "does not come live". | decision | **Owner's call** (see *What the owner still owns*): keep the old version on sale while the new one waits, or keep taking it down. |
 
 ### What the owner still owns
 
@@ -482,6 +488,23 @@ The queue worker (OWNER_ACTIONS 3); DNS and cPanel for the shop
 subdomain and any shop's domain (§5hl); a Meilisearch server if the
 catalogue grows (§5hk); paid gallery themes (decision 19, undecided);
 Fitrah's remaining details (`docs/vendors/FITRAH.md`).
+
+**Re-approval takes a product off the shelf (audit finding 27, 2026-10-01).**
+Under P4's decision D4, a live product whose title, description, category,
+photos or variant names change goes back to the office and is hidden until
+approved. Two ways to run it; the default is what ships today:
+
+- *Keep as is (default)*: the edited product is off sale until the office
+  approves. Safe — nothing unreviewed is ever shown — but a shop that fixes a
+  typo loses the sale until someone at the office looks.
+- *Keep the last approved version on sale while the edit waits*: one more
+  column (`approved_snapshot`) holding the last approved title, texts,
+  category and photo list; the public page reads the snapshot while
+  `pending_review`, the office compares the two. A day's slice. Sales
+  continue; the office still sees every change before customers do.
+
+Either way, the office should check `/admin/bookshop#listings` daily until
+the shops it trusts are marked *trusted* (then their edits skip the queue).
 
 ---
 

@@ -33,7 +33,7 @@ class PublishStorefrontAction
     {
         $this->owner($scope);
 
-        return DB::transaction(function () use ($scope, $note) {
+        $storefront = DB::transaction(function () use ($scope, $note) {
             $storefront = VendorStorefront::query()->where('vendor_id', $scope->vendorId)->lockForUpdate()->firstOrFail();
             $vendor = Vendor::query()->findOrFail($scope->vendorId);
             if ($storefront->isHeld()) {
@@ -74,13 +74,16 @@ class PublishStorefrontAction
                 'pages' => $pages->map(fn (VendorPage $p) => ['id' => $p->id, 'slug' => $p->slug, 'title' => $p->title, 'title_dv' => $p->title_dv, 'title_ar' => $p->title_ar, 'sections' => (array) ($p->draft_sections ?? []), 'seo' => (array) ($p->seo ?? [])])->values()->all(),
             ], $scope->userId, trim((string) $note) ?: null);
         });
+        $this->forget($storefront);
+
+        return $storefront;
     }
 
     public function rollBack(VendorScope $scope, int $versionId): VendorStorefront
     {
         $this->owner($scope);
 
-        return DB::transaction(function () use ($scope, $versionId) {
+        $storefront = DB::transaction(function () use ($scope, $versionId) {
             $storefront = VendorStorefront::query()->where('vendor_id', $scope->vendorId)->lockForUpdate()->firstOrFail();
             if ($storefront->isHeld()) {
                 throw ValidationException::withMessages(['storefront' => __('shop.error_storefront_held')]);
@@ -103,6 +106,20 @@ class PublishStorefrontAction
 
             return $this->record($storefront, $snapshot, $scope->userId, __('shop.rolled_back_note', ['number' => $version->number]));
         });
+        $this->forget($storefront);
+
+        return $storefront;
+    }
+
+    /**
+     * The public cache goes only once the new copy is committed. Cleared
+     * inside the transaction, a visitor arriving between the clear and the
+     * commit would read the old copy and cache it for another ten minutes —
+     * the vendor's publish "didn't take".
+     */
+    private function forget(VendorStorefront $storefront): void
+    {
+        app(ResolveStorefrontAction::class)->forget((int) $storefront->vendor_id);
     }
 
     /**
@@ -129,7 +146,6 @@ class PublishStorefrontAction
             'published_by' => $userId,
             'moderation_note' => null,
         ]);
-        app(ResolveStorefrontAction::class)->forget($storefront->vendor_id);
 
         return $storefront->refresh();
     }

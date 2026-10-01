@@ -161,8 +161,11 @@ await addSection('video');
 await vendor.fill('[data-testid="home-3-url"]', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ');
 check('four sections are arranged: hero, featured products, FAQ, video', (await count(vendor, '[data-testid^="home-row-"]')) === 4);
 await vendor.click('[data-testid="save-sections"]');
-await settle(vendor, '[data-testid="flash-success"]');
-check('the draft saves', (await count(vendor, '[data-testid="flash-success"]')) === 1 && (await count(vendor, '[data-testid^="home-row-"]')) === 4, (await text(vendor)).slice(0, 120));
+// The image upload's flash is still on the page, so wait for the save's own words, not for "a flash".
+await vendor.locator('[data-testid="flash-success"]', { hasText: 'Draft saved' }).waitFor({ timeout: 20000 }).catch(() => {});
+await settle(vendor);
+check('the draft saves', (await vendor.locator('[data-testid="flash-success"]').innerText().catch(() => '')).includes('Draft saved') && (await count(vendor, '[data-testid^="home-row-"]')) === 4, (await text(vendor)).slice(0, 120));
+check('and the designer says the saved draft is not live yet (§5mo)', (await count(vendor, '[data-testid="draft-not-live"]')) === 1);
 
 await vendor.frameLocator('[data-testid="preview-frame"]').locator('[data-testid="storefront-sections"]').waitFor({ timeout: 20000 }).catch(() => {});
 const previewBody = await frameText(vendor);
@@ -220,6 +223,7 @@ await vendor.fill('[data-testid="version-note"]', 'Sections');
 await vendor.click('[data-testid="publish"]');
 await settle(vendor, '[data-testid="flash-success"]');
 check('the owner publishes', (await text(vendor)).includes('Published'), (await text(vendor)).slice(0, 120));
+check('and the "not live yet" notice goes', (await count(vendor, '[data-testid="draft-not-live"]')) === 0);
 
 await guest.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
 const home = await text(guest);
@@ -232,6 +236,15 @@ check('the About page is live at /p/about-us, inside the storefront', about.incl
 
 await guest.goto(`${BASE}/en/shop/fitrah/starter-kit`, { waitUntil: 'networkidle' });
 check('the collection page lists its two products', (await count(guest, '[data-testid="collection-title"]')) === 1 && (await count(guest, `[data-testid="shop-grid"] [data-product="${BOOK}"]`)) === 1 && (await count(guest, `[data-testid="shop-grid"] [data-product="${PUZZLE}"]`)) === 1 && (await count(guest, '[data-testid="shop-grid"] [data-product]')) === 2, `${await count(guest, '[data-testid="shop-grid"] [data-product]')} products`);
+
+// §5mo: a collection has no publish step — renaming it changes the live home at once, cache or no cache.
+await vendor.click('[data-testid="tab-collections"]');
+await vendor.click('[data-testid="edit-collection-starter-kit"]');
+await vendor.fill('[data-testid="collection-name"]', 'SMOKE-Grade 1 kit');
+await vendor.click('[data-testid="save-collection"]');
+await vendor.locator('[data-testid="collection-row-starter-kit"]', { hasText: 'SMOKE-Grade 1 kit' }).waitFor({ timeout: 20000 }).catch(() => {});
+await guest.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
+check('renaming the collection shows on the live page at once, without a publish', (await guest.locator('[data-section-type="collection"]').innerText().catch(() => '')).includes('SMOKE-Grade 1 kit'), (await guest.locator('[data-section-type="collection"]').innerText().catch(() => '')).replace(/\s+/g, ' ').slice(0, 120));
 
 await guest.goto(`${BASE}/en/shop/products/${BOOK}`, { waitUntil: 'networkidle' });
 const jsonLd = await guest.locator('script[type="application/ld+json"]').allInnerTexts();

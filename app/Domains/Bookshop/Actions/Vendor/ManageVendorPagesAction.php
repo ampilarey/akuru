@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Vendor;
 
+use App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\VendorPage;
 use Illuminate\Support\Str;
@@ -13,7 +14,9 @@ use Illuminate\Validation\ValidationException;
  * `/shop/<vendor>/p/<slug>`, built from the same sections as the home.
  * The slug is fixed at creation (it is the page's address, and the menu
  * points at it); the titles and order may change. A page's draft goes
- * public with the storefront's next publish.
+ * public with the storefront's next publish — but its title is live at
+ * once, and so is its absence, so renaming or deleting a page clears the
+ * published storefront's cache (§5mo).
  */
 class ManageVendorPagesAction
 {
@@ -66,6 +69,7 @@ class ManageVendorPagesAction
     {
         $page = VendorPage::query()->where('vendor_id', $scope->vendorId)->whereKey($pageId)->firstOrFail();
         $page->update($this->titles($data) + ['sort_order' => is_numeric($data['sort_order'] ?? null) ? max(0, (int) $data['sort_order']) : $page->sort_order]);
+        app(ResolveStorefrontAction::class)->forget($scope->vendorId);
 
         return $page->refresh();
     }
@@ -78,7 +82,10 @@ class ManageVendorPagesAction
 
     public function delete(VendorScope $scope, int $pageId): void
     {
+        // Cleared before the row goes, so the page's own cached copy is among the keys found.
+        app(ResolveStorefrontAction::class)->forget($scope->vendorId);
         VendorPage::query()->where('vendor_id', $scope->vendorId)->whereKey($pageId)->firstOrFail()->delete();
+        app(ResolveStorefrontAction::class)->forget($scope->vendorId);
     }
 
     /**
