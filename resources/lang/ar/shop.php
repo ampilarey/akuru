@@ -1896,4 +1896,9 @@ return [
     'receipt_link_total' => 'المدفوع إجمالًا: :amount',
     'receipt_link_track' => 'أين هذا الطلب؟',
     'receipt_link_private' => 'يمكن لأي شخص لديه هذا الرابط قراءة الإيصال؛ ولا يظهر فيه عنوان ولا هاتف.',
+    // COMMERCE_PARITY_PLAN P8b: the driver is told.
+    'notice_driver_assigned_title' => 'توصيل لك: :number',
+    'notice_driver_assigned_body' => 'الطلب :number لتوصله أنت (:where). افتح توصيلاتك لترى العنوان والمنتجات.',
+    'notice_driver_unassigned_title' => 'لم يعد :number لك',
+    'notice_driver_unassigned_body' => 'أعطى المكتب الطلب :number لسائق آخر.',
 ];

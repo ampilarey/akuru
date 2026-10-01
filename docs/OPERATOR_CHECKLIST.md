@@ -334,8 +334,11 @@ Needs a machine with Android Studio / Xcode (see `docs/MOBILE.md`):
       pronunciation, BML return-URL landing back inside the shell, offline
       page, RTL/Thaana fonts.
 - [ ] Record results in STATUS.md, then signing keys and store listings.
-- [ ] Push notifications stay future: needs FCM/APNs keys + a token
-      endpoint before wiring.
+- [ ] Push notifications: sending is built (#551, STATUS §5jr; P8b §5ml) —
+      every in-app notice also goes to the person's registered phones. To
+      turn it on, set `PUSH_DRIVER=fcm`, `FCM_PROJECT_ID` and
+      `FCM_CREDENTIALS_PATH` (a service-account JSON outside the web root) as
+      in MOBILE.md; rehearse with `PUSH_DRIVER=log` on staging first.
 
 ---
 

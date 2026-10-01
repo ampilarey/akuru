@@ -9,7 +9,7 @@
  *      at Akuru's fee, and no shop courier; pays from the wallet;
  *   2. the office's Akuru page lists the order to pack, and the shelf one
  *      down; the office starts it and gives it to the seeded driver (P6b);
- *   3. the driver, on a phone, marks it picked up and delivered with a
+ *   3. the driver, told in the app it is theirs (P8b), on a phone marks it picked up and delivered with a
  *      photo; the office can open the photo, the customer cannot;
  *   4. the customer's order says Delivered; the CSV has it.
  *
@@ -122,6 +122,10 @@ check('the office starts it and gives it to the driver', /SMOKE Driver/.test(awa
 const driver = await signIn(DRIVER);
 check('the driver signs in to their deliveries', /\/deliveries/.test(driver.url()) || (await driver.locator('a[href$="/deliveries"]').count()) > 0, driver.url().replace(BASE, ''));
 await driver.setViewportSize({ width: 390, height: 844 });
+// P8b: the driver was told the order is theirs (in the app; a registered phone gets it as a push).
+await driver.goto(`${BASE}/en/portal/notifications`, { waitUntil: 'networkidle' });
+const driverNotices = (await driver.innerText("body")).replace(/\s+/g, " ");
+check("the driver was told the delivery is theirs", driverNotices.includes(`A delivery for you: ${orderNumber}`), driverNotices.slice(0, 160));
 await driver.goto(`${BASE}/en/deliveries`, { waitUntil: 'networkidle' });
 const card = driver.locator(`[data-testid="delivery-${orderNumber}"]`);
 check('the driver sees the delivery with the address and what to hand over', (await card.count()) === 1 && /M\. Smoke Villa/.test(await card.innerText()) && /Akuru-Packed Notebook/.test(await card.innerText()), (await card.innerText().catch(() => 'not listed')).replace(/\s+/g, ' ').slice(0, 140));

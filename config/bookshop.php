@@ -202,7 +202,7 @@ return [
      * only sends where `SMS_LIVE` allows it.
      */
     'notices' => [
-        'customer_events' => ['order_paid', 'slip_decided', 'order_progress', 'order_cancelled', 'return_decided', 'refund', 'back_in_stock', 'cart_reminder', 'quote_ready', 'complaint_reply'],
+        'customer_events' => ['order_paid', 'slip_decided', 'order_progress', 'order_cancelled', 'return_decided', 'refund', 'back_in_stock', 'cart_reminder', 'quote_ready', 'complaint_reply', 'driver_assigned'],
         'vendor_events' => ['new_order', 'customer_cancelled', 'return_requested', 'low_stock', 'review', 'question', 'payout_decided', 'invoice', 'quote_requested'],
         'vendor_defaults' => [
             // COMMERCE_PARITY_PLAN P5: a paid order reaches the shop by SMS too.

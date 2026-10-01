@@ -106,7 +106,7 @@ supplier purchasing, shifts.
 | F10 | **On a Library sale the writer and the office hear nothing**; the reader gets `purchase_ready`. | `GrantLibraryAccessOnPaymentConfirmed`, `config/library.php` `notices.events` (`new_sale` is listed but never sent) |
 | F11 | **SMS is not live on production.** `SMS_LIVE=false` by default, `LogSmsSender` bound otherwise; OWNER_ACTIONS item 1's OTP box has never been ticked. Everything in §1's customer model and F9–F10 depends on it. | `NotificationsServiceProvider` line 38, `config/services.php` `sms.live`, `.env.example` line 79 |
 | F12 | **Akuru never holds stock and never delivers.** `DeliveryKind::CollectAkuru` is a free counter pick-up (2 days). No fulfilment-by-Akuru flag, no Akuru stock location, no drivers, no fee. | `DeliveryKind`, `config/bookshop.php` `delivery_template`, `vendors` and `vendor_delivery_methods` migrations |
-| F13 | **The customer features Bake & Grill has that Akuru lacks:** phone-first sign-in (F4), SMS tracking links and receipts, complaints the office sees, SMS campaigns to shop customers with opt-out, customer tags and follow-up notes, credit accounts, drivers with proof of delivery, push *sending* (device registration exists, Mobile A). Akuru already has the rest of §1's list. | routes in `routes/web_public.php`, `docs/BOOKSHOP_PLAN.md` §4–§5, §16 |
+| F13 | **The customer features Bake & Grill has that Akuru lacks:** phone-first sign-in (F4), SMS tracking links and receipts, complaints the office sees, SMS campaigns to shop customers with opt-out, customer tags and follow-up notes, credit accounts, drivers with proof of delivery, push *sending* (device registration exists, Mobile A). *(Corrected 2026-10-01, P8b: push sending already existed — #551 fans every in-app notice out to registered phones; what was missing was a notice for the driver.)* Akuru already has the rest of §1's list. | routes in `routes/web_public.php`, `docs/BOOKSHOP_PLAN.md` §4–§5, §16 |
 
 ---
 
@@ -407,7 +407,7 @@ SMS link. Each is its own slice when the owner asks; recorded in
 BACKLOG C13.
 
 The owner asked for it on 2026-10-01. Four slices: **P8a receipts by SMS
-link — shipped 2026-10-01, STATUS §5mk**; P8b push sending; P8c credit
+link — shipped 2026-10-01, STATUS §5mk**; **P8b push — shipped 2026-10-01, STATUS §5ml** (sending already existed since #551; the slice tells the driver); P8c credit
 accounts for schools; P8d pre-orders with a deposit.
 
 ---

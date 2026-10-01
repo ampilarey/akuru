@@ -1900,4 +1900,9 @@ return [
     'receipt_link_total' => 'Paid in all: :amount',
     'receipt_link_track' => 'Where is this order?',
     'receipt_link_private' => 'Anyone with this link can read this receipt; it shows no address or phone.',
+    // COMMERCE_PARITY_PLAN P8b: the driver is told.
+    'notice_driver_assigned_title' => 'A delivery for you: :number',
+    'notice_driver_assigned_body' => 'Order :number is yours to deliver (:where). Open your deliveries to see the address and items.',
+    'notice_driver_unassigned_title' => ':number is no longer yours',
+    'notice_driver_unassigned_body' => 'The office gave order :number to another driver.',
 ];
