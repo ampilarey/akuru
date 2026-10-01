@@ -1056,11 +1056,13 @@ class SmokeMarkerSeeder extends Seeder
      */
     private function sensitiveRecords(AcademicYear $year, int $studentId, ?object $admin): void
     {
-        $other = (int) DB::table('students')->where('id', '!=', $studentId)->value('id');
+        // Ordered: without it MySQL may pick a different "other" child on each run, and a
+        // re-seed then planted a card for a third one (ExamCycleSmokeResetTest, 3 ≠ 2).
+        $other = (int) DB::table('students')->where('id', '!=', $studentId)->orderBy('id')->value('id');
         // The year's first real term, by id — never `SMOKE-Term`, which
         // `examCycle()` plants after this and keeps empty of published cards.
         $term = (int) DB::table('terms')->where('academic_year_id', $year->id)->orderBy('id')->value('id');
-        $class = (int) DB::table('class_student')->where('student_id', $studentId)->value('class_id');
+        $class = (int) DB::table('class_student')->where('student_id', $studentId)->orderBy('class_id')->value('class_id');
 
         if ($term > 0 && $class > 0) {
             $templateId = DB::table('report_card_templates')->where('name', 'SMOKE-Template')->value('id')
