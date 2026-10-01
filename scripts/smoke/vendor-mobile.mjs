@@ -8,6 +8,8 @@
  * This walk signs in as Fitrah's owner on a 390 × 844 screen and asks what a
  * phone user asks: does the page fit, can I get to the settings, are the
  * boxes labelled, are the links big enough for a thumb, and does a save work?
+ * Since §5mq the settings are folding cards with a one-line summary each, and
+ * a checklist at the top says what stands between the shop and its customers.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/vendor-mobile.mjs
@@ -111,7 +113,14 @@ check('the eight shop links sit in two even columns', await page.evaluate(() => 
     return links.length === 8 && lefts.size === 2 && links.every((a) => a.getBoundingClientRect().height >= 32);
 }));
 
-// ------------------------------------------------------------ 2. getting to the settings
+// ------------------------------------------------------------ 2. what stands between the shop and its customers (§5mq)
+
+const ready = await page.locator('[data-testid="shop-readiness"]').innerText().catch(() => '');
+check('a "Your shop page" checklist sits at the top: ID card, products on sale, page design', (await count('[data-testid="shop-readiness"] [data-testid^="ready-"]')) >= 3 && /ID card/i.test(ready), ready.replace(/\s+/g, ' ').slice(0, 160));
+const folded = await page.evaluate(() => [...document.querySelectorAll('section[data-open]')].map((s) => s.dataset.open));
+check('the seven settings start folded on a phone, each a heading with a one-line summary', folded.length >= 6 && folded.every((o) => o === '0') && (await count('[data-testid$="-summary"]')) >= 6, `${folded.length} cards, ${folded.filter((o) => o === '0').length} folded`);
+
+// ------------------------------------------------------------ 3. getting to the settings
 
 const chips = await count('[data-testid="section-nav"] a');
 check('a row of section chips sits under the heading, each big enough for a thumb', chips >= 7 && (await smallTargets('[data-testid="section-nav"] a')).length === 0, `${chips} chips`);
@@ -120,14 +129,14 @@ await page.click('[data-testid="jump-settings"]');
 await page.waitForTimeout(500);
 const settingsTop = await page.evaluate(() => document.querySelector('[data-testid="shop-settings"]').getBoundingClientRect().top);
 const navAfter = await page.evaluate(() => document.querySelector('[data-testid="section-nav"]').getBoundingClientRect().top);
-check('tapping "Returns and holidays" brings the settings onto the screen', settingsTop >= 0 && settingsTop < 300, `settings at ${Math.round(settingsTop)}px from the top`);
+check('tapping "Returns and holidays" opens that card and brings it onto the screen', settingsTop >= 0 && settingsTop < 300 && (await count('[data-testid="return-window"]')) === 1, `settings at ${Math.round(settingsTop)}px from the top`);
 check('and the chips stay pinned to the top while the page scrolls', navAfter >= 0 && navAfter <= 1 && navBefore > 1, `chips at ${Math.round(navAfter)}px (were ${Math.round(navBefore)}px)`);
 await page.click('[data-testid="jump-delivery"]');
 await page.waitForTimeout(500);
 const deliveryTop = await page.evaluate(() => document.querySelector('[data-testid="delivery-methods"]').getBoundingClientRect().top);
 check('"Delivery methods" too', deliveryTop >= 0 && deliveryTop < 300, `${Math.round(deliveryTop)}px from the top`);
 
-// ------------------------------------------------------------ 3. labelled boxes, thumb-sized links
+// ------------------------------------------------------------ 4. labelled boxes, thumb-sized links
 
 await page.click('[data-testid="add-method"]');
 await settle('[data-testid="delivery-row-0"]');
@@ -138,15 +147,21 @@ const labelled = await page.evaluate(() => {
     return { boxes: boxes.length, named: named.length, cols: new Set([...boxes].map((b) => Math.round(b.getBoundingClientRect().left))).size };
 });
 check('a new delivery method is nine labelled boxes, two to a row', labelled.boxes === 9 && labelled.named === 9 && labelled.cols === 2, `${labelled.named}/${labelled.boxes} labelled, ${labelled.cols} columns`);
+await page.click('[data-testid="jump-notices"]');
+await page.waitForTimeout(400);
 const noticeHeads = await page.evaluate(() => [...document.querySelectorAll('[data-testid="shop-notices"] th')].filter((th) => th.getBoundingClientRect().width > 0).length);
 check('the notices table drops its always-ticked "in the app" column on a phone', noticeHeads === 3, `${noticeHeads} columns showing`);
 const small = await smallTargets('[data-testid="product-list"] .table-actions a, [data-testid="product-list"] .table-actions button');
 check('every Edit, Duplicate and View link on a product card is big enough for a thumb', small.length === 0, small.length ? small.slice(0, 4).join(' | ') : `${await count('[data-testid="product-list"] .table-actions a, [data-testid="product-list"] .table-actions button')} links, none under 32px`);
 
-// ------------------------------------------------------------ 4. a save on the phone
+// ------------------------------------------------------------ 5. a save on the phone
 
 // Saved means read back after a reload — a flash may already be on the page from the step before.
 const saveSettings = async (value) => {
+    if (!(await count('[data-testid="return-window"]'))) {
+        await page.click('[data-testid="jump-settings"]');
+        await page.locator('[data-testid="return-window"]').waitFor({ timeout: 10000 }).catch(() => {});
+    }
     await page.fill('[data-testid="return-window"]', value);
     await Promise.all([
         page.waitForResponse((r) => r.url().includes('/vendor/settings') && r.request().method() === 'POST', { timeout: 20000 }).catch(() => {}),
@@ -154,6 +169,8 @@ const saveSettings = async (value) => {
     ]);
     await settle();
     await page.reload({ waitUntil: 'networkidle' });
+    await page.click('[data-testid="jump-settings"]');
+    await page.locator('[data-testid="return-window"]').waitFor({ timeout: 10000 }).catch(() => {});
     return page.locator('[data-testid="return-window"]').inputValue();
 };
 const was = await page.locator('[data-testid="return-window"]').inputValue();

@@ -46,6 +46,9 @@ class PresentSectionsDesignerAction
                 'locked_types' => (array) ($storefront?->locked_section_types ?? []),
             ],
             'pages' => $pages,
+            // §5mq: product sections show nothing to customers until something is on sale; the designer says so.
+            'on_sale' => $products->count(),
+            'waiting' => Product::query()->where('vendor_id', $scope->vendorId)->where('status', 'pending_review')->count(),
             'collections' => app(ManageVendorCollectionsAction::class)->list($scope),
             'library' => app(UploadStorefrontImagesAction::class)->list($scope),
             'products' => $products->map(fn (Product $p) => ['id' => $p->id, 'title' => $p->title, 'slug' => $p->slug, 'category_id' => $p->product_category_id, 'tags' => (array) ($p->tags ?? [])])->values()->all(),

@@ -13,6 +13,7 @@ use App\Domains\Bookshop\Actions\Vendor\ListVendorProductsAction;
 use App\Domains\Bookshop\Actions\Vendor\ListVendorSubscribersAction;
 use App\Domains\Bookshop\Actions\Vendor\ManageVendorDiscountCodesAction;
 use App\Domains\Bookshop\Actions\Vendor\ManageVendorMembersAction;
+use App\Domains\Bookshop\Actions\Vendor\PresentShopReadinessAction;
 use App\Domains\Bookshop\Actions\Vendor\RequestVendorHostAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveVendorDeliveryMethodsAction;
 use App\Domains\Bookshop\Actions\Vendor\SaveVendorNoticeSettingsAction;
@@ -63,8 +64,10 @@ class VendorPortalController extends Controller
             ],
             'memberships' => app(ResolveVendorScopeAction::class)->memberships($scope->userId),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
-            'products' => $page['rows'] ?? [],
-            'products_page' => $page === null ? null : array_diff_key($page, ['rows' => true]),
+            // STATUS §5mq: what stands between the shop's work and its customers, in one place.
+            'readiness' => $scope->agreementAccepted ? app(PresentShopReadinessAction::class)->execute($scope) : null,
+            // The page of products and where it sits in the list.
+            'products' => $page['rows'] ?? [], 'products_page' => $page === null ? null : array_diff_key($page, ['rows' => true]),
             'members' => $scope->agreementAccepted ? app(ManageVendorMembersAction::class)->list($scope) : [],
             'delivery_methods' => $scope->agreementAccepted ? app(SaveVendorDeliveryMethodsAction::class)->list($scope) : [],
             'delivery_kinds' => array_map(fn (DeliveryKind $k) => $k->value, DeliveryKind::cases()),

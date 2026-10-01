@@ -545,6 +545,7 @@ export default function VendorSections({ t, vendor, designer, preview_url, publi
     const [busy, setBusy] = useState(false);
     const [note, setNote] = useState('');
     const refresh = () => setPreviewKey((k) => k + 1);
+    const publish = () => router.post('/vendor/storefront/publish', { note }, { preserveScroll: true, onSuccess: () => { setNote(''); refresh(); } });
     const saveHome = () => {
         setBusy(true);
         router.post('/vendor/storefront/sections', { sections, navigation, seo }, {
@@ -560,9 +561,18 @@ export default function VendorSections({ t, vendor, designer, preview_url, publi
         <AppShell title={t.sections_title}>
             <FormErrors errors={errors} className="mb-4" />
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
+            {/* §5mq: on a phone the notice is a bar at the bottom of the screen with Publish in it, wherever the vendor has scrolled to. */}
             {d.draft_dirty && !d.moderation.held && (
-                <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="draft-not-live">
-                    <strong>{t.draft_not_live}</strong>{!isOwner && <> {t.draft_owner_publishes}</>}
+                <div className="fixed inset-x-0 bottom-0 z-30 border-t border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 shadow-lg sm:static sm:mb-4 sm:rounded sm:border sm:shadow-none" data-testid="draft-not-live">
+                    <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+                        <span><strong>{t.draft_not_live}</strong>{!isOwner && <> {t.draft_owner_publishes}</>}</span>
+                        {isOwner && <button type="button" className="btn-primary shrink-0" disabled={!d.exists} onClick={publish} data-testid="publish-now">{t.publish}</button>}
+                    </div>
+                </div>
+            )}
+            {d.on_sale === 0 && (
+                <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="nothing-on-sale">
+                    {t.sections_nothing_on_sale}{d.waiting > 0 && <> {t.ready_products_waiting.replace(':count', d.waiting)}</>}
                 </p>
             )}
             {d.moderation.held && <p className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-red-800" data-testid="moderation-held"><strong>{t.storefront_held}</strong> {d.moderation.note}</p>}
@@ -585,7 +595,7 @@ export default function VendorSections({ t, vendor, designer, preview_url, publi
                 {isOwner && (
                     <span className="flex flex-wrap items-center gap-2">
                         <input className="form-input w-48" placeholder={t.version_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid="version-note" />
-                        <button type="button" className="btn-primary" disabled={!d.exists || d.moderation.held} title={d.moderation.held ? t.storefront_held : ''} data-testid="publish" onClick={() => router.post('/vendor/storefront/publish', { note }, { preserveScroll: true, onSuccess: () => { setNote(''); refresh(); } })}>{t.publish}</button>
+                        <button type="button" className="btn-primary" disabled={!d.exists || d.moderation.held} title={d.moderation.held ? t.storefront_held : ''} data-testid="publish" onClick={publish}>{t.publish}</button>
                         {d.draft_dirty && <span className="text-xs text-amber-800" data-testid="draft-dirty">{t.draft_differs}</span>}
                     </span>
                 )}
@@ -636,6 +646,8 @@ export default function VendorSections({ t, vendor, designer, preview_url, publi
                     <p className="mt-1 px-2 text-xs text-gray-500">{t.preview_hint}</p>
                 </section>
             </div>
+            {/* §5mq: room under the last field for the phone's Publish bar. */}
+            {d.draft_dirty && <div className="h-24 sm:hidden" aria-hidden="true" />}
         </AppShell>
     );
 }

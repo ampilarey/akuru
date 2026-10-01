@@ -257,17 +257,107 @@ function ProductEditor({ product, options, t, onDone, trusted = false }) {
  * (the shell's header is sticky only from `sm`), static beside the header
  * on wider screens. Each chip is at least 32px tall.
  */
-function SectionNav({ items, t }) {
+function SectionNav({ items, t, onJump }) {
     return (
         <nav className="sticky top-0 z-20 -mx-4 mb-4 bg-brandBeige-50/95 px-4 py-2 shadow-sm backdrop-blur sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:shadow-none" aria-label={t.on_this_page} data-testid="section-nav">
             <ul className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:pb-0">
                 {items.map(([id, label]) => (
                     <li key={id} className="shrink-0">
-                        <a href={`#${id}`} className="inline-flex min-h-[2rem] items-center whitespace-nowrap rounded-full border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:border-brandMaroon-600 hover:text-brandMaroon-600" data-testid={`jump-${id}`}>{label}</a>
+                        <a href={`#${id}`} onClick={() => onJump?.(id)} className="inline-flex min-h-[2rem] items-center whitespace-nowrap rounded-full border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:border-brandMaroon-600 hover:text-brandMaroon-600" data-testid={`jump-${id}`}>{label}</a>
                     </li>
                 ))}
             </ul>
         </nav>
+    );
+}
+
+/**
+ * STATUS §5mq: the settings as cards that fold. The owner, on a phone: "the
+ * settings page is very complicated". Seven forms one under the other are a
+ * lot to take in; seven headings with a one-line summary each are not. A
+ * card opens on tap (or from its chip above); on a desk every card starts
+ * open, so nothing moved for anyone with the room. The body is mounted only
+ * while open, so a closed card costs nothing and its form re-reads the
+ * server's values when it opens.
+ */
+function usePanels(ids) {
+    const wide = typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches;
+    const [open, setOpen] = useState(() => Object.fromEntries(ids.map((id) => [id, wide])));
+
+    return {
+        isOpen: (id) => Boolean(open[id]),
+        toggle: (id) => setOpen((o) => ({ ...o, [id]: !o[id] })),
+        show: (id) => setOpen((o) => ({ ...o, [id]: true })),
+    };
+}
+
+function Panel({ panels, id, testid, title, summary, children }) {
+    const open = panels.isOpen(id);
+
+    return (
+        <section className="mt-4 scroll-mt-14 rounded-lg border bg-white" id={id} data-testid={testid} data-open={open ? '1' : '0'}>
+            <button type="button" className="flex w-full items-center justify-between gap-3 p-3 text-start" aria-expanded={open} aria-controls={`${id}-body`} onClick={() => panels.toggle(id)} data-testid={`${testid}-toggle`}>
+                <span className="min-w-0">
+                    <span className="block text-lg font-semibold">{title}</span>
+                    {summary && <span className="block truncate text-sm text-gray-600" data-testid={`${testid}-summary`}>{summary}</span>}
+                </span>
+                <svg aria-hidden="true" className={`h-5 w-5 shrink-0 text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06z" clipRule="evenodd" /></svg>
+            </button>
+            {open && <div id={`${id}-body`} className="border-t p-3">{children}</div>}
+        </section>
+    );
+}
+
+/**
+ * STATUS §5mq: "my changes don't show" — the three things between a shop's
+ * work and its customers, each with what to do: the owner's ID card, the
+ * office's approval of each listing, and Publish on the page design.
+ */
+function ShopReadiness({ r, isOwner, t }) {
+    const id = r.id.status;
+    const p = r.products;
+    const s = r.storefront;
+    const steps = [
+        {
+            key: 'id',
+            ok: id === 'verified',
+            text: id === 'verified' ? t.ready_id_verified : id === 'pending' ? t.ready_id_pending : id === 'rejected' ? t.ready_id_rejected.replace(':note', r.id.note || '') : t.ready_id_none,
+        },
+        {
+            key: 'products',
+            ok: p.on_sale > 0,
+            text: [
+                p.on_sale > 0 ? t.ready_products_on_sale.replace(':count', p.on_sale) : t.ready_products_none,
+                p.waiting > 0 ? t.ready_products_waiting.replace(':count', p.waiting) : null,
+                p.drafts > 0 ? t.ready_products_drafts.replace(':count', p.drafts) : null,
+            ].filter(Boolean).join(' '),
+        },
+        {
+            key: 'design',
+            ok: s.published && !s.dirty && !s.held,
+            text: s.held ? t.storefront_held : !s.published ? t.ready_design_none : s.dirty ? t.ready_design_dirty : t.ready_design_live,
+            action: !s.held && (s.dirty || !s.published) ? (
+                isOwner && s.dirty && s.published
+                    ? <button type="button" className="btn-primary px-3 py-1 text-sm" onClick={() => router.post('/vendor/storefront/publish', {}, { preserveScroll: true })} data-testid="ready-publish">{t.publish}</button>
+                    : <a href="/vendor/storefront/sections" className="btn-secondary px-3 py-1 text-sm" data-testid="ready-design">{t.ready_open_designer}</a>
+            ) : null,
+        },
+    ];
+    const allOk = steps.every((step) => step.ok);
+
+    return (
+        <section className={`mb-4 rounded-lg border p-3 ${allOk ? 'border-green-300 bg-green-50' : 'border-amber-300 bg-amber-50'}`} data-testid="shop-readiness" data-ready={allOk ? '1' : '0'}>
+            <h2 className="mb-2 font-semibold">{allOk ? t.ready_all_good : t.ready_heading}</h2>
+            <ol className="space-y-2 text-sm">
+                {steps.map((step) => (
+                    <li key={step.key} className="flex items-start gap-2" data-testid={`ready-${step.key}`} data-ok={step.ok ? '1' : '0'}>
+                        <span aria-hidden="true" className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${step.ok ? 'bg-green-600' : 'bg-amber-500'}`}>{step.ok ? '✓' : '!'}</span>
+                        <span className="min-w-0 flex-1">{step.text}</span>
+                        {step.action}
+                    </li>
+                ))}
+            </ol>
+        </section>
     );
 }
 
@@ -296,13 +386,12 @@ function AgreementGate({ t, agreementUrl }) {
     );
 }
 
-function Members({ members, isOwner, t }) {
+function Members({ members, isOwner, t, panels }) {
     const form = useForm({ name: '', email: '', phone: '' });
     const flash = usePage().props.flash || {};
 
     return (
-        <section className="mt-8 scroll-mt-14" id="members" data-testid="members">
-            <h2 className="mb-2 text-lg font-semibold">{t.members_heading}</h2>
+        <Panel panels={panels} id="members" testid="members" title={t.members_heading} summary={t.summary_people.replace(':count', members.length)}>
             <ul className="mb-3 divide-y rounded border bg-white">
                 {members.map((m) => (
                     <li key={m.id} className="flex flex-wrap justify-between gap-2 p-3 text-sm">
@@ -334,7 +423,7 @@ function Members({ members, isOwner, t }) {
                     <span className="ms-2 text-sm text-amber-800">{t.shown_once}</span>
                 </p>
             )}
-        </section>
+        </Panel>
     );
 }
 
@@ -342,14 +431,13 @@ function Members({ members, isOwner, t }) {
  * B2: the owner's delivery methods, replaced as a whole. Until the shop
  * sets its own, the office's standard methods apply at checkout.
  */
-function DeliveryMethods({ methods, kinds, isOwner, t }) {
+function DeliveryMethods({ methods, kinds, isOwner, t, panels }) {
     const form = useForm({ methods: methods.map((m) => ({ ...m, free_over: m.free_over ?? '', minimum_order: m.minimum_order ?? '', note: m.note ?? '', name_dv: m.name_dv ?? '', name_ar: m.name_ar ?? '' })) });
     const setRow = (index, key, value) => form.setData('methods', form.data.methods.map((m, i) => (i === index ? { ...m, [key]: value } : m)));
     const addRow = () => form.setData('methods', [...form.data.methods, { kind: kinds[0], name: '', name_dv: '', name_ar: '', fee: '0', free_over: '', minimum_order: '', carrier_paid_on_arrival: false, handling_days: 1, note: '', is_active: true }]);
 
     return (
-        <section className="mt-8 scroll-mt-14" id="delivery" data-testid="delivery-methods">
-            <h2 className="mb-1 text-lg font-semibold">{t.delivery_methods_heading}</h2>
+        <Panel panels={panels} id="delivery" testid="delivery-methods" title={t.delivery_methods_heading} summary={methods.length > 0 ? t.summary_methods.replace(':count', methods.length) : t.no_methods_yet}>
             <p className="mb-3 text-sm text-gray-600">{t.delivery_methods_intro}</p>
             {methods.length === 0 && (
                 <p className="mb-3 rounded border bg-white p-3 text-sm text-gray-600" data-testid="no-methods">
@@ -400,7 +488,7 @@ function DeliveryMethods({ methods, kinds, isOwner, t }) {
                     {methods.map((m) => <li key={m.id} className="p-2">{m.name} · {t[`kind_${m.kind}`] || m.kind} · {m.fee}</li>)}
                 </ul>
             )}
-        </section>
+        </Panel>
     );
 }
 
@@ -409,7 +497,7 @@ function DeliveryMethods({ methods, kinds, isOwner, t }) {
  * and holiday mode — products stay visible marked "back on", the cart
  * refuses them, the shop page shows the notice. Owners edit; staff read.
  */
-function ShopSettings({ settings, isOwner, t }) {
+function ShopSettings({ settings, isOwner, t, panels }) {
     const form = useForm({
         return_window_days: String(settings.return_window_days),
         return_conditions: settings.return_conditions || '',
@@ -423,11 +511,10 @@ function ShopSettings({ settings, isOwner, t }) {
     const set = (name) => (e) => form.setData(name, e.target.value);
 
     return (
-        <section className="mt-8 scroll-mt-14" id="settings" data-testid="shop-settings">
-            <h2 className="mb-1 text-lg font-semibold">{t.shop_settings_heading}</h2>
+        <Panel panels={panels} id="settings" testid="shop-settings" title={t.shop_settings_heading} summary={`${t.summary_return_days.replace(':days', settings.return_window_days)}${settings.on_holiday ? ` · ${t.on_holiday_now}` : ''}`}>
             {settings.on_holiday && <p className="mb-2 rounded bg-amber-50 p-2 text-sm text-amber-900" data-testid="on-holiday">{t.on_holiday_now}</p>}
             <form
-                className="grid gap-3 rounded border bg-white p-3 md:grid-cols-3"
+                className="grid gap-3 md:grid-cols-3"
                 onSubmit={(e) => {
                     e.preventDefault();
                     form.post('/vendor/settings', { preserveScroll: true });
@@ -451,44 +538,42 @@ function ShopSettings({ settings, isOwner, t }) {
                 <FormErrors errors={form.errors} className="md:col-span-3" />
                 {isOwner && <div className="md:col-span-3"><button type="submit" className="btn-primary" disabled={form.processing} data-testid="save-settings">{t.save}</button></div>}
             </form>
-        </section>
+        </Panel>
     );
 }
 
 /** B9f (§2): the shop's own domain — asked for here, turned on by the office once it points at Akuru. */
-function OwnDomain({ settings, isOwner, t }) {
+function OwnDomain({ settings, isOwner, t, panels }) {
     const form = useForm({ custom_host: settings.custom_host || '' });
     const status = settings.custom_host ? settings.custom_host_status : null;
 
     return (
-        <section className="mt-8 scroll-mt-14" id="domain" data-testid="own-domain">
-            <h2 className="mb-1 text-lg font-semibold">{t.host_heading}</h2>
+        <Panel panels={panels} id="domain" testid="own-domain" title={t.host_heading} summary={settings.custom_host ? `${settings.custom_host} · ${status === 'active' ? t.active : t.host_requested_short}` : t.summary_not_set}>
             <p className="mb-2 text-sm text-gray-600">{t.host_intro.replace(':host', settings.canonical_host)}</p>
             {status && (
                 <p className={`mb-2 rounded p-2 text-sm ${status === 'active' ? 'bg-green-50 text-green-800' : 'bg-amber-50 text-amber-900'}`} data-testid="host-status" data-status={status}>
                     {(status === 'active' ? t.host_active : t.host_requested).replace(':host', settings.custom_host)}
                 </p>
             )}
-            <form className="flex flex-wrap items-end gap-2 rounded border bg-white p-3" onSubmit={(e) => { e.preventDefault(); form.post('/vendor/host', { preserveScroll: true }); }}>
+            <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); form.post('/vendor/host', { preserveScroll: true }); }}>
                 <label className="w-full text-sm sm:w-auto">{t.host_label}
                     <input className="form-input block w-full sm:w-72" dir="ltr" placeholder="www.example.mv" value={form.data.custom_host} onChange={(e) => form.setData('custom_host', e.target.value)} disabled={!isOwner} data-testid="host-input" />
                 </label>
                 {isOwner && <button type="submit" className="btn-secondary" disabled={form.processing} data-testid="host-save">{t.host_save}</button>}
                 <FormErrors errors={form.errors} className="w-full" />
             </form>
-        </section>
+        </Panel>
     );
 }
 
 /** B7 (§6.5): the shop's own discount codes — funded by the shop, good on its products only. */
-function DiscountCodes({ codes, isOwner, t }) {
+function DiscountCodes({ codes, isOwner, t, panels }) {
     const blank = { code: '', name: '', discount_type: 'percentage', discount_value: '', minimum_order_amount: '', max_discount_amount: '', usage_limit: '', per_user_limit: '1', starts_at: '', ends_at: '' };
     const form = useForm(blank);
     const set = (name) => (e) => form.setData(name, e.target.value);
 
     return (
-        <section className="mt-8 scroll-mt-14" id="codes" data-testid="discount-codes">
-            <h2 className="mb-1 text-lg font-semibold">{t.discount_codes_heading}</h2>
+        <Panel panels={panels} id="codes" testid="discount-codes" title={t.discount_codes_heading} summary={t.summary_codes.replace(':count', codes.length).replace(':active', codes.filter((c) => c.status === 'active').length)}>
             <p className="mb-2 text-sm text-gray-600">{t.discount_codes_intro}</p>
             {codes.length > 0 && (
                 <table className="table-stack mb-3 w-full rounded border bg-white text-sm">
@@ -508,7 +593,7 @@ function DiscountCodes({ codes, isOwner, t }) {
                 </table>
             )}
             {isOwner ? (
-                <form className="grid gap-3 rounded border bg-white p-3 md:grid-cols-4" data-testid="code-form" onSubmit={(e) => { e.preventDefault(); form.post('/vendor/discount-codes', { preserveScroll: true, onSuccess: () => form.reset() }); }}>
+                <form className="grid gap-3 md:grid-cols-4" data-testid="code-form" onSubmit={(e) => { e.preventDefault(); form.post('/vendor/discount-codes', { preserveScroll: true, onSuccess: () => form.reset() }); }}>
                     <Field label={t.discount_code}><input className="form-input w-full font-mono uppercase" value={form.data.code} onChange={set('code')} maxLength={20} required data-testid="code-code" /></Field>
                     <Field label={t.code_type}>
                         <select className="form-input w-full" value={form.data.discount_type} onChange={set('discount_type')} data-testid="code-type">
@@ -528,19 +613,19 @@ function DiscountCodes({ codes, isOwner, t }) {
             ) : (
                 <p className="text-sm text-gray-600">{t.owner_manages_codes}</p>
             )}
-        </section>
+        </Panel>
     );
 }
 
 /** B8 (§5 "Notifications: which events email or SMS them"): every notice is in the app; these add email or SMS. */
-function Notices({ settings, isOwner, t }) {
+function Notices({ settings, isOwner, t, panels }) {
     const form = useForm({ events: settings.events });
     const set = (event, channel, value) => form.setData('events', { ...form.data.events, [event]: { ...form.data.events[event], [channel]: value } });
     const office = settings.office;
+    const on = (channel) => Object.values(settings.events).filter((e) => e[channel]).length;
 
     return (
-        <section className="mt-8 scroll-mt-14" id="notices" data-testid="shop-notices">
-            <h2 className="mb-1 text-lg font-semibold">{t.notices_heading}</h2>
+        <Panel panels={panels} id="notices" testid="shop-notices" title={t.notices_heading} summary={t.summary_notices.replace(':email', on('email')).replace(':sms', on('sms')).replace(':total', Object.keys(settings.events).length)}>
             <p className="mb-2 text-sm text-gray-600">{t.notices_hint}{!settings.phone && <span className="ms-1 text-amber-800">{t.notices_no_phone}</span>}</p>
             {(!office.vendor_email || !office.vendor_sms) && (
                 <p className="mb-2 rounded bg-gray-50 p-2 text-xs text-gray-600" data-testid="notices-office-off">
@@ -566,25 +651,24 @@ function Notices({ settings, isOwner, t }) {
                 </div>
                 {isOwner && <button type="submit" className="btn-primary mt-2" disabled={form.processing} data-testid="save-notices">{t.save}</button>}
             </form>
-        </section>
+        </Panel>
     );
 }
 
 /** B9c (§6.3 "Newsletter"): who asked for the shop's news. Add the Newsletter section on the storefront to collect them. */
-function Newsletter({ newsletter, t }) {
+function Newsletter({ newsletter, t, panels }) {
     return (
-        <section className="mt-8 scroll-mt-14" id="newsletter" data-testid="shop-newsletter">
-            <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
-                <h2 className="text-lg font-semibold">{t.newsletter_list_heading} <span className="text-sm font-normal text-gray-500" data-testid="newsletter-count">{t.newsletter_count.replace(':count', newsletter.active)}</span></h2>
+        <Panel panels={panels} id="newsletter" testid="shop-newsletter" title={t.newsletter_list_heading} summary={<span data-testid="newsletter-count">{t.newsletter_count.replace(':count', newsletter.active)}</span>}>
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <p className="text-sm text-gray-600">{t.newsletter_list_hint}</p>
                 <a href="/vendor/newsletter/export" className="btn-secondary" data-testid="export-newsletter">{t.export_csv}</a>
             </div>
-            <p className="mb-2 text-sm text-gray-600">{t.newsletter_list_hint}</p>
             {newsletter.recent.length > 0 && (
                 <ul className="divide-y rounded border bg-white text-sm">
                     {newsletter.recent.map((s) => <li key={s.email} className="flex justify-between gap-2 p-2"><span>{s.name ? `${s.name} · ` : ''}{s.email}</span><span className="text-gray-500">{s.since}</span></li>)}
                 </ul>
             )}
-        </section>
+        </Panel>
     );
 }
 
@@ -652,7 +736,7 @@ function ProductList({ products, t, onEdit, selected, setSelected }) {
     );
 }
 
-export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], products_page = null, members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, discount_codes = [], notice_settings = null, newsletter = null, options, filters, identity = null, id_l = {} }) {
+export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], products_page = null, members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, discount_codes = [], notice_settings = null, newsletter = null, readiness = null, options, filters, identity = null, id_l = {} }) {
     const { flash = {}, errors } = usePage().props;
     const [editing, setEditing] = useState(null);
     const [search, setSearch] = useState(filters.q || '');
@@ -662,6 +746,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
     const [selected, setSelected] = useState([]);
     const [bulkStatus, setBulkStatus] = useState('active');
     const isOwner = vendor.role === 'owner';
+    const panels = usePanels(['settings', 'domain', 'codes', 'notices', 'newsletter', 'delivery', 'members']);
     const listQuery = (page) => ({ q: search || undefined, status: status || undefined, low: low ? 1 : undefined, category: category || undefined, page: page > 1 ? page : undefined });
     const goPage = (page) => router.get('/vendor', listQuery(page), { preserveState: true, preserveScroll: true, onSuccess: () => setSelected([]) });
 
@@ -708,7 +793,8 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                 <AgreementGate t={t} agreementUrl={agreement_url} />
             ) : (
                 <>
-                    <SectionNav t={t} items={[
+                    {readiness && <ShopReadiness r={readiness} isOwner={isOwner} t={t} />}
+                    <SectionNav t={t} onJump={panels.show} items={[
                         ['products', t.products_heading],
                         ...(shop_settings ? [['settings', t.shop_settings_heading], ['domain', t.host_heading]] : []),
                         ['codes', t.discount_codes_heading],
@@ -774,13 +860,13 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                         )}
                     </section>
                     {/* Keyed on the rows, so the form re-reads them after the template or a save (useForm keeps its first values otherwise). */}
-                    {shop_settings && <ShopSettings settings={shop_settings} isOwner={isOwner} t={t} />}
-                    {shop_settings && <OwnDomain settings={shop_settings} isOwner={isOwner} t={t} />}
-                    <DiscountCodes codes={discount_codes} isOwner={isOwner} t={t} />
-                    {notice_settings && <Notices key={JSON.stringify(notice_settings.events)} settings={notice_settings} isOwner={isOwner} t={t} />}
-                    {newsletter && <Newsletter newsletter={newsletter} t={t} />}
-                    <DeliveryMethods key={delivery_methods.map((m) => `${m.id}:${m.name}`).join('|')} methods={delivery_methods} kinds={delivery_kinds} isOwner={isOwner} t={t} />
-                    <Members members={members} isOwner={isOwner} t={t} />
+                    {shop_settings && <ShopSettings settings={shop_settings} isOwner={isOwner} t={t} panels={panels} />}
+                    {shop_settings && <OwnDomain settings={shop_settings} isOwner={isOwner} t={t} panels={panels} />}
+                    <DiscountCodes codes={discount_codes} isOwner={isOwner} t={t} panels={panels} />
+                    {notice_settings && <Notices key={JSON.stringify(notice_settings.events)} settings={notice_settings} isOwner={isOwner} t={t} panels={panels} />}
+                    {newsletter && <Newsletter newsletter={newsletter} t={t} panels={panels} />}
+                    <DeliveryMethods key={delivery_methods.map((m) => `${m.id}:${m.name}`).join('|')} methods={delivery_methods} kinds={delivery_kinds} isOwner={isOwner} t={t} panels={panels} />
+                    <Members members={members} isOwner={isOwner} t={t} panels={panels} />
                 </>
             )}
             {/* The rest of the workspace's menu as tiles (SIGN_IN_PLAN ID5). */}

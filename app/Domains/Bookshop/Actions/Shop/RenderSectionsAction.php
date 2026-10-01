@@ -72,6 +72,8 @@ class RenderSectionsAction
                 'heading' => $this->text($settings, 'heading'),
                 'mobile_order' => is_numeric($section['mobile_order'] ?? null) ? (int) $section['mobile_order'] : null,
                 'draft_hidden' => $draft && ! SectionTypes::isVisible($section),
+                // §5mq: in the preview, a section the public page leaves out because nothing in it is on sale says so.
+                'draft_empty' => $draft && $this->isEmpty((string) $section['type'], $data),
             ] + $data;
         }
 
