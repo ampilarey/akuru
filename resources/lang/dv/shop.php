@@ -1896,4 +1896,9 @@ return [
     'receipt_link_total' => 'ޖުމްލަ ދައްކާފައި: :amount',
     'receipt_link_track' => 'މި އޯޑަރު ހުރީ ކޮންތާކު؟',
     'receipt_link_private' => 'މި ލިންކު ލިބޭ ކޮންމެ މީހަކަށް މި ރަސީދު ކިޔޭނެ؛ އެޑްރެހެއް ނުވަތަ ފޯނު ނަންބަރެއް ނުދައްކާ.',
+    // COMMERCE_PARITY_PLAN P8b: the driver is told.
+    'notice_driver_assigned_title' => 'ތިޔަބޭފުޅާއަށް ޑެލިވަރީއެއް: :number',
+    'notice_driver_assigned_body' => 'އޯޑަރު :number ޑެލިވަރކުރަންވީ ތިޔަބޭފުޅާ (:where). އެޑްރެހާއި ތަކެތި ބަލަން ޑެލިވަރީތައް ހުޅުވާ.',
+    'notice_driver_unassigned_title' => ':number މިހާރު ތިޔަބޭފުޅާގެ ނޫން',
+    'notice_driver_unassigned_body' => 'އޮފީހުން އޯޑަރު :number އެހެން ޑްރައިވަރަކަށް ދީފި.',
 ];

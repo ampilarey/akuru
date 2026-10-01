@@ -95,7 +95,19 @@ class AkuruDeliveryAction
         if ($delivery->picked_up_at !== null) {
             throw ValidationException::withMessages(['driver' => __('shop.error_driver_picked_up')]);
         }
+        $previous = $delivery->exists && (int) $delivery->delivery_driver_id !== (int) $driver->id ? DeliveryDriver::query()->find($delivery->delivery_driver_id) : null;
         $delivery->fill(['delivery_driver_id' => $driver->id, 'assigned_by' => $officeUserId, 'assigned_at' => now()])->save();
+
+        // COMMERCE_PARITY_PLAN P8b: the driver is told — in the app, which reaches their phone as a push where
+        // push is on (#551), and by SMS where the office allows it; a driver it was taken from is told too.
+        $notify = app(NotifyBookshopUserAction::class);
+        $where = collect([$order->address_snapshot['island'] ?? null, $order->address_snapshot['atoll'] ?? null])->filter()->implode(', ');
+        $notify->execute((int) $driver->user_id, __('shop.notice_driver_assigned_title', ['number' => $order->number]),
+            __('shop.notice_driver_assigned_body', ['number' => $order->number, 'where' => $where ?: '—']), '/deliveries', 'driver_assigned');
+        if ($previous !== null && $previous->user_id !== null) {
+            $notify->execute((int) $previous->user_id, __('shop.notice_driver_unassigned_title', ['number' => $order->number]),
+                __('shop.notice_driver_unassigned_body', ['number' => $order->number]), '/deliveries');
+        }
 
         return $delivery;
     }

@@ -4414,6 +4414,45 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ml. Push: the driver is told an order is theirs (COMMERCE_PARITY_PLAN P8b, 2026-10-01)
+
+- **The audit was wrong about push.** COMMERCE_PARITY_PLAN F13 listed push
+  *sending* as missing. It is not missing:
+  - #551 (STATUS §5jr) built `SendPushNotificationAction`, behind
+    `PushSenderInterface` with null, log and FCM HTTP v1 senders (config/push.php).
+  - `SendUserNotificationAction` fans every in-app notice out to the person's
+    active registered phones whenever a push driver is set.
+  - Every Bookstore notice (P5's purchase notices, complaints, campaign replies)
+    therefore already reaches a phone once FCM is configured.
+
+  The plan and OPERATOR_CHECKLIST now say so.
+- **What was missing was the notice itself.** A driver was never told when the
+  office gave them an order. Now `AkuruDeliveryAction::assign` tells them:
+  - *A delivery for you: number*, with the island and atoll;
+  - in the app, which reaches their phone as a push;
+  - by email or SMS where the office's customer switches allow it (event
+    `driver_assigned`);
+  - opening it takes them to `/deliveries`.
+- **Reassigning:** the driver it was taken from is told *number is no longer yours*.
+  Giving it to the same driver again tells nobody that it was taken.
+- **Languages**: EN/DV/AR.
+- **Owner action, unchanged:** set `PUSH_DRIVER=fcm`, `FCM_PROJECT_ID` and
+  `FCM_CREDENTIALS_PATH` on the host (MOBILE.md). Until then the notices are
+  in-app, email and SMS only.
+
+Tests:
+- New `DriverNoticeTest`, 3 tests:
+  - the assigned driver gets the notice, naming the island, and their registered
+    phone gets the push (log driver, fake sender);
+  - a reassignment tells the previous driver, and giving it to the same driver
+    again tells nobody;
+  - DV/AR.
+- `AkuruDeliveryTest` still green.
+
+Walk:
+- `akuru.mjs` 17/17, with a new step: the seeded driver's notifications list
+  *A delivery for you: AK-…* before they open their deliveries.
+
 ## 5mk. Receipts by SMS link (COMMERCE_PARITY_PLAN P8a, 2026-10-01)
 
 The owner asked for P8 now ("do it now", 2026-10-01). P8 runs as four slices: P8a
