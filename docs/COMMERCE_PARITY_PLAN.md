@@ -382,7 +382,7 @@ fixes: the admin OTP route stays admin-only and untouched.
 - **Docs**: BOOKSHOP_PLAN §4, §5, §8 and decisions 20–21; STATUS; ADR for
   the fee model (money rules, rule 12: fees are ledger lines, never edits).
 
-### P7 — Feedback the office sees, and SMS to customers (one PR each)
+### P7 — Feedback the office sees, and SMS to customers (one PR each) — **shipped 2026-10-01: P7a §5mh, P7b §5mi, P7c §5mj**
 
 - **P7a Complaints** — **shipped 2026-10-01, STATUS §5mh**: `order_complaints` (order_id, user_id, kind, text,
   photo, status open → in progress → resolved, resolution note); *Report
@@ -395,7 +395,7 @@ fixes: the admin OTP route stays admin-only and untouched.
   a shop / everyone who opted in; per-message cost shown; opt-out link
   and `STOP` reply honoured through the existing opt-out routes; a
   monthly budget setting. Tests, walk.
-- **P7c Customer notes and tags** on the office's customer view (who
+- **P7c Customer notes and tags** — **shipped 2026-10-01, STATUS §5mj** (`/admin/bookshop/customers`) on the office's customer view (who
   bought what, last order, tags, follow-up notes) — B&G's
   `AdminCustomerController`. Tests, walk.
 

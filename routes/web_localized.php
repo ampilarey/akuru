@@ -900,6 +900,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('campaigns/export', [\App\Domains\Bookshop\Http\Controllers\AdminSmsCampaignController::class, 'export'])->name('admin.bookshop.campaigns.export');
         Route::post('campaigns', [\App\Domains\Bookshop\Http\Controllers\AdminSmsCampaignController::class, 'send'])->name('admin.bookshop.campaigns.send')->middleware('throttle:10,1,shop-campaign-send');
         Route::post('campaigns/settings', [\App\Domains\Bookshop\Http\Controllers\AdminSmsCampaignController::class, 'settings'])->name('admin.bookshop.campaigns.settings');
+        // COMMERCE_PARITY_PLAN P7c: the customers, with the office's tags and notes.
+        Route::get('customers', [\App\Domains\Bookshop\Http\Controllers\AdminCustomerController::class, 'index'])->name('admin.bookshop.customers');
+        Route::get('customers/export', [\App\Domains\Bookshop\Http\Controllers\AdminCustomerController::class, 'export'])->name('admin.bookshop.customers.export');
+        Route::get('customers/{customer}', [\App\Domains\Bookshop\Http\Controllers\AdminCustomerController::class, 'show'])->name('admin.bookshop.customers.show')->whereNumber('customer');
+        Route::post('customers/{customer}/tags', [\App\Domains\Bookshop\Http\Controllers\AdminCustomerController::class, 'tags'])->name('admin.bookshop.customers.tags')->whereNumber('customer');
+        Route::post('customers/{customer}/notes', [\App\Domains\Bookshop\Http\Controllers\AdminCustomerController::class, 'note'])->name('admin.bookshop.customers.notes')->whereNumber('customer');
+        Route::post('customers/{customer}/notes/{note}/done', [\App\Domains\Bookshop\Http\Controllers\AdminCustomerController::class, 'done'])->name('admin.bookshop.customers.notes.done')->whereNumber('customer')->whereNumber('note');
         // COMMERCE_PARITY_PLAN P4: listings awaiting the office's approval.
         Route::post('listings/{product}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'decide'])->name('admin.bookshop.listings.decide')->whereNumber('product');
         Route::get('listings/export', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'export'])->name('admin.bookshop.listings.export');

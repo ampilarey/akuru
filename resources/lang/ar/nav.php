@@ -144,6 +144,7 @@ return [
     'akuru_fulfilment' => 'تجهيز أكورو',
     'complaints' => 'المشكلات المبلّغ عنها',
     'sms_campaigns' => 'عروض الرسائل القصيرة',
+    'shop_customers' => 'العملاء',
     'shop' => 'متجر الكتب',
     'my_orders' => 'طلباتي',
     'my_wishlist' => 'قائمة أمنياتي',

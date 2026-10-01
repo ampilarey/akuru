@@ -42,7 +42,7 @@ it('shows the system admin every Institute section, each inner screen a real rou
         ->assertInertia(fn (Assert $page) => $page
             ->where('parts', fn ($parts) => collect($parts)->pluck('key')->all() === ['panel_website', 'panel_money', 'panel_system'])
             ->where('parts.0.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['website_cms', 'admin_instructors', 'prayer_times', 'pronunciation_office'])
-            ->where('parts.1.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['commerce', 'library_office', 'bookshop', 'akuru_fulfilment', 'complaints', 'sms_campaigns'])
+            ->where('parts.1.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['commerce', 'library_office', 'bookshop', 'akuru_fulfilment', 'complaints', 'sms_campaigns', 'shop_customers'])
             ->where('parts.2.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['manage_users', 'system_settings', 'ops_checklist', 'feature_walkthrough', 'translations']));
 
     // Every inner screen is a real route inside its section.

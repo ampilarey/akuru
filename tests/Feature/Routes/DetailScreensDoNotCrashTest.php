@@ -109,6 +109,8 @@ function unresolvedDetailScreens(): array
         // as the applicant (403) and for an application without one (404).
         'admin/library/applications/{application}/document' => 'streams a private identity document; covered by WriterApplicationExtrasTest',
         // COMMERCE_PARITY_PLAN P2: one side of an ID card, streamed to the office that owns its purpose.
+        // COMMERCE_PARITY_PLAN P7c: one Bookstore customer; the id is a user with an order, which the sweep's fixtures do not plant.
+        'admin/bookshop/customers/{customer}' => 'a customer page; covered by ShopCustomersTest (200 for a customer, 404 for someone who never ordered)',
         'admin/identity-checks/{verification}/{side}' => 'streams a private identity card; covered by IdentityVerificationTest',
         // COMMERCE_PARITY_PLAN P6b: a delivery's proof photo, streamed to the office or the driver.
         'deliveries/{delivery}/proof' => 'streams a private delivery photo; covered by AkuruDeliveryTest',

@@ -4414,6 +4414,65 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mj. The office's customer view, with tags and notes (COMMERCE_PARITY_PLAN P7c, 2026-10-01)
+
+The last of P7. This is Bake & Grill's `AdminCustomerController`, done the Akuru way.
+
+- **The list** (`/admin/bookshop/customers`, in the money workspace and the
+  Bookstore admin's bar):
+  - It shows everyone with a paid order, biggest spenders first: name, phone,
+    email, orders, amount spent, last order, tags, and how many follow-ups are
+    due.
+  - Search works on name, email, phone or an order number.
+  - Filters: by tag, and *Follow-ups due*.
+  - CSV export with the same filters.
+- **One customer** (`/admin/bookshop/customers/{id}`) shows:
+  - phone, email, when they joined, and whether they get SMS offers (P7b);
+  - orders count and amount spent;
+  - every order with its shop and status;
+  - the problems they reported (P7a).
+- **Tags** (`shop_customer_profiles`):
+  - Stored as lower case, trimmed, with duplicates dropped.
+  - At most 10 tags per customer, and 30 characters per tag.
+  - The page shows the saved form once the tags are saved.
+- **Notes** (`shop_customer_notes`):
+  - Each note records who wrote it and when.
+  - A note can have a follow-up date, today or later. It shows as due on and
+    after that date.
+  - *Done* records who ticked it off and when. The note stays.
+- **Scope**: a customer is a user with an order. Tags, notes and done are refused
+  (404) for anyone else.
+- **Rule 3**: the account is read through the configured user model. The new
+  tables reference `users` only by key.
+- Morph aliases are added for both tables. **Languages**: EN/DV/AR.
+
+Tests:
+- New `ShopCustomersTest`, 4 tests:
+  - the list: biggest spender first, someone with no paid order is left out, found
+    by name, phone or order number, CSV, and others are refused;
+  - tags: normalised, filtered, at most 10, cleared, and refused for a non-customer;
+  - notes: the follow-up is due, the due filter works, a past date is refused,
+    *Done* records who and when and moves the customer out of the due list, and
+    another customer's note is a 404;
+  - DV/AR.
+- AdminHubTest and WorkspacesTest count the new money section.
+- `DetailScreensDoNotCrashTest` lists the customer page with its reason.
+- Architecture, Nav, Admin, Routes and Bookshop: green.
+
+Walk:
+- New `customers.mjs`, 7/7:
+  - the student buys;
+  - the office finds them by the order number, with orders and amount spent;
+  - it opens their page;
+  - it tags them "School, VIP", which is saved as "school, vip";
+  - it adds a note due today, which shows as due;
+  - *Follow-ups due* with the VIP tag lists them;
+  - *Done* takes them out of the due list.
+- `SmokeMarkerSeeder::smsOffers()` also clears the student's tags and notes.
+
+**COMMERCE_PARITY_PLAN P1–P7 are done.** P8 stays *later, on request*
+(BACKLOG C13).
+
 ## 5mi. SMS offers to customers who asked for them (COMMERCE_PARITY_PLAN P7b, 2026-10-01)
 
 The second of P7's three PRs. It follows the prayer-times broadcast pattern:
