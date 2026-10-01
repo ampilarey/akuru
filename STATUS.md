@@ -4414,6 +4414,112 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mq. Why a shop's changes do not show, said on the first screen; the settings fold (2026-10-01)
+
+The owner, after #627 and #628 were pulled: "Still the changes that are made by
+shop owners to his page are not showing. Still the settings page is very
+complicated. I'm checking the mobile view."
+
+**What production showed** (read from the live site, 2026-10-01):
+- `https://akuru.edu.mv/en/shop/products` lists **no product at all**: not one
+  is on sale in the whole Bookstore.
+- `/en/shop/fitrah` renders its published storefront: the "sand" theme and the
+  logo, served from `/storage/storefronts/…` with a 200. But it has **no
+  sections and no products**.
+- Responses carry `no-store`, there is no edge cache in front, and the built
+  assets match `main`. So nothing between the app and the browser was holding
+  an old copy. Since #627, every save without a publish step reaches the page
+  at once.
+
+So the page was not stale. It was **empty**, because the public renderer
+leaves out a product section with nothing on sale in it:
+- featured products, new arrivals, a collection, category tiles and best
+  sellers all draw only products that are on sale;
+- with none on sale, every one of them is dropped;
+- the shop's page is left as a theme and a logo.
+
+Two rules from COMMERCE_PARITY_PLAN hold the products back:
+- **P2:** no product goes on sale until the office has checked the owner's ID
+  card. The product form refuses it.
+- **P4:** each product put on sale waits for the office's approval, unless the
+  shop is trusted.
+
+Each rule was explained only where it bites: a refused save, an amber
+"Waiting for approval" label in a long list, a small line in the designer.
+Nothing told the owner that their page was empty because of them.
+
+**Built:**
+- **A "Your shop page" checklist** at the top of `/vendor`
+  (`PresentShopReadinessAction`), green when all is well and amber otherwise.
+  It has three steps, each with what to do:
+  1. **ID card:** checked; with the office; refused, with the office's note;
+     or not sent.
+  2. **Products:** on sale, waiting for the office's approval, and drafts,
+     with "choose *For sale* to send it".
+  3. **Page design:** published; saved changes not yet published (owners get
+     a **Publish** button right there); never published (with *Open the
+     designer*); or taken down by the office.
+- **The designer says it too.**
+  - With nothing on sale, *Sections and pages* opens with "None of your
+    products is on sale yet, so customers do not see your product
+    sections…", plus how many are waiting for the office.
+  - In the draft preview, each section the public page will leave out as
+    empty carries "Customers do not see this section yet: nothing in it is
+    on sale." `RenderSectionsAction` marks it `draft_empty`.
+- **The settings fold.** The seven settings are now cards: Returns and
+  holidays, Your own domain, Discount codes, Email and SMS notices,
+  Newsletter, Delivery methods, People.
+  - Each card is a heading and a one-line summary, such as "Returns within 7
+    days", "Email for 10 of 11, SMS for 1" or "Not set". It opens on a tap or
+    from its chip.
+  - On a phone they start folded, so the page is the checklist, the products
+    and seven lines. On a desk they start open, so nothing moved for anyone
+    with the room.
+  - A card's form is mounted only while it is open.
+- **The Publish bar on a phone.** On both designer screens, the
+  "saved changes are a draft" notice is a bar fixed to the bottom of the phone
+  with **Publish** in it, wherever the owner has scrolled. A spacer keeps it
+  off the last field. On a desk it stays where it was.
+- EN/DV/AR for every new line. The counts read "On sale: 1", "Drafts: 1" and
+  "People: 1", so a single item reads right in English.
+
+**What the owner does on production:**
+- Open `/admin/bookshop`.
+- **Check the shop owners' ID cards** (`#identity`).
+- **Approve the waiting listings** (`#listings`), or tick *Trusted* on a shop
+  whose listings should skip the queue.
+
+Until then no shop can have a product on sale, whatever it edits.
+
+Found, not fixed here: sixteen Inertia pages print the flash message
+themselves, and the shell prints it too, so a save says "Draft saved" twice.
+That is a sweep of its own: the walks read the page's copy.
+
+Tests:
+- New `ShopReadinessTest`, 3 tests:
+  - the checklist walks from nothing (ID not sent, two waiting, one draft,
+    design unpublished) to green, through the real ID upload and the office's
+    refusal and approval. A page's unpublished draft counts as unpublished
+    design;
+  - the designer's `on_sale` and `waiting` counts. The preview marks only the
+    empty product section, and the mark goes once something is on sale;
+  - Dhivehi and Arabic.
+- Architecture, Nav, Admin, Routes and Bookshop: 412 green. `ThinControllers`
+  holds: the portal's `index` kept its line budget rather than joining the
+  baseline.
+
+Walks:
+- `vendor-mobile.mjs`, now 13/13 at 390 × 844. New steps:
+  - the checklist is at the top;
+  - the seven cards start folded with their summaries;
+  - a chip opens its card.
+
+  The notices and save steps open their cards first.
+- `vendor.mjs` 32/32, `sections.mjs` 25/25 and `storefront.mjs` 15/15. These
+  run at desk width, where the cards are open.
+- `checkout.mjs` and `operations.mjs` fail only their two known
+  data-dependent steps.
+
 ## 5mp. The vendor portal on a phone (2026-10-01)
 
 The owner: "enhance the mobile layout of the vendor settings page". `/vendor`

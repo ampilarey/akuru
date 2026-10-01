@@ -152,6 +152,7 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
     });
     const [previewKey, setPreviewKey] = useState(0);
     const [note, setNote] = useState('');
+    const publish = () => router.post('/vendor/storefront/publish', { note }, { preserveScroll: true, onSuccess: () => { setNote(''); setPreviewKey((k) => k + 1); } });
     const setTheme = (patch) => form.setData('theme', { ...form.data.theme, ...patch });
     const setColor = (slot, value) => setTheme({ preset: '', colors: { ...form.data.theme.colors, [slot]: value } });
     const choosePreset = (key) => setTheme({ preset: key, colors: { ...d.options.presets[key].colors } });
@@ -176,10 +177,14 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
         <AppShell title={t.designer_title}>
             <FormErrors errors={errors} className="mb-4" />
             {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
+            {/* §5mq: on a phone the notice is a bar at the bottom of the screen with Publish in it, wherever the vendor has scrolled to. */}
             {d.draft_dirty && (
-                <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="draft-not-live">
-                    <strong>{t.draft_not_live}</strong>{!isOwner && <> {t.draft_owner_publishes}</>}
-                </p>
+                <div className="fixed inset-x-0 bottom-0 z-30 border-t border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 shadow-lg sm:static sm:mb-4 sm:rounded sm:border sm:shadow-none" data-testid="draft-not-live">
+                    <div className="mx-auto flex max-w-6xl items-center justify-between gap-3">
+                        <span><strong>{t.draft_not_live}</strong>{!isOwner && <> {t.draft_owner_publishes}</>}{isOwner && d.problems.length > 0 && <> {t.contrast_failing}</>}</span>
+                        {isOwner && <button type="button" className="btn-primary shrink-0" disabled={!d.exists || d.problems.length > 0} onClick={publish} data-testid="publish-now">{t.publish}</button>}
+                    </div>
+                </div>
             )}
             <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
@@ -332,7 +337,7 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                                     disabled={!d.exists || d.problems.length > 0}
                                     title={d.problems.length > 0 ? t.contrast_failing : ''}
                                     data-testid="publish"
-                                    onClick={() => router.post('/vendor/storefront/publish', { note }, { preserveScroll: true, onSuccess: () => { setNote(''); setPreviewKey((k) => k + 1); } })}
+                                    onClick={publish}
                                 >
                                     {t.publish}
                                 </button>
@@ -377,6 +382,8 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                     </section>
                 </div>
             </div>
+            {/* §5mq: room under the last field for the phone's Publish bar. */}
+            {d.draft_dirty && <div className="h-24 sm:hidden" aria-hidden="true" />}
         </AppShell>
     );
 }

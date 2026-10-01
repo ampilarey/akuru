@@ -17,6 +17,8 @@
     >
         @if($section['draft_hidden'])
             <p class="container mx-auto px-4 pt-2 text-xs font-semibold text-amber-800">{{ __('shop.hidden_in_preview') }}</p>
+        @elseif($section['draft_empty'] ?? false)
+            <p class="container mx-auto px-4 pt-2 text-xs font-semibold text-amber-800" data-testid="section-empty-note">{{ __('shop.section_empty_hidden') }}</p>
         @endif
 
         @switch($section['type'])
