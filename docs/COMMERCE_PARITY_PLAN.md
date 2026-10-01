@@ -288,7 +288,7 @@ fixes: the admin OTP route stays admin-only and untouched.
   upload; `exams.mjs`/`certificates` step checks the withhold.
 - **Docs**: SPEC §32/§44 note; STATUS.
 
-### P4 — Listings approved by the office (one PR)
+### P4 — Listings approved by the office — **shipped 2026-09-30, STATUS §5md**
 
 - **Data**: `ProductStatus::PendingReview = 'pending_review'`;
   `products.submitted_at`, `review_note`, `reviewed_by`, `reviewed_at`;

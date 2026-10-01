@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Vendor;
 
+use App\Domains\Bookshop\Actions\ListingApprovalAction;
 use App\Domains\Bookshop\Actions\Shop\CustomerListsAction;
 use App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
@@ -42,7 +43,12 @@ class SaveVendorProductAction
      */
     public function execute(VendorScope $scope, array $data, ?int $productId = null, array $photos = [], string $stockKind = 'adjustment'): Product
     {
-        $product = DB::transaction(function () use ($scope, $data, $productId, $photos, $stockKind) {
+        // P4: an export re-imported, or a form re-sent while waiting — still a request to sell.
+        if (($data['status'] ?? null) === 'pending_review') {
+            $data['status'] = 'active';
+        }
+        $submitted = false;
+        $product = DB::transaction(function () use ($scope, $data, $productId, $photos, $stockKind, &$submitted) {
             $product = $productId === null
                 ? new Product(['vendor_id' => $scope->vendorId, 'created_by' => $scope->userId])
                 : Product::query()->where('vendor_id', $scope->vendorId)->lockForUpdate()->findOrFail($productId);
@@ -56,7 +62,11 @@ class SaveVendorProductAction
                 VendorIdentity::require($scope->vendorId);
             }
             $before = $isNew ? 0 : (int) $product->stock;
+            $was = $isNew ? null : $product->status?->value;
+            $renamed = $this->variantsRenamed($product, $data);
             $product->fill($this->columns($data));
+            // COMMERCE_PARITY_PLAN P4: the office approves a listing, and again when what it is changes.
+            $submitted = app(ListingApprovalAction::class)->gate($product, $was, $scope->vendorId, $renamed, $photos !== [] && ! $isNew);
             $product->vendor_id = $scope->vendorId;
             $product->updated_by = $scope->userId;
             if ($isNew) {
@@ -80,12 +90,30 @@ class SaveVendorProductAction
 
             return $product->refresh();
         });
+        if ($submitted) {
+            app(ListingApprovalAction::class)->announce((int) $product->vendor_id, 1, (string) $product->title);
+        }
         // B7: restocked or reactivated — tell anyone waiting for it.
         app(CustomerListsAction::class)->notifyIfBack((int) $product->id);
         // §5lb: the shop's page shows the new price (or sale) at once, not after its cache runs out.
         app(ResolveStorefrontAction::class)->forget((int) $product->vendor_id);
 
         return $product;
+    }
+
+    /**
+     * P4 (D4): the variants' names changed — a new variant, one gone, one renamed.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function variantsRenamed(Product $product, array $data): bool
+    {
+        if (! $product->exists || (! array_key_exists('variants', $data) && empty($data['variants_sent']))) {
+            return false;
+        }
+        $names = fn (iterable $rows) => collect($rows)->map(fn ($r) => trim((string) (is_array($r) ? ($r['name'] ?? '') : $r)))->filter()->sort()->values()->all();
+
+        return $names((array) ($data['variants'] ?? [])) !== $names(ProductVariant::query()->where('product_id', $product->id)->pluck('name'));
     }
 
     /**

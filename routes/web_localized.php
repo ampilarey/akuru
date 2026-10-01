@@ -874,6 +874,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B9a: shop applications.
         Route::post('applications/{application}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideApplication'])->name('admin.bookshop.applications.decide')->whereNumber('application');
         Route::post('applications/open', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setApplicationsOpen'])->name('admin.bookshop.applications.open');
+        // COMMERCE_PARITY_PLAN P4: listings awaiting the office's approval.
+        Route::post('listings/{product}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'decide'])->name('admin.bookshop.listings.decide')->whereNumber('product');
+        Route::get('listings/export', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'export'])->name('admin.bookshop.listings.export');
         // B9b: cash on delivery.
         Route::post('cod', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setCod'])->name('admin.bookshop.cod');
         // STATUS §5lm: rewards into the wallet, off until the office turns them on.

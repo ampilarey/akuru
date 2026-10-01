@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
+use App\Domains\Bookshop\Actions\ListingApprovalAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Actions\ResolveVendorScopeAction;
 use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
@@ -57,7 +58,8 @@ class VendorPortalController extends Controller
                 'role' => $scope->role->value,
                 'agreement_accepted' => $scope->agreementAccepted,
                 // STATUS §5lo: paused by the office — nothing sells; the open orders are still theirs.
-                'paused' => $scope->paused,
+                // …and (COMMERCE_PARITY_PLAN P4) whether its listings skip the office's approval.
+                'paused' => $scope->paused, 'trusted' => app(ListingApprovalAction::class)->trusted($scope->vendorId),
             ],
             'memberships' => app(ResolveVendorScopeAction::class)->memberships($scope->userId),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),

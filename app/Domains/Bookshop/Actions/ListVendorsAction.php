@@ -54,6 +54,7 @@ class ListVendorsAction
                 'legal_name' => $vendor->legal_name,
                 'tin' => $vendor->tin,
                 'gst_registered' => $vendor->gst_registered,
+                'trusted' => (bool) $vendor->trusted,
                 'badges' => (array) ($vendor->badges ?? []),
                 'storefront_published_at' => $vendor->storefront?->published_at?->toDateTimeString(),
                 // B5 (§6.6): what the office moderates.

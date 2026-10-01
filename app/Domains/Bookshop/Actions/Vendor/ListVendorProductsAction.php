@@ -130,6 +130,9 @@ class ListVendorProductsAction
             'low_stock' => $p->track_stock && $p->low_stock_at !== null && $p->stock <= $p->low_stock_at,
             'lead_days' => $p->lead_days,
             'status' => $p->status->value,
+            // COMMERCE_PARITY_PLAN P4: waiting since, and the office's note on a declined listing.
+            'submitted_at' => $p->submitted_at?->format('Y-m-d H:i'),
+            'review_note' => $p->review_note,
             'visibility' => $p->visibility->value,
             'tags' => $p->tags ?? [],
             'details' => (object) ($p->details ?? []),

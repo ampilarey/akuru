@@ -106,7 +106,7 @@ function VendorEditor({ vendor, t, onDone, sectionTypes = [] }) {
         gst_registered: Boolean(vendor.gst_registered), status: vendor.status, commission_rate: vendor.commission_rate || '',
         contact_email: vendor.contact_email || '', contact_phone: vendor.contact_phone || '', address: vendor.address || '',
         opening_hours: vendor.opening_hours || '', office_notes: vendor.office_notes || '',
-        badges: vendor.badges || [],
+        badges: vendor.badges || [], trusted: Boolean(vendor.trusted),
     });
     const set = (name) => (e) => form.setData(name, e.target.type === 'checkbox' ? e.target.checked : e.target.value);
     const toggleBadge = (badge) => (e) => form.setData('badges', e.target.checked ? [...form.data.badges, badge] : form.data.badges.filter((b) => b !== badge));
@@ -133,6 +133,8 @@ function VendorEditor({ vendor, t, onDone, sectionTypes = [] }) {
             <label className="text-sm">{t.legal_name}<input className="form-input w-full" value={form.data.legal_name} onChange={set('legal_name')} /></label>
             <label className="text-sm">{t.tin}<input className="form-input w-full" value={form.data.tin} onChange={set('tin')} /></label>
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.data.gst_registered} onChange={set('gst_registered')} /> {t.gst_registered}</label>
+            {/* COMMERCE_PARITY_PLAN P4: a trusted shop's listings go on sale without the office's approval. */}
+            <label className="flex items-center gap-2 text-sm" title={t.trusted_hint}><input type="checkbox" checked={form.data.trusted} onChange={set('trusted')} data-testid="vendor-trusted" /> {t.trusted}</label>
             {/* B4 (plan §6.1): the office's badges; "Akuru partner" also unlocks Akuru's own palette (decision 10). */}
             <fieldset className="flex flex-wrap items-center gap-3 text-sm md:col-span-2">
                 <legend className="sr-only">{t.badges}</legend>
@@ -591,6 +593,65 @@ function ApplicationRow({ a, t }) {
                 <p className="mt-1 text-xs text-gray-500">{a.decided_at}{a.decision_note && ` · ${a.decision_note}`}{a.vendor && <> · <a href={`/shop/${a.vendor.slug}`} className="text-blue-700 underline">{a.vendor.name}</a></>}</p>
             )}
         </li>
+    );
+}
+
+/** COMMERCE_PARITY_PLAN P4: listings awaiting the office's approval, oldest first. */
+function ListingDecision({ row, t }) {
+    const form = useForm({ decision: 'approve', note: '' });
+    const decide = (decision) => (e) => {
+        e.preventDefault();
+        form.transform((data) => ({ ...data, decision }));
+        form.post(`/admin/bookshop/listings/${row.id}/decide`, { preserveScroll: true });
+    };
+
+    return (
+        <form className="flex flex-wrap items-center gap-2" onSubmit={decide('approve')}>
+            <input className="form-input w-56 text-sm" placeholder={t.listing_note_placeholder} value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} maxLength={1000} data-testid={`listing-note-${row.id}`} />
+            <button type="submit" className="rounded bg-green-700 px-3 py-1 text-sm font-semibold text-white" disabled={form.processing} data-testid={`listing-approve-${row.id}`}>{t.listing_approve}</button>
+            <button type="button" onClick={decide('decline')} className="rounded border border-red-300 px-3 py-1 text-sm text-red-800" disabled={form.processing} data-testid={`listing-decline-${row.id}`}>{t.listing_decline}</button>
+            {form.errors.note && <span className="w-full text-xs text-red-700">{form.errors.note}</span>}
+            {form.errors.decision && <span className="w-full text-xs text-red-700">{form.errors.decision}</span>}
+        </form>
+    );
+}
+
+function Listings({ rows, t }) {
+    return (
+        <section id="listings" className="mb-8 rounded-lg border border-amber-300 bg-white p-4" data-testid="listings">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">{t.listings_title} ({rows.length})</h2>
+                <a href="/admin/bookshop/listings/export" className="btn-secondary" data-testid="export-listings">{t.export_csv}</a>
+            </div>
+            <p className="mb-3 text-sm text-gray-600">{t.listings_intro}</p>
+            {rows.length === 0 && <p className="text-sm text-gray-500" data-testid="listings-empty">{t.listings_empty}</p>}
+            <ul className="divide-y">
+                {rows.map((row) => (
+                    <li key={row.id} className="grid gap-3 py-3 md:grid-cols-[96px_1fr]" data-testid={`listing-${row.slug}`}>
+                        {row.image ? <img src={row.image} alt="" className="h-24 w-24 rounded object-cover" /> : <div className="h-24 w-24 rounded bg-gray-100" />}
+                        <div className="min-w-0">
+                            <p className="font-semibold">{row.title} <span className="text-sm font-normal text-gray-600">· {row.vendor} · MVR {row.price}{row.category ? ` · ${row.category}` : ''}</span></p>
+                            <p className="text-xs text-gray-500">{t.listing_submitted}: {row.submitted_at}</p>
+                            {row.summary && <p className="mt-1 text-sm text-gray-700">{row.summary}</p>}
+                            {row.description && <p className="mt-1 text-sm text-gray-600">{row.description}</p>}
+                            {row.changes && (
+                                <div className="mt-2 rounded bg-amber-50 p-2 text-sm" data-testid={`listing-changes-${row.id}`}>
+                                    <p className="font-medium">{t.listing_changed}</p>
+                                    <ul className="list-disc ps-5">
+                                        {Object.entries(row.changes).map(([field, change]) => (
+                                            <li key={field}>{t[`listing_field_${field.replace(/_(dv|ar)$/, '')}`] || field}{field.endsWith('_dv') ? ' (DV)' : field.endsWith('_ar') ? ' (AR)' : ''}{change.from || change.to ? `: ${change.from || '—'} → ${change.to || '—'}` : ''}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                            <div className="mt-2 flex flex-wrap items-center gap-3">
+                                <ListingDecision row={row} t={t} />
+                            </div>
+                        </div>
+                    </li>
+                ))}
+            </ul>
+        </section>
     );
 }
 
@@ -1154,7 +1215,7 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], questions = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, rewards = null, referrals = null, shop_open = { open: true, message: null }, default_commission_rate, sign_in_url, section_types = [], identity_checks = [], id_l = {} }) {
+export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], questions = [], home = null, low_stock = [], notices = null, order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, cod_on = true, rewards = null, referrals = null, shop_open = { open: true, message: null }, default_commission_rate, sign_in_url, section_types = [], identity_checks = [], id_l = {}, listings = [] }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -1167,6 +1228,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
             {money && money.requests.length > 0 && <Money money={money} t={t} />}
             {applications.some((a) => a.status === 'pending') && <Applications applications={applications} open={applications_open} t={t} />}
+            <Listings rows={listings} t={t} />
             {/* COMMERCE_PARITY_PLAN P2: shop owners' identity cards. */}
             <div id="identity" className="mt-8"><IdentityChecks rows={identity_checks} l={id_l} /></div>
 

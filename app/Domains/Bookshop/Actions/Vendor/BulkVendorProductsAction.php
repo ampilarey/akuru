@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Vendor;
 
+use App\Domains\Bookshop\Actions\ListingApprovalAction;
 use App\Domains\Bookshop\Actions\Shop\CustomerListsAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\Product;
@@ -34,6 +35,10 @@ class BulkVendorProductsAction
             VendorIdentity::require($scope->vendorId);
         }
         $ids = array_values(array_unique(array_map('intval', $ids)));
+        // COMMERCE_PARITY_PLAN P4: unless the office trusts the shop, *put on sale* asks the office first.
+        if ($status === 'active' && ! app(ListingApprovalAction::class)->trusted($scope->vendorId)) {
+            return app(ListingApprovalAction::class)->bulkSubmit($scope->vendorId, $ids, $scope->userId);
+        }
         $changed = Product::query()->where('vendor_id', $scope->vendorId)->whereIn('id', $ids)->where('status', '!=', $status)
             ->update(['status' => $status, 'updated_by' => $scope->userId, 'updated_at' => now()]);
         if ($status === 'active') {

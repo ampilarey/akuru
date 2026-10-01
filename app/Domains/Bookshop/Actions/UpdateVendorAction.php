@@ -14,6 +14,8 @@ class UpdateVendorAction
     private const EDITABLE = [
         'name', 'tagline', 'legal_name', 'tin', 'gst_registered', 'status', 'commission_rate',
         'contact_email', 'contact_phone', 'address', 'opening_hours', 'office_notes', 'badges',
+        // COMMERCE_PARITY_PLAN P4: a trusted shop's listings skip the office's queue.
+        'trusted',
     ];
 
     public const BADGES = ['verified', 'akuru_partner'];

@@ -108,8 +108,9 @@ it('keeps an unverified shop from putting a product on sale or asking for a payo
     $card = IdentityVerification::query()->where('user_id', $owner->id)->firstOrFail();
     idWeb()->actingAs($office)->post(route('identity.decide', $card->id), ['decision' => 'verify'])->assertSessionHasNoErrors();
 
+    // Verified, the request to sell goes through — to the office's approval queue (P4).
     idWeb()->actingAs($owner)->post(route('vendor.products.store'), idProductInput(['title' => 'Dua cards']))->assertSessionHasNoErrors();
-    expect(Product::query()->where('vendor_id', $vendor->id)->where('status', 'active')->count())->toBe(1);
+    expect(Product::query()->where('vendor_id', $vendor->id)->where('status', 'pending_review')->count())->toBe(1);
     idWeb()->actingAs($owner)->get(route('vendor.index'))->assertInertia(fn ($page) => $page->where('identity', null));
 });
 
