@@ -2,7 +2,6 @@
 
 namespace App\Domains\Lending\Actions;
 
-use App\Domains\Lending\Enums\LoanStatus;
 use App\Domains\Lending\Models\Lender;
 use App\Domains\Lending\Models\LendingLoan;
 use App\Domains\Lending\Models\LendingRating;
@@ -26,7 +25,7 @@ class RateLendingAction
         $isBorrower = (int) $loan->borrower_user_id === $byUserId;
         $isLender = (int) $loan->lender->user_id === $byUserId;
         abort_unless($isBorrower || $isLender, 404);
-        if ($loan->status !== LoanStatus::Returned) {
+        if (! $loan->status->isClosedWell()) {
             throw ValidationException::withMessages(['stars' => __('lending.error_rate_before_return')]);
         }
         if (LendingRating::query()->where('lending_loan_id', $loan->id)->where('by_user_id', $byUserId)->exists()) {

@@ -4414,6 +4414,53 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mv. Free books, given away (LENDING_AND_USED_BOOKS_PLAN L3, 2026-10-01)
+
+The owner, after L2: "I don't see free book, give away". Lending was
+borrow-and-return; nothing let a person give a book away. One idea added to
+the same shelf, no new screen.
+
+- **A listed book is offered one of two ways** — *To borrow* (every book so
+  far) or *Free to keep*. The add/edit form asks first; the book's row, the
+  shelf card and the book page say which (a *Free to keep* badge; *Given by*
+  instead of *Lent by*; no return days or deposit shown for a give-away).
+- **The shelf** gains an *Offered* filter and a *Free books* chip
+  (`/lending?offer=give`). The Bookstore menu's chip now reads *Borrow or
+  get free books*.
+- **The loan of a give-away**: asked for (*Ask for it*), accepted **without
+  a return date** (none is asked, none stored even if sent), and at
+  handover the loan closes as **Given** and the book as **Given away** —
+  off the shelf for good, its page a 404; *Returned* is refused; the taker
+  is told "The book is yours". Both may still rate each other, as after a
+  return. Reminders never touch it (they watch `out` loans only).
+- **Data**: `lending_books.offer` (`lend` default, indexed); statuses
+  `given` on loans and books. Additive.
+- EN/DV/AR.
+
+Tests:
+- New `GiveAwayTest` (1 test, 40 assertions): a bad offer refused; a
+  give-away and a loan listed side by side; the shelf shows both, the
+  filter and chip narrow to each, the pages differ (badge, no deposit,
+  *Ask for it* vs *Ask to borrow*); accepted with no due date despite one
+  sent, the notice says "will give you"; handover → given/given away, off
+  the shelf, 404, "The book is yours"; *returned* refused; both rate; the
+  office sees the given loan and the stars; a loan book still becomes *out*
+  with a date.
+- Architecture, Nav, Admin, Routes, Bookshop, Identity, Lending, Unit: all
+  green (see the PR).
+
+Walk:
+- `lending.mjs` grows from 33 to **42/42**: the lender lists a free book;
+  the shelf badge and *Free books* chip; the chip narrows to give-aways;
+  the page without deposit; *Ask for it*; the request without a date field;
+  acceptance without *Due back* and the *Handed over — it is theirs*
+  button; handover → Given, Given away, gone, 404; the taker sees *Given
+  by* and the rating form.
+
+Also: production had not pulled since #630 — `/en/lending` and
+`/en/shop/used` were 404 there when the owner looked. The pull command
+stands; nothing in the code was wrong.
+
 ## 5mu. One flash per screen; the browser may keep the built files (2026-10-01)
 
 Two small things seen while walking §5mq and §5mr, done together because

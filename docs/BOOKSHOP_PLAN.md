@@ -515,8 +515,8 @@ U1 puts a condition on products and lets a person sell their own books as a
 *personal seller* (a vendor of kind `personal`); L1 (built the same day, STATUS
 §5ms) adds book lending between Akuru's users beside the Bookstore — `/lending`,
 `/my-lending`, `/admin/lending`, lenders' ID cards checked by the Bookstore
-team — and L2 (STATUS §5mt) the daily reminders, ratings, pause and the
-office's moderation. `used` and `lending` are reserved shop addresses.
+team — L2 (STATUS §5mt) the daily reminders, ratings, pause and the
+office's moderation, and L3 (STATUS §5mv) books given away free to keep. `used` and `lending` are reserved shop addresses.
 
 ## 16. After the build: features from the iruali comparison (2026-09-29)
 

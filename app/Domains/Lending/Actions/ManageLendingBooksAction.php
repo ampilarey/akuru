@@ -3,6 +3,7 @@
 namespace App\Domains\Lending\Actions;
 
 use App\Domains\Lending\Enums\BookCondition;
+use App\Domains\Lending\Enums\BookOffer;
 use App\Domains\Lending\Enums\LendingBookStatus;
 use App\Domains\Lending\Models\Lender;
 use App\Domains\Lending\Models\LendingBook;
@@ -45,6 +46,11 @@ class ManageLendingBooksAction
         $days = (int) ($data['max_days'] ?? config('lending.default_days', 14));
         $days = max(1, min((int) config('lending.max_days', 60), $days));
         $condition = BookCondition::tryFrom((string) ($data['condition'] ?? '')) ?? BookCondition::Good;
+        // L3: to lend or to give away; a book already on loan or given keeps its offer.
+        $offer = BookOffer::tryFrom((string) ($data['offer'] ?? '')) ?? ($book?->offer ?? BookOffer::Lend);
+        if ($book !== null && in_array($book->status, [LendingBookStatus::OnLoan, LendingBookStatus::Given], true)) {
+            $offer = $book->offer;
+        }
 
         $book ??= new LendingBook(['lender_id' => $lender->id, 'slug' => $this->uniqueSlug($title), 'status' => LendingBookStatus::Available->value]);
         $book->fill([
@@ -52,6 +58,7 @@ class ManageLendingBooksAction
             'author' => $text($data['author'] ?? null, 255),
             'language' => $text($data['language'] ?? null, 40),
             'condition' => $condition->value,
+            'offer' => $offer->value,
             'description' => $text($data['description'] ?? null, 2000),
             'grade' => $text($data['grade'] ?? null, 40),
             'subject' => $text($data['subject'] ?? null, 80),

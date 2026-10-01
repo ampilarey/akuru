@@ -18,7 +18,7 @@ use Illuminate\Database\Eloquent\Builder;
 class ListLendingBooksAction
 {
     /**
-     * @param  array<string, mixed>  $filters  q, grade, subject, language, island
+     * @param  array<string, mixed>  $filters  q, offer (lend|give, L3), grade, subject, language, island
      * @return array{books: list<array<string, mixed>>, total: int, filters: array<string, list<string>>}
      */
     public function execute(array $filters = []): array
@@ -28,6 +28,7 @@ class ListLendingBooksAction
                 $term = '%'.str_replace(['%', '_'], ['\\%', '\\_'], trim((string) $filters['q'])).'%';
                 $q->where(fn (Builder $w) => $w->where('title', 'like', $term)->orWhere('author', 'like', $term)->orWhere('subject', 'like', $term));
             })
+            ->when(in_array($filters['offer'] ?? '', ['lend', 'give'], true), fn (Builder $q) => $q->where('offer', (string) $filters['offer']))
             ->when(($filters['grade'] ?? '') !== '', fn (Builder $q) => $q->where('grade', (string) $filters['grade']))
             ->when(($filters['subject'] ?? '') !== '', fn (Builder $q) => $q->where('subject', (string) $filters['subject']))
             ->when(($filters['language'] ?? '') !== '', fn (Builder $q) => $q->where('language', (string) $filters['language']))

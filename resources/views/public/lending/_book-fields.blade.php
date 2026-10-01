@@ -1,5 +1,18 @@
 {{-- L1: the fields of a lent book, for the add form and each book's edit form on My lending. --}}
 @php($new = $book === null)
+@php($offer = $new ? old('offer', 'lend') : $book['offer'])
+{{-- L3: to lend, or free to keep. --}}
+<fieldset class="text-sm sm:col-span-2" data-testid="book-offer">
+    <legend class="mb-1">{{ __('lending.offer_label') }}</legend>
+    <div class="grid gap-2 sm:grid-cols-2">
+        @foreach(['lend', 'give'] as $o)
+            <label class="flex cursor-pointer items-start gap-2 rounded border p-2 {{ $offer === $o ? 'border-brandMaroon-400 bg-brandMaroon-50' : 'bg-white' }}">
+                <input type="radio" name="offer" value="{{ $o }}" @checked($offer === $o) class="mt-1" @if($new) data-testid="offer-{{ $o }}" @endif>
+                <span><span class="font-medium">{{ __('lending.offer_'.$o) }}</span><br><span class="text-xs text-gray-500">{{ __('lending.offer_'.$o.'_hint') }}</span></span>
+            </label>
+        @endforeach
+    </div>
+</fieldset>
 <label class="text-sm sm:col-span-2">{{ __('lending.book_title') }}
     <input type="text" name="title" value="{{ $new ? old('title') : $book['title'] }}" maxlength="255" required class="form-input w-full" dir="auto" @if($new) data-testid="book-title-input" @endif>
 </label>

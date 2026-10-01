@@ -51,7 +51,7 @@ export default function Admin({ t = {}, id_l = {}, admin = {} }) {
     const { errors } = usePage().props;
     const { counts = {}, lenders = [], loans = [], books = [], identity = [] } = admin;
     const stars = (r) => (r && r.count > 0 ? `★ ${r.avg} (${r.count})` : '—');
-    const tone = { requested: 'bg-amber-100 text-amber-800', accepted: 'bg-blue-100 text-blue-800', declined: 'bg-red-100 text-red-800', cancelled: 'bg-gray-100 text-gray-700', out: 'bg-indigo-100 text-indigo-800', returned: 'bg-green-100 text-green-800' };
+    const tone = { requested: 'bg-amber-100 text-amber-800', accepted: 'bg-blue-100 text-blue-800', declined: 'bg-red-100 text-red-800', cancelled: 'bg-gray-100 text-gray-700', out: 'bg-indigo-100 text-indigo-800', returned: 'bg-green-100 text-green-800', given: 'bg-green-100 text-green-800' };
 
     return (
         <AppShell title={t.admin_title}>

@@ -9,6 +9,8 @@
  * the lender and the stars reach the shelf; the lender pauses and resumes a
  * book and themselves; the office pauses the lender with a note the lender
  * reads, resumes them, takes the book down with a note; the lenders CSV.
+ * L3: a book offered free to keep — the Free books chip and badge, asked
+ * for, accepted without a date, handed over and gone for good.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/lending.mjs
@@ -270,6 +272,48 @@ await settle(office);
 await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
 await lender.reload({ waitUntil: 'networkidle' });
 check('the office takes the book down with a note: gone from the shelf and the lender\'s list', (await count(guest, `[data-lending-book="${slug}"]`)) === 0 && (await count(lender, `[data-testid="my-book-${slug}"]`)) === 0 && (await count(office, `[data-testid="book-${bookId}"]`)) === 0);
+// ------------------------------------------------------------ 9. L3: a book given away for good
+
+const GIFT = `SMOKE-Walk Old Atlas ${Math.random().toString(36).slice(2, 7)}`;
+const giftSlug = GIFT.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+await lender.reload({ waitUntil: 'networkidle' });
+if ((await count(lender, '[data-testid="add-book"][open]')) === 0) {
+    await lender.locator('[data-testid="add-book"] summary').click();
+}
+await lender.check('[data-testid="offer-give"]');
+await lender.fill('[data-testid="book-title-input"]', GIFT);
+await lender.selectOption('[data-testid="book-condition-select"]', 'fair');
+await lender.click('[data-testid="save-book"]');
+await settle(lender, `[data-testid="my-book-${giftSlug}"]`);
+check('the lender lists a book free to keep', (await count(lender, `[data-testid="my-book-${giftSlug}"][data-status="available"]`)) === 1 && (await lender.locator(`[data-testid="my-book-${giftSlug}"] [data-testid="book-offer-label"]`).innerText()).includes('Free to keep'));
+await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
+check('the shelf shows it with the Free to keep badge and offers a Free books chip', (await count(guest, `[data-lending-book="${giftSlug}"] [data-badge="give"]`)) === 1 && (await count(guest, '[data-testid="lending-free-chip"]')) === 1);
+await guest.click('[data-testid="lending-free-chip"]');
+await settle(guest, '[data-testid="lending-grid"]');
+const freeCards = await count(guest, '[data-lending-book]');
+check('the Free books chip narrows the shelf to give-aways', /offer=give/.test(guest.url()) && freeCards >= 1 && freeCards === (await count(guest, '[data-badge="give"]')), `${freeCards} cards`);
+await guest.goto(`${BASE}/en/lending/${giftSlug}`, { waitUntil: 'networkidle' });
+check('its page says Free to keep, has no deposit or days, and the button says Ask for it', (await count(guest, '[data-testid="give-badge"]')) === 1 && (await count(guest, '[data-testid="book-deposit"]')) === 0 && (await guest.locator('[data-testid="ask-sign-in"]').count()) === 1);
+await borrower.goto(`${BASE}/en/lending/${giftSlug}`, { waitUntil: 'networkidle' });
+check('and for a signed-in person the button says Ask for it', (await borrower.locator('[data-testid="ask-submit"]').innerText()).includes('Ask for it'));
+await borrower.click('[data-testid="ask-submit"]');
+await settle(borrower, '[data-testid="borrowing-section"]');
+await lender.reload({ waitUntil: 'networkidle' });
+const giftReq = lender.locator('[data-testid="lending-loans"] [data-status="requested"]').first();
+const giftLoanId = (await giftReq.getAttribute('data-testid'))?.replace('loan-', '');
+check('the lender sees the request with no return-date field', (await giftReq.count()) === 1 && (await count(lender, `[data-testid="accept-due-${giftLoanId}"]`)) === 0);
+await lender.click(`[data-testid="accept-${giftLoanId}"]`);
+await settle(lender, '[data-testid="flash-success"]');
+const giftLoan = lender.locator(`[data-testid="loan-${giftLoanId}"]`);
+check('accepting a give-away sets no due date and offers Handed over — it is theirs', (await giftLoan.getAttribute('data-status')) === 'accepted' && !(await giftLoan.innerText()).includes('Due back') && (await lender.locator(`[data-testid="handover-${giftLoanId}"]`).innerText()).includes('theirs'));
+await lender.click(`[data-testid="handover-${giftLoanId}"]`);
+await settle(lender, '[data-testid="flash-success"]');
+await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
+const giftPage = await guest.goto(`${BASE}/en/lending/${giftSlug}`, { waitUntil: 'networkidle' });
+check('handing it over gives it away: the loan is Given, the book Given away, gone from the shelf and its page a 404', (await giftLoan.getAttribute('data-status')) === 'given' && (await count(lender, `[data-testid="my-book-${giftSlug}"][data-status="given"]`)) === 1 && (await count(guest, `[data-lending-book="${giftSlug}"]`)) === 0 && giftPage?.status() === 404, `HTTP ${giftPage?.status()}`);
+await borrower.goto(`${BASE}/en/my-lending`, { waitUntil: 'networkidle' });
+check('the taker sees Given by, the book theirs, and may rate the giver', (await count(borrower, `[data-testid="borrow-${giftLoanId}"][data-status="given"]`)) === 1 && (await borrower.locator(`[data-testid="borrow-${giftLoanId}"]`).innerText()).includes('Given by') && (await count(borrower, `[data-testid="rate-form-${giftLoanId}"]`)) === 1);
+
 const lendersCsv = await office.request.get(`${BASE}/en/admin/lending/lenders/export`);
 const lendersBody = await lendersCsv.text();
 check('the lenders CSV carries the lender with their rating', lendersCsv.status() === 200 && lendersBody.includes('Aminath (walk)') && lendersBody.includes('rating_avg'), `HTTP ${lendersCsv.status()}`);

@@ -8,6 +8,7 @@ use App\Domains\Lending\Actions\ManageLendingBooksAction;
 use App\Domains\Lending\Actions\RateLendingAction;
 use App\Domains\Lending\Actions\RegisterLenderAction;
 use App\Domains\Lending\Enums\BookCondition;
+use App\Domains\Lending\Enums\BookOffer;
 use App\Domains\Lending\Models\Lender;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
@@ -90,6 +91,7 @@ class MyLendingController extends Controller
             'author' => 'nullable|string|max:255',
             'language' => 'nullable|string|max:40',
             'condition' => 'required|string|in:'.implode(',', BookCondition::values()),
+            'offer' => 'nullable|string|in:'.implode(',', BookOffer::values()),
             'description' => 'nullable|string|max:2000',
             'grade' => 'nullable|string|max:40',
             'subject' => 'nullable|string|max:80',
@@ -115,15 +117,16 @@ class MyLendingController extends Controller
         $data = $request->validate(['due_on' => 'nullable|date', 'note' => 'nullable|string|max:500']);
         $userId = (int) $request->user()->id;
         $loans = app(LendingLoanAction::class);
-        match ($action) {
+        $result = match ($action) {
             'accept' => $loans->accept($loan, $userId, $data['due_on'] ?? null),
             'decline' => $loans->decline($loan, $userId, $data['note'] ?? null),
             'cancel' => $loans->cancel($loan, $userId),
             'handover' => $loans->handOver($loan, $userId),
             default => $loans->markReturned($loan, $userId),
         };
+        $flash = $action === 'handover' && $result->status->value === 'given' ? 'loan_given_flash' : 'loan_'.$action.'_flash';
 
-        return redirect()->to(route('public.lending.mine').($action === 'cancel' ? '#borrowing' : '#lending'))->with('success', __('lending.loan_'.$action.'_flash'));
+        return redirect()->to(route('public.lending.mine').($action === 'cancel' ? '#borrowing' : '#lending'))->with('success', __('lending.'.$flash));
     }
 
     private function lender(Request $request): Lender

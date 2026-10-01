@@ -4,9 +4,9 @@
 // No money goes through Akuru (D4): a deposit is words the two agree on.
 // DV/AR first pass pending native review (BACKLOG A10).
 return [
-    'borrow_heading' => 'Borrow books',
-    'shelf_title' => 'Books to borrow',
-    'shelf_intro' => 'Books that people near you lend for free. Ask for one; the lender agrees a return date; you arrange the handover between you. No money goes through Akuru.',
+    'borrow_heading' => 'Borrow or get free books',
+    'shelf_title' => 'Books to borrow or keep',
+    'shelf_intro' => 'Books that people near you lend, or give away, for free. Ask for one; the lender agrees (and a return date, if it is a loan); you arrange the handover between you. No money goes through Akuru.',
     'shelf_empty' => 'No books to borrow match. Try fewer filters, or lend your own.',
     'shelf_count' => ':count book|:count books',
     'search_placeholder' => 'Title, author or subject',
@@ -209,6 +209,27 @@ return [
     'export_lenders_csv' => 'Lenders CSV',
     'col_rating' => 'Rating',
     'paused_by_office' => 'Paused by office',
+
+    // L3: give-aways — a book offered free to keep, on the same shelf
+    'offer_label' => 'Offered',
+    'offer_lend' => 'To borrow',
+    'offer_give' => 'Free to keep',
+    'offer_lend_hint' => 'They bring it back by the date you agree.',
+    'offer_give_hint' => 'It is theirs once handed over. Nothing comes back.',
+    'give_badge' => 'Free to keep',
+    'given_by' => 'Given by',
+    'ask_to_take' => 'Ask for it',
+    'filter_offer' => 'Offered',
+    'filter_offer_any' => 'Borrow or keep',
+    'shelf_free_chip' => 'Free books',
+    'book_status_given' => 'Given away',
+    'loan_status_given' => 'Given — it is theirs',
+    'loan_given_flash' => 'Handed over. The book is theirs now.',
+    'notice_accepted_give_body' => ':name will give you “:title”. Phone: :phone. Arrange the handover between you.',
+    'notice_given_title' => 'The book is yours',
+    'notice_given_body' => ':name has given you “:title”. Enjoy it.',
+    'handover_give' => 'Handed over — it is theirs',
+    'books_given_note' => 'Given away',
 
     // Office
     'admin_title' => 'Book lending',
