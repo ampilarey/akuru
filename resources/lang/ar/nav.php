@@ -145,6 +145,7 @@ return [
     'complaints' => 'المشكلات المبلّغ عنها',
     'sms_campaigns' => 'عروض الرسائل القصيرة',
     'shop_customers' => 'العملاء',
+    'shop_credit' => 'حسابات الائتمان',
     'shop' => 'متجر الكتب',
     'my_orders' => 'طلباتي',
     'my_wishlist' => 'قائمة أمنياتي',

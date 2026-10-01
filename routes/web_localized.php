@@ -907,6 +907,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('customers/{customer}/tags', [\App\Domains\Bookshop\Http\Controllers\AdminCustomerController::class, 'tags'])->name('admin.bookshop.customers.tags')->whereNumber('customer');
         Route::post('customers/{customer}/notes', [\App\Domains\Bookshop\Http\Controllers\AdminCustomerController::class, 'note'])->name('admin.bookshop.customers.notes')->whereNumber('customer');
         Route::post('customers/{customer}/notes/{note}/done', [\App\Domains\Bookshop\Http\Controllers\AdminCustomerController::class, 'done'])->name('admin.bookshop.customers.notes.done')->whereNumber('customer')->whereNumber('note');
+        // COMMERCE_PARITY_PLAN P8c: credit accounts for schools.
+        Route::get('credit', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'index'])->name('admin.bookshop.credit');
+        Route::get('credit/export', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'export'])->name('admin.bookshop.credit.export');
+        Route::post('credit', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'open'])->name('admin.bookshop.credit.open');
+        Route::post('credit/{account}', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'update'])->name('admin.bookshop.credit.update')->whereNumber('account');
+        Route::post('credit/{account}/payments', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'payment'])->name('admin.bookshop.credit.payment')->whereNumber('account');
+        Route::get('credit/{account}/statement', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'statement'])->name('admin.bookshop.credit.statement')->whereNumber('account');
         // COMMERCE_PARITY_PLAN P4: listings awaiting the office's approval.
         Route::post('listings/{product}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'decide'])->name('admin.bookshop.listings.decide')->whereNumber('product');
         Route::get('listings/export', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'export'])->name('admin.bookshop.listings.export');

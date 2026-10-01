@@ -4414,6 +4414,94 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mm. Credit accounts for schools, with deposits (COMMERCE_PARITY_PLAN P8c, 2026-10-01)
+
+**Deposits.** P8 listed "deposits" separately, but the reference has them as
+Bake & Grill's *deposits for trade customers*: money paid ahead onto the account.
+They belong here, not in P8d.
+- The office ticks *A deposit paid ahead* when it records the money.
+- A deposit may go past what is owed. The account is then **in credit**, and that
+  adds to what it may spend.
+- A plain payment still cannot pass what is owed, so a mistyped amount cannot make
+  credit by accident.
+- Kind `deposit` on the ledger.
+- The customer is told what is in credit, and My orders and the office list show
+  it.
+- An extra test covers it: a payment past what is owed is refused, the same amount
+  as a deposit is accepted, and MVR 300 of books then fits a MVR 100 limit plus the
+  MVR 250 deposit.
+
+P8d is therefore pre-orders alone.
+
+This is Bake & Grill's CustomerCreditLedger, done under rule 12.
+
+- **The office** (`/admin/bookshop/credit`, in the money workspace and the
+  Bookstore admin's bar):
+  - opens an account for an existing customer, by email or phone, with the school
+    or organisation, a credit limit and days to pay; one account per customer;
+  - edits the limit, the terms and the status (active or suspended);
+  - records what the school paid (amount and reference). It cannot record more
+    than is owed;
+  - reads each account's statement (date, entry, charged, paid or refunded,
+    running balance) and can download it as CSV;
+  - sees every account, most owed first, with owed, available and overdue, and
+    can download the list as CSV.
+- **Checkout**:
+  - *Pay on account* is offered only to a customer with an active account, and
+    shows what is available and the days to pay.
+  - Choosing it puts a **charge** on the ledger inside the checkout's
+    transaction, and the checkout is paid at once.
+  - The shop's earning and the notices follow the same path as a wallet or card
+    payment.
+  - An order the available credit cannot cover is refused, and so is a
+    suspended account. Nothing is written in either case.
+- **Refunds**: a cancellation or return of an order paid on account goes back as
+  a **refund** entry, and the refund is recorded with destination `credit`.
+- **The customer**: My orders shows the account (limit, owed, available, days,
+  anything overdue) and their own statement CSV. They are told when a payment is
+  recorded, with what is still owed.
+- **The ledger** (`shop_credit_entries`):
+  - It is append-only. The model refuses an update or a delete, and every key
+    restricts deletes (pinned in MoneyTablesRestrictOnDeleteTest).
+  - A checkout can carry at most one charge.
+  - Owed is charges minus payments minus refunds.
+  - Overdue is charges older than the terms minus everything paid back, so the
+    oldest is paid first.
+  - The account row holds settings only (limit, terms, status) and is edited
+    freely. It holds no money.
+- `SmokeMarkerSeeder` clears the walk's synthetic account and its ledger before it
+  clears the walk's checkouts, because the ledger's keys refuse to let them go
+  first.
+- **Languages**: EN/DV/AR.
+
+Tests:
+- New `ShopCreditTest`, 6 tests:
+  - not offered and refused without an account;
+  - offered with what is available, paid at once, charge on the ledger, shop's
+    earning recorded, My orders shows it;
+  - over the limit refused and nothing written, suspended refused;
+  - a payment over what is owed refused; a payment recorded, the customer told,
+    the statement's running balance, all three CSVs, and others refused;
+  - a cancelled order paid on account goes back onto the account;
+  - entries refuse update and delete, overdue after the terms, one account per
+    customer, an unknown customer refused;
+  - DV/AR.
+- Money-table restrict test, WorkspacesTest, AdminHubTest and DetailScreens
+  updated.
+- Architecture, Nav, Admin, Routes and Bookshop: 403 green.
+
+Walk:
+- New `credit.mjs`, 7/7:
+  - the office opens an account for the student (MVR 1000, 30 days);
+  - the checkout offers *Pay on account* with MVR 1000.00 available;
+  - the order is paid at once;
+  - My orders shows owed MVR 170.00 and available MVR 830.00;
+  - the office sees 170.00 owed and records a payment of 100;
+  - 70.00 is still owed;
+  - the statement shows the order, the payment and the balance.
+- The seeder's reset was then run with the walk's credit rows present and
+  cleared them.
+
 ## 5ml. Push: the driver is told an order is theirs (COMMERCE_PARITY_PLAN P8b, 2026-10-01)
 
 - **The audit was wrong about push.** COMMERCE_PARITY_PLAN F13 listed push

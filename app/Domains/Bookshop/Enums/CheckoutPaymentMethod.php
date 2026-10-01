@@ -13,5 +13,7 @@ enum CheckoutPaymentMethod: string
     case BankTransfer = 'bank_transfer';
     // B9b: paid to the shop in cash when the order arrives or is collected.
     case CashOnDelivery = 'cash_on_delivery';
+    // COMMERCE_PARITY_PLAN P8c: on a credit account the office opened, paid at once and owed until the school pays.
+    case Credit = 'credit';
     case None = 'none';
 }

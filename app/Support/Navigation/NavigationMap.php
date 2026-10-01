@@ -105,6 +105,7 @@ final class NavigationMap
                 ['key' => 'complaints', 'href' => '/admin/bookshop/complaints'],
                 ['key' => 'sms_campaigns', 'href' => '/admin/bookshop/campaigns'],
                 ['key' => 'shop_customers', 'href' => '/admin/bookshop/customers'],
+                ['key' => 'shop_credit', 'href' => '/admin/bookshop/credit'],
                 ['key' => 'shop', 'href' => '/shop'],
             ],
             // The Institute workspace (STATUS §5id): the business side's doors.
@@ -409,6 +410,8 @@ final class NavigationMap
                 ['key' => 'sms_campaigns', 'href' => '/admin/bookshop/campaigns', 'can' => ['bookshop.manage']],
                 // COMMERCE_PARITY_PLAN P7c: the customers, with the office's tags and notes.
                 ['key' => 'shop_customers', 'href' => '/admin/bookshop/customers', 'can' => ['bookshop.manage']],
+                // COMMERCE_PARITY_PLAN P8c: credit accounts for schools.
+                ['key' => 'shop_credit', 'href' => '/admin/bookshop/credit', 'can' => ['bookshop.manage']],
             ]],
             ['key' => 'panel_system', 'items' => [
                 ['key' => 'manage_users', 'href' => '/admin/users'],

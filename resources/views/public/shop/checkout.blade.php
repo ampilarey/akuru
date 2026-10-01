@@ -105,6 +105,7 @@
                             @if($method === 'wallet')<span class="block text-xs text-gray-500">{{ __('shop.wallet_balance', ['balance' => $currency.' '.$checkout['wallet_balance']]) }}</span>@endif
                             @if($method === 'bank_transfer')<span class="block text-xs text-gray-500">{{ __('shop.pay_bank_transfer_hint') }}</span>@endif
                             @if($method === 'cash_on_delivery')<span class="block text-xs text-gray-500">{{ __('shop.pay_cash_on_delivery_hint') }}</span>@endif
+                            @if($method === 'credit' && $checkout['credit'])<span class="block text-xs text-gray-500" data-testid="credit-available">{{ __('shop.pay_credit_hint', ['available' => $currency.' '.$checkout['credit']['available'], 'days' => $checkout['credit']['terms_days']]) }}</span>@endif
                         </span>
                     </label>
                 @endforeach
