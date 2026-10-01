@@ -51,7 +51,7 @@ function BankDetails({ bank, isOwner, t }) {
 }
 
 export default function VendorMoney({ t, vendor, money }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
     const isOwner = vendor.role === 'owner';
     const m = money;
     const s = m.summary;
@@ -61,7 +61,6 @@ export default function VendorMoney({ t, vendor, money }) {
     return (
         <AppShell title={t.money_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <header className="mb-4">
                 <h1 className="text-2xl font-bold" data-testid="money-heading">{t.money_title} · {vendor.name}</h1>
                 <p className="text-sm text-gray-600">

@@ -248,7 +248,7 @@ function OrderCard({ order, t, open, onToggle }) {
 }
 
 export default function VendorOrders({ t, vendor, orders, counts, filters }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
     const [open, setOpen] = useState(orders.length === 1 ? orders[0].id : null);
     const [q, setQ] = useState(filters.q || '');
     const [range, setRange] = useState({ from: '', to: '' });
@@ -260,7 +260,6 @@ export default function VendorOrders({ t, vendor, orders, counts, filters }) {
         <AppShell title={t.orders_title}>
             {vendor.paused && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="shop-paused">{t.shop_paused_banner}</p>}
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold" data-testid="orders-heading">{t.orders_title} · {vendor.name}</h1>

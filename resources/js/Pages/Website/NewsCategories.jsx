@@ -7,14 +7,13 @@ import FormErrors from '../../Components/FormErrors';
  * whether they are offered on the news form.
  */
 export default function NewsCategories({ categories = [], t = {} }) {
-    const { flash = {}, errors = {} } = usePage().props;
+    const { errors = {} } = usePage().props;
     const form = useForm({ name: '', sort_order: '' });
     const toggle = (category) => router.put(`/admin/public-site/news/categories/${category.id}`, { name: category.name, slug: category.slug, sort_order: category.sort_order, is_active: category.is_active ? 0 : 1 }, { preserveScroll: true });
 
     return (
         <AppShell title={t.news_categories || 'Categories'}>
             <p className="mb-4 text-sm"><Link href="/admin/public-site/news" className="text-gray-500 underline">{t.news_back || '← Back to News'}</Link></p>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">✓ {flash.success}</p>}
             <FormErrors errors={errors} className="mb-4" />
             <form onSubmit={(e) => { e.preventDefault(); form.post('/admin/public-site/news/categories', { preserveScroll: true, onSuccess: () => form.reset() }); }} className="mb-4 flex flex-wrap gap-2" data-testid="news-category-add">
                 <input className="form-input" placeholder={t.news_category_name || 'Category name'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />

@@ -11,7 +11,7 @@ import AppShell from '../../Layouts/AppShell';
 const humanize = (value) => (value || '').replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
 
 export default function DailyContentQueue({ items = [], t = {} }) {
-    const { flash = {}, errors = {}, auth = {} } = usePage().props;
+    const { errors = {}, auth = {} } = usePage().props;
     const viewerId = auth.user?.id;
     const firstError = Object.values(errors)[0];
     const typeLabel = (type) => t[`subs_type_${type}`] || humanize(type);
@@ -28,8 +28,7 @@ export default function DailyContentQueue({ items = [], t = {} }) {
     return (
         <AppShell title={t.daily_queue_title || 'Approval queue'}>
             <p className="mb-4 text-sm"><Link href="/admin/public-site/daily-content" className="underline" data-testid="queue-calendar-link">{t.daily_link_calendar || 'Calendar →'}</Link></p>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="queue-flash">✓ {flash.success}</p>}
-            {(flash.error || firstError) && <p className="mb-4 rounded bg-red-50 p-3 text-red-700" data-testid="queue-error">✗ {flash.error || firstError}</p>}
+            {firstError && <p className="mb-4 rounded bg-red-50 p-3 text-red-700" data-testid="queue-error">✗ {firstError}</p>}
             <p className="mb-4 text-sm text-gray-600">{t.daily_queue_intro || 'The creator cannot approve their own item.'}</p>
 
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="queue-table">

@@ -4,7 +4,7 @@ import AppShell from '../../Layouts/AppShell';
 import { createRecorder, describeRecordingFailure, recordingSupport } from '../../Platform';
 
 export default function Practice({ letters, harakas, attempts, ai_enabled: aiEnabled }) {
-    const { flash = {}, i18n } = usePage().props;
+    const { i18n } = usePage().props;
     const t = i18n?.learn || {};
     const [letterId, setLetterId] = useState(letters[0]?.id || '');
     const [harakaId, setHarakaId] = useState(harakas[0]?.id || '');
@@ -78,8 +78,6 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
 
     return (
         <AppShell title={t.pronounce_title || 'Pronunciation practice'}>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
-
             <div className="mb-6 rounded-lg border bg-white p-6 text-center">
                 <div className="mb-4 flex justify-center gap-3">
                     <select className="form-input" value={letterId} onChange={(e) => setLetterId(e.target.value)}>

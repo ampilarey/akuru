@@ -48,7 +48,7 @@ function Stat({ label, value, testid }) {
 }
 
 export default function Admin({ t = {}, id_l = {}, admin = {} }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
     const { counts = {}, lenders = [], loans = [], books = [], identity = [] } = admin;
     const stars = (r) => (r && r.count > 0 ? `★ ${r.avg} (${r.count})` : '—');
     const tone = { requested: 'bg-amber-100 text-amber-800', accepted: 'bg-blue-100 text-blue-800', declined: 'bg-red-100 text-red-800', cancelled: 'bg-gray-100 text-gray-700', out: 'bg-indigo-100 text-indigo-800', returned: 'bg-green-100 text-green-800' };
@@ -56,7 +56,6 @@ export default function Admin({ t = {}, id_l = {}, admin = {} }) {
     return (
         <AppShell title={t.admin_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <p className="mb-4 text-sm text-gray-600">{t.admin_intro}</p>
 
             <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4" data-testid="lending-stats">

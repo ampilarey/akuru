@@ -1,4 +1,4 @@
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 /**
@@ -11,8 +11,7 @@ export default function PageForm(props) {
 }
 
 function PageFormBody({ page = null, t = {} }) {
-    const { flash = {} } = usePage().props;
-    const editing = page !== null;
+        const editing = page !== null;
     const form = useForm({
         title: page?.title || '',
         slug: page?.slug || '',
@@ -40,7 +39,6 @@ function PageFormBody({ page = null, t = {} }) {
     return (
         <AppShell title={editing ? (t.pages_edit_title || 'Edit Page: :title').replace(':title', page.title) : (t.pages_new_title || 'Create New Page')}>
             <p className="mb-4 text-sm"><Link href="/admin/public-site/pages" className="text-gray-500 underline" data-testid="pages-back">{t.pages_back || '← Back to Pages'}</Link></p>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="pages-flash">✓ {flash.success}</p>}
             {firstError && <p className="mb-4 rounded bg-red-50 p-3 text-sm text-red-700" data-testid="pages-error">✗ {firstError}</p>}
 
             <form onSubmit={submit} className="max-w-3xl space-y-5 rounded-lg border bg-white p-6" data-testid="page-form">

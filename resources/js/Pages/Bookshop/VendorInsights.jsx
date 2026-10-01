@@ -1,4 +1,4 @@
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 /**
@@ -73,12 +73,10 @@ const pageName = (subject, t) => {
 };
 
 export default function VendorInsights({ t, vendor, report, ranges }) {
-    const { flash = {} } = usePage().props;
-    const days = report.days;
+        const days = report.days;
 
     return (
         <AppShell title={t.insights_title}>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
             <header className="mb-4 flex flex-wrap items-end justify-between gap-2">
                 <div>
                     <h1 className="text-2xl font-bold" data-testid="insights-heading">{t.insights_title} · {vendor.name}</h1>

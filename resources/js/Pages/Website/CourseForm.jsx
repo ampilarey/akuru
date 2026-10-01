@@ -1,4 +1,4 @@
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 const LANGUAGES = ['en', 'ar', 'dv', 'mixed'];
@@ -17,8 +17,7 @@ export default function CourseForm(props) {
 }
 
 function CourseFormBody({ course = null, categories = [], t = {} }) {
-    const { flash = {} } = usePage().props;
-    const editing = course !== null;
+        const editing = course !== null;
     const form = useForm({
         course_category_id: course?.course_category_id ?? '',
         title: course?.title || '',
@@ -75,7 +74,6 @@ function CourseFormBody({ course = null, categories = [], t = {} }) {
     return (
         <AppShell title={editing ? (t.courses_edit_title || 'Edit Course: :title').replace(':title', course.title) : (t.courses_new_title || 'Create New Course')}>
             <p className="mb-4 text-sm"><Link href="/admin/public-site/courses" className="text-gray-500 underline" data-testid="courses-back">{t.courses_back || '← Back to Courses'}</Link></p>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="courses-flash">✓ {flash.success}</p>}
             {firstError && <p className="mb-4 rounded bg-red-50 p-3 text-sm text-red-700" data-testid="courses-error">✗ {firstError}</p>}
 
             <form onSubmit={submit} action={editing ? `/admin/public-site/courses/${course.slug}` : '/admin/public-site/courses'} method="post" className="max-w-3xl space-y-5 rounded-lg border bg-white p-6" data-testid="course-form">

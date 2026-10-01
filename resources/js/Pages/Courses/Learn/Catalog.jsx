@@ -82,12 +82,10 @@ function Intakes({ row, t }) {
 
 export default function Catalog({ rows }) {
     const t = usePage().props.i18n?.learn || {};
-    const flash = usePage().props.flash || {};
 
     return (
         <AppShell title={t.catalog_title || 'Learn catalog'}>
             <p className="mb-4 text-sm text-gray-600">{t.catalog_intro || 'Published courses. Enroll self-paced, or choose an intake where one is open.'}</p>
-            {flash.error && <p className="mb-4 rounded bg-red-50 p-3 text-red-700">{flash.error}</p>}
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

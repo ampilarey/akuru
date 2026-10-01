@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 
@@ -9,8 +9,7 @@ import AppShell from '../../Layouts/AppShell';
  * door to a new draft. Every string is a key in the admin tranche.
  */
 export default function Broadcasts({ broadcasts = [], pagination, filters = {}, modes = [], statuses = [], t = {} }) {
-    const { flash = {} } = usePage().props;
-    const [mode, setMode] = useState(filters.mode || '');
+        const [mode, setMode] = useState(filters.mode || '');
     const [status, setStatus] = useState(filters.status || '');
     const query = new URLSearchParams(Object.fromEntries(Object.entries({ mode, status }).filter(([, v]) => v))).toString();
     const filter = (e) => {
@@ -27,8 +26,6 @@ export default function Broadcasts({ broadcasts = [], pagination, filters = {}, 
                 <a href={`/admin/prayer-times/broadcasts/export${query ? `?${query}` : ''}`} className="btn-secondary ms-auto text-sm" data-testid="export-csv">{t.prayer_export || 'Export CSV'}</a>
                 <Link href="/admin/prayer-times/broadcasts/create" className="btn-primary" data-testid="broadcast-new">{t.prayer_broadcast_new || 'New broadcast'}</Link>
             </div>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="prayer-flash">✓ {flash.success}</p>}
-
             <form onSubmit={filter} action="/admin/prayer-times/broadcasts" method="get" className="mb-4 flex flex-wrap gap-3 text-sm" data-testid="broadcasts-filter">
                 <select name="mode" className="form-input" value={mode} onChange={(e) => setMode(e.target.value)} aria-label={t.prayer_mode || 'Mode'}>
                     <option value="">{t.prayer_all_modes || 'All modes'}</option>

@@ -26,7 +26,7 @@ function Status({ application, t }) {
 }
 
 export default function VendorApply({ t, open, application, shops = [], agreement_url, defaults, id_l = {} }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
     const form = useForm({ kind: 'shop', shop_name: '', legal_name: '', tin: '', contact_email: defaults.contact_email || '', contact_phone: defaults.contact_phone || '', island: '', what_they_sell: '', link: '', agreement: false, id_front: null, id_back: null });
     const set = (name) => (e) => form.setData(name, e.target.value);
     const waiting = application?.status === 'pending';
@@ -34,7 +34,6 @@ export default function VendorApply({ t, open, application, shops = [], agreemen
     return (
         <AppShell title={t.apply_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <h1 className="mb-1 text-2xl font-bold" data-testid="apply-heading">{t.apply_title}</h1>
             <p className="mb-6 max-w-2xl text-gray-600">{t.apply_intro}</p>
 

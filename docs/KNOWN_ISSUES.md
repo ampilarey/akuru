@@ -157,6 +157,15 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the Bookstore storefront walks (2026-10-01)
+
+- **Every saved form showed its "Saved" twice** on the Inertia screens —
+  **fixed (2026-10-01, STATUS §5mu)**. `AppShell` has printed the flash
+  under the title since the shell existed, and 48 pages printed it again
+  below. The pages' copies are gone; the shell's bar carries the test id.
+- **The browser could cache nothing**, not even the built CSS and JS —
+  **fixed (2026-10-01, STATUS §5mu)**; Bookstore audit finding 26.
+
 ## Found by the news editor slice R4 (2026-09-29)
 
 - **The public site is always left-to-right** — **fixed (2026-09-29, STATUS

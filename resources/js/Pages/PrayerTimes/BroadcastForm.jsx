@@ -14,7 +14,7 @@ export default function BroadcastForm(props) {
 }
 
 function BroadcastFormBody({ broadcast = null, islands = [], groups = [], modes = [], languages = [], t = {} }) {
-    const { flash = {}, errors = {} } = usePage().props;
+    const { errors = {} } = usePage().props;
     const editing = broadcast !== null;
     const snapshot = broadcast?.snapshot ?? null;
     const form = useForm({
@@ -39,7 +39,6 @@ function BroadcastFormBody({ broadcast = null, islands = [], groups = [], modes 
     return (
         <AppShell title={editing ? (t.prayer_broadcast_title || 'Broadcast :id').replace(':id', broadcast.id) : (t.prayer_broadcast_new_title || 'New broadcast')}>
             <p className="mb-4 text-sm"><Link href="/admin/prayer-times/broadcasts" className="text-gray-500 underline" data-testid="broadcast-back">{t.prayer_back_broadcasts || '← Prayer broadcasts'}</Link></p>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="prayer-flash">✓ {flash.success}</p>}
             {firstError && <p className="mb-4 rounded bg-red-50 p-3 text-sm text-red-700" data-testid="prayer-error">✗ {firstError}</p>}
             {editing && <p className="mb-4 text-sm text-gray-600">{t.prayer_col_status || 'Status'}: <span className="font-semibold" data-testid="broadcast-status">{t[`prayer_status_${broadcast.status}`] || broadcast.status}</span></p>}
 

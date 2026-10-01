@@ -90,12 +90,11 @@ function QuoteCard({ quote, t, defaultDays, maxDays }) {
 }
 
 export default function VendorQuotes({ t, vendor, quotes, counts, statuses, status, default_valid_days, max_valid_days }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
 
     return (
         <AppShell title={t.quotes_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <header className="mb-4 flex flex-wrap items-end justify-between gap-2">
                 <div>
                     <h1 className="text-2xl font-bold" data-testid="quotes-heading">{t.quotes_title} · {vendor.name}</h1>

@@ -1,4 +1,4 @@
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import BodyEditor from '../../Components/BodyEditor';
 
@@ -12,8 +12,7 @@ export default function NewsForm(props) {
 }
 
 function NewsFormBody({ post = null, categories = [], t = {} }) {
-    const { flash = {} } = usePage().props;
-    const editing = post !== null;
+        const editing = post !== null;
     const form = useForm({
         title: post?.title || '',
         slug: post?.slug || '',
@@ -57,7 +56,6 @@ function NewsFormBody({ post = null, categories = [], t = {} }) {
     return (
         <AppShell title={editing ? (t.news_edit_title || 'Edit news: :title').replace(':title', post.title) : (t.news_new_title || 'Write news')}>
             <p className="mb-4 text-sm"><Link href="/admin/public-site/news" className="text-gray-500 underline">{t.news_back || '← Back to News'}</Link></p>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">✓ {flash.success}</p>}
             {firstError && <p className="mb-4 rounded bg-red-50 p-3 text-sm text-red-700" data-testid="news-error">✗ {firstError}</p>}
 
             <form onSubmit={submit} className="max-w-3xl space-y-5 rounded-lg border bg-white p-6" data-testid="news-form">

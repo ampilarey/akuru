@@ -354,13 +354,14 @@ export default function AppShell({ title, children }) {
             </header>
             <main id="main" className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
                 <h1 className="mb-4 text-xl font-semibold text-gray-900">{title}</h1>
+                {/* The one place a flash is printed (STATUS §5mu): pages do not print it again. */}
                 {flash?.success && (
-                    <div role="status" className="mb-4 rounded border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-800">
+                    <div role="status" className="mb-4 rounded border border-green-200 bg-green-50 px-4 py-2 text-sm text-green-800" data-testid="flash-success">
                         {flash.success}
                     </div>
                 )}
                 {flash?.error && (
-                    <div role="alert" className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800">
+                    <div role="alert" className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-800" data-testid="flash-error">
                         {flash.error}
                     </div>
                 )}

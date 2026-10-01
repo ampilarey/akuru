@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 
@@ -18,8 +18,7 @@ const ROLE_TONES = {
 };
 
 export default function Users({ users = [], pagination, total = 0, filters = {}, roles = [], t = {} }) {
-    const { flash = {} } = usePage().props;
-    const [search, setSearch] = useState(filters.search || '');
+        const [search, setSearch] = useState(filters.search || '');
     const [role, setRole] = useState(filters.role || '');
     const query = (extra = {}) => {
         const params = new URLSearchParams({ ...(search ? { search } : {}), ...(role ? { role } : {}), ...extra });
@@ -43,9 +42,6 @@ export default function Users({ users = [], pagination, total = 0, filters = {},
                 {/* Not in the nav bar: a list of who has been hammering the OTP endpoints should take a decision to open. */}
                 <Link href="/admin/users/otp-abuse" className="underline">{t.users_otp_abuse || 'OTP abuse events'}</Link>
             </div>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="users-flash">✓ {flash.success}</p>}
-            {flash.error && <p className="mb-4 rounded bg-red-50 p-3 text-red-700" data-testid="users-error">✗ {flash.error}</p>}
-
             <form onSubmit={submit} className="mb-4 flex flex-wrap gap-2" data-testid="users-filter">
                 <input className="form-input min-w-[14rem] flex-1" name="search" placeholder={t.users_search_placeholder || 'Search name, ID card, mobile, email…'} value={search} onChange={(e) => setSearch(e.target.value)} />
                 <select className="form-input" name="role" value={role} onChange={(e) => setRole(e.target.value)} aria-label={t.users_col_role || 'Role'}>

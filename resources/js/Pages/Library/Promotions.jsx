@@ -1,4 +1,4 @@
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
@@ -105,8 +105,7 @@ function CampaignForm({ options, fundingSources, t }) {
 }
 
 export default function Promotions({ campaigns = [], options = { categories: [], writers: [], items: [] }, funding_sources = [], t = {} }) {
-    const { flash = {} } = usePage().props;
-    const describe = (c) => (c.discount_type === 'percentage' ? `${c.discount_value}%` : `MVR ${c.discount_value}`)
+        const describe = (c) => (c.discount_type === 'percentage' ? `${c.discount_value}%` : `MVR ${c.discount_value}`)
         + (c.max_discount_amount ? ` (max MVR ${c.max_discount_amount})` : '')
         + (c.is_gift_card_bonus ? ` ${t.library_promotions_bonus || 'bonus'}` : '')
         + (c.minimum_amount ? ` ${t.library_promotions_from || 'from'} MVR ${c.minimum_amount}` : '');
@@ -119,8 +118,6 @@ export default function Promotions({ campaigns = [], options = { categories: [],
                 <a href="/library/promotions" className="underline" target="_blank" rel="noopener">{t.library_promotions_public || 'The public offers page'}</a>
                 <a href="/admin/library" className="ms-auto underline">{t.library_settings_back || 'Back to the Library office'}</a>
             </div>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
-
             <CampaignForm options={options} fundingSources={funding_sources} t={t} />
 
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="campaigns">

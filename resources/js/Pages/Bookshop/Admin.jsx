@@ -1246,7 +1246,6 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
     return (
         <AppShell title={t.office_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             {flash.vendor_invite && <InviteCard invite={flash.vendor_invite} t={t} signInUrl={sign_in_url} />}
 
             {slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}

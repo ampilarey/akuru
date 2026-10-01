@@ -62,12 +62,11 @@ function Payment({ account, t }) {
 }
 
 export default function Credit({ t = {}, accounts = [], statement = null }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
 
     return (
         <AppShell title={t.credit_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm text-gray-600">{t.credit_intro}</p>
                 <a href="/admin/bookshop/credit/export" className="btn-secondary" data-testid="export-credit">{t.export_csv}</a>

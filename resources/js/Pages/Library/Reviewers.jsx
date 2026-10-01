@@ -8,7 +8,7 @@ import FormErrors from '../../Components/FormErrors';
  * long they take; add by email, remove when nothing is open.
  */
 export default function Reviewers({ reviewers = [], t = {} }) {
-    const { flash = {}, errors = {} } = usePage().props;
+    const { errors = {} } = usePage().props;
     const form = useForm({ email: '' });
     const remove = (reviewer) => {
         if (window.confirm((t.library_reviewers_remove_confirm || 'Remove :name from the reviewer pool?').replace(':name', reviewer.name))) {
@@ -19,7 +19,6 @@ export default function Reviewers({ reviewers = [], t = {} }) {
     return (
         <AppShell title={t.library_reviewers_title || 'Peer reviewers'}>
             <p className="mb-4 text-sm text-gray-600">{t.library_reviewers_intro || 'The people who peer-review research. Assigning someone by email on a submission also adds them here.'}</p>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
             <FormErrors errors={errors} className="mb-4" />
             <form
                 onSubmit={(e) => { e.preventDefault(); form.post('/admin/library/reviewers', { preserveScroll: true, onSuccess: () => form.reset() }); }}

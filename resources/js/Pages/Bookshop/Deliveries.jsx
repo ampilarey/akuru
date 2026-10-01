@@ -37,12 +37,11 @@ function PickedUp({ delivery, t }) {
 }
 
 export default function Deliveries({ t = {}, deliveries = [] }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
 
     return (
         <AppShell title={t.deliveries_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <p className="mb-4 text-sm text-gray-600">{t.deliveries_intro}</p>
             {deliveries.length === 0 && <p className="rounded border bg-white p-3 text-sm text-gray-600" data-testid="deliveries-empty">{t.deliveries_empty}</p>}
             <ul className="grid gap-3" data-testid="deliveries">

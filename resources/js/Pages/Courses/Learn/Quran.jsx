@@ -185,15 +185,12 @@ function RecitationRecorder({ surahs, assignments, t }) {
 
 export default function Quran({ student, submissions, progress, schedules, assignments = [], surahs = [] }) {
     const t = usePage().props.i18n?.learn || {};
-    const flash = usePage().props.flash || {};
 
     return (
         <AppShell title={t.quran_dashboard || "My Qur'an"}>
             {!student && (
                 <p className="mb-4 text-sm text-gray-600">{t.no_profile || 'No student profile is linked to this account.'}</p>
             )}
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
-
             {student && surahs.length > 0 && (
                 <RecitationRecorder surahs={surahs} assignments={assignments} t={t} />
             )}

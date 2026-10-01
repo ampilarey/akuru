@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 import { IdentityStatus } from '../../Components/IdentityCard';
@@ -26,8 +26,7 @@ const PAYMENT_TONES = {
 const humanize = (value) => (value || '').replace(/_/g, ' ').replace(/^\w/, (c) => c.toUpperCase());
 
 export default function Enrollments({ enrollments = [], pagination, total = 0, courses = [], filters = {}, statuses = [], payment_statuses: paymentStatuses = [], t = {}, id_l = {} }) {
-    const { flash = {} } = usePage().props;
-    const [form, setForm] = useState({ search: filters.search || '', course_id: filters.course_id || '', status: filters.status || '', payment_status: filters.payment_status || '', id_card: filters.id_card || '' });
+        const [form, setForm] = useState({ search: filters.search || '', course_id: filters.course_id || '', status: filters.status || '', payment_status: filters.payment_status || '', id_card: filters.id_card || '' });
     const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
     const active = Object.fromEntries(Object.entries(form).filter(([, v]) => v !== ''));
     const query = new URLSearchParams(active).toString();
@@ -49,9 +48,6 @@ export default function Enrollments({ enrollments = [], pagination, total = 0, c
                 <p className="text-gray-600" data-testid="enrolments-total">{(t.enrolments_total || ':count enrolments').replace(':count', total)}</p>
                 <a href={`/admin/enrollments/export${query ? `?${query}` : ''}`} className="ms-auto underline" data-testid="export-csv">{t.enrolments_export || 'Export CSV'}</a>
             </div>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="enrolments-flash">✓ {flash.success}</p>}
-            {flash.error && <p className="mb-4 rounded bg-red-50 p-3 text-red-700" data-testid="enrolments-error">✗ {flash.error}</p>}
-
             <form onSubmit={submit} className="mb-4 flex flex-wrap items-end gap-2 rounded-lg border bg-white p-3" data-testid="enrolments-filter">
                 <label className="text-xs text-gray-600">
                     {t.enrolments_search || 'Search'}

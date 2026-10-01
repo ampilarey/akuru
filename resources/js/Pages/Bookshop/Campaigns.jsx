@@ -37,7 +37,7 @@ function Settings({ summary, t }) {
 }
 
 export default function Campaigns({ t = {}, summary, campaigns = [] }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
     const form = useForm({ audience: 'opted_in', vendor_id: '', message: '' });
     const shop = summary.shops.find((s) => String(s.id) === String(form.data.vendor_id));
     const people = form.data.audience === 'shop_buyers' ? (shop?.opted_in_buyers ?? 0) : summary.opted_in;
@@ -55,7 +55,6 @@ export default function Campaigns({ t = {}, summary, campaigns = [] }) {
     return (
         <AppShell title={t.campaigns_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <p className="mb-4 text-sm text-gray-600">{t.campaigns_intro}</p>
 
             <section className="mb-6 rounded-lg border bg-white p-4" data-testid="campaign-budget-box">
