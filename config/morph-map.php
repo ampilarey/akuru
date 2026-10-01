@@ -151,6 +151,9 @@ return [
     'shop_sms_optin' => \App\Domains\Bookshop\Models\ShopSmsOptin::class,
     'shop_sms_campaign' => \App\Domains\Bookshop\Models\ShopSmsCampaign::class,
     'shop_sms_campaign_recipient' => \App\Domains\Bookshop\Models\ShopSmsCampaignRecipient::class,
+    // COMMERCE_PARITY_PLAN P7c: the office's tags and notes on a customer.
+    'shop_customer_profile' => \App\Domains\Bookshop\Models\ShopCustomerProfile::class,
+    'shop_customer_note' => \App\Domains\Bookshop\Models\ShopCustomerNote::class,
     'vendor_application' => \App\Domains\Bookshop\Models\VendorApplication::class,
     'vendor_newsletter_subscriber' => \App\Domains\Bookshop\Models\VendorNewsletterSubscriber::class,
     'quote_request' => \App\Domains\Bookshop\Models\QuoteRequest::class,

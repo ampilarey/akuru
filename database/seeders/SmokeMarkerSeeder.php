@@ -1855,6 +1855,12 @@ class SmokeMarkerSeeder extends Seeder
     {
         DB::table('shop_sms_campaigns')->where('message', 'like', 'SMOKE-%')->delete();
         DB::table('shop_sms_optins')->where('phone', '7700000')->delete();
+        // P7c: customers.mjs tags the student and keeps a note with a follow-up.
+        $student = DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id');
+        if ($student !== null) {
+            DB::table('shop_customer_notes')->where('user_id', $student)->delete();
+            DB::table('shop_customer_profiles')->where('user_id', $student)->delete();
+        }
     }
 
     private function officePurchaseContacts(): void

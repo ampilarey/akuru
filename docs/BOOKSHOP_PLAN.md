@@ -114,6 +114,8 @@ decided on `/admin/bookshop`, the form closable by the office.)*
 
 *(COMMERCE_PARITY_PLAN P7b, 2026-10-01, STATUS §5mi: SMS offers — a customer opts in at checkout; the office sends to everyone who opted in or to one shop's opted-in buyers, sees the cost first, stays inside a monthly budget; every message carries its own stop link, and STOP works too.)*
 
+*(COMMERCE_PARITY_PLAN P7c, 2026-10-01, STATUS §5mj: the office's customer view — everyone with a paid order, biggest spenders first, searchable by name, phone or order number; tags; notes with follow-up dates ticked off when done; CSV.)*
+
 *(COMMERCE_PARITY_PLAN P5, 2026-09-30, STATUS §5me: a paid order tells the customer (with the tracking link), each shop and the office — in the app, by email and by SMS, all on by default. A bank slip, a cancellation and a return reach the office's own email and phone too, set under *Notices* on `/admin/bookshop`.)*
 
 **Browse and find**
