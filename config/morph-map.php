@@ -162,6 +162,7 @@ return [
     'lender' => \App\Domains\Lending\Models\Lender::class,
     'lending_book' => \App\Domains\Lending\Models\LendingBook::class,
     'lending_loan' => \App\Domains\Lending\Models\LendingLoan::class,
+    'lending_rating' => \App\Domains\Lending\Models\LendingRating::class,
     'vendor_newsletter_subscriber' => \App\Domains\Bookshop\Models\VendorNewsletterSubscriber::class,
     'quote_request' => \App\Domains\Bookshop\Models\QuoteRequest::class,
     'quote_item' => \App\Domains\Bookshop\Models\QuoteItem::class,
