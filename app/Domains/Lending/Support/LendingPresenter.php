@@ -2,6 +2,7 @@
 
 namespace App\Domains\Lending\Support;
 
+use App\Domains\Lending\Actions\RateLendingAction;
 use App\Domains\Lending\Models\Lender;
 use App\Domains\Lending\Models\LendingBook;
 use App\Domains\Lending\Models\LendingLoan;
@@ -33,6 +34,7 @@ final class LendingPresenter
             'deposit' => $book->deposit,
             'status' => $book->status->value,
             'status_label' => $book->status->label(),
+            'office_note' => $book->office_note,
             'photo' => $book->photo_media_id !== null ? $images->execute((int) $book->photo_media_id, (int) config('lending.photo.card_width', 480)) : null,
             'photo_large' => $large && $book->photo_media_id !== null ? $images->execute((int) $book->photo_media_id, (int) config('lending.photo.large_width', 1200)) : null,
             'url' => route('public.lending.show', $book->slug),
@@ -41,11 +43,12 @@ final class LendingPresenter
     }
 
     /**
-     * @return array{id: int, name: string, island: ?string, about: ?string, id_required: bool}
+     * @return array{id: int, name: string, island: ?string, about: ?string, id_required: bool, rating: array{avg: ?float, count: int}}
      */
     public static function lender(Lender $lender): array
     {
         return [
+            'rating' => RateLendingAction::lenderSummary($lender),
             'id' => $lender->id,
             'name' => $lender->display_name,
             'island' => $lender->island,
@@ -65,6 +68,7 @@ final class LendingPresenter
     public static function loan(LendingLoan $loan, array $borrower, array $lenderPerson): array
     {
         $accepted = in_array($loan->status->value, ['accepted', 'out', 'returned'], true);
+        $ratings = $loan->status->value === 'returned' ? RateLendingAction::onLoan($loan) : [];
 
         return [
             'id' => $loan->id,
@@ -79,8 +83,10 @@ final class LendingPresenter
             'due_on' => $loan->due_on?->toDateString(),
             'overdue' => $loan->status->value === 'out' && $loan->due_on !== null && $loan->due_on->isPast(),
             'returned_at' => $loan->returned_at?->toDateTimeString(),
+            // L2: once returned, each side may rate the other once.
+            'ratings' => $ratings,
             'book' => ['id' => $loan->book->id, 'slug' => $loan->book->slug, 'title' => $loan->book->title, 'author' => $loan->book->author, 'url' => route('public.lending.show', $loan->book->slug), 'max_days' => (int) $loan->book->max_days, 'deposit' => $loan->book->deposit],
-            'borrower' => ['name' => (string) ($borrower['name'] ?? ''), 'phone' => $accepted ? ($borrower['phone'] ?? null) : null, 'id_verified' => (bool) ($borrower['id_verified'] ?? false)],
+            'borrower' => ['name' => (string) ($borrower['name'] ?? ''), 'phone' => $accepted ? ($borrower['phone'] ?? null) : null, 'id_verified' => (bool) ($borrower['id_verified'] ?? false), 'rating' => RateLendingAction::borrowerSummary((int) $loan->borrower_user_id)],
             'lender' => ['name' => $loan->lender->display_name, 'island' => $loan->lender->island, 'phone' => $accepted ? ($lenderPerson['phone'] ?? null) : null],
         ];
     }

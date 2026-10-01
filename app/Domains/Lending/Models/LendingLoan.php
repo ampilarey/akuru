@@ -23,6 +23,9 @@ class LendingLoan extends Model
             'handed_at' => 'datetime',
             'due_on' => 'date',
             'returned_at' => 'datetime',
+            'reminded_before_at' => 'datetime',
+            'reminded_due_at' => 'datetime',
+            'last_overdue_reminder_on' => 'date',
         ];
     }
 

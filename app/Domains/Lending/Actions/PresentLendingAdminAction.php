@@ -8,6 +8,7 @@ use App\Domains\Lending\Enums\LoanStatus;
 use App\Domains\Lending\Models\Lender;
 use App\Domains\Lending\Models\LendingBook;
 use App\Domains\Lending\Models\LendingLoan;
+use App\Domains\Lending\Models\LendingRating;
 
 /**
  * The office's view of lending (L1): every lender with their book and loan
@@ -41,6 +42,9 @@ class PresentLendingAdminAction
                 'island' => $l->island,
                 'status' => $l->status,
                 'id_required' => (bool) $l->id_required,
+                'office_paused' => (bool) $l->office_paused,
+                'office_note' => $l->office_note,
+                'rating' => RateLendingAction::lenderSummary($l),
                 'books' => (int) $l->books_count,
                 'loans' => (int) $l->loans_count,
                 'open_loans' => (int) $l->open_loans_count,
@@ -49,8 +53,35 @@ class PresentLendingAdminAction
                 'since' => $l->created_at?->toDateString(),
             ])->values()->all(),
             'loans' => $this->loans($limit),
+            // L2: the books, for the office to take one down with a note.
+            'books' => $this->books($limit),
             'identity' => app(IdentityVerificationAction::class)->list('lender'),
         ];
+    }
+
+    /**
+     * The books on offer (not taken down), newest first (L2).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function books(int $limit = 200): array
+    {
+        return LendingBook::query()->where('status', '!=', LendingBookStatus::Removed->value)->with('lender')->orderByDesc('id')->limit($limit)->get()
+            ->map(fn (LendingBook $b) => ['id' => $b->id, 'slug' => $b->slug, 'title' => $b->title, 'author' => $b->author, 'lender' => $b->lender->display_name, 'lender_id' => $b->lender_id, 'status' => $b->status->value, 'status_label' => $b->status->label(), 'condition_label' => $b->condition->label(), 'since' => $b->created_at?->toDateString()])
+            ->values()->all();
+    }
+
+    /**
+     * Every lender as a CSV row (L2).
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function lendersForExport(int $limit = 5000): array
+    {
+        $rows = $this->execute($limit)['lenders'];
+        $ratings = LendingRating::query()->where('about', LendingRating::ABOUT_LENDER)->selectRaw('lender_id, avg(stars) as avg, count(*) as n')->groupBy('lender_id')->get()->keyBy('lender_id');
+
+        return array_map(fn (array $l) => $l + ['rating_avg' => isset($ratings[$l['id']]) ? round((float) $ratings[$l['id']]->avg, 1) : null, 'rating_count' => (int) ($ratings[$l['id']]->n ?? 0)], $rows);
     }
 
     /**

@@ -17,11 +17,11 @@ class Lender extends Model
 
     public const PAUSED = 'paused';
 
-    protected $fillable = ['user_id', 'display_name', 'island', 'about', 'id_required', 'status'];
+    protected $fillable = ['user_id', 'display_name', 'island', 'about', 'id_required', 'status', 'office_paused', 'office_note'];
 
     protected function casts(): array
     {
-        return ['id_required' => 'boolean'];
+        return ['id_required' => 'boolean', 'office_paused' => 'boolean'];
     }
 
     public function books(): HasMany

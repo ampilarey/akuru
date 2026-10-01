@@ -5,6 +5,7 @@ namespace App\Domains\Lending\Http\Controllers;
 use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Lending\Actions\LendingLoanAction;
 use App\Domains\Lending\Actions\ManageLendingBooksAction;
+use App\Domains\Lending\Actions\RateLendingAction;
 use App\Domains\Lending\Actions\RegisterLenderAction;
 use App\Domains\Lending\Enums\BookCondition;
 use App\Domains\Lending\Models\Lender;
@@ -47,6 +48,31 @@ class MyLendingController extends Controller
         app(RegisterLenderAction::class)->execute((int) $request->user()->id, $data);
 
         return redirect()->to(route('public.lending.mine').'#lender')->with('success', __('lending.lender_saved_flash'));
+    }
+
+    /** L2: the lender pauses or resumes themselves; the route constrains the word. */
+    public function status(Request $request, string $action): RedirectResponse
+    {
+        app(RegisterLenderAction::class)->setStatus((int) $request->user()->id, $action === 'pause' ? Lender::PAUSED : Lender::ACTIVE);
+
+        return redirect()->to(route('public.lending.mine').'#lender')->with('success', __('lending.lender_'.$action.'_flash'));
+    }
+
+    /** L2: a book off the shelf for a while, or back on it. */
+    public function bookStatus(Request $request, int $book, string $action): RedirectResponse
+    {
+        app(ManageLendingBooksAction::class)->setStatus($this->lender($request), $book, $action);
+
+        return redirect()->to(route('public.lending.mine').'#books')->with('success', __('lending.book_'.$action.'_flash'));
+    }
+
+    /** L2: either side rates the other after a return. */
+    public function rate(Request $request, int $loan): RedirectResponse
+    {
+        $data = $request->validate(['stars' => 'required|integer|min:1|max:5', 'comment' => 'nullable|string|max:500']);
+        $rating = app(RateLendingAction::class)->rate($loan, (int) $request->user()->id, (int) $data['stars'], $data['comment'] ?? null);
+
+        return redirect()->to(route('public.lending.mine').($rating->about === 'lender' ? '#borrowing' : '#lending'))->with('success', __('lending.rated_flash'));
     }
 
     public function identity(Request $request): RedirectResponse

@@ -5,6 +5,7 @@ namespace App\Domains\Lending\Actions;
 use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Lending\Models\Lender;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Validation\ValidationException;
 
 /**
  * A person becomes a lender, or changes how they appear (L1): the name
@@ -28,6 +29,18 @@ class RegisterLenderAction
             'about' => $text($data['about'] ?? null, 1000),
             'id_required' => (bool) ($data['id_required'] ?? false),
         ]);
+    }
+
+    /** L2: the lender pauses or resumes themselves — unless the office paused them. */
+    public function setStatus(int $userId, string $status): Lender
+    {
+        $lender = Lender::query()->where('user_id', $userId)->firstOrFail();
+        if ($lender->office_paused) {
+            throw ValidationException::withMessages(['status' => __('lending.error_office_paused')]);
+        }
+        $lender->update(['status' => $status === Lender::PAUSED ? Lender::PAUSED : Lender::ACTIVE]);
+
+        return $lender->refresh();
     }
 
     public function sendCard(int $userId, UploadedFile $front, UploadedFile $back): void
@@ -58,6 +71,9 @@ class RegisterLenderAction
                 'about' => $lender->about,
                 'id_required' => (bool) $lender->id_required,
                 'status' => $lender->status,
+                'office_paused' => (bool) $lender->office_paused,
+                'office_note' => $lender->office_note,
+                'rating' => RateLendingAction::lenderSummary($lender),
             ],
             'id' => app(IdentityVerificationAction::class)->status($userId, 'lender') + ['verified' => self::verified($userId)],
         ];

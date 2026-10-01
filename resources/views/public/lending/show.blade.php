@@ -50,6 +50,13 @@
                 <h2 class="text-sm font-semibold text-gray-700">{{ __('lending.about_lender') }}</h2>
                 <p class="font-medium" dir="auto">{{ $book['lender']['name'] }}@if($book['lender']['island']) <span class="font-normal text-gray-600">· {{ $book['lender']['island'] }}</span>@endif</p>
                 @if($book['lender']['about'])<p class="mt-1 text-sm text-gray-700" dir="auto">{{ $book['lender']['about'] }}</p>@endif
+                <p class="mt-1 text-sm text-amber-700" data-testid="lender-rating">{{ __('lending.rating_of_lender') }}: {{ $book['lender']['rating']['count'] > 0 ? '★ '.__('lending.rating_summary', ['avg' => $book['lender']['rating']['avg'], 'count' => $book['lender']['rating']['count']]) : __('lending.rating_none') }}</p>
+                @if(count($book['lender_comments'] ?? []) > 0)
+                    <ul class="mt-2 space-y-1 text-sm" data-testid="lender-comments">
+                        <li class="text-xs font-semibold text-gray-500">{{ __('lending.what_borrowers_said') }}</li>
+                        @foreach($book['lender_comments'] as $c)<li dir="auto"><span class="text-amber-700">{{ str_repeat('★', $c['stars']) }}</span> {{ $c['comment'] }} <span class="text-xs text-gray-400">{{ $c['on'] }}</span></li>@endforeach
+                    </ul>
+                @endif
                 <p class="mt-1 text-xs text-gray-500">{{ __('lending.phone_after_accept') }}</p>
             </section>
 

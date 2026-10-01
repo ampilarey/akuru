@@ -30,6 +30,8 @@ Schedule::command('bookshop:release-preorders')->dailyAt('07:05')->timezone('Ind
 Schedule::command('library:remind-readers')->dailyAt('09:00')->timezone('Indian/Maldives');
 // RESEARCH_ARTICLES_PLAN R3b: peer-review reports due in three days, or today.
 Schedule::command('library:remind-reviewers')->dailyAt('08:30')->timezone('Indian/Maldives');
+// LENDING_AND_USED_BOOKS_PLAN L2: lending reminders — two days before, on the day, every day overdue; to both sides.
+Schedule::command('lending:remind')->dailyAt('08:45')->timezone('Indian/Maldives');
 // BOOKSHOP_PLAN B9e: the catalogue to the search server, only while one is chosen.
 Schedule::command('bookshop:search-sync')->hourly()->when(fn () => config('bookshop.search.driver') === 'meilisearch');
 

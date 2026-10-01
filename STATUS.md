@@ -4414,6 +4414,61 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mt. Book lending, the rest (LENDING_AND_USED_BOOKS_PLAN L2, 2026-10-01)
+
+The plan's third and last slice, on the L1 loop of §5ms.
+
+- **Reminders**: `lending:remind`, daily at 08:45 Maldives time, to **both**
+  sides of every book out on loan — two days before it is due (once), on the
+  day (once), and every day it is overdue (once a day). Marks on the loan
+  row (`reminded_before_at`, `reminded_due_at`, `last_overdue_reminder_on`)
+  make a re-run harmless. In the app, by email and SMS as L1's notices are.
+- **Ratings**: once a book is back, each side rates the other once — stars
+  and a few words. A borrower's rating of the lender shows on the lender's
+  shelf cards, the book page (with the latest comments) and the office's
+  table, for the next borrower; a lender's rating of a borrower shows to
+  the next lender they ask, beside their request. The rated person is told.
+- **Pause**: a lender pauses their lending (books stay listed for them,
+  leave the shelf) and resumes; a book may be paused and put back on its
+  own. Both from My lending.
+- **The office's hand** (`/admin/lending`): pause a lender with a note the
+  lender reads on My lending — and cannot undo until the office resumes
+  them; take a book down with a note; a *Books on offer* table; a lenders
+  CSV with counts, ID state and rating beside the loans CSV.
+- **Data**: `lending_ratings`; `lenders.office_paused` and `office_note`;
+  `lending_books.office_note`; three reminder marks on `lending_loans`.
+  Additive.
+- EN/DV/AR.
+
+Tests:
+- New `LendingExtrasTest`, 3 tests: the reminder calendar day by day
+  (nothing at five days out; two notices at two days, none again; none the
+  day after; two on the day, once; two each overdue day, once a day; a
+  returned book left alone; the command's line); ratings — a stranger is a
+  404, 7 stars refused, one rating each, a second refused, the rated person
+  told, the stars on the card, the comment on the page, both ratings on both
+  My lending pages, the office's table, not before the return; pause and
+  resume of a book and of the lender, another lender's book a 404, the
+  office's pause with its note read by the lender who cannot resume, the
+  office's resume, the book taken down with its note and the lender told, a
+  customer forbidden, the lenders CSV.
+- Unguarded-write baseline names the three new own-data routes; Blade +1
+  (the rating partial).
+- Architecture, Nav, Admin, Routes, Bookshop, Identity, Lending: 552 green.
+
+Walk:
+- `lending.mjs` grows from 20 to **33/33**: the borrower rates, the form
+  gives way to the rating, the lender reads the words and rates back, the
+  shelf card carries the stars and the page the comment; pausing a book
+  and the lender empties the shelf and resuming fills it; the office pauses
+  the lender with a note the lender reads (and loses the resume button),
+  resumes them, takes the book down with a note (gone from the shelf, the
+  lender's list and the office's table); the lenders CSV.
+
+Lending is complete as planned (U1, L1, L2). For the owner: D4 stands — no
+money through Akuru. The scheduler must be running on production for the
+reminders (it already runs the Bookstore's and Library's).
+
 ## 5ms. Book lending, the loop (LENDING_AND_USED_BOOKS_PLAN L1, 2026-10-01)
 
 The owner: "book lending features. Lender register and list books to lend,

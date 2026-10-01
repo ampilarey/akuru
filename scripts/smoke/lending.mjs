@@ -5,7 +5,10 @@
  * the shelf stays empty until the office checks the card at /admin/lending;
  * then a guest finds the book; the student asks for it; the lender accepts
  * (the borrower's phone appears only then), hands it over and marks it
- * returned; the office's loans table and CSV say so.
+ * returned; the office's loans table and CSV say so. L2: the borrower rates
+ * the lender and the stars reach the shelf; the lender pauses and resumes a
+ * book and themselves; the office pauses the lender with a note the lender
+ * reads, resumes them, takes the book down with a note; the lenders CSV.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/lending.mjs
@@ -195,5 +198,80 @@ check('the office\'s loans table shows the returned loan', (await count(office, 
 const csv = await office.request.get(`${BASE}/en/admin/lending/export`);
 const csvBody = await csv.text();
 check('and the CSV export carries it', csv.status() === 200 && csvBody.includes(TITLE) && csvBody.includes('returned'), `HTTP ${csv.status()}`);
+
+// ------------------------------------------------------------ 6. L2: ratings
+
+await borrower.reload({ waitUntil: 'networkidle' });
+await borrower.selectOption(`[data-testid="rate-stars-${loanId}"]`, '4');
+await borrower.fill(`[data-testid="rate-comment-${loanId}"]`, 'SMOKE-Kind and on time.');
+await borrower.click(`[data-testid="rate-send-${loanId}"]`);
+await settle(borrower, '[data-testid="flash-success"]');
+check('the borrower rates the lender once the book is back; the form gives way to the rating', (await count(borrower, `[data-testid="my-rating-${loanId}"]`)) === 1 && (await count(borrower, `[data-testid="rate-form-${loanId}"]`)) === 0);
+await lender.reload({ waitUntil: 'networkidle' });
+check('the lender sees the borrower\'s words and may rate back', (await count(lender, `[data-testid="their-rating-${loanId}"]`)) === 1 && (await lender.locator(`[data-testid="their-rating-${loanId}"]`).innerText()).includes('SMOKE-Kind and on time.') && (await count(lender, `[data-testid="rate-form-${loanId}"]`)) === 1);
+await lender.selectOption(`[data-testid="rate-stars-${loanId}"]`, '5');
+await lender.click(`[data-testid="rate-send-${loanId}"]`);
+await settle(lender, '[data-testid="flash-success"]');
+check('the lender rates the borrower; the summary says 5 of 5', (await count(lender, `[data-testid="my-rating-${loanId}"]`)) === 1 && (await lender.locator('[data-testid="lending-section"]').innerText()).includes('5 of 5'));
+await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
+check('the shelf card carries the lender\'s stars', (await guest.locator(`[data-lending-book="${slug}"] [data-testid="card-rating"]`).getAttribute('data-avg')) === '4');
+await guest.goto(`${BASE}/en/lending/${slug}`, { waitUntil: 'networkidle' });
+check('and the book page shows what borrowers said', (await count(guest, '[data-testid="lender-comments"]')) === 1 && (await text(guest)).includes('SMOKE-Kind and on time.'));
+
+// ------------------------------------------------------------ 7. L2: the lender pauses a book, then themselves
+
+await lender.click(`[data-testid="toggle-book-${slug}"]`);
+await settle(lender, '[data-testid="flash-success"]');
+await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
+check('pausing a book takes it off the shelf', (await count(lender, `[data-testid="my-book-${slug}"][data-status="paused"]`)) === 1 && (await count(guest, `[data-lending-book="${slug}"]`)) === 0);
+await lender.click(`[data-testid="toggle-book-${slug}"]`);
+await settle(lender, '[data-testid="flash-success"]');
+await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
+check('putting it back shows it again', (await count(guest, `[data-lending-book="${slug}"][data-status="available"]`)) === 1);
+await lender.click('[data-testid="lender-toggle"]');
+await settle(lender, '[data-testid="flash-success"]');
+await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
+check('pausing my lending empties my shelf', (await lender.locator('[data-testid="lender-status"]').innerText()).includes('Paused') && (await count(guest, `[data-lending-book="${slug}"]`)) === 0);
+await lender.click('[data-testid="lender-toggle"]');
+await settle(lender, '[data-testid="flash-success"]');
+await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
+check('resuming fills it again', (await count(guest, `[data-lending-book="${slug}"]`)) === 1);
+
+// ------------------------------------------------------------ 8. L2: the office's hand
+
+await office.reload({ waitUntil: 'networkidle' });
+await settle(office, '[data-testid="lenders"]');
+const lenderRow = office.locator('[data-testid="lenders"] [data-testid^="lender-"]').filter({ hasText: 'Aminath (walk)' }).first();
+const lenderId = (await lenderRow.getAttribute('data-testid'))?.replace('lender-', '');
+await office.fill(`[data-testid="lender-note-${lenderId}"]`, 'SMOKE-Two borrowers reported the books were not as described.');
+await Promise.all([
+    office.waitForResponse((r) => r.url().includes(`/admin/lending/lenders/${lenderId}/pause`) && r.request().method() === 'POST', { timeout: 20000 }).catch(() => {}),
+    office.click(`[data-testid="lender-pause-${lenderId}"]`),
+]);
+await settle(office, `[data-testid="lender-office-paused-${lenderId}"]`);
+await lender.reload({ waitUntil: 'networkidle' });
+await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
+check('the office pauses the lender with a note: the lender reads it and cannot resume; the shelf is empty', (await count(office, `[data-testid="lender-office-paused-${lenderId}"]`)) === 1 && (await count(lender, '[data-testid="office-paused-note"]')) === 1 && (await lender.locator('[data-testid="office-paused-note"]').innerText()).includes('SMOKE-Two borrowers') && (await count(lender, '[data-testid="lender-toggle"]')) === 0 && (await count(guest, `[data-lending-book="${slug}"]`)) === 0);
+await Promise.all([
+    office.waitForResponse((r) => r.url().includes(`/admin/lending/lenders/${lenderId}/resume`) && r.request().method() === 'POST', { timeout: 20000 }).catch(() => {}),
+    office.click(`[data-testid="lender-resume-${lenderId}"]`),
+]);
+await settle(office, `[data-testid="lender-pause-${lenderId}"]`);
+await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
+check('the office resumes them: the book is back', (await count(guest, `[data-lending-book="${slug}"]`)) === 1);
+const bookRow = office.locator('[data-testid="books"] [data-testid^="book-"]').filter({ hasText: TITLE }).first();
+const bookId = (await bookRow.getAttribute('data-testid'))?.replace('book-', '');
+await office.fill(`[data-testid="book-note-${bookId}"]`, 'SMOKE-Copyrighted photocopy.');
+await Promise.all([
+    office.waitForResponse((r) => r.url().includes(`/admin/lending/books/${bookId}/remove`) && r.request().method() === 'POST', { timeout: 20000 }).catch(() => {}),
+    office.click(`[data-testid="book-remove-${bookId}"]`),
+]);
+await settle(office);
+await guest.goto(`${BASE}/en/lending`, { waitUntil: 'networkidle' });
+await lender.reload({ waitUntil: 'networkidle' });
+check('the office takes the book down with a note: gone from the shelf and the lender\'s list', (await count(guest, `[data-lending-book="${slug}"]`)) === 0 && (await count(lender, `[data-testid="my-book-${slug}"]`)) === 0 && (await count(office, `[data-testid="book-${bookId}"]`)) === 0);
+const lendersCsv = await office.request.get(`${BASE}/en/admin/lending/lenders/export`);
+const lendersBody = await lendersCsv.text();
+check('the lenders CSV carries the lender with their rating', lendersCsv.status() === 200 && lendersBody.includes('Aminath (walk)') && lendersBody.includes('rating_avg'), `HTTP ${lendersCsv.status()}`);
 
 await finish();
