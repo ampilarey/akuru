@@ -131,6 +131,7 @@ class ListVendorProductsAction
             'low_stock_at' => $p->low_stock_at,
             'low_stock' => $p->track_stock && $p->low_stock_at !== null && $p->stock <= $p->low_stock_at,
             'lead_days' => $p->lead_days,
+            'preorder_release_on' => $p->preorder_release_on?->toDateString(),
             'status' => $p->status->value,
             // COMMERCE_PARITY_PLAN P4: waiting since, and the office's note on a declined listing.
             'submitted_at' => $p->submitted_at?->format('Y-m-d H:i'),

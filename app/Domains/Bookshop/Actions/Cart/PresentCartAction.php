@@ -43,7 +43,7 @@ class PresentCartAction
             $variant = $item->variant;
             $sellable = in_array($product->id, $forSale, true) && ($variant === null || $variant->is_active);
             $available = $sellable ? Stock::available($product, $variant) : 0;
-            $short = $available !== null && $item->quantity > $available && ! Stock::madeToOrder($product);
+            $short = $available !== null && $item->quantity > $available && ! Stock::sellsWithoutStock($product);
             // B9d: a quoted line pays the quoted price while the quote holds; §5lb: a running sale's price.
             $quoted = CartPrice::quoted($item, $product, $variant);
             $listPrice = (float) ($variant?->price ?? $product->price);
@@ -83,6 +83,8 @@ class PresentCartAction
                 'sellable' => $sellable,
                 'short' => $short,
                 'made_to_order' => Stock::madeToOrder($product),
+                // P8d: a pre-order, and the date it ships from.
+                'preorder_release' => Stock::preorder($product) ? $product->preorder_release_on->toDateString() : null,
                 'quoted' => $quoted !== null,
                 'quote_lapsed' => $item->quote_item_id !== null && $quoted === null,
             ];
@@ -133,7 +135,7 @@ class PresentCartAction
                 'image' => $first !== null ? $images->execute((int) $first->media_file_id, ShopPresenter::CARD_WIDTH) : null,
                 'unit_price' => number_format(SalePrice::apply((float) ($item->variant?->price ?? $product->price), $product), 2, '.', ''),
                 'quantity' => (int) $item->quantity,
-                'can_move' => $available === null || $available > 0 || Stock::madeToOrder($product),
+                'can_move' => $available === null || $available > 0 || Stock::sellsWithoutStock($product),
             ];
         })->values()->all();
     }

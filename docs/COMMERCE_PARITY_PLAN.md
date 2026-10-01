@@ -399,7 +399,7 @@ fixes: the admin OTP route stays admin-only and untouched.
   bought what, last order, tags, follow-up notes) — B&G's
   `AdminCustomerController`. Tests, walk.
 
-### P8 — Later, on request
+### P8 — Later, on request — **shipped 2026-10-01 on the owner's request: P8a §5mk, P8b §5ml, P8c §5mm, P8d §5mn**
 
 Credit accounts for schools (B&G's `CustomerCreditLedger`), deposits,
 pre-orders, push sending (Mobile A's registration exists), receipts by
@@ -407,7 +407,7 @@ SMS link. Each is its own slice when the owner asks; recorded in
 BACKLOG C13.
 
 The owner asked for it on 2026-10-01. Four slices: **P8a receipts by SMS
-link — shipped 2026-10-01, STATUS §5mk**; **P8b push — shipped 2026-10-01, STATUS §5ml** (sending already existed since #551; the slice tells the driver); **P8c credit accounts for schools, with deposits — shipped 2026-10-01, STATUS §5mm**; P8d pre-orders with a deposit.
+link — shipped 2026-10-01, STATUS §5mk**; **P8b push — shipped 2026-10-01, STATUS §5ml** (sending already existed since #551; the slice tells the driver); **P8c credit accounts for schools, with deposits — shipped 2026-10-01, STATUS §5mm**; **P8d pre-orders — shipped 2026-10-01, STATUS §5mn** (deposits moved to P8c, where the reference has them).
 
 ---
 

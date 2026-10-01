@@ -21,6 +21,8 @@ class Order extends Model
         'number', 'bookshop_checkout_id', 'vendor_id', 'user_id', 'status', 'delivery_kind', 'delivery_name',
         'delivery_fee', 'delivery_carrier_paid', 'delivery_handling_days', 'fulfilled_by', 'akuru_handling_fee', 'delivery_revenue_to', 'address_snapshot', 'subtotal', 'discount',
         'tax', 'total', 'currency', 'tax_shown', 'vendor_tin', 'notes', 'gift_message', 'paid_at',
+        // COMMERCE_PARITY_PLAN P8d: a pre-order ships from this date; told once on it.
+        'ships_from', 'preorder_released_at',
         // B3: fulfilment.
         'processing_at', 'ready_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'cancelled_by', 'cancel_reason',
         'carrier', 'tracking_note', 'message_thread_id',
@@ -41,6 +43,8 @@ class Order extends Model
             'total' => 'decimal:2',
             'tax_shown' => 'boolean',
             'paid_at' => 'datetime',
+            'ships_from' => 'date',
+            'preorder_released_at' => 'datetime',
             'processing_at' => 'datetime',
             'ready_at' => 'datetime',
             'dispatched_at' => 'datetime',

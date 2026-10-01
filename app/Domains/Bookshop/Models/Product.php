@@ -49,6 +49,8 @@ class Product extends Model
         'low_stock_at',
         'low_stock_notified_at',
         'lead_days',
+        // COMMERCE_PARITY_PLAN P8d: a pre-order until this date.
+        'preorder_release_on',
         'status',
         'submitted_at',
         'review_note',
@@ -76,6 +78,7 @@ class Product extends Model
             'compare_at_price' => 'decimal:2',
             'sale_percent' => 'integer',
             'sale_starts_at' => 'datetime',
+            'preorder_release_on' => 'date',
             'sale_ends_at' => 'datetime',
             'cost' => 'decimal:2',
             'tax_class' => TaxClass::class,

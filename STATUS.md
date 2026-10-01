@@ -4414,6 +4414,62 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mn. Pre-orders (COMMERCE_PARITY_PLAN P8d, 2026-10-01)
+
+This is the last slice of P8. Deposits moved to P8c (§5mm), so P8d covers
+pre-orders alone.
+
+- **The shop** gives a product a *Pre-order until* date on its product form. The
+  date must still be to come.
+- **The customer**:
+  - Until that date the product says *Pre-order — ships from date*, keeps its
+    add-to-cart button with nothing on the shelf, and is listed under *in stock*.
+  - The cart says it ships from the date.
+  - The checkout takes it paid in full, by any payment method.
+  - A product without a release date that has sold out is still refused.
+  - From the release day onwards the product is ordinary again.
+- **The order**:
+  - It records `ships_from`: the latest release date among its pre-order lines.
+  - The customer's order page says *This is a pre-order. The shop sends it from
+    date*.
+  - The shop's order list says *Pre-order: send from date*.
+  - JSON-LD marks the product `PreOrder`, and the comparison page names it.
+- **Release day**:
+  - `bookshop:release-preorders` runs daily at 07:05 Maldives time.
+  - It tells the buyer *Your pre-order number is released*, in the app and by
+    email and SMS as for order progress.
+  - It tells the shop *Pre-order number can be sent*.
+  - Each order is claimed before it is told, so it is told once, however often the
+    command runs. Only open orders are told: paid, cash due, processing, needs
+    attention.
+- **Data**: `products.preorder_release_on`, `orders.ships_from`,
+  `orders.preorder_released_at`. All three are additive and nullable.
+- **Languages**: EN/DV/AR.
+
+Tests:
+- New `PreorderTest`, 5 tests:
+  - sold with nothing on the shelf, with the product page, cart, order and shop
+    order list saying so;
+  - an ordinary product again on its release day, so with no stock it is refused;
+  - told on the release date and once only, and nothing before the date;
+  - a release date already past is refused on the product form;
+  - DV/AR.
+- Architecture, Nav, Admin, Routes and Bookshop: 407 green.
+
+Walk:
+- New `preorder.mjs`, 7/7:
+  - the shop's product form carries the date;
+  - the product says pre-order with the date and still offers the cart;
+  - the cart says so;
+  - the student pre-orders it, paid in full;
+  - the order says so;
+  - the shop's order says not to send it before the date;
+  - on release day the student is told once.
+- The release date is set, and release day brought forward, through tinker.
+- `SmokeMarkerSeeder` clears smoke products' release dates on every run.
+
+**COMMERCE_PARITY_PLAN P1–P8 are done.**
+
 ## 5mm. Credit accounts for schools, with deposits (COMMERCE_PARITY_PLAN P8c, 2026-10-01)
 
 **Deposits.** P8 listed "deposits" separately, but the reference has them as

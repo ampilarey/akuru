@@ -1953,4 +1953,14 @@ return [
     'credit_in_credit' => 'رصيد دائن: :amount',
     'credit_kind_deposit' => 'دفعة مقدمة',
     'notice_credit_in_credit' => 'في حسابك رصيد دائن قدره :amount.',
+    // COMMERCE_PARITY_PLAN P8d: pre-orders.
+    'stock_preorder' => 'طلب مسبق — يُشحن من :date',
+    'preorder_note' => 'طلب مسبق: يُشحن من :date، ويُدفع كاملًا الآن.',
+    'order_preorder' => 'هذا طلب مسبق. يرسله المتجر من :date؛ وسنخبرك حين يكون في الطريق.',
+    'vendor_order_preorder' => 'طلب مسبق: أرسله من :date.',
+    'preorder_release_on' => 'طلب مسبق حتى (تاريخ الإصدار)',
+    'notice_preorder_released_title' => 'صدر طلبك المسبق :number',
+    'notice_preorder_released_body' => 'الطلب :number متاح الآن؛ والمتجر يجهزه لك.',
+    'notice_preorder_vendor_title' => 'يمكن إرسال الطلب المسبق :number',
+    'notice_preorder_vendor_body' => 'حان تاريخ إصدار الطلب :number. جهّزه وأرسله.',
 ];

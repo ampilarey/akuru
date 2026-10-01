@@ -98,6 +98,10 @@
         </div>
     @elseif(! in_array($order['status'], ['pending_payment', 'expired'], true))
         @php($stepKeys = ['paid', 'processing', $order['collection'] ? 'ready' : 'dispatched', 'delivered'])
+        {{-- COMMERCE_PARITY_PLAN P8d: a pre-order, and when it ships. --}}
+        @if(($order['ships_from'] ?? null) && ! in_array($order['status'], ['cancelled', 'delivered'], true))
+            <p class="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" data-testid="order-preorder">{{ __('shop.order_preorder', ['date' => $order['ships_from']]) }}</p>
+        @endif
         <ol class="no-print mb-4 grid grid-cols-4 gap-1 text-center text-xs" data-testid="order-progress">
             @foreach($stepKeys as $step)
                 @php($at = $order['steps'][$step] ?? null)

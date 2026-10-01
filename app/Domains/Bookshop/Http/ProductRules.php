@@ -52,6 +52,8 @@ final class ProductRules
             'stock' => 'nullable|integer|min:0|max:1000000',
             'low_stock_at' => 'nullable|integer|min:0|max:100000',
             'lead_days' => 'nullable|integer|min:0|max:365',
+            // COMMERCE_PARITY_PLAN P8d: a pre-order until this date (a date to come, or none).
+            'preorder_release_on' => 'nullable|date|after:today',
             'status' => 'required|string|in:draft,active,archived',
             'visibility' => 'required|string|in:shop,storefront',
             // B11: a product tied to a book in the Digital Library, and the alt text of each photo it already has.

@@ -37,4 +37,16 @@ final class Stock
     {
         return $product->lead_days !== null && (int) $product->lead_days > 0;
     }
+
+    /** COMMERCE_PARITY_PLAN P8d: a pre-order — its release date is still to come (Maldives time). */
+    public static function preorder(Product $product): bool
+    {
+        return $product->preorder_release_on !== null && $product->preorder_release_on->toDateString() > now('Indian/Maldives')->toDateString();
+    }
+
+    /** Sold with no stock on the shelf: made to order, or a pre-order. */
+    public static function sellsWithoutStock(Product $product): bool
+    {
+        return self::madeToOrder($product) || self::preorder($product);
+    }
 }

@@ -142,6 +142,8 @@ class ListVendorOrdersAction
             'cancel_reason' => $order->cancel_reason,
             'placed_at' => $order->created_at?->toDateTimeString(),
             'paid_at' => $order->paid_at?->toDateTimeString(),
+            // COMMERCE_PARITY_PLAN P8d: a pre-order — not to send before this date.
+            'ships_from' => $order->ships_from?->toDateString(),
             // COMMERCE_PARITY_PLAN P6a: an order Akuru packs is the office's to move; the shop sees it.
             'fulfilled_by' => $order->fulfilled_by, 'akuru_handling_fee' => (string) $order->akuru_handling_fee,
             'next' => array_values(array_filter(OrderView::nextSteps($order), fn (string $to) => ! AkuruFulfilment::takesStep($order, $to))),

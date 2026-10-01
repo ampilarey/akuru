@@ -139,6 +139,8 @@ class PresentOrderAction
             'item_count' => (int) ($order->relationLoaded('items') ? $order->items->sum('quantity') : $order->items()->sum('quantity')),
             'placed_at' => $order->created_at?->toDateTimeString(),
             'paid_at' => $order->paid_at?->toDateTimeString(),
+            // COMMERCE_PARITY_PLAN P8d: a pre-order ships from this date.
+            'ships_from' => $order->ships_from?->toDateString(),
         ];
     }
 }
