@@ -13,7 +13,7 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 191 (a document template, not a screen — see the documents block;
+// Count: 192 (a document template, not a screen — see the documents block;
 // the five public bookshop views of BOOKSHOP_PLAN B1b, the five customer
 // pages of B2, the two storefront partials of B4, the sections, menu and
 // vendor page of B5 and the customer's wishlist of B7 — see the public
@@ -164,7 +164,7 @@ return [
     'profile/partials/update-password-form.blade.php',
     'profile/partials/update-profile-information-form.blade.php',
 
-    // public — 61
+    // public — 62
     'public/about/index.blade.php',
     'public/achievements/index.blade.php',
     'public/admissions/apply.blade.php',
@@ -264,6 +264,8 @@ return [
     'public/lending/show.blade.php',
     'public/lending/mine.blade.php',
     'public/lending/_book-fields.blade.php',
+    // L2 — the after-return rating block, @included on both sides of My lending.
+    'public/lending/_rate.blade.php',
     // BOOKSHOP_PLAN B9d — a customer's bulk quotes, asked from the Blade cart
     // and accepted back into it; siblings of My orders for the same reason.
     'public/shop/quotes/index.blade.php',

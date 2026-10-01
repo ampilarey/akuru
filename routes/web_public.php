@@ -115,6 +115,10 @@ Route::middleware(['auth', 'customer_password'])->group(function () {
     Route::post('my-lending/books/{book}', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'storeBook'])->name('public.lending.books.update')->middleware('throttle:30,1,lending-books')->whereNumber('book');
     Route::delete('my-lending/books/{book}', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'destroyBook'])->name('public.lending.books.destroy')->middleware('throttle:30,1,lending-books')->whereNumber('book');
     Route::post('my-lending/loans/{loan}/{action}', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'loan'])->name('public.lending.loan')->middleware('throttle:30,1,lending-loan')->whereNumber('loan')->where('action', 'accept|decline|cancel|handover|returned');
+    // L2: pause and resume (the lender, a book), ratings after a return.
+    Route::post('my-lending/status/{action}', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'status'])->name('public.lending.status')->middleware('throttle:20,1,lending-status')->where('action', 'pause|resume');
+    Route::post('my-lending/books/{book}/{action}', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'bookStatus'])->name('public.lending.books.status')->middleware('throttle:30,1,lending-books')->whereNumber('book')->where('action', 'pause|resume');
+    Route::post('my-lending/loans/{loan}/rate', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'rate'])->name('public.lending.rate')->middleware('throttle:20,1,lending-rate')->whereNumber('loan');
     Route::post('lending/{slug}/request', [\App\Domains\Lending\Http\Controllers\LendingController::class, 'request'])->name('public.lending.request')->middleware('throttle:10,1,lending-request')->where('slug', '[a-z0-9-]+');
     // COMMERCE_PARITY_PLAN P7a: report a problem with an order.
     Route::post('my-orders/{number}/complaints', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'complain'])->name('public.shop.orders.complain')->middleware('throttle:10,60,shop-complaint');

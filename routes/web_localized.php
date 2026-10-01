@@ -868,6 +868,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::prefix('admin/lending')->middleware(['role:super_admin|bookshop_manager', 'can:bookshop.manage'])->group(function () {
         Route::get('/', [\App\Domains\Lending\Http\Controllers\AdminLendingController::class, 'index'])->name('admin.lending.index');
         Route::get('export', [\App\Domains\Lending\Http\Controllers\AdminLendingController::class, 'export'])->name('admin.lending.export');
+        // L2: the lenders as CSV; pause or resume a lender; take a book down — each with a note.
+        Route::get('lenders/export', [\App\Domains\Lending\Http\Controllers\AdminLendingController::class, 'exportLenders'])->name('admin.lending.lenders.export');
+        Route::post('lenders/{lender}/{action}', [\App\Domains\Lending\Http\Controllers\AdminLendingController::class, 'lender'])->name('admin.lending.lender')->middleware('throttle:30,1,lending-moderate')->whereNumber('lender')->where('action', 'pause|resume');
+        Route::post('books/{book}/remove', [\App\Domains\Lending\Http\Controllers\AdminLendingController::class, 'removeBook'])->name('admin.lending.books.remove')->middleware('throttle:30,1,lending-moderate')->whereNumber('book');
     });
     Route::prefix('admin/bookshop')->middleware(['role:super_admin|bookshop_manager', 'can:bookshop.manage'])->group(function () {
         Route::get('/', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'index'])->name('admin.bookshop.index');

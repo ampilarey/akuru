@@ -13,7 +13,7 @@ class LendingBook extends Model
 {
     protected $fillable = [
         'lender_id', 'slug', 'title', 'author', 'language', 'condition', 'description', 'grade', 'subject',
-        'max_days', 'deposit', 'photo_media_id', 'status',
+        'max_days', 'deposit', 'photo_media_id', 'status', 'office_note',
     ];
 
     protected function casts(): array

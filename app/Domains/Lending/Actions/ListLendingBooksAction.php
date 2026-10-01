@@ -51,7 +51,12 @@ class ListLendingBooksAction
     {
         $book = $this->shelf()->where('slug', $slug)->with('lender')->first();
 
-        return $book === null ? null : LendingPresenter::book($book, null, true);
+        if ($book === null) {
+            return null;
+        }
+
+        // L2: what borrowers said about this lender.
+        return LendingPresenter::book($book, null, true) + ['lender_comments' => RateLendingAction::lenderComments((int) $book->lender_id)];
     }
 
     /** Books that may be shown: not paused or removed, from an active, ID-checked lender. */

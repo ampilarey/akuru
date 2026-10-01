@@ -67,6 +67,18 @@ class ManageLendingBooksAction
         return $book->refresh();
     }
 
+    /** L2: pause a book (off the shelf, kept) or put it back; a book on loan or taken down stays as it is. */
+    public function setStatus(Lender $lender, int $bookId, string $status): LendingBook
+    {
+        $book = LendingBook::query()->where('lender_id', $lender->id)->whereKey($bookId)->firstOrFail();
+        if (! in_array($book->status, [LendingBookStatus::Available, LendingBookStatus::Paused], true)) {
+            throw ValidationException::withMessages(['book' => __('lending.error_wrong_state')]);
+        }
+        $book->update(['status' => $status === 'pause' ? LendingBookStatus::Paused->value : LendingBookStatus::Available->value]);
+
+        return $book->refresh();
+    }
+
     public function remove(Lender $lender, int $bookId): void
     {
         $book = LendingBook::query()->where('lender_id', $lender->id)->whereKey($bookId)->firstOrFail();

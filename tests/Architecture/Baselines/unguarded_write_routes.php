@@ -129,5 +129,8 @@ return [
     'my-lending/books' => 'MyLendingController@storeBook — your own books; the lender is found by the signed-in user (403 if unregistered), and ManageLendingBooksAction scopes every book to that lender.',
     'my-lending/books/{book}' => 'MyLendingController@storeBook — as above; READ: ManageLendingBooksAction looks the book up under the caller\'s own lender_id, so another lender\'s id is a 404.',
     'my-lending/loans/{loan}/{action}' => 'MyLendingController@loan — READ: LendingLoanAction::ownLoan scopes accept/decline/handover/returned to loans on the caller\'s own books, and cancel to the caller\'s own requests; anything else is a 404.',
+    'my-lending/status/{action}' => 'MyLendingController@status — L2: your own lender record; RegisterLenderAction::setStatus finds it by the signed-in user id and refuses while the office has paused you.',
+    'my-lending/books/{book}/{action}' => 'MyLendingController@bookStatus — L2: READ: ManageLendingBooksAction::setStatus looks the book up under the caller\'s own lender_id, so another lender\'s id is a 404.',
+    'my-lending/loans/{loan}/rate' => 'MyLendingController@rate — L2: READ: RateLendingAction::rate is a 404 unless the signed-in user is the loan\'s borrower or its lender, and refuses a second rating.',
     'lending/{slug}/request' => 'LendingController@request — a signed-in person\'s own request; LendingLoanAction::request writes it under the signed-in user id and refuses the lender\'s own book.',
 ];

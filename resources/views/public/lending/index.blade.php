@@ -59,6 +59,7 @@
                         <p class="truncate text-[11px] text-gray-500">{{ __('lending.lent_by') }} <span class="font-medium text-gray-700" dir="auto">{{ $book['lender']['name'] }}</span>@if($book['lender']['island']) · {{ $book['lender']['island'] }}@endif</p>
                         <h3 class="mt-0.5 line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-snug text-brandMaroon-900 group-hover:underline" dir="auto">{{ $book['title'] }}</h3>
                         @if($book['author'])<p class="text-xs text-gray-600" dir="auto">{{ $book['author'] }}</p>@endif
+                        @if($book['lender']['rating']['count'] > 0)<p class="text-xs text-amber-700" data-testid="card-rating" data-avg="{{ $book['lender']['rating']['avg'] }}">★ {{ __('lending.rating_summary', ['avg' => $book['lender']['rating']['avg'], 'count' => $book['lender']['rating']['count']]) }}</p>@endif
                         <p class="mt-auto pt-2 text-xs text-gray-500">{{ __('lending.max_days', ['days' => $book['max_days']]) }}@if($book['grade']) · {{ __('lending.filter_grade') }} {{ $book['grade'] }}@endif</p>
                     </div>
                 </a>

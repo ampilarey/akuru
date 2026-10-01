@@ -21,6 +21,9 @@ return [
         'large_width' => 1200,
     ],
 
+    // L2: the daily reminders — this many days before the due date, on the day, every day overdue.
+    'reminders' => ['days_before' => (int) env('LENDING_REMIND_DAYS_BEFORE', 2)],
+
     // Lending notices go in the app always; by email and SMS too when these are on.
     'notices' => [
         'email' => filter_var(env('LENDING_NOTICE_EMAIL', true), FILTER_VALIDATE_BOOLEAN),
