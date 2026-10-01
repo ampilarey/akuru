@@ -2,8 +2,10 @@
 
 namespace App\Domains\Bookshop\Actions\Checkout;
 
+use App\Domains\Bookshop\Enums\DeliveryKind;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Models\VendorDeliveryMethod;
+use App\Domains\Bookshop\Support\AkuruFulfilment;
 
 /**
  * How a vendor can get this basket to the customer, with the fee for this
@@ -45,12 +47,15 @@ class ResolveDeliveryOptionsAction
                 'note' => $t['note'] ?? null,
             ], (array) config('bookshop.delivery_template', []), array_keys((array) config('bookshop.delivery_template', [])));
 
+        $rows = $this->akuru($vendor, $rows);
+
         // B7 (§6.5 "spend MVR X, get free delivery"): the shop-wide threshold
-        // frees every charged method, unless the method's own is lower.
+        // frees every charged method, unless the method's own is lower —
+        // not Akuru's courier, whose fee is Akuru's (P6a).
         $shopWide = $vendor->free_delivery_over !== null ? (float) $vendor->free_delivery_over : null;
 
         return array_map(function (array $row) use ($vendorSubtotal, $shopWide): array {
-            if ($shopWide !== null && ! $row['carrier_paid'] && $row['fee'] > 0) {
+            if ($shopWide !== null && ! $row['carrier_paid'] && $row['fee'] > 0 && $row['kind'] !== DeliveryKind::AkuruCourier->value) {
                 $row['free_over'] = $row['free_over'] === null ? $shopWide : min($row['free_over'], $shopWide);
             }
             $free = $row['carrier_paid'] || ($row['free_over'] !== null && $vendorSubtotal >= $row['free_over']);
@@ -70,6 +75,38 @@ class ResolveDeliveryOptionsAction
                 'note' => $row['note'],
             ];
         }, $rows);
+    }
+
+    /**
+     * COMMERCE_PARITY_PLAN P6a: where Akuru delivers for the shop, Akuru's
+     * courier takes the place of the shop's own Malé courier, at Akuru's fee;
+     * where Akuru packs, collecting is from Akuru, not the shop.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array<string, mixed>>
+     */
+    private function akuru(Vendor $vendor, array $rows): array
+    {
+        if (AkuruFulfilment::delivers($vendor)) {
+            $fees = AkuruFulfilment::settings();
+            $rows = array_values(array_filter($rows, fn (array $r) => $r['kind'] !== DeliveryKind::CourierMale->value));
+            array_unshift($rows, [
+                'key' => 'akuru', 'kind' => DeliveryKind::AkuruCourier->value, 'name' => (string) __('shop.akuru_courier_name'),
+                'fee' => $fees['delivery_fee'], 'free_over' => $fees['delivery_free_over'], 'minimum_order' => null,
+                'carrier_paid' => false, 'handling_days' => 1, 'note' => (string) __('shop.akuru_courier_note'),
+            ]);
+        }
+        if (AkuruFulfilment::packs($vendor)) {
+            $rows = array_values(array_filter($rows, fn (array $r) => $r['kind'] !== DeliveryKind::CollectVendor->value));
+            if (! collect($rows)->contains('kind', DeliveryKind::CollectAkuru->value)) {
+                $rows[] = [
+                    'key' => 'akuru-collect', 'kind' => DeliveryKind::CollectAkuru->value, 'name' => (string) __('shop.akuru_collect_name'),
+                    'fee' => 0.0, 'free_over' => null, 'minimum_order' => null, 'carrier_paid' => false, 'handling_days' => 1, 'note' => null,
+                ];
+            }
+        }
+
+        return $rows;
     }
 
     private function name(VendorDeliveryMethod $m): string

@@ -49,6 +49,8 @@ export default function CommissionInvoice({ t, invoice: i, back_url }) {
             <section className="ms-auto w-72 text-sm" data-testid="invoice-totals">
                 <p className="flex justify-between border-b py-1"><span>{t.commission_on_sales.replace(':amount', `${i.currency} ${i.sales}`)}</span><span>{i.currency} {i.commission}</span></p>
                 {Number(i.tax) > 0 && <p className="flex justify-between border-b py-1"><span>{t.gst} {i.tax_rate}%</span><span>{i.currency} {i.tax}</span></p>}
+                {/* COMMERCE_PARITY_PLAN P6a: Akuru's packing of the shop's orders, its own line. */}
+                {Number(i.handling) > 0 && <p className="flex justify-between border-b py-1" data-testid="invoice-handling"><span>{t.akuru_handling_line}</span><span>{i.currency} {i.handling}</span></p>}
                 <p className="flex justify-between py-1 text-base font-bold"><span>{t.total}</span><span>{i.currency} {i.total}</span></p>
             </section>
 

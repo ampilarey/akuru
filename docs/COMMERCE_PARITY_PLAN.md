@@ -337,7 +337,7 @@ fixes: the admin OTP route stays admin-only and untouched.
 - **Docs**: BOOKSHOP_PLAN §4/§7, LIBRARY_PLAN §41, OWNER_ACTIONS item 23
   updated; STATUS.
 
-### P6 — Fulfilment and delivery by Akuru, with a charge (one PR, or P6a data+money and P6b screens)
+### P6 — Fulfilment and delivery by Akuru, with a charge (one PR, or P6a data+money and P6b screens) — **P6a shipped 2026-10-01, STATUS §5mf (ADR-042); P6b drivers next**
 
 - **Data**: `vendors.fulfilment` (`vendor` | `akuru`), `vendors.delivery_by`
   (`vendor` | `akuru`), `vendors.akuru_handling_fee` (nullable override);

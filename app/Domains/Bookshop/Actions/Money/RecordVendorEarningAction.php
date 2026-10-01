@@ -20,6 +20,9 @@ use App\Domains\Commerce\Actions\ResolveRedemptionFundingSourceAction;
  *    vendor-scoped codes) comes off the goods first.
  *  - GST on the commission is added only when Akuru is registered
  *    (config), so the net already matches the monthly commission invoice.
+ *  - COMMERCE_PARITY_PLAN P6a: where Akuru delivered, the delivery fee is
+ *    Akuru's and never reaches the shop; where Akuru packed, its handling fee
+ *    comes off, as a line of its own.
  *  - The earning stays *pending* until the order is delivered and its
  *    return window has passed (`onDelivered` sets the date; the
  *    `bookshop:mature-earnings` command flips it).
@@ -40,7 +43,9 @@ class RecordVendorEarningAction
         $gross = round((float) $order->subtotal, 2);
         $discount = round((float) $order->discount, 2);
         $funding = $discount > 0 ? $this->funding((int) $order->bookshop_checkout_id) : null;
-        $delivery = $order->delivery_carrier_paid ? 0.0 : round((float) $order->delivery_fee, 2);
+        // P6a: Akuru's courier fee is Akuru's, and Akuru's packing is charged to the shop.
+        $delivery = $order->delivery_carrier_paid || $order->delivery_revenue_to === 'akuru' ? 0.0 : round((float) $order->delivery_fee, 2);
+        $handling = $order->fulfilled_by === 'akuru' ? round((float) $order->akuru_handling_fee, 2) : 0.0;
         $rate = $vendor->effectiveCommissionRate();
         $base = round($funding === 'vendor' ? $gross - $discount : $gross, 2);
         $commission = round($base * $rate / 100, 2);
@@ -59,7 +64,8 @@ class RecordVendorEarningAction
             'commission' => $commission,
             'commission_tax_rate' => $taxRate,
             'commission_tax' => $tax,
-            'net' => round($base + $delivery - $commission - $tax, 2),
+            'akuru_handling_fee' => $handling,
+            'net' => round($base + $delivery - $commission - $tax - $handling, 2),
             'refunded' => 0,
             'paid_amount' => 0,
             'status' => EarningStatus::Pending->value,

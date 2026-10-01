@@ -93,6 +93,19 @@ return [
      * with GST on it only when Akuru is registered — the owner's numbers,
      * set on the host, never committed.
      */
+    /*
+     * COMMERCE_PARITY_PLAN P6a: Akuru packs (fulfilment) and/or delivers for a
+     * shop that chooses it. The handling fee comes off the shop's earning per
+     * order Akuru packs; the Akuru courier fee is paid by the customer and is
+     * Akuru's. The office changes all three on /admin/bookshop (settings
+     * `bookshop_akuru_*`); these are the deploy's defaults.
+     */
+    'akuru' => [
+        'handling_fee' => (float) env('BOOKSHOP_AKURU_HANDLING_FEE', 15),
+        'delivery_fee' => (float) env('BOOKSHOP_AKURU_DELIVERY_FEE', 30),
+        'delivery_free_over' => env('BOOKSHOP_AKURU_DELIVERY_FREE_OVER'),
+    ],
+
     'money' => [
         'payouts_enabled' => filter_var(env('BOOKSHOP_PAYOUTS_ENABLED', true), FILTER_VALIDATE_BOOLEAN),
         'min_payout' => (float) env('BOOKSHOP_MIN_PAYOUT', 100),

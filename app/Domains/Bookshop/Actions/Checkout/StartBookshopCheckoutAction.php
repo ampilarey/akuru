@@ -16,6 +16,7 @@ use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\StockReservation;
 use App\Domains\Bookshop\Models\Vendor;
+use App\Domains\Bookshop\Support\AkuruFulfilment;
 use App\Domains\Bookshop\Support\CartPrice;
 use App\Domains\Bookshop\Support\OrderNumbers;
 use App\Domains\Bookshop\Support\Stock;
@@ -192,6 +193,10 @@ class StartBookshopCheckoutAction
                     'delivery_fee' => (float) $option['fee'],
                     'delivery_carrier_paid' => $option['carrier_paid'],
                     'delivery_handling_days' => $option['handling_days'],
+                    // COMMERCE_PARITY_PLAN P6a: who packs it, what Akuru charges the shop for that, whose the delivery fee is.
+                    'fulfilled_by' => AkuruFulfilment::packs($vendor) ? 'akuru' : 'vendor',
+                    'akuru_handling_fee' => AkuruFulfilment::packs($vendor) ? AkuruFulfilment::handlingFee($vendor) : 0,
+                    'delivery_revenue_to' => $option['kind'] === DeliveryKind::AkuruCourier->value ? 'akuru' : 'vendor',
                     'address_snapshot' => $address,
                     'subtotal' => $vendorSubtotal,
                     'discount' => $vendorDiscount,

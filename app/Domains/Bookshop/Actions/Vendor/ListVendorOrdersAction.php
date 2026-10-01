@@ -137,7 +137,9 @@ class ListVendorOrdersAction
             'cancel_reason' => $order->cancel_reason,
             'placed_at' => $order->created_at?->toDateTimeString(),
             'paid_at' => $order->paid_at?->toDateTimeString(),
-            'next' => OrderView::nextSteps($order),
+            // COMMERCE_PARITY_PLAN P6a: an order Akuru packs is the office's to move; the shop sees it.
+            'fulfilled_by' => $order->fulfilled_by, 'akuru_handling_fee' => (string) $order->akuru_handling_fee,
+            'next' => $order->fulfilled_by === 'akuru' ? [] : OrderView::nextSteps($order),
             'cancellable' => $order->status->cancellableByVendor(),
             'events' => $order->events->map(fn (OrderEvent $e) => ['type' => $e->type, 'note' => $e->note, 'at' => $e->created_at?->toDateTimeString()])->values()->all(),
             'returns' => $order->returns->map(fn (OrderReturn $r) => OrderView::returnRow($r))->values()->all(),

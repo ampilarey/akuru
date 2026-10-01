@@ -71,6 +71,8 @@ final class MoneyView
             'commission_rate' => self::money($e->commission_rate),
             'commission' => self::money($e->commission),
             'commission_tax' => self::money($e->commission_tax),
+            // P6a: Akuru's packing, taken off.
+            'akuru_handling_fee' => self::money($e->akuru_handling_fee),
             'refunded' => self::money($e->refunded),
             'net' => self::money($e->net),
             // B9b: cash the shop took at the door, already taken off `net`.
@@ -120,6 +122,7 @@ final class MoneyView
             'commission' => self::money($i->commission),
             'tax_rate' => self::money($i->tax_rate),
             'tax' => self::money($i->tax),
+            'handling' => self::money($i->handling),
             'total' => self::money($i->total),
             'currency' => $i->currency,
             'issuer_name' => $i->issuer_name,

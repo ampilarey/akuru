@@ -874,6 +874,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B9a: shop applications.
         Route::post('applications/{application}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideApplication'])->name('admin.bookshop.applications.decide')->whereNumber('application');
         Route::post('applications/open', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'setApplicationsOpen'])->name('admin.bookshop.applications.open');
+        // COMMERCE_PARITY_PLAN P6a: Akuru packs and delivers for the shops that choose it.
+        Route::get('akuru', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'index'])->name('admin.bookshop.akuru');
+        Route::get('akuru/export', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'export'])->name('admin.bookshop.akuru.export');
+        Route::post('akuru/settings', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'settings'])->name('admin.bookshop.akuru.settings');
+        Route::post('akuru/orders/{order}', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'advance'])->name('admin.bookshop.akuru.advance')->whereNumber('order');
+        Route::post('akuru/stock/{product}', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'stock'])->name('admin.bookshop.akuru.stock')->whereNumber('product');
         // COMMERCE_PARITY_PLAN P4: listings awaiting the office's approval.
         Route::post('listings/{product}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'decide'])->name('admin.bookshop.listings.decide')->whereNumber('product');
         Route::get('listings/export', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'export'])->name('admin.bookshop.listings.export');

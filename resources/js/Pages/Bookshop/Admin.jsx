@@ -107,6 +107,7 @@ function VendorEditor({ vendor, t, onDone, sectionTypes = [] }) {
         contact_email: vendor.contact_email || '', contact_phone: vendor.contact_phone || '', address: vendor.address || '',
         opening_hours: vendor.opening_hours || '', office_notes: vendor.office_notes || '',
         badges: vendor.badges || [], trusted: Boolean(vendor.trusted),
+        fulfilment: vendor.fulfilment || 'vendor', delivery_by: vendor.delivery_by || 'vendor', akuru_handling_fee: vendor.akuru_handling_fee || '',
     });
     const set = (name) => (e) => form.setData(name, e.target.type === 'checkbox' ? e.target.checked : e.target.value);
     const toggleBadge = (badge) => (e) => form.setData('badges', e.target.checked ? [...form.data.badges, badge] : form.data.badges.filter((b) => b !== badge));
@@ -135,6 +136,20 @@ function VendorEditor({ vendor, t, onDone, sectionTypes = [] }) {
             <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.data.gst_registered} onChange={set('gst_registered')} /> {t.gst_registered}</label>
             {/* COMMERCE_PARITY_PLAN P4: a trusted shop's listings go on sale without the office's approval. */}
             <label className="flex items-center gap-2 text-sm" title={t.trusted_hint}><input type="checkbox" checked={form.data.trusted} onChange={set('trusted')} data-testid="vendor-trusted" /> {t.trusted}</label>
+            {/* COMMERCE_PARITY_PLAN P6a: who packs and who delivers, and Akuru's handling fee for this shop. */}
+            <label className="text-sm">{t.akuru_fulfilment}
+                <select className="form-input w-full" value={form.data.fulfilment} onChange={set('fulfilment')} data-testid="vendor-fulfilment">
+                    <option value="vendor">{t.akuru_by_shop}</option>
+                    <option value="akuru">{t.akuru_by_akuru}</option>
+                </select>
+            </label>
+            <label className="text-sm">{t.akuru_delivery_by}
+                <select className="form-input w-full" value={form.data.delivery_by} onChange={set('delivery_by')} data-testid="vendor-delivery-by">
+                    <option value="vendor">{t.akuru_by_shop}</option>
+                    <option value="akuru">{t.akuru_by_akuru}</option>
+                </select>
+            </label>
+            <label className="text-sm">{t.akuru_handling_override}<input className="form-input w-full" type="number" step="0.01" min="0" value={form.data.akuru_handling_fee} onChange={set('akuru_handling_fee')} placeholder={t.akuru_handling_default} data-testid="vendor-handling-fee" /></label>
             {/* B4 (plan §6.1): the office's badges; "Akuru partner" also unlocks Akuru's own palette (decision 10). */}
             <fieldset className="flex flex-wrap items-center gap-3 text-sm md:col-span-2">
                 <legend className="sr-only">{t.badges}</legend>
@@ -1246,7 +1261,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
 
             <div className="mb-2 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">{t.vendors}</h2>
-                <a href="/admin/bookshop/vendors/export" className="btn-secondary" data-testid="export-vendors">{t.export_csv}</a>
+                <span className="flex flex-wrap gap-2"><a href="/admin/bookshop/akuru" className="btn-secondary" data-testid="open-akuru">{t.akuru_page_title}</a><a href="/admin/bookshop/vendors/export" className="btn-secondary" data-testid="export-vendors">{t.export_csv}</a></span>
             </div>
             <VendorTable vendors={vendors} t={t} sectionTypes={section_types} />
 

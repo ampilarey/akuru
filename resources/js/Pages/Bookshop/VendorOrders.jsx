@@ -34,6 +34,10 @@ function StepButtons({ order, t }) {
     const [tracking, setTracking] = useState(order.tracking_note || '');
     // B9b: a cash order is handed over only with the cash in hand.
     const [cash, setCash] = useState(false);
+    if (order.fulfilled_by === 'akuru') {
+        // COMMERCE_PARITY_PLAN P6a: Akuru packs this one; the shop follows it here.
+        return <p className="rounded bg-sky-50 p-2 text-sm text-sky-900" data-testid={`akuru-packs-${order.number}`}>{(t.akuru_packs_order || '').replace(':fee', order.akuru_handling_fee)}</p>;
+    }
     if (order.next.length === 0) {
         return null;
     }

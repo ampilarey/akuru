@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class VendorCommissionInvoice extends Model
 {
     protected $fillable = [
-        'vendor_id', 'number', 'period_start', 'period_end', 'orders_count', 'sales', 'commission', 'tax_rate', 'tax',
+        'vendor_id', 'number', 'period_start', 'period_end', 'orders_count', 'sales', 'commission', 'tax_rate', 'tax', 'handling',
         'total', 'currency', 'issuer_name', 'issuer_tin', 'vendor_legal_name', 'vendor_tin', 'issued_at', 'issued_by',
     ];
 
@@ -27,6 +27,7 @@ class VendorCommissionInvoice extends Model
             'commission' => 'decimal:2',
             'tax_rate' => 'decimal:2',
             'tax' => 'decimal:2',
+            'handling' => 'decimal:2',
             'total' => 'decimal:2',
             'issued_at' => 'datetime',
         ];

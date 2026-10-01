@@ -36,7 +36,9 @@ class IssueCommissionInvoicesAction
                 }
                 $earnings = VendorEarning::query()->where('vendor_id', $vendor->id)->whereBetween('order_paid_at', [$start, $end])->lockForUpdate()->get();
                 $commission = round((float) $earnings->sum('commission'), 2);
-                if ($commission <= 0) {
+                // P6a: Akuru's handling of the shop's orders, its own line.
+                $handling = round((float) $earnings->sum('akuru_handling_fee'), 2);
+                if ($commission <= 0 && $handling <= 0) {
                     return null;
                 }
                 $tax = round((float) $earnings->sum('commission_tax'), 2);
@@ -52,7 +54,8 @@ class IssueCommissionInvoicesAction
                     'commission' => $commission,
                     'tax_rate' => $taxRate,
                     'tax' => $tax,
-                    'total' => round($commission + $tax, 2),
+                    'handling' => $handling,
+                    'total' => round($commission + $tax + $handling, 2),
                     'currency' => config('bookshop.currency', 'MVR'),
                     'issuer_name' => (string) config('bookshop.money.issuer_name', 'Akuru Institute'),
                     'issuer_tin' => config('bookshop.money.issuer_tin'),

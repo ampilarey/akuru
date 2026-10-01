@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Support;
 
+use App\Domains\Bookshop\Actions\AkuruStockAction;
 use App\Domains\Bookshop\Actions\Shop\CustomerListsAction;
 use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\Product;
@@ -39,6 +40,8 @@ final class Restock
             $product->update(['stock' => (int) $product->stock + $quantity]);
             StockLedger::record($product, null, $quantity, $kind, $userId, (int) $item->order_id);
         }
+        // P6a: back on Akuru's shelf when Akuru packed the order.
+        app(AkuruStockAction::class)->putBack($item, $quantity);
         // B7: anyone waiting for it hears, once the stock is really back.
         $productId = (int) $product->id;
         DB::afterCommit(fn () => app(CustomerListsAction::class)->notifyIfBack($productId));

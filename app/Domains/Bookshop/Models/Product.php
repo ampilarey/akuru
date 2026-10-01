@@ -45,6 +45,7 @@ class Product extends Model
         'dimensions',
         'track_stock',
         'stock',
+        'stock_at_akuru',
         'low_stock_at',
         'low_stock_notified_at',
         'lead_days',

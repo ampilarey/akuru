@@ -3,7 +3,9 @@
 namespace App\Domains\Bookshop\Actions;
 
 use App\Domains\Bookshop\DTOs\VendorScope;
+use App\Domains\Bookshop\Enums\VendorMemberRole;
 use App\Domains\Bookshop\Enums\VendorStatus;
+use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Models\VendorMember;
 
 /**
@@ -37,6 +39,28 @@ class ResolveVendorScopeAction
             vendorSlug: (string) $member->vendor->slug,
             agreementAccepted: $member->agreement_accepted_at !== null,
             paused: $member->vendor->status === VendorStatus::Paused,
+        );
+    }
+
+    /**
+     * COMMERCE_PARITY_PLAN P6a: the office acting for a shop on the orders
+     * Akuru packs — the caller has checked `bookshop.manage`. Never a member's
+     * scope: `office` is set, and the fulfilment action accepts it only for
+     * an order Akuru packs.
+     */
+    public function forOffice(int $vendorId, int $officeUserId): VendorScope
+    {
+        $vendor = Vendor::query()->findOrFail($vendorId);
+
+        return new VendorScope(
+            vendorId: (int) $vendor->id,
+            userId: $officeUserId,
+            role: VendorMemberRole::Staff,
+            vendorName: (string) $vendor->name,
+            vendorSlug: (string) $vendor->slug,
+            agreementAccepted: true,
+            paused: $vendor->status === VendorStatus::Paused,
+            office: true,
         );
     }
 
