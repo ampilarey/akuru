@@ -22,7 +22,7 @@ use Illuminate\Validation\ValidationException;
  */
 class IdentityVerificationAction
 {
-    public const PURPOSES = ['vendor', 'writer', 'learner'];
+    public const PURPOSES = ['vendor', 'writer', 'learner', 'lender'];
 
     /** @var list<string> */
     public const MIMES = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -194,7 +194,7 @@ class IdentityVerificationAction
             if (! $notify) {
                 return $row;
             }
-            $hrefs = ['vendor' => '/vendor', 'writer' => '/write', 'learner' => '/my-learning'];
+            $hrefs = ['vendor' => '/vendor', 'writer' => '/write', 'learner' => '/my-learning', 'lender' => '/my-lending'];
             $title = __($verified ? 'account.id_decided_title_verified' : 'account.id_decided_title_rejected');
             $body = __($verified ? 'account.id_decided_body_verified' : 'account.id_decided_body_rejected', ['note' => (string) $note]);
             DB::afterCommit(function () use ($row, $title, $body, $hrefs) {

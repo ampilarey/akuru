@@ -150,6 +150,7 @@ return [
     'sms_campaigns' => 'SMS offers',
     'shop_customers' => 'Customers',
     'shop_credit' => 'Credit accounts',
+    'lending_office' => 'Book lending',
     'shop' => 'Bookstore',
     'my_orders' => 'My orders',
     'my_wishlist' => 'My wishlist',

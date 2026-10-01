@@ -13,7 +13,7 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 186 (a document template, not a screen — see the documents block;
+// Count: 191 (a document template, not a screen — see the documents block;
 // the five public bookshop views of BOOKSHOP_PLAN B1b, the five customer
 // pages of B2, the two storefront partials of B4, the sections, menu and
 // vendor page of B5 and the customer's wishlist of B7 — see the public
@@ -116,7 +116,7 @@ return [
     'e-learning/quran-lessons.blade.php',
     'e-learning/show.blade.php',
 
-    // emails — 7 (an email is a Blade template by nature, not a screen)
+    // emails — 8 (an email is a Blade template by nature, not a screen)
     'emails/admin-free-enrollment.blade.php',
     'emails/admin-new-enrollment.blade.php',
     'emails/daily-content-digest.blade.php',
@@ -129,6 +129,8 @@ return [
     'emails/bookshop-notice.blade.php',
     // STATUS §5lq — a Digital Library notice by email (the in-app notice's words and link).
     'emails/library-notice.blade.php',
+    // LENDING_AND_USED_BOOKS_PLAN L1 — a book-lending notice by email (the in-app notice's words and link).
+    'emails/lending-notice.blade.php',
 
     // errors — 2
     'errors/404.blade.php',
@@ -162,7 +164,7 @@ return [
     'profile/partials/update-password-form.blade.php',
     'profile/partials/update-profile-information-form.blade.php',
 
-    // public — 57
+    // public — 61
     'public/about/index.blade.php',
     'public/achievements/index.blade.php',
     'public/admissions/apply.blade.php',
@@ -255,6 +257,13 @@ return [
     'public/shop/receipt.blade.php',
     // COMMERCE_PARITY_PLAN P7b — stop the Bookstore's SMS offers, from the link in every offer (no sign-in); the newsletter page's twin.
     'public/shop/sms-stop.blade.php',
+    // LENDING_AND_USED_BOOKS_PLAN L1 — book lending between people: the public shelf and a book's page sit
+    // beside the Blade shop pages they are linked from; My lending is Blade for the same reason the shop's
+    // customer pages are (cart, orders); the book-fields partial is @included by the add and edit forms.
+    'public/lending/index.blade.php',
+    'public/lending/show.blade.php',
+    'public/lending/mine.blade.php',
+    'public/lending/_book-fields.blade.php',
     // BOOKSHOP_PLAN B9d — a customer's bulk quotes, asked from the Blade cart
     // and accepted back into it; siblings of My orders for the same reason.
     'public/shop/quotes/index.blade.php',

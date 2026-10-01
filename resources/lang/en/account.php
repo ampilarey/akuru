@@ -97,6 +97,7 @@ return [
     'id_verify_title' => 'Verify your identity',
     'id_vendor_blurb' => 'Before your shop can put products on sale or ask for a payout, the office checks the owner\'s ID card. Upload both sides here.',
     'id_writer_blurb' => 'Before you can submit a work or ask for a payout, the office checks your ID card. Upload both sides here.',
+    'id_lender_blurb' => 'Before your books appear on the lending shelf, the office checks your ID card. Upload both sides here.',
     'id_pending_body' => 'Your card is with the office. We will tell you when it is checked.',
     'id_rejected_note' => 'The office said',
     'id_status_none' => 'Not sent',

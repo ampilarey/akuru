@@ -19,6 +19,7 @@ return [
     App\Domains\Commerce\Providers\CommerceServiceProvider::class,
     App\Domains\Library\Providers\LibraryServiceProvider::class,
     App\Domains\Bookshop\Providers\BookshopServiceProvider::class,
+    App\Domains\Lending\Providers\LendingServiceProvider::class,
     App\Domains\Courses\Providers\CoursesServiceProvider::class,
     App\Domains\Offerings\Providers\OfferingsServiceProvider::class,
     App\Domains\Progress\Providers\ProgressServiceProvider::class,

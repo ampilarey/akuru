@@ -158,6 +158,10 @@ return [
     'shop_credit_account' => \App\Domains\Bookshop\Models\ShopCreditAccount::class,
     'shop_credit_entry' => \App\Domains\Bookshop\Models\ShopCreditEntry::class,
     'vendor_application' => \App\Domains\Bookshop\Models\VendorApplication::class,
+    // LENDING_AND_USED_BOOKS_PLAN L1 — book lending between people.
+    'lender' => \App\Domains\Lending\Models\Lender::class,
+    'lending_book' => \App\Domains\Lending\Models\LendingBook::class,
+    'lending_loan' => \App\Domains\Lending\Models\LendingLoan::class,
     'vendor_newsletter_subscriber' => \App\Domains\Bookshop\Models\VendorNewsletterSubscriber::class,
     'quote_request' => \App\Domains\Bookshop\Models\QuoteRequest::class,
     'quote_item' => \App\Domains\Bookshop\Models\QuoteItem::class,

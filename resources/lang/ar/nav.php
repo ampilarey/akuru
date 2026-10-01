@@ -146,6 +146,7 @@ return [
     'sms_campaigns' => 'عروض الرسائل القصيرة',
     'shop_customers' => 'العملاء',
     'shop_credit' => 'حسابات الائتمان',
+    'lending_office' => 'إعارة الكتب',
     'shop' => 'متجر الكتب',
     'my_orders' => 'طلباتي',
     'my_wishlist' => 'قائمة أمنياتي',
