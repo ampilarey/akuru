@@ -356,6 +356,7 @@ return [
 
     // Vendor delivery methods (B2)
     'delivery_methods_heading' => 'Delivery methods',
+    'on_this_page' => 'On this page',
     'delivery_methods_intro' => 'How your shop gets orders to customers. Fees are per order. Until you set your own, the office’s standard methods apply.',
     'use_template' => 'Start from the standard methods',
     'kind' => 'Kind',

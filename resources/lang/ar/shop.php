@@ -352,6 +352,7 @@ return [
 
     // Vendor delivery methods (B2)
     'delivery_methods_heading' => 'طرق التوصيل',
+    'on_this_page' => 'في هذه الصفحة',
     'delivery_methods_intro' => 'كيف يوصل متجرك الطلبات إلى العملاء. الرسوم لكل طلب. إلى أن تحدد طرقك، تُطبَّق طرق المكتب القياسية.',
     'use_template' => 'ابدأ من الطرق القياسية',
     'kind' => 'النوع',
