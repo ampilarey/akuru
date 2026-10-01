@@ -100,7 +100,7 @@ it('keeps a live product live through a price or stock change, and sends a new t
     listingWeb()->actingAs($owner)->post(route('vendor.products.update', $product->id), listingInput(['title' => 'Seerah for young readers', 'price' => 99, 'stock' => 12]))->assertSessionHasNoErrors();
     $product->refresh();
     expect($product->status->value)->toBe('pending_review')
-        ->and($product->review_changes)->toBe(['title' => ['from' => 'Seerah for children', 'to' => 'Seerah for young readers']]);
+        ->and($product->review_changes)->toEqual(['title' => ['from' => 'Seerah for children', 'to' => 'Seerah for young readers']]); // JSON key order is the database's
     listingWeb()->get(route('public.shop.product', $product->slug))->assertNotFound();
     listingWeb()->actingAs($office)->get(route('admin.bookshop.index'))
         ->assertInertia(fn ($page) => $page->where('listings.0.changes.title.to', 'Seerah for young readers'));
