@@ -108,12 +108,11 @@ function Charges({ settings, t }) {
 }
 
 export default function Akuru({ t = {}, orders = [], shops = [], settings, drivers = [], driver_added = null }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
 
     return (
         <AppShell title={t.akuru_page_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <p className="mb-4 text-sm text-gray-600">{t.akuru_page_intro} <a href="/admin/bookshop" className="text-blue-700 underline">{t.akuru_back}</a></p>
 
             <section className="mb-8" data-testid="akuru-orders">

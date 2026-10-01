@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 /**
@@ -9,8 +9,7 @@ import AppShell from '../../Layouts/AppShell';
  * tranche, so the screen reads in Dhivehi and Arabic too.
  */
 export default function Index({ instructors = [], pagination, total = 0, t = {} }) {
-    const { flash = {} } = usePage().props;
-    const remove = (row) => {
+        const remove = (row) => {
         if (!window.confirm((t.instructors_delete_confirm || 'Delete :name?').replace(':name', row.name))) return;
         router.delete(`/admin/instructors/${row.id}`, { preserveScroll: true });
     };
@@ -23,8 +22,6 @@ export default function Index({ instructors = [], pagination, total = 0, t = {} 
                 <a href="/admin/instructors/export" className="ms-auto underline" data-testid="export-csv">{t.instructors_export || 'Export CSV'}</a>
                 <Link href="/admin/instructors/create" className="btn-primary" data-testid="instructors-add">{t.instructors_add || '+ Add instructor'}</Link>
             </div>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="instructors-flash">✓ {flash.success}</p>}
-
             {/* overflow-x-auto: on a phone the action column stays reachable with a swipe (docs/ADMIN_PANEL.md L12). */}
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="instructors-table">
                 <table className="min-w-full text-sm">

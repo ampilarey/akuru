@@ -1,4 +1,4 @@
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
@@ -32,7 +32,6 @@ function VersionForm() {
 }
 
 export default function Admin({ pending_samples: pendingSamples, model_versions: modelVersions, stats, ai_enabled: aiEnabled }) {
-    const flash = usePage().props.flash || {};
     const [reasons, setReasons] = useState({});
 
     const decide = (id, approve) =>
@@ -40,7 +39,6 @@ export default function Admin({ pending_samples: pendingSamples, model_versions:
 
     return (
         <AppShell title="Pronunciation AI admin">
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2 text-sm">
                 <span className={aiEnabled ? 'text-green-700' : 'text-amber-700'}>
                     AI checking is {aiEnabled ? 'ON' : 'OFF (flag AI_PRONUNCIATION_ENABLED)'} · totals:{' '}

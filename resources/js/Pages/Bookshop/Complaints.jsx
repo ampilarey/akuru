@@ -30,13 +30,12 @@ function Reply({ complaint, t }) {
 }
 
 export default function Complaints({ t = {}, complaints = [] }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
     const tone = { open: 'bg-red-50 text-red-800', in_progress: 'bg-amber-50 text-amber-800', resolved: 'bg-green-50 text-green-800' };
 
     return (
         <AppShell title={t.complaints_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm text-gray-600">{t.complaints_intro}</p>
                 <a href="/admin/bookshop/complaints/export" className="btn-secondary" data-testid="export-complaints">{t.export_csv}</a>

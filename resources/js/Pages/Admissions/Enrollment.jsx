@@ -47,7 +47,7 @@ function Decision({ enrollment, action, label, confirm, tone, testId }) {
 }
 
 export default function Enrollment({ enrollment, payment_methods: paymentMethods = [], can_record_payment: canRecordPayment = false, t = {}, identity = null, id_l = {} }) {
-    const { flash = {}, errors = {} } = usePage().props;
+    const { errors = {} } = usePage().props;
     const [starts, setStarts] = useState(enrollment.access_starts_at || '');
     const [ends, setEnds] = useState(enrollment.access_ends_at || '');
     const [amount, setAmount] = useState(enrollment.suggested_amount || '');
@@ -70,8 +70,7 @@ export default function Enrollment({ enrollment, payment_methods: paymentMethods
     return (
         <AppShell title={title}>
             <p className="mb-4 text-sm"><Link href="/admin/enrollments" className="text-gray-500 underline" data-testid="enrolment-back">{t.enrolment_back || '← Enrollments'}</Link> <span className="text-gray-400">/</span> <span className="text-gray-700">{title}</span></p>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="enrolment-flash">✓ {flash.success}</p>}
-            {(flash.error || firstError) && <p className="mb-4 rounded bg-red-50 p-3 text-red-700" data-testid="enrolment-error">✗ {flash.error || firstError}</p>}
+            {firstError && <p className="mb-4 rounded bg-red-50 p-3 text-red-700" data-testid="enrolment-error">✗ {firstError}</p>}
 
             <section className="mb-6 rounded-lg border bg-white p-5" data-testid="enrolment-details">
                 <h2 className="mb-3 text-base font-semibold text-gray-800">{t.enrolment_details || 'Enrollment Details'}</h2>

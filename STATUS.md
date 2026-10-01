@@ -4414,6 +4414,38 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mu. One flash per screen; the browser may keep the built files (2026-10-01)
+
+Two small things seen while walking §5mq and §5mr, done together because
+each is a one-idea change across many files.
+
+- **The flash printed twice.** `AppShell` prints `flash.success` and
+  `flash.error` under the page title, and 48 Inertia pages printed them
+  again — so every "Saved" showed as two green bars. The pages' copies are
+  gone (and the five `(flash.error || firstError)` guards now show only the
+  form's own first error, which the shell does not print); the shell's two
+  bars carry `data-testid="flash-success"` / `flash-error`, so the walks
+  that looked for the page's bar find the shell's. Pages with a flash of
+  their own kind — the vendor invite card, a member's one-time password,
+  a gift-card code — keep it; those are not messages.
+- **`public/.htaccess`** sent `Cache-Control: no-cache, no-store` on every
+  response, built CSS and JS included (Bookstore audit finding 26). Pages
+  keep that. Static files (`css js mjs map png jpe?g gif webp avif svg ico
+  woff2? ttf otf eot webmanifest`) get `public, max-age=86400`; Vite's
+  hashed `name-XXXXXXXX.css|js` files get a year and `immutable`, since a
+  changed file is a new address. Verify on the host after the pull:
+  `curl -sI https://akuru.edu.mv/build/assets/app-*.js | grep -i cache-control`
+  should read `max-age=31536000, immutable`; a page should still read
+  `no-store`. LiteSpeed honours `<FilesMatch>` and `Header` as Apache does;
+  this environment has neither, so the host is the first real test.
+
+Tests: the Inertia-page architecture tests (FormErrors, pages exist,
+document title, form transform) stay green; nothing else asserts on a
+page's own flash.
+
+Walk: `vendor.mjs` 32/32, `vendor-mobile.mjs` 13/13 (its "saves from the
+phone" step finds the shell's bar), `admin-mobile.mjs` 3/3.
+
 ## 5mt. Book lending, the rest (LENDING_AND_USED_BOOKS_PLAN L2, 2026-10-01)
 
 The plan's third and last slice, on the L1 loop of §5ms.

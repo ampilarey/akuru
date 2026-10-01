@@ -777,7 +777,6 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
     return (
         <AppShell title={t.portal_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             {/* COMMERCE_PARITY_PLAN P2: the owner's ID card, until the office has checked it. */}
             <IdentityCardUpload identity={identity} href="/vendor/identity" l={id_l} blurb={id_l.id_vendor_blurb} />
             {vendor.paused && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="shop-paused">{t.shop_paused_banner}</p>}

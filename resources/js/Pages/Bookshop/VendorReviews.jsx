@@ -74,13 +74,12 @@ function QuestionRow({ question: q, t }) {
 }
 
 export default function VendorReviews({ t, vendor, reviews, questions = { waiting: 0, questions: [] } }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
     const s = reviews.summary;
 
     return (
         <AppShell title={t.reviews_heading}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
                     <h1 className="text-2xl font-bold" data-testid="reviews-heading">{t.reviews_heading} · {vendor.name}</h1>

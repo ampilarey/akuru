@@ -19,7 +19,6 @@ export default function Import({ cache_version = 1, t = {} }) {
     return (
         <AppShell title={t.prayer_import_title || 'Import prayer times'}>
             <p className="mb-4 text-sm"><Link href="/admin/prayer-times/islands" className="text-gray-500 underline" data-testid="prayer-islands-link">{t.prayer_link_islands || 'Islands →'}</Link></p>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="prayer-flash">✓ {flash.success}</p>}
             {firstError && <p className="mb-4 rounded bg-red-50 p-3 text-sm text-red-700" data-testid="prayer-error">✗ {firstError}</p>}
             <p className="mb-4 max-w-2xl text-sm text-gray-600">{(t.prayer_import_note || 'Cache version :version. Import fails unless every category has 366 rows.').replace(':version', cache_version)}</p>
 

@@ -44,12 +44,11 @@ function AddNote({ customer, t }) {
 }
 
 export default function Customer({ t = {}, customer }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
 
     return (
         <AppShell title={customer.name}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             <p className="mb-4 text-sm"><Link href="/admin/bookshop/customers" className="text-blue-700 underline">{t.customer_back}</Link></p>
 
             <section className="mb-6 rounded-lg border bg-white p-4" data-testid="customer-summary">

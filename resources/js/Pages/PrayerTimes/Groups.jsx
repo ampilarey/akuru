@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 /**
@@ -7,8 +7,7 @@ import AppShell from '../../Layouts/AppShell';
  * to a new one. Every string is a key in the admin tranche.
  */
 export default function Groups({ groups = [], t = {} }) {
-    const { flash = {} } = usePage().props;
-
+    
     return (
         <AppShell title={t.prayer_groups_title || 'Recipient groups'}>
             <div className="mb-4 flex flex-wrap items-center gap-3 text-sm">
@@ -16,8 +15,6 @@ export default function Groups({ groups = [], t = {} }) {
                 <Link href="/admin/prayer-times/islands" className="underline" data-testid="prayer-islands-link">{t.prayer_link_islands || 'Islands →'}</Link>
                 <Link href="/admin/prayer-times/groups/create" className="btn-primary ms-auto" data-testid="group-new">{t.prayer_group_new || 'New group'}</Link>
             </div>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="prayer-flash">✓ {flash.success}</p>}
-
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="groups-table">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

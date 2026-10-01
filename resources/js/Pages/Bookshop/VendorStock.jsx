@@ -199,12 +199,11 @@ function Movements({ movements, kinds, filters, t }) {
 }
 
 export default function VendorStock({ t, vendor, low_stock, movements, kinds, filters, products, import: preview, import_expired, import_result: result, columns, limits }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
 
     return (
         <AppShell title={t.stock_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             {result && result.failed?.length > 0 && (
                 <ul className="mb-4 rounded bg-red-50 p-3 text-sm text-red-800" data-testid="import-failed">
                     {result.failed.map((f) => <li key={f.line}>{fill(t.import_failed_line, { line: f.line, error: f.error })}</li>)}

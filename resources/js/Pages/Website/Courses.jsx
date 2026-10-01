@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 const STATUS_CLASS = { open: 'bg-green-100 text-green-800', upcoming: 'bg-blue-100 text-blue-800' };
@@ -10,8 +10,7 @@ const STATUS_CLASS = { open: 'bg-green-100 text-green-800', upcoming: 'bg-blue-1
  * string is a key in the admin tranche.
  */
 export default function Courses({ courses = [], pagination, total = 0, t = {} }) {
-    const { flash = {} } = usePage().props;
-    const remove = (course) => {
+        const remove = (course) => {
         if (!window.confirm(t.courses_delete_confirm || 'Are you sure you want to delete this course?')) return;
         router.delete(`/admin/public-site/courses/${course.slug}`, { preserveScroll: true });
     };
@@ -30,8 +29,6 @@ export default function Courses({ courses = [], pagination, total = 0, t = {} })
                 <p className="text-gray-600" data-testid="courses-total">{(t.courses_total || ':count courses').replace(':count', total)}</p>
                 <Link href="/admin/public-site/courses/create" className="btn-primary ms-auto" data-testid="courses-new">{t.courses_new || 'Add New Course'}</Link>
             </div>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="courses-flash">✓ {flash.success}</p>}
-
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="courses-table">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

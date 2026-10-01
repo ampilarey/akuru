@@ -414,7 +414,7 @@ function EarningsCard({ earnings, itemSales = [], t = {} }) {
 }
 
 export default function Write({ dashboard, options, earnings = null, item_sales = [], identity = null, id_l = {} }) {
-    const { flash = {}, i18n } = usePage().props;
+    const { i18n } = usePage().props;
     const t = i18n?.common || {};
     // R3b: on a revision, the writer tells the reviewers what changed.
     const [notes, setNotes] = useState({});
@@ -428,8 +428,6 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
                 not in a submittable state — had nowhere to appear. The editor
                 forms below carry their own field-level errors. */}
             <FormErrors errors={usePage().props.errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
-
             {profile && <IdentityCardUpload identity={identity} href="/write/identity" l={id_l} blurb={id_l.id_writer_blurb} />}
             {!profile && (
                 <div className="mb-6">

@@ -1,4 +1,4 @@
-import { Link, usePage } from '@inertiajs/react';
+import { Link } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 /**
@@ -9,8 +9,7 @@ import AppShell from '../../Layouts/AppShell';
 const STATE_TONE = { live: 'bg-green-100 text-green-800', scheduled: 'bg-blue-100 text-blue-800', draft: 'bg-gray-100 text-gray-800' };
 
 export default function News({ posts = [], t = {} }) {
-    const { flash = {} } = usePage().props;
-    const stateLabel = (state) => ({ live: t.news_state_live || 'Published', scheduled: t.news_state_scheduled || 'Scheduled', draft: t.news_state_draft || 'Draft' })[state] || state;
+        const stateLabel = (state) => ({ live: t.news_state_live || 'Published', scheduled: t.news_state_scheduled || 'Scheduled', draft: t.news_state_draft || 'Draft' })[state] || state;
 
     return (
         <AppShell title={t.news_title || 'News'}>
@@ -20,8 +19,6 @@ export default function News({ posts = [], t = {} }) {
                 <p className="text-gray-600">{(t.news_total || ':count news items').replace(':count', posts.length)}</p>
                 <Link href="/admin/public-site/news/create" className="btn-primary ms-auto" data-testid="news-new">{t.news_new || 'Write news'}</Link>
             </div>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">✓ {flash.success}</p>}
-
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="news-table">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

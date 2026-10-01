@@ -32,7 +32,7 @@ function monthGrid(month) {
 }
 
 export default function DailyContent({ items = [], filters = {}, month, t = {} }) {
-    const { flash = {}, errors = {} } = usePage().props;
+    const { errors = {} } = usePage().props;
     const [form, setForm] = useState({ month: month || '', content_type: filters.content_type || '', status: filters.status || '', theme_tag: filters.theme_tag || '', q: filters.q || '' });
     const [batch, setBatch] = useState({ publish_date: '', days: '30', theme_tag: '', attribution: '', text_en: '', text_dv: '' });
     const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
@@ -73,8 +73,7 @@ export default function DailyContent({ items = [], filters = {}, month, t = {} }
                 <a href={`/admin/public-site/daily-content/export${query ? `?${query}` : ''}`} className="ms-auto underline" data-testid="export-csv">{t.daily_export || 'Export CSV'}</a>
                 <Link href="/admin/public-site/daily-content/create" className="btn-primary" data-testid="daily-new">{t.daily_new || 'New item'}</Link>
             </div>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="daily-flash">✓ {flash.success}</p>}
-            {(flash.error || firstError) && <p className="mb-4 rounded bg-red-50 p-3 text-red-700" data-testid="daily-error">✗ {flash.error || firstError}</p>}
+            {firstError && <p className="mb-4 rounded bg-red-50 p-3 text-red-700" data-testid="daily-error">✗ {firstError}</p>}
             <p className="mb-4 text-sm text-gray-600">{t.daily_intro || 'Maker–checker: a second reviewer with daily_content.approve must approve before schedule/publish. Hadith needs collection, number, grading, and grading source. No auto-generation.'}</p>
 
             <form onSubmit={submit} className="mb-4 flex flex-wrap items-end gap-2 rounded-lg border bg-white p-3" data-testid="daily-filter">

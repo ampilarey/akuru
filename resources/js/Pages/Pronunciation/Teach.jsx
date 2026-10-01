@@ -1,4 +1,4 @@
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 
@@ -51,11 +51,9 @@ function ReviewRow({ attempt, letters, harakas }) {
 }
 
 export default function Teach({ review_queue: reviewQueue, letters, harakas, ai_enabled: aiEnabled }) {
-    const flash = usePage().props.flash || {};
 
     return (
         <AppShell title="Pronunciation review">
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700">{flash.success}</p>}
             {!aiEnabled && <p className="mb-4 rounded bg-amber-50 p-3 text-sm text-amber-800">AI checking is off — every attempt lands here for a human ear.</p>}
 
             <div className="overflow-x-auto rounded-lg border bg-white">

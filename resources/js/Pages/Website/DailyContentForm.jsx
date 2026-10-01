@@ -1,4 +1,4 @@
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 
@@ -19,8 +19,7 @@ export default function DailyContentForm(props) {
 }
 
 function DailyContentFormBody({ item = null, type = 'ayah', t = {} }) {
-    const { flash = {} } = usePage().props;
-    const editing = item !== null;
+        const editing = item !== null;
     const form = useForm({
         content_type: item?.content_type || type || 'ayah',
         publish_date: item?.publish_date || '',
@@ -96,7 +95,6 @@ function DailyContentFormBody({ item = null, type = 'ayah', t = {} }) {
     return (
         <AppShell title={editing ? (t.daily_edit_title || 'Edit daily content') : (t.daily_new_title || 'New daily content')}>
             <p className="mb-4 text-sm"><Link href="/admin/public-site/daily-content" className="text-gray-500 underline" data-testid="daily-back">{t.daily_back || '← Daily content'}</Link></p>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="daily-flash">✓ {flash.success}</p>}
             {firstError && <p className="mb-4 rounded bg-red-50 p-3 text-sm text-red-700" data-testid="daily-error">✗ {firstError}</p>}
 
             <form onSubmit={submit} className="max-w-3xl space-y-4 rounded-lg border bg-white p-6" data-testid="daily-form">

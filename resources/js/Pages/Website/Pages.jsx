@@ -1,4 +1,4 @@
-import { Link, router, usePage } from '@inertiajs/react';
+import { Link, router } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 /**
@@ -8,8 +8,7 @@ import AppShell from '../../Layouts/AppShell';
  * the admin tranche.
  */
 export default function Pages({ pages = [], pagination, total = 0, t = {} }) {
-    const { flash = {} } = usePage().props;
-    const remove = (page) => {
+        const remove = (page) => {
         if (!window.confirm(t.pages_delete_confirm || 'Are you sure you want to delete this page?')) return;
         router.delete(`/admin/public-site/pages/${page.id}`, { preserveScroll: true });
     };
@@ -24,8 +23,6 @@ export default function Pages({ pages = [], pagination, total = 0, t = {} }) {
                 <p className="text-gray-600" data-testid="pages-total">{(t.pages_total || ':count pages').replace(':count', total)}</p>
                 <Link href="/admin/public-site/pages/create" className="btn-primary ms-auto" data-testid="pages-new">{t.pages_new || 'Add New Page'}</Link>
             </div>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="pages-flash">✓ {flash.success}</p>}
-
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="pages-table">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

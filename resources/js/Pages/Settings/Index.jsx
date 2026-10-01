@@ -1,4 +1,4 @@
-import { router, usePage } from '@inertiajs/react';
+import { router } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 /**
@@ -21,8 +21,7 @@ function Card({ icon, label, value, note, tone = 'text-gray-900', testId }) {
 }
 
 export default function Index({ settings, sms_configured, bml_configured, bml_webhook_ready, configuration_cached, links = [], t = {} }) {
-    const { flash = {} } = usePage().props;
-    const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—');
+        const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—');
     const configured = (on) => (on ? t.system_settings_configured || 'Configured' : t.system_settings_not_configured || 'Not configured');
     const tone = (on) => (on ? 'text-green-800' : 'text-amber-800');
     const info = [
@@ -37,8 +36,6 @@ export default function Index({ settings, sms_configured, bml_configured, bml_we
     return (
         <AppShell title={t.system_settings_title || 'System Settings'}>
             <p className="mb-4 text-sm text-gray-600">{t.system_settings_intro || 'Application configuration overview and utilities.'}</p>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="settings-flash">✓ {flash.success}</p>}
-
             <div className="mb-6 grid gap-3 md:grid-cols-2 lg:grid-cols-4" data-testid="integration-status">
                 <Card icon="📩" label={t.system_settings_mail || 'Mail driver'} value={cap(settings.mail_mailer)} note={settings.mail_from} />
                 <Card icon={sms_configured ? '✅' : '⚠️'} label={t.system_settings_sms || 'SMS gateway'} value={configured(sms_configured)} tone={tone(sms_configured)} note={t.system_settings_sms_note || 'Check .env SMS_GATEWAY_API_KEY'} testId="sms-status" />

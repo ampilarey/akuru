@@ -533,7 +533,7 @@ function Library({ d, t }) {
 }
 
 export default function VendorSections({ t, vendor, designer, preview_url, public_url }) {
-    const { flash = {}, errors } = usePage().props;
+    const { errors } = usePage().props;
     const isOwner = vendor.role === 'owner';
     const d = { ...designer, vendorSlug: vendor.slug };
     const [tab, setTab] = useState('home');
@@ -560,7 +560,6 @@ export default function VendorSections({ t, vendor, designer, preview_url, publi
     return (
         <AppShell title={t.sections_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="flash-success">{flash.success}</p>}
             {/* §5mq: on a phone the notice is a bar at the bottom of the screen with Publish in it, wherever the vendor has scrolled to. */}
             {d.draft_dirty && !d.moderation.held && (
                 <div className="fixed inset-x-0 bottom-0 z-30 border-t border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 shadow-lg sm:static sm:mb-4 sm:rounded sm:border sm:shadow-none" data-testid="draft-not-live">

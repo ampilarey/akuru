@@ -49,7 +49,7 @@ function RefundForm({ payment, t }) {
 }
 
 export default function Payments({ payments = [], pagination, total = 0, filters = {}, statuses = [], can_refund: canRefund = false, t = {} }) {
-    const { flash = {}, errors = {} } = usePage().props;
+    const { errors = {} } = usePage().props;
     const [search, setSearch] = useState(filters.search || '');
     const [status, setStatus] = useState(filters.status || '');
     const active = { ...(search ? { search } : {}), ...(status ? { status } : {}) };
@@ -71,8 +71,7 @@ export default function Payments({ payments = [], pagination, total = 0, filters
                 <p className="text-gray-600" data-testid="payments-total">{(t.payments_total || ':count payments').replace(':count', total)}</p>
                 <a href={`/admin/enrollments/payments/export${query ? `?${query}` : ''}`} className="ms-auto underline" data-testid="export-csv">{t.payments_export || 'Export CSV'}</a>
             </div>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="payments-flash">✓ {flash.success}</p>}
-            {(flash.error || firstError) && <p className="mb-4 rounded bg-red-50 p-3 text-red-700" data-testid="payments-error">✗ {flash.error || firstError}</p>}
+            {firstError && <p className="mb-4 rounded bg-red-50 p-3 text-red-700" data-testid="payments-error">✗ {firstError}</p>}
 
             <form onSubmit={submit} className="mb-4 flex flex-wrap items-end gap-2 rounded-lg border bg-white p-3" data-testid="payments-filter">
                 <label className="text-xs text-gray-600">

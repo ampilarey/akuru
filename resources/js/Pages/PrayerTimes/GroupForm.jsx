@@ -1,4 +1,4 @@
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 /**
@@ -12,8 +12,7 @@ export default function GroupForm(props) {
 }
 
 function GroupFormBody({ group = null, t = {} }) {
-    const { flash = {} } = usePage().props;
-    const editing = group !== null;
+        const editing = group !== null;
     const form = useForm({
         name_en: group?.name_en || '',
         name_dv: group?.name_dv || '',
@@ -38,8 +37,6 @@ function GroupFormBody({ group = null, t = {} }) {
     return (
         <AppShell title={editing ? (t.prayer_group_edit_title || 'Edit group') : (t.prayer_group_new_title || 'New group')}>
             <p className="mb-4 text-sm"><Link href="/admin/prayer-times/groups" className="text-gray-500 underline" data-testid="group-back">{t.prayer_back_groups || '← Recipient groups'}</Link></p>
-            {flash.success && <p className="mb-4 rounded bg-green-50 p-3 text-green-700" data-testid="prayer-flash">✓ {flash.success}</p>}
-
             <form onSubmit={submit} action={editing ? `/admin/prayer-times/groups/${group.id}` : '/admin/prayer-times/groups'} method="post" className="max-w-2xl space-y-4 rounded-lg border bg-white p-6" data-testid="group-form">
                 {field('name_en', t.prayer_name_en || 'Name (EN)', { required: true, type: 'text' })}
                 {field('name_dv', t.prayer_name_dv || 'Name (DV)', { type: 'text', dir: 'rtl' })}
