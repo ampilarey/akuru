@@ -4414,6 +4414,24 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mx. Lending: the owner's two decisions (2026-10-01)
+
+Asked after L3, the owner: "1. Need approval 2. No money". Both are what
+is built, so no code moves; the plan's D4 and D5 stop being defaults and
+become decisions:
+
+- **D5 — lenders need the office's approval.** A lender's books reach the
+  shelf only after the Bookstore team verifies their ID card at
+  `/admin/lending`. The switch to open lending without it is not flipped.
+- **D4 — no money through Akuru for lending.** A deposit is words between
+  the two people, settled at handover; Akuru holds nothing and charges
+  nothing. Lenders and vendors remain different things (the owner, the
+  same day: "lenders don't have a specific page, and no money is
+  involved") — the earlier idea of letting a vendor's verified card count
+  for lending is dropped; lending keeps its own check.
+
+`docs/LENDING_AND_USED_BOOKS_PLAN.md` §2 and §4, BACKLOG C14 updated.
+
 ## 5mw. Log out left the shell behind (2026-10-01)
 
 The owner's screenshot, from the vendor shell on a phone: pressing *Log

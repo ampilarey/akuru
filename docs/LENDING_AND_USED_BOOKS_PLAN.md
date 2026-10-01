@@ -26,15 +26,17 @@ Akuru, so it is its own small domain, not a corner of Commerce.
 ## 2. Decisions, with defaults
 
 The agent decided these to build without stopping; the owner can overturn
-any of them with a word.
+any of them with a word. **D4 and D5 are the owner's since 2026-10-01**
+("1. Need approval 2. No money"): lenders are checked by the office before
+their books show, and no money passes through Akuru for lending.
 
 | # | Decision | Default | Why |
 |---|---|---|---|
 | D1 | **Who may sell used books** | Any shop, and any **person** who applies as a *personal seller*. A personal seller is a vendor of kind `personal`: the same ID check, the same listing approval, the same commission, payouts and delivery methods. | Everything that keeps the Bookstore honest already hangs off `vendors`; a second seller table would duplicate all of it. The office can still tell the two apart (`vendors.kind`). |
 | D2 | **Condition grades** | `new` (default), `like_new`, `good`, `fair`, `worn`, plus a free-text *condition note* (what is marked, written in, missing). | Five words a buyer understands; the note carries the rest. |
 | D3 | **Returns on used books** | The shop's usual window (seven days at least, BOOKSHOP_PLAN decision 8). | A used book described honestly is still returnable if it is not as described. |
-| D4 | **Lending and money** | **No money through Akuru in v1.** Lending is free; a lender may name a deposit, which is written on the book's page and settled between the two people at handover. | Taking deposits would make every loan a payment under rule 12 (webhook confirmation, append-only ledger, refunds) — a week of money work before the first book changes hands. Said plainly on the page; revisit when lenders ask. |
-| D5 | **Who may lend** | Any signed-in person who registers as a lender. Their books go public once the office has checked their ID card (purpose `lender`), the same card check shops get. Borrowers must be signed in; a lender may require a borrower with a checked ID. | A stranger takes a book home; the lender should know who. |
+| D4 | **Lending and money** — **owner-confirmed 2026-10-01: "No money"** | **No money through Akuru in v1.** Lending is free; a lender may name a deposit, which is written on the book's page and settled between the two people at handover. | Taking deposits would make every loan a payment under rule 12 (webhook confirmation, append-only ledger, refunds) — a week of money work before the first book changes hands. Said plainly on the page; revisit when lenders ask. |
+| D5 | **Who may lend** — **owner-confirmed 2026-10-01: "Need approval"** | Any signed-in person who registers as a lender. Their books go public once the office has checked their ID card (purpose `lender`), the same card check shops get. Borrowers must be signed in; a lender may require a borrower with a checked ID. | A stranger takes a book home; the lender should know who. |
 | D6 | **Who runs it at the office** | Bookstore admins (`bookshop.manage`). | One team already looks at ID cards and listings daily. |
 | D7 | **Where it lives** | `/shop/used` and the *Used* filter inside the Bookstore; `/lending` beside it, with *Borrow books* in the Bookstore's menu; *My lending* in the signed-in shell. | Readers already know where the Bookstore is. |
 
@@ -49,9 +51,11 @@ any of them with a word.
 
 ## 4. What the owner owns
 
-- **D4**: whether Akuru should ever hold deposits or charge a lending fee.
-  If yes, it is a Commerce slice: a deposit is a payment (rule 12), its
-  return a reversal on the ledger, and Akuru's cut — if any — a commission
-  like the Bookstore's.
+- ~~**D4**: whether Akuru should ever hold deposits or charge a lending fee.~~
+  **Decided 2026-10-01: no money.** If that ever changes it is a Commerce
+  slice: a deposit is a payment (rule 12), its return a reversal on the
+  ledger, and Akuru's cut — if any — a commission like the Bookstore's.
+- ~~**D5**: whether lenders need the office's ID check.~~ **Decided
+  2026-10-01: yes, approval needed** — the check stays on.
 - Whether a personal seller's commission should differ from a shop's (the
   office can set a rate per vendor already).
