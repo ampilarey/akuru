@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Models;
 
+use App\Domains\Bookshop\Enums\ProductCondition;
 use App\Domains\Bookshop\Enums\ProductStatus;
 use App\Domains\Bookshop\Enums\ProductVisibility;
 use App\Domains\Bookshop\Enums\TaxClass;
@@ -51,6 +52,9 @@ class Product extends Model
         'lead_days',
         // COMMERCE_PARITY_PLAN P8d: a pre-order until this date.
         'preorder_release_on',
+        // LENDING_AND_USED_BOOKS_PLAN U1: new, or a used book's grade and a note on its state.
+        'condition',
+        'condition_note',
         'status',
         'submitted_at',
         'review_note',
@@ -84,6 +88,7 @@ class Product extends Model
             'tax_class' => TaxClass::class,
             'status' => ProductStatus::class,
             'visibility' => ProductVisibility::class,
+            'condition' => ProductCondition::class,
             'track_stock' => 'boolean',
             'featured' => 'boolean',
             'rating_avg' => 'decimal:2',

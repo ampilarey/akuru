@@ -21,7 +21,7 @@ final class ProductSheet
     public const COLUMNS = [
         'id', 'sku', 'variant', 'parent_sku', 'title', 'title_dv', 'title_ar', 'summary',
         'price', 'compare_at_price', 'cost', 'tax_class', 'barcode', 'category', 'brand', 'tags',
-        'track_stock', 'stock', 'low_stock_at', 'lead_days', 'status', 'visibility', 'weight_grams',
+        'track_stock', 'stock', 'low_stock_at', 'lead_days', 'condition', 'status', 'visibility', 'weight_grams',
         'author', 'publisher', 'year', 'pages', 'language', 'age_range', 'grade', 'subject', 'url',
     ];
 
@@ -55,6 +55,7 @@ final class ProductSheet
             'stock' => (int) $p->stock,
             'low_stock_at' => $p->low_stock_at,
             'lead_days' => $p->lead_days,
+            'condition' => $p->condition->value,
             'status' => $p->status->value,
             'visibility' => $p->visibility->value,
             'weight_grams' => $p->weight_grams,

@@ -86,7 +86,14 @@
                 {{ __('shop.sold_by') }}
                 <a href="{{ route('public.shop.vendor', $product['vendor']['slug']) }}" class="font-semibold text-brandMaroon-700 hover:underline">{{ $product['vendor']['name'] }}</a>
                 · {{ __('shop.at_akuru') }}
+                @if(($product['vendor']['kind'] ?? 'shop') === 'personal') · <span data-testid="personal-seller">{{ __('shop.personal_seller') }}</span>@endif
             </p>
+            @if($product['condition_label'] ?? null)
+                {{-- U1: a used book's grade and what is marked or missing. --}}
+                <p class="mt-2 rounded border border-amber-200 bg-amber-50 p-2 text-sm text-amber-900" data-testid="product-condition" data-condition="{{ $product['condition'] }}">
+                    <strong>{{ __('shop.used_badge', ['grade' => $product['condition_label']]) }}</strong>@if($product['condition_note']) <span dir="auto">— {{ $product['condition_note'] }}</span>@endif
+                </p>
+            @endif
 
             <p class="mt-4 text-2xl font-semibold" data-testid="product-price">
                 {{ $product['currency'] }} {{ $product['price'] }}

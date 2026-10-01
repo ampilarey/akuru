@@ -237,7 +237,7 @@ class ImportVendorProductsAction
             }
 
             $isNew = $product === null;
-            $input = $isNew ? ['title' => '', 'price' => null, 'tax_class' => 'standard', 'status' => 'draft', 'visibility' => 'shop', 'track_stock' => true, 'stock' => 0, 'tags' => [], 'details' => []] : $this->snapshot($product);
+            $input = $isNew ? ['title' => '', 'price' => null, 'tax_class' => 'standard', 'status' => 'draft', 'visibility' => 'shop', 'track_stock' => true, 'stock' => 0, 'tags' => [], 'details' => [], 'condition' => 'new'] : $this->snapshot($product);
             $before = $input;
             $this->overlay($input, $c, $isNew, $categories, $brands, $errors);
             if ($isNew && $errors === [] && (trim((string) $input['title']) === '' || $input['price'] === null || $input['price'] === '')) {
@@ -356,6 +356,8 @@ class ImportVendorProductsAction
             'tax_class' => ['standard' => 'standard', 'zero_rated' => 'zero_rated', 'zero-rated' => 'zero_rated', 'zero rated' => 'zero_rated', 'exempt' => 'exempt'],
             'status' => ['draft' => 'draft', 'active' => 'active', 'archived' => 'archived', 'pending_review' => 'active'],
             'visibility' => ['shop' => 'shop', 'storefront' => 'storefront'],
+            // U1: a used book's grade; the words a seller might type map onto the five.
+            'condition' => ['new' => 'new', 'like_new' => 'like_new', 'like new' => 'like_new', 'as new' => 'like_new', 'good' => 'good', 'fair' => 'fair', 'worn' => 'worn', 'used' => 'good'],
         ];
         foreach ($choices as $field => $allowed) {
             if (array_key_exists($field, $c) && $c[$field] !== '') {
@@ -471,7 +473,7 @@ class ImportVendorProductsAction
             'weight_grams' => $p->weight_grams, 'dimensions' => $p->dimensions,
             'track_stock' => (bool) $p->track_stock, 'stock' => (int) $p->stock,
             'low_stock_at' => $p->low_stock_at, 'lead_days' => $p->lead_days,
-            'status' => $p->status->value, 'visibility' => $p->visibility->value,
+            'status' => $p->status->value, 'visibility' => $p->visibility->value, 'condition' => $p->condition->value,
             'tags' => array_values((array) ($p->tags ?? [])), 'details' => (array) ($p->details ?? []),
             'badge' => $p->badge, 'badge_dv' => $p->badge_dv, 'badge_ar' => $p->badge_ar,
         ];

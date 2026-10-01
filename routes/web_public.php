@@ -58,6 +58,8 @@ Route::get('articles/{slug}', [\App\Domains\Website\Http\Controllers\PublicSite\
 // "products", "c", "export", "cart", "checkout" or "slips".
 Route::get('shop', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'index'])->name('public.shop.index');
 Route::get('shop/deals', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'deals'])->name('public.shop.deals');
+// LENDING_AND_USED_BOOKS_PLAN U1: old and used books.
+Route::get('shop/used', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'used'])->name('public.shop.used');
 Route::get('shop/export', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'export'])->name('public.shop.export');
 // B7: suggestions as you type.
 Route::get('shop/suggest', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'suggest'])->name('public.shop.suggest')->middleware('throttle:120,1,shop-suggest');

@@ -30,6 +30,7 @@ class CatalogueApiController extends Controller
             'age' => 'nullable|string|max:20',
             'grade' => 'nullable|string|max:20',
             'deals' => 'nullable|boolean',
+            'used' => 'nullable|boolean',
             'sort' => 'nullable|string|in:'.implode(',', ListShopProductsAction::SORTS),
             'per_page' => 'nullable|integer|min:1|max:'.PresentCatalogueApiAction::MAX_PER_PAGE,
         ]);

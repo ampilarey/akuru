@@ -19,7 +19,7 @@ use Illuminate\Validation\ValidationException;
 class CreateVendorAction
 {
     // Every literal address under /shop (a test holds this to the route list).
-    public const RESERVED_SLUGS = ['products', 'c', 'export', 'cart', 'checkout', 'orders', 'search', 'slips', 'deals', 'suggest', 'newsletter', 'quotes', 'wishlist', 'book-lists', 'reviews', 'brand', 'compare', 'track', 'r', 'sms', 'sms-opt-out'];
+    public const RESERVED_SLUGS = ['products', 'c', 'export', 'cart', 'checkout', 'orders', 'search', 'slips', 'deals', 'suggest', 'newsletter', 'quotes', 'wishlist', 'book-lists', 'reviews', 'brand', 'compare', 'track', 'r', 'sms', 'sms-opt-out', 'used', 'lending'];
 
     /**
      * @param  array<string, mixed>  $data
@@ -40,6 +40,8 @@ class CreateVendorAction
                 'tin' => $data['tin'] ?? null,
                 'gst_registered' => (bool) ($data['gst_registered'] ?? false),
                 'status' => VendorStatus::Active->value,
+                // U1 (D1): a shop unless the application said a person.
+                'kind' => ($data['kind'] ?? 'shop') === 'personal' ? 'personal' : 'shop',
                 'commission_rate' => $data['commission_rate'] ?? null,
                 'contact_email' => $data['contact_email'] ?? $data['owner_email'] ?? null,
                 'contact_phone' => $data['contact_phone'] ?? $data['owner_phone'] ?? null,

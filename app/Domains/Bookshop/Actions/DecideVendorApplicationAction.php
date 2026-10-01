@@ -33,6 +33,7 @@ class DecideVendorApplicationAction
             'id' => $a->id,
             'status' => $a->status,
             'shop_name' => $a->shop_name,
+            'kind' => $a->kind ?? 'shop',
             'legal_name' => $a->legal_name,
             'tin' => $a->tin,
             'contact_email' => $a->contact_email,
@@ -72,6 +73,7 @@ class DecideVendorApplicationAction
                 $owner = $userModel::query()->findOrFail($application->user_id);
                 $created = app(CreateVendorAction::class)->execute([
                     'name' => $application->shop_name,
+                    'kind' => $application->kind ?? 'shop',
                     'code' => $terms['code'] ?? null,
                     'legal_name' => $application->legal_name,
                     'tin' => $application->tin,

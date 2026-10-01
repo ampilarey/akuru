@@ -53,6 +53,8 @@ class PresentShopProductAction
             'weight_grams' => $product->weight_grams,
             'dimensions' => $product->dimensions,
             'tax_class' => $product->tax_class->value,
+            // U1: what is marked or missing on a used book.
+            'condition_note' => $product->condition_note,
             'details' => $product->details ?? [],
             'tags' => $product->tags ?? [],
             // B11 (§4): "read the e-book" when the printed book is tied to a published Digital Library item.
@@ -102,6 +104,8 @@ class PresentShopProductAction
             'gtin13' => is_string($product->barcode) && preg_match('/^\d{13}$/', $product->barcode) ? $product->barcode : null,
             'brand' => $product->brand !== null ? ['@type' => 'Brand', 'name' => $product->brand->name] : null,
             'offers' => array_filter([
+                // U1: search engines show a used book as one.
+                'itemCondition' => $product->condition->schema(),
                 '@type' => 'Offer',
                 'url' => route('public.shop.product', $product->slug),
                 'priceCurrency' => $card['currency'],

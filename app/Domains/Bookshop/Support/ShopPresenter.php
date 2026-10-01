@@ -64,6 +64,9 @@ final class ShopPresenter
             // B7: badges and stars.
             'badges' => Merchandise::badges($product),
             'rating' => Merchandise::rating($product),
+            // LENDING_AND_USED_BOOKS_PLAN U1: a used book's grade, named on the card and the page.
+            'condition' => $product->condition->value,
+            'condition_label' => $product->condition->isUsed() ? $product->condition->label() : null,
         ];
     }
 
@@ -76,6 +79,8 @@ final class ShopPresenter
             'name' => $vendor->name,
             'slug' => $vendor->slug,
             'tagline' => $vendor->tagline,
+            // U1 (D1): a shop, or a person selling their own books.
+            'kind' => $vendor->kind ?? 'shop',
             // B7: the shop-wide "free delivery over" rule, for the product page and the cart.
             'free_delivery_over' => $vendor->free_delivery_over !== null ? number_format((float) $vendor->free_delivery_over, 2, '.', '') : null,
             // B3 holiday mode: "back on <date>" is the day after the last day away.

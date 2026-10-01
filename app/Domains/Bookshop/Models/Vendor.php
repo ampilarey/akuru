@@ -24,6 +24,8 @@ class Vendor extends Model
         'gst_registered',
         'status',
         'trusted',
+        // LENDING_AND_USED_BOOKS_PLAN U1 (D1): a shop, or a person selling their own books.
+        'kind',
         'fulfilment',
         'delivery_by',
         'akuru_handling_fee',
@@ -103,6 +105,12 @@ class Vendor extends Model
     }
 
     /** The office's badges (plan §6.1): `verified`, `akuru_partner`. */
+    /** U1: a person selling their own used books, with everything a shop has. */
+    public function isPersonal(): bool
+    {
+        return ($this->kind ?? 'shop') === 'personal';
+    }
+
     public function hasBadge(string $badge): bool
     {
         return in_array($badge, (array) ($this->badges ?? []), true);

@@ -25,6 +25,7 @@ function blankProduct() {
         sale_percent: '', sale_starts_at: '', sale_ends_at: '',
         sku: '', barcode: '', weight_grams: '', dimensions: '',
         track_stock: true, stock: '0', low_stock_at: '', lead_days: '', preorder_release_on: '',
+        condition: 'new', condition_note: '',
         status: 'draft', visibility: 'shop',
         details: {}, variants: [], photos: [], image_alts: {},
     };
@@ -45,6 +46,7 @@ function fromProduct(p) {
         price: text(p.price), compare_at_price: text(p.compare_at_price), cost: text(p.cost), tax_class: p.tax_class,
         sale_percent: text(p.sale_percent), sale_starts_at: text(p.sale_starts_at), sale_ends_at: text(p.sale_ends_at),
         sku: text(p.sku), barcode: text(p.barcode), weight_grams: text(p.weight_grams), dimensions: text(p.dimensions),
+        condition: p.condition || 'new', condition_note: text(p.condition_note),
         track_stock: Boolean(p.track_stock), stock: text(p.stock), low_stock_at: text(p.low_stock_at), lead_days: text(p.lead_days), preorder_release_on: text(p.preorder_release_on),
         // P4: a listing waiting for the office is still a request to sell.
         status: p.status === 'pending_review' ? 'active' : p.status, visibility: p.visibility,
@@ -63,8 +65,13 @@ function Field({ label, hint, children, className = '' }) {
     );
 }
 
-function ProductEditor({ product, options, t, onDone, trusted = false }) {
-    const form = useForm(product ? fromProduct(product) : blankProduct());
+/**
+ * `simple` (LENDING_AND_USED_BOOKS_PLAN U1): the short form for a used book — title, author, condition and
+ * note, price, photos, one in stock — without variants, sales, SKUs or dimensions. The full form is one tap away.
+ */
+function ProductEditor({ product, options, t, onDone, trusted = false, simple = false, initial = {} }) {
+    const form = useForm({ ...(product ? fromProduct(product) : blankProduct()), ...initial });
+    const [full, setFull] = useState(!simple);
     const [showTranslations, setShowTranslations] = useState(Boolean(product?.title_dv || product?.title_ar));
     const set = (name) => (e) => form.setData(name, e.target.type === 'checkbox' ? e.target.checked : e.target.value);
     const setDetail = (key) => (e) => form.setData('details', { ...form.data.details, [key]: e.target.value });
@@ -96,7 +103,7 @@ function ProductEditor({ product, options, t, onDone, trusted = false }) {
 
     return (
         <form onSubmit={submit} className="mb-6 space-y-4 rounded-lg border bg-white p-4" data-testid="product-editor">
-            <h3 className="text-lg font-semibold">{product ? t.edit_product : t.new_product}</h3>
+            <h3 className="text-lg font-semibold">{product ? t.edit_product : (simple ? t.quick_add_used : t.new_product)}</h3>
             <FormErrors errors={form.errors} />
 
             <div className="grid gap-3 md:grid-cols-3">
@@ -114,13 +121,23 @@ function ProductEditor({ product, options, t, onDone, trusted = false }) {
                 <Field label={t.product_badge} hint={t.product_badge_hint}>
                     <input className="form-input w-full" value={form.data.badge} onChange={set('badge')} maxLength={40} data-testid="product-badge" />
                 </Field>
+                {/* U1: new, or a used book's grade and what is marked or missing. */}
+                <Field label={t.condition_label}>
+                    <select className="form-input w-full" value={form.data.condition} onChange={set('condition')} data-testid="product-condition">
+                        {options.conditions.map((c) => <option key={c} value={c}>{t[`condition_${c}`] || c}</option>)}
+                    </select>
+                </Field>
+                <Field label={t.condition_note_label} hint={t.condition_note_hint} className="md:col-span-2">
+                    <input className="form-input w-full" value={form.data.condition_note} onChange={set('condition_note')} maxLength={500} disabled={form.data.condition === 'new'} data-testid="product-condition-note" />
+                </Field>
                 <Field label={t.description} hint={t.description_hint} className="md:col-span-3">
                     <textarea className="form-input w-full" rows={4} value={form.data.description} onChange={set('description')} />
                 </Field>
             </div>
 
-            <button type="button" className="text-sm text-blue-700 underline" onClick={() => setShowTranslations(!showTranslations)}>{t.translations}</button>
-            {showTranslations && (
+            {!full && <button type="button" className="text-sm text-blue-700 underline" onClick={() => setFull(true)} data-testid="show-full-form">{t.show_full_form}</button>}
+            {full && <button type="button" className="text-sm text-blue-700 underline" onClick={() => setShowTranslations(!showTranslations)}>{t.translations}</button>}
+            {full && showTranslations && (
                 <div className="grid gap-3 md:grid-cols-2">
                     <Field label={t.title_dv}><input dir="rtl" className="form-input w-full" value={form.data.title_dv} onChange={set('title_dv')} /></Field>
                     <Field label={t.title_ar}><input dir="rtl" className="form-input w-full" value={form.data.title_ar} onChange={set('title_ar')} /></Field>
@@ -135,8 +152,8 @@ function ProductEditor({ product, options, t, onDone, trusted = false }) {
 
             <div className="grid gap-3 md:grid-cols-4">
                 <Field label={t.price}><input className="form-input w-full" type="number" step="0.01" min="0" value={form.data.price} onChange={set('price')} data-testid="product-price" required /></Field>
-                <Field label={t.compare_at_price} hint={t.compare_at_hint}><input className="form-input w-full" type="number" step="0.01" min="0" value={form.data.compare_at_price} onChange={set('compare_at_price')} /></Field>
-                <Field label={t.cost} hint={t.cost_hint}><input className="form-input w-full" type="number" step="0.01" min="0" value={form.data.cost} onChange={set('cost')} /></Field>
+                {full && <Field label={t.compare_at_price} hint={t.compare_at_hint}><input className="form-input w-full" type="number" step="0.01" min="0" value={form.data.compare_at_price} onChange={set('compare_at_price')} /></Field>}
+                {full && <Field label={t.cost} hint={t.cost_hint}><input className="form-input w-full" type="number" step="0.01" min="0" value={form.data.cost} onChange={set('cost')} /></Field>}
                 <Field label={t.tax_class}>
                     <select className="form-input w-full" value={form.data.tax_class} onChange={set('tax_class')} data-testid="product-tax-class">
                         {options.tax_classes.map((c) => <option key={c} value={c}>{t[`tax_${c}`] || c}</option>)}
@@ -148,44 +165,50 @@ function ProductEditor({ product, options, t, onDone, trusted = false }) {
                         {options.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
                 </Field>
-                <Field label={t.brand}>
-                    <select className="form-input w-full" value={form.data.brand_id} onChange={set('brand_id')}>
-                        <option value="">{t.none}</option>
-                        {options.brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-                    </select>
-                </Field>
-                <Field label={t.tags} hint={t.tags_hint} className="md:col-span-2"><input className="form-input w-full" value={form.data.tags_text} onChange={set('tags_text')} /></Field>
-                <Field label={t.ebook_link} hint={t.ebook_link_hint} className="md:col-span-2">
-                    <select className="form-input w-full" value={form.data.library_item_id} onChange={set('library_item_id')} data-testid="product-ebook">
-                        <option value="">{t.none}</option>
-                        {(options.library_items || []).map((i) => <option key={i.id} value={i.id}>{i.title}</option>)}
-                    </select>
-                </Field>
-                <Field label={t.sku}><input className="form-input w-full" value={form.data.sku} onChange={set('sku')} data-testid="product-sku" /></Field>
-                <Field label={t.barcode}><input className="form-input w-full" value={form.data.barcode} onChange={set('barcode')} /></Field>
-                <Field label={t.weight_grams}><input className="form-input w-full" type="number" min="0" value={form.data.weight_grams} onChange={set('weight_grams')} /></Field>
-                <Field label={t.dimensions}><input className="form-input w-full" value={form.data.dimensions} onChange={set('dimensions')} /></Field>
+                {full && (
+                    <>
+                        <Field label={t.brand}>
+                            <select className="form-input w-full" value={form.data.brand_id} onChange={set('brand_id')}>
+                                <option value="">{t.none}</option>
+                                {options.brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                            </select>
+                        </Field>
+                        <Field label={t.tags} hint={t.tags_hint} className="md:col-span-2"><input className="form-input w-full" value={form.data.tags_text} onChange={set('tags_text')} /></Field>
+                        <Field label={t.ebook_link} hint={t.ebook_link_hint} className="md:col-span-2">
+                            <select className="form-input w-full" value={form.data.library_item_id} onChange={set('library_item_id')} data-testid="product-ebook">
+                                <option value="">{t.none}</option>
+                                {(options.library_items || []).map((i) => <option key={i.id} value={i.id}>{i.title}</option>)}
+                            </select>
+                        </Field>
+                        <Field label={t.sku}><input className="form-input w-full" value={form.data.sku} onChange={set('sku')} data-testid="product-sku" /></Field>
+                        <Field label={t.barcode}><input className="form-input w-full" value={form.data.barcode} onChange={set('barcode')} /></Field>
+                        <Field label={t.weight_grams}><input className="form-input w-full" type="number" min="0" value={form.data.weight_grams} onChange={set('weight_grams')} /></Field>
+                        <Field label={t.dimensions}><input className="form-input w-full" value={form.data.dimensions} onChange={set('dimensions')} /></Field>
+                    </>
+                )}
                 <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.data.track_stock} onChange={set('track_stock')} /> {t.track_stock}</label>
                 <Field label={t.stock}><input className="form-input w-full" type="number" min="0" value={form.data.stock} onChange={set('stock')} data-testid="product-stock" /></Field>
-                <Field label={t.low_stock_at}><input className="form-input w-full" type="number" min="0" value={form.data.low_stock_at} onChange={set('low_stock_at')} /></Field>
-                <Field label={t.lead_days}><input className="form-input w-full" type="number" min="0" value={form.data.lead_days} onChange={set('lead_days')} /></Field>
+                {full && <Field label={t.low_stock_at}><input className="form-input w-full" type="number" min="0" value={form.data.low_stock_at} onChange={set('low_stock_at')} /></Field>}
+                {full && <Field label={t.lead_days}><input className="form-input w-full" type="number" min="0" value={form.data.lead_days} onChange={set('lead_days')} /></Field>}
                 {/* COMMERCE_PARITY_PLAN P8d: sold before it arrives, paid in full, sent from this date. */}
-                <Field label={t.preorder_release_on}><input className="form-input w-full" type="date" value={form.data.preorder_release_on} onChange={set('preorder_release_on')} data-testid="product-preorder" /></Field>
-                <Field label={t.visibility} className="md:col-span-2">
-                    <select className="form-input w-full" value={form.data.visibility} onChange={set('visibility')}>
-                        {options.visibilities.map((v) => <option key={v} value={v}>{t[`visibility_${v}`] || v}</option>)}
-                    </select>
-                </Field>
+                {full && <Field label={t.preorder_release_on}><input className="form-input w-full" type="date" value={form.data.preorder_release_on} onChange={set('preorder_release_on')} data-testid="product-preorder" /></Field>}
+                {full && (
+                    <Field label={t.visibility} className="md:col-span-2">
+                        <select className="form-input w-full" value={form.data.visibility} onChange={set('visibility')}>
+                            {options.visibilities.map((v) => <option key={v} value={v}>{t[`visibility_${v}`] || v}</option>)}
+                        </select>
+                    </Field>
+                )}
             </div>
 
             {/* STATUS §5lb: a timed sale — the store shows and charges the lower price until it ends. */}
-            <fieldset className="min-w-0 grid gap-3 rounded border p-3 md:grid-cols-3" data-testid="product-sale">
+            {full && <fieldset className="min-w-0 grid gap-3 rounded border p-3 md:grid-cols-3" data-testid="product-sale">
                 <legend className="px-1 text-sm font-semibold">{t.sale_heading}</legend>
                 <Field label={t.sale_percent}><input className="form-input w-full" type="number" min="1" max="90" step="1" value={form.data.sale_percent} onChange={set('sale_percent')} data-testid="product-sale-percent" /></Field>
                 <Field label={t.sale_starts_at}><input className="form-input w-full" type="datetime-local" value={form.data.sale_starts_at} onChange={set('sale_starts_at')} data-testid="product-sale-starts" /></Field>
                 <Field label={t.sale_ends_at}><input className="form-input w-full" type="datetime-local" value={form.data.sale_ends_at} onChange={set('sale_ends_at')} required={form.data.sale_percent !== ''} data-testid="product-sale-ends" /></Field>
                 <p className="text-xs text-gray-500 md:col-span-3">{t.sale_hint}</p>
-            </fieldset>
+            </fieldset>}
 
             <fieldset className="min-w-0 grid gap-3 rounded border p-3 md:grid-cols-5">
                 <legend className="px-1 text-sm font-semibold">{t.book_details}</legend>
@@ -193,14 +216,14 @@ function ProductEditor({ product, options, t, onDone, trusted = false }) {
                     <Field key={key} label={t[key]}><input className="form-input w-full" value={form.data.details[key] || ''} onChange={setDetail(key)} data-testid={`detail-${key}`} /></Field>
                 ))}
             </fieldset>
-            <fieldset className="min-w-0 grid gap-3 rounded border p-3 md:grid-cols-3">
+            {full && <fieldset className="min-w-0 grid gap-3 rounded border p-3 md:grid-cols-3">
                 <legend className="px-1 text-sm font-semibold">{t.educational_details}</legend>
                 {DETAIL_EDU.map((key) => (
                     <Field key={key} label={t[key]}><input className="form-input w-full" value={form.data.details[key] || ''} onChange={setDetail(key)} data-testid={`detail-${key}`} /></Field>
                 ))}
-            </fieldset>
+            </fieldset>}
 
-            <fieldset className="min-w-0 rounded border p-3" data-testid="variants">
+            {full && <fieldset className="min-w-0 rounded border p-3" data-testid="variants">
                 <legend className="px-1 text-sm font-semibold">{t.variants}</legend>
                 <p className="mb-2 text-xs text-gray-500">{t.variants_hint}</p>
                 {form.data.variants.map((v, index) => (
@@ -213,7 +236,7 @@ function ProductEditor({ product, options, t, onDone, trusted = false }) {
                     </div>
                 ))}
                 <button type="button" className="text-sm text-blue-700 underline" data-testid="add-variant" onClick={() => form.setData('variants', [...form.data.variants, { name: '', sku: '', price: '', stock: '0', is_active: true }])}>{t.add_variant}</button>
-            </fieldset>
+            </fieldset>}
 
             <fieldset className="min-w-0 rounded border p-3">
                 <legend className="px-1 text-sm font-semibold">{t.photos}</legend>
@@ -704,6 +727,7 @@ function ProductList({ products, t, onEdit, selected, setSelected }) {
                                 <span className="font-medium">{p.title}</span>
                                 {p.category && <span className="block text-xs text-gray-500">{p.category}</span>}
                                 {p.variants.length > 0 && <span className="block text-xs text-gray-500">{t.variants}: {p.variants.map((v) => v.name).join(', ')}</span>}
+                                {p.condition && p.condition !== 'new' && <span className="mt-0.5 inline-block rounded bg-amber-100 px-1 text-xs text-amber-900" data-testid={`condition-${p.slug}`}>{t.used_badge.replace(':grade', t[`condition_${p.condition}`] || p.condition)}</span>}
                             </span>
                         </td>
                         <td className="p-2 break-all" data-label={t.sku}>{p.sku || t.none}</td>
@@ -827,13 +851,16 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                                 <button type="submit" className="btn-secondary justify-center sm:justify-start" data-testid="filter-products">{t.search}</button>
                                 <a href="/vendor/products/export" className="btn-secondary justify-center sm:justify-start" data-testid="export-products">{t.export_csv}</a>
                                 <a href="/vendor/stock#import" className="btn-secondary justify-center sm:justify-start" data-testid="open-import">{t.import_heading}</a>
-                                <button type="button" className="btn-primary col-span-2 justify-center sm:col-span-1 sm:justify-start" onClick={() => setEditing('new')} data-testid="new-product">{t.new_product}</button>
+                                <button type="button" className="btn-secondary justify-center sm:justify-start" onClick={() => setEditing('used')} data-testid="new-used-book">{t.quick_add_used}</button>
+                                <button type="button" className="btn-primary justify-center sm:justify-start" onClick={() => setEditing('new')} data-testid="new-product">{t.new_product}</button>
                             </form>
                         </div>
                         {editing && (
                             <ProductEditor
-                                key={editing === 'new' ? 'new' : editing.id}
-                                product={editing === 'new' ? null : products.find((p) => p.id === editing.id) || editing}
+                                key={editing === 'new' || editing === 'used' ? editing : editing.id}
+                                product={editing === 'new' || editing === 'used' ? null : products.find((p) => p.id === editing.id) || editing}
+                                simple={editing === 'used'}
+                                initial={editing === 'used' ? { condition: 'good', stock: '1', track_stock: true, tax_class: 'zero_rated' } : {}}
                                 options={options}
                                 t={t}
                                 onDone={() => setEditing(null)}

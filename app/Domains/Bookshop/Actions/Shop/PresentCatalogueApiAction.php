@@ -133,6 +133,8 @@ class PresentCatalogueApiAction
             'currency' => $card['currency'],
             'sale_ends_at' => $card['sale']['ends_at'] ?? null,
             'availability' => $card['stock']['state'],
+            // LENDING_AND_USED_BOOKS_PLAN U1: new, or a used book's grade.
+            'condition' => $card['condition'],
             'image' => $this->absolute($card['image']),
             'image_alt' => $card['image_alt'],
             'shop' => ['name' => $card['vendor']['name'], 'slug' => $card['vendor']['slug']],

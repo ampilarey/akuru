@@ -77,7 +77,9 @@ class ListShopProductsAction
             ->when(($filters['language'] ?? '') !== '', fn ($query) => $query->where('details->language', 'like', '%'.$filters['language'].'%'))
             ->when(($filters['age'] ?? '') !== '', fn ($query) => $query->where('details->age_range', 'like', '%'.$filters['age'].'%'))
             ->when(($filters['grade'] ?? '') !== '', fn ($query) => $query->where('details->grade', 'like', '%'.$filters['grade'].'%'))
-            ->when(! empty($filters['deals']), fn ($query) => self::onSale($query));
+            ->when(! empty($filters['deals']), fn ($query) => self::onSale($query))
+            // U1: used books only — anything that is not new.
+            ->when(! empty($filters['used']), fn ($query) => $query->where('condition', '!=', 'new'));
 
         if ($picked !== [] && ! isset($filters['sort'])) {
             return $query->orderByRaw('field(id, '.implode(',', $picked).')');

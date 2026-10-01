@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions;
 
+use App\Domains\Bookshop\Enums\ProductCondition;
 use App\Domains\Bookshop\Enums\ProductStatus;
 use App\Domains\Bookshop\Enums\ProductVisibility;
 use App\Domains\Bookshop\Enums\TaxClass;
@@ -39,6 +40,8 @@ class ListCatalogueOptionsAction
             'tax_classes' => array_map(fn (TaxClass $c) => $c->value, TaxClass::cases()),
             'statuses' => array_map(fn (ProductStatus $s) => $s->value, ProductStatus::cases()),
             'visibilities' => array_map(fn (ProductVisibility $v) => $v->value, ProductVisibility::cases()),
+            // LENDING_AND_USED_BOOKS_PLAN U1: new, or a used book's grade.
+            'conditions' => ProductCondition::values(),
             'languages' => ['en' => 'English', 'dv' => 'Dhivehi', 'ar' => 'Arabic'],
             // B11 (§4 "read the e-book"): the published Digital Library items a printed book may point at.
             'library_items' => array_map(fn (array $i) => ['id' => $i['id'], 'title' => $i['title'], 'slug' => $i['slug']], app(ListLibraryItemsAction::class)->execute(['sort' => 'title'])),

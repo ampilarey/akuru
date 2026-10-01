@@ -50,7 +50,7 @@ it('lists what is for sale, filtered and paged, with the page\'s address and not
         ->assertJsonPath('data.1.shop', ['name' => 'Api Shop', 'slug' => 'api-shop'])
         ->assertJsonPath('data.1.availability', 'few_left')->assertJsonPath('data.0.availability', 'in_stock')
         ->assertJsonPath('data.1.url', url('en/shop/products/school-atlas'));
-    expect(array_keys($response->json('data.1')))->toBe(['slug', 'title', 'summary', 'price', 'was_price', 'currency', 'sale_ends_at', 'availability', 'image', 'image_alt', 'shop', 'category', 'rating', 'url'])
+    expect(array_keys($response->json('data.1')))->toBe(['slug', 'title', 'summary', 'price', 'was_price', 'currency', 'sale_ends_at', 'availability', 'condition', 'image', 'image_alt', 'shop', 'category', 'rating', 'url'])
         ->and($response->getContent())->not->toContain('Draft Book')->not->toContain('Storefront Only')->not->toContain('Suspended Shop Book')
         ->not->toContain('owner-private');
 

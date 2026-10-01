@@ -2,6 +2,8 @@
 
 namespace App\Domains\Bookshop\Http;
 
+use App\Domains\Bookshop\Enums\ProductCondition;
+
 /**
  * What a vendor may send for a product (BOOKSHOP_PLAN §5). The shape of the
  * input only; what makes a product *valid* (unique SKU within the vendor,
@@ -52,6 +54,9 @@ final class ProductRules
             'stock' => 'nullable|integer|min:0|max:1000000',
             'low_stock_at' => 'nullable|integer|min:0|max:100000',
             'lead_days' => 'nullable|integer|min:0|max:365',
+            // LENDING_AND_USED_BOOKS_PLAN U1: new, or a used book's grade, with a note on its state.
+            'condition' => 'nullable|string|in:'.implode(',', ProductCondition::values()),
+            'condition_note' => 'nullable|string|max:500',
             // COMMERCE_PARITY_PLAN P8d: a pre-order until this date (a date to come, or none).
             'preorder_release_on' => 'nullable|date|after:today',
             'status' => 'required|string|in:draft,active,archived',

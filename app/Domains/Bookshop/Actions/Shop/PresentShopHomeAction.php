@@ -95,6 +95,8 @@ class PresentShopHomeAction
             // §5lb: the timed sales ending soonest.
             'deals' => $cards(ListShopProductsAction::onSale($shopWide())->orderBy('sale_ends_at')->orderBy('id')->limit(8)),
             'featured' => $featured,
+            // U1: the used books, newest first.
+            'used' => $cards($shopWide()->where('condition', '!=', 'new')->orderByDesc('created_at')->orderByDesc('id')->limit(8)),
             'collections' => $this->collections($features->get('collection', collect())),
             'best_sellers' => $best,
             'new_arrivals' => $newArrivals,

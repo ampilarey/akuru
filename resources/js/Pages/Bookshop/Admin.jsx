@@ -583,7 +583,7 @@ function ApplicationRow({ a, t }) {
     return (
         <li className="p-3 text-sm" data-testid={`application-${a.id}`} data-status={a.status}>
             <div className="flex flex-wrap items-baseline justify-between gap-2">
-                <span className="font-semibold" dir="auto">{a.shop_name}</span>
+                <span className="font-semibold" dir="auto">{a.shop_name}{a.kind === 'personal' && <span className="ms-2 rounded bg-brandBeige-100 px-1.5 py-0.5 text-xs font-normal text-brandMaroon-800" data-testid={`application-personal-${a.id}`}>{t.personal_seller}</span>}</span>
                 <span className="text-xs text-gray-500">{a.submitted_at} · {t[`application_state_${a.status}`] || a.status}</span>
             </div>
             <p className="text-gray-700">{a.applicant} · {a.contact_email} · {a.contact_phone} · {a.island}{a.legal_name && ` · ${a.legal_name}`}{a.tin && ` · TIN ${a.tin}`}</p>
