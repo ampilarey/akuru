@@ -19,6 +19,7 @@ class LendingController extends Controller
     {
         $filters = $request->validate([
             'q' => 'nullable|string|max:100',
+            'offer' => 'nullable|string|in:lend,give',
             'grade' => 'nullable|string|max:40',
             'subject' => 'nullable|string|max:80',
             'language' => 'nullable|string|max:40',

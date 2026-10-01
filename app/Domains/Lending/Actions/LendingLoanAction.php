@@ -4,6 +4,7 @@ namespace App\Domains\Lending\Actions;
 
 use App\Domains\Academics\Actions\ResolveAcademicYearForDateAction;
 use App\Domains\Identity\Actions\IdentityVerificationAction;
+use App\Domains\Lending\Enums\BookOffer;
 use App\Domains\Lending\Enums\LendingBookStatus;
 use App\Domains\Lending\Enums\LoanStatus;
 use App\Domains\Lending\Models\Lender;
@@ -74,8 +75,9 @@ class LendingLoanAction
             if ($book->status !== LendingBookStatus::Available) {
                 throw ValidationException::withMessages(['loan' => __('lending.error_not_available')]);
             }
-            $due = $dueOn !== null && $dueOn !== '' ? Carbon::parse($dueOn)->toDateString() : now()->addDays((int) $book->max_days)->toDateString();
-            if ($due < now()->toDateString()) {
+            // L3: a give-away has no return date.
+            $due = $book->offer === BookOffer::Give ? null : ($dueOn !== null && $dueOn !== '' ? Carbon::parse($dueOn)->toDateString() : now()->addDays((int) $book->max_days)->toDateString());
+            if ($due !== null && $due < now()->toDateString()) {
                 throw ValidationException::withMessages(['due_on' => __('lending.error_due_past')]);
             }
             $loan->update(['status' => LoanStatus::Accepted->value, 'decided_at' => now(), 'due_on' => $due]);
@@ -86,7 +88,10 @@ class LendingLoanAction
             return $loan->refresh();
         });
         $lender = $this->person($lenderUserId);
-        app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, __('lending.notice_accepted_title'), __('lending.notice_accepted_body', ['title' => $loan->book->title, 'name' => $loan->lender->display_name, 'phone' => $lender['phone'] ?? '—', 'due' => $loan->due_on->toDateString()]), '/my-lending#borrowing', 'accepted');
+        $body = $loan->due_on === null
+            ? __('lending.notice_accepted_give_body', ['title' => $loan->book->title, 'name' => $loan->lender->display_name, 'phone' => $lender['phone'] ?? '—'])
+            : __('lending.notice_accepted_body', ['title' => $loan->book->title, 'name' => $loan->lender->display_name, 'phone' => $lender['phone'] ?? '—', 'due' => $loan->due_on->toDateString()]);
+        app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, __('lending.notice_accepted_title'), $body, '/my-lending#borrowing', 'accepted');
 
         return $loan;
     }
@@ -129,12 +134,22 @@ class LendingLoanAction
     {
         $loan = DB::transaction(function () use ($loanId, $lenderUserId) {
             $loan = $this->ownLoan($loanId, $lenderUserId, [LoanStatus::Accepted]);
-            $loan->update(['status' => LoanStatus::Out->value, 'handed_at' => now()]);
-            LendingBook::query()->whereKey($loan->lending_book_id)->update(['status' => LendingBookStatus::OnLoan->value]);
+            if ($loan->book->offer === BookOffer::Give) {
+                // L3: a give-away is done at handover — the book is theirs.
+                $loan->update(['status' => LoanStatus::Given->value, 'handed_at' => now()]);
+                LendingBook::query()->whereKey($loan->lending_book_id)->update(['status' => LendingBookStatus::Given->value]);
+            } else {
+                $loan->update(['status' => LoanStatus::Out->value, 'handed_at' => now()]);
+                LendingBook::query()->whereKey($loan->lending_book_id)->update(['status' => LendingBookStatus::OnLoan->value]);
+            }
 
             return $loan->refresh();
         });
-        app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, __('lending.notice_out_title'), __('lending.notice_out_body', ['title' => $loan->book->title, 'due' => $loan->due_on?->toDateString() ?? '']), '/my-lending#borrowing', 'out');
+        if ($loan->status === LoanStatus::Given) {
+            app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, __('lending.notice_given_title'), __('lending.notice_given_body', ['title' => $loan->book->title, 'name' => $loan->lender->display_name]), '/my-lending#borrowing', 'given');
+        } else {
+            app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, __('lending.notice_out_title'), __('lending.notice_out_body', ['title' => $loan->book->title, 'due' => $loan->due_on?->toDateString() ?? '']), '/my-lending#borrowing', 'out');
+        }
 
         return $loan;
     }

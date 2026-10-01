@@ -6,7 +6,7 @@
 
 @php($lender = $status['lender'])
 @php($idStatus = $status['id']['status'] ?? 'none')
-@php($statusTone = ['requested' => 'bg-amber-100 text-amber-800', 'accepted' => 'bg-blue-100 text-blue-800', 'declined' => 'bg-red-100 text-red-800', 'cancelled' => 'bg-gray-100 text-gray-700', 'out' => 'bg-indigo-100 text-indigo-800', 'returned' => 'bg-green-100 text-green-800'])
+@php($statusTone = ['requested' => 'bg-amber-100 text-amber-800', 'accepted' => 'bg-blue-100 text-blue-800', 'declined' => 'bg-red-100 text-red-800', 'cancelled' => 'bg-gray-100 text-gray-700', 'out' => 'bg-indigo-100 text-indigo-800', 'returned' => 'bg-green-100 text-green-800', 'given' => 'bg-green-100 text-green-800'])
 
 @section('content')
 <div class="container mx-auto max-w-5xl px-4 py-8" data-testid="my-lending">
@@ -103,7 +103,7 @@
                         @if($book['photo'])<img src="{{ $book['photo'] }}" alt="" class="h-12 w-12 rounded object-cover">@endif
                         <div class="min-w-0 flex-1">
                             <a href="{{ $book['url'] }}" class="font-medium text-brandMaroon-900 hover:underline" dir="auto">{{ $book['title'] }}</a>
-                            <p class="text-xs text-gray-500">{{ $book['condition_label'] }} · {{ __('lending.max_days', ['days' => $book['max_days']]) }} · <span data-testid="book-status">{{ $book['status_label'] }}</span></p>
+                            <p class="text-xs text-gray-500"><span data-testid="book-offer-label">{{ $book['offer_label'] }}</span> · {{ $book['condition_label'] }}@if($book['offer'] === 'lend') · {{ __('lending.max_days', ['days' => $book['max_days']]) }}@endif · <span data-testid="book-status">{{ $book['status_label'] }}</span></p>
                         </div>
                         <details class="w-full sm:w-auto">
                             <summary class="cursor-pointer text-brandMaroon-700 underline">{{ __('lending.edit_book') }}</summary>
@@ -119,7 +119,7 @@
                                 <button type="submit" class="text-brandMaroon-700 underline" data-testid="toggle-book-{{ $book['slug'] }}">{{ $book['status'] === 'available' ? __('lending.book_pause') : __('lending.book_resume') }}</button>
                             </form>
                         @endif
-                        @if($book['status'] !== 'on_loan')
+                        @if(! in_array($book['status'], ['on_loan', 'given'], true))
                             <form method="POST" action="{{ route('public.lending.books.destroy', $book['id']) }}" onsubmit="return confirm(@js(__('lending.remove_book_confirm')))">
                                 @csrf @method('DELETE')
                                 <button type="submit" class="text-red-700 underline" data-testid="remove-book-{{ $book['slug'] }}">{{ __('lending.remove_book') }}</button>
@@ -162,9 +162,11 @@
                             @if($loan['status'] === 'requested')
                                 <form method="POST" action="{{ route('public.lending.loan', [$loan['id'], 'accept']) }}" class="flex flex-wrap items-end gap-2">
                                     @csrf
-                                    <label class="text-xs text-gray-600">{{ __('lending.due_on') }}<br><input type="date" name="due_on" min="{{ now()->toDateString() }}" class="form-input text-sm" data-testid="accept-due-{{ $loan['id'] }}"></label>
+                                    @if($loan['book']['offer'] === 'lend')
+                                        <label class="text-xs text-gray-600">{{ __('lending.due_on') }}<br><input type="date" name="due_on" min="{{ now()->toDateString() }}" class="form-input text-sm" data-testid="accept-due-{{ $loan['id'] }}"></label>
+                                    @endif
                                     <button type="submit" class="btn-primary text-sm" data-testid="accept-{{ $loan['id'] }}">{{ __('lending.accept') }}</button>
-                                    <span class="text-xs text-gray-500">{{ __('lending.due_on_hint', ['days' => $loan['book']['max_days']]) }}</span>
+                                    <span class="text-xs text-gray-500">{{ $loan['book']['offer'] === 'give' ? __('lending.offer_give_hint') : __('lending.due_on_hint', ['days' => $loan['book']['max_days']]) }}</span>
                                 </form>
                                 <form method="POST" action="{{ route('public.lending.loan', [$loan['id'], 'decline']) }}" class="flex flex-wrap items-end gap-2">
                                     @csrf
@@ -172,10 +174,10 @@
                                     <button type="submit" class="btn-secondary text-sm" data-testid="decline-{{ $loan['id'] }}">{{ __('lending.decline') }}</button>
                                 </form>
                             @elseif($loan['status'] === 'accepted')
-                                <form method="POST" action="{{ route('public.lending.loan', [$loan['id'], 'handover']) }}">@csrf<button type="submit" class="btn-primary text-sm" data-testid="handover-{{ $loan['id'] }}">{{ __('lending.handover') }}</button></form>
+                                <form method="POST" action="{{ route('public.lending.loan', [$loan['id'], 'handover']) }}">@csrf<button type="submit" class="btn-primary text-sm" data-testid="handover-{{ $loan['id'] }}">{{ $loan['book']['offer'] === 'give' ? __('lending.handover_give') : __('lending.handover') }}</button></form>
                             @elseif($loan['status'] === 'out')
                                 <form method="POST" action="{{ route('public.lending.loan', [$loan['id'], 'returned']) }}">@csrf<button type="submit" class="btn-primary text-sm" data-testid="returned-{{ $loan['id'] }}">{{ __('lending.returned') }}</button></form>
-                            @elseif($loan['status'] === 'returned')
+                            @elseif(in_array($loan['status'], ['returned', 'given'], true))
                                 @include('public.lending._rate', ['loan' => $loan, 'mine' => 'by_lender', 'theirs' => 'by_borrower', 'hint' => __('lending.rate_borrower_hint')])
                             @endif
                         </div>
@@ -198,7 +200,7 @@
                             <span class="ms-1 rounded px-2 py-0.5 text-xs font-semibold {{ $statusTone[$loan['status']] ?? '' }}" data-testid="borrow-status">{{ $loan['status_label'] }}</span>
                             @if($loan['overdue'])<span class="ms-1 rounded bg-red-100 px-2 py-0.5 text-xs font-semibold text-red-800">{{ __('lending.overdue') }}</span>@endif
                         </p>
-                        <p class="text-gray-600">{{ __('lending.lent_by') }} <span class="font-medium text-gray-800" dir="auto">{{ $loan['lender']['name'] }}</span>@if($loan['lender']['island']) · {{ $loan['lender']['island'] }}@endif
+                        <p class="text-gray-600">{{ $loan['book']['offer'] === 'give' ? __('lending.given_by') : __('lending.lent_by') }} <span class="font-medium text-gray-800" dir="auto">{{ $loan['lender']['name'] }}</span>@if($loan['lender']['island']) · {{ $loan['lender']['island'] }}@endif
                             @if($loan['lender']['phone']) · {{ __('lending.phone_label') }} <span dir="ltr" data-testid="lender-phone">{{ $loan['lender']['phone'] }}</span>@else · <span class="text-xs">{{ __('lending.phone_after_accept') }}</span>@endif
                             @if($loan['due_on']) · {{ __('lending.due_on') }} {{ $loan['due_on'] }}@endif
                             @if($loan['book']['deposit']) · {{ __('lending.deposit_label') }}: <span dir="auto">{{ $loan['book']['deposit'] }}</span>@endif
@@ -206,7 +208,7 @@
                         @if($loan['note'])<p class="mt-1 text-xs text-gray-600" dir="auto">{{ __('lending.lender_note') }}: {{ $loan['note'] }}</p>@endif
                         @if(in_array($loan['status'], ['requested', 'accepted'], true))
                             <form method="POST" action="{{ route('public.lending.loan', [$loan['id'], 'cancel']) }}" class="mt-2">@csrf<button type="submit" class="text-red-700 underline" data-testid="cancel-{{ $loan['id'] }}">{{ __('lending.cancel') }}</button></form>
-                        @elseif($loan['status'] === 'returned')
+                        @elseif(in_array($loan['status'], ['returned', 'given'], true))
                             <div class="mt-2">@include('public.lending._rate', ['loan' => $loan, 'mine' => 'by_borrower', 'theirs' => 'by_lender', 'hint' => __('lending.rate_lender_hint')])</div>
                         @endif
                     </li>

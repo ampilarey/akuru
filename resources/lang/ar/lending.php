@@ -2,8 +2,8 @@
 
 // إعارة الكتب بين الناس (LENDING_AND_USED_BOOKS_PLAN L1). AR first pass pending native review (BACKLOG A10).
 return [
-    'borrow_heading' => 'استعارة الكتب',
-    'shelf_title' => 'كتب للاستعارة',
+    'borrow_heading' => 'استعارة أو كتب مجانية',
+    'shelf_title' => 'كتب للاستعارة أو الاحتفاظ',
     'shelf_intro' => 'كتب يعيرها أناس قريبون منك مجانًا. اطلب كتابًا؛ يتفق المعير على موعد الإرجاع؛ وترتّبان التسليم بينكما. لا يمرّ أي مال عبر أكورو.',
     'shelf_empty' => 'لا كتب للاستعارة تطابق البحث. جرّب مرشّحات أقل، أو أعِر كتبك.',
     'shelf_count' => 'كتاب واحد|:count كتب',
@@ -203,6 +203,27 @@ return [
     'export_lenders_csv' => 'المعيرون CSV',
     'col_rating' => 'التقييم',
     'paused_by_office' => 'أوقفه المكتب',
+
+    // L3
+    'offer_label' => 'معروض',
+    'offer_lend' => 'للاستعارة',
+    'offer_give' => 'مجانًا للاحتفاظ',
+    'offer_lend_hint' => 'يعيدونه في الموعد الذي تتفقان عليه.',
+    'offer_give_hint' => 'يصبح لهم عند التسليم. لا يعود شيء.',
+    'give_badge' => 'مجانًا للاحتفاظ',
+    'given_by' => 'يهديه',
+    'ask_to_take' => 'اطلبه',
+    'filter_offer' => 'معروض',
+    'filter_offer_any' => 'استعارة أو احتفاظ',
+    'shelf_free_chip' => 'كتب مجانية',
+    'book_status_given' => 'أُهدي',
+    'loan_status_given' => 'أُهدي — صار لهم',
+    'loan_given_flash' => 'تم التسليم. الكتاب لهم الآن.',
+    'notice_accepted_give_body' => 'سيهديك :name «:title». الهاتف: :phone. رتّبا التسليم بينكما.',
+    'notice_given_title' => 'الكتاب لك',
+    'notice_given_body' => 'أهداك :name «:title». استمتع به.',
+    'handover_give' => 'تم التسليم — صار لهم',
+    'books_given_note' => 'أُهدي',
 
     'admin_title' => 'إعارة الكتب',
     'admin_intro' => 'أناس يعيرون كتبهم لبعضهم. تحقق من بطاقات هوية المعيرين هنا؛ لا تصل كتب المعير إلى الرف إلا بعد التحقق من بطاقته. لا يمرّ أي مال عبر أكورو.',

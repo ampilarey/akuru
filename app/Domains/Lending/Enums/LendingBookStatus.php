@@ -8,6 +8,8 @@ enum LendingBookStatus: string
     case OnLoan = 'on_loan';
     case Paused = 'paused';
     case Removed = 'removed';
+    /** L3: a give-away that has found its new owner. */
+    case Given = 'given';
 
     public function label(): string
     {

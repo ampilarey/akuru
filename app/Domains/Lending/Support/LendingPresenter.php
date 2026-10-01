@@ -25,6 +25,8 @@ final class LendingPresenter
             'title' => $book->title,
             'author' => $book->author,
             'language' => $book->language,
+            'offer' => $book->offer->value,
+            'offer_label' => $book->offer->label(),
             'condition' => $book->condition->value,
             'condition_label' => $book->condition->label(),
             'description' => $book->description,
@@ -67,8 +69,8 @@ final class LendingPresenter
      */
     public static function loan(LendingLoan $loan, array $borrower, array $lenderPerson): array
     {
-        $accepted = in_array($loan->status->value, ['accepted', 'out', 'returned'], true);
-        $ratings = $loan->status->value === 'returned' ? RateLendingAction::onLoan($loan) : [];
+        $accepted = in_array($loan->status->value, ['accepted', 'out', 'returned', 'given'], true);
+        $ratings = $loan->status->isClosedWell() ? RateLendingAction::onLoan($loan) : [];
 
         return [
             'id' => $loan->id,
@@ -85,7 +87,7 @@ final class LendingPresenter
             'returned_at' => $loan->returned_at?->toDateTimeString(),
             // L2: once returned, each side may rate the other once.
             'ratings' => $ratings,
-            'book' => ['id' => $loan->book->id, 'slug' => $loan->book->slug, 'title' => $loan->book->title, 'author' => $loan->book->author, 'url' => route('public.lending.show', $loan->book->slug), 'max_days' => (int) $loan->book->max_days, 'deposit' => $loan->book->deposit],
+            'book' => ['id' => $loan->book->id, 'slug' => $loan->book->slug, 'offer' => $loan->book->offer->value, 'title' => $loan->book->title, 'author' => $loan->book->author, 'url' => route('public.lending.show', $loan->book->slug), 'max_days' => (int) $loan->book->max_days, 'deposit' => $loan->book->deposit],
             'borrower' => ['name' => (string) ($borrower['name'] ?? ''), 'phone' => $accepted ? ($borrower['phone'] ?? null) : null, 'id_verified' => (bool) ($borrower['id_verified'] ?? false), 'rating' => RateLendingAction::borrowerSummary((int) $loan->borrower_user_id)],
             'lender' => ['name' => $loan->lender->display_name, 'island' => $loan->lender->island, 'phone' => $accepted ? ($lenderPerson['phone'] ?? null) : null],
         ];
