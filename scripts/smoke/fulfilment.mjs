@@ -16,6 +16,10 @@
  *      has it ready, and the money comes back.
  *   6. The owner puts the shop on holiday: the product page says when it is
  *      back and offers no cart button; then takes the holiday off.
+ *   7. (COMMERCE_PARITY_PLAN P7a) The student reports a problem on the first
+ *      order with a photo; the shop sees it on the order; the office answers
+ *      it as resolved on /admin/bookshop/complaints; the student reads the
+ *      answer on the order.
  *
  * `SmokeMarkerSeeder::vendorCycle()` plants the products, clears the last
  * run's orders, returns, refunds and threads, reopens Fitrah and tops the
@@ -24,14 +28,15 @@
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/fulfilment.mjs
  *
- * Environment: SMOKE_BASE_URL, SMOKE_STUDENT, SMOKE_VENDOR, SMOKE_PASSWORD,
- * SMOKE_CHROMIUM.
+ * Environment: SMOKE_BASE_URL, SMOKE_STUDENT, SMOKE_VENDOR, SMOKE_ADMIN,
+ * SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const STUDENT = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
 const VENDOR = process.env.SMOKE_VENDOR ?? 'vendor@akuru.edu.mv';
+const ADMIN = process.env.SMOKE_ADMIN ?? 'superadmin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const BOOK = 'smoke-arabic-letters-tracing-book';
 const MAT = 'smoke-kids-prayer-mat';
@@ -280,5 +285,37 @@ await vendor.click('[data-testid="save-settings"]');
 await settle(vendor);
 await vendor.reload({ waitUntil: 'networkidle' });
 check('and takes the holiday off again', (await vendor.locator('[data-testid="on-holiday"]').count()) === 0);
+
+// ------------------------------------------------------------ 7. a problem reported, answered (P7a)
+
+await student.goto(`${BASE}/en/my-orders/${number}`, { waitUntil: 'networkidle' });
+// The form stands open while the order has no problem reported.
+await student.selectOption('[data-testid="complaint-kind"]', 'damaged');
+await student.fill('[data-testid="complaint-body"]', 'SMOKE-The prayer mat arrived stained.');
+// A 1×1 PNG, as a phone photo would be.
+await student.setInputFiles('[data-testid="complaint-photo"]', { name: 'stain.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64') });
+await submit(student, '[data-testid="send-complaint"]');
+const reported = await student.locator('[data-testid="order-complaints"] [data-status="open"]').count();
+check('the student reports a problem with a photo', reported === 1 && (await text(student)).includes('stained'), `${reported} open`);
+
+await vendor.goto(`${BASE}/en/vendor/orders?q=${number}`, { waitUntil: 'networkidle' });
+await ensureOpen(vendor.locator(`[data-testid="vendor-order-${number}"]`));
+check('the shop sees the problem on its order', (await vendor.locator('[data-testid="vendor-complaints"]').innerText().catch(() => '')).includes('stained'));
+
+const office = await signIn(ADMIN);
+await office.goto(`${BASE}/en/admin/bookshop/complaints`, { waitUntil: 'networkidle' });
+const complaintCard = office.locator('[data-testid^="complaint-"][data-status="open"]').filter({ hasText: number }).first();
+const complaintId = ((await complaintCard.getAttribute('data-testid').catch(() => '')) || '').replace('complaint-', '');
+const photoHref = await complaintCard.locator(`[data-testid="complaint-photo-${complaintId}"]`).getAttribute('href').catch(() => null);
+const photo = photoHref ? await office.request.get(photoHref) : null;
+check('the office finds it, open, and opens the photo', Boolean(complaintId) && photo?.status() === 200 && (photo?.headers()['content-type'] ?? '').startsWith('image/'), `${complaintId} ${photo?.status()}`);
+await office.fill(`[data-testid="complaint-reply-${complaintId}"]`, 'SMOKE-A new mat goes out tomorrow.');
+await office.selectOption(`[data-testid="complaint-status-${complaintId}"]`, 'resolved');
+await office.click(`[data-testid="complaint-send-${complaintId}"]`);
+await settle(office, '[data-testid="flash-success"]');
+check('the office answers it as resolved', (await office.locator(`[data-testid="complaint-${complaintId}"]`).getAttribute('data-status').catch(() => '')) === 'resolved');
+
+await student.goto(`${BASE}/en/my-orders/${number}`, { waitUntil: 'networkidle' });
+check('the student reads the answer on the order', (await student.locator('[data-testid="order-complaints"] [data-status="resolved"]').count()) === 1 && (await text(student)).includes('A new mat goes out tomorrow'));
 
 await finish();

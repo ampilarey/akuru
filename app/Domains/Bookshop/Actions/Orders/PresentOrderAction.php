@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Actions\Orders;
 
 use App\Domains\Bookshop\Actions\Money\LoyaltyRewardsAction;
+use App\Domains\Bookshop\Actions\OrderComplaintAction;
 use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Models\Order;
@@ -56,6 +57,8 @@ class PresentOrderAction
             'returns' => $order->returns->map(fn (OrderReturn $r) => OrderView::returnRow($r))->values()->all(),
             'refunds' => $order->refunds->map(fn (OrderRefund $r) => OrderView::refund($r))->values()->all(),
             'message_thread_id' => $order->message_thread_id,
+            // COMMERCE_PARITY_PLAN P7a: problems reported, and the office's answers.
+            'complaints' => app(OrderComplaintAction::class)->forOrder((int) $order->id),
             'items' => $order->items->map(fn (OrderItem $i) => [
                 'id' => $i->id,
                 // B7: a delivered line the customer has not reviewed yet points at its product's review form.

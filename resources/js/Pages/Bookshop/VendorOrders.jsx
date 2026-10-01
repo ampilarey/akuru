@@ -170,6 +170,7 @@ function OrderCard({ order, t, open, onToggle }) {
                     <span className="font-mono font-semibold">{order.number}</span>
                     <span className={`ms-2 rounded px-2 py-0.5 text-xs ${tone[order.status] || 'bg-gray-100'}`}>{t[`status_${order.status}`] || order.status}</span>
                     {order.returns.some((r) => r.status === 'requested') && <span className="ms-2 rounded bg-orange-100 px-2 py-0.5 text-xs text-orange-800">{t.return_requested}</span>}
+                    {(order.complaints || []).some((c) => c.status !== 'resolved') && <span className="ms-2 rounded bg-red-100 px-2 py-0.5 text-xs text-red-800" data-testid={`complaint-flag-${order.number}`}>{t.complaint_heading}</span>}
                     <span className="block text-sm text-gray-600">{order.customer} · {order.delivery.name} · {order.placed_at}</span>
                 </span>
                 <span className="font-semibold">{order.currency} {order.total}</span>
@@ -211,6 +212,21 @@ function OrderCard({ order, t, open, onToggle }) {
                         <div>
                             <p className="font-semibold">{t.returns_heading}</p>
                             <ul className="divide-y">{order.returns.map((r) => <ReturnRow key={r.id} ret={r} t={t} />)}</ul>
+                        </div>
+                    )}
+                    {(order.complaints || []).length > 0 && (
+                        <div data-testid="vendor-complaints">
+                            <p className="font-semibold">{t.complaint_heading}</p>
+                            <p className="text-xs text-gray-600">{t.complaint_shop_note}</p>
+                            <ul className="divide-y">
+                                {order.complaints.map((c) => (
+                                    <li key={c.id} className="py-1">
+                                        {c.created_at} · {t[`complaint_kind_${c.kind}`] || c.kind} · {t[`complaint_status_${c.status}`] || c.status} — {c.body}
+                                        {c.photo_url && <> · <a href={c.photo_url} target="_blank" rel="noreferrer" className="underline">{t.complaint_open_photo}</a></>}
+                                        {c.reply && <span className="block text-gray-600">{t.complaint_answer}: {c.reply}</span>}
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
                     )}
                     {order.refunds.length > 0 && (

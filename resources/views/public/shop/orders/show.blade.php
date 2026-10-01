@@ -249,6 +249,35 @@
         </details>
     @endif
 
+    {{-- COMMERCE_PARITY_PLAN P7a: report a problem; the office answers here. --}}
+    @if(! in_array($order['status'], ['pending_payment', 'expired'], true))
+        <section class="no-print mb-4 rounded-lg border bg-white p-4 text-sm" data-testid="order-complaints">
+            <h2 class="mb-1 font-semibold">{{ __('shop.complaint_heading') }}</h2>
+            @foreach($order['complaints'] as $complaint)
+                <div class="mb-2 rounded border border-gray-200 p-2" data-testid="complaint-{{ $complaint['id'] }}" data-status="{{ $complaint['status'] }}">
+                    <p><span class="font-medium">{{ __('shop.complaint_kind_'.$complaint['kind']) }}</span> · {{ __('shop.complaint_status_'.$complaint['status']) }} · <span class="text-gray-500">{{ $complaint['created_at'] }}</span></p>
+                    <p class="text-gray-700" dir="auto">{{ $complaint['body'] }}</p>
+                    @if($complaint['photo_url'])<a href="{{ $complaint['photo_url'] }}" target="_blank" rel="noopener" class="text-brandMaroon-700 underline">{{ __('shop.complaint_open_photo') }}</a>@endif
+                    @if($complaint['reply'])<p class="mt-1 rounded bg-green-50 p-2 text-green-900" dir="auto" data-testid="complaint-reply">{{ __('shop.complaint_answer') }}: {{ $complaint['reply'] }}</p>@endif
+                </div>
+            @endforeach
+            <details @if(count($order['complaints']) === 0) open @endif>
+                <summary class="cursor-pointer text-brandMaroon-700 underline" data-testid="report-problem">{{ __('shop.complaint_report') }}</summary>
+                <form method="POST" action="{{ route('public.shop.orders.complain', $order['number']) }}" enctype="multipart/form-data" class="mt-2 grid gap-2 md:grid-cols-2">
+                    @csrf
+                    <label>{{ __('shop.complaint_what') }}
+                        <select name="kind" class="form-input block w-full" data-testid="complaint-kind">
+                            @foreach(\App\Domains\Bookshop\Models\OrderComplaint::KINDS as $kind)<option value="{{ $kind }}">{{ __('shop.complaint_kind_'.$kind) }}</option>@endforeach
+                        </select>
+                    </label>
+                    <label>{{ __('shop.complaint_photo') }}<input type="file" name="photo" accept="image/*" class="block w-full text-sm" data-testid="complaint-photo"></label>
+                    <label class="md:col-span-2">{{ __('shop.complaint_tell_us') }}<textarea name="body" rows="3" class="form-input block w-full" required maxlength="2000" data-testid="complaint-body"></textarea></label>
+                    <div><button type="submit" class="btn-primary" data-testid="send-complaint">{{ __('shop.complaint_send') }}</button></div>
+                </form>
+            </details>
+        </section>
+    @endif
+
     {{-- B3: write to the shop. --}}
     @if(! in_array($order['status'], ['pending_payment', 'expired'], true))
         <section class="no-print mb-4 rounded-lg border bg-white p-4 text-sm" data-testid="message-shop">

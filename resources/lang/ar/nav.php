@@ -142,6 +142,7 @@ return [
     'my_wallet' => 'محفظتي',
     'bookshop' => 'متجر أكورو للكتب',
     'akuru_fulfilment' => 'تجهيز أكورو',
+    'complaints' => 'المشكلات المبلّغ عنها',
     'shop' => 'متجر الكتب',
     'my_orders' => 'طلباتي',
     'my_wishlist' => 'قائمة أمنياتي',

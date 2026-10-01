@@ -4414,6 +4414,64 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mh. A customer reports a problem with an order; the office answers (COMMERCE_PARITY_PLAN P7a, 2026-10-01)
+
+The first of P7's three PRs.
+
+- **Data**: `order_complaints` holds the order, its shop, the customer, the kind,
+  the text, and a photo as private media. Each complaint has a status (open, then
+  in progress, then resolved), the answer, who answered and when, and when it was
+  resolved. It has a morph alias.
+- **The customer**:
+  - The order page (`/my-orders/{number}`) has *Report a problem* once the order is
+    paid.
+  - The kinds are damaged, missing, wrong item, late or not arrived, and other.
+  - A photo is optional.
+  - The form stands open until something is reported, and the problem and the
+    office's answer then show on the order.
+  - The route is throttled to 10 an hour.
+- **Who is told when a problem is reported**:
+  - the office (in the app, and to the office email and phone set in P5, event
+    `complaint`);
+  - the shop (event `complaint`, an email by default, and a switch in the shop's
+    notice settings).
+- **The office** (`/admin/bookshop/complaints`, in the money workspace and the
+  Bookstore admin's bar):
+  - Open problems come first, with the shop, the recipient and their phone.
+  - The office can open the photo.
+  - It answers and moves the problem to in progress or resolved.
+  - The answer reaches the customer in the app, by email and by SMS (customer event
+    `complaint_reply`).
+  - Every complaint can be exported as CSV.
+- **The shop**: its order list flags an order that has an unresolved problem and
+  shows the problem and the answer. The shop does not answer; Akuru does.
+- **The photo** (`/complaints/{id}/photo`): it opens for the customer who sent it,
+  the shop's members and the office, with `no-store`. Pinned in the
+  private-media-readers test.
+- **Languages**: EN/DV/AR.
+
+Tests:
+- New `OrderComplaintTest`, 5 tests:
+  - the customer reports with a photo, and the office and the shop are told;
+  - the problem shows on the customer's page and on the shop's order;
+  - the office answers: a status of open is refused, resolved sets who answered and
+    when, the customer is told and sees the answer, and the CSV holds the complaint;
+  - a customer is refused the office screens;
+  - the photo opens for the customer, the shop and the office, and anyone else is
+    refused;
+  - someone else's order (404), an unknown kind and an unpaid order are all refused;
+  - DV/AR.
+- The section count in `WorkspacesTest` for the money workspace goes from 4 to 5.
+- Architecture, Nav, Routes and Bookshop: green.
+
+Walk:
+- `fulfilment.mjs` 26/26, with five new steps:
+  - the student reports a problem on the delivered order with a photo;
+  - the shop sees it on the order;
+  - the office finds it open and the photo opens (200, image);
+  - the office answers it as resolved;
+  - the student reads the answer.
+
 ## 5mg. Akuru's drivers: picked up, delivered, with a photo (COMMERCE_PARITY_PLAN P6b, 2026-10-01)
 
 The second half of P6.

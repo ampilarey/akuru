@@ -110,6 +110,8 @@ decided on `/admin/bookshop`, the form closable by the office.)*
 
 *(COMMERCE_PARITY_PLAN P6b, 2026-10-01, STATUS §5mg: an order Akuru's courier carries goes to one of Akuru's drivers; the customer's order says *Out for delivery* when the driver picks it up and *Delivered* — with the driver's name — when it is handed over, and is told each time.)*
 
+*(COMMERCE_PARITY_PLAN P7a, 2026-10-01, STATUS §5mh: a customer reports a problem with a paid order — damaged, missing, wrong item, late, other — with a photo; the office and the shop are told; the office answers on `/admin/bookshop/complaints` and the answer reaches the customer in the app, by email and by SMS; the shop reads it on its order.)*
+
 *(COMMERCE_PARITY_PLAN P5, 2026-09-30, STATUS §5me: a paid order tells the customer (with the tracking link), each shop and the office — in the app, by email and by SMS, all on by default. A bank slip, a cancellation and a return reach the office's own email and phone too, set under *Notices* on `/admin/bookshop`.)*
 
 **Browse and find**

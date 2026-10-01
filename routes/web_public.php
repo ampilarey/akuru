@@ -98,6 +98,8 @@ Route::middleware(['auth', 'customer_password'])->group(function () {
     Route::post('my-orders/{number}/cancel', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'cancel'])->name('public.shop.orders.cancel')->middleware('throttle:10,1,shop-cancel');
     Route::post('my-orders/{number}/returns', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'requestReturn'])->name('public.shop.orders.return')->middleware('throttle:10,1,shop-return');
     Route::post('my-orders/{number}/message', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'message'])->name('public.shop.orders.message')->middleware('throttle:20,1,shop-message');
+    // COMMERCE_PARITY_PLAN P7a: report a problem with an order.
+    Route::post('my-orders/{number}/complaints', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'complain'])->name('public.shop.orders.complain')->middleware('throttle:10,60,shop-complaint');
     // B7: the wishlist, back-in-stock requests, reviews of what was received.
     Route::get('my-wishlist', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'wishlist'])->name('public.shop.wishlist');
     Route::get('my-wishlist/export', [\App\Domains\Bookshop\Http\Controllers\ShopAccountController::class, 'exportWishlist'])->name('public.shop.wishlist.export');
