@@ -68,6 +68,7 @@ class CompareProductsAction
             'few_left' => __('shop.stock_few_left', ['count' => $c['stock']['count']]),
             'out_of_stock' => __('shop.stock_out_of_stock'),
             'made_to_order' => __('shop.stock_made_to_order', ['days' => $c['stock']['days']]),
+            'preorder' => __('shop.stock_preorder', ['date' => $c['stock']['release'] ?? '']),
             'available' => __('shop.stock_available'),
             default => __('shop.stock_in_stock'),
         };

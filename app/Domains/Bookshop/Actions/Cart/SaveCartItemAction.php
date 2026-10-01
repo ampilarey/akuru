@@ -136,7 +136,7 @@ class SaveCartItemAction
         $variant = $item->product_variant_id !== null ? ProductVariant::query()->find($item->product_variant_id) : null;
 
         $available = Stock::available($product, $variant);
-        if ($available !== null && $quantity > $available && ! Stock::madeToOrder($product)) {
+        if ($available !== null && $quantity > $available && ! Stock::sellsWithoutStock($product)) {
             if ($available <= 0) {
                 throw ValidationException::withMessages(['quantity' => __('shop.error_sold_out', ['title' => $product->title])]);
             }

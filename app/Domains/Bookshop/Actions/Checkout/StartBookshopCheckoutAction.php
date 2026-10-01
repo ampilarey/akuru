@@ -81,7 +81,7 @@ class StartBookshopCheckoutAction
                     throw ValidationException::withMessages(['cart' => __('shop.error_on_holiday', ['vendor' => $product->vendor->name, 'date' => $product->vendor->holiday_until->copy()->addDay()->toDateString()])]);
                 }
                 $available = Stock::available($product, $variant);
-                if ($available !== null && $item->quantity > $available && ! Stock::madeToOrder($product)) {
+                if ($available !== null && $item->quantity > $available && ! Stock::sellsWithoutStock($product)) {
                     throw ValidationException::withMessages(['cart' => $available <= 0
                         ? __('shop.error_sold_out', ['title' => $product->title])
                         : __('shop.error_only_n_left', ['count' => $available, 'title' => $product->title])]);
@@ -209,6 +209,8 @@ class StartBookshopCheckoutAction
                     'vendor_tin' => $taxShown ? $vendor->tin : null,
                     'notes' => $checkout->notes,
                     'gift_message' => $checkout->gift_message,
+                    // COMMERCE_PARITY_PLAN P8d: an order with a pre-order in it ships from the latest release date.
+                    'ships_from' => collect($vendorLines)->filter(fn (array $l) => Stock::preorder($l['product']))->map(fn (array $l) => $l['product']->preorder_release_on->toDateString())->max(),
                 ]);
 
                 $tax = 0.0;

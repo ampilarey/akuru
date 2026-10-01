@@ -24,7 +24,7 @@ function blankProduct() {
         price: '', compare_at_price: '', cost: '', tax_class: 'standard',
         sale_percent: '', sale_starts_at: '', sale_ends_at: '',
         sku: '', barcode: '', weight_grams: '', dimensions: '',
-        track_stock: true, stock: '0', low_stock_at: '', lead_days: '',
+        track_stock: true, stock: '0', low_stock_at: '', lead_days: '', preorder_release_on: '',
         status: 'draft', visibility: 'shop',
         details: {}, variants: [], photos: [], image_alts: {},
     };
@@ -45,7 +45,7 @@ function fromProduct(p) {
         price: text(p.price), compare_at_price: text(p.compare_at_price), cost: text(p.cost), tax_class: p.tax_class,
         sale_percent: text(p.sale_percent), sale_starts_at: text(p.sale_starts_at), sale_ends_at: text(p.sale_ends_at),
         sku: text(p.sku), barcode: text(p.barcode), weight_grams: text(p.weight_grams), dimensions: text(p.dimensions),
-        track_stock: Boolean(p.track_stock), stock: text(p.stock), low_stock_at: text(p.low_stock_at), lead_days: text(p.lead_days),
+        track_stock: Boolean(p.track_stock), stock: text(p.stock), low_stock_at: text(p.low_stock_at), lead_days: text(p.lead_days), preorder_release_on: text(p.preorder_release_on),
         // P4: a listing waiting for the office is still a request to sell.
         status: p.status === 'pending_review' ? 'active' : p.status, visibility: p.visibility,
         details: { ...(p.details || {}) },
@@ -169,6 +169,8 @@ function ProductEditor({ product, options, t, onDone, trusted = false }) {
                 <Field label={t.stock}><input className="form-input w-full" type="number" min="0" value={form.data.stock} onChange={set('stock')} data-testid="product-stock" /></Field>
                 <Field label={t.low_stock_at}><input className="form-input w-full" type="number" min="0" value={form.data.low_stock_at} onChange={set('low_stock_at')} /></Field>
                 <Field label={t.lead_days}><input className="form-input w-full" type="number" min="0" value={form.data.lead_days} onChange={set('lead_days')} /></Field>
+                {/* COMMERCE_PARITY_PLAN P8d: sold before it arrives, paid in full, sent from this date. */}
+                <Field label={t.preorder_release_on}><input className="form-input w-full" type="date" value={form.data.preorder_release_on} onChange={set('preorder_release_on')} data-testid="product-preorder" /></Field>
                 <Field label={t.visibility} className="md:col-span-2">
                     <select className="form-input w-full" value={form.data.visibility} onChange={set('visibility')}>
                         {options.visibilities.map((v) => <option key={v} value={v}>{t[`visibility_${v}`] || v}</option>)}

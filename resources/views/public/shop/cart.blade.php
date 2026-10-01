@@ -60,6 +60,7 @@
                                 @if($line['quoted'] ?? false)<span class="mt-1 inline-block rounded bg-green-100 px-2 py-0.5 text-xs text-green-800" data-testid="cart-quoted">{{ __('shop.quoted_price_badge') }}</span>@endif
                                 @if($line['quote_lapsed'] ?? false)<span class="block text-xs text-amber-800" data-testid="cart-quote-lapsed">{{ __('shop.quote_lapsed_note') }}</span>@endif
                                 @if($line['made_to_order'])<span class="block text-xs text-gray-500">{{ __('shop.made_to_order_note') }}</span>@endif
+                                @if($line['preorder_release'] ?? null)<span class="block text-xs font-medium text-amber-800" data-testid="cart-preorder">{{ __('shop.preorder_note', ['date' => $line['preorder_release']]) }}</span>@endif
                                 @if($line['short'])<span class="block text-xs text-amber-800">{{ __('shop.stock_short', ['count' => $line['available']]) }}</span>@endif
                             </div>
                             <form method="POST" action="{{ route('public.shop.cart.update', $line['id']) }}" class="flex items-center gap-2">

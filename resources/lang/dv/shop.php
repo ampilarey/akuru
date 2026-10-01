@@ -1953,4 +1953,14 @@ return [
     'credit_in_credit' => 'އެކައުންޓުގައި ބާކީ: :amount',
     'credit_kind_deposit' => 'ޑިޕޮޒިޓް',
     'notice_credit_in_credit' => 'ތިޔަ އެކައުންޓުގައި :amount ބާކީ ހުރި.',
+    // COMMERCE_PARITY_PLAN P8d: pre-orders.
+    'stock_preorder' => 'ޕްރީ-އޯޑަރ — :date އިން ފެށިގެން ފޮނުވާނެ',
+    'preorder_note' => 'ޕްރީ-އޯޑަރ: :date އިން ފެށިގެން ފޮނުވާނެ، މިހާރު ފުރިހަމައަށް ދައްކަވާ.',
+    'order_preorder' => 'މިއީ ޕްރީ-އޯޑަރެކެވެ. ފިހާރައިން ފޮނުވާނީ :date އިން ފެށިގެން؛ ފޮނުވާއިރު އަންގާނަން.',
+    'vendor_order_preorder' => 'ޕްރީ-އޯޑަރ: :date އިން ފެށިގެން ފޮނުވާ.',
+    'preorder_release_on' => 'ޕްރީ-އޯޑަރ ނިމޭ ތާރީޚް (ރިލީސް)',
+    'notice_preorder_released_title' => 'ތިޔަ ޕްރީ-އޯޑަރ :number ރިލީސްވެއްޖެ',
+    'notice_preorder_released_body' => 'އޯޑަރު :number މިހާރު ލިބެން ހުރި؛ ފިހާރައިން ތައްޔާރުކުރަމުން ދަނީ.',
+    'notice_preorder_vendor_title' => 'ޕްރީ-އޯޑަރ :number ފޮނުވޭނެ',
+    'notice_preorder_vendor_body' => 'އޯޑަރު :number ގެ ރިލީސް ތާރީޚް އައިސްފި. ތައްޔާރުކޮށް ފޮނުވާ.',
 ];

@@ -199,6 +199,7 @@ function OrderCard({ order, t, open, onToggle }) {
                             <p><span className="font-semibold">{t.payment_method}:</span> {t[`pay_${order.payment_method}`] || order.payment_method}</p>
                             {order.notes && <p><span className="font-semibold">{t.order_notes}:</span> {order.notes}</p>}
                             {order.gift_message && <p data-testid="vendor-gift-message" dir="auto"><span className="font-semibold">{t.gift_message}:</span> {order.gift_message}</p>}
+                            {order.ships_from && <p className="rounded bg-amber-50 p-2 text-amber-900" data-testid={`vendor-preorder-${order.number}`}>{(t.vendor_order_preorder || '').replace(':date', order.ships_from)}</p>}
                             {(order.carrier || order.tracking_note) && <p><span className="font-semibold">{t.tracking_note}:</span> {order.carrier} {order.tracking_note}</p>}
                             {order.cancel_reason && <p className="text-red-700"><span className="font-semibold">{t.cancel_reason}:</span> {order.cancel_reason}</p>}
                         </div>

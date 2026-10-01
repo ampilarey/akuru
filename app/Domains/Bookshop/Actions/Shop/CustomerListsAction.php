@@ -8,6 +8,7 @@ use App\Domains\Bookshop\Models\ProductVariant;
 use App\Domains\Bookshop\Models\StockAlert;
 use App\Domains\Bookshop\Models\WishlistItem;
 use App\Domains\Bookshop\Support\ShopPresenter;
+use App\Domains\Bookshop\Support\Stock;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Validation\ValidationException;
 
@@ -129,7 +130,7 @@ class CustomerListsAction
     /** Something to buy: stock not counted, on the shelf, made to order, or an active variant with stock. */
     public static function available(Product $product): bool
     {
-        if (! $product->track_stock || (int) $product->stock > 0 || (int) $product->lead_days > 0) {
+        if (! $product->track_stock || (int) $product->stock > 0 || (int) $product->lead_days > 0 || Stock::preorder($product)) {
             return true;
         }
 

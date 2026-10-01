@@ -164,6 +164,7 @@ class SaveVendorProductAction
             'stock' => (int) ($data['stock'] ?? 0),
             'low_stock_at' => $data['low_stock_at'] ?? null,
             'lead_days' => $data['lead_days'] ?? null,
+            'preorder_release_on' => ($data['preorder_release_on'] ?? null) ?: null,
             'status' => $data['status'] ?? 'draft',
             'visibility' => $data['visibility'] ?? 'shop',
             'tags' => $tags,

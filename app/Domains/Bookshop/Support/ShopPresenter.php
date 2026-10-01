@@ -96,6 +96,10 @@ final class ShopPresenter
     public static function stock(Product $product): array
     {
         $days = $product->lead_days !== null && $product->lead_days > 0 ? (int) $product->lead_days : null;
+        // COMMERCE_PARITY_PLAN P8d: a pre-order says so, with the date it ships from, whatever the shelf holds.
+        if (Stock::preorder($product)) {
+            return ['state' => 'preorder', 'count' => null, 'days' => null, 'release' => $product->preorder_release_on->toDateString()];
+        }
 
         if (! $product->track_stock) {
             return ['state' => $days !== null ? 'made_to_order' : 'available', 'count' => null, 'days' => $days];

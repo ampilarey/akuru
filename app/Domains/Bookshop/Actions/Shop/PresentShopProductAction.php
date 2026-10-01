@@ -87,6 +87,7 @@ class PresentShopProductAction
         $availability = match ($card['stock']['state']) {
             'out_of_stock' => 'https://schema.org/OutOfStock',
             'made_to_order' => 'https://schema.org/PreOrder',
+            'preorder' => 'https://schema.org/PreOrder',
             default => 'https://schema.org/InStock',
         };
         $images = $product->images->map(fn (ProductImage $i) => app(ResolvePublicImageVariantAction::class)->execute((int) $i->media_file_id, ShopPresenter::LARGE_WIDTH))->filter()->values()->all();

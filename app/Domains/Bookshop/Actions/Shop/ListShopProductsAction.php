@@ -72,6 +72,7 @@ class ListShopProductsAction
                 ->where('track_stock', false)
                 ->orWhere('stock', '>', 0)
                 ->orWhere('lead_days', '>', 0)
+                ->orWhere('preorder_release_on', '>', now('Indian/Maldives')->toDateString())
                 ->orWhereHas('variants', fn ($v) => $v->where('is_active', true)->where('stock', '>', 0))))
             ->when(($filters['language'] ?? '') !== '', fn ($query) => $query->where('details->language', 'like', '%'.$filters['language'].'%'))
             ->when(($filters['age'] ?? '') !== '', fn ($query) => $query->where('details->age_range', 'like', '%'.$filters['age'].'%'))

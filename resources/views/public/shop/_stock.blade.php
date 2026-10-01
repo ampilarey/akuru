@@ -9,6 +9,7 @@
         @case('few_left'){{ __('shop.stock_few_left', ['count' => $stock['count']]) }}@break
         @case('out_of_stock'){{ __('shop.stock_out_of_stock') }}@break
         @case('made_to_order'){{ __('shop.stock_made_to_order', ['days' => $stock['days']]) }}@break
+        @case('preorder'){{ __('shop.stock_preorder', ['date' => $stock['release']]) }}@break
         @case('available'){{ __('shop.stock_available') }}@break
         @default{{ __('shop.stock_in_stock') }}
     @endswitch

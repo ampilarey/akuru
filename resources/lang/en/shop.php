@@ -1957,4 +1957,14 @@ return [
     'credit_in_credit' => 'In credit: :amount',
     'credit_kind_deposit' => 'Deposit',
     'notice_credit_in_credit' => 'Your account is in credit by :amount.',
+    // COMMERCE_PARITY_PLAN P8d: pre-orders.
+    'stock_preorder' => 'Pre-order — ships from :date',
+    'preorder_note' => 'Pre-order: ships from :date, paid in full now.',
+    'order_preorder' => 'This is a pre-order. The shop sends it from :date; we will tell you when it is on its way.',
+    'vendor_order_preorder' => 'Pre-order: send from :date.',
+    'preorder_release_on' => 'Pre-order until (release date)',
+    'notice_preorder_released_title' => 'Your pre-order :number is released',
+    'notice_preorder_released_body' => 'Order :number is out now; the shop is preparing it for you.',
+    'notice_preorder_vendor_title' => 'Pre-order :number can be sent',
+    'notice_preorder_vendor_body' => 'The release date for order :number has come. Prepare and send it.',
 ];

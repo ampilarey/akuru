@@ -1857,6 +1857,8 @@ class SmokeMarkerSeeder extends Seeder
     {
         DB::table('shop_sms_campaigns')->where('message', 'like', 'SMOKE-%')->delete();
         DB::table('shop_sms_optins')->where('phone', '7700000')->delete();
+        // P8d: preorder.mjs makes a smoke product a pre-order; every run starts from an ordinary one.
+        DB::table('products')->where('slug', 'like', 'smoke-%')->whereNotNull('preorder_release_on')->update(['preorder_release_on' => null]);
         // P7c: customers.mjs tags the student and keeps a note with a follow-up.
         $student = DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id');
         if ($student !== null) {
