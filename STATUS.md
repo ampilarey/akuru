@@ -4414,6 +4414,32 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mw. Log out left the shell behind (2026-10-01)
+
+The owner's screenshot, from the vendor shell on a phone: pressing *Log
+out* drew the public home page **inside a modal over the shell** — header,
+drawer and portal still visible around it.
+
+- **Why.** The shell's *Log out* button posts `/logout` as an Inertia
+  request (`router.post`). The controller logged out and `redirect('/')`.
+  The home page is Blade, so the XHR followed the redirect to a page with
+  no `X-Inertia` header, and Inertia does what it always does with that: it
+  shows the response in its error modal. The session *was* ended; the
+  screen just never left.
+- **Fix.** `AuthenticatedSessionController::destroy` answers an `X-Inertia`
+  request with `Inertia::location('/')` (a 409 with `X-Inertia-Location`,
+  which makes the browser do a full visit) and a plain request with the
+  redirect it always gave. The same pattern `AccountController` already
+  uses for the checkout's password step (P1).
+
+Tests: `AppShellLogoutTest` gains the Inertia case — 409, the location
+header, and a guest afterwards; the plain-POST case still asserts the
+redirect. Auth, SeededLogin and EmailLoginFallback suites green.
+
+Walk: new `logout.mjs`, 8/8 — on a phone and on a desktop, the vendor
+signs in, opens the drawer, presses *Log out*; the document is the home
+page (`/en`, one frame, no `#main`), and `/vendor` then asks to sign in.
+
 ## 5mv. Free books, given away (LENDING_AND_USED_BOOKS_PLAN L3, 2026-10-01)
 
 The owner, after L2: "I don't see free book, give away". Lending was

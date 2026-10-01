@@ -157,6 +157,13 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the owner on a phone (2026-10-01)
+
+- **Log out from the shell drew the home page in a modal over the shell** —
+  **fixed (2026-10-01, STATUS §5mw)**. The Inertia logout followed a
+  redirect to a Blade page; the controller now answers an Inertia request
+  with `Inertia::location('/')`. The session had ended either way.
+
 ## Found by the Bookstore storefront walks (2026-10-01)
 
 - **Every saved form showed its "Saved" twice** on the Inertia screens —
