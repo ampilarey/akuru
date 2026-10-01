@@ -1069,9 +1069,19 @@ function NoticeSwitches({ notices, t }) {
             <h2 className="mb-1 text-lg font-semibold">{t.notices_heading}</h2>
             <p className="mb-2 text-sm text-gray-600">{t.office_notices_hint}</p>
             <form className="flex flex-wrap items-center gap-4 rounded border bg-white p-3 text-sm" onSubmit={(e) => { e.preventDefault(); form.post('/admin/bookshop/notices', { preserveScroll: true }); }}>
-                {['customer_email', 'customer_sms', 'vendor_email', 'vendor_sms'].map((k) => (
+                {['customer_email', 'customer_sms', 'vendor_email', 'vendor_sms', 'office_email', 'office_sms'].map((k) => (
                     <label key={k} className="flex items-center gap-2"><input type="checkbox" checked={!!form.data[k]} onChange={(e) => form.setData(k, e.target.checked)} data-testid={`switch-${k}`} /> {t[`switch_${k}`]}</label>
                 ))}
+                {/* COMMERCE_PARITY_PLAN P5: the office's own copy of every purchase notice. */}
+                <label className="flex w-full flex-wrap items-center gap-2 sm:w-auto">{t.office_contact_email}
+                    <input type="email" className="form-input w-64" value={form.data.office_contact_email || ''} onChange={(e) => form.setData('office_contact_email', e.target.value)} data-testid="office-contact-email" />
+                    {form.errors.office_contact_email && <span className="text-xs text-red-700">{form.errors.office_contact_email}</span>}
+                </label>
+                <label className="flex w-full flex-wrap items-center gap-2 sm:w-auto">{t.office_contact_phone}
+                    <input type="tel" className="form-input w-40" value={form.data.office_contact_phone || ''} onChange={(e) => form.setData('office_contact_phone', e.target.value)} data-testid="office-contact-phone" />
+                    {form.errors.office_contact_phone && <span className="text-xs text-red-700">{form.errors.office_contact_phone}</span>}
+                </label>
+                <p className="w-full text-xs text-gray-600">{t.office_contact_hint}</p>
                 <button type="submit" className="btn-primary" disabled={form.processing} data-testid="save-switches">{t.save}</button>
             </form>
         </section>

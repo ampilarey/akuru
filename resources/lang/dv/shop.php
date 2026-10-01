@@ -1704,4 +1704,16 @@ return [
     'notice_listing_declined_title' => 'ތިޔަ ތަކެތި ރިޖެކްޓްކޮށްފި',
     'notice_listing_declined_body' => 'އޮފީހުން ":title" ރިޖެކްޓްކޮށްފި: :note',
     'notice_event_listing_decided' => 'އޮފީހުން ތަކެއްޗެއް އެޕްރޫވް ނުވަތަ ރިޖެކްޓްކުރުން',
+    // COMMERCE_PARITY_PLAN P5: every purchase tells the office too.
+    'notice_paid_track' => 'ޓްރެކްކުރަން: :link',
+    'notice_office_paid_title' => 'ފޮތްފިހާރައިގެ އޯޑަރަކަށް ފައިސާ ދައްކައިފި',
+    'notice_office_paid_body' => 'ޗެކްއައުޓް :number އަށް ފައިސާ ދައްކައިފި: :amount، :shops ފިހާރަ.',
+    'notice_office_cancelled_title' => 'ފޮތްފިހާރައިގެ އޯޑަރެއް ކެންސަލްކޮށްފި',
+    'notice_office_cancelled_body' => 'އޯޑަރު :number ކެންސަލްކޮށްފި: :reason.',
+    'office_name' => 'އަކުރު ފޮތްފިހާރައިގެ އޮފީސް',
+    'switch_office_email' => 'ކޮންމެ ގަތުމެއްގައި އޮފީހަށް އީމެއިލް ކުރޭ',
+    'switch_office_sms' => 'ކޮންމެ ގަތުމެއްގައި އޮފީހަށް އެސްއެމްއެސް ކުރޭ',
+    'office_contact_email' => 'އޮފީހުގެ އީމެއިލް',
+    'office_contact_phone' => 'އޮފީހުގެ ފޯނު',
+    'office_contact_hint' => 'ފައިސާ ދެއްކި އޯޑަރެއް، ބޭންކް ސްލިޕެއް، ކެންސަލްކުރުމެއް ނުވަތަ ރިޓަރނެއް މި އެޑްރެހަށާއި ނަންބަރަށް ދާނެ، އަދި އެޕުގައި ފޮތްފިހާރަ ހިންގާ ހުރިހާ މީހުންނަށް.',
 ];

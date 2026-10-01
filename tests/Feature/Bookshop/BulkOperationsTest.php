@@ -313,12 +313,13 @@ it('sends notices by email and SMS where the office and the shop allow, and neve
     [$fitrah, $owner, $staff] = opsShop();
     $book = opsProduct($fitrah, 'Tracing Book', 85, 50);
 
-    // Defaults: customers and shops by email, nobody by SMS.
+    // Defaults (COMMERCE_PARITY_PLAN P5): customers and shops by email and by SMS; no office number set, no office SMS.
     $customer = opsCustomer();
     opsBuy($customer, $book, 1);
     Mail::assertQueued(BookshopNoticeMail::class, fn ($m) => $m->hasTo($customer->email) && $m->heading === __('shop.notice_paid_title'));
     Mail::assertQueued(BookshopNoticeMail::class, fn ($m) => $m->hasTo('fitrah-staff@example.test') && $m->heading === __('shop.notice_vendor_order_title'));
-    expect($sms->sent)->toBe([]);
+    expect(collect($sms->sent)->pluck(0)->all())->toBe(['7712345', '7000001']);
+    $sms->sent = [];
 
     // Staff cannot change the shop's choices; the owner can.
     opsAs($staff)->post(route('vendor.notices.save'), ['events' => ['new_order' => ['email' => 0, 'sms' => 1]]])->assertForbidden();

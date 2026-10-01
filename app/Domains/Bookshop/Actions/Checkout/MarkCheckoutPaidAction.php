@@ -120,11 +120,20 @@ class MarkCheckoutPaidAction
     private function tell(BookshopCheckout $checkout, array $attention): void
     {
         $notify = app(NotifyBookshopUserAction::class);
+        // P5: the customer's notice carries the tracking link (the first order's number; the phone finds the rest).
+        $first = $checkout->orders->first();
         $notify->execute(
             (int) $checkout->user_id,
             __('shop.notice_paid_title'),
-            __('shop.notice_paid_body', ['number' => $checkout->number]),
+            __('shop.notice_paid_body', ['number' => $checkout->number]).($first !== null ? ' '.__('shop.notice_paid_track', ['link' => route('public.shop.track', ['number' => $first->number])]) : ''),
             '/my-orders',
+            'order_paid',
+        );
+        // COMMERCE_PARITY_PLAN P5: and the office, by its own address and number too.
+        $notify->office(
+            __('shop.notice_office_paid_title'),
+            __('shop.notice_office_paid_body', ['number' => $checkout->number, 'amount' => $checkout->currency.' '.number_format((float) $checkout->total, 2), 'shops' => $checkout->orders->count()]),
+            '/admin/bookshop',
             'order_paid',
         );
         foreach ($checkout->orders as $order) {

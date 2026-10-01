@@ -64,6 +64,8 @@ class CancelOrderAction
         } else {
             $notify->execute((int) $order->user_id, __('shop.notice_vendor_cancelled_title'), __('shop.notice_vendor_cancelled_body', ['number' => $order->number, 'reason' => $reason]), '/my-orders/'.$order->number, 'order_cancelled');
         }
+        // COMMERCE_PARITY_PLAN P5: a paid order undone is the office's to know too.
+        $notify->office(__('shop.notice_office_cancelled_title'), __('shop.notice_office_cancelled_body', ['number' => $order->number, 'reason' => $reason]), '/admin/bookshop', 'order_cancelled');
 
         return $order;
     }

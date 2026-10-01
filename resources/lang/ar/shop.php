@@ -1704,4 +1704,16 @@ return [
     'notice_listing_declined_title' => 'رُفض منتجك',
     'notice_listing_declined_body' => 'رفض المكتب ":title": :note',
     'notice_event_listing_decided' => 'المكتب يوافق على منتج أو يرفضه',
+    // COMMERCE_PARITY_PLAN P5: every purchase tells the office too.
+    'notice_paid_track' => 'تتبّعه: :link',
+    'notice_office_paid_title' => 'دُفع طلب من المكتبة التجارية',
+    'notice_office_paid_body' => 'دُفعت عملية الدفع :number: :amount، :shops متجر.',
+    'notice_office_cancelled_title' => 'أُلغي طلب من المكتبة التجارية',
+    'notice_office_cancelled_body' => 'أُلغي الطلب :number: :reason.',
+    'office_name' => 'مكتب مكتبة أكورو التجارية',
+    'switch_office_email' => 'راسل المكتب بالبريد عند كل شراء',
+    'switch_office_sms' => 'أرسل إلى المكتب رسالة نصية عند كل شراء',
+    'office_contact_email' => 'بريد المكتب',
+    'office_contact_phone' => 'هاتف المكتب',
+    'office_contact_hint' => 'يصل الطلب المدفوع وإيصال التحويل والإلغاء والإرجاع إلى هذا البريد وهذا الرقم، إضافة إلى كل من يدير المكتبة التجارية في التطبيق.',
 ];

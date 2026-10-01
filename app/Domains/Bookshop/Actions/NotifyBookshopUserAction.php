@@ -20,7 +20,8 @@ use Illuminate\Support\Facades\Mail;
  *
  *  - customer: order paid, bank transfer confirmed or rejected, dispatched…;
  *  - vendor members: a paid order to fulfil, low stock, a return…;
- *  - office (`bookshop.manage`): a slip to confirm, an order needing attention.
+ *  - office (`bookshop.manage`): a slip to confirm, an order needing attention;
+ *    the purchase events also to the office's address and number (P5).
  *
  * B8 (§4 "Notices in app and by email (SMS where the office enables it)",
  * §5 and §7 "email/SMS switches"): a call that names its **event** may also
@@ -76,24 +77,65 @@ class NotifyBookshopUserAction
         }
     }
 
-    /** Everyone who runs the bookstore: the holders of `bookshop.manage`. In-app only. */
-    public function office(string $title, string $message, ?string $href = null): void
+    /**
+     * Everyone who runs the bookstore: the holders of `bookshop.manage`, in the app.
+     *
+     * COMMERCE_PARITY_PLAN P5 (the owner: "SMS and email to vendor, customer
+     * and admin on every purchase"): a call naming one of the office events —
+     * a paid order, a bank slip, a cancellation, a return — also goes to the
+     * office's own address and number (set on `/admin/bookshop`), as the
+     * office's two switches allow. No address or number set: in the app only.
+     */
+    public function office(string $title, string $message, ?string $href = null, ?string $event = null): void
     {
         $userModel = config('auth.providers.users.model');
         try {
             $ids = $userModel::query()->permission('bookshop.manage')->pluck('id');
         } catch (\Throwable) {
-            return;
+            $ids = [];
         }
         foreach ($ids as $id) {
             $this->inApp((int) $id, $title, $message, $href);
         }
+        if ($event === null || ! in_array($event, (array) config('bookshop.notices.office_events'), true)) {
+            return;
+        }
+        $switches = self::officeSwitches();
+        $contact = self::officeContact();
+        if ($switches['office_email'] && $contact['office_contact_email'] !== null) {
+            $this->emailTo($contact['office_contact_email'], (string) __('shop.office_name'), $title, $message, $href);
+        }
+        if ($switches['office_sms'] && $contact['office_contact_phone'] !== null) {
+            $this->sms($contact['office_contact_phone'], $title, $message, $event);
+        }
+    }
+
+    /**
+     * P5: the office's own address and number for purchase notices — the
+     * settings, over the deploy's `BOOKSHOP_OFFICE_EMAIL` / `_PHONE`.
+     *
+     * @return array{office_contact_email: ?string, office_contact_phone: ?string}
+     */
+    public static function officeContact(): array
+    {
+        try {
+            $stored = app(SettingsRepositoryInterface::class)->many(['bookshop_office_email' => null, 'bookshop_office_phone' => null]);
+        } catch (\Throwable) {
+            $stored = [];
+        }
+        $email = trim((string) (($stored['bookshop_office_email'] ?? null) ?: config('bookshop.notices.office_email')));
+        $phone = trim((string) (($stored['bookshop_office_phone'] ?? null) ?: config('bookshop.notices.office_phone')));
+
+        return [
+            'office_contact_email' => filter_var($email, FILTER_VALIDATE_EMAIL) ? $email : null,
+            'office_contact_phone' => $phone !== '' ? $phone : null,
+        ];
     }
 
     /**
      * The office's switches, defaults from config.
      *
-     * @return array{customer_email: bool, customer_sms: bool, vendor_email: bool, vendor_sms: bool}
+     * @return array{customer_email: bool, customer_sms: bool, vendor_email: bool, vendor_sms: bool, office_email: bool, office_sms: bool}
      */
     public static function officeSwitches(): array
     {
@@ -113,7 +155,7 @@ class NotifyBookshopUserAction
             $out[$key] = $value === null || $value === '' ? (bool) $default : in_array(strtolower(trim((string) $value)), ['1', 'true', 'on', 'yes'], true);
         }
 
-        /** @var array{customer_email: bool, customer_sms: bool, vendor_email: bool, vendor_sms: bool} $out */
+        /** @var array{customer_email: bool, customer_sms: bool, vendor_email: bool, vendor_sms: bool, office_email: bool, office_sms: bool} $out */
         return $out;
     }
 
@@ -165,14 +207,18 @@ class NotifyBookshopUserAction
     private function email(int $userId, string $title, string $message, ?string $href): void
     {
         $person = $this->person($userId);
-        $address = trim((string) ($person['email'] ?? ''));
+        $this->emailTo(trim((string) ($person['email'] ?? '')), (string) ($person['name'] ?? ''), $title, $message, $href);
+    }
+
+    private function emailTo(string $address, string $name, string $title, string $message, ?string $href): void
+    {
         if ($address === '' || ! filter_var($address, FILTER_VALIDATE_EMAIL)) {
             return;
         }
         $link = $href !== null ? url($href) : null;
-        DB::afterCommit(function () use ($address, $person, $title, $message, $link): void {
+        DB::afterCommit(function () use ($address, $name, $title, $message, $link): void {
             try {
-                Mail::to($address)->queue(new BookshopNoticeMail((string) ($person['name'] ?? ''), $title, $message, $link));
+                Mail::to($address)->queue(new BookshopNoticeMail($name, $title, $message, $link));
             } catch (\Throwable) {
                 // The in-app notice stands; a mail failure never fails the order.
             }

@@ -50,6 +50,7 @@ class UploadBankTransferSlipAction
             __('shop.notice_slip_title'),
             __('shop.notice_slip_body', ['number' => $checkout->number]),
             '/admin/bookshop',
+            'slip_received',
         );
 
         return $slip;

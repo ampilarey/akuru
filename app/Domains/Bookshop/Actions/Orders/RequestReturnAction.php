@@ -62,6 +62,8 @@ class RequestReturnAction
             '/vendor/orders',
             'return_requested',
         );
+        // COMMERCE_PARITY_PLAN P5: and the office.
+        app(NotifyBookshopUserAction::class)->office(__('shop.notice_return_requested_title'), __('shop.notice_return_requested_body', ['number' => $order->number]), '/admin/bookshop', 'return_requested');
 
         return $return;
     }

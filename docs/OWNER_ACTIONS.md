@@ -420,7 +420,21 @@ show **Open to print**, as before, and nothing breaks.
 
 "Not yet" is a legible answer: report cards stay HTML.
 
-### 23. Library notices by email and SMS — when to turn them on (kept for later, 2026-09-29)
+### 23. Library and Bookstore notices by email and SMS (updated 2026-09-30, COMMERCE_PARITY_PLAN P5)
+
+**On since P5** (STATUS §5me), because the owner asked that every purchase
+reach the customer, the seller and the office by SMS and email. What is
+left for you:
+- [ ] The **office's own email and phone** for purchase notices: on
+  `/admin/bookshop` under *Notices*, and on `/admin/library/settings`.
+  Until they are set, the office hears only in the app.
+- [ ] Item 3: email is queued, so it needs the queue worker.
+- [ ] Item 24: SMS reaches phones only once live SMS is on; until then it
+  is logged.
+
+Either office can switch any channel off again on the same screens.
+
+The text below is from before P5, when the notices were off by default.
 
 Built and **off** (STATUS §5lq). Once on, the important Library notices also go
 by email and/or SMS:

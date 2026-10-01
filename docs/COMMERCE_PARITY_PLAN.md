@@ -311,7 +311,7 @@ fixes: the admin OTP route stays admin-only and untouched.
   products approved).
 - **Docs**: BOOKSHOP_PLAN §5 and §7; STATUS.
 
-### P5 — Every purchase tells everyone (one PR)
+### P5 — Every purchase tells everyone — **shipped 2026-09-30, STATUS §5me**
 
 - **Settings**: `bookshop_office_phone`, `bookshop_office_email`,
   `library_office_phone`, `library_office_email` on the two office

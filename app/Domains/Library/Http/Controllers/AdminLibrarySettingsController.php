@@ -38,6 +38,9 @@ class AdminLibrarySettingsController extends Controller
             // STATUS §5lq: the important notices by email and SMS too.
             'notices_email' => 'sometimes|boolean',
             'notices_sms' => 'sometimes|boolean',
+            // COMMERCE_PARITY_PLAN P5: the office's own address and number for a sale.
+            'office_email' => 'nullable|email|max:255',
+            'office_phone' => ['nullable', 'string', 'max:20', 'regex:/^\+?[0-9 ]{7,20}$/'],
         ]);
 
         app(SaveLibrarySettingsAction::class)->execute($data);

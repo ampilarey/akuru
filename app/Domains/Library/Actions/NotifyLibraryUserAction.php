@@ -18,7 +18,8 @@ use Illuminate\Support\Facades\Mail;
  *  - writer: application decided, submission received, changes requested,
  *    rejected, published, new sale, payout decided;
  *  - reader: access granted after a purchase;
- *  - office: new writer application, new submission.
+ *  - office: new writer application, new submission; a sale, by the
+ *    office's own address and number too (COMMERCE_PARITY_PLAN P5).
  *
  * STATUS §5lq: a call that names its **event** — one of
  * `library.notices.events`, the decisions and the money — may also go by
@@ -57,17 +58,34 @@ class NotifyLibraryUserAction
         }
     }
 
-    /** Everyone who runs the Library: the holders of `library.manage`. In-app only. */
-    public function office(string $title, string $message, ?string $href = null): void
+    /**
+     * Everyone who runs the Library: the holders of `library.manage`, in the app.
+     * COMMERCE_PARITY_PLAN P5: a sale (`office_events`) also goes to the
+     * office's own address and number from the settings screen, as the two
+     * switches allow; none set, in the app only.
+     */
+    public function office(string $title, string $message, ?string $href = null, ?string $event = null): void
     {
         $userModel = config('auth.providers.users.model');
         try {
             $ids = $userModel::query()->permission('library.manage')->pluck('id');
         } catch (\Throwable) {
-            return;
+            $ids = [];
         }
         foreach ($ids as $id) {
             $this->inApp((int) $id, $title, $message, $href);
+        }
+        if ($event === null || ! in_array($event, (array) config('library.notices.office_events'), true)) {
+            return;
+        }
+        $settings = app(ResolveLibrarySettingAction::class);
+        $address = (string) $settings->execute('office_email');
+        $phone = (string) $settings->execute('office_phone');
+        if ($settings->execute('notices_email') && $address !== '') {
+            $this->email(['name' => 'Akuru Library office', 'email' => $address], $title, $message, $href);
+        }
+        if ($settings->execute('notices_sms') && $phone !== '') {
+            $this->sms($phone, $title, $message, $event);
         }
     }
 

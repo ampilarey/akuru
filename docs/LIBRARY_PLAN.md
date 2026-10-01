@@ -314,6 +314,8 @@ Full DOI, journal issue/volume system, complex peer review, subscriptions, offli
 
 ## 41. Notifications
 
+*(COMMERCE_PARITY_PLAN P5, 2026-09-30, STATUS §5me: a sale reaches the reader (their purchase is ready), the writer (their share) and the office — the office also by its own email and phone from `/admin/library/settings` — whether paid by card or wallet. Email and SMS are on by default now.)*
+
 - **Reader:** purchase success, access granted, gift card received/redeemed, wallet credited, discount used, new content published, continue-reading reminder (optional).
 - **Writer:** application decision, submission received, changes requested, approved, published, new sale, discount applied to content, payout processed.
 - **Admin:** new writer application, new submission, payment issue, gift card purchase, large wallet adjustment, suspicious activity, copyright complaint.

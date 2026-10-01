@@ -29,8 +29,11 @@
  * SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
+import { execSync } from 'node:child_process';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
+// sms_receipts is read through local tinker, so only when the app is the local server.
+const LOCAL_SMS = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(BASE);
 const ADMIN = process.env.SMOKE_ADMIN ?? 'superadmin@akuru.edu.mv';
 const STUDENT = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
 const VENDOR = process.env.SMOKE_VENDOR ?? 'vendor@akuru.edu.mv';
@@ -176,6 +179,12 @@ const paidNumber = ((await customer.locator('[data-testid="checkout-number"]').i
 check('paid from the wallet, the customer lands on the checkout marked paid', /\/shop\/checkout\/AK-/.test(customer.url()) && (await customer.locator('[data-testid="checkout-status"]').getAttribute('data-status').catch(() => '')) === 'paid' && (await customer.locator('[data-testid="paid-thanks"]').count()) === 1, `${customer.url().replace(BASE, '')}`);
 const orderNumbers = await customer.locator('[data-testid="checkout-orders"] [data-order]').evaluateAll((els) => els.map((el) => el.getAttribute('data-order')));
 check('with one order per shop', orderNumbers.length === 2 && orderNumbers.includes(`${paidNumber}-FIT`) && orderNumbers.includes(`${paidNumber}-SOS`), orderNumbers.join(', '));
+// COMMERCE_PARITY_PLAN P5: the customer, each shop and the office are texted (read from sms_receipts, where the log sender writes).
+if (LOCAL_SMS) {
+    const refs = execSync(`cd ${process.cwd()} && php artisan tinker --execute="echo json_encode(\\Illuminate\\Support\\Facades\\DB::table('sms_receipts')->where('body','like','%${paidNumber}%')->orderBy('id')->get(['phone','reference'])->map(fn (\\$r) => \\$r->phone.' '.\\$r->reference)->all());"`, { encoding: 'utf8' });
+    const sent = JSON.parse(refs.trim().split('\n').pop() || '[]');
+    check('the paid order texts the customer, each shop and the office', sent.some((r) => /bookshop_order_paid$/.test(r) && !r.includes('7000999')) && sent.filter((r) => /bookshop_new_order$/.test(r)).length >= 1 && sent.some((r) => r.includes('7000999') && /bookshop_order_paid$/.test(r)), sent.join(' · ') || 'none');
+}
 
 await customer.goto(`${BASE}/en/my-orders`, { waitUntil: 'networkidle' });
 check('My orders lists both as paid', (await customer.locator(`[data-order="${paidNumber}-FIT"]`).count()) === 1 && (await customer.locator(`[data-order="${paidNumber}-SOS"]`).count()) === 1 && (await text(customer)).includes('Paid'));
@@ -244,6 +253,7 @@ check('confirming it marks the slip confirmed', (await office.locator(`[data-tes
 check('and the orders list has all three orders', (await office.locator(`[data-testid="order-row-${bankNumber}-FIT"]`).count()) === 1 && (await office.locator(`[data-testid="order-row-${paidNumber}-SOS"]`).count()) === 1);
 const ordersCsv = await office.request.get(`${BASE}/en/admin/bookshop/orders/export`);
 check('the office exports orders as CSV', ordersCsv.status() === 200 && (await ordersCsv.text()).includes(bankNumber), `HTTP ${ordersCsv.status()}`);
+check('the office\'s notice settings carry its own email and phone for purchase notices', (await office.locator('[data-testid="office-contact-email"]').inputValue().catch(() => '')) === 'bookshop-office@akuru.edu.mv' && (await office.locator('[data-testid="office-contact-phone"]').inputValue().catch(() => '')) === '7000999' && (await office.locator('[data-testid="switch-office_sms"]').isChecked().catch(() => false)));
 
 await customer.reload({ waitUntil: 'networkidle' });
 check('the customer\'s page now says paid', (await customer.locator('[data-testid="checkout-status"]').getAttribute('data-status').catch(() => '')) === 'paid');

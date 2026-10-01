@@ -1708,4 +1708,16 @@ return [
     'notice_listing_declined_title' => 'Your listing was declined',
     'notice_listing_declined_body' => 'The office declined ":title": :note',
     'notice_event_listing_decided' => 'The office approves or declines a listing',
+    // COMMERCE_PARITY_PLAN P5: every purchase tells the office too.
+    'notice_paid_track' => 'Track it: :link',
+    'notice_office_paid_title' => 'A bookstore order is paid',
+    'notice_office_paid_body' => 'Checkout :number is paid: :amount, :shops shop(s).',
+    'notice_office_cancelled_title' => 'A bookstore order was cancelled',
+    'notice_office_cancelled_body' => 'Order :number was cancelled: :reason.',
+    'office_name' => 'Akuru Bookstore office',
+    'switch_office_email' => 'Email the office on every purchase',
+    'switch_office_sms' => 'Text the office on every purchase',
+    'office_contact_email' => 'Office email',
+    'office_contact_phone' => 'Office phone',
+    'office_contact_hint' => 'A paid order, a bank slip, a cancellation or a return reaches this address and number, as well as everyone who runs the bookstore in the app.',
 ];

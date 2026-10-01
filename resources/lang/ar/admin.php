@@ -1032,4 +1032,8 @@ return [
     'library_settings_notices_email' => 'أرسل الإشعارات المهمة بالبريد الإلكتروني أيضًا',
     'library_settings_notices_sms' => 'أرسل الإشعارات المهمة برسالة نصية أيضًا',
     'library_settings_notices_note' => 'الإشعارات المهمة: قرار بشأن طلب أو مشاركة، نشر، بيع، صرف مستحقات، طلب مراجعة، جاهزية مشترى. تذكيرات القراء وتنبيهات المكتب تبقى داخل التطبيق.',
+    // COMMERCE_PARITY_PLAN P5: the Library office's own address and number for a sale.
+    'library_settings_office_email' => 'بريد المكتب للمبيعات',
+    'library_settings_office_phone' => 'هاتف المكتب للمبيعات',
+    'library_settings_office_note' => 'تصل كل عملية بيع إلى هذا البريد وهذا الرقم كما يسمح المفتاحان أعلاه. اتركهما فارغين لإبقاء المبيعات داخل التطبيق.',
 ];

@@ -55,6 +55,15 @@ export default function Settings({ settings, t = {} }) {
                         </span>
                     </label>
                 ))}
+                {/* COMMERCE_PARITY_PLAN P5: the office's own copy of every sale. */}
+                {[['office_email', 'email', t.library_settings_office_email || 'Office email for sales'], ['office_phone', 'tel', t.library_settings_office_phone || 'Office phone for sales']].map(([key, type, label]) => (
+                    <label key={key} className="text-sm">
+                        <span className="mb-1 block font-medium">{label}</span>
+                        <input className="form-input w-full" type={type} name={key} value={form.data[key] || ''} onChange={(e) => form.setData(key, e.target.value)} data-testid={`library-setting-${key}`} />
+                        {form.errors[key] && <span className="mt-1 block text-xs text-red-600">{form.errors[key]}</span>}
+                    </label>
+                ))}
+                <p className="text-xs text-gray-600 md:col-span-2">{t.library_settings_office_note || 'Every sale reaches this address and number, as the two switches above allow. Leave empty to keep sales in the app.'}</p>
                 <p className="text-xs text-gray-600 md:col-span-2" data-testid="library-notices-note">{t.library_settings_notices_note || 'Important notices: a decision on an application or submission, a publication, a sale, a payout, a review asked for, a purchase ready. Reader reminders and office alerts stay in the app.'}</p>
                 <p className="text-xs text-amber-800 md:col-span-2">{t.library_settings_payouts_note || 'Payouts stay off until the tax and accounting treatment of writer payouts is confirmed (ROADMAP §9.4); earnings accrue meanwhile.'}</p>
                 <FormErrors errors={form.errors} />

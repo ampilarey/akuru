@@ -15,7 +15,7 @@ class SaveLibrarySettingsAction
 {
     /**
      * @param  array<string, mixed>  $data  keys of `ResolveLibrarySettingAction::KNOBS`; a missing key is left as it is
-     * @return array<string, int|bool> what is now in force
+     * @return array<string, int|bool|string> what is now in force
      */
     public function execute(array $data): array
     {
@@ -27,9 +27,11 @@ class SaveLibrarySettingsAction
 
                 continue;
             }
-            $next[$key] = $type === 'bool'
-                ? filter_var($data[$key], FILTER_VALIDATE_BOOLEAN)
-                : (int) $data[$key];
+            $next[$key] = match ($type) {
+                'bool' => filter_var($data[$key], FILTER_VALIDATE_BOOLEAN),
+                'string' => trim((string) $data[$key]),
+                default => (int) $data[$key],
+            };
         }
 
         $errors = [];
@@ -54,6 +56,13 @@ class SaveLibrarySettingsAction
         // R3 (D2): peer review cannot be switched off by asking for none.
         if ($next['research_reviews_required'] < 1 || $next['research_reviews_required'] > 10) {
             $errors['research_reviews_required'] = 'Research needs from 1 to 10 reviewer accepts before it is published.';
+        }
+        // P5: the office's own copy of a sale notice.
+        if ($next['office_email'] !== '' && ! filter_var($next['office_email'], FILTER_VALIDATE_EMAIL)) {
+            $errors['office_email'] = 'The office email is not an email address.';
+        }
+        if ($next['office_phone'] !== '' && ! preg_match('/^\+?[0-9 ]{7,20}$/', $next['office_phone'])) {
+            $errors['office_phone'] = 'The office phone is a number of 7 to 20 digits.';
         }
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);

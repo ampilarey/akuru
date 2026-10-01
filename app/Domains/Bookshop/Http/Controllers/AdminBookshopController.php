@@ -72,7 +72,7 @@ class AdminBookshopController extends Controller
             'questions' => app(ModerateQuestionAction::class)->list(),
             'home' => app(ManageShopHomeAction::class)->list(),
             'low_stock' => app(ListLowStockAction::class)->execute(500),
-            'notices' => NotifyBookshopUserAction::officeSwitches(),
+            'notices' => NotifyBookshopUserAction::officeSwitches() + NotifyBookshopUserAction::officeContact(),
             'order_statuses' => array_map(fn (OrderStatus $s) => $s->value, OrderStatus::cases()),
             'applications' => app(DecideVendorApplicationAction::class)->list(),
             'applications_open' => app(ApplyToSellAction::class)->isOpen(),
@@ -680,7 +680,12 @@ class AdminBookshopController extends Controller
     public function saveNotices(Request $request): RedirectResponse
     {
         abort_unless($request->user()?->can('bookshop.manage'), 403);
-        $data = $request->validate(['customer_email' => 'nullable|boolean', 'customer_sms' => 'nullable|boolean', 'vendor_email' => 'nullable|boolean', 'vendor_sms' => 'nullable|boolean']);
+        $data = $request->validate([
+            'customer_email' => 'nullable|boolean', 'customer_sms' => 'nullable|boolean', 'vendor_email' => 'nullable|boolean', 'vendor_sms' => 'nullable|boolean',
+            // COMMERCE_PARITY_PLAN P5: the office's own address and number for purchase notices.
+            'office_email' => 'nullable|boolean', 'office_sms' => 'nullable|boolean',
+            'office_contact_email' => 'nullable|email|max:255', 'office_contact_phone' => ['nullable', 'string', 'max:20', 'regex:/^\+?[0-9 ]{7,20}$/'],
+        ]);
 
         app(SaveBookshopNoticeSwitchesAction::class)->execute($data);
 

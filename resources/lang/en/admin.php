@@ -1032,4 +1032,8 @@ return [
     'library_settings_notices_email' => 'Send the important notices by email too',
     'library_settings_notices_sms' => 'Send the important notices by SMS too',
     'library_settings_notices_note' => 'Important notices: a decision on an application or submission, a publication, a sale, a payout, a review asked for, a purchase ready. Reader reminders and office alerts stay in the app.',
+    // COMMERCE_PARITY_PLAN P5: the Library office's own address and number for a sale.
+    'library_settings_office_email' => 'Office email for sales',
+    'library_settings_office_phone' => 'Office phone for sales',
+    'library_settings_office_note' => 'Every sale reaches this address and number, as the two switches above allow. Leave empty to keep sales in the app.',
 ];

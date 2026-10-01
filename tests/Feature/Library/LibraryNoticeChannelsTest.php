@@ -64,9 +64,12 @@ function libraryNoticeSwitches(User $admin, bool $email, bool $sms)
     ]);
 }
 
-it('keeps every notice in the app until the office turns email and SMS on', function () {
+it('keeps every notice in the app once the office turns email and SMS off', function () {
     Mail::fake();
     $sms = libraryNoticeSms();
+    // On by default since COMMERCE_PARITY_PLAN P5; the office can turn both off.
+    libraryNoticeSwitches(actingSystemAdmin(['library.manage']), false, false)->assertSessionHasNoErrors();
+    auth()->logout();
     $writer = libraryApplicant('writer-one@example.test');
 
     decideApplicationOf($writer);
@@ -82,7 +85,7 @@ it('sends the decisions by email and SMS once the office allows, and shows the s
     $admin = actingSystemAdmin(['library.manage']);
     libraryNoticeSwitches($admin, true, true)->assertSessionHasNoErrors();
     test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('admin.library.settings'))
-        ->assertInertia(fn ($page) => $page->where('settings.notices_email.value', true)->where('settings.notices_sms.value', true)->where('settings.notices_email.default', false));
+        ->assertInertia(fn ($page) => $page->where('settings.notices_email.value', true)->where('settings.notices_sms.value', true)->where('settings.notices_email.default', true));
     auth()->logout();
 
     $writer = libraryApplicant('writer-two@example.test');
