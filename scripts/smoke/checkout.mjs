@@ -184,6 +184,15 @@ if (LOCAL_SMS) {
     const refs = execSync(`cd ${process.cwd()} && php artisan tinker --execute="echo json_encode(\\Illuminate\\Support\\Facades\\DB::table('sms_receipts')->where('body','like','%${paidNumber}%')->orderBy('id')->get(['phone','reference'])->map(fn (\\$r) => \\$r->phone.' '.\\$r->reference)->all());"`, { encoding: 'utf8' });
     const sent = JSON.parse(refs.trim().split('\n').pop() || '[]');
     check('the paid order texts the customer, each shop and the office', sent.some((r) => /bookshop_order_paid$/.test(r) && !r.includes('7000999')) && sent.filter((r) => /bookshop_new_order$/.test(r)).length >= 1 && sent.some((r) => r.includes('7000999') && /bookshop_order_paid$/.test(r)), sent.join(' · ') || 'none');
+    // COMMERCE_PARITY_PLAN P8: the customer's text carries the receipt link, which opens without signing in.
+    const body = execSync(`cd ${process.cwd()} && php artisan tinker --execute="echo json_encode(\\Illuminate\\Support\\Facades\\DB::table('sms_receipts')->where('body','like','%${paidNumber}%')->where('reference','bookshop_order_paid')->where('phone','!=','7000999')->orderByDesc('id')->value('body'));"`, { encoding: 'utf8' }).trim().split('\n').pop();
+    const receiptUrl = (String(JSON.parse(body || 'null') ?? '').match(/https?:\/\/\S+\/shop\/r\/[a-z0-9]{16}/) ?? [])[0] ?? null;
+    const anon = await newPage('receipt', { width: 390, height: 844 });
+    if (receiptUrl) {
+        await anon.goto(receiptUrl.replace(/^https?:\/\/[^/]+/, BASE), { waitUntil: 'networkidle' });
+    }
+    const anonText = await text(anon);
+    check('the receipt link in the text opens the receipt signed out, both shops, no address', Boolean(receiptUrl) && (await anon.locator('[data-testid="receipt-order"]').count()) === 2 && anonText.includes(paidNumber) && !anonText.includes('M. Smoke Villa'), receiptUrl ?? 'no link');
 }
 
 await customer.goto(`${BASE}/en/my-orders`, { waitUntil: 'networkidle' });

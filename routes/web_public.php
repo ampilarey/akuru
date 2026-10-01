@@ -63,6 +63,8 @@ Route::get('shop/export', [\App\Domains\Bookshop\Http\Controllers\ShopController
 Route::get('shop/suggest', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'suggest'])->name('public.shop.suggest')->middleware('throttle:120,1,shop-suggest');
 Route::get('shop/products/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'product'])->name('public.shop.product');
 // §5lj: track an order without signing in — its number and phone, throttled against guessing.
+// COMMERCE_PARITY_PLAN P8: the receipt a paid checkout's SMS and email link to, without signing in.
+Route::get('shop/r/{token}', [\App\Domains\Bookshop\Http\Controllers\ShopReceiptController::class, 'show'])->name('public.shop.receipt')->where('token', '[a-z0-9]{16}')->middleware('throttle:30,1,shop-receipt');
 Route::get('shop/track', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'track'])->name('public.shop.track')->middleware('throttle:10,1,shop-track');
 Route::get('shop/compare', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'compare'])->name('public.shop.compare');
 // STATUS §5ln: a customer's share link.
