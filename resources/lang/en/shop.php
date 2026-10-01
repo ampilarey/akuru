@@ -1893,4 +1893,11 @@ return [
     'customer_complaints' => 'Problems reported',
     'customer_back' => 'All customers',
     'error_customer_tags' => 'At most :max tags.',
+    // COMMERCE_PARITY_PLAN P8: receipts by SMS link.
+    'notice_paid_receipt' => 'Receipt: :link',
+    'receipt_link_title' => 'Receipt :number',
+    'receipt_link_paid' => 'Paid :date',
+    'receipt_link_total' => 'Paid in all: :amount',
+    'receipt_link_track' => 'Where is this order?',
+    'receipt_link_private' => 'Anyone with this link can read this receipt; it shows no address or phone.',
 ];

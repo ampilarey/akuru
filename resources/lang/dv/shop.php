@@ -1889,4 +1889,11 @@ return [
     'customer_complaints' => 'ރިޕޯޓުކުރެވުނު މައްސަލަތައް',
     'customer_back' => 'ހުރިހާ ކަސްޓަމަރުން',
     'error_customer_tags' => 'އެންމެ ގިނަވެގެން :max ޓެގް.',
+    // COMMERCE_PARITY_PLAN P8: receipts by SMS link.
+    'notice_paid_receipt' => 'ރަސީދު: :link',
+    'receipt_link_title' => 'ރަސީދު :number',
+    'receipt_link_paid' => ':date ގައި ފައިސާ ދައްކައިފި',
+    'receipt_link_total' => 'ޖުމްލަ ދައްކާފައި: :amount',
+    'receipt_link_track' => 'މި އޯޑަރު ހުރީ ކޮންތާކު؟',
+    'receipt_link_private' => 'މި ލިންކު ލިބޭ ކޮންމެ މީހަކަށް މި ރަސީދު ކިޔޭނެ؛ އެޑްރެހެއް ނުވަތަ ފޯނު ނަންބަރެއް ނުދައްކާ.',
 ];

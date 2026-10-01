@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\AkuruStockAction;
 use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
 use App\Domains\Bookshop\Actions\Money\RecordVendorEarningAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
+use App\Domains\Bookshop\Actions\Orders\CheckoutReceiptAction;
 use App\Domains\Bookshop\Enums\CheckoutStatus;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Models\BookshopCheckout;
@@ -128,7 +129,9 @@ class MarkCheckoutPaidAction
         $notify->execute(
             (int) $checkout->user_id,
             __('shop.notice_paid_title'),
-            __('shop.notice_paid_body', ['number' => $checkout->number]).($first !== null ? ' '.__('shop.notice_paid_track', ['link' => route('public.shop.track', ['number' => $first->number])]) : ''),
+            // COMMERCE_PARITY_PLAN P8: the receipt first, by a link that opens without signing in, then the tracking link.
+            __('shop.notice_paid_body', ['number' => $checkout->number]).' '.__('shop.notice_paid_receipt', ['link' => app(CheckoutReceiptAction::class)->link($checkout)])
+                .($first !== null ? ' '.__('shop.notice_paid_track', ['link' => route('public.shop.track', ['number' => $first->number])]) : ''),
             '/my-orders',
             'order_paid',
         );

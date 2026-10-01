@@ -4414,6 +4414,56 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mk. Receipts by SMS link (COMMERCE_PARITY_PLAN P8a, 2026-10-01)
+
+The owner asked for P8 now ("do it now", 2026-10-01). P8 runs as four slices: P8a
+receipts by SMS link, P8b push sending, P8c credit accounts for schools, and P8d
+pre-orders with a deposit. This is P8a.
+
+- **The link**:
+  - A paid checkout gets a 16-character private token (`bookshop_checkouts.receipt_token`,
+    additive and nullable). The token is made the first time the link is, and the
+    link stays the same after that.
+  - `/shop/r/{token}` opens the receipt without signing in.
+  - A bank transfer gets its link only when the office confirms the slip. An unpaid
+    checkout or an unknown token returns 404.
+- **The paid notice**:
+  - The customer's in-app notice, email and SMS now carry *Receipt: link* first and
+    the P5 tracking link after it, so a long SMS loses the tracking link to the
+    300-character cut, never the receipt.
+  - The test holds the SMS to that limit.
+- **The receipt page** carries what a paper receipt carries:
+  - for each shop: the order number, who sold it (the legal name), the lines,
+    goods, discount, delivery and total;
+  - GST and the TIN where the shop is registered;
+  - the total paid, and a Print button;
+  - a link to track each order.
+
+  It never shows the address, the phone or the messages, because a link gets
+  forwarded. It sends `noindex`, is throttled, and never writes. It is a public
+  Blade page, like the newsletter and SMS-stop pages, and is baselined.
+- **Languages**: EN/DV/AR.
+
+Tests:
+- New `ReceiptLinkTest`, 5 tests:
+  - the paid SMS carries the link, ahead of the tracking link, within the limit;
+  - the page shows the shop, the lines, the total and the GST without signing in,
+    and never the recipient, the street or the phone;
+  - the same link comes back every time; an unknown token and an unpaid checkout
+    are 404;
+  - no link for a bank transfer before it is confirmed;
+  - DV/AR.
+- Architecture (Blade and public-route baselines), Nav, Admin, Routes and
+  Bookshop: 392 green.
+
+Walk:
+- `checkout.mjs` gains a step: the customer's paid text in `sms_receipts` carries
+  `/shop/r/…`. Opened in a signed-out phone browser, it shows both shops' orders
+  and no address.
+- 47/48. The one miss is *a paid Library item offers the guest form*. The local
+  database was rebuilt after the container restart corrupted it, and it has no
+  paid Library item yet. That step is data-dependent and unrelated to this slice.
+
 ## 5mj. The office's customer view, with tags and notes (COMMERCE_PARITY_PLAN P7c, 2026-10-01)
 
 The last of P7. This is Bake & Grill's `AdminCustomerController`, done the Akuru way.

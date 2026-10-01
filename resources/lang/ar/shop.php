@@ -1889,4 +1889,11 @@ return [
     'customer_complaints' => 'المشكلات المبلّغ عنها',
     'customer_back' => 'كل العملاء',
     'error_customer_tags' => 'لا أكثر من :max وسوم.',
+    // COMMERCE_PARITY_PLAN P8: receipts by SMS link.
+    'notice_paid_receipt' => 'الإيصال: :link',
+    'receipt_link_title' => 'إيصال :number',
+    'receipt_link_paid' => 'دُفع في :date',
+    'receipt_link_total' => 'المدفوع إجمالًا: :amount',
+    'receipt_link_track' => 'أين هذا الطلب؟',
+    'receipt_link_private' => 'يمكن لأي شخص لديه هذا الرابط قراءة الإيصال؛ ولا يظهر فيه عنوان ولا هاتف.',
 ];
