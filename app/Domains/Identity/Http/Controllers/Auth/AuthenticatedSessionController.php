@@ -8,6 +8,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Inertia\Inertia;
+use Symfony\Component\HttpFoundation\Response;
 
 class AuthenticatedSessionController extends Controller
 {
@@ -37,7 +39,14 @@ class AuthenticatedSessionController extends Controller
     /**
      * Destroy an authenticated session.
      */
-    public function destroy(Request $request): RedirectResponse
+    /**
+     * Log out and land on the public home page. The shell's Log out button
+     * posts as an Inertia request; the home page is Blade, so a plain
+     * redirect would come back as a non-Inertia page and Inertia would show
+     * it in a modal over the shell (the owner's screenshot, 2026-10-01).
+     * Inertia::location makes the browser do a full visit instead.
+     */
+    public function destroy(Request $request): Response
     {
         Auth::guard('web')->logout();
 
@@ -45,6 +54,6 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect('/');
+        return $request->header('X-Inertia') ? Inertia::location('/') : redirect('/');
     }
 }

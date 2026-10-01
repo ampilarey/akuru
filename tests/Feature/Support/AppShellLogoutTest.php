@@ -31,6 +31,22 @@ it('rejects GET logout and logs out with POST from an Inertia session', function
     $this->assertGuest();
 });
 
+// The shell's button posts as an Inertia request; the home page is Blade. A plain
+// redirect came back as a non-Inertia page and Inertia showed it in a modal over
+// the shell (the owner's screenshot, 2026-10-01). Inertia::location makes the
+// browser leave the shell for real.
+it('tells an Inertia logout to do a full visit to the home page', function () {
+    $admin = actingPeopleAdmin();
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($admin)
+        ->post(route('logout'), [], ['X-Inertia' => 'true', 'X-Requested-With' => 'XMLHttpRequest'])
+        ->assertStatus(409)
+        ->assertHeader('X-Inertia-Location', '/');
+
+    $this->assertGuest();
+});
+
 it('posts logout from AppShell instead of linking GET /logout', function () {
     $shell = file_get_contents(resource_path('js/Layouts/AppShell.jsx'));
 
