@@ -215,4 +215,7 @@ return [
     'set_password_body' => 'لا يمكنك الآن تسجيل الدخول إلا برمز لمرة واحدة. أضف كلمة مرور لتسجيل الدخول برقم جوالك أو بريدك الإلكتروني.',
     'set_password_link' => 'اختر كلمة مرور',
     'my_portal' => 'بوابتي',
+    // COMMERCE_PARITY_PLAN P6b.
+    'deliveries' => 'توصيلاتي',
+    'workspace_deliveries' => 'التوصيل',
 ];

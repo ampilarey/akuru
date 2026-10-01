@@ -4414,6 +4414,73 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mg. Akuru's drivers: picked up, delivered, with a photo (COMMERCE_PARITY_PLAN P6b, 2026-10-01)
+
+The second half of P6.
+
+- **Data**:
+  - `delivery_drivers`: each driver is a person who signs in, with the new `driver`
+    role and `bookshop.deliver`, created by migration as ADR-040's roles are.
+  - `order_deliveries`: the order, the driver, assigned, picked up, delivered, the
+    proof photo as private media, and a note.
+  - Both have morph aliases.
+- **The office** (`/admin/bookshop/akuru`):
+  - adds a driver by email: a new account gets a one-time password, shown once;
+  - switches a driver off or on;
+  - gives an order Akuru's courier carries to an active driver, and can change the
+    driver until it is picked up;
+  - sees who has each order, when it went out, and the photo.
+- **The driver** (`/deliveries`, made for the phone; the driver's own workspace and
+  home):
+  - today's deliveries, with the recipient, a tap-to-call number, the address and
+    the items;
+  - *Picked up* dispatches the order with the carrier "Akuru courier: name" and the
+    note "Out for delivery";
+  - *Delivered* needs a photo from the camera. A cash order asks whether the cash
+    was collected. The order is delivered and an event names the driver.
+  - A driver sees and moves only their own.
+- **One path to an order's state**:
+  - Both steps run through the shop's own `FulfilVendorOrderAction` under the
+    office's scope (ADR-042), so the customer gets the same notices as any order.
+  - The earning's return window starts at delivery.
+  - `AkuruFulfilment::takesStep` holds the rule. Everything on an order Akuru packs
+    is Akuru's. On an order the shop packs but Akuru's courier carries, the shop
+    starts it and Akuru dispatches and delivers it.
+  - The shop's order list shows only the shop's own steps.
+- **The photo**: only the office or the driver who took it can open it (`no-store`).
+  Pinned in the private-media readers test.
+- **Languages**: EN/DV/AR, including the role name and the workspace.
+
+Tests:
+- New `AkuruDeliveryTest`, 5 tests:
+  - the office adds a driver (role, one-time password) and assigns the order; the
+    driver's page lists it; a customer is refused;
+  - picked up → dispatched, out for delivery, and the customer told;
+  - another driver is refused, delivered without a photo is refused, and an order
+    already picked up cannot be reassigned;
+  - delivered with the photo: the event names the driver, the customer is told, and
+    the photo opens for the office and the driver only;
+  - a shop that packs its own can start the order but not dispatch it, and the
+    driver takes it from there;
+  - only an order Akuru's courier carries, and only an active driver;
+  - DV/AR.
+- Architecture, Nav, Routes and Bookshop: green.
+
+Walk:
+- `akuru.mjs` 16/16, with eight new steps:
+  - the office starts the order and gives it to the seeded driver;
+  - the driver signs in to `/deliveries` on a 390px phone and sees the address and
+    items;
+  - *Picked up*;
+  - *Delivered* with a photo;
+  - the office opens the photo, and the customer gets 403;
+  - the order leaves the queue;
+  - the customer's order says Delivered.
+- `SmokeMarkerSeeder` adds `driver@akuru.edu.mv`, a synthetic driver.
+
+The owner's part: add Akuru's real drivers under *Drivers* on `/admin/bookshop/akuru`,
+and hand each one their one-time password.
+
 ## 5mf. Akuru packs and delivers for a shop, and charges for it (COMMERCE_PARITY_PLAN P6a, 2026-10-01)
 
 The owner: "inventory and delivery handled by the vendor or by Akuru, with an extra

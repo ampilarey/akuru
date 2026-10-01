@@ -78,6 +78,10 @@ final class NavigationMap
                 ['key' => 'review', 'href' => '/review'],
             ],
             // BOOKSHOP_PLAN B1a: a vendor member's own shop.
+            // COMMERCE_PARITY_PLAN P6b: a driver's own deliveries.
+            'driver' => [
+                ['key' => 'deliveries', 'href' => '/deliveries'],
+            ],
             'vendor' => [
                 ['key' => 'vendor_portal', 'href' => '/vendor'],
             ],

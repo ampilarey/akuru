@@ -8,8 +8,10 @@
  *   1. the customer adds a notebook: the checkout offers *Delivered by Akuru*
  *      at Akuru's fee, and no shop courier; pays from the wallet;
  *   2. the office's Akuru page lists the order to pack, and the shelf one
- *      down; the office moves it to processing, dispatched, delivered;
- *   3. the customer's order says Delivered; the CSV has it.
+ *      down; the office starts it and gives it to the seeded driver (P6b);
+ *   3. the driver, on a phone, marks it picked up and delivered with a
+ *      photo; the office can open the photo, the customer cannot;
+ *   4. the customer's order says Delivered; the CSV has it.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/akuru.mjs
@@ -22,6 +24,7 @@ const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const ADMIN = process.env.SMOKE_ADMIN ?? 'superadmin@akuru.edu.mv';
 const STUDENT = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
+const DRIVER = process.env.SMOKE_DRIVER ?? 'driver@akuru.edu.mv';
 const NOTEBOOK = 'smoke-akuru-packed-notebook';
 const SHOP = 'smoke-akuru-packs';
 
@@ -105,19 +108,46 @@ check('the order waits in the office\'s queue with what is in it', (await row.co
 const shelf = office.locator('[data-testid^="akuru-at-"]').filter({ hasText: /^9$/ });
 check('and the notebook left Akuru\'s shelf: 9 of 10 there now', (await shelf.count()) >= 1);
 
-for (const to of ['processing', 'dispatched', 'delivered']) {
-    const button = office.locator(`[data-testid="akuru-order-${orderNumber}"] [data-testid$="-${to}"]`).first();
-    await button.click().catch(() => {});
-    await office.waitForLoadState('networkidle').catch(() => {});
-    await office.waitForTimeout(400);
-}
+// P6b: the office starts it and gives it to the driver.
+await office.locator(`[data-testid="akuru-order-${orderNumber}"] [data-testid$="-processing"]`).first().click().catch(() => {});
+await office.waitForLoadState('networkidle').catch(() => {});
 await office.reload({ waitUntil: 'networkidle' });
-check('the office moves it to processing, dispatched and delivered, and it leaves the queue', (await office.locator(`[data-testid="akuru-order-${orderNumber}"]`).count()) === 0);
+const pick = office.locator(`[data-testid="akuru-order-${orderNumber}"] [data-testid^="driver-select-"]`);
+await pick.selectOption({ label: 'SMOKE Driver' }).catch(() => {});
+await office.locator(`[data-testid="akuru-order-${orderNumber}"] [data-testid^="driver-assign-"]`).click().catch(() => {});
+await settle(office, `[data-testid="akuru-order-${orderNumber}"] [data-testid^="order-driver-"]`);
+check('the office starts it and gives it to the driver', /SMOKE Driver/.test(await office.locator(`[data-testid="akuru-order-${orderNumber}"] [data-testid^="order-driver-"]`).innerText().catch(() => '')));
+
+// ------------------------------------------------------------ 3. the driver, on a phone
+const driver = await signIn(DRIVER);
+check('the driver signs in to their deliveries', /\/deliveries/.test(driver.url()) || (await driver.locator('a[href$="/deliveries"]').count()) > 0, driver.url().replace(BASE, ''));
+await driver.setViewportSize({ width: 390, height: 844 });
+await driver.goto(`${BASE}/en/deliveries`, { waitUntil: 'networkidle' });
+const card = driver.locator(`[data-testid="delivery-${orderNumber}"]`);
+check('the driver sees the delivery with the address and what to hand over', (await card.count()) === 1 && /M\. Smoke Villa/.test(await card.innerText()) && /Akuru-Packed Notebook/.test(await card.innerText()), (await card.innerText().catch(() => 'not listed')).replace(/\s+/g, ' ').slice(0, 140));
+check('and the page fits a phone', (await driver.evaluate(() => document.documentElement.scrollWidth)) <= 390);
+await card.locator('[data-testid^="picked-up-"]').click().catch(() => {});
+await settle(driver, `[data-testid="delivery-${orderNumber}"][data-state="picked_up"]`);
+check('Picked up: the order is out for delivery', (await driver.locator(`[data-testid="delivery-${orderNumber}"][data-state="picked_up"]`).count()) === 1);
+const proofPhoto = { name: 'door.png', mimeType: 'image/png', buffer: await driver.screenshot({ clip: { x: 0, y: 0, width: 120, height: 120 } }) };
+await driver.locator(`[data-testid="delivery-${orderNumber}"] [data-testid^="proof-"]`).setInputFiles(proofPhoto);
+await driver.locator(`[data-testid="delivery-${orderNumber}"] [data-testid^="delivered-"]`).click().catch(() => {});
+await settle(driver, `[data-testid="delivery-${orderNumber}"][data-state="delivered"]`);
+const done = driver.locator(`[data-testid="delivery-${orderNumber}"][data-state="delivered"]`);
+check('Delivered, with the photo', (await done.count()) === 1 && (await done.locator('[data-testid="proof-link"]').count()) === 1);
+const proofHref = await done.locator('[data-testid="proof-link"]').first().getAttribute('href').catch(() => null);
+const proofForOffice = proofHref ? await office.request.get(proofHref.startsWith('http') ? proofHref : `${BASE}${proofHref}`) : null;
+check('the office can open the photo', proofForOffice?.status() === 200 && /image/.test(proofForOffice?.headers()['content-type'] ?? ''), proofHref ?? 'no link');
+const proofForCustomer = proofHref ? await customer.request.get(proofHref.startsWith('http') ? proofHref : `${BASE}${proofHref}`) : null;
+check('and the customer cannot', proofForCustomer?.status() === 403, `HTTP ${proofForCustomer?.status()}`);
+
+await office.reload({ waitUntil: 'networkidle' });
+check('the order leaves the office\'s queue once delivered', (await office.locator(`[data-testid="akuru-order-${orderNumber}"]`).count()) === 0);
 const csv = await office.request.get(`${BASE}/en/admin/bookshop/akuru/export`);
 const csvLine = (await csv.text()).split('\n').find((l) => l.startsWith(orderNumber)) ?? '';
 check('the Akuru orders CSV has it, delivered', csv.status() === 200 && /SMOKE-Akuru Packs/.test(csvLine) && /,delivered,/.test(csvLine), csvLine.slice(0, 120) || `HTTP ${csv.status()}`);
 
-// ------------------------------------------------------------ 3. the customer sees it
+// ------------------------------------------------------------ 4. the customer sees it
 await customer.goto(`${BASE}/en/my-orders/${orderNumber}`, { waitUntil: 'networkidle' });
 check('the customer\'s order says delivered', /Delivered/.test(await customer.locator('main').innerText().catch(() => '')));
 

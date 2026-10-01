@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Http\Controllers;
 
+use App\Domains\Bookshop\Actions\AkuruDeliveryAction;
 use App\Domains\Bookshop\Actions\AkuruFulfilmentAction;
 use App\Domains\Bookshop\Actions\AkuruStockAction;
 use App\Domains\Bookshop\Actions\ResolveVendorScopeAction;
@@ -31,6 +32,9 @@ class AdminAkuruController extends Controller
             'orders' => app(AkuruFulfilmentAction::class)->queue(),
             'shops' => app(AkuruFulfilmentAction::class)->shops(),
             'settings' => AkuruFulfilment::settings(),
+            // P6b: Akuru's drivers, and a new one's one-time password, once.
+            'drivers' => app(AkuruDeliveryAction::class)->drivers(),
+            'driver_added' => $request->session()->get('driver_added'),
         ]);
     }
 
@@ -43,6 +47,31 @@ class AdminAkuruController extends Controller
         $moved = app(FulfilVendorOrderAction::class)->advance($scope, $row->id, $data['to'], $data);
 
         return back()->with('success', __('shop.akuru_order_moved_flash', ['number' => $moved->number, 'status' => __('shop.status_'.$data['to'])]));
+    }
+
+    /** P6b: give an order Akuru delivers to a driver. */
+    public function assign(Request $request, int $order): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['driver_id' => 'required|integer']);
+        app(AkuruDeliveryAction::class)->assign($order, (int) $data['driver_id'], (int) $request->user()->id);
+
+        return back()->with('success', __('shop.driver_assigned_flash'));
+    }
+
+    /** P6b: add a driver (an account by email; a new one gets a one-time password) or switch one off and on. */
+    public function driver(Request $request, ?int $driver = null): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        if ($driver !== null) {
+            app(AkuruDeliveryAction::class)->setActive($driver, (bool) $request->validate(['active' => 'required|boolean'])['active']);
+
+            return back()->with('success', __('shop.driver_saved_flash'));
+        }
+        $data = $request->validate(['email' => 'required|email|max:255', 'name' => 'required|string|max:120', 'phone' => ['nullable', 'string', 'max:20', 'regex:/^\+?[0-9 ]{7,20}$/']]);
+        $added = app(AkuruDeliveryAction::class)->addDriver($data['email'], $data['name'], $data['phone'] ?? null);
+
+        return back()->with('success', __('shop.driver_saved_flash'))->with('driver_added', ['name' => $added['driver']->name, 'email' => $data['email'], 'temporary_password' => $added['temporary_password']]);
     }
 
     public function stock(Request $request, int $product): RedirectResponse

@@ -40,6 +40,8 @@ it('pins every caller that can read a private file', function () {
         'app/Domains/Academics/Actions/ServeMaterialFileAction.php',
         // The found-item controller, which reads through the action above.
         'app/Domains/Academics/Http/Controllers/FoundItemController.php',
+        // COMMERCE_PARITY_PLAN P6b: a delivery's proof photo — the office, or the driver who took it (DriverController::proof).
+        'app/Domains/Bookshop/Actions/AkuruDeliveryAction.php',
         // A bank-transfer slip (BOOKSHOP_PLAN B2). The id comes from the
         // route, so the action carries the scope itself: the caller must own
         // the slip's checkout, or hold `bookshop.manage`. It reaches slips

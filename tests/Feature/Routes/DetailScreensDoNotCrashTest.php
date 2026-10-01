@@ -110,6 +110,8 @@ function unresolvedDetailScreens(): array
         'admin/library/applications/{application}/document' => 'streams a private identity document; covered by WriterApplicationExtrasTest',
         // COMMERCE_PARITY_PLAN P2: one side of an ID card, streamed to the office that owns its purpose.
         'admin/identity-checks/{verification}/{side}' => 'streams a private identity card; covered by IdentityVerificationTest',
+        // COMMERCE_PARITY_PLAN P6b: a delivery's proof photo, streamed to the office or the driver.
+        'deliveries/{delivery}/proof' => 'streams a private delivery photo; covered by AkuruDeliveryTest',
         // Not screens of their own: both render the public vendor page from
         // the storefront's draft, for a designer's or the office's iframe.
         // StorefrontSectionsTest loads the page preview as its shop and the

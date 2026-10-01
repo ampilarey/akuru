@@ -108,6 +108,8 @@ decided on `/admin/bookshop`, the form closable by the office.)*
 
 ## 4. Customer features (the "all e-commerce features" list)
 
+*(COMMERCE_PARITY_PLAN P6b, 2026-10-01, STATUS §5mg: an order Akuru's courier carries goes to one of Akuru's drivers; the customer's order says *Out for delivery* when the driver picks it up and *Delivered* — with the driver's name — when it is handed over, and is told each time.)*
+
 *(COMMERCE_PARITY_PLAN P5, 2026-09-30, STATUS §5me: a paid order tells the customer (with the tracking link), each shop and the office — in the app, by email and by SMS, all on by default. A bank slip, a cancellation and a return reach the office's own email and phone too, set under *Notices* on `/admin/bookshop`.)*
 
 **Browse and find**

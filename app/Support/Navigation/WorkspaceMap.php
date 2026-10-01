@@ -63,6 +63,8 @@ final class WorkspaceMap
             'family' => ['roles' => ['parent'], 'groups' => self::HOUSEHOLD, 'home' => 'portal.home'],
             'learn' => ['roles' => ['student'], 'groups' => self::HOUSEHOLD, 'home' => 'portal.home'],
             'vendor' => ['roles' => ['vendor'], 'groups' => ['me'], 'home' => 'vendor.index'],
+            // COMMERCE_PARITY_PLAN P6b: Akuru's drivers — their deliveries, on the phone.
+            'deliveries' => ['roles' => ['driver'], 'groups' => ['me'], 'home' => 'deliveries.index'],
             'writing' => ['roles' => ['writer', 'reviewer'], 'groups' => ['me'], 'home' => 'write.index'],
             'catalog' => ['roles' => ['course_creator'], 'groups' => ['catalog_group', 'me'], 'home' => 'catalog.courses.index'],
             self::LEARNER => ['roles' => [], 'groups' => ['education', 'me'], 'home' => 'learn.dashboard'],
@@ -100,6 +102,7 @@ final class WorkspaceMap
             'family' => ['parent'],
             'learn' => ['student'],
             'vendor' => ['vendor'],
+            'deliveries' => ['driver'],
             'writing' => [
                 ...($has('writer') ? ['writer'] : []),
                 ...($has('reviewer') ? ['reviewer'] : []),

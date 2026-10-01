@@ -13,6 +13,7 @@ use App\Domains\Bookshop\Enums\ReturnStatus;
 use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\OrderEvent;
 use App\Domains\Bookshop\Models\OrderReturn;
+use App\Domains\Bookshop\Support\AkuruFulfilment;
 use App\Domains\Bookshop\Support\OrderView;
 use App\Domains\Bookshop\Support\Restock;
 use Illuminate\Support\Facades\DB;
@@ -34,8 +35,9 @@ class FulfilVendorOrderAction
     {
         $order = DB::transaction(function () use ($scope, $orderId, $to, $data) {
             $order = Order::query()->where('vendor_id', $scope->vendorId)->whereKey($orderId)->lockForUpdate()->firstOrFail();
-            // COMMERCE_PARITY_PLAN P6a: an order Akuru packs is the office's to move, and only such an order is.
-            if (($order->fulfilled_by === 'akuru') !== $scope->office) {
+            // COMMERCE_PARITY_PLAN P6a/P6b: what Akuru packs is the office's to move; what Akuru's
+            // courier carries is the office's (or its driver's) to dispatch and deliver. Nothing else is.
+            if (AkuruFulfilment::takesStep($order, $to) !== $scope->office) {
                 throw ValidationException::withMessages(['status' => __($scope->office ? 'shop.error_not_akuru_order' : 'shop.error_akuru_packs')]);
             }
             if (! in_array($to, OrderView::nextSteps($order), true)) {

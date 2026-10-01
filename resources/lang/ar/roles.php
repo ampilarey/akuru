@@ -14,4 +14,5 @@ return [
     'vendor' => 'بائع',
     'bookshop_manager' => 'مدير المكتبة',
     'none' => 'بدون دور',
+    'driver' => 'سائق',
 ];

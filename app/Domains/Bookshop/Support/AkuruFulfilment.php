@@ -2,6 +2,8 @@
 
 namespace App\Domains\Bookshop\Support;
 
+use App\Domains\Bookshop\Enums\DeliveryKind;
+use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
 
@@ -33,6 +35,16 @@ final class AkuruFulfilment
     public static function delivers(Vendor $vendor): bool
     {
         return $vendor->delivery_by === 'akuru';
+    }
+
+    /**
+     * P6a/P6b: is this order step Akuru's to take, not the shop's? Everything
+     * on an order Akuru packs; dispatching and delivering one Akuru's courier carries.
+     */
+    public static function takesStep(Order $order, string $to): bool
+    {
+        return $order->fulfilled_by === 'akuru'
+            || ($order->delivery_kind === DeliveryKind::AkuruCourier && in_array($to, ['dispatched', 'delivered'], true));
     }
 
     /**

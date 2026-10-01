@@ -1977,6 +1977,12 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('vendor_members')->where('vendor_id', $akuruShopId)->update(['agreement_accepted_at' => now()]);
         $this->smokeProduct($akuruShopId, 'smoke-akuru-packed-notebook', 'SMOKE Akuru-Packed Notebook', 50, 'zero_rated', null, 20, []);
         DB::table('products')->where('slug', 'smoke-akuru-packed-notebook')->update(['stock_at_akuru' => 10]);
+        // P6b (`akuru.mjs`): Akuru's driver, who signs in with the walks' password.
+        $driverUserId = (int) DB::table('users')->where('email', 'driver@akuru.edu.mv')->value('id');
+        if ($driverUserId === 0) {
+            $driverUserId = (int) app(\App\Domains\Identity\Actions\CreateUserAction::class)->execute('SMOKE Driver', 'driver@akuru.edu.mv', 'password', '7000777', 'driver')['id'];
+        }
+        DB::table('delivery_drivers')->updateOrInsert(['user_id' => $driverUserId], ['name' => 'SMOKE Driver', 'phone' => '7000777', 'is_active' => true, 'created_at' => now(), 'updated_at' => now()]);
 
         // B1b (`shop.mjs`): a photo on the tracing book, a Dhivehi title on
         // the puzzle, and a draft the public shop must never show.
