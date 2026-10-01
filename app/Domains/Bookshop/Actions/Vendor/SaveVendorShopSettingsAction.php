@@ -2,6 +2,8 @@
 
 namespace App\Domains\Bookshop\Actions\Vendor;
 
+use App\Domains\Bookshop\Actions\Checkout\CashOnDeliveryAction;
+use App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\Vendor;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -43,7 +45,7 @@ class SaveVendorShopSettingsAction
             'custom_host' => $vendor->custom_host,
             'custom_host_status' => $vendor->custom_host_status,
             'canonical_host' => (string) parse_url((string) config('app.url'), PHP_URL_HOST),
-            'cod_office_on' => app(\App\Domains\Bookshop\Actions\Checkout\CashOnDeliveryAction::class)->isOn(),
+            'cod_office_on' => app(CashOnDeliveryAction::class)->isOn(),
             'minimum_window' => (int) config('bookshop.returns.window_days', 7),
         ];
     }
@@ -79,5 +81,7 @@ class SaveVendorShopSettingsAction
             'cod_enabled' => (bool) ($data['cod_enabled'] ?? false),
             'cod_max' => is_numeric($data['cod_max'] ?? null) && (float) $data['cod_max'] > 0 ? round((float) $data['cod_max'], 2) : null,
         ]);
+        // The Delivery & returns section prints the window and conditions from the cached storefront (§5mo).
+        app(ResolveStorefrontAction::class)->forget($scope->vendorId);
     }
 }

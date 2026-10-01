@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Vendor;
 
+use App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Enums\DeliveryKind;
 use App\Domains\Bookshop\Models\VendorDeliveryMethod;
@@ -83,6 +84,8 @@ class SaveVendorDeliveryMethodsAction
             }
             VendorDeliveryMethod::query()->where('vendor_id', $scope->vendorId)->whereNotIn('id', $kept)->delete();
         });
+        // The Delivery & returns section lists these from the cached storefront (§5mo).
+        app(ResolveStorefrontAction::class)->forget($scope->vendorId);
     }
 
     /** The office's template becomes the vendor's own rows, to edit from there. */

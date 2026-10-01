@@ -643,6 +643,8 @@ return [
     'publish' => 'Publish',
     'version_note' => 'Name this version (optional)',
     'draft_differs' => 'The draft differs from what is published.',
+    'draft_not_live' => 'Your saved changes are a draft. Customers will see them when you publish.',
+    'draft_owner_publishes' => 'Only the shop owner can publish.',
     'preview_heading' => 'Preview of your draft',
     'preview_hint' => 'This is your real page, drawn from the draft. Save to see changes.',
     'preview_banner' => 'Preview — this is your draft, not what customers see.',

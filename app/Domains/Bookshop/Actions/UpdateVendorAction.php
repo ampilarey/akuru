@@ -2,12 +2,15 @@
 
 namespace App\Domains\Bookshop\Actions;
 
+use App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction;
 use App\Domains\Bookshop\Models\Vendor;
 
 /**
  * The office edits a vendor (BOOKSHOP_PLAN §7): details, commission rate,
  * status (active / paused / suspended), notes. The slug and code never change here —
- * one is the storefront's address, the other is printed on orders.
+ * one is the storefront's address, the other is printed on orders. The
+ * name, tagline and badges are drawn into the published storefront's
+ * head, so the edit clears its cache (§5mo).
  */
 class UpdateVendorAction
 {
@@ -34,6 +37,7 @@ class UpdateVendorAction
         }
         $vendor->fill(array_intersect_key($data, array_flip(self::EDITABLE)));
         $vendor->save();
+        app(ResolveStorefrontAction::class)->forget($vendor->id);
 
         return $vendor;
     }

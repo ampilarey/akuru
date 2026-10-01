@@ -24,6 +24,7 @@ class PresentSectionsDesignerAction
         $storefront = VendorStorefront::query()->where('vendor_id', $scope->vendorId)->first();
         $products = Product::query()->where('vendor_id', $scope->vendorId)->where('status', 'active')->orderBy('title')->get(['id', 'title', 'slug', 'product_category_id', 'tags']);
         $categories = ProductCategory::query()->whereIn('id', $products->pluck('product_category_id')->filter()->unique()->all())->orderBy('name')->get(['id', 'name']);
+        $pages = app(ManageVendorPagesAction::class)->list($scope);
 
         return [
             'exists' => $storefront !== null,
@@ -31,10 +32,12 @@ class PresentSectionsDesignerAction
             'sections' => (array) ($storefront?->draft_sections ?? []),
             'navigation' => (array) ($storefront?->draft_navigation ?? []),
             'seo' => ((array) ($storefront?->draft_seo ?? [])) + ['title' => null, 'description' => null, 'image' => null],
+            // §5mo: "not live yet" counts a page whose draft differs too — pages publish with the storefront.
             'draft_dirty' => $storefront !== null && (
                 ($storefront->draft_sections ?? []) !== ($storefront->published_sections ?? [])
                 || ($storefront->draft_navigation ?? []) !== ($storefront->published_navigation ?? [])
                 || ($storefront->draft_seo ?? []) !== ($storefront->published_seo ?? [])
+                || collect($pages)->contains(fn (array $p) => $p['draft_dirty'])
             ),
             'moderation' => [
                 'held' => $storefront?->isHeld() ?? false,
@@ -42,7 +45,7 @@ class PresentSectionsDesignerAction
                 'note' => $storefront?->moderation_note,
                 'locked_types' => (array) ($storefront?->locked_section_types ?? []),
             ],
-            'pages' => app(ManageVendorPagesAction::class)->list($scope),
+            'pages' => $pages,
             'collections' => app(ManageVendorCollectionsAction::class)->list($scope),
             'library' => app(UploadStorefrontImagesAction::class)->list($scope),
             'products' => $products->map(fn (Product $p) => ['id' => $p->id, 'title' => $p->title, 'slug' => $p->slug, 'category_id' => $p->product_category_id, 'tags' => (array) ($p->tags ?? [])])->values()->all(),

@@ -1,5 +1,8 @@
 <?php
 
+use App\Domains\Bookshop\Actions\Shop\ListShopSitemapEntriesAction;
+use App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction;
+use App\Domains\Bookshop\Actions\UpdateVendorAction;
 use App\Domains\Bookshop\Models\BookshopCheckout;
 use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\OrderItem;
@@ -15,6 +18,7 @@ use App\Domains\Bookshop\Models\VendorStorefrontVersion;
 use App\Domains\Identity\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Permission;
@@ -169,15 +173,15 @@ it('renders the published sections on the public page in the visitor\'s language
         ->assertSee('openstreetmap.org/export/embed.html?bbox=', false)->assertSee('--sf-mobile-order: 0', false)
         ->assertSee('youtube-nocookie.com/embed/dQw4w9WgXcQ', false)->assertDontSee('data-section-type="best_sellers"', false);
 
-    \Illuminate\Support\Facades\App::setLocale('dv');
+    App::setLocale('dv');
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor', 'fitrah'))->assertOk()->assertSee('އުނގެނުން އުފާވެރި')->assertSee('ފޮތް ގަންނަ');
-    \Illuminate\Support\Facades\App::setLocale('en');
+    App::setLocale('en');
 
     // Best sellers appear once something has been paid for.
     $checkout = BookshopCheckout::query()->create(['number' => 'CHK-1', 'user_id' => $owner->id, 'status' => 'paid', 'payment_method' => 'wallet', 'address_snapshot' => ['name' => 'Owner'], 'subtotal' => 240, 'discount' => 0, 'delivery_total' => 0, 'total' => 240, 'currency' => 'MVR', 'paid_at' => now()]);
     $order = Order::query()->create(['number' => 'FIT-1', 'bookshop_checkout_id' => $checkout->id, 'vendor_id' => $vendor->id, 'user_id' => $owner->id, 'status' => 'paid', 'delivery_kind' => 'collect_vendor', 'delivery_name' => 'Collect', 'address_snapshot' => ['name' => 'Owner'], 'subtotal' => 240, 'total' => 240, 'currency' => 'MVR', 'paid_at' => now()]);
     OrderItem::query()->create(['order_id' => $order->id, 'product_id' => $products['puzzle']->id, 'title' => 'Wooden Puzzle', 'unit_price' => 240, 'quantity' => 3, 'line_total' => 720, 'tax_class' => 'zero_rated', 'tax_amount' => 0]);
-    app(\App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction::class)->forget($vendor->id);
+    app(ResolveStorefrontAction::class)->forget($vendor->id);
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor', 'fitrah'))->assertSee('data-section-type="best_sellers"', false);
 
     // The product page carries structured data.
@@ -216,16 +220,15 @@ it('publishes pages with the storefront, serves them at /p/<slug> with their SEO
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor.page', ['fitrah', 'schools']))->assertOk()->assertSee('data-testid="page-empty"', false);
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor.page', ['fitrah', 'nowhere']))->assertNotFound();
 
-    \Illuminate\Support\Facades\App::setLocale('dv');
+    App::setLocale('dv');
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor.page', ['fitrah', 'about-us']))->assertOk()->assertSee('އަހަރެމެންނާ ބެހޭ')->assertSee('>ބެހޭ</a>', false);
-    \Illuminate\Support\Facades\App::setLocale('en');
+    App::setLocale('en');
 
-    $sitemap = collect(app(\App\Domains\Bookshop\Actions\Shop\ListShopSitemapEntriesAction::class)->execute())->pluck('path');
+    $sitemap = collect(app(ListShopSitemapEntriesAction::class)->execute())->pluck('path');
     expect($sitemap)->toContain('shop/fitrah/p/about-us')->toContain('shop/fitrah/p/schools');
 
-    // Deleting a page drops it from the menu on the next render; the designer lists what is left.
+    // Deleting a page drops it from the menu at once (§5mo: no publish step, so the delete clears the cache); the designer lists what is left.
     sectionsAs($owner)->delete(route('vendor.storefront.pages.destroy', $schools->id))->assertRedirect()->assertSessionHasNoErrors();
-    app(\App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction::class)->forget($vendor->id);
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor', 'fitrah'))->assertOk()->assertDontSee('>Schools</a>', false)->assertSee('>About</a>', false);
     sectionsAs($owner)->get(route('vendor.storefront.sections'))->assertOk()->assertInertia(fn ($p) => $p
         ->component('Bookshop/VendorSections')->has('designer.pages', 1)->where('designer.pages.0.slug', 'about-us')->has('designer.schema.hero')->where('designer.limits.pages', 10));
@@ -264,10 +267,10 @@ it('keeps collections by hand or by rule, serves them at /shop/<vendor>/<slug> i
     sectionsAs($owner)->post(route('vendor.storefront.publish'))->assertSessionHasNoErrors();
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor', 'fitrah'))->assertOk()
         ->assertSee('data-section-type="collection"', false)->assertSee('Starter kit')->assertSee('href="'.route('public.shop.vendor.collection', ['fitrah', 'starter-kit']).'"', false)->assertSee('>Arabic</a>', false);
-    expect(collect(app(\App\Domains\Bookshop\Actions\Shop\ListShopSitemapEntriesAction::class)->execute())->pluck('path'))->toContain('shop/fitrah/starter-kit');
+    expect(collect(app(ListShopSitemapEntriesAction::class)->execute())->pluck('path'))->toContain('shop/fitrah/starter-kit');
 
+    // §5mo: a collection has no publish step, so deactivating it leaves the menu at once — no hand-clearing of the cache here.
     sectionsAs($owner)->post(route('vendor.storefront.collections.update', $arabic->id), ['name' => 'Arabic', 'kind' => 'rule', 'rule' => ['tags' => ['arabic'], 'category_id' => $category->id], 'is_active' => false])->assertSessionHasNoErrors();
-    app(\App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction::class)->forget($vendor->id);
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor.collection', ['fitrah', 'arabic']))->assertNotFound();
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor', 'fitrah'))->assertDontSee('>Arabic</a>', false);
     sectionsAs($owner)->delete(route('vendor.storefront.collections.destroy', $kit->id))->assertSessionHasNoErrors();
@@ -359,4 +362,83 @@ it('gives a published storefront the store\'s links, its cart among them, and th
         ->toContain('data-testid="shop-bottom-bar" data-scope="shop"');
     // The links sit under the storefront's head, before its products.
     expect(strpos($html, 'data-testid="shop-links"'))->toBeLessThan(strpos($html, 'data-testid="shop-grid"'));
+});
+
+it('shows edits that have no publish step on the live page at once — collections, pages, images, delivery, returns, the office\'s vendor details (STATUS §5mo)', function () {
+    Storage::fake('public');
+    [$vendor, $owner, $products] = sectionsShop();
+    publishTheme($owner);
+    sectionsAs($owner)->post(route('vendor.storefront.images.upload'), ['images' => [UploadedFile::fake()->image('shop.jpg', 1200, 800)], 'alt' => 'Our shop front'])->assertSessionHasNoErrors();
+    $image = VendorStorefrontImage::query()->where('vendor_id', $vendor->id)->firstOrFail();
+    sectionsAs($owner)->post(route('vendor.storefront.collections.store'), ['name' => 'Starter kit', 'kind' => 'manual', 'product_ids' => [$products['puzzle']->id]])->assertSessionHasNoErrors();
+    $kit = VendorCollection::query()->where('slug', 'starter-kit')->firstOrFail();
+    sectionsAs($owner)->post(route('vendor.storefront.pages.store'), ['title' => 'About us'])->assertSessionHasNoErrors();
+    $about = VendorPage::query()->where('slug', 'about-us')->firstOrFail();
+    sectionsAs($owner)->post(route('vendor.storefront.sections.save'), [
+        'sections' => [
+            ['type' => 'hero', 'settings' => ['heading' => 'Hello', 'buttons' => [['kind' => 'product', 'target' => 'tracing-book', 'label' => 'Shop the book']]]],
+            ['type' => 'collection', 'settings' => ['collection' => $kit->id, 'count' => '4']],
+            ['type' => 'gallery', 'settings' => ['images' => [$image->media_file_id]]],
+            ['type' => 'delivery_returns', 'settings' => []],
+        ],
+        'navigation' => [['kind' => 'page', 'target' => 'about-us', 'label' => 'About']],
+    ])->assertSessionHasNoErrors();
+    sectionsAs($owner)->post(route('vendor.storefront.publish'))->assertSessionHasNoErrors();
+    $home = fn () => test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor', 'fitrah'))->assertOk();
+    $home()->assertSee('Starter kit')->assertSee('alt="Our shop front"', false)->assertSee('Returns within 7 days')->assertSee('>About</a>', false)->assertSee('Shop the book');
+
+    // A collection renamed, then deactivated: the section follows, no publish asked for.
+    sectionsAs($owner)->post(route('vendor.storefront.collections.update', $kit->id), ['name' => 'Grade 1 kit', 'kind' => 'manual', 'product_ids' => [$products['puzzle']->id]])->assertSessionHasNoErrors();
+    $home()->assertSee('Grade 1 kit')->assertDontSee('Starter kit');
+    sectionsAs($owner)->post(route('vendor.storefront.collections.update', $kit->id), ['name' => 'Grade 1 kit', 'kind' => 'manual', 'product_ids' => [$products['puzzle']->id], 'is_active' => false])->assertSessionHasNoErrors();
+    $home()->assertDontSee('data-section-type="collection"', false);
+
+    // An image's alt text, then the image leaves the library and the gallery with it.
+    sectionsAs($owner)->post(route('vendor.storefront.images.update', $image->id), ['alt' => 'The shop in Malé'])->assertSessionHasNoErrors();
+    $home()->assertSee('alt="The shop in Malé"', false);
+    sectionsAs($owner)->delete(route('vendor.storefront.images.destroy', $image->id))->assertSessionHasNoErrors();
+    $home()->assertDontSee('data-section-type="gallery"', false);
+
+    // The returns window and the delivery methods come from the shop's settings, not the designer.
+    sectionsAs($owner)->post(route('vendor.settings.save'), ['return_window_days' => 14, 'return_conditions' => 'Unopened, with the receipt.'])->assertSessionHasNoErrors();
+    $home()->assertSee('Returns within 14 days')->assertSee('Unopened, with the receipt.');
+    sectionsAs($owner)->post(route('vendor.delivery-methods.save'), ['methods' => [['kind' => 'collect_vendor', 'name' => 'Collect from Majeedhee Magu', 'fee' => 0, 'handling_days' => 1]]])->assertSessionHasNoErrors();
+    $home()->assertSee('Collect from Majeedhee Magu');
+
+    // A page's title is live before its next publish; a deleted page leaves the menu.
+    sectionsAs($owner)->post(route('vendor.storefront.pages.update', $about->id), ['title' => 'Who we are'])->assertSessionHasNoErrors();
+    test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor.page', ['fitrah', 'about-us']))->assertOk()->assertSee('Who we are');
+    sectionsAs($owner)->delete(route('vendor.storefront.pages.destroy', $about->id))->assertSessionHasNoErrors();
+    $home()->assertDontSee('>About</a>', false);
+
+    // The office renames the shop: the storefront's head says so at once.
+    app(UpdateVendorAction::class)->execute($vendor->id, ['name' => 'Fitrah Books']);
+    expect(app(ResolveStorefrontAction::class)->execute($vendor->fresh())['name'])->toBe('Fitrah Books');
+
+    // A product taken off sale takes its hero button with it (the product save clears the cache; the button was drawn as a draft before).
+    $products['tracing-book']->update(['status' => 'draft']);
+    app(ResolveStorefrontAction::class)->forget($vendor->id);
+    $home()->assertDontSee('Shop the book');
+    sectionsAs($owner)->get(route('vendor.storefront.preview'))->assertOk()->assertDontSee('Shop the book');
+});
+
+it('tells the designer when a saved draft is not what customers see, a page\'s draft included, in three languages (STATUS §5mo)', function () {
+    [$vendor, $owner] = sectionsShop();
+    publishTheme($owner);
+    sectionsAs($owner)->post(route('vendor.storefront.publish'))->assertSessionHasNoErrors();
+    sectionsAs($owner)->get(route('vendor.storefront.sections'))->assertInertia(fn ($p) => $p->where('designer.draft_dirty', false));
+
+    sectionsAs($owner)->post(route('vendor.storefront.pages.store'), ['title' => 'About'])->assertSessionHasNoErrors();
+    $about = VendorPage::query()->firstOrFail();
+    sectionsAs($owner)->post(route('vendor.storefront.pages.sections', $about->id), ['sections' => [['type' => 'faq', 'settings' => ['items' => [['question' => 'One?', 'answer' => 'Yes.']]]]]])->assertSessionHasNoErrors();
+    sectionsAs($owner)->get(route('vendor.storefront.sections'))->assertInertia(fn ($p) => $p->where('designer.draft_dirty', true)->where('designer.pages.0.draft_dirty', true));
+
+    sectionsAs($owner)->post(route('vendor.storefront.publish'))->assertSessionHasNoErrors();
+    sectionsAs($owner)->get(route('vendor.storefront.sections'))->assertInertia(fn ($p) => $p->where('designer.draft_dirty', false)->where('designer.pages.0.draft_dirty', false));
+
+    foreach (['dv', 'ar'] as $locale) {
+        foreach (['draft_not_live', 'draft_owner_publishes'] as $key) {
+            expect(__("shop.{$key}", [], $locale))->not->toBe(__("shop.{$key}", [], 'en'))->not->toBe("shop.{$key}");
+        }
+    }
 });

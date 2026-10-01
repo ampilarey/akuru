@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Vendor;
 
+use App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\VendorCollection;
@@ -17,6 +18,10 @@ use Illuminate\Validation\ValidationException;
  * words the shop's address already uses are not allowed as one. Since
  * §5lc a hand-picked collection can be a school's book list for a grade,
  * with a quantity per item (1–99).
+ *
+ * A collection has no publish step: it is live the moment it is saved, so
+ * every save and delete clears the published storefront's cache (§5mo) —
+ * the Collection section and the menu draw it into the cached home.
  */
 class ManageVendorCollectionsAction
 {
@@ -72,7 +77,7 @@ class ManageVendorCollectionsAction
         $own = Product::query()->where('vendor_id', $scope->vendorId)->whereIn('id', $productIds)->pluck('id')->map(fn ($id) => (int) $id)->all();
         $productIds = array_values(array_filter($productIds, fn (int $id) => in_array($id, $own, true)));
 
-        return DB::transaction(function () use ($scope, $collectionId, $data, $text, $name, $rule, $productIds) {
+        $collection = DB::transaction(function () use ($scope, $collectionId, $data, $text, $name, $rule, $productIds) {
             if ($collectionId === null) {
                 $max = (int) config('bookshop.storefront.max_collections', 20);
                 if (VendorCollection::query()->where('vendor_id', $scope->vendorId)->count() >= $max) {
@@ -113,10 +118,14 @@ class ManageVendorCollectionsAction
 
             return $collection->refresh();
         });
+        app(ResolveStorefrontAction::class)->forget($scope->vendorId);
+
+        return $collection;
     }
 
     public function delete(VendorScope $scope, int $collectionId): void
     {
         VendorCollection::query()->where('vendor_id', $scope->vendorId)->whereKey($collectionId)->firstOrFail()->delete();
+        app(ResolveStorefrontAction::class)->forget($scope->vendorId);
     }
 }

@@ -70,15 +70,18 @@ class UploadStorefrontImagesAction
         return $ids;
     }
 
+    /** The alt text is read at render, so the published page's cache goes with the change (§5mo). */
     public function describe(VendorScope $scope, int $imageId, ?string $alt): void
     {
         VendorStorefrontImage::query()->where('vendor_id', $scope->vendorId)->whereKey($imageId)->firstOrFail()
             ->update(['alt' => is_string($alt) && trim($alt) !== '' ? mb_substr(trim($alt), 0, 200) : null]);
+        app(ResolveStorefrontAction::class)->forget($scope->vendorId);
     }
 
-    /** Leaves the library; a section still pointing at it shows nothing there. */
+    /** Leaves the library; a section still pointing at it shows nothing there, at once. */
     public function remove(VendorScope $scope, int $imageId): void
     {
         VendorStorefrontImage::query()->where('vendor_id', $scope->vendorId)->whereKey($imageId)->firstOrFail()->delete();
+        app(ResolveStorefrontAction::class)->forget($scope->vendorId);
     }
 }
