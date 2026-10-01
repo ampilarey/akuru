@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions;
 
+use App\Domains\Bookshop\Enums\DeliveryKind;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\OrderItem;
@@ -26,10 +27,14 @@ class AkuruFulfilmentAction
      */
     public function queue(int $limit = 200, bool $all = false): array
     {
-        $query = Order::query()->with(['vendor:id,name,slug', 'items'])->where('fulfilled_by', 'akuru');
+        // P6b: what Akuru packs, and what Akuru's courier carries for a shop that packs its own.
+        $query = Order::query()->with(['vendor:id,name,slug', 'items'])->where(fn ($q) => $q->where('fulfilled_by', 'akuru')->orWhere('delivery_kind', DeliveryKind::AkuruCourier->value));
         $all ? $query->orderByDesc('id') : $query->whereIn('status', self::OPEN)->orderBy('paid_at');
 
-        return $query->limit($limit)->get()->map(fn (Order $o) => [
+        $orders = $query->limit($limit)->get();
+        $deliveries = app(AkuruDeliveryAction::class)->forOrders($orders->pluck('id')->map(fn ($id) => (int) $id)->all());
+
+        return $orders->map(fn (Order $o) => [
             'id' => $o->id,
             'number' => $o->number,
             'vendor' => $o->vendor?->name,
@@ -41,7 +46,9 @@ class AkuruFulfilmentAction
             'address' => collect([$o->address_snapshot['street'] ?? null, $o->address_snapshot['island'] ?? null, $o->address_snapshot['atoll'] ?? null])->filter()->implode(', '),
             'items' => $o->items->map(fn (OrderItem $i) => ['title' => $i->title, 'quantity' => (int) $i->quantity])->values()->all(),
             'handling_fee' => (string) $o->akuru_handling_fee,
-            'next' => OrderView::nextSteps($o),
+            'fulfilled_by' => $o->fulfilled_by,
+            'next' => array_values(array_filter(OrderView::nextSteps($o), fn (string $to) => AkuruFulfilment::takesStep($o, $to))),
+            'delivery_by_driver' => $deliveries[(int) $o->id] ?? null,
         ])->values()->all();
     }
 

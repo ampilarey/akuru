@@ -142,6 +142,9 @@ return [
     'wishlist_item' => \App\Domains\Bookshop\Models\WishlistItem::class,
     'stock_alert' => \App\Domains\Bookshop\Models\StockAlert::class,
     'stock_movement' => \App\Domains\Bookshop\Models\StockMovement::class,
+    // COMMERCE_PARITY_PLAN P6b: Akuru's drivers and the deliveries they make.
+    'delivery_driver' => \App\Domains\Bookshop\Models\DeliveryDriver::class,
+    'order_delivery' => \App\Domains\Bookshop\Models\OrderDelivery::class,
     'vendor_application' => \App\Domains\Bookshop\Models\VendorApplication::class,
     'vendor_newsletter_subscriber' => \App\Domains\Bookshop\Models\VendorNewsletterSubscriber::class,
     'quote_request' => \App\Domains\Bookshop\Models\QuoteRequest::class,

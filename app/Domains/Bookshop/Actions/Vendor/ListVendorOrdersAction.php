@@ -13,6 +13,7 @@ use App\Domains\Bookshop\Models\OrderEvent;
 use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\OrderRefund;
 use App\Domains\Bookshop\Models\OrderReturn;
+use App\Domains\Bookshop\Support\AkuruFulfilment;
 use App\Domains\Bookshop\Support\OrderView;
 
 /**
@@ -139,7 +140,8 @@ class ListVendorOrdersAction
             'paid_at' => $order->paid_at?->toDateTimeString(),
             // COMMERCE_PARITY_PLAN P6a: an order Akuru packs is the office's to move; the shop sees it.
             'fulfilled_by' => $order->fulfilled_by, 'akuru_handling_fee' => (string) $order->akuru_handling_fee,
-            'next' => $order->fulfilled_by === 'akuru' ? [] : OrderView::nextSteps($order),
+            'next' => array_values(array_filter(OrderView::nextSteps($order), fn (string $to) => ! AkuruFulfilment::takesStep($order, $to))),
+            'akuru_delivers' => $order->delivery_kind === \App\Domains\Bookshop\Enums\DeliveryKind::AkuruCourier,
             'cancellable' => $order->status->cancellableByVendor(),
             'events' => $order->events->map(fn (OrderEvent $e) => ['type' => $e->type, 'note' => $e->note, 'at' => $e->created_at?->toDateTimeString()])->values()->all(),
             'returns' => $order->returns->map(fn (OrderReturn $r) => OrderView::returnRow($r))->values()->all(),

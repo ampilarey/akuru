@@ -219,4 +219,7 @@ return [
     'set_password_body' => 'For now you can only sign in with a one-time code. Add a password to sign in with your mobile number or email.',
     'set_password_link' => 'Set a password',
     'my_portal' => 'My Portal',
+    // COMMERCE_PARITY_PLAN P6b.
+    'deliveries' => 'My deliveries',
+    'workspace_deliveries' => 'Deliveries',
 ];

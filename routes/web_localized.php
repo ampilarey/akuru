@@ -194,6 +194,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/my-account', [MyAccountController::class, 'index'])->name('account.home');
     Route::get('/my-enrollments/export', [MyAccountController::class, 'export'])->name('my.enrollments.export');
     Route::get('/my-enrollments', [MyAccountController::class, 'enrolments'])->name('my.enrollments');
+    // COMMERCE_PARITY_PLAN P6b: a driver's deliveries, and the proof photo (the office, or the driver who took it).
+    Route::get('/deliveries', [\App\Domains\Bookshop\Http\Controllers\DriverController::class, 'index'])->name('deliveries.index');
+    Route::post('/deliveries/{delivery}/picked-up', [\App\Domains\Bookshop\Http\Controllers\DriverController::class, 'pickUp'])->name('deliveries.picked-up')->whereNumber('delivery');
+    Route::post('/deliveries/{delivery}/delivered', [\App\Domains\Bookshop\Http\Controllers\DriverController::class, 'deliver'])->name('deliveries.delivered')->whereNumber('delivery')->middleware('throttle:30,1,delivery-proof');
+    Route::get('/deliveries/{delivery}/proof', [\App\Domains\Bookshop\Http\Controllers\DriverController::class, 'proof'])->name('deliveries.proof')->whereNumber('delivery');
     // COMMERCE_PARITY_PLAN P3: a learner's ID card, sent again after the office rejected it. Not under
     // my-enrollments: ConvertEnroll403ToRedirect turns any 403 on a POST path holding "enroll" into a redirect.
     Route::post('/my-account/id-card/{student}', [MyAccountController::class, 'idCard'])->name('account.id-card')->whereNumber('student')->middleware('throttle:10,60,learner-id-card');
@@ -880,6 +885,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('akuru/settings', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'settings'])->name('admin.bookshop.akuru.settings');
         Route::post('akuru/orders/{order}', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'advance'])->name('admin.bookshop.akuru.advance')->whereNumber('order');
         Route::post('akuru/stock/{product}', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'stock'])->name('admin.bookshop.akuru.stock')->whereNumber('product');
+        // P6b: drivers, and who delivers which order.
+        Route::post('akuru/drivers', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'driver'])->name('admin.bookshop.akuru.drivers.store');
+        Route::post('akuru/drivers/{driver}', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'driver'])->name('admin.bookshop.akuru.drivers.update')->whereNumber('driver');
+        Route::post('akuru/orders/{order}/driver', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'assign'])->name('admin.bookshop.akuru.assign')->whereNumber('order');
         // COMMERCE_PARITY_PLAN P4: listings awaiting the office's approval.
         Route::post('listings/{product}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'decide'])->name('admin.bookshop.listings.decide')->whereNumber('product');
         Route::get('listings/export', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'export'])->name('admin.bookshop.listings.export');

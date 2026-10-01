@@ -46,7 +46,7 @@ it('opens from the users list and shows the roles by label, with the protected o
             ->where('user.name', 'Ustadh Ali')->where('user.roles', ['teacher'])->where('user.labels', 'Teacher')->where('user.is_active', true)->where('user.is_self', false)
             ->where('roles.0', ['key' => 'super_admin', 'label' => 'System admin'])
             ->where('roles.2', ['key' => 'headmaster', 'label' => 'Dean'])
-            ->has('roles', 12)
+            ->has('roles', 13)
             ->where('locked', [])
             ->where('t.roles_title', 'Roles & access'));
 

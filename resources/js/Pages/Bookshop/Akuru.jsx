@@ -1,4 +1,4 @@
-import { useForm, usePage } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 
@@ -25,6 +25,51 @@ function Step({ order, to, t }) {
             <button type="submit" className="btn-primary text-sm" disabled={form.processing} data-testid={`akuru-step-${order.id}-${to}`}>{label}</button>
             {form.errors.status && <span className="w-full text-xs text-red-700">{form.errors.status}</span>}
         </form>
+    );
+}
+
+/** P6b: who delivers an order Akuru's courier carries. */
+function AssignDriver({ order, drivers, t }) {
+    const form = useForm({ driver_id: order.delivery_by_driver?.driver_id || '' });
+    const picked = order.delivery_by_driver?.picked_up_at;
+
+    return (
+        <form className="flex flex-wrap items-center gap-2" onSubmit={(e) => { e.preventDefault(); form.post(`/admin/bookshop/akuru/orders/${order.id}/driver`, { preserveScroll: true }); }}>
+            <select className="form-input text-sm" value={form.data.driver_id} onChange={(e) => form.setData('driver_id', e.target.value)} disabled={Boolean(picked)} data-testid={`driver-select-${order.id}`}>
+                <option value="">{t.driver_assign}</option>
+                {drivers.filter((d) => d.active).map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
+            </select>
+            {!picked && <button type="submit" className="btn-secondary text-sm" disabled={form.processing || !form.data.driver_id} data-testid={`driver-assign-${order.id}`}>{t.driver_assign_button}</button>}
+            {form.errors.driver && <span className="w-full text-xs text-red-700">{form.errors.driver}</span>}
+        </form>
+    );
+}
+
+function Drivers({ drivers, added, t }) {
+    const form = useForm({ email: '', name: '', phone: '' });
+
+    return (
+        <section className="mb-8 rounded-lg border bg-white p-4" data-testid="akuru-drivers">
+            <h2 className="mb-2 text-lg font-semibold">{t.drivers}</h2>
+            {added && (
+                <p className="mb-3 rounded bg-amber-50 p-2 text-sm" data-testid="driver-added">{added.temporary_password ? (t.driver_password_once || '').replace(':name', added.name).replace(':email', added.email).replace(':password', added.temporary_password) : (t.driver_existing || '').replace(':name', added.name)}</p>
+            )}
+            <ul className="mb-3 divide-y text-sm">
+                {drivers.map((d) => (
+                    <li key={d.id} className="flex flex-wrap items-center justify-between gap-2 py-1" data-testid={`driver-${d.id}`}>
+                        <span>{d.name}{d.phone ? ` · ${d.phone}` : ''} · {(t.driver_open_count || '').replace(':count', d.open)}{!d.active && <span className="ms-1 text-gray-500">({t.driver_off})</span>}</span>
+                        <button type="button" className="text-blue-700 underline" onClick={() => router.post(`/admin/bookshop/akuru/drivers/${d.id}`, { active: d.active ? 0 : 1 }, { preserveScroll: true })} data-testid={`driver-toggle-${d.id}`}>{d.active ? t.driver_switch_off : t.driver_switch_on}</button>
+                    </li>
+                ))}
+            </ul>
+            <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); form.post('/admin/bookshop/akuru/drivers', { preserveScroll: true, onSuccess: () => form.reset() }); }}>
+                <label className="text-sm">{t.driver_name}<input className="form-input w-40" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} required data-testid="driver-name" /></label>
+                <label className="text-sm">{t.driver_email}<input type="email" className="form-input w-56" value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} required data-testid="driver-email" /></label>
+                <label className="text-sm">{t.driver_phone}<input type="tel" className="form-input w-32" value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} data-testid="driver-phone" /></label>
+                <button type="submit" className="btn-primary" disabled={form.processing} data-testid="driver-add">{t.driver_add}</button>
+            </form>
+            {(form.errors.email || form.errors.name || form.errors.phone) && <p className="mt-1 text-xs text-red-700">{form.errors.email || form.errors.name || form.errors.phone}</p>}
+        </section>
     );
 }
 
@@ -62,7 +107,7 @@ function Charges({ settings, t }) {
     );
 }
 
-export default function Akuru({ t = {}, orders = [], shops = [], settings }) {
+export default function Akuru({ t = {}, orders = [], shops = [], settings, drivers = [], driver_added = null }) {
     const { flash = {}, errors } = usePage().props;
 
     return (
@@ -86,12 +131,18 @@ export default function Akuru({ t = {}, orders = [], shops = [], settings }) {
                                     <p>{o.recipient}{o.address ? ` — ${o.address}` : ''}</p>
                                     <ul className="list-disc ps-5">{o.items.map((i, k) => <li key={k}>{i.quantity} × {i.title}</li>)}</ul>
                                 </div>
-                                <div className="flex flex-col gap-2">{o.next.map((to) => <Step key={to} order={o} to={to} t={t} />)}</div>
+                                <div className="flex flex-col gap-2">
+                                    {o.delivery_kind === 'akuru_courier' && <AssignDriver order={o} drivers={drivers} t={t} />}
+                                    {o.delivery_by_driver && <p className="text-xs text-gray-600" data-testid={`order-driver-${o.id}`}>{o.delivery_by_driver.driver}{o.delivery_by_driver.picked_up_at ? ` · ${t.out_for_delivery} ${o.delivery_by_driver.picked_up_at}` : ''}{o.delivery_by_driver.proof_url && <> · <a href={o.delivery_by_driver.proof_url} target="_blank" rel="noreferrer" className="underline">{t.proof_photo}</a></>}</p>}
+                                    {o.next.map((to) => <Step key={to} order={o} to={to} t={t} />)}
+                                </div>
                             </li>
                         ))}
                     </ul>
                 )}
             </section>
+
+            <Drivers drivers={drivers} added={driver_added} t={t} />
 
             <section className="mb-8" data-testid="akuru-shops">
                 <h2 className="mb-2 text-lg font-semibold">{t.akuru_shops}</h2>

@@ -18,4 +18,5 @@ return [
     'vendor' => 'Vendor',
     'bookshop_manager' => 'Bookstore admin',
     'none' => 'No role',
+    'driver' => 'Driver',
 ];
