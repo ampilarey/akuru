@@ -149,6 +149,7 @@ return [
     'complaints' => 'Problems reported',
     'sms_campaigns' => 'SMS offers',
     'shop_customers' => 'Customers',
+    'shop_credit' => 'Credit accounts',
     'shop' => 'Bookstore',
     'my_orders' => 'My orders',
     'my_wishlist' => 'My wishlist',

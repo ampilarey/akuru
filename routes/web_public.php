@@ -93,6 +93,8 @@ Route::middleware(['auth', 'customer_password'])->group(function () {
     Route::post('shop/checkout/{number}/slip', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'uploadSlip'])->name('public.shop.checkout.slip')->middleware('throttle:10,1,shop-slip');
     Route::get('shop/slips/{slip}', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'slip'])->name('public.shop.slip')->whereNumber('slip');
     Route::get('my-orders', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'index'])->name('public.shop.orders');
+    // COMMERCE_PARITY_PLAN P8c: a school's own credit statement.
+    Route::get('my-orders/credit-statement', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'mine'])->name('public.shop.credit.statement');
     Route::get('my-orders/export', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'export'])->name('public.shop.orders.export');
     Route::get('my-orders/{number}', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'show'])->name('public.shop.orders.show');
     // B3: the customer cancels before dispatch, asks for a return, writes to the shop.

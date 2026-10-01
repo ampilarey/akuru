@@ -13,6 +13,17 @@
         </div>
     </div>
 
+    {{-- COMMERCE_PARITY_PLAN P8c: a school's credit account — what it may spend, what it owes, and its statement. --}}
+    @if($credit ?? null)
+        <section class="mb-6 rounded-lg border bg-white p-4 text-sm" data-testid="credit-account">
+            <h2 class="mb-1 font-semibold">{{ __('shop.credit_account_heading') }}@if($credit['organisation']) · {{ $credit['organisation'] }}@endif</h2>
+            <p>{{ __('shop.credit_account_line', ['limit' => 'MVR '.$credit['limit'], 'owed' => 'MVR '.$credit['owed'], 'available' => 'MVR '.$credit['available'], 'days' => $credit['terms_days']]) }}</p>
+            @if((float) $credit['overdue'] > 0)<p class="mt-1 font-medium text-red-700" data-testid="credit-overdue">{{ __('shop.credit_overdue', ['amount' => 'MVR '.$credit['overdue']]) }}</p>@endif
+            @if((float) $credit['in_credit'] > 0)<p class="mt-1 font-medium text-green-700" data-testid="credit-in-credit">{{ __('shop.credit_in_credit', ['amount' => 'MVR '.$credit['in_credit']]) }}</p>@endif
+            <a href="{{ route('public.shop.credit.statement') }}" class="mt-2 inline-block text-brandMaroon-700 underline" data-testid="credit-statement">{{ __('shop.credit_statement_csv') }}</a>
+        </section>
+    @endif
+
     @if($invite ?? null)
         {{-- STATUS §5ln: a customer's share link, while referral credit is on. --}}
         <section class="mb-6 rounded-lg border border-green-200 bg-green-50 p-4 text-sm" data-testid="referral-invite">

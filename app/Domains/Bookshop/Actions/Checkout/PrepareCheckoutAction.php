@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Actions\Checkout;
 
 use App\Domains\Bookshop\Actions\Cart\PresentCartAction;
+use App\Domains\Bookshop\Actions\ShopCreditAction;
 use App\Domains\Bookshop\Models\Cart;
 use App\Domains\Bookshop\Models\CustomerAddress;
 use App\Domains\Bookshop\Models\Vendor;
@@ -37,6 +38,11 @@ class PrepareCheckoutAction
         if (app(CashOnDeliveryAction::class)->offeredFor($vendors->values())) {
             $methods[] = 'cash_on_delivery';
         }
+        // COMMERCE_PARITY_PLAN P8c: pay on account, for a customer the office opened an active credit account for.
+        $credit = app(ShopCreditAction::class)->standing($userId);
+        if ($credit !== null) {
+            $methods[] = 'credit';
+        }
 
         return [
             'basket' => $basket,
@@ -44,6 +50,7 @@ class PrepareCheckoutAction
                 ->map(fn (CustomerAddress $a) => ['id' => $a->id, 'label' => $a->label] + $a->snapshot())->values()->all(),
             'payment_methods' => $methods,
             'wallet_balance' => app(ListWalletAction::class)->execute($userId)['balance'],
+            'credit' => $credit,
             'currency' => $basket['currency'],
             'reservation_minutes' => (int) config('bookshop.checkout.reservation_minutes', 30),
         ];

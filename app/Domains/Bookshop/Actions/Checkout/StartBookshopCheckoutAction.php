@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Actions\Checkout;
 
 use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
+use App\Domains\Bookshop\Actions\ShopCreditAction;
 use App\Domains\Bookshop\Actions\ShopSmsCampaignAction;
 use App\Domains\Bookshop\Enums\CheckoutPaymentMethod;
 use App\Domains\Bookshop\Enums\CheckoutStatus;
@@ -252,6 +253,10 @@ class StartBookshopCheckoutAction
             if ($effective === CheckoutPaymentMethod::Wallet) {
                 app(DebitWalletAction::class)->execute($userId, $total, 'bookshop_checkout', $checkout->id, 'Akuru Bookstore '.$checkout->number);
             }
+            // COMMERCE_PARITY_PLAN P8c: on account — the charge goes on the ledger, or nothing happens at all.
+            if ($effective === CheckoutPaymentMethod::Credit) {
+                app(ShopCreditAction::class)->charge($userId, $checkout, $total);
+            }
             $cart->items()->delete();
 
             return $checkout;
@@ -264,7 +269,7 @@ class StartBookshopCheckoutAction
         }
         // B9e: a step of each shop's funnel.
         app(RecordShopEventAction::class)->checkout($checkout->orders()->get());
-        if (in_array($checkout->payment_method, [CheckoutPaymentMethod::Wallet, CheckoutPaymentMethod::None], true)) {
+        if (in_array($checkout->payment_method, [CheckoutPaymentMethod::Wallet, CheckoutPaymentMethod::Credit, CheckoutPaymentMethod::None], true)) {
             app(MarkCheckoutPaidAction::class)->execute($checkout->id, $checkout->payment_method->value);
 
             return ['checkout' => $checkout->refresh(), 'redirect_url' => null, 'error' => null, 'paid' => true];

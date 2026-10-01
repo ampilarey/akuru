@@ -10,6 +10,7 @@ use App\Domains\Bookshop\Actions\Orders\ListMyOrdersAction;
 use App\Domains\Bookshop\Actions\Orders\PresentOrderAction;
 use App\Domains\Bookshop\Actions\Orders\RequestReturnAction;
 use App\Domains\Bookshop\Actions\Orders\TrackOrderAction;
+use App\Domains\Bookshop\Actions\ShopCreditAction;
 use App\Domains\Bookshop\Enums\ReturnReason;
 use App\Domains\Bookshop\Http\Controllers\Concerns\ResolvesCart;
 use App\Domains\Bookshop\Models\OrderComplaint;
@@ -35,6 +36,8 @@ class MyOrdersController extends Controller
             'orders' => app(ListMyOrdersAction::class)->execute((int) $request->user()->id),
             // STATUS §5ln: their share link while referral credit is on.
             'invite' => app(ReferralCreditAction::class)->invite((int) $request->user()->id),
+            // COMMERCE_PARITY_PLAN P8c: a school's credit account, where the office opened one.
+            'credit' => app(ShopCreditAction::class)->standing((int) $request->user()->id),
         ]);
     }
 

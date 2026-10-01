@@ -1929,6 +1929,10 @@ class SmokeMarkerSeeder extends Seeder
             );
         }
         $walkCheckouts = DB::table('bookshop_checkouts')->whereIn('user_id', $walkPeople)->pluck('id');
+        // COMMERCE_PARITY_PLAN P8c: credit.mjs's synthetic account goes first — its ledger points at these checkouts.
+        $walkCredit = DB::table('shop_credit_accounts')->whereIn('user_id', $walkPeople)->pluck('id');
+        DB::table('shop_credit_entries')->whereIn('shop_credit_account_id', $walkCredit)->delete();
+        DB::table('shop_credit_accounts')->whereIn('id', $walkCredit)->delete();
         foreach (DB::table('bank_transfer_slips')->whereIn('bookshop_checkout_id', $walkCheckouts)->pluck('media_file_id') as $mediaId) {
             $media = DB::table('media_files')->where('id', $mediaId)->first(['disk', 'path']);
             if ($media !== null) {

@@ -407,8 +407,7 @@ SMS link. Each is its own slice when the owner asks; recorded in
 BACKLOG C13.
 
 The owner asked for it on 2026-10-01. Four slices: **P8a receipts by SMS
-link — shipped 2026-10-01, STATUS §5mk**; **P8b push — shipped 2026-10-01, STATUS §5ml** (sending already existed since #551; the slice tells the driver); P8c credit
-accounts for schools; P8d pre-orders with a deposit.
+link — shipped 2026-10-01, STATUS §5mk**; **P8b push — shipped 2026-10-01, STATUS §5ml** (sending already existed since #551; the slice tells the driver); **P8c credit accounts for schools, with deposits — shipped 2026-10-01, STATUS §5mm**; P8d pre-orders with a deposit.
 
 ---
 

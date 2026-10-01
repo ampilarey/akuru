@@ -33,6 +33,9 @@ it('makes every money-table key refuse a delete rather than cascade', function (
         'library_purchases' => ['user_id', 'library_item_id'],
         'writer_earnings' => ['writer_id', 'library_purchase_id', 'library_item_id'],
         'writer_payouts' => ['writer_id'],
+        // COMMERCE_PARITY_PLAN P8c: credit accounts and their ledger.
+        'shop_credit_accounts' => ['user_id'],
+        'shop_credit_entries' => ['shop_credit_account_id', 'bookshop_checkout_id'],
     ];
 
     $cascading = [];

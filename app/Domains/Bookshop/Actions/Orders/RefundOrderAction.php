@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Actions\Orders;
 
 use App\Domains\Bookshop\Actions\Money\ReverseVendorEarningAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
+use App\Domains\Bookshop\Actions\ShopCreditAction;
 use App\Domains\Bookshop\Enums\CheckoutPaymentMethod;
 use App\Domains\Bookshop\Enums\RefundStatus;
 use App\Domains\Bookshop\Models\Order;
@@ -73,6 +74,10 @@ class RefundOrderAction
                 $refund->update(['status' => RefundStatus::Done->value, 'destination' => 'wallet', 'processed_by' => $byUserId, 'processed_at' => now()]);
             } elseif ($paidWith === CheckoutPaymentMethod::BankTransfer) {
                 $this->toWallet($refund, $order, $byUserId);
+            } elseif ($paidWith === CheckoutPaymentMethod::Credit) {
+                // COMMERCE_PARITY_PLAN P8c: paid on account — back onto the account, a refund entry on its ledger.
+                app(ShopCreditAction::class)->refund((int) $order->user_id, $refund, $order->number, $byUserId);
+                $refund->update(['status' => RefundStatus::Done->value, 'destination' => 'credit', 'processed_by' => $byUserId, 'processed_at' => now()]);
             }
 
             return $refund;
