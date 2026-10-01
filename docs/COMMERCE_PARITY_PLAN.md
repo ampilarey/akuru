@@ -384,7 +384,7 @@ fixes: the admin OTP route stays admin-only and untouched.
 
 ### P7 — Feedback the office sees, and SMS to customers (one PR each)
 
-- **P7a Complaints**: `order_complaints` (order_id, user_id, kind, text,
+- **P7a Complaints** — **shipped 2026-10-01, STATUS §5mh**: `order_complaints` (order_id, user_id, kind, text,
   photo, status open → in progress → resolved, resolution note); *Report
   a problem* on the order page; office queue on `/admin/bookshop` with a
   reply that reaches the customer (in-app, email, SMS); the shop sees its

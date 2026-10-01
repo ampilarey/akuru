@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Actions\Vendor;
 
+use App\Domains\Bookshop\Actions\OrderComplaintAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Enums\CheckoutPaymentMethod;
 use App\Domains\Bookshop\Enums\OrderStatus;
@@ -56,8 +57,11 @@ class ListVendorOrdersAction
         $userModel = config('auth.providers.users.model');
         $people = $userModel::query()->whereIn('id', $orders->pluck('user_id')->unique()->all())->get(['id', 'name'])->keyBy('id');
 
+        // COMMERCE_PARITY_PLAN P7a: the problems customers reported on these orders (the office answers them).
+        $complaints = app(OrderComplaintAction::class)->forOrders($orders->pluck('id')->all());
+
         return [
-            'orders' => $orders->map(fn (Order $o) => $this->row($o, $people->get($o->user_id)?->name))->values()->all(),
+            'orders' => $orders->map(fn (Order $o) => $this->row($o, $people->get($o->user_id)?->name) + ['complaints' => $complaints[$o->id] ?? []])->values()->all(),
             'counts' => $counts,
         ];
     }

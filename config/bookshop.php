@@ -202,7 +202,7 @@ return [
      * only sends where `SMS_LIVE` allows it.
      */
     'notices' => [
-        'customer_events' => ['order_paid', 'slip_decided', 'order_progress', 'order_cancelled', 'return_decided', 'refund', 'back_in_stock', 'cart_reminder', 'quote_ready'],
+        'customer_events' => ['order_paid', 'slip_decided', 'order_progress', 'order_cancelled', 'return_decided', 'refund', 'back_in_stock', 'cart_reminder', 'quote_ready', 'complaint_reply'],
         'vendor_events' => ['new_order', 'customer_cancelled', 'return_requested', 'low_stock', 'review', 'question', 'payout_decided', 'invoice', 'quote_requested'],
         'vendor_defaults' => [
             // COMMERCE_PARITY_PLAN P5: a paid order reaches the shop by SMS too.
@@ -216,6 +216,8 @@ return [
             'payout_decided' => ['email' => true, 'sms' => false],
             // COMMERCE_PARITY_PLAN P4: the office approves or declines a listing.
             'listing_decided' => ['email' => true, 'sms' => false],
+            // COMMERCE_PARITY_PLAN P7a: a customer reported a problem with an order.
+            'complaint' => ['email' => true, 'sms' => false],
             'invoice' => ['email' => true, 'sms' => false],
             'quote_requested' => ['email' => true, 'sms' => false],
         ],
@@ -230,7 +232,7 @@ return [
             'office_sms' => true,
         ],
         // P5: what reaches the office's own address and number (set on /admin/bookshop).
-        'office_events' => ['order_paid', 'slip_received', 'order_cancelled', 'return_requested'],
+        'office_events' => ['order_paid', 'slip_received', 'order_cancelled', 'return_requested', 'complaint'],
         'office_email' => env('BOOKSHOP_OFFICE_EMAIL'),
         'office_phone' => env('BOOKSHOP_OFFICE_PHONE'),
         'sms_max_length' => 300,

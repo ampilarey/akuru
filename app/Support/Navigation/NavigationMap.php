@@ -102,6 +102,7 @@ final class NavigationMap
             'bookshop_manager' => [
                 ['key' => 'bookshop', 'href' => '/admin/bookshop'],
                 ['key' => 'akuru_fulfilment', 'href' => '/admin/bookshop/akuru'],
+                ['key' => 'complaints', 'href' => '/admin/bookshop/complaints'],
                 ['key' => 'shop', 'href' => '/shop'],
             ],
             // The Institute workspace (STATUS §5id): the business side's doors.
@@ -400,6 +401,8 @@ final class NavigationMap
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
                 // COMMERCE_PARITY_PLAN P6a: the orders Akuru packs, and its charges.
                 ['key' => 'akuru_fulfilment', 'href' => '/admin/bookshop/akuru', 'can' => ['bookshop.manage']],
+                // COMMERCE_PARITY_PLAN P7a: the problems customers report on orders.
+                ['key' => 'complaints', 'href' => '/admin/bookshop/complaints', 'can' => ['bookshop.manage']],
             ]],
             ['key' => 'panel_system', 'items' => [
                 ['key' => 'manage_users', 'href' => '/admin/users'],

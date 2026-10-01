@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\Cart\BuyAgainAction;
 use App\Domains\Bookshop\Actions\Money\ReferralCreditAction;
+use App\Domains\Bookshop\Actions\OrderComplaintAction;
 use App\Domains\Bookshop\Actions\Orders\CustomerOrderAction;
 use App\Domains\Bookshop\Actions\Orders\ListMyOrdersAction;
 use App\Domains\Bookshop\Actions\Orders\PresentOrderAction;
@@ -11,6 +12,7 @@ use App\Domains\Bookshop\Actions\Orders\RequestReturnAction;
 use App\Domains\Bookshop\Actions\Orders\TrackOrderAction;
 use App\Domains\Bookshop\Enums\ReturnReason;
 use App\Domains\Bookshop\Http\Controllers\Concerns\ResolvesCart;
+use App\Domains\Bookshop\Models\OrderComplaint;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use Illuminate\Http\RedirectResponse;
@@ -98,6 +100,20 @@ class MyOrdersController extends Controller
         app(RequestReturnAction::class)->execute((int) $request->user()->id, $number, (int) $data['item_id'], (int) $data['quantity'], $data['reason'], $data['note'] ?? null);
 
         return back()->with('success', __('shop.return_requested_flash'));
+    }
+
+    /** COMMERCE_PARITY_PLAN P7a: report a problem with this order, with a photo if there is one. */
+    public function complain(Request $request, string $number): RedirectResponse
+    {
+        abort_unless($request->user() !== null, 403);
+        $data = $request->validate([
+            'kind' => 'required|string|in:'.implode(',', OrderComplaint::KINDS),
+            'body' => 'required|string|max:2000',
+            'photo' => ['nullable', 'file', 'max:10240', 'mimetypes:'.implode(',', OrderComplaintAction::PHOTO_MIMES)],
+        ]);
+        app(OrderComplaintAction::class)->report((int) $request->user()->id, $number, $data['kind'], $data['body'], $request->file('photo'));
+
+        return back()->with('success', __('shop.complaint_sent_flash'));
     }
 
     /** B3: write to the shop about this order, on the Messages threads. */

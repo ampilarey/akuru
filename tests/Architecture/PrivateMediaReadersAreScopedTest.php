@@ -47,6 +47,10 @@ it('pins every caller that can read a private file', function () {
         // the slip's checkout, or hold `bookshop.manage`. It reaches slips
         // only — the media id is read from the slip row, never the request.
         'app/Domains/Bookshop/Actions/Checkout/ServeBankTransferSlipAction.php',
+        // COMMERCE_PARITY_PLAN P7a: a complaint's photo — the media id is read
+        // from the complaint row; AdminComplaintController::photo admits the
+        // customer who sent it, the shop's members, or the office.
+        'app/Domains/Bookshop/Actions/OrderComplaintAction.php',
         // **The one that takes an id straight from the route**, and therefore
         // the one carrying an explicit allow-list: catalog media, or a
         // submission attachment a reviewer is opening.

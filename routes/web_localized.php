@@ -198,6 +198,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/deliveries', [\App\Domains\Bookshop\Http\Controllers\DriverController::class, 'index'])->name('deliveries.index');
     Route::post('/deliveries/{delivery}/picked-up', [\App\Domains\Bookshop\Http\Controllers\DriverController::class, 'pickUp'])->name('deliveries.picked-up')->whereNumber('delivery');
     Route::post('/deliveries/{delivery}/delivered', [\App\Domains\Bookshop\Http\Controllers\DriverController::class, 'deliver'])->name('deliveries.delivered')->whereNumber('delivery')->middleware('throttle:30,1,delivery-proof');
+    // P7a: a complaint's photo — the customer, the shop, or the office.
+    Route::get('/complaints/{complaint}/photo', [\App\Domains\Bookshop\Http\Controllers\AdminComplaintController::class, 'photo'])->name('complaints.photo')->whereNumber('complaint');
     Route::get('/deliveries/{delivery}/proof', [\App\Domains\Bookshop\Http\Controllers\DriverController::class, 'proof'])->name('deliveries.proof')->whereNumber('delivery');
     // COMMERCE_PARITY_PLAN P3: a learner's ID card, sent again after the office rejected it. Not under
     // my-enrollments: ConvertEnroll403ToRedirect turns any 403 on a POST path holding "enroll" into a redirect.
@@ -889,6 +891,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('akuru/drivers', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'driver'])->name('admin.bookshop.akuru.drivers.store');
         Route::post('akuru/drivers/{driver}', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'driver'])->name('admin.bookshop.akuru.drivers.update')->whereNumber('driver');
         Route::post('akuru/orders/{order}/driver', [\App\Domains\Bookshop\Http\Controllers\AdminAkuruController::class, 'assign'])->name('admin.bookshop.akuru.assign')->whereNumber('order');
+        // COMMERCE_PARITY_PLAN P7a: problems customers reported, and the office's answers.
+        Route::get('complaints', [\App\Domains\Bookshop\Http\Controllers\AdminComplaintController::class, 'index'])->name('admin.bookshop.complaints');
+        Route::get('complaints/export', [\App\Domains\Bookshop\Http\Controllers\AdminComplaintController::class, 'export'])->name('admin.bookshop.complaints.export');
+        Route::post('complaints/{complaint}/reply', [\App\Domains\Bookshop\Http\Controllers\AdminComplaintController::class, 'reply'])->name('admin.bookshop.complaints.reply')->whereNumber('complaint');
         // COMMERCE_PARITY_PLAN P4: listings awaiting the office's approval.
         Route::post('listings/{product}/decide', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'decide'])->name('admin.bookshop.listings.decide')->whereNumber('product');
         Route::get('listings/export', [\App\Domains\Bookshop\Http\Controllers\AdminListingController::class, 'export'])->name('admin.bookshop.listings.export');
