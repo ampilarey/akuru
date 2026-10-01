@@ -128,6 +128,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->requestsCycle($class);
         $this->vendorCycle();
         $this->verifiedIdentityCards();
+        $this->lending();
         $this->officePurchaseContacts();
         $this->smsOffers();
 
@@ -1890,6 +1891,22 @@ class SmokeMarkerSeeder extends Seeder
             $row = $identity->submit($userId, $purpose, $file(), $file());
             $identity->decide($row->id, $officeId ?: $userId, true, null, false);
         }
+    }
+
+    /**
+     * LENDING_AND_USED_BOOKS_PLAN L1: lending.mjs registers the parent as a
+     * lender, sends their card, lists a book and lends it to the student.
+     * Each run starts from nothing: the walk's lender, their books, loans
+     * and lender card go, so the walk can register and be checked again.
+     */
+    private function lending(): void
+    {
+        $ids = DB::table('users')->whereIn('email', ['parent@akuru.edu.mv', 'student@akuru.edu.mv'])->pluck('id');
+        $lenderIds = DB::table('lenders')->whereIn('user_id', $ids)->pluck('id');
+        DB::table('lending_loans')->whereIn('lender_id', $lenderIds)->orWhereIn('borrower_user_id', $ids)->delete();
+        DB::table('lending_books')->whereIn('lender_id', $lenderIds)->delete();
+        DB::table('lenders')->whereIn('id', $lenderIds)->delete();
+        DB::table('identity_verifications')->whereIn('user_id', $ids)->where('purpose', 'lender')->delete();
     }
 
     private function vendorCycle(): void

@@ -106,6 +106,7 @@ final class NavigationMap
                 ['key' => 'sms_campaigns', 'href' => '/admin/bookshop/campaigns'],
                 ['key' => 'shop_customers', 'href' => '/admin/bookshop/customers'],
                 ['key' => 'shop_credit', 'href' => '/admin/bookshop/credit'],
+                ['key' => 'lending_office', 'href' => '/admin/lending'],
                 ['key' => 'shop', 'href' => '/shop'],
             ],
             // The Institute workspace (STATUS §5id): the business side's doors.
@@ -412,6 +413,8 @@ final class NavigationMap
                 ['key' => 'shop_customers', 'href' => '/admin/bookshop/customers', 'can' => ['bookshop.manage']],
                 // COMMERCE_PARITY_PLAN P8c: credit accounts for schools.
                 ['key' => 'shop_credit', 'href' => '/admin/bookshop/credit', 'can' => ['bookshop.manage']],
+                // LENDING_AND_USED_BOOKS_PLAN L1: lenders, their ID cards, the loans (D6: the Bookstore team).
+                ['key' => 'lending_office', 'href' => '/admin/lending', 'can' => ['bookshop.manage']],
             ]],
             ['key' => 'panel_system', 'items' => [
                 ['key' => 'manage_users', 'href' => '/admin/users'],

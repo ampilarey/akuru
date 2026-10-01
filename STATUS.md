@@ -4414,6 +4414,87 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5ms. Book lending, the loop (LENDING_AND_USED_BOOKS_PLAN L1, 2026-10-01)
+
+The owner: "book lending features. Lender register and list books to lend,
+and lend books to others". The second of the plan's three slices; a new
+`Domains/Lending`, beside the Bookstore, with no money through Akuru (D4).
+
+- **Becoming a lender**: `/my-lending`, signed in. A person registers once —
+  the name borrowers see, their island, a few words, and whether they lend
+  only to borrowers whose ID the office has checked (D5). They send their own
+  ID card (Identity purpose `lender`); until the office verifies it their
+  books stay off the public shelf, and the page says so.
+- **Books I lend**: title, author, language, condition (like new → worn),
+  description, grade, subject, how long it may be kept (default 14 days, at
+  most 60), a deposit *as words* ("another book while mine is out"), a photo.
+  Up to 50 books; the slug is fixed at creation; a book on loan cannot be
+  taken down.
+- **The shelf**: `/lending` — available and on-loan books of active, checked
+  lenders, searchable by title/author/subject and narrowed by grade, subject,
+  language and island (the filters offer only what the shelf holds). A card
+  shows the lender's display name and island, never their phone, email or
+  legal name. `/lending/{slug}` is the book's page; a visitor is sent to sign
+  in to ask. *Borrow books* joins the Bookstore's menu.
+- **The loan**: a signed-in person asks (with a message); the lender accepts
+  (naming the return date, else today + the book's days) or declines with a
+  note; on acceptance **both sides see each other's phone** — not before — and
+  arrange the handover themselves; other open requests for the same book are
+  declined with "lent to someone else"; the lender marks *Handed over* (book
+  → on loan) and *Returned* (book → available); the borrower may cancel until
+  handover. Every state change is one transaction with the book row locked.
+  Each loan carries `academic_year_id` (rule 10).
+- **Notices**: in the app (new category *Book lending*, which a person may
+  switch off), by email (`LendingNoticeMail`) and SMS (`SmsSenderInterface`,
+  type `lending`), each behind `config/lending.php` switches — asked,
+  accepted (with the lender's phone and the due date), declined (with the
+  note), cancelled, handed over, returned. Mail and SMS failures never fail
+  the caller.
+- **The office**: `/admin/lending` (Bookstore admins, D6) — counts, the
+  lenders' ID cards to verify or reject (the same `IdentityChecks` rows as
+  the Bookstore's), every lender with their book and loan counts and whether
+  their card is checked, the loans, CSV. *Book lending* in the
+  `bookshop_manager` bar and the Institute panel.
+- **Data**: `lenders`, `lending_books`, `lending_loans`; morph aliases
+  `lender`, `lending_book`, `lending_loan`. Additive.
+- `IdentityCheckController::authorizeFor` learns the `lender` purpose
+  (`bookshop.manage`) — its per-purpose map fell to *false* for anything
+  new, a silent 403 the first test caught.
+- EN/DV/AR throughout (`lang/*/lending.php`).
+
+Tests:
+- New `LendingTest`, 3 tests: a book stays off the shelf (and its page a 404)
+  until the office verifies the lender's card, then appears with the lender's
+  name and island and never their email, and comes off when taken down; a
+  loan from request to return — the lender cannot borrow their own, a visitor
+  is sent to sign in, one open request per person per book, only the lender
+  decides, a decline needs a note, no past due date, acceptance declines the
+  other request and shares phones that were hidden before, handover and
+  return move the book's status, the office sees and exports it, the
+  Bookstore permission gates it; a borrower cancels before handover and a
+  lender who asks for a checked ID refuses one without.
+- Public-route baseline gains `GET lending` and `GET lending/{slug}`; the
+  unguarded-write baseline names the six own-data routes with the scoping
+  that guards each; `AdminHubTest` and `WorkspacesTest` learn the ninth
+  Institute door; Blade baseline +5 (three pages, a fields partial, the
+  notice email).
+- Architecture, Nav, Admin, Routes, Bookshop, Identity, Lending: 549 green.
+
+Walk:
+- New `lending.mjs`, 20/20: the parent registers, sends their card, lists a
+  book; the shelf and the book's page refuse it until the office verifies the
+  card at `/admin/lending`; a guest finds it by grade and subject with the
+  lender's name and island and no phone; the student asks; the lender sees
+  the message and no phone, accepts (phone appears, due date set), hands
+  over (shelf says *On loan*), marks returned (available again); the office's
+  table and CSV carry the returned loan. Phone-width screenshots of the
+  shelf, the book, My lending and the office: no horizontal scroll.
+
+For the owner: D4 stands — Akuru holds no deposit and charges nothing for
+lending; a lender's deposit is words between two people. The office must
+verify lenders' ID cards at `/admin/lending` before any book shows. L2 (daily
+reminders, ratings, pause, moderation) is next.
+
 ## 5mr. Old and used books (LENDING_AND_USED_BOOKS_PLAN U1, 2026-10-01)
 
 The owner: "old and used books selling features". Planned with book lending in

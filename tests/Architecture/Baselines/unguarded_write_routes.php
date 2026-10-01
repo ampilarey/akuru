@@ -123,4 +123,11 @@ return [
     'write/payout-request' => 'WriterPortalController@requestPayout — your own balance; gated by library.payouts_enabled.',
     'review/{assignment}' => 'ReviewerPortalController@store — READ: SubmitResearchReviewAction refuses an assignment not assigned to you.',
     'review/{assignment}/declare' => 'ReviewerPortalController@declare — READ: DeclareReviewerNoConflictAction refuses an assignment not assigned to you (R3b).',
+    // LENDING_AND_USED_BOOKS_PLAN L1: book lending between people — every write is the signed-in person's own (auth + customer_password, throttled).
+    'my-lending/register' => 'MyLendingController@register — your own lender record; RegisterLenderAction keys it on the signed-in user id, never a request value.',
+    'my-lending/identity' => 'MyLendingController@identity — your own ID card, sent to the office through the Identity domain under the signed-in user id.',
+    'my-lending/books' => 'MyLendingController@storeBook — your own books; the lender is found by the signed-in user (403 if unregistered), and ManageLendingBooksAction scopes every book to that lender.',
+    'my-lending/books/{book}' => 'MyLendingController@storeBook — as above; READ: ManageLendingBooksAction looks the book up under the caller\'s own lender_id, so another lender\'s id is a 404.',
+    'my-lending/loans/{loan}/{action}' => 'MyLendingController@loan — READ: LendingLoanAction::ownLoan scopes accept/decline/handover/returned to loans on the caller\'s own books, and cancel to the caller\'s own requests; anything else is a 404.',
+    'lending/{slug}/request' => 'LendingController@request — a signed-in person\'s own request; LendingLoanAction::request writes it under the signed-in user id and refuses the lender\'s own book.',
 ];

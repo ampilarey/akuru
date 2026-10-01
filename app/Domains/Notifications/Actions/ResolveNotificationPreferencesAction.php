@@ -34,6 +34,7 @@ class ResolveNotificationPreferencesAction
         // BOOKSHOP_PLAN B2 (2026-09-26): a customer's orders, a vendor's
         // orders to fulfil, the office's slips to confirm.
         'shop' => 'Bookstore orders',
+        'lending' => 'Book lending',
     ];
 
     /**

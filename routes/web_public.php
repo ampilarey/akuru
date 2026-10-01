@@ -60,6 +60,9 @@ Route::get('shop', [\App\Domains\Bookshop\Http\Controllers\ShopController::class
 Route::get('shop/deals', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'deals'])->name('public.shop.deals');
 // LENDING_AND_USED_BOOKS_PLAN U1: old and used books.
 Route::get('shop/used', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'used'])->name('public.shop.used');
+// LENDING_AND_USED_BOOKS_PLAN L1: books to borrow from checked lenders, and one book's page.
+Route::get('lending', [\App\Domains\Lending\Http\Controllers\LendingController::class, 'index'])->name('public.lending.index');
+Route::get('lending/{slug}', [\App\Domains\Lending\Http\Controllers\LendingController::class, 'show'])->name('public.lending.show')->where('slug', '[a-z0-9-]+');
 Route::get('shop/export', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'export'])->name('public.shop.export');
 // B7: suggestions as you type.
 Route::get('shop/suggest', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'suggest'])->name('public.shop.suggest')->middleware('throttle:120,1,shop-suggest');
@@ -104,6 +107,15 @@ Route::middleware(['auth', 'customer_password'])->group(function () {
     Route::post('my-orders/{number}/cancel', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'cancel'])->name('public.shop.orders.cancel')->middleware('throttle:10,1,shop-cancel');
     Route::post('my-orders/{number}/returns', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'requestReturn'])->name('public.shop.orders.return')->middleware('throttle:10,1,shop-return');
     Route::post('my-orders/{number}/message', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'message'])->name('public.shop.orders.message')->middleware('throttle:20,1,shop-message');
+    // LENDING_AND_USED_BOOKS_PLAN L1: My lending — become a lender, the lender's ID card, the books lent, the loans either way.
+    Route::get('my-lending', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'index'])->name('public.lending.mine');
+    Route::post('my-lending/register', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'register'])->name('public.lending.register')->middleware('throttle:20,1,lending-register');
+    Route::post('my-lending/identity', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'identity'])->name('public.lending.identity')->middleware('throttle:10,60,lending-identity');
+    Route::post('my-lending/books', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'storeBook'])->name('public.lending.books.store')->middleware('throttle:30,1,lending-books');
+    Route::post('my-lending/books/{book}', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'storeBook'])->name('public.lending.books.update')->middleware('throttle:30,1,lending-books')->whereNumber('book');
+    Route::delete('my-lending/books/{book}', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'destroyBook'])->name('public.lending.books.destroy')->middleware('throttle:30,1,lending-books')->whereNumber('book');
+    Route::post('my-lending/loans/{loan}/{action}', [\App\Domains\Lending\Http\Controllers\MyLendingController::class, 'loan'])->name('public.lending.loan')->middleware('throttle:30,1,lending-loan')->whereNumber('loan')->where('action', 'accept|decline|cancel|handover|returned');
+    Route::post('lending/{slug}/request', [\App\Domains\Lending\Http\Controllers\LendingController::class, 'request'])->name('public.lending.request')->middleware('throttle:10,1,lending-request')->where('slug', '[a-z0-9-]+');
     // COMMERCE_PARITY_PLAN P7a: report a problem with an order.
     Route::post('my-orders/{number}/complaints', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'complain'])->name('public.shop.orders.complain')->middleware('throttle:10,60,shop-complaint');
     // B7: the wishlist, back-in-stock requests, reviews of what was received.

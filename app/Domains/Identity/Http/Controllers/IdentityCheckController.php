@@ -50,6 +50,8 @@ class IdentityCheckController extends Controller
             'vendor' => $user?->can('bookshop.manage'),
             'writer' => $user?->can('library.manage'),
             'learner' => $user?->hasAnyRole(['super_admin', 'admin', 'headmaster']),
+            // LENDING_AND_USED_BOOKS_PLAN L1, D6: the Bookstore team checks lenders' cards.
+            'lender' => $user?->can('bookshop.manage'),
             default => false,
         };
         abort_unless((bool) $allowed, 403);

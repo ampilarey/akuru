@@ -864,6 +864,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // B10b: a Bookstore admin (`bookshop_manager`) runs this screen without
     // being a full admin. The Bookstore is the Institute's, so the system
     // admin and the Bookstore admin, and not the school's office (ADR-040).
+    // LENDING_AND_USED_BOOKS_PLAN L1: the office's view of book lending; the Bookstore team runs it (D6).
+    Route::prefix('admin/lending')->middleware(['role:super_admin|bookshop_manager', 'can:bookshop.manage'])->group(function () {
+        Route::get('/', [\App\Domains\Lending\Http\Controllers\AdminLendingController::class, 'index'])->name('admin.lending.index');
+        Route::get('export', [\App\Domains\Lending\Http\Controllers\AdminLendingController::class, 'export'])->name('admin.lending.export');
+    });
     Route::prefix('admin/bookshop')->middleware(['role:super_admin|bookshop_manager', 'can:bookshop.manage'])->group(function () {
         Route::get('/', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'index'])->name('admin.bookshop.index');
         Route::get('vendors/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportVendors'])->name('admin.bookshop.vendors.export');

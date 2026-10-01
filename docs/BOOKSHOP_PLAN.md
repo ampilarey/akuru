@@ -512,8 +512,10 @@ the shops it trusts are marked *trusted* (then their edits skip the queue).
 
 Planned and built in their own document, `docs/LENDING_AND_USED_BOOKS_PLAN.md`:
 U1 puts a condition on products and lets a person sell their own books as a
-*personal seller* (a vendor of kind `personal`); L1 and L2 add book lending
-between Akuru's users beside the Bookstore. `used` and `lending` are reserved
+*personal seller* (a vendor of kind `personal`); L1 (built the same day, STATUS
+§5ms) adds book lending between Akuru's users beside the Bookstore — `/lending`,
+`/my-lending`, `/admin/lending`, lenders' ID cards checked by the Bookstore
+team — and L2 the reminders and ratings. `used` and `lending` are reserved
 shop addresses.
 
 ## 16. After the build: features from the iruali comparison (2026-09-29)
