@@ -250,6 +250,27 @@ function ProductEditor({ product, options, t, onDone, trusted = false }) {
     );
 }
 
+/**
+ * STATUS §5mp: the portal is one long page — products first, then seven
+ * settings sections — and on a phone the settings start 2,300px down with
+ * nothing to jump by. A row of chips, sticky under the thumb on phones
+ * (the shell's header is sticky only from `sm`), static beside the header
+ * on wider screens. Each chip is at least 32px tall.
+ */
+function SectionNav({ items, t }) {
+    return (
+        <nav className="sticky top-0 z-20 -mx-4 mb-4 bg-brandBeige-50/95 px-4 py-2 shadow-sm backdrop-blur sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:shadow-none" aria-label={t.on_this_page} data-testid="section-nav">
+            <ul className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:pb-0">
+                {items.map(([id, label]) => (
+                    <li key={id} className="shrink-0">
+                        <a href={`#${id}`} className="inline-flex min-h-[2rem] items-center whitespace-nowrap rounded-full border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:border-brandMaroon-600 hover:text-brandMaroon-600" data-testid={`jump-${id}`}>{label}</a>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    );
+}
+
 function AgreementGate({ t, agreementUrl }) {
     const form = useForm({ accept: false });
 
@@ -280,7 +301,7 @@ function Members({ members, isOwner, t }) {
     const flash = usePage().props.flash || {};
 
     return (
-        <section className="mt-8" data-testid="members">
+        <section className="mt-8 scroll-mt-14" id="members" data-testid="members">
             <h2 className="mb-2 text-lg font-semibold">{t.members_heading}</h2>
             <ul className="mb-3 divide-y rounded border bg-white">
                 {members.map((m) => (
@@ -327,7 +348,7 @@ function DeliveryMethods({ methods, kinds, isOwner, t }) {
     const addRow = () => form.setData('methods', [...form.data.methods, { kind: kinds[0], name: '', name_dv: '', name_ar: '', fee: '0', free_over: '', minimum_order: '', carrier_paid_on_arrival: false, handling_days: 1, note: '', is_active: true }]);
 
     return (
-        <section className="mt-8" data-testid="delivery-methods">
+        <section className="mt-8 scroll-mt-14" id="delivery" data-testid="delivery-methods">
             <h2 className="mb-1 text-lg font-semibold">{t.delivery_methods_heading}</h2>
             <p className="mb-3 text-sm text-gray-600">{t.delivery_methods_intro}</p>
             {methods.length === 0 && (
@@ -346,21 +367,26 @@ function DeliveryMethods({ methods, kinds, isOwner, t }) {
                         form.post('/vendor/delivery-methods', { preserveScroll: true });
                     }}
                 >
+                    {/* §5mp: every box labelled (a placeholder is gone once typed into), two to a row on a phone, six on a desk. */}
                     {form.data.methods.map((m, index) => (
-                        <div key={m.id ?? `new-${index}`} className="mb-3 grid gap-2 border-b pb-3 md:grid-cols-6" data-testid={`delivery-row-${index}`}>
-                            <select className="form-input" value={m.kind} onChange={(e) => setRow(index, 'kind', e.target.value)} aria-label={t.kind}>
-                                {kinds.map((k) => <option key={k} value={k}>{t[`kind_${k}`] || k}</option>)}
-                            </select>
-                            <input className="form-input md:col-span-2" placeholder={t.name} value={m.name} onChange={(e) => setRow(index, 'name', e.target.value)} data-testid={`delivery-name-${index}`} />
-                            <input className="form-input" type="number" step="0.01" min="0" placeholder={t.fee} value={m.fee} onChange={(e) => setRow(index, 'fee', e.target.value)} disabled={m.kind === 'boat'} aria-label={t.fee} data-testid={`delivery-fee-${index}`} />
-                            <input className="form-input" type="number" step="0.01" min="0" placeholder={t.free_over} value={m.free_over} onChange={(e) => setRow(index, 'free_over', e.target.value)} aria-label={t.free_over} />
-                            <input className="form-input" type="number" step="0.01" min="0" placeholder={t.minimum_order} value={m.minimum_order} onChange={(e) => setRow(index, 'minimum_order', e.target.value)} aria-label={t.minimum_order} />
-                            <input className="form-input" type="number" min="0" max="60" placeholder={t.handling_days} value={m.handling_days} onChange={(e) => setRow(index, 'handling_days', e.target.value)} aria-label={t.handling_days} />
-                            <input className="form-input md:col-span-2" placeholder={t.note} value={m.note} onChange={(e) => setRow(index, 'note', e.target.value)} />
-                            <input className="form-input" dir="rtl" placeholder={t.name_dv} value={m.name_dv} onChange={(e) => setRow(index, 'name_dv', e.target.value)} />
-                            <input className="form-input" dir="rtl" placeholder={t.name_ar} value={m.name_ar} onChange={(e) => setRow(index, 'name_ar', e.target.value)} />
-                            <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={Boolean(m.is_active)} onChange={(e) => setRow(index, 'is_active', e.target.checked)} /> {t.active}</label>
-                            <button type="button" className="text-sm text-red-700 underline" onClick={() => form.setData('methods', form.data.methods.filter((_, i) => i !== index))}>{t.remove}</button>
+                        <div key={m.id ?? `new-${index}`} className="mb-3 grid grid-cols-2 gap-2 rounded border p-3 md:grid-cols-6" data-testid={`delivery-row-${index}`}>
+                            <Field label={t.kind}>
+                                <select className="form-input w-full" value={m.kind} onChange={(e) => setRow(index, 'kind', e.target.value)}>
+                                    {kinds.map((k) => <option key={k} value={k}>{t[`kind_${k}`] || k}</option>)}
+                                </select>
+                            </Field>
+                            <Field label={t.name} className="md:col-span-2"><input className="form-input w-full" value={m.name} onChange={(e) => setRow(index, 'name', e.target.value)} data-testid={`delivery-name-${index}`} /></Field>
+                            <Field label={t.fee}><input className="form-input w-full" type="number" step="0.01" min="0" value={m.fee} onChange={(e) => setRow(index, 'fee', e.target.value)} disabled={m.kind === 'boat'} data-testid={`delivery-fee-${index}`} /></Field>
+                            <Field label={t.free_over}><input className="form-input w-full" type="number" step="0.01" min="0" value={m.free_over} onChange={(e) => setRow(index, 'free_over', e.target.value)} /></Field>
+                            <Field label={t.minimum_order}><input className="form-input w-full" type="number" step="0.01" min="0" value={m.minimum_order} onChange={(e) => setRow(index, 'minimum_order', e.target.value)} /></Field>
+                            <Field label={t.handling_days}><input className="form-input w-full" type="number" min="0" max="60" value={m.handling_days} onChange={(e) => setRow(index, 'handling_days', e.target.value)} /></Field>
+                            <Field label={t.note} className="col-span-2"><input className="form-input w-full" value={m.note} onChange={(e) => setRow(index, 'note', e.target.value)} /></Field>
+                            <Field label={t.name_dv}><input className="form-input w-full" dir="rtl" value={m.name_dv} onChange={(e) => setRow(index, 'name_dv', e.target.value)} /></Field>
+                            <Field label={t.name_ar}><input className="form-input w-full" dir="rtl" value={m.name_ar} onChange={(e) => setRow(index, 'name_ar', e.target.value)} /></Field>
+                            <div className="col-span-2 flex items-center justify-between gap-3 md:col-span-6">
+                                <label className="flex min-h-[2rem] items-center gap-2 text-sm"><input type="checkbox" checked={Boolean(m.is_active)} onChange={(e) => setRow(index, 'is_active', e.target.checked)} /> {t.active}</label>
+                                <button type="button" className="min-h-[2rem] px-2 text-sm text-red-700 underline" onClick={() => form.setData('methods', form.data.methods.filter((_, i) => i !== index))}>{t.remove}</button>
+                            </div>
                         </div>
                     ))}
                     <FormErrors errors={form.errors} className="mb-2" />
@@ -397,7 +423,7 @@ function ShopSettings({ settings, isOwner, t }) {
     const set = (name) => (e) => form.setData(name, e.target.value);
 
     return (
-        <section className="mt-8" data-testid="shop-settings">
+        <section className="mt-8 scroll-mt-14" id="settings" data-testid="shop-settings">
             <h2 className="mb-1 text-lg font-semibold">{t.shop_settings_heading}</h2>
             {settings.on_holiday && <p className="mb-2 rounded bg-amber-50 p-2 text-sm text-amber-900" data-testid="on-holiday">{t.on_holiday_now}</p>}
             <form
@@ -435,7 +461,7 @@ function OwnDomain({ settings, isOwner, t }) {
     const status = settings.custom_host ? settings.custom_host_status : null;
 
     return (
-        <section className="mt-8" data-testid="own-domain">
+        <section className="mt-8 scroll-mt-14" id="domain" data-testid="own-domain">
             <h2 className="mb-1 text-lg font-semibold">{t.host_heading}</h2>
             <p className="mb-2 text-sm text-gray-600">{t.host_intro.replace(':host', settings.canonical_host)}</p>
             {status && (
@@ -444,8 +470,8 @@ function OwnDomain({ settings, isOwner, t }) {
                 </p>
             )}
             <form className="flex flex-wrap items-end gap-2 rounded border bg-white p-3" onSubmit={(e) => { e.preventDefault(); form.post('/vendor/host', { preserveScroll: true }); }}>
-                <label className="text-sm">{t.host_label}
-                    <input className="form-input block w-72" dir="ltr" placeholder="www.example.mv" value={form.data.custom_host} onChange={(e) => form.setData('custom_host', e.target.value)} disabled={!isOwner} data-testid="host-input" />
+                <label className="w-full text-sm sm:w-auto">{t.host_label}
+                    <input className="form-input block w-full sm:w-72" dir="ltr" placeholder="www.example.mv" value={form.data.custom_host} onChange={(e) => form.setData('custom_host', e.target.value)} disabled={!isOwner} data-testid="host-input" />
                 </label>
                 {isOwner && <button type="submit" className="btn-secondary" disabled={form.processing} data-testid="host-save">{t.host_save}</button>}
                 <FormErrors errors={form.errors} className="w-full" />
@@ -461,7 +487,7 @@ function DiscountCodes({ codes, isOwner, t }) {
     const set = (name) => (e) => form.setData(name, e.target.value);
 
     return (
-        <section className="mt-8" data-testid="discount-codes">
+        <section className="mt-8 scroll-mt-14" id="codes" data-testid="discount-codes">
             <h2 className="mb-1 text-lg font-semibold">{t.discount_codes_heading}</h2>
             <p className="mb-2 text-sm text-gray-600">{t.discount_codes_intro}</p>
             {codes.length > 0 && (
@@ -513,7 +539,7 @@ function Notices({ settings, isOwner, t }) {
     const office = settings.office;
 
     return (
-        <section className="mt-8" data-testid="shop-notices">
+        <section className="mt-8 scroll-mt-14" id="notices" data-testid="shop-notices">
             <h2 className="mb-1 text-lg font-semibold">{t.notices_heading}</h2>
             <p className="mb-2 text-sm text-gray-600">{t.notices_hint}{!settings.phone && <span className="ms-1 text-amber-800">{t.notices_no_phone}</span>}</p>
             {(!office.vendor_email || !office.vendor_sms) && (
@@ -524,12 +550,13 @@ function Notices({ settings, isOwner, t }) {
             <form onSubmit={(e) => { e.preventDefault(); form.post('/vendor/notices', { preserveScroll: true }); }}>
                 <div className="overflow-x-auto">
                 <table className="w-full rounded border bg-white text-sm">
-                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.notice_event}</th><th className="p-2">{t.in_app}</th><th className="p-2">{t.email}</th><th className="p-2">SMS</th></tr></thead>
+                    {/* §5mp: the always-ticked "in the app" column is the intro's words; on a phone it gives its width to the event names. */}
+                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.notice_event}</th><th className="hidden p-2 sm:table-cell">{t.in_app}</th><th className="p-2">{t.email}</th><th className="p-2">SMS</th></tr></thead>
                     <tbody>
                         {Object.keys(form.data.events).map((event) => (
                             <tr key={event} className="border-t" data-testid={`notice-${event}`}>
                                 <td className="p-2">{t[`notice_event_${event}`] || event}</td>
-                                <td className="p-2 text-center">✓</td>
+                                <td className="hidden p-2 text-center sm:table-cell">✓</td>
                                 <td className="p-2 text-center"><input type="checkbox" checked={!!form.data.events[event].email} disabled={!isOwner || !office.vendor_email} onChange={(e) => set(event, 'email', e.target.checked)} data-testid={`notice-${event}-email`} /></td>
                                 <td className="p-2 text-center"><input type="checkbox" checked={!!form.data.events[event].sms} disabled={!isOwner || !office.vendor_sms} onChange={(e) => set(event, 'sms', e.target.checked)} data-testid={`notice-${event}-sms`} /></td>
                             </tr>
@@ -546,7 +573,7 @@ function Notices({ settings, isOwner, t }) {
 /** B9c (§6.3 "Newsletter"): who asked for the shop's news. Add the Newsletter section on the storefront to collect them. */
 function Newsletter({ newsletter, t }) {
     return (
-        <section className="mt-8" data-testid="shop-newsletter">
+        <section className="mt-8 scroll-mt-14" id="newsletter" data-testid="shop-newsletter">
             <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold">{t.newsletter_list_heading} <span className="text-sm font-normal text-gray-500" data-testid="newsletter-count">{t.newsletter_count.replace(':count', newsletter.active)}</span></h2>
                 <a href="/vendor/newsletter/export" className="btn-secondary" data-testid="export-newsletter">{t.export_csv}</a>
@@ -654,15 +681,16 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                         <a href={`/shop/${vendor.slug}`} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid="open-shop-page">{t.open_shop_page}</a>
                     </p>
                     {vendor.agreement_accepted && (
-                        <span className="mt-2 flex flex-wrap gap-2" data-testid="shop-sections">
-                            <a href="/vendor/orders" className="btn-primary" data-testid="open-orders">{t.orders_title}</a>
-                            <a href="/vendor/storefront" className="btn-secondary" data-testid="open-designer">{t.designer_title}</a>
-                            <a href="/vendor/storefront/sections" className="btn-secondary" data-testid="open-sections">{t.sections_title}</a>
-                            <a href="/vendor/money" className="btn-secondary" data-testid="open-money">{t.money_title}</a>
-                            <a href="/vendor/reviews" className="btn-secondary" data-testid="open-reviews">{t.reviews_heading}</a>
-                            <a href="/vendor/stock" className="btn-secondary" data-testid="open-stock">{t.stock_title}</a>
-                            <a href="/vendor/quotes" className="btn-secondary" data-testid="open-quotes">{t.quotes_title}</a>
-                            <a href="/vendor/insights" className="btn-secondary" data-testid="open-insights">{t.insights_title}</a>
+                        /* §5mp: two even columns on a phone instead of a ragged wrap of eight. */
+                        <span className="mt-2 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap" data-testid="shop-sections">
+                            <a href="/vendor/orders" className="btn-primary justify-center sm:justify-start" data-testid="open-orders">{t.orders_title}</a>
+                            <a href="/vendor/storefront" className="btn-secondary justify-center sm:justify-start" data-testid="open-designer">{t.designer_title}</a>
+                            <a href="/vendor/storefront/sections" className="btn-secondary justify-center sm:justify-start" data-testid="open-sections">{t.sections_title}</a>
+                            <a href="/vendor/money" className="btn-secondary justify-center sm:justify-start" data-testid="open-money">{t.money_title}</a>
+                            <a href="/vendor/reviews" className="btn-secondary justify-center sm:justify-start" data-testid="open-reviews">{t.reviews_heading}</a>
+                            <a href="/vendor/stock" className="btn-secondary justify-center sm:justify-start" data-testid="open-stock">{t.stock_title}</a>
+                            <a href="/vendor/quotes" className="btn-secondary justify-center sm:justify-start" data-testid="open-quotes">{t.quotes_title}</a>
+                            <a href="/vendor/insights" className="btn-secondary justify-center sm:justify-start" data-testid="open-insights">{t.insights_title}</a>
                         </span>
                     )}
                 </div>
@@ -680,30 +708,40 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                 <AgreementGate t={t} agreementUrl={agreement_url} />
             ) : (
                 <>
-                    <section>
+                    <SectionNav t={t} items={[
+                        ['products', t.products_heading],
+                        ...(shop_settings ? [['settings', t.shop_settings_heading], ['domain', t.host_heading]] : []),
+                        ['codes', t.discount_codes_heading],
+                        ...(notice_settings ? [['notices', t.notices_heading]] : []),
+                        ...(newsletter ? [['newsletter', t.newsletter_list_heading]] : []),
+                        ['delivery', t.delivery_methods_heading],
+                        ['members', t.members_heading],
+                    ]} />
+                    <section className="scroll-mt-14" id="products">
                         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                             <h2 className="text-lg font-semibold">{t.products_heading} <span className="text-sm font-normal text-gray-500" data-testid="products-total">{t.products_count.replace(':count', products_page ? products_page.total : products.length)}</span></h2>
+                            {/* §5mp: on a phone the toolbar is a two-column grid — search across, the two filters side by side, New product across — not nine controls wrapping one per line. */}
                             <form
-                                className="flex flex-wrap gap-2"
+                                className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap"
                                 onSubmit={(e) => {
                                     e.preventDefault();
                                     goPage(1);
                                 }}
                             >
-                                <input className="form-input" placeholder={t.search_products} value={search} onChange={(e) => setSearch(e.target.value)} />
-                                <select className="form-input" value={status} onChange={(e) => setStatus(e.target.value)}>
+                                <input className="form-input col-span-2 sm:col-span-1 sm:w-auto" placeholder={t.search_products} value={search} onChange={(e) => setSearch(e.target.value)} />
+                                <select className="form-input sm:w-auto" value={status} onChange={(e) => setStatus(e.target.value)}>
                                     <option value="">{t.all_statuses}</option>
                                     {options.statuses.map((s) => <option key={s} value={s}>{t[`status_${s}`] || s}</option>)}
                                 </select>
-                                <select className="form-input" value={category} onChange={(e) => setCategory(e.target.value)} data-testid="filter-category">
+                                <select className="form-input sm:w-auto" value={category} onChange={(e) => setCategory(e.target.value)} data-testid="filter-category">
                                     <option value="">{t.all_categories}</option>
                                     {options.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                                 </select>
-                                <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={low} onChange={(e) => setLow(e.target.checked)} data-testid="filter-low" /> {t.low_stock_only}</label>
-                                <button type="submit" className="btn-secondary" data-testid="filter-products">{t.search}</button>
-                                <a href="/vendor/products/export" className="btn-secondary" data-testid="export-products">{t.export_csv}</a>
-                                <a href="/vendor/stock#import" className="btn-secondary" data-testid="open-import">{t.import_heading}</a>
-                                <button type="button" className="btn-primary" onClick={() => setEditing('new')} data-testid="new-product">{t.new_product}</button>
+                                <label className="flex min-h-[2rem] items-center gap-1 text-sm"><input type="checkbox" checked={low} onChange={(e) => setLow(e.target.checked)} data-testid="filter-low" /> {t.low_stock_only}</label>
+                                <button type="submit" className="btn-secondary justify-center sm:justify-start" data-testid="filter-products">{t.search}</button>
+                                <a href="/vendor/products/export" className="btn-secondary justify-center sm:justify-start" data-testid="export-products">{t.export_csv}</a>
+                                <a href="/vendor/stock#import" className="btn-secondary justify-center sm:justify-start" data-testid="open-import">{t.import_heading}</a>
+                                <button type="button" className="btn-primary col-span-2 justify-center sm:col-span-1 sm:justify-start" onClick={() => setEditing('new')} data-testid="new-product">{t.new_product}</button>
                             </form>
                         </div>
                         {editing && (

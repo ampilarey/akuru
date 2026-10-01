@@ -226,6 +226,17 @@ html[lang="dv"] body,
     gap: 0.5rem;
     padding-top: 0.5rem;
   }
+  /* STATUS §5mp: an Edit, Duplicate or View link in a card is a 20px line of
+     text on a desk; under a thumb it needs the 32px the portal's own links
+     have. The margin that spaced them in a table row gives way to the gap. */
+  .table-stack td.table-actions > a,
+  .table-stack td.table-actions > button {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2rem;
+    padding: 0.25rem 0.5rem;
+    margin-inline-start: 0;
+  }
 }
 /* B3 (LIBRARY_PLAN §36): the article body's editor. A page break is a
    labelled rule so the writer sees where the reader's page turns; the

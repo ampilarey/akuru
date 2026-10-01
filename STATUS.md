@@ -4414,6 +4414,61 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mp. The vendor portal on a phone (2026-10-01)
+
+The owner: "enhance the mobile layout of the vendor settings page". `/vendor`
+is one page — products, then returns and holidays, the shop's domain,
+discount codes, notices, newsletter, delivery methods and people. Measured at
+390 × 844 as Fitrah's owner before any change: nothing scrolled sideways (the
+§5js stacked tables hold), but the page was 6,310px tall with the first
+setting 2,327px down and no way to it but the thumb; the eight shop links
+wrapped into a ragged four rows; the products toolbar put nine controls one
+under the other; a delivery method was ten unlabelled boxes (placeholders,
+gone once typed into); the notices table spent a column on an always-ticked
+"in the app"; and every Edit, Duplicate and View on a product card was a 20px
+line of text.
+
+**Built:**
+- A row of **section chips** under the heading — Products, Returns and
+  holidays, Your own domain, Discount codes, Email and SMS notices,
+  Newsletter, Delivery methods, People in this shop — scrolling sideways and
+  **pinned to the top of the phone** as the page scrolls (the shell's header is
+  sticky only from `sm`, so nothing collides); static beside the heading on a
+  desk. Each chip is 32px tall; each section carries an `id` and
+  `scroll-mt-14` so the chip bar never covers the heading it lands on.
+- The **eight shop links** in two even columns on a phone.
+- The **products toolbar** as a two-column grid on a phone: search across, the
+  two filters side by side, the low-stock tick beside Search, Export and
+  Import side by side, New product across.
+- **Delivery methods**: every box labelled (kind, name, fee, free over,
+  minimum, handling days, note, Dhivehi and Arabic names), two to a row on a
+  phone and six on a desk, each method its own card with Active and Remove on
+  one line. Labels help on a desk too — a placeholder is gone once typed into.
+- **Notices**: the "in the app" column hides below `sm`; its words are already
+  in the intro.
+- **Own domain**: the box is the phone's width, 18rem from `sm`.
+- **Thumb-sized actions in every stacked table** (`.table-stack
+  td.table-actions a, button`): 32px tall, platform-wide, so parents' and
+  students' cards gain the same.
+- `shop.on_this_page` in EN/DV/AR for the chip row's label.
+
+No test ids changed, so `vendor.mjs`, `checkout.mjs` and `operations.mjs`
+drive the same controls.
+
+Walk:
+- New `vendor-mobile.mjs`, 11/11 at 390 × 844: the portal opens and fits;
+  the eight links sit in two even columns; eight chips, none under 32px;
+  tapping *Returns and holidays* lands the settings 56px from the top with
+  the chips pinned at 0px (they were 662px down); *Delivery methods* too;
+  Add method gives nine labelled boxes in two columns; the notices table shows
+  three columns; fourteen product-card links, none under 32px; the returns
+  window saves from the phone and reads back after a reload (then is put
+  back).
+- `vendor.mjs` 32/32; `checkout.mjs` 47/48 and `operations.mjs` 20/21 — the
+  reds are the two known data-dependent steps on a rebuilt database (no paid
+  Library item; the office's SMS switch on), neither touched here.
+- Vendor portal, shop-paused and Nav tests: 46 green.
+
 ## 5mo. Storefront freshness: every edit without a publish step is live at once (2026-10-01)
 
 The owner: "some vendors told me the edits they make don't come live". An audit
