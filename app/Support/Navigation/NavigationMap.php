@@ -82,6 +82,11 @@ final class NavigationMap
             'driver' => [
                 ['key' => 'deliveries', 'href' => '/deliveries'],
             ],
+            // LENDING_AND_USED_BOOKS_PLAN L4: a lender's own page and the shelf.
+            'lender' => [
+                ['key' => 'my_lending', 'href' => '/my-lending', 'hard' => true],
+                ['key' => 'lending_shelf', 'href' => '/lending', 'hard' => true],
+            ],
             'vendor' => [
                 ['key' => 'vendor_portal', 'href' => '/vendor'],
             ],

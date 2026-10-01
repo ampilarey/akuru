@@ -65,6 +65,8 @@ final class WorkspaceMap
             'vendor' => ['roles' => ['vendor'], 'groups' => ['me'], 'home' => 'vendor.index'],
             // COMMERCE_PARITY_PLAN P6b: Akuru's drivers — their deliveries, on the phone.
             'deliveries' => ['roles' => ['driver'], 'groups' => ['me'], 'home' => 'deliveries.index'],
+            // LENDING_AND_USED_BOOKS_PLAN L4: a lender's own books and loans (My lending is a public page, D7).
+            'lending' => ['roles' => ['lender'], 'groups' => ['me'], 'home' => 'public.lending.mine'],
             'writing' => ['roles' => ['writer', 'reviewer'], 'groups' => ['me'], 'home' => 'write.index'],
             'catalog' => ['roles' => ['course_creator'], 'groups' => ['catalog_group', 'me'], 'home' => 'catalog.courses.index'],
             self::LEARNER => ['roles' => [], 'groups' => ['education', 'me'], 'home' => 'learn.dashboard'],
@@ -103,6 +105,7 @@ final class WorkspaceMap
             'learn' => ['student'],
             'vendor' => ['vendor'],
             'deliveries' => ['driver'],
+            'lending' => ['lender'],
             'writing' => [
                 ...($has('writer') ? ['writer'] : []),
                 ...($has('reviewer') ? ['reviewer'] : []),

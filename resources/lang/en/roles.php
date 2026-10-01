@@ -19,4 +19,6 @@ return [
     'bookshop_manager' => 'Bookstore admin',
     'none' => 'No role',
     'driver' => 'Driver',
+    // LENDING_AND_USED_BOOKS_PLAN L4: granted by registering on My lending; the office may take it away.
+    'lender' => 'Lender',
 ];

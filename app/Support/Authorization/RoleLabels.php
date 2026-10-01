@@ -14,7 +14,7 @@ namespace App\Support\Authorization;
 final class RoleLabels
 {
     /** The roles the label file names, in the order the users screen offers them. */
-    public const KNOWN = ['super_admin', 'admin', 'headmaster', 'supervisor', 'teacher', 'student', 'parent', 'course_creator', 'writer', 'reviewer', 'vendor', 'bookshop_manager', 'driver'];
+    public const KNOWN = ['super_admin', 'admin', 'headmaster', 'supervisor', 'teacher', 'student', 'parent', 'course_creator', 'writer', 'reviewer', 'vendor', 'bookshop_manager', 'driver', 'lender'];
 
     public static function label(string $role, ?string $locale = null): string
     {

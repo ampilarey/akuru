@@ -46,6 +46,25 @@ class ModerateLendingAction
         return $book->refresh();
     }
 
+    /**
+     * L4: the office took the `lender` role away on Manage users, or gave it
+     * back. A registered lender is paused (with a note they read) or resumed;
+     * a person with no lender row is untouched — the role alone is an
+     * invitation, and they register on My lending.
+     */
+    public function roleChanged(int $userId, bool $holdsRole): void
+    {
+        $lender = Lender::query()->where('user_id', $userId)->first();
+        if ($lender === null) {
+            return;
+        }
+        if (! $holdsRole && ! $lender->office_paused) {
+            $this->pauseLender($lender->id, __('lending.office_role_removed_note'));
+        } elseif ($holdsRole && $lender->office_paused) {
+            $this->resumeLender($lender->id);
+        }
+    }
+
     private function note(?string $note, bool $required): ?string
     {
         $note = is_string($note) ? trim($note) : '';

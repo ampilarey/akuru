@@ -227,4 +227,8 @@ return [
     // COMMERCE_PARITY_PLAN P6b.
     'deliveries' => 'My deliveries',
     'workspace_deliveries' => 'Deliveries',
+    // LENDING_AND_USED_BOOKS_PLAN L4
+    'my_lending' => 'My lending',
+    'lending_shelf' => 'Books to borrow or keep',
+    'workspace_lending' => 'Lending',
 ];

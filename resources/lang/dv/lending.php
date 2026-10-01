@@ -191,6 +191,7 @@ return [
     'notice_office_resumed_body' => 'އޮފީހުން ތިބާގެ ދޫކުރުން އަލުން ފަށައިދީފި.',
     'notice_office_removed_title' => 'އޮފީހުން ފޮތެއް ނަގައިފި',
     'notice_office_removed_body' => '"‏:title" — :note',
+    'office_role_removed_note' => 'އޮފީހުން މެނޭޖް ޔޫޒަރސް އިން ތިބާގެ ދޫކުރާ ފަރާތުގެ ރޯލް ނަގައިފި.',
     'office_pause_lender' => 'ދޫކުރާ ފަރާތް މަޑުޖައްސާ',
     'office_resume_lender' => 'އަލުން ފަށާ',
     'office_note_placeholder' => 'ސަބަބު (މީހާއަށް ފެންނާނެ)',

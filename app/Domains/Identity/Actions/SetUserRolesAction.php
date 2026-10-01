@@ -65,6 +65,12 @@ class SetUserRolesAction
             }
         }
 
+        // LENDING_AND_USED_BOOKS_PLAN L4: taking Lender away pauses a registered
+        // lender (their books leave the shelf, they read why); giving it back resumes.
+        if (in_array('lender', $added, true) || in_array('lender', $removed, true)) {
+            app(\App\Domains\Lending\Actions\ModerateLendingAction::class)->roleChanged((int) $user->id, in_array('lender', $roles, true));
+        }
+
         return ['added' => $added, 'removed' => $removed];
     }
 }
