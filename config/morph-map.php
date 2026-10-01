@@ -147,6 +147,10 @@ return [
     'order_delivery' => \App\Domains\Bookshop\Models\OrderDelivery::class,
     // COMMERCE_PARITY_PLAN P7a: a problem a customer reported with an order.
     'order_complaint' => \App\Domains\Bookshop\Models\OrderComplaint::class,
+    // COMMERCE_PARITY_PLAN P7b: SMS offers — who opted in, what was sent.
+    'shop_sms_optin' => \App\Domains\Bookshop\Models\ShopSmsOptin::class,
+    'shop_sms_campaign' => \App\Domains\Bookshop\Models\ShopSmsCampaign::class,
+    'shop_sms_campaign_recipient' => \App\Domains\Bookshop\Models\ShopSmsCampaignRecipient::class,
     'vendor_application' => \App\Domains\Bookshop\Models\VendorApplication::class,
     'vendor_newsletter_subscriber' => \App\Domains\Bookshop\Models\VendorNewsletterSubscriber::class,
     'quote_request' => \App\Domains\Bookshop\Models\QuoteRequest::class,

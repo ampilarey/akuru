@@ -119,6 +119,10 @@ Route::middleware(['auth', 'customer_password'])->group(function () {
 // B9c: a shop's newsletter — sign up on its page; the unsubscribe page its mailings link to.
 Route::get('shop/newsletter/unsubscribe/{token}', [\App\Domains\Bookshop\Http\Controllers\NewsletterController::class, 'show'])->name('public.shop.newsletter.unsubscribe')->where('token', '[A-Za-z0-9]{48}');
 Route::post('shop/newsletter/unsubscribe/{token}', [\App\Domains\Bookshop\Http\Controllers\NewsletterController::class, 'unsubscribe'])->name('public.shop.newsletter.unsubscribe.confirm')->where('token', '[A-Za-z0-9]{48}')->middleware('throttle:20,1,shop-newsletter-leave');
+// COMMERCE_PARITY_PLAN P7b: stop the Bookstore's SMS offers — the link in every offer, and the STOP keyword hook.
+Route::get('shop/sms/stop/{token}', [\App\Domains\Bookshop\Http\Controllers\ShopSmsController::class, 'show'])->name('public.shop.sms.stop')->where('token', '[a-z0-9]{12}');
+Route::post('shop/sms/stop/{token}', [\App\Domains\Bookshop\Http\Controllers\ShopSmsController::class, 'stop'])->name('public.shop.sms.stop.confirm')->where('token', '[a-z0-9]{12}')->middleware('throttle:20,1,shop-sms-stop');
+Route::post('shop/sms-opt-out', [\App\Domains\Bookshop\Http\Controllers\ShopSmsController::class, 'keyword'])->name('public.shop.sms.opt-out')->middleware('throttle:10,1,shop-sms-opt-out');
 Route::post('shop/{vendor}/newsletter', [\App\Domains\Bookshop\Http\Controllers\NewsletterController::class, 'subscribe'])->name('public.shop.newsletter.subscribe')->where('vendor', '[a-z0-9-]+')->middleware('throttle:10,1,shop-newsletter');
 Route::get('shop/{vendor}', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'vendor'])->name('public.shop.vendor')
     ->where('vendor', '(?!(products|c|export|cart|checkout|slips|suggest|wishlist|newsletter)$)[a-z0-9-]+');

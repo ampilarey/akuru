@@ -389,7 +389,7 @@ fixes: the admin OTP route stays admin-only and untouched.
   a problem* on the order page; office queue on `/admin/bookshop` with a
   reply that reaches the customer (in-app, email, SMS); the shop sees its
   own; CSV. Tests, `fulfilment.mjs` step.
-- **P7b SMS campaigns for the shop**: reuse the prayer-times broadcast
+- **P7b SMS campaigns for the shop** — **shipped 2026-10-01, STATUS §5mi** (office-sent at a shop's request; opt-in at checkout, since People consents cover only students and guardians): reuse the prayer-times broadcast
   screens' pattern (`Domains/PrayerTimes` recipient groups and broadcasts)
   as a Bookstore *Campaigns* screen: audience = customers who bought from
   a shop / everyone who opted in; per-message cost shown; opt-out link

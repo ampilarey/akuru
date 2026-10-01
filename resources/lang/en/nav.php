@@ -147,6 +147,7 @@ return [
     'bookshop' => 'Akuru Bookstore',
     'akuru_fulfilment' => 'Akuru fulfilment',
     'complaints' => 'Problems reported',
+    'sms_campaigns' => 'SMS offers',
     'shop' => 'Bookstore',
     'my_orders' => 'My orders',
     'my_wishlist' => 'My wishlist',

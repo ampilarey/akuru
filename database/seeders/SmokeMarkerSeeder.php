@@ -129,6 +129,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->vendorCycle();
         $this->verifiedIdentityCards();
         $this->officePurchaseContacts();
+        $this->smsOffers();
 
         // A default `migrate:fresh --seed` leaves `staff_profiles` empty, and
         // this used to skip the whole HR block in silence — so the sweep
@@ -1845,6 +1846,17 @@ class SmokeMarkerSeeder extends Seeder
      * checkout walk can read the office's copy of a purchase notice in the
      * SMS log. Synthetic, like everything here — never run on production.
      */
+    /**
+     * COMMERCE_PARITY_PLAN P7b: campaigns.mjs ticks the SMS-offers box at
+     * checkout and sends an offer. Start each run with the student not opted
+     * in and no smoke campaign spent against the month's budget.
+     */
+    private function smsOffers(): void
+    {
+        DB::table('shop_sms_campaigns')->where('message', 'like', 'SMOKE-%')->delete();
+        DB::table('shop_sms_optins')->where('phone', '7700000')->delete();
+    }
+
     private function officePurchaseContacts(): void
     {
         $set = app(\App\Domains\Settings\Actions\SetSettingAction::class);

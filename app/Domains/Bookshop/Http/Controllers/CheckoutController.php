@@ -60,6 +60,7 @@ class CheckoutController extends Controller
             'discount_code' => 'nullable|string|max:40',
             'notes' => 'nullable|string|max:1000',
             'gift_message' => 'nullable|string|max:300',
+            'sms_offers' => 'nullable|boolean',
         ]);
         $cart = $this->cart($request);
         abort_if($cart === null, 404);

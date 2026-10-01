@@ -143,6 +143,7 @@ return [
     'bookshop' => 'متجر أكورو للكتب',
     'akuru_fulfilment' => 'تجهيز أكورو',
     'complaints' => 'المشكلات المبلّغ عنها',
+    'sms_campaigns' => 'عروض الرسائل القصيرة',
     'shop' => 'متجر الكتب',
     'my_orders' => 'طلباتي',
     'my_wishlist' => 'قائمة أمنياتي',

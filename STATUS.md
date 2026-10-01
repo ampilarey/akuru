@@ -4414,6 +4414,89 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mi. SMS offers to customers who asked for them (COMMERCE_PARITY_PLAN P7b, 2026-10-01)
+
+The second of P7's three PRs. It follows the prayer-times broadcast pattern:
+recipients are counted first, messages go out from the queue, and there is one
+row per phone.
+
+- **Opt-in only**:
+  - Checkout has an unticked box, *Text me Akuru Bookstore offers*. Ticking it
+    records the order's phone in `shop_sms_optins`, with its source and time.
+  - Nobody without a row is ever sent an offer.
+  - Ticking the box again after stopping starts the offers again.
+  - People's `consents` only covers students and guardians, so a plain shop
+    customer could not be recorded there. That is why the Bookstore keeps its
+    own opt-in table.
+- **Stopping**:
+  - Every message ends with its own link, *Stop: …/shop/sms/stop/{12-char
+    token}*.
+  - The page shows the masked number and stops the offers only when the button is
+    pressed, so a link preview opening it stops nothing. It is the newsletter
+    page's twin, and a public Blade page for the same reason (baselined).
+  - The gateway's STOP or UNSUBSCRIBE reply arrives at `POST shop/sms-opt-out`,
+    as with prayer reminders, and stops them too.
+  - A phone that stops between sending and delivery is skipped.
+- **The office** (`/admin/bookshop/campaigns`, in the money workspace and the
+  Bookstore admin's bar):
+  - The audience is either everyone who opted in, or those of them with a paid
+    order from one shop. The office sends at a shop's request; shops do not
+    send for themselves (recorded here as the decision).
+  - As the message is typed, the page shows its length, how many messages each
+    person gets, and the cost (people × messages × rate).
+  - The office confirms the number of people and the price before anything is
+    sent.
+  - The cost is fixed and the budget is checked under a lock at sending time. A
+    month's campaigns cannot go over the budget.
+  - The rate and the monthly budget are the office's settings (defaults: MVR 0.25
+    and MVR 500, from `config/bookshop.php` campaigns).
+  - The history shows each campaign's status, how many were delivered and how many
+    failed, with a CSV export.
+- **Counting**:
+  - `Support/SmsSegments` counts the way the gateway bills. GSM-7 text is 160
+    characters, then 153 per part. Dhivehi, Arabic or other Unicode text is 70,
+    then 67.
+  - Campaigns.jsx counts the same way.
+- **Data**:
+  - `shop_sms_optins`
+  - `shop_sms_campaigns`
+  - `shop_sms_campaign_recipients`, which stores the message as sent with its
+    link
+  - All three have morph aliases. `sms` and `sms-opt-out` are now reserved shop
+    slugs.
+- **Languages**: EN/DV/AR.
+
+Tests:
+- New `ShopSmsCampaignTest`, 7 tests:
+  - only the customer who ticked the box is opted in;
+  - the office's counts and rate;
+  - a shop's buyers get the offer, each with its own stop link;
+  - "everyone" never reaches someone who did not opt in;
+  - CSV, and others are refused;
+  - the link stops nothing until the button is pressed; an unknown token is a
+    404; STOP stops and "hello" does not; nobody left means the campaign is
+    refused; ticking the box again opts back in;
+  - a phone that stopped in between is skipped;
+  - the budget: refused when over, sent when it fits, then the month is spent;
+  - segment counting;
+  - DV/AR.
+- AdminHubTest and WorkspacesTest now count the two new money sections.
+- Architecture (Blade, public and write-route baselines), Nav, Routes, Admin and
+  Bookshop: green.
+
+Walk:
+- New `campaigns.mjs`, 9/9:
+  - the box is unticked at checkout;
+  - the student buys with it ticked;
+  - the office sees Fitrah's opted-in buyers and the cost before sending;
+  - it sends, and the campaign shows as sent once the queue is drained;
+  - the message in `sms_receipts` ends with its stop link;
+  - the stop page shows the masked number and asks first;
+  - the student stops the offers;
+  - the office's count drops by one.
+- `SmokeMarkerSeeder::smsOffers()` resets the student's opt-in and the smoke
+  campaigns.
+
 ## 5mh. A customer reports a problem with an order; the office answers (COMMERCE_PARITY_PLAN P7a, 2026-10-01)
 
 The first of P7's three PRs.
