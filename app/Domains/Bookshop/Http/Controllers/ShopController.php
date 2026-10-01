@@ -128,6 +128,21 @@ class ShopController extends Controller
         ]);
     }
 
+    /** LENDING_AND_USED_BOOKS_PLAN U1: old and used books, newest first unless the visitor sorts. */
+    public function used(Request $request)
+    {
+        $filters = ['used' => '1'] + $this->filters($request);
+
+        return view('public.shop.index', [
+            'home' => null,
+            'products' => app(ListShopProductsAction::class)->execute($filters),
+            'filters' => $filters,
+            'options' => $this->options(),
+            'vendor' => null,
+            'heading' => __('shop.used_heading'),
+        ]);
+    }
+
     public function vendor(Request $request, string $vendor)
     {
         $shop = app(PresentShopVendorAction::class)->execute($vendor);
@@ -242,6 +257,7 @@ class ShopController extends Controller
             'age' => 'nullable|string|max:20',
             'grade' => 'nullable|string|max:20',
             'deals' => 'nullable|boolean',
+            'used' => 'nullable|boolean',
             'sort' => 'nullable|string|in:'.implode(',', ListShopProductsAction::SORTS),
         ]);
 

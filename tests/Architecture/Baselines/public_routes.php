@@ -112,6 +112,7 @@ return [
     'POST shop/compare/{slug}' => 'Add a product to this device\'s comparison, or take it out (STATUS §5li). The session\'s own list only; throttled. No per-person data.',
     'GET shop/track' => 'Track an order without signing in (STATUS §5lj): only with its number AND the phone it is going to; shows status, steps, tracking note and item titles — never the address, name, money or messages. Throttled at 10 a minute against guessing.',
     'GET shop/deals' => 'The public deals page (STATUS §5lb): products of active shops on a timed sale now. Public catalogue content only. No per-person data.',
+    'GET shop/used' => 'Old and used books (STATUS §5mr): products of active shops whose condition is not new. Public catalogue content only. No per-person data.',
     'GET shop/export' => 'The public bookshop listing as CSV (every listing gets one). Only what the page shows. No per-person data.',
     'GET shop/products/{slug}' => 'A product for sale. Drafts, archived products and suspended vendors\' products are a 404. The vendor\'s contact details are deliberately not shown. Since B7 it reads the session for the visitor\'s own recently viewed list, and, when signed in, only their own wishlist and back-in-stock state; published reviews show a first name and initial only.',
     'GET shop/newsletter/unsubscribe/{token}' => 'BOOKSHOP_PLAN B9c: the unsubscribe page a shop links in its newsletter emails. Verified by token: the 48-character token is the whole of the right, and the page shows only that address and the shop; unknown tokens 404.',

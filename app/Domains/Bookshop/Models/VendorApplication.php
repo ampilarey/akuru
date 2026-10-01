@@ -18,7 +18,7 @@ class VendorApplication extends Model
     public const DECLINED = 'declined';
 
     protected $fillable = [
-        'user_id', 'shop_name', 'legal_name', 'tin', 'contact_email', 'contact_phone', 'island', 'what_they_sell', 'link',
+        'user_id', 'kind', 'shop_name', 'legal_name', 'tin', 'contact_email', 'contact_phone', 'island', 'what_they_sell', 'link',
         'agreement_accepted_at', 'status', 'decided_by', 'decided_at', 'decision_note', 'vendor_id',
     ];
 

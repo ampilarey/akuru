@@ -37,6 +37,8 @@ class VendorApplyController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $data = $request->validate([
+            // U1 (D1): a shop, or a person selling their own used books.
+            'kind' => 'nullable|string|in:shop,personal',
             'shop_name' => 'required|string|max:120',
             'legal_name' => 'nullable|string|max:255',
             'tin' => 'nullable|string|max:40',

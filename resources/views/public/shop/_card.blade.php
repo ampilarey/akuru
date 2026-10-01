@@ -10,8 +10,10 @@
                 <svg class="h-12 w-12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.4" d="M5 4h11a3 3 0 013 3v13H8a3 3 0 01-3-3V4zm0 13a3 3 0 013-3h11"/></svg>
             </span>
         @endif
-        @if($percentOff > 0 || count($card['badges'] ?? []) > 0)
+        @if($percentOff > 0 || count($card['badges'] ?? []) > 0 || ($card['condition_label'] ?? null))
             <span class="absolute top-2 start-2 flex flex-col items-start gap-1">
+                {{-- U1: a used book says so, and how used. --}}
+                @if($card['condition_label'] ?? null)<span class="rounded bg-amber-700 px-1.5 py-0.5 text-[11px] font-semibold text-white" dir="auto" data-badge="condition" data-condition="{{ $card['condition'] }}">{{ __('shop.used_badge', ['grade' => $card['condition_label']]) }}</span>@endif
                 @if($percentOff > 0)<span dir="ltr" class="rounded bg-brandMaroon-600 px-1.5 py-0.5 text-[11px] font-bold text-white" data-badge="percent-off">&minus;{{ $percentOff }}%</span>@endif
                 @foreach($card['badges'] ?? [] as $badge)
                     <span class="shop-badge shop-badge-{{ $badge['kind'] }} rounded px-1.5 py-0.5 text-[11px] font-semibold" dir="auto" data-badge="{{ $badge['kind'] }}">{{ $badge['label'] }}</span>

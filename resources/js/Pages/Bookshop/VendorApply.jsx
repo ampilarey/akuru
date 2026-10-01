@@ -27,7 +27,7 @@ function Status({ application, t }) {
 
 export default function VendorApply({ t, open, application, shops = [], agreement_url, defaults, id_l = {} }) {
     const { flash = {}, errors } = usePage().props;
-    const form = useForm({ shop_name: '', legal_name: '', tin: '', contact_email: defaults.contact_email || '', contact_phone: defaults.contact_phone || '', island: '', what_they_sell: '', link: '', agreement: false, id_front: null, id_back: null });
+    const form = useForm({ kind: 'shop', shop_name: '', legal_name: '', tin: '', contact_email: defaults.contact_email || '', contact_phone: defaults.contact_phone || '', island: '', what_they_sell: '', link: '', agreement: false, id_front: null, id_back: null });
     const set = (name) => (e) => form.setData(name, e.target.value);
     const waiting = application?.status === 'pending';
 
@@ -53,16 +53,26 @@ export default function VendorApply({ t, open, application, shops = [], agreemen
                     onSubmit={(e) => { e.preventDefault(); form.post('/vendor/apply', { forceFormData: true }); }}
                     data-testid="apply-form"
                 >
-                    <label className="text-sm">{t.apply_shop_name}<input className="form-input w-full" value={form.data.shop_name} onChange={set('shop_name')} required maxLength={120} data-testid="apply-shop-name" /></label>
+                    {/* LENDING_AND_USED_BOOKS_PLAN U1 (D1): a shop, or a person selling their own used books. */}
+                    <fieldset className="grid gap-2 md:col-span-2 sm:grid-cols-2" data-testid="apply-kind">
+                        <legend className="mb-1 text-sm font-medium">{t.apply_kind}</legend>
+                        {['shop', 'personal'].map((k) => (
+                            <label key={k} className={`flex cursor-pointer items-start gap-2 rounded border p-3 text-sm ${form.data.kind === k ? 'border-brandMaroon-600 bg-brandBeige-50' : 'border-gray-200'}`}>
+                                <input type="radio" name="kind" value={k} checked={form.data.kind === k} onChange={() => form.setData('kind', k)} className="mt-1" data-testid={`apply-kind-${k}`} />
+                                <span><span className="block font-semibold">{t[`apply_kind_${k}`]}</span><span className="block text-xs text-gray-600">{t[`apply_kind_${k}_hint`]}</span></span>
+                            </label>
+                        ))}
+                    </fieldset>
+                    <label className="text-sm">{form.data.kind === 'personal' ? t.apply_seller_name : t.apply_shop_name}<input className="form-input w-full" value={form.data.shop_name} onChange={set('shop_name')} required maxLength={120} data-testid="apply-shop-name" /></label>
                     <label className="text-sm">{t.apply_island}<input className="form-input w-full" value={form.data.island} onChange={set('island')} required maxLength={120} placeholder={t.apply_island_hint} data-testid="apply-island" /></label>
-                    <label className="text-sm">{t.apply_legal_name}<input className="form-input w-full" value={form.data.legal_name} onChange={set('legal_name')} maxLength={255} data-testid="apply-legal-name" /></label>
-                    <label className="text-sm">{t.apply_tin}<input className="form-input w-full" value={form.data.tin} onChange={set('tin')} maxLength={40} data-testid="apply-tin" /></label>
+                    {form.data.kind === 'shop' && <label className="text-sm">{t.apply_legal_name}<input className="form-input w-full" value={form.data.legal_name} onChange={set('legal_name')} maxLength={255} data-testid="apply-legal-name" /></label>}
+                    {form.data.kind === 'shop' && <label className="text-sm">{t.apply_tin}<input className="form-input w-full" value={form.data.tin} onChange={set('tin')} maxLength={40} data-testid="apply-tin" /></label>}
                     <label className="text-sm">{t.apply_email}<input className="form-input w-full" type="email" value={form.data.contact_email} onChange={set('contact_email')} required data-testid="apply-email" /></label>
                     <label className="text-sm">{t.apply_phone}<input className="form-input w-full" value={form.data.contact_phone} onChange={set('contact_phone')} required maxLength={40} data-testid="apply-phone" /></label>
-                    <label className="text-sm md:col-span-2">{t.apply_what_they_sell}
-                        <textarea className="form-input w-full" rows={4} value={form.data.what_they_sell} onChange={set('what_they_sell')} required minLength={20} maxLength={2000} placeholder={t.apply_what_hint} data-testid="apply-what" />
+                    <label className="text-sm md:col-span-2">{form.data.kind === 'personal' ? t.apply_what_personal : t.apply_what_they_sell}
+                        <textarea className="form-input w-full" rows={4} value={form.data.what_they_sell} onChange={set('what_they_sell')} required minLength={20} maxLength={2000} placeholder={form.data.kind === 'personal' ? t.apply_what_personal_hint : t.apply_what_hint} data-testid="apply-what" />
                     </label>
-                    <label className="text-sm md:col-span-2">{t.apply_link}<input className="form-input w-full" type="url" value={form.data.link} onChange={set('link')} placeholder="https://" data-testid="apply-link" /></label>
+                    {form.data.kind === 'shop' && <label className="text-sm md:col-span-2">{t.apply_link}<input className="form-input w-full" type="url" value={form.data.link} onChange={set('link')} placeholder="https://" data-testid="apply-link" /></label>}
                     <IdentityCardFields form={form} l={id_l} />
                     <label className="flex items-start gap-2 text-sm md:col-span-2">
                         <input type="checkbox" checked={form.data.agreement} onChange={(e) => form.setData('agreement', e.target.checked)} required data-testid="apply-agreement" />

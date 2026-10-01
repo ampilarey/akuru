@@ -132,6 +132,9 @@ class ListVendorProductsAction
             'low_stock' => $p->track_stock && $p->low_stock_at !== null && $p->stock <= $p->low_stock_at,
             'lead_days' => $p->lead_days,
             'preorder_release_on' => $p->preorder_release_on?->toDateString(),
+            // U1: a used book's grade and note.
+            'condition' => $p->condition->value,
+            'condition_note' => $p->condition_note,
             'status' => $p->status->value,
             // COMMERCE_PARITY_PLAN P4: waiting since, and the office's note on a declined listing.
             'submitted_at' => $p->submitted_at?->format('Y-m-d H:i'),

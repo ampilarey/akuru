@@ -165,6 +165,9 @@ class SaveVendorProductAction
             'low_stock_at' => $data['low_stock_at'] ?? null,
             'lead_days' => $data['lead_days'] ?? null,
             'preorder_release_on' => ($data['preorder_release_on'] ?? null) ?: null,
+            // U1: a used book's grade and what is marked or missing; a product that says nothing is new.
+            'condition' => ($data['condition'] ?? null) ?: 'new',
+            'condition_note' => $this->short($data['condition_note'] ?? null, 500),
             'status' => $data['status'] ?? 'draft',
             'visibility' => $data['visibility'] ?? 'shop',
             'tags' => $tags,
@@ -201,9 +204,9 @@ class SaveVendorProductAction
         ];
     }
 
-    private function short(mixed $value): ?string
+    private function short(mixed $value, int $max = 40): ?string
     {
-        return is_string($value) && trim($value) !== '' ? mb_substr(trim($value), 0, 40) : null;
+        return is_string($value) && trim($value) !== '' ? mb_substr(trim($value), 0, $max) : null;
     }
 
     /**

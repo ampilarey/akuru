@@ -4414,6 +4414,60 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mr. Old and used books (LENDING_AND_USED_BOOKS_PLAN U1, 2026-10-01)
+
+The owner: "old and used books selling features". Planned with book lending in
+`docs/LENDING_AND_USED_BOOKS_PLAN.md` (decisions D1–D7 with defaults); this is
+the first of its three slices.
+
+- **A product has a condition**: new (every product so far), like new, good,
+  fair or worn, and a *condition note* — what is marked, written in, worn or
+  missing. The product form carries both; the note is disabled while the
+  product is new.
+- **Add a used book**: a second button beside *New product* opens the short
+  form — title, condition (good to start), note, price, photos, one in stock,
+  zero-rated — without variants, sales, SKUs, dimensions or visibility. *Show
+  every field* opens the full form.
+- **Where customers see it**: *Used · Good* on the card, with the note on the
+  product page; `/shop/used` and *Used books* in the Bookstore's menu; a *Used
+  books* shelf on the front; *Used books only* among the filters; the catalogue
+  API's cards carry `condition`; structured data says `UsedCondition` (or
+  `DamagedCondition` for worn, `NewCondition` otherwise).
+- **Personal sellers** (D1): the application asks *Who is selling?* — *A shop*
+  or *Just me, selling my own books*. A person gives no legal name, TIN or
+  link. The office's application card says *Personal seller*; approving makes
+  a vendor of kind `personal`, with everything a shop has — the same ID check,
+  listing approval, commission, payouts and delivery. The shop head and the
+  product page say *Personal seller*.
+- **CSV**: export has a `condition` column; import accepts `condition`
+  (`new`, `like new`, `good`, `fair`, `worn`; `used` reads as good).
+- **Data**: `products.condition` (default `new`, indexed) and
+  `condition_note`; `vendors.kind` and `vendor_applications.kind` (default
+  `shop`). Additive.
+- `used` and `lending` join the words a shop cannot be named.
+- EN/DV/AR throughout.
+
+Tests:
+- New `UsedBooksTest`, 3 tests: a used book with its grade and note on the
+  card, the page, the Used shelf, the Used page, the filter, the CSV and the
+  API, and a bad grade refused; a person applying as a personal seller through
+  to an approved vendor of kind `personal` whose product page and shop head
+  say so, while a shop's application stays a shop; DV/AR.
+- `CatalogueApiTest` learns the card's new `condition` key; the public-route
+  baseline gains `GET shop/used`.
+- Architecture, Nav, Admin, Routes and Bookshop: 415 green.
+- `vendor.mjs` 32/32 and `apply.mjs` 17/17 still pass: the full product form
+  and a shop's application are as they were.
+
+Walk:
+- New `used-books.mjs`, 8/8: the short form opens without SKU or variants and
+  with the grade set to Good; the book saves as *Used · Fair* and waits for the
+  office; the office sees and approves it, and the seller's list says *For
+  sale*; the Bookstore menu has *Used books* and the shelf shows the graded
+  card; `/shop/used` lists only used books; the product page says *Used ·
+  Fair* with the note and its structured data says used; the Used filter keeps
+  the new books out.
+
 ## 5mq. Why a shop's changes do not show, said on the first screen; the settings fold (2026-10-01)
 
 The owner, after #627 and #628 were pulled: "Still the changes that are made by

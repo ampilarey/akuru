@@ -55,6 +55,7 @@ class ListVendorsAction
                 'tin' => $vendor->tin,
                 'gst_registered' => $vendor->gst_registered,
                 'trusted' => (bool) $vendor->trusted,
+                'kind' => $vendor->kind ?? 'shop',
                 // P6a.
                 'fulfilment' => $vendor->fulfilment ?? 'vendor', 'delivery_by' => $vendor->delivery_by ?? 'vendor',
                 'akuru_handling_fee' => $vendor->akuru_handling_fee !== null ? (string) $vendor->akuru_handling_fee : null,

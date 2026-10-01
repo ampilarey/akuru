@@ -32,6 +32,8 @@
     <nav class="shop-scroll container mx-auto flex gap-2 overflow-x-auto px-4 pb-3 sm:flex-wrap sm:overflow-visible {{ $storefront ? 'pt-4' : 'pt-3' }} text-sm" aria-label="{{ __('site.store_menu') }}" data-testid="shop-links">
         <a href="{{ $home ? '#shops' : route('public.shop.index').'#shops' }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 font-semibold text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-shops">{{ __('site.shops') }}</a>
         <a href="{{ route('public.shop.deals') }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-deals">{{ __('site.store_deals') }}</a>
+        {{-- LENDING_AND_USED_BOOKS_PLAN U1: old and used books. --}}
+        <a href="{{ route('public.shop.used') }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-used">{{ __('shop.used_heading') }}</a>
         <a href="{{ $home ? '#book-lists' : route('public.shop.index').'#book-lists' }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-book-lists">{{ __('site.store_book_lists') }}</a>
         <a href="{{ $home ? '#categories' : route('public.shop.index').'#categories' }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50">{{ __('site.shop_categories') }}</a>
         <a href="{{ route('public.shop.cart') }}" class="inline-flex shrink-0 items-center whitespace-nowrap gap-1 rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-cart">{{ __('site.cart') }}@if($cartCount > 0)<span class="rounded-full bg-brandMaroon-600 px-1.5 text-xs font-semibold text-white" data-testid="shop-link-cart-count">{{ $cartCount }}</span>@endif</a>
@@ -71,7 +73,7 @@
 {{-- STATUS §5lu, after iruali: the store's front opens on a hero card with two tiles beside it;
      a shop's page on a card with its name; the other listings on a plain heading. Each is
      followed by the store's links and, off the front, a strip of categories. --}}
-@php($plainListing = empty($filters['q'] ?? null) && collect(['category', 'brand', 'language', 'price_min', 'price_max', 'in_stock', 'deals'])->every(fn ($k) => empty($filters[$k] ?? null)))
+@php($plainListing = empty($filters['q'] ?? null) && collect(['category', 'brand', 'language', 'price_min', 'price_max', 'in_stock', 'deals', 'used'])->every(fn ($k) => empty($filters[$k] ?? null)))
 @if($home && ! $heading)
 <section class="bg-brandBeige-50 pt-4 md:pt-6" data-testid="store-head">
     <div class="container mx-auto px-4">
@@ -156,6 +158,8 @@
                     <p class="mt-0.5 line-clamp-2 text-brandGray-700" dir="auto">{{ $vendor['tagline'] }}</p>
                 @endif
                 <p class="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-600">
+                    {{-- U1 (D1): a person selling their own books, not a shop. --}}
+                    @if(($vendor['kind'] ?? 'shop') === 'personal')<span class="rounded bg-brandBeige-100 px-2 py-0.5 text-xs font-semibold text-brandMaroon-800" data-testid="personal-seller">{{ __('shop.personal_seller') }}</span>@endif
                     <span class="inline-flex items-center gap-1 font-medium text-green-700" data-testid="at-akuru">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3l7 3v5c0 4.5-3 8.5-7 10-4-1.5-7-5.5-7-10V6l7-3zm-3 9l2 2 4-4"/></svg>
                         {{ $collection ? $vendor['name'].' · ' : '' }}{{ __('shop.at_akuru') }}
@@ -242,7 +246,7 @@
      so the products are on the first screen (the owner's screenshot, STATUS §5kv). The
      fold is served open, so the filters are there without script; the script folds
      it on a phone unless a filter is already in use. --}}
-@php($activeFilters = collect(['category', 'brand', 'language', 'price_min', 'price_max', 'in_stock'])
+@php($activeFilters = collect(['category', 'brand', 'language', 'price_min', 'price_max', 'in_stock', 'used'])
     ->filter(fn ($key) => ! empty($filters[$key]) && ! (request()->routeIs('public.shop.category') && $key === 'category') && ! (request()->routeIs('public.shop.brand') && $key === 'brand'))
     ->count() + ((($filters['sort'] ?? 'newest') !== 'newest') ? 1 : 0))
 <section class="border-b py-4 {{ $storefront ? '' : 'bg-white' }}">
@@ -322,6 +326,10 @@
                     <label class="col-span-2 flex min-h-[44px] items-center gap-2 text-sm md:col-span-1">
                         <input type="checkbox" name="in_stock" value="1" class="h-5 w-5 rounded border-gray-300" @checked(! empty($filters['in_stock'])) data-testid="filter-in-stock"> {{ __('shop.in_stock_only') }}
                     </label>
+                    <label class="col-span-2 flex min-h-[44px] items-center gap-2 text-sm md:col-span-1">
+                        {{-- U1: only the used books. --}}
+                        <input type="checkbox" name="used" value="1" class="h-5 w-5 rounded border-gray-300" @checked(! empty($filters['used'])) data-testid="filter-used"> {{ __('shop.used_only') }}
+                    </label>
                     <div class="col-span-2 flex flex-wrap items-center gap-3 md:col-span-1">
                         <button type="submit" class="btn-primary">{{ __('shop.filter') }}</button>
                         <a href="{{ url()->current() }}" class="btn-secondary">{{ __('shop.clear_filters') }}</a>
@@ -376,8 +384,8 @@
 @if($home)
     {{-- B7 (§7): featured products and collections; best sellers; recently viewed (the hero slides are in the head card, §5lu). --}}
     {{-- §5lb: the deals ending soonest, before the featured shelf, with a way to all of them. --}}
-    @php($seeAll = ['deals' => route('public.shop.deals'), 'best_sellers' => route('public.shop.index', ['sort' => 'best_selling']).'#shop-grid', 'new_arrivals' => route('public.shop.index', ['sort' => 'newest']).'#shop-grid'])
-    @foreach([['deals', 'deals_heading', 'shop-deals'], ['featured', 'featured_heading', 'shop-featured'], ['best_sellers', 'best_sellers', 'shop-best-sellers'], ['recently_viewed', 'recently_viewed', 'shop-recently-viewed']] as [$key, $label, $testid])
+    @php($seeAll = ['deals' => route('public.shop.deals'), 'used' => route('public.shop.used'), 'best_sellers' => route('public.shop.index', ['sort' => 'best_selling']).'#shop-grid', 'new_arrivals' => route('public.shop.index', ['sort' => 'newest']).'#shop-grid'])
+    @foreach([['deals', 'deals_heading', 'shop-deals'], ['featured', 'featured_heading', 'shop-featured'], ['used', 'used_heading', 'shop-used'], ['best_sellers', 'best_sellers', 'shop-best-sellers'], ['recently_viewed', 'recently_viewed', 'shop-recently-viewed']] as [$key, $label, $testid])
         @if(count($home[$key] ?? []) > 0)
             <section class="pt-8" data-testid="{{ $testid }}">
                 <div class="container mx-auto px-4">

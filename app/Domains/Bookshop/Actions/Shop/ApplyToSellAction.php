@@ -53,6 +53,7 @@ class ApplyToSellAction
         return $a === null ? null : [
             'id' => $a->id,
             'shop_name' => $a->shop_name,
+            'kind' => $a->kind ?? 'shop',
             'status' => $a->status,
             'submitted_at' => $a->created_at?->toDateString(),
             'decided_at' => $a->decided_at?->toDateString(),
@@ -84,6 +85,8 @@ class ApplyToSellAction
 
         $application = VendorApplication::query()->create([
             'user_id' => $userId,
+            // U1 (D1): a shop, or a person selling their own books.
+            'kind' => ($data['kind'] ?? 'shop') === 'personal' ? 'personal' : 'shop',
             'shop_name' => trim((string) $data['shop_name']),
             'legal_name' => $this->clean($data['legal_name'] ?? null),
             'tin' => $this->clean($data['tin'] ?? null),
