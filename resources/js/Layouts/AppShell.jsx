@@ -58,6 +58,11 @@ export default function AppShell({ title, children }) {
     const unlocalised = (href) => (href || '').replace(/^\/(en|dv|ar)(?=\/|$)/, '') || '/';
     const path = unlocalised(url.split('?')[0]);
     const isCurrent = (href) => path === unlocalised(href) || path.startsWith(`${unlocalised(href)}/`);
+    const unread = Number(auth?.unread_notifications) || 0;
+    // The bar's links move into the phone menu. The workspace home is already
+    // there, so it is not listed a second time.
+    const homePath = unlocalised(activeWorkspace?.href || '');
+    const barInMenu = nav.primary.filter((item) => unlocalised(item.href) !== homePath);
 
     // `hard`: a Blade screen, opened with a full page load — an Inertia visit
     // would get a non-Inertia response and show it in a modal.
@@ -75,10 +80,10 @@ export default function AppShell({ title, children }) {
             </a>
             {/* The same brand bar as the Blade shell — wine gradient, the logo,
                 "Akuru Institute", white links — so an administrator moving between
-                the two shells sees one application (STATUS §5ib). Sticky from sm:
-                only — on a phone the bar wraps to several rows. */}
+                the two shells sees one application (STATUS §5ib). Sticky from sm:.
+                On a phone it is one row: the brand and the initial. */}
             <header className="relative z-30 bg-gradient-to-br from-[#3D1219] to-[#7C2D37] text-white shadow-md sm:sticky sm:top-0">
-                <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-x-6 gap-y-2 px-4 py-2 sm:px-6">
+                <div className="mx-auto flex max-w-6xl items-center justify-between gap-x-3 px-4 py-1.5 sm:flex-wrap sm:gap-x-6 sm:gap-y-2 sm:px-6 sm:py-2">
                     <div className="flex min-w-0 items-center gap-3">
                         <a href="/dashboard" className="flex shrink-0 items-center gap-2.5 no-underline" data-testid="shell-home">
                             <img src="/images/logos/akuru-logo-on-dark.svg?v=5" alt="Akuru Institute" className="h-8 w-auto object-contain" />
@@ -88,7 +93,7 @@ export default function AppShell({ title, children }) {
                             than one. Switching posts the choice, so the server remembers
                             it and sends them to that workspace's home. */}
                         {workspaces.length > 1 && (
-                            <div className="relative">
+                            <div className="relative hidden sm:block">
                                 <button
                                     type="button"
                                     aria-expanded={switching}
@@ -124,18 +129,14 @@ export default function AppShell({ title, children }) {
                             </div>
                         )}
                     </div>
-                    {/* `w-full min-w-0` on a phone: a flex item's minimum width is its
-                        content's, and the nowrap link row below made this nav as wide
-                        as every link laid end to end (608 px for the Institute) — wider
-                        than the phone, so the header ran off the screen and Safari
-                        zoomed the whole page out to fit it (the owner's screenshot,
-                        2026-09-28, STATUS §5jq). Full width and a zero minimum let the
-                        row scroll inside the screen instead. */}
-                    <nav aria-label={n.primary_nav || 'Primary'} className="flex w-full min-w-0 flex-wrap items-center gap-x-1 gap-y-1 text-sm sm:w-auto">
-                        {/* On a phone the primary links are one row that scrolls sideways;
-                            More, Alerts, the account and the language switcher stay in view
-                            beneath it (the mobile sweep, STATUS §5hu). */}
-                        <div className="order-last flex w-full min-w-0 flex-nowrap items-center gap-x-1 overflow-x-auto whitespace-nowrap sm:order-none sm:w-auto sm:flex-wrap sm:gap-y-1 sm:overflow-visible sm:whitespace-normal">
+                    {/* On a phone this nav is only the initial, on the same row as the
+                        brand. The bar, Alerts and the workspace pill are desk-only
+                        (STATUS §5ne); a nowrap strip of them used to widen the header
+                        past the phone (STATUS §5jq). */}
+                    <nav aria-label={n.primary_nav || 'Primary'} className="flex min-w-0 items-center gap-x-1 gap-y-1 text-sm sm:w-auto sm:flex-wrap">
+                        {/* The bar links stay on a desk. On a phone they are in the
+                            initial's menu, so this row is not drawn (STATUS §5ne). */}
+                        <div className="order-last hidden w-full min-w-0 flex-nowrap items-center gap-x-1 overflow-x-auto whitespace-nowrap sm:order-none sm:flex sm:w-auto sm:flex-wrap sm:gap-y-1 sm:overflow-visible sm:whitespace-normal">
                         {nav.primary.map((item) => (
                             <Item
                                 key={item.href}
@@ -167,12 +168,12 @@ export default function AppShell({ title, children }) {
                         {user && (
                             <Link
                                 href="/portal/notifications"
-                                className="flex items-center gap-1 rounded-md px-3 py-2 font-medium text-white/80 hover:bg-white/10 hover:text-white sm:py-1.5"
+                                className="hidden items-center gap-1 rounded-md px-3 py-2 font-medium text-white/80 hover:bg-white/10 hover:text-white sm:flex sm:py-1.5"
                             >
                                 {n.alerts || 'Alerts'}
-                                {auth?.unread_notifications > 0 && (
+                                {unread > 0 && (
                                     <span className="rounded-full bg-[#D4A017] px-1.5 py-0.5 text-xs font-bold text-[#3D1219]">
-                                        {auth.unread_notifications}
+                                        {unread}
                                     </span>
                                 )}
                             </Link>
@@ -186,7 +187,7 @@ export default function AppShell({ title, children }) {
                             <button
                                 key={account.id}
                                 type="button"
-                                className="rounded-full border border-white/40 px-3 py-1 font-medium text-white hover:bg-white/10"
+                                className="hidden rounded-full border border-white/40 px-3 py-1 font-medium text-white hover:bg-white/10 sm:inline"
                                 onClick={() => router.post(`/account/switch/${account.id}`)}
                                 title={`Switch to ${account.name} (${account.roles})`}
                             >
@@ -194,12 +195,10 @@ export default function AppShell({ title, children }) {
                             </button>
                         ))}
                         {/* The account pill and the language switch: in the bar from sm:,
-                            in this panel on a phone. Five header rows took three fifths
-                            of a phone's first screen before a parent saw a word of their
-                            own page (the phone-first pass, STATUS §5js); three rows is the
-                            most a header gets. The initial stays in the bar so a shared
-                            phone still shows who is signed in — and it is the control that
-                            opens the list More opens on a desk. */}
+                            in this panel on a phone. The phone header is one row — the
+                            brand and this initial — so the page starts sooner (STATUS
+                            §5ne). The initial stays so a shared phone still shows who is
+                            signed in, and it opens the list More opens on a desk. */}
                         {user && (
                             <button
                                 type="button"
@@ -243,6 +242,11 @@ export default function AppShell({ title, children }) {
                         </span>
                     </nav>
                 </div>
+                {narrow && unread > 0 && (
+                    <Link href="/portal/notifications" data-testid="alerts-banner" className="block bg-[#D4A017] px-4 py-1 text-center text-xs font-semibold text-[#3D1219]">
+                        {n.alerts || 'Alerts'} · {unread}
+                    </Link>
+                )}
                 {open && (
                     <>
                         {/* A click anywhere else closes the menu. */}
@@ -322,6 +326,21 @@ export default function AppShell({ title, children }) {
                                             ))}
                                         </ul>
                                     </div>
+                                )}
+                                {user && (
+                                    <Link href="/portal/notifications" data-testid="shell-alerts" className="mb-3 flex min-h-[2rem] items-center justify-between gap-3 rounded-lg border border-[#E6D9C8] bg-white px-3 py-2 text-gray-900">
+                                        <span className="font-medium">{n.alerts || 'Alerts'}</span>
+                                        {unread > 0 && <span className="rounded-full bg-[#D4A017] px-1.5 py-0.5 text-xs font-bold text-[#3D1219]">{unread}</span>}
+                                    </Link>
+                                )}
+                                {barInMenu.length > 0 && (
+                                    <ul className="mb-3 divide-y divide-[#E6D9C8] rounded-lg border border-[#E6D9C8] bg-white" data-testid="shell-bar-links">
+                                        {barInMenu.map((item) => (
+                                            <li key={item.href}>
+                                                <Item item={item} className={`block px-3 py-2.5 ${!item.hard && isCurrent(item.href) ? 'font-semibold text-[#7C2D37]' : 'text-gray-800'}`} />
+                                            </li>
+                                        ))}
+                                    </ul>
                                 )}
                                 <div className="flex flex-wrap items-center gap-2">
                                     <span className="text-xs font-semibold uppercase tracking-wide text-gray-500">{n.language || 'Language'}</span>

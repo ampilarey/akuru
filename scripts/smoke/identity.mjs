@@ -193,11 +193,13 @@ check('the family portal sends them back to My learning', path(learner.url()) ==
 
 const parentLearner = await signIn(PARENT_LEARNER);
 check('a parent who enrolled themselves lands on Family', /\/portal\/home$/.test(parentLearner.url()), path(parentLearner.url()));
-await parentLearner.click('header [data-testid="workspace-switcher"]');
-await parentLearner.waitForSelector('#app-shell-workspaces', { state: 'visible' });
-const offered = await parentLearner.locator('#app-shell-workspaces [data-testid^="workspace-"]').evaluateAll((els) => els.map((el) => el.textContent.trim()));
-check('the switcher offers Family and My learning', offered.join(',') === 'Family,My learning', offered.join(', '));
-await Promise.all([parentLearner.waitForURL(/\/learn$/, { timeout: 15000 }).catch(() => {}), parentLearner.click('#app-shell-workspaces [data-testid="workspace-learner"]')]);
+// On a phone the header pill is not drawn (STATUS §5ne). Your accounts,
+// under the initial, is where Family and My learning are switched.
+await parentLearner.click('[data-testid="shell-avatar"]');
+await parentLearner.waitForSelector('#app-shell-more [data-testid="shell-accounts"]', { state: 'visible' });
+const offered = await parentLearner.locator('#app-shell-more [data-testid^="account-"]').evaluateAll((els) => els.map((el) => el.textContent.replace(/\s+/g, ' ').trim()));
+check('under the initial, Your accounts offers Family and My learning', offered.length === 2 && offered[0].includes('Family') && offered[1].includes('My learning'), offered.join(' | '));
+await Promise.all([parentLearner.waitForURL(/\/learn$/, { timeout: 15000 }).catch(() => {}), parentLearner.click('#app-shell-more [data-testid="account-learner"]')]);
 await parentLearner.waitForLoadState('networkidle');
 check('switching to My learning shows their own course', path(parentLearner.url()) === '/learn' && (await parentLearner.locator('main').innerText()).includes('SMOKE-Learner-Course'), path(parentLearner.url()));
 menu = await readMore(parentLearner, 'parent-learner');
