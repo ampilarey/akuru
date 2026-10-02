@@ -54,7 +54,7 @@ export default function Users({ users = [], pagination, total = 0, filters = {},
 
             {/* overflow-x-auto, not hidden: on a phone the right-hand columns were cut off with no way to reach them (STATUS §5hu). */}
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="users-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">#</th>
@@ -70,25 +70,25 @@ export default function Users({ users = [], pagination, total = 0, filters = {},
                         {users.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan="7">{t.users_none || 'No users found.'}</td></tr>}
                         {users.map((u) => (
                             <tr key={u.id} className={`border-t align-top ${u.is_self ? 'bg-[#FFFBF0]' : ''}`}>
-                                <td className="px-3 py-2 text-gray-400">{u.id}</td>
-                                <td className="px-3 py-2">
+                                <td data-label="#" className="px-3 py-2 text-gray-400">{u.id}</td>
+                                <td data-label={t.users_col_name || 'Name'} className="px-3 py-2">
                                     <p className="font-medium">{u.name}</p>
                                     {u.is_self && <p className="text-xs font-semibold text-amber-700">{t.users_you || 'YOU'}</p>}
                                     {!u.is_active && <p className="text-xs font-semibold text-red-700" data-testid="user-inactive">{t.users_inactive || 'Deactivated'}</p>}
                                 </td>
-                                <td className="px-3 py-2 text-gray-700">
+                                <td data-label={t.users_col_contact || 'Contact'} className="px-3 py-2 text-gray-700">
                                     {u.mobile && <p>📱 {u.mobile}</p>}
                                     {u.email && <p className="text-xs text-gray-500">✉ {u.email}</p>}
                                     {!u.mobile && !u.email && <span className="text-gray-300">—</span>}
                                 </td>
-                                <td className="px-3 py-2 text-gray-700">{u.identity || '—'}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.users_col_identity || 'ID card'} className="px-3 py-2 text-gray-700">{u.identity || '—'}</td>
+                                <td data-label={t.users_col_role || 'Role'} className="px-3 py-2">
                                     {u.role
                                         ? <span data-testid="role-badge" className={`rounded-full px-2 py-0.5 text-xs font-bold ${ROLE_TONES[u.role] || 'bg-gray-100 text-gray-700'}`}>{u.role_label}</span>
                                         : <span className="text-gray-300">—</span>}
                                 </td>
-                                <td className="whitespace-nowrap px-3 py-2 text-gray-400">{u.registered}</td>
-                                <td className="whitespace-nowrap px-3 py-2">
+                                <td data-label={t.users_col_registered || 'Registered'} className="whitespace-nowrap px-3 py-2 text-gray-400">{u.registered}</td>
+                                <td className="table-actions whitespace-nowrap px-3 py-2">
                                     {/* The role and access screen (ADR-040 slice 4): every row, the protected ones included. */}
                                     <Link href={`/admin/users/${u.id}/roles`} className="me-2 inline-block rounded border border-[#E6D9C8] bg-[#FFFBF0] px-2 py-1 text-xs font-semibold text-[#7C2D37]" data-testid="user-roles-link">{t.users_roles_link || 'Roles & access'}</Link>
                                     {u.is_protected

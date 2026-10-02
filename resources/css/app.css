@@ -247,14 +247,16 @@ html[lang="dv"] body,
     padding-top: 0.5rem;
   }
   /* STATUS §5mp: an Edit, Duplicate or View link in a card is a 20px line of
-     text on a desk; under a thumb it needs the 32px the portal's own links
-     have. The margin that spaced them in a table row gives way to the gap. */
+     text on a desk; under a thumb it needs room. 32px here until STATUS §5nr,
+     when the admin cards' Roles & access and Delete measured 32px against the
+     44px the rule below asks of every row action (this selector outranks
+     it). The margin that spaced them in a table row gives way to the gap. */
   .table-stack td.table-actions > a,
   .table-stack td.table-actions > button {
     display: inline-flex;
     align-items: center;
-    min-height: 2rem;
-    padding: 0.25rem 0.5rem;
+    min-height: 2.75rem;
+    padding: 0.25rem 0.75rem;
     margin-inline-start: 0;
   }
 }

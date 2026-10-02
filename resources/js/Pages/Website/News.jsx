@@ -20,7 +20,7 @@ export default function News({ posts = [], t = {} }) {
                 <Link href="/admin/public-site/news/create" className="btn-primary ms-auto" data-testid="news-new">{t.news_new || 'Write news'}</Link>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="news-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.pages_col_title || 'Title'}</th>
@@ -41,7 +41,7 @@ export default function News({ posts = [], t = {} }) {
                         )}
                         {posts.map((post) => (
                             <tr key={post.id} className="border-t align-top" data-testid="news-row">
-                                <td className="px-3 py-2">
+                                <td data-label={t.pages_col_title || 'Title'} className="px-3 py-2">
                                     <p className="font-medium text-gray-900">
                                         {post.is_pinned && <span className="me-1" title={t.news_pinned || 'Pinned'}>📌</span>}
                                         {post.is_featured && <span className="me-1" title={t.news_featured || 'Featured'}>★</span>}
@@ -49,10 +49,10 @@ export default function News({ posts = [], t = {} }) {
                                     </p>
                                     {post.summary && <p className="text-xs text-gray-500">{post.summary.slice(0, 90)}</p>}
                                 </td>
-                                <td className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${STATE_TONE[post.state] || ''}`} data-testid="news-state">{stateLabel(post.state)}</span></td>
-                                <td className="whitespace-nowrap px-3 py-2 text-gray-500">{post.published_at || '—'}</td>
-                                <td className="px-3 py-2 text-gray-600">{post.category || '—'}</td>
-                                <td className="whitespace-nowrap px-3 py-2 text-end">
+                                <td data-label={t.pages_col_status || 'Status'} className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${STATE_TONE[post.state] || ''}`} data-testid="news-state">{stateLabel(post.state)}</span></td>
+                                <td data-label={t.news_col_date || 'Published'} className="whitespace-nowrap px-3 py-2 text-gray-500">{post.published_at || '—'}</td>
+                                <td data-label={t.news_col_category || 'Category'} className="px-3 py-2 text-gray-600">{post.category || '—'}</td>
+                                <td className="table-actions whitespace-nowrap px-3 py-2 text-end">
                                     {post.state === 'live' && <a href={post.public_url} target="_blank" rel="noopener noreferrer" className="me-3 text-xs font-semibold text-[#1D4E89] underline">{t.pages_view || 'View'}</a>}
                                     <Link href={`/admin/public-site/news/${post.id}`} className="me-3 text-xs font-semibold text-[#1D4E89] underline" data-testid="news-preview">{t.pages_preview || 'Preview'}</Link>
                                     <Link href={`/admin/public-site/news/${post.id}/edit`} className="text-xs font-semibold text-[#1D4E89] underline" data-testid="news-edit">{t.research_edit || 'Edit'}</Link>

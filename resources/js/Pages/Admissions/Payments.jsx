@@ -90,7 +90,7 @@ export default function Payments({ payments = [], pagination, total = 0, filters
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="payments-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.payments_col_reference || 'Reference'}</th>
@@ -106,13 +106,13 @@ export default function Payments({ payments = [], pagination, total = 0, filters
                         {payments.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan="7">{t.payments_none || 'No payments found.'}</td></tr>}
                         {payments.map((p) => (
                             <tr key={p.id} className="border-t align-top" data-testid="payment-row">
-                                <td className="max-w-xs break-all px-3 py-2 font-mono text-xs text-gray-600">{p.reference}</td>
-                                <td className="px-3 py-2 text-gray-800">{p.payer || '—'}</td>
-                                <td className="px-3 py-2 text-gray-800">{p.student || '—'}</td>
-                                <td className="whitespace-nowrap px-3 py-2 font-semibold text-gray-900">{p.amount} {p.currency}</td>
-                                <td className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_TONES[p.status] || 'bg-amber-100 text-amber-800'}`} data-testid="payment-status">{statusLabel(p.status)}</span></td>
-                                <td className="whitespace-nowrap px-3 py-2 text-gray-500">{p.date}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.payments_col_reference || 'Reference'} className="max-w-xs break-all px-3 py-2 font-mono text-xs text-gray-600">{p.reference}</td>
+                                <td data-label={t.payments_col_payer || 'Payer'} className="px-3 py-2 text-gray-800">{p.payer || '—'}</td>
+                                <td data-label={t.payments_col_student || 'Student'} className="px-3 py-2 text-gray-800">{p.student || '—'}</td>
+                                <td data-label={t.payments_col_amount || 'Amount'} className="whitespace-nowrap px-3 py-2 font-semibold text-gray-900">{p.amount} {p.currency}</td>
+                                <td data-label={t.payments_col_status || 'Status'} className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_TONES[p.status] || 'bg-amber-100 text-amber-800'}`} data-testid="payment-status">{statusLabel(p.status)}</span></td>
+                                <td data-label={t.payments_col_date || 'Date'} className="whitespace-nowrap px-3 py-2 text-gray-500">{p.date}</td>
+                                <td className="table-actions px-3 py-2">
                                     {p.refunded && <p className="mb-1 text-xs text-gray-500">{(t.payments_refunded || 'Refunded: :amount').replace(':amount', `${p.refunded} ${p.currency}`)}</p>}
                                     {canRefund && p.refundable
                                         ? <RefundForm payment={p} t={t} />
