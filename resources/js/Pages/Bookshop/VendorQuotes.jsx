@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
+import VendorNav from '../../Components/Bookshop/VendorNav';
 
 /**
  * BOOKSHOP_PLAN slice B9d — bulk quotes for schools, the shop's side: the
@@ -26,22 +27,22 @@ function PriceForm({ quote, t, defaultDays, maxDays }) {
     return (
         <div className="mt-3 border-t pt-3">
             <form onSubmit={(e) => { e.preventDefault(); form.post(`/vendor/quotes/${quote.id}`, { preserveScroll: true }); }}>
-                <table className="w-full text-sm">
+                <table className="table-stack w-full text-sm">
                     <thead className="text-start text-xs text-gray-500"><tr><th className="p-1 text-start">{t.quote_item}</th><th className="p-1 text-end">{t.quantity}</th><th className="p-1 text-end">{t.quote_list_price}</th><th className="p-1 text-end">{t.quote_your_price}</th></tr></thead>
                     <tbody>
                         {quote.items.map((i) => (
                             <tr key={i.id} className="border-t">
-                                <td className="p-1" dir="auto">{i.title}{i.variant && <span className="text-gray-500"> · {i.variant}</span>}{i.sku && <span className="block text-xs text-gray-500">{i.sku}</span>}</td>
-                                <td className="p-1 text-end">{i.quantity}</td>
-                                <td className="p-1 text-end">{i.list_price}</td>
-                                <td className="p-1 text-end">
-                                    <input className="form-input w-28 text-end" type="number" step="0.01" min="0.01" required value={form.data.prices[i.id]}
+                                <td className="p-1" dir="auto" data-label={t.quote_item}>{i.title}{i.variant && <span className="text-gray-500"> · {i.variant}</span>}{i.sku && <span className="block text-xs text-gray-500">{i.sku}</span>}</td>
+                                <td className="p-1 sm:text-end" data-label={t.quantity}>{i.quantity}</td>
+                                <td className="p-1 sm:text-end" data-label={t.quote_list_price}>{i.list_price}</td>
+                                <td className="p-1 sm:text-end" data-label={t.quote_your_price}>
+                                    <input className="form-input w-full max-w-[8rem] text-end sm:w-28" type="number" step="0.01" min="0.01" required value={form.data.prices[i.id]}
                                         onChange={(e) => form.setData('prices', { ...form.data.prices, [i.id]: e.target.value })} data-testid={`quote-price-${i.id}`} />
                                 </td>
                             </tr>
                         ))}
                     </tbody>
-                    <tfoot><tr className="border-t font-semibold"><td className="p-1" colSpan={2}>{t.total}</td><td className="p-1 text-end">{quote.list_total}</td><td className="p-1 text-end" data-testid="quote-live-total">{money(total)}</td></tr></tfoot>
+                    <tfoot><tr className="border-t font-semibold"><td className="p-1" colSpan={2}>{t.total}</td><td className="p-1 sm:text-end" data-label={t.quote_list_price}>{quote.list_total}</td><td className="p-1 sm:text-end" data-label={t.quote_your_price} data-testid="quote-live-total">{money(total)}</td></tr></tfoot>
                 </table>
                 <div className="mt-2 grid gap-2 md:grid-cols-4">
                     <label className="text-sm">{t.quote_valid_days}
@@ -57,8 +58,8 @@ function PriceForm({ quote, t, defaultDays, maxDays }) {
                 </div>
             </form>
             {declining && (
-                <form className="mt-2 flex flex-wrap gap-2" onSubmit={(e) => { e.preventDefault(); decline.post(`/vendor/quotes/${quote.id}/decline`, { preserveScroll: true }); }}>
-                    <input className="form-input flex-1" required maxLength={2000} placeholder={t.quote_decline_note} value={decline.data.note} onChange={(e) => decline.setData('note', e.target.value)} dir="auto" data-testid="quote-decline-note" />
+                <form className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap" onSubmit={(e) => { e.preventDefault(); decline.post(`/vendor/quotes/${quote.id}/decline`, { preserveScroll: true }); }}>
+                    <input className="form-input w-full min-w-0 flex-1" required maxLength={2000} placeholder={t.quote_decline_note} value={decline.data.note} onChange={(e) => decline.setData('note', e.target.value)} dir="auto" data-testid="quote-decline-note" />
                     <button type="submit" className="btn-secondary text-red-700" disabled={decline.processing} data-testid="quote-decline">{t.quote_decline}</button>
                 </form>
             )}
@@ -95,17 +96,20 @@ export default function VendorQuotes({ t, vendor, quotes, counts, statuses, stat
     return (
         <AppShell title={t.quotes_title}>
             <FormErrors errors={errors} className="mb-4" />
-            <header className="mb-4 flex flex-wrap items-end justify-between gap-2">
-                <div>
-                    <h1 className="text-2xl font-bold" data-testid="quotes-heading">{t.quotes_title} · {vendor.name}</h1>
-                    <p className="text-sm text-gray-600"><a href="/vendor" className="text-blue-700 underline">{t.portal_title}</a> · {t.quotes_vendor_intro}</p>
+            <header className="mb-4">
+                <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
+                    <div>
+                        <h1 className="text-2xl font-bold" data-testid="quotes-heading">{t.quotes_title} · {vendor.name}</h1>
+                        <p className="text-sm text-gray-600">{t.quotes_vendor_intro}</p>
+                    </div>
+                    <a href="/vendor/quotes/export" className="btn-secondary" data-testid="export-quotes">{t.export_csv}</a>
                 </div>
-                <a href="/vendor/quotes/export" className="btn-secondary" data-testid="export-quotes">{t.export_csv}</a>
+                <VendorNav t={t} current="quotes" />
             </header>
-            <nav className="mb-4 flex flex-wrap gap-2 text-sm" data-testid="quote-filters">
-                <button type="button" className={`rounded px-2 py-1 ${!status ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get('/vendor/quotes')}>{t.all_orders}</button>
+            <nav className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 text-sm sm:mx-0 sm:flex-wrap sm:px-0" data-testid="quote-filters">
+                <button type="button" className={`inline-flex min-h-[2rem] shrink-0 items-center whitespace-nowrap rounded px-3 py-1 ${!status ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get('/vendor/quotes')}>{t.all_orders}</button>
                 {statuses.map((s) => (
-                    <button key={s} type="button" className={`rounded px-2 py-1 ${status === s ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get('/vendor/quotes', { status: s })} data-testid={`quote-filter-${s}`}>
+                    <button key={s} type="button" className={`inline-flex min-h-[2rem] shrink-0 items-center whitespace-nowrap rounded px-3 py-1 ${status === s ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get('/vendor/quotes', { status: s })} data-testid={`quote-filter-${s}`}>
                         {t[`quote_status_${s}`] || s} ({counts[s] || 0})
                     </button>
                 ))}

@@ -547,6 +547,9 @@ return [
 
     // Shop settings (B3)
     'shop_settings_heading' => 'الإرجاع والعطلات',
+    'settings_group_returns' => 'الإرجاع',
+    'settings_group_holiday' => 'العطلة',
+    'settings_group_pay' => 'التوصيل والدفع نقداً',
     'return_window_days' => 'مدة الإرجاع (أيام)',
     'return_window_hint' => ':min أيام على الأقل من التسليم.',
     'return_conditions' => 'شروط الإرجاع بكلماتك',

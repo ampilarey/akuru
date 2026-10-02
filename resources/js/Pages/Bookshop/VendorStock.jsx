@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
+import VendorNav from '../../Components/Bookshop/VendorNav';
 
 /**
  * BOOKSHOP_PLAN slice B8 — the shop's stock page: what is low or sold out,
@@ -22,16 +23,16 @@ function LowStock({ rows, t }) {
             {rows.length === 0 ? (
                 <p className="rounded border bg-white p-3 text-sm text-gray-600" data-testid="no-low-stock">{t.no_low_stock}</p>
             ) : (
-                <table className="w-full overflow-hidden rounded border bg-white text-sm">
-                    <thead className="bg-gray-50 text-start"><tr><th className="p-2 text-start">{t.product}</th><th className="p-2 text-start">SKU</th><th className="p-2 text-end">{t.stock}</th><th className="p-2 text-end">{t.low_stock_at}</th><th className="p-2 text-start">{t.state}</th></tr></thead>
+                <table className="table-stack w-full overflow-hidden rounded border bg-white text-sm">
+                    <thead className="bg-gray-50 text-start"><tr><th className="p-2 text-start">{t.product}</th><th className="p-2 text-start">{t.sku}</th><th className="p-2 text-end">{t.stock}</th><th className="p-2 text-end">{t.low_stock_at}</th><th className="p-2 text-start">{t.state}</th></tr></thead>
                     <tbody>
                         {rows.map((r) => (
                             <tr key={`${r.product_id}-${r.variant_id || 0}`} className="border-t" data-testid={`low-${r.sku || r.slug}`} data-state={r.state}>
-                                <td className="p-2" dir="auto">{r.title}{r.variant && <span className="text-gray-500"> · {r.variant}</span>}</td>
-                                <td className="p-2">{r.sku || '—'}</td>
-                                <td className="p-2 text-end font-semibold">{r.stock}</td>
-                                <td className="p-2 text-end">{r.low_stock_at ?? '—'}</td>
-                                <td className="p-2"><span className={`rounded px-1 text-xs ${r.state === 'sold_out' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}`}>{t[`stock_state_${r.state}`] || r.state}</span></td>
+                                <td className="p-2" dir="auto" data-label={t.product}>{r.title}{r.variant && <span className="text-gray-500"> · {r.variant}</span>}</td>
+                                <td className="p-2" data-label={t.sku}>{r.sku || '—'}</td>
+                                <td className="p-2 font-semibold sm:text-end" data-label={t.stock}>{r.stock}</td>
+                                <td className="p-2 sm:text-end" data-label={t.low_stock_at}>{r.low_stock_at ?? '—'}</td>
+                                <td className="p-2" data-label={t.state}><span className={`rounded px-1 text-xs ${r.state === 'sold_out' ? 'bg-red-100 text-red-800' : 'bg-amber-100 text-amber-800'}`}>{t[`stock_state_${r.state}`] || r.state}</span></td>
                             </tr>
                         ))}
                     </tbody>
@@ -99,16 +100,16 @@ function Import({ t, preview, expired, columns, limits }) {
         <section className="mb-8" id="import" data-testid="import">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold">{t.import_heading}</h2>
-                <span className="flex gap-2">
-                    <a href="/vendor/products/export" className="btn-secondary" data-testid="export-sheet">{t.export_sheet}</a>
-                    <a href="/vendor/stock/template" className="btn-secondary" data-testid="download-template">{t.download_template}</a>
+                <span className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto">
+                    <a href="/vendor/products/export" className="btn-secondary justify-center" data-testid="export-sheet">{t.export_sheet}</a>
+                    <a href="/vendor/stock/template" className="btn-secondary justify-center" data-testid="download-template">{t.download_template}</a>
                 </span>
             </div>
             <p className="mb-2 text-sm text-gray-600">{fill(t.import_hint, { rows: limits.rows, kb: limits.kilobytes })}</p>
             <details className="mb-3 text-xs text-gray-500"><summary className="cursor-pointer">{t.import_columns}</summary><p className="mt-1 font-mono">{columns.join(', ')}</p><p className="mt-1">{t.import_rules}</p></details>
             {expired && <p className="mb-3 rounded bg-amber-50 p-2 text-sm text-amber-900" data-testid="import-expired">{t.import_expired}</p>}
-            <form className="flex flex-wrap items-center gap-2 rounded border bg-white p-3" onSubmit={(e) => { e.preventDefault(); form.post('/vendor/stock/import', { forceFormData: true }); }}>
-                <input type="file" accept=".csv,text/csv" onChange={(e) => form.setData('file', e.target.files?.[0] || null)} required data-testid="import-file" />
+            <form className="flex flex-col gap-2 rounded border bg-white p-3 sm:flex-row sm:flex-wrap sm:items-center" onSubmit={(e) => { e.preventDefault(); form.post('/vendor/stock/import', { forceFormData: true }); }}>
+                <input type="file" accept=".csv,text/csv" className="block w-full max-w-full text-sm sm:w-auto" onChange={(e) => form.setData('file', e.target.files?.[0] || null)} required data-testid="import-file" />
                 <button type="submit" className="btn-primary" disabled={form.processing || !form.data.file} data-testid="import-check">{t.import_check}</button>
             </form>
             {preview && (
@@ -118,16 +119,16 @@ function Import({ t, preview, expired, columns, limits }) {
                     </p>
                     {preview.ignored.length > 0 && <p className="text-xs text-amber-800">{fill(t.import_ignored, { columns: preview.ignored.join(', ') })}</p>}
                     <label className="mt-2 flex items-center gap-2 text-xs"><input type="checkbox" checked={showAll} onChange={(e) => setShowAll(e.target.checked)} /> {t.import_show_unchanged}</label>
-                    <table className="mt-2 w-full text-sm">
-                        <thead className="bg-gray-50"><tr><th className="p-1 text-start">{t.line}</th><th className="p-1 text-start">{t.import_action}</th><th className="p-1 text-start">SKU</th><th className="p-1 text-start">{t.product}</th><th className="p-1 text-start">{t.import_what}</th></tr></thead>
+                    <table className="table-stack mt-2 w-full text-sm">
+                        <thead className="bg-gray-50"><tr><th className="p-1 text-start">{t.line}</th><th className="p-1 text-start">{t.import_action}</th><th className="p-1 text-start">{t.sku}</th><th className="p-1 text-start">{t.product}</th><th className="p-1 text-start">{t.import_what}</th></tr></thead>
                         <tbody>
                             {rows.map((r) => (
                                 <tr key={r.line} className={`border-t ${r.errors.length ? 'bg-red-50' : ''}`} data-testid={`import-line-${r.line}`} data-action={r.errors.length ? 'error' : r.action}>
-                                    <td className="p-1">{r.line}</td>
-                                    <td className="p-1">{r.errors.length ? t.import_error : t[`import_action_${r.action}`]}</td>
-                                    <td className="p-1">{r.sku || '—'}</td>
-                                    <td className="p-1" dir="auto">{r.title}</td>
-                                    <td className="p-1 text-xs">{r.errors.length ? <span className="text-red-800">{r.errors.join(' · ')}</span> : r.changes.join(', ')}</td>
+                                    <td className="p-1" data-label={t.line}>{r.line}</td>
+                                    <td className="p-1" data-label={t.import_action}>{r.errors.length ? t.import_error : t[`import_action_${r.action}`]}</td>
+                                    <td className="p-1" data-label={t.sku}>{r.sku || '—'}</td>
+                                    <td className="p-1" dir="auto" data-label={t.product}>{r.title}</td>
+                                    <td className="p-1 text-xs" data-label={t.import_what}>{r.errors.length ? <span className="text-red-800">{r.errors.join(' · ')}</span> : r.changes.join(', ')}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -157,31 +158,31 @@ function Movements({ movements, kinds, filters, t }) {
                 <h2 className="text-lg font-semibold">{t.stock_log_heading} <span className="text-sm font-normal text-gray-500">({movements.total})</span></h2>
                 <a href={`/vendor/stock/movements/export?${new URLSearchParams(query).toString()}`} className="btn-secondary" data-testid="export-stock-log">{t.export_csv}</a>
             </div>
-            <form className="mb-2 flex flex-wrap gap-2 text-sm" onSubmit={(e) => { e.preventDefault(); go(1); }}>
-                <input className="form-input" placeholder={t.search_products} value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })} data-testid="log-search" />
-                <select className="form-input" value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value })} data-testid="log-kind">
+            <form className="mb-2 grid grid-cols-2 gap-2 text-sm sm:flex sm:flex-wrap" onSubmit={(e) => { e.preventDefault(); go(1); }}>
+                <input className="form-input col-span-2 min-w-0 sm:w-auto" placeholder={t.search_products} value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })} data-testid="log-search" />
+                <select className="form-input col-span-2 min-w-0 sm:w-auto" value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value })} data-testid="log-kind">
                     <option value="">{t.all_kinds}</option>
                     {kinds.map((k) => <option key={k} value={k}>{t[`movement_${k}`] || k}</option>)}
                 </select>
-                <input className="form-input" type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} aria-label={t.from} />
-                <input className="form-input" type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} aria-label={t.to} />
-                <button type="submit" className="btn-secondary">{t.search}</button>
+                <input className="form-input min-w-0" type="date" value={f.from} onChange={(e) => setF({ ...f, from: e.target.value })} aria-label={t.from} />
+                <input className="form-input min-w-0" type="date" value={f.to} onChange={(e) => setF({ ...f, to: e.target.value })} aria-label={t.to} />
+                <button type="submit" className="btn-secondary col-span-2 justify-center sm:col-auto">{t.search}</button>
             </form>
             {movements.rows.length === 0 ? (
                 <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_movements}</p>
             ) : (
-                <table className="w-full overflow-hidden rounded border bg-white text-sm">
+                <table className="table-stack w-full overflow-hidden rounded border bg-white text-sm">
                     <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.date}</th><th className="p-2 text-start">{t.movement_kind}</th><th className="p-2 text-start">{t.product}</th><th className="p-2 text-end">{t.quantity}</th><th className="p-2 text-end">{t.stock_after}</th><th className="p-2 text-start">{t.note}</th><th className="p-2 text-start">{t.by}</th></tr></thead>
                     <tbody>
                         {movements.rows.map((m) => (
                             <tr key={m.id} className="border-t" data-testid={`movement-${m.id}`} data-kind={m.kind} data-sku={m.sku || ''}>
-                                <td className="p-2 whitespace-nowrap">{m.at}</td>
-                                <td className="p-2">{t[`movement_${m.kind}`] || m.kind}</td>
-                                <td className="p-2" dir="auto">{m.product}{m.variant && <span className="text-gray-500"> · {m.variant}</span>}{m.order && <span className="block text-xs text-gray-500">{m.order}</span>}</td>
-                                <td className={`p-2 text-end font-semibold ${m.quantity < 0 ? 'text-red-700' : 'text-green-700'}`}>{m.quantity > 0 ? `+${m.quantity}` : m.quantity}</td>
-                                <td className="p-2 text-end">{m.stock_after}</td>
-                                <td className="p-2 text-xs" dir="auto">{m.note}</td>
-                                <td className="p-2 text-xs">{m.by || '—'}</td>
+                                <td className="p-2 sm:whitespace-nowrap" data-label={t.date}>{m.at}</td>
+                                <td className="p-2" data-label={t.movement_kind}>{t[`movement_${m.kind}`] || m.kind}</td>
+                                <td className="p-2" dir="auto" data-label={t.product}>{m.product}{m.variant && <span className="text-gray-500"> · {m.variant}</span>}{m.order && <span className="block text-xs text-gray-500">{m.order}</span>}</td>
+                                <td className={`p-2 font-semibold sm:text-end ${m.quantity < 0 ? 'text-red-700' : 'text-green-700'}`} data-label={t.quantity}>{m.quantity > 0 ? `+${m.quantity}` : m.quantity}</td>
+                                <td className="p-2 sm:text-end" data-label={t.stock_after}>{m.stock_after}</td>
+                                <td className="p-2 text-xs" dir="auto" data-label={t.note}>{m.note}</td>
+                                <td className="p-2 text-xs" data-label={t.by}>{m.by || '—'}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -211,7 +212,8 @@ export default function VendorStock({ t, vendor, low_stock, movements, kinds, fi
             )}
             <header className="mb-6">
                 <h1 className="text-2xl font-bold" data-testid="stock-heading">{t.stock_title} · {vendor.name}</h1>
-                <p className="text-sm text-gray-600"><a href="/vendor" className="text-blue-700 underline">{t.portal_title}</a> · {t.stock_intro}</p>
+                <p className="mb-3 text-sm text-gray-600">{t.stock_intro}</p>
+                <VendorNav t={t} current="stock" />
             </header>
             <LowStock rows={low_stock} t={t} />
             <Adjust products={products} t={t} />

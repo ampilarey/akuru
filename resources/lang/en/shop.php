@@ -551,6 +551,9 @@ return [
 
     // Shop settings (B3)
     'shop_settings_heading' => 'Returns and holidays',
+    'settings_group_returns' => 'Returns',
+    'settings_group_holiday' => 'Holiday',
+    'settings_group_pay' => 'Delivery and cash',
     'return_window_days' => 'Return window (days)',
     'return_window_hint' => 'At least :min days from delivery.',
     'return_conditions' => 'Return conditions, in your words',

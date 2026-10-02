@@ -537,29 +537,38 @@ function ShopSettings({ settings, isOwner, t, panels }) {
         <Panel panels={panels} id="settings" testid="shop-settings" title={t.shop_settings_heading} summary={`${t.summary_return_days.replace(':days', settings.return_window_days)}${settings.on_holiday ? ` · ${t.on_holiday_now}` : ''}`}>
             {settings.on_holiday && <p className="mb-2 rounded bg-amber-50 p-2 text-sm text-amber-900" data-testid="on-holiday">{t.on_holiday_now}</p>}
             <form
-                className="grid gap-3 md:grid-cols-3"
+                className="space-y-4"
                 onSubmit={(e) => {
                     e.preventDefault();
                     form.post('/vendor/settings', { preserveScroll: true });
                 }}
             >
-                <Field label={t.return_window_days} hint={t.return_window_hint.replace(':min', settings.minimum_window)}>
-                    <input className="form-input w-full" type="number" min={settings.minimum_window} max="60" value={form.data.return_window_days} onChange={set('return_window_days')} disabled={!isOwner} data-testid="return-window" />
-                </Field>
-                <Field label={t.return_conditions} className="md:col-span-2">
-                    <textarea className="form-input w-full" rows={2} value={form.data.return_conditions} onChange={set('return_conditions')} disabled={!isOwner} />
-                </Field>
-                <Field label={t.holiday_from}><input className="form-input w-full" type="date" value={form.data.holiday_from} onChange={set('holiday_from')} disabled={!isOwner} data-testid="holiday-from" /></Field>
-                <Field label={t.holiday_until}><input className="form-input w-full" type="date" value={form.data.holiday_until} onChange={set('holiday_until')} disabled={!isOwner} data-testid="holiday-until" /></Field>
-                <Field label={t.holiday_notice} hint={t.holiday_hint}><input className="form-input w-full" value={form.data.holiday_notice} onChange={set('holiday_notice')} disabled={!isOwner} data-testid="holiday-notice" /></Field>
-                <Field label={t.free_delivery_over} hint={t.free_delivery_over_hint}><input className="form-input w-full" type="number" min="0" step="1" value={form.data.free_delivery_over} onChange={set('free_delivery_over')} disabled={!isOwner} data-testid="free-delivery-over" /></Field>
-                {/* B9b: cash on delivery — the shop's own collection and couriers only; the office can switch it off for everyone. */}
-                <Field label={t.cod_label} hint={settings.cod_office_on ? t.cod_hint : t.cod_office_off}>
-                    <label className="flex items-center gap-2"><input type="checkbox" checked={form.data.cod_enabled} onChange={(e) => form.setData('cod_enabled', e.target.checked)} disabled={!isOwner || !settings.cod_office_on} data-testid="cod-enabled" /> {t.cod_take_cash}</label>
-                </Field>
-                <Field label={t.cod_max} hint={t.cod_max_hint}><input className="form-input w-full" type="number" min="0" step="1" value={form.data.cod_max} onChange={set('cod_max')} disabled={!isOwner || !form.data.cod_enabled} data-testid="cod-max" /></Field>
-                <FormErrors errors={form.errors} className="md:col-span-3" />
-                {isOwner && <div className="md:col-span-3"><button type="submit" className="btn-primary" disabled={form.processing} data-testid="save-settings">{t.save}</button></div>}
+                <fieldset className="grid gap-3 rounded border p-3 md:grid-cols-3">
+                    <legend className="px-1 text-sm font-semibold">{t.settings_group_returns}</legend>
+                    <Field label={t.return_window_days} hint={t.return_window_hint.replace(':min', settings.minimum_window)}>
+                        <input className="form-input w-full" type="number" min={settings.minimum_window} max="60" value={form.data.return_window_days} onChange={set('return_window_days')} disabled={!isOwner} data-testid="return-window" />
+                    </Field>
+                    <Field label={t.return_conditions} className="md:col-span-2">
+                        <textarea className="form-input w-full" rows={2} value={form.data.return_conditions} onChange={set('return_conditions')} disabled={!isOwner} />
+                    </Field>
+                </fieldset>
+                <fieldset className="grid gap-3 rounded border p-3 md:grid-cols-3">
+                    <legend className="px-1 text-sm font-semibold">{t.settings_group_holiday}</legend>
+                    <Field label={t.holiday_from}><input className="form-input w-full" type="date" value={form.data.holiday_from} onChange={set('holiday_from')} disabled={!isOwner} data-testid="holiday-from" /></Field>
+                    <Field label={t.holiday_until}><input className="form-input w-full" type="date" value={form.data.holiday_until} onChange={set('holiday_until')} disabled={!isOwner} data-testid="holiday-until" /></Field>
+                    <Field label={t.holiday_notice} hint={t.holiday_hint}><input className="form-input w-full" value={form.data.holiday_notice} onChange={set('holiday_notice')} disabled={!isOwner} data-testid="holiday-notice" /></Field>
+                </fieldset>
+                <fieldset className="grid gap-3 rounded border p-3 md:grid-cols-3">
+                    <legend className="px-1 text-sm font-semibold">{t.settings_group_pay}</legend>
+                    <Field label={t.free_delivery_over} hint={t.free_delivery_over_hint}><input className="form-input w-full" type="number" min="0" step="1" value={form.data.free_delivery_over} onChange={set('free_delivery_over')} disabled={!isOwner} data-testid="free-delivery-over" /></Field>
+                    {/* B9b: cash on delivery — the shop's own collection and couriers only; the office can switch it off for everyone. */}
+                    <Field label={t.cod_label} hint={settings.cod_office_on ? t.cod_hint : t.cod_office_off}>
+                        <label className="flex min-h-[2rem] items-center gap-2"><input type="checkbox" className="h-5 w-5" checked={form.data.cod_enabled} onChange={(e) => form.setData('cod_enabled', e.target.checked)} disabled={!isOwner || !settings.cod_office_on} data-testid="cod-enabled" /> {t.cod_take_cash}</label>
+                    </Field>
+                    <Field label={t.cod_max} hint={t.cod_max_hint}><input className="form-input w-full" type="number" min="0" step="1" value={form.data.cod_max} onChange={set('cod_max')} disabled={!isOwner || !form.data.cod_enabled} data-testid="cod-max" /></Field>
+                </fieldset>
+                <FormErrors errors={form.errors} />
+                {isOwner && <button type="submit" className="btn-primary" disabled={form.processing} data-testid="save-settings">{t.save}</button>}
             </form>
         </Panel>
     );
@@ -665,8 +674,8 @@ function Notices({ settings, isOwner, t, panels }) {
                             <tr key={event} className="border-t" data-testid={`notice-${event}`}>
                                 <td className="p-2">{t[`notice_event_${event}`] || event}</td>
                                 <td className="hidden p-2 text-center sm:table-cell">✓</td>
-                                <td className="p-2 text-center"><input type="checkbox" checked={!!form.data.events[event].email} disabled={!isOwner || !office.vendor_email} onChange={(e) => set(event, 'email', e.target.checked)} data-testid={`notice-${event}-email`} /></td>
-                                <td className="p-2 text-center"><input type="checkbox" checked={!!form.data.events[event].sms} disabled={!isOwner || !office.vendor_sms} onChange={(e) => set(event, 'sms', e.target.checked)} data-testid={`notice-${event}-sms`} /></td>
+                                <td className="p-2 text-center"><label className="inline-flex min-h-[2rem] min-w-[2rem] items-center justify-center"><input type="checkbox" className="h-5 w-5" checked={!!form.data.events[event].email} disabled={!isOwner || !office.vendor_email} onChange={(e) => set(event, 'email', e.target.checked)} data-testid={`notice-${event}-email`} /></label></td>
+                                <td className="p-2 text-center"><label className="inline-flex min-h-[2rem] min-w-[2rem] items-center justify-center"><input type="checkbox" className="h-5 w-5" checked={!!form.data.events[event].sms} disabled={!isOwner || !office.vendor_sms} onChange={(e) => set(event, 'sms', e.target.checked)} data-testid={`notice-${event}-sms`} /></label></td>
                             </tr>
                         ))}
                     </tbody>

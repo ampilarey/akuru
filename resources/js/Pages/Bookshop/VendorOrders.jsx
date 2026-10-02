@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
+import VendorNav from '../../Components/Bookshop/VendorNav';
 
 /**
  * BOOKSHOP_PLAN slice B3 — the shop's order queue. Tabs by status with
@@ -46,8 +47,8 @@ function StepButtons({ order, t }) {
         <div className="flex flex-wrap items-end gap-2" data-testid={`steps-${order.number}`}>
             {order.next.includes('dispatched') && (
                 <>
-                    <label className="text-sm">{t.carrier}<input className="form-input block w-40" value={carrier} onChange={(e) => setCarrier(e.target.value)} data-testid="carrier" /></label>
-                    <label className="text-sm">{t.tracking_note}<input className="form-input block w-64" value={tracking} onChange={(e) => setTracking(e.target.value)} data-testid="tracking-note" /></label>
+                    <label className="w-full text-sm sm:w-auto">{t.carrier}<input className="form-input block w-full sm:w-40" value={carrier} onChange={(e) => setCarrier(e.target.value)} data-testid="carrier" /></label>
+                    <label className="w-full text-sm sm:w-auto">{t.tracking_note}<input className="form-input block w-full sm:w-64" value={tracking} onChange={(e) => setTracking(e.target.value)} data-testid="tracking-note" /></label>
                 </>
             )}
             {order.awaiting_cash && order.next.includes('delivered') && (
@@ -81,7 +82,7 @@ function CancelForm({ order, t }) {
 
     return open ? (
         <div className="flex flex-wrap items-center gap-2" data-testid="vendor-cancel-form">
-            <input className="form-input w-72" placeholder={t.cancel_reason} value={reason} onChange={(e) => setReason(e.target.value)} data-testid="vendor-cancel-reason" />
+            <input className="form-input w-full sm:w-72" placeholder={t.cancel_reason} value={reason} onChange={(e) => setReason(e.target.value)} data-testid="vendor-cancel-reason" />
             <button type="button" className="rounded bg-red-600 px-3 py-2 text-sm text-white" data-testid="vendor-cancel-confirm" onClick={() => post(`/vendor/orders/${order.id}/cancel`, { reason })}>{t.cancel_order_refund}</button>
             <button type="button" className="text-sm underline" onClick={() => setOpen(false)}>{t.cancel}</button>
         </div>
@@ -106,7 +107,7 @@ function Slip({ order, t }) {
             </p>
             {slip.can_confirm ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <input className="form-input w-56" placeholder={t.decision_note} value={note} onChange={(e) => setNote(e.target.value)} />
+                    <input className="form-input w-full sm:w-56" placeholder={t.decision_note} value={note} onChange={(e) => setNote(e.target.value)} />
                     <button type="button" className="btn-primary" data-testid="vendor-confirm-slip" onClick={() => post(`/vendor/slips/${slip.id}/decide`, { decision: 'confirm', note })}>{t.confirm}</button>
                     <button type="button" className="text-red-700 underline" onClick={() => post(`/vendor/slips/${slip.id}/decide`, { decision: 'reject', note })}>{t.reject}</button>
                 </div>
@@ -131,7 +132,7 @@ function ReturnRow({ ret, t }) {
             {ret.status === 'requested' ? (
                 <div className="mt-1 flex flex-wrap items-center gap-2">
                     <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={restock} onChange={(e) => setRestock(e.target.checked)} /> {t.restock}</label>
-                    <input className="form-input w-56" placeholder={t.decline_reason} value={note} onChange={(e) => setNote(e.target.value)} data-testid="return-note" />
+                    <input className="form-input w-full sm:w-56" placeholder={t.decline_reason} value={note} onChange={(e) => setNote(e.target.value)} data-testid="return-note" />
                     <button type="button" className="btn-primary" data-testid="accept-return" onClick={() => post(`/vendor/returns/${ret.id}/decide`, { decision: 'accept', restock: restock ? 1 : 0, note })}>{t.accept_return}</button>
                     <button type="button" className="text-red-700 underline" data-testid="decline-return" onClick={() => post(`/vendor/returns/${ret.id}/decide`, { decision: 'decline', note })}>{t.decline_return}</button>
                 </div>
@@ -178,11 +179,16 @@ function OrderCard({ order, t, open, onToggle }) {
             {open && (
                 <div className="space-y-4 border-t p-3 text-sm">
                     <Slip order={order} t={t} />
-                    <table className="w-full">
+                    <table className="table-stack w-full">
                         <thead className="text-gray-500"><tr><th className="text-start">{t.product_title}</th><th className="text-start">{t.sku}</th><th className="text-end">{t.quantity}</th><th className="text-end">{t.line_total}</th></tr></thead>
                         <tbody>
                             {order.items.map((i) => (
-                                <tr key={i.id} className="border-t"><td dir="auto">{i.title}{i.variant ? ` (${i.variant})` : ''}</td><td>{i.sku || t.none}</td><td className="text-end">{i.quantity}</td><td className="text-end">{i.line_total}</td></tr>
+                                <tr key={i.id} className="border-t">
+                                    <td dir="auto" data-label={t.product_title}>{i.title}{i.variant ? ` (${i.variant})` : ''}</td>
+                                    <td data-label={t.sku}>{i.sku || t.none}</td>
+                                    <td className="sm:text-end" data-label={t.quantity}>{i.quantity}</td>
+                                    <td className="sm:text-end" data-label={t.line_total}>{i.line_total}</td>
+                                </tr>
                             ))}
                         </tbody>
                     </table>
@@ -260,24 +266,22 @@ export default function VendorOrders({ t, vendor, orders, counts, filters }) {
         <AppShell title={t.orders_title}>
             {vendor.paused && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900" data-testid="shop-paused">{t.shop_paused_banner}</p>}
             <FormErrors errors={errors} className="mb-4" />
-            <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                    <h1 className="text-2xl font-bold" data-testid="orders-heading">{t.orders_title} · {vendor.name}</h1>
-                    <a href="/vendor" className="text-sm text-blue-700 underline">{t.portal_title}</a>
-                </div>
-                <form className="flex gap-2" onSubmit={(e) => { e.preventDefault(); router.get('/vendor/orders', { status: filters.status || undefined, q: q || undefined }); }}>
-                    <input className="form-input" placeholder={t.search_orders} value={q} onChange={(e) => setQ(e.target.value)} />
-                    <button type="submit" className="btn-secondary">{t.search}</button>
+            <header className="mb-4">
+                <h1 className="text-2xl font-bold" data-testid="orders-heading">{t.orders_title} · {vendor.name}</h1>
+                <VendorNav t={t} current="orders" />
+                <form className="grid grid-cols-[1fr_auto] gap-2 sm:flex" onSubmit={(e) => { e.preventDefault(); router.get('/vendor/orders', { status: filters.status || undefined, q: q || undefined }); }}>
+                    <input className="form-input min-w-0" placeholder={t.search_orders} value={q} onChange={(e) => setQ(e.target.value)} />
+                    <button type="submit" className="btn-secondary justify-center">{t.search}</button>
                 </form>
             </header>
-            <div className="mb-4 flex flex-wrap items-center gap-2 rounded border bg-white p-2 text-sm" data-testid="order-exports">
-                <span className="text-gray-600">{t.export_orders_label}</span>
-                <label className="flex items-center gap-1">{t.from} <input className="form-input" type="date" value={range.from} onChange={(e) => setRange({ ...range, from: e.target.value })} data-testid="export-from" /></label>
-                <label className="flex items-center gap-1">{t.to} <input className="form-input" type="date" value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} data-testid="export-to" /></label>
-                <a href={`/vendor/orders/export${exportQuery ? `?${exportQuery}` : ''}`} className="btn-secondary" data-testid="export-vendor-orders">{t.export_orders_csv}</a>
-                <a href={`/vendor/orders/lines/export${exportQuery ? `?${exportQuery}` : ''}`} className="btn-secondary" data-testid="export-order-lines">{t.export_lines_csv}</a>
+            <div className="mb-4 grid grid-cols-2 gap-2 rounded border bg-white p-2 text-sm sm:flex sm:flex-wrap sm:items-center" data-testid="order-exports">
+                <span className="col-span-2 text-gray-600">{t.export_orders_label}</span>
+                <label className="min-w-0">{t.from} <input className="form-input w-full min-w-0" type="date" value={range.from} onChange={(e) => setRange({ ...range, from: e.target.value })} data-testid="export-from" /></label>
+                <label className="min-w-0">{t.to} <input className="form-input w-full min-w-0" type="date" value={range.to} onChange={(e) => setRange({ ...range, to: e.target.value })} data-testid="export-to" /></label>
+                <a href={`/vendor/orders/export${exportQuery ? `?${exportQuery}` : ''}`} className="btn-secondary col-span-2 justify-center sm:col-auto" data-testid="export-vendor-orders">{t.export_orders_csv}</a>
+                <a href={`/vendor/orders/lines/export${exportQuery ? `?${exportQuery}` : ''}`} className="btn-secondary col-span-2 justify-center sm:col-auto" data-testid="export-order-lines">{t.export_lines_csv}</a>
             </div>
-            <nav className="mb-4 flex flex-wrap gap-2" data-testid="order-tabs">
+            <nav className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0" data-testid="order-tabs">
                 {TABS.map((s) => {
                     const n = s === '' ? total : counts[s] || 0;
                     if (s !== '' && n === 0 && filters.status !== s) {
@@ -285,7 +289,7 @@ export default function VendorOrders({ t, vendor, orders, counts, filters }) {
                     }
 
                     return (
-                        <a key={s || 'all'} href={s ? `/vendor/orders?status=${s}` : '/vendor/orders'} data-testid={`tab-${s || 'all'}`} className={`rounded-full border px-3 py-1 text-sm ${(filters.status || '') === s ? 'bg-gray-900 text-white' : 'bg-white'}`}>
+                        <a key={s || 'all'} href={s ? `/vendor/orders?status=${s}` : '/vendor/orders'} data-testid={`tab-${s || 'all'}`} className={`inline-flex min-h-[2rem] shrink-0 items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm ${(filters.status || '') === s ? 'bg-gray-900 text-white' : 'bg-white'}`}>
                             {s === '' ? t.all_orders : s === 'returns' ? t.returns_heading : s === 'pending_payment' ? t.to_confirm : t[`status_${s}`]} ({n})
                         </a>
                     );

@@ -4414,6 +4414,47 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5na. Vendor settings, and the shop's other pages, on a phone (2026-10-02)
+
+The owner: audit the vendor settings page and its sub pages, make them
+easier to use, and fit a phone.
+
+`/vendor` already folds its seven cards and pins a chip row (§5mp, §5mq).
+What was still hard:
+
+- Opening **Returns and holidays** showed returns, a holiday, free
+  delivery and cash on delivery as one grid.
+- Orders, Money, Stock, Reviews, Quotes, Insights, the designer and
+  Sections each had only a text link back to the portal. Moving between
+  them meant going home first.
+- Those pages still laid wide tables out in a row (earnings has eight
+  columns; the stock log seven; insights-by-day seven). On a 390px phone
+  the page scrolled sideways. Order tracking, cancel and slip boxes were
+  fixed widths. Reply boxes used a 16rem minimum. Insights' date range
+  did not wrap.
+
+**Built:**
+- The settings card is three groups: **Returns**, **Holiday**, **Delivery
+  and cash**. EN/DV/AR (`settings_group_returns`, `settings_group_holiday`,
+  `settings_group_pay`). Notice and cash checkboxes are a 32px tap.
+- Every shop page (orders, money, stock, reviews, quotes, insights,
+  designer, sections) has the same scrolling row: Shop, Orders, Look,
+  Sections, Money, Reviews, Stock, Quotes, Insights. The page you are on
+  is filled in. Each chip is at least 32px.
+- Those tables use the existing phone cards (`.table-stack`): each cell
+  is a label and a value. Order lines, quote prices, low stock, the
+  import preview and the stock log do the same. Search, export dates and
+  stock filters are a grid on a phone. Range chips and money/quote/section
+  tabs scroll sideways instead of squeezing.
+
+The phone layout of this markup, with the built stylesheet, at 390px:
+overflow 0, the chip row shows Shop through Insights with Money filled
+in, the settings card has the three groups, and the earnings table's
+header row is hidden (each cell is a label and a value). `vendor-mobile.mjs`
+now also opens orders, money, stock, reviews, quotes, insights, the
+designer and sections. That walk was not run here: this machine has no
+PHP or MySQL.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not

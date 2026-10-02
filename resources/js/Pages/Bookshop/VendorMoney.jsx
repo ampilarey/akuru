@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
+import VendorNav from '../../Components/Bookshop/VendorNav';
 
 /**
  * BOOKSHOP_PLAN slice B6 — the shop's money: what it has earned by state,
@@ -63,11 +64,8 @@ export default function VendorMoney({ t, vendor, money }) {
             <FormErrors errors={errors} className="mb-4" />
             <header className="mb-4">
                 <h1 className="text-2xl font-bold" data-testid="money-heading">{t.money_title} · {vendor.name}</h1>
-                <p className="text-sm text-gray-600">
-                    <a href="/vendor" className="text-blue-700 underline">{t.portal_title}</a>
-                    {' · '}
-                    {t.money_intro.replace(':rate', s.commission_rate).replace(':days', s.return_window_days)}
-                </p>
+                <p className="mb-3 text-sm text-gray-600">{t.money_intro.replace(':rate', s.commission_rate).replace(':days', s.return_window_days)}</p>
+                <VendorNav t={t} current="money" />
             </header>
 
             <div className="mb-4 grid gap-3 sm:grid-cols-2 md:grid-cols-6">
@@ -105,73 +103,69 @@ export default function VendorMoney({ t, vendor, money }) {
 
             <div className="mb-4"><BankDetails bank={m.bank} isOwner={isOwner} t={t} /></div>
 
-            <nav className="mb-3 flex flex-wrap gap-1 border-b text-sm" data-testid="money-tabs">
+            <nav className="-mx-4 mb-3 flex gap-1 overflow-x-auto border-b px-4 text-sm sm:mx-0 sm:flex-wrap sm:px-0" data-testid="money-tabs">
                 {['earnings', 'statements', 'payouts', 'invoices'].map((k) => (
-                    <button key={k} type="button" className={`px-3 py-2 ${tab === k ? 'border-b-2 border-gray-900 font-semibold' : 'text-gray-600'}`} onClick={() => setTab(k)} data-testid={`tab-${k}`}>{t[`money_tab_${k}`]}</button>
+                    <button key={k} type="button" className={`inline-flex min-h-[2rem] shrink-0 items-center whitespace-nowrap px-3 py-2 ${tab === k ? 'border-b-2 border-gray-900 font-semibold' : 'text-gray-600'}`} onClick={() => setTab(k)} data-testid={`tab-${k}`}>{t[`money_tab_${k}`]}</button>
                 ))}
             </nav>
 
             {tab === 'earnings' && (
                 <section data-testid="earnings">
-                    <div className="mb-2 flex items-center justify-between">
+                    <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-sm text-gray-600">{t.earnings_intro}</p>
-                        <a href="/vendor/money/earnings/export" className="btn-secondary" data-testid="export-earnings">{t.export_csv}</a>
+                        <a href="/vendor/money/earnings/export" className="btn-secondary justify-center sm:justify-start" data-testid="export-earnings">{t.export_csv}</a>
                     </div>
                     {m.earnings.length === 0 ? <p className="rounded border bg-white p-4 text-gray-600">{t.no_earnings}</p> : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full rounded border bg-white text-sm">
-                                <thead className="bg-gray-50"><tr>
-                                    <th className="p-2 text-start">{t.order_number}</th><th className="p-2 text-start">{t.paid_on}</th><th className="p-2 text-end">{t.goods}</th><th className="p-2 text-end">{t.delivery}</th><th className="p-2 text-end">{t.commission}</th><th className="p-2 text-end">{t.refunded}</th><th className="p-2 text-end">{t.net}</th><th className="p-2 text-start">{t.status}</th>
-                                </tr></thead>
-                                <tbody>
-                                    {m.earnings.map((e) => (
-                                        <tr key={e.id} className="border-t" data-testid={`earning-${e.order_number}`} data-earning-status={e.status}>
-                                            <td className="p-2 font-mono">{e.order_number}</td>
-                                            <td className="p-2">{e.paid_at}</td>
-                                            <td className="p-2 text-end">{e.gross}{Number(e.discount) > 0 && <span className="block text-xs text-gray-500">−{e.discount} {t[`funding_${e.discount_funding}`] || ''}</span>}</td>
-                                            <td className="p-2 text-end">{e.delivery_fee}</td>
-                                            <td className="p-2 text-end">{e.commission}{Number(e.commission_tax) > 0 && <span className="block text-xs text-gray-500">+{e.commission_tax} {t.gst}</span>}<span className="block text-xs text-gray-500">{e.commission_rate}%</span>{Number(e.akuru_handling_fee) > 0 && <span className="block text-xs text-sky-800" data-testid="earning-handling">{t.akuru_handling_fee}: {e.akuru_handling_fee}</span>}</td>
-                                            <td className="p-2 text-end">{Number(e.refunded) > 0 ? e.refunded : '—'}</td>
-                                            <td className="p-2 text-end font-semibold">{e.net}{Number(e.cash_collected) > 0 && <span className="block text-xs font-normal text-amber-800" data-testid="cash-collected">{t.cash_you_took}: {e.cash_collected}</span>}{Number(e.paid_amount) > 0 && Number(e.balance) !== 0 && <span className="block text-xs text-red-700">{t.clawback}: {e.balance}</span>}</td>
-                                            <td className="p-2">{t[`earning_${e.status}`] || e.status}{e.status === 'pending' && <span className="block text-xs text-gray-500">{e.available_at ? t.available_on.replace(':date', e.available_at) : t.after_delivery}</span>}{e.in_payout && <span className="block text-xs text-gray-500">{t.in_payout_request}</span>}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <table className="table-stack w-full rounded border bg-white text-sm">
+                            <thead className="bg-gray-50"><tr>
+                                <th className="p-2 text-start">{t.order_number}</th><th className="p-2 text-start">{t.paid_on}</th><th className="p-2 text-end">{t.goods}</th><th className="p-2 text-end">{t.delivery}</th><th className="p-2 text-end">{t.commission}</th><th className="p-2 text-end">{t.refunded}</th><th className="p-2 text-end">{t.net}</th><th className="p-2 text-start">{t.status}</th>
+                            </tr></thead>
+                            <tbody>
+                                {m.earnings.map((e) => (
+                                    <tr key={e.id} className="border-t" data-testid={`earning-${e.order_number}`} data-earning-status={e.status}>
+                                        <td className="p-2 font-mono" data-label={t.order_number}>{e.order_number}</td>
+                                        <td className="p-2" data-label={t.paid_on}>{e.paid_at}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.goods}>{e.gross}{Number(e.discount) > 0 && <span className="block text-xs text-gray-500">−{e.discount} {t[`funding_${e.discount_funding}`] || ''}</span>}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.delivery}>{e.delivery_fee}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.commission}>{e.commission}{Number(e.commission_tax) > 0 && <span className="block text-xs text-gray-500">+{e.commission_tax} {t.gst}</span>}<span className="block text-xs text-gray-500">{e.commission_rate}%</span>{Number(e.akuru_handling_fee) > 0 && <span className="block text-xs text-sky-800" data-testid="earning-handling">{t.akuru_handling_fee}: {e.akuru_handling_fee}</span>}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.refunded}>{Number(e.refunded) > 0 ? e.refunded : '—'}</td>
+                                        <td className="p-2 font-semibold sm:text-end" data-label={t.net}>{e.net}{Number(e.cash_collected) > 0 && <span className="block text-xs font-normal text-amber-800" data-testid="cash-collected">{t.cash_you_took}: {e.cash_collected}</span>}{Number(e.paid_amount) > 0 && Number(e.balance) !== 0 && <span className="block text-xs text-red-700">{t.clawback}: {e.balance}</span>}</td>
+                                        <td className="p-2" data-label={t.status}>{t[`earning_${e.status}`] || e.status}{e.status === 'pending' && <span className="block text-xs text-gray-500">{e.available_at ? t.available_on.replace(':date', e.available_at) : t.after_delivery}</span>}{e.in_payout && <span className="block text-xs text-gray-500">{t.in_payout_request}</span>}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     )}
                 </section>
             )}
 
             {tab === 'statements' && (
                 <section data-testid="statements">
-                    <div className="mb-2 flex items-center justify-between">
+                    <div className="mb-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <p className="text-sm text-gray-600">{t.statements_intro}</p>
-                        <a href="/vendor/money/statements/export" className="btn-secondary" data-testid="export-statements">{t.export_csv}</a>
+                        <a href="/vendor/money/statements/export" className="btn-secondary justify-center sm:justify-start" data-testid="export-statements">{t.export_csv}</a>
                     </div>
                     {m.statements.length === 0 ? <p className="rounded border bg-white p-4 text-gray-600">{t.no_earnings}</p> : (
-                        <div className="overflow-x-auto">
-                            <table className="w-full rounded border bg-white text-sm">
-                                <thead className="bg-gray-50"><tr>
-                                    <th className="p-2 text-start">{t.month}</th><th className="p-2 text-end">{t.orders_title}</th><th className="p-2 text-end">{t.goods}</th><th className="p-2 text-end">{t.delivery}</th><th className="p-2 text-end">{t.refunded}</th><th className="p-2 text-end">{t.commission}</th><th className="p-2 text-end">{t.net}</th><th className="p-2 text-end">{t.paid_out}</th><th className="p-2 text-start">{t.invoice}</th>
-                                </tr></thead>
-                                <tbody>
-                                    {m.statements.map((r) => (
-                                        <tr key={r.month} className="border-t" data-testid={`statement-${r.month}`}>
-                                            <td className="p-2">{r.label}</td>
-                                            <td className="p-2 text-end">{r.orders}</td>
-                                            <td className="p-2 text-end">{r.gross}{Number(r.discounts_vendor) > 0 && <span className="block text-xs text-gray-500">−{r.discounts_vendor}</span>}</td>
-                                            <td className="p-2 text-end">{r.delivery}</td>
-                                            <td className="p-2 text-end">{r.refunded}</td>
-                                            <td className="p-2 text-end">{r.commission}{Number(r.commission_tax) > 0 && <span className="block text-xs text-gray-500">+{r.commission_tax} {t.gst}</span>}</td>
-                                            <td className="p-2 text-end font-semibold">{r.net}</td>
-                                            <td className="p-2 text-end">{r.paid_out}</td>
-                                            <td className="p-2">{r.invoice_number ? `${r.invoice_number} · ${c} ${r.invoice_total}` : '—'}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
+                        <table className="table-stack w-full rounded border bg-white text-sm">
+                            <thead className="bg-gray-50"><tr>
+                                <th className="p-2 text-start">{t.month}</th><th className="p-2 text-end">{t.orders_title}</th><th className="p-2 text-end">{t.goods}</th><th className="p-2 text-end">{t.delivery}</th><th className="p-2 text-end">{t.refunded}</th><th className="p-2 text-end">{t.commission}</th><th className="p-2 text-end">{t.net}</th><th className="p-2 text-end">{t.paid_out}</th><th className="p-2 text-start">{t.invoice}</th>
+                            </tr></thead>
+                            <tbody>
+                                {m.statements.map((r) => (
+                                    <tr key={r.month} className="border-t" data-testid={`statement-${r.month}`}>
+                                        <td className="p-2" data-label={t.month}>{r.label}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.orders_title}>{r.orders}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.goods}>{r.gross}{Number(r.discounts_vendor) > 0 && <span className="block text-xs text-gray-500">−{r.discounts_vendor}</span>}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.delivery}>{r.delivery}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.refunded}>{r.refunded}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.commission}>{r.commission}{Number(r.commission_tax) > 0 && <span className="block text-xs text-gray-500">+{r.commission_tax} {t.gst}</span>}</td>
+                                        <td className="p-2 font-semibold sm:text-end" data-label={t.net}>{r.net}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.paid_out}>{r.paid_out}</td>
+                                        <td className="p-2" data-label={t.invoice}>{r.invoice_number ? `${r.invoice_number} · ${c} ${r.invoice_total}` : '—'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     )}
                 </section>
             )}
@@ -179,15 +173,15 @@ export default function VendorMoney({ t, vendor, money }) {
             {tab === 'payouts' && (
                 <section data-testid="payouts">
                     {m.payouts.length === 0 ? <p className="rounded border bg-white p-4 text-gray-600">{t.no_payouts}</p> : (
-                        <table className="w-full rounded border bg-white text-sm">
+                        <table className="table-stack w-full rounded border bg-white text-sm">
                             <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.requested_on}</th><th className="p-2 text-end">{t.amount}</th><th className="p-2 text-start">{t.status}</th><th className="p-2 text-start">{t.payment_ref}</th></tr></thead>
                             <tbody>
                                 {m.payouts.map((p) => (
                                     <tr key={p.id} className="border-t" data-testid={`payout-${p.id}`} data-payout-status={p.status}>
-                                        <td className="p-2">{p.requested_at}</td>
-                                        <td className="p-2 text-end">{p.currency} {p.amount}</td>
-                                        <td className="p-2">{t[`payout_${p.status}`] || p.status}{p.decided_at && <span className="block text-xs text-gray-500">{p.decided_at}</span>}</td>
-                                        <td className="p-2">{p.reference || ''}{p.note && <span className="block text-xs text-gray-500">{p.note}</span>}</td>
+                                        <td className="p-2" data-label={t.requested_on}>{p.requested_at}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.amount}>{p.currency} {p.amount}</td>
+                                        <td className="p-2" data-label={t.status}>{t[`payout_${p.status}`] || p.status}{p.decided_at && <span className="block text-xs text-gray-500">{p.decided_at}</span>}</td>
+                                        <td className="p-2" data-label={t.payment_ref}>{p.reference || ''}{p.note && <span className="block text-xs text-gray-500">{p.note}</span>}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -200,18 +194,18 @@ export default function VendorMoney({ t, vendor, money }) {
                 <section data-testid="invoices">
                     <p className="mb-2 text-sm text-gray-600">{t.invoices_intro}</p>
                     {m.invoices.length === 0 ? <p className="rounded border bg-white p-4 text-gray-600">{t.no_invoices}</p> : (
-                        <table className="w-full rounded border bg-white text-sm">
+                        <table className="table-stack w-full rounded border bg-white text-sm">
                             <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.invoice}</th><th className="p-2 text-start">{t.period}</th><th className="p-2 text-end">{t.sales_charged}</th><th className="p-2 text-end">{t.commission}</th><th className="p-2 text-end">{t.gst}</th><th className="p-2 text-end">{t.total}</th><th className="p-2" /></tr></thead>
                             <tbody>
                                 {m.invoices.map((i) => (
                                     <tr key={i.id} className="border-t" data-testid={`invoice-${i.number}`}>
-                                        <td className="p-2 font-mono">{i.number}</td>
-                                        <td className="p-2">{i.period}</td>
-                                        <td className="p-2 text-end">{i.sales}</td>
-                                        <td className="p-2 text-end">{i.commission}</td>
-                                        <td className="p-2 text-end">{i.tax}</td>
-                                        <td className="p-2 text-end font-semibold">{i.currency} {i.total}</td>
-                                        <td className="p-2 text-end"><a href={`/vendor/money/invoices/${i.id}`} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`open-invoice-${i.number}`}>{t.open}</a></td>
+                                        <td className="p-2 font-mono" data-label={t.invoice}>{i.number}</td>
+                                        <td className="p-2" data-label={t.period}>{i.period}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.sales_charged}>{i.sales}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.commission}>{i.commission}</td>
+                                        <td className="p-2 sm:text-end" data-label={t.gst}>{i.tax}</td>
+                                        <td className="p-2 font-semibold sm:text-end" data-label={t.total}>{i.currency} {i.total}</td>
+                                        <td className="table-actions p-2 sm:text-end"><a href={`/vendor/money/invoices/${i.id}`} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`open-invoice-${i.number}`}>{t.open}</a></td>
                                     </tr>
                                 ))}
                             </tbody>
