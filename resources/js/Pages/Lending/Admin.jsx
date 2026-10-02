@@ -17,7 +17,7 @@ function LenderAction({ lender, t }) {
 
     return (
         <form className="flex flex-wrap items-center gap-1" onSubmit={submit}>
-            {!lender.office_paused && <input className="form-input w-40 text-xs" placeholder={t.office_note_placeholder} value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} maxLength={500} data-testid={`lender-note-${lender.id}`} />}
+            {!lender.office_paused && <input className="form-input w-40 text-xs" placeholder={t.office_note_placeholder} aria-label={t.office_note_placeholder} value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} maxLength={500} data-testid={`lender-note-${lender.id}`} />}
             <button type="submit" className={`rounded px-2 py-1 text-xs font-semibold ${lender.office_paused ? 'bg-green-700 text-white' : 'border border-red-300 text-red-800'}`} disabled={form.processing} data-testid={`lender-${action}-${lender.id}`}>{lender.office_paused ? t.office_resume_lender : t.office_pause_lender}</button>
             {form.errors.note && <span className="w-full text-xs text-red-700">{form.errors.note}</span>}
         </form>
@@ -31,7 +31,7 @@ function RemoveBook({ book, t }) {
 
     return (
         <form className="flex flex-wrap items-center gap-1" onSubmit={submit}>
-            <input className="form-input w-40 text-xs" placeholder={t.office_note_placeholder} value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} maxLength={500} required data-testid={`book-note-${book.id}`} />
+            <input className="form-input w-40 text-xs" placeholder={t.office_note_placeholder} aria-label={t.office_note_placeholder} value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} maxLength={500} required data-testid={`book-note-${book.id}`} />
             <button type="submit" className="rounded border border-red-300 px-2 py-1 text-xs text-red-800" disabled={form.processing} data-testid={`book-remove-${book.id}`}>{t.office_remove_book}</button>
             {form.errors.note && <span className="w-full text-xs text-red-700">{form.errors.note}</span>}
         </form>

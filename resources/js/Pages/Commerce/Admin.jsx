@@ -22,10 +22,10 @@ function GiftCardForm() {
                 }}
                 className="grid gap-2 md:grid-cols-5"
             >
-                <input className="form-input" type="number" step="0.01" min="1" placeholder="Amount (MVR)" value={form.data.amount} onChange={(e) => form.setData('amount', e.target.value)} />
-                <input className="form-input" placeholder="Recipient name" value={form.data.recipient_name} onChange={(e) => form.setData('recipient_name', e.target.value)} />
-                <input className="form-input" type="email" placeholder="Recipient email" value={form.data.recipient_email} onChange={(e) => form.setData('recipient_email', e.target.value)} />
-                <input className="form-input" type="date" value={form.data.expires_at} onChange={(e) => form.setData('expires_at', e.target.value)} />
+                <input className="form-input" type="number" step="0.01" min="1" placeholder="Amount (MVR)" aria-label="Amount (MVR)" value={form.data.amount} onChange={(e) => form.setData('amount', e.target.value)} />
+                <input className="form-input" placeholder="Recipient name" aria-label="Recipient name" value={form.data.recipient_name} onChange={(e) => form.setData('recipient_name', e.target.value)} />
+                <input className="form-input" type="email" placeholder="Recipient email" aria-label="Recipient email" value={form.data.recipient_email} onChange={(e) => form.setData('recipient_email', e.target.value)} />
+                <input className="form-input" type="date" value={form.data.expires_at} onChange={(e) => form.setData('expires_at', e.target.value)} aria-label="Expires on" />
                 <button type="submit" className="btn-primary" disabled={form.processing}>Issue</button>
                 <FormErrors errors={form.errors} />
             </form>
@@ -46,9 +46,9 @@ function CreditForm() {
                 }}
                 className="grid gap-2 md:grid-cols-4"
             >
-                <input className="form-input" type="number" placeholder="User ID" value={form.data.user_id} onChange={(e) => form.setData('user_id', e.target.value)} />
-                <input className="form-input" type="number" step="0.01" min="0.01" placeholder="Amount (MVR)" value={form.data.amount} onChange={(e) => form.setData('amount', e.target.value)} />
-                <input className="form-input" placeholder="Reason" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
+                <input className="form-input" type="number" placeholder="User ID" aria-label="User ID" value={form.data.user_id} onChange={(e) => form.setData('user_id', e.target.value)} />
+                <input className="form-input" type="number" step="0.01" min="0.01" placeholder="Amount (MVR)" aria-label="Amount (MVR)" value={form.data.amount} onChange={(e) => form.setData('amount', e.target.value)} />
+                <input className="form-input" placeholder="Reason" aria-label="Reason" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>Credit</button>
                 <FormErrors errors={form.errors} />
             </form>
@@ -72,17 +72,17 @@ function DiscountForm() {
                 }}
                 className="grid gap-2 md:grid-cols-4"
             >
-                <input className="form-input" placeholder="CODE" value={form.data.code} onChange={(e) => form.setData('code', e.target.value)} />
-                <select className="form-input" value={form.data.discount_type} onChange={(e) => form.setData('discount_type', e.target.value)}>
+                <input className="form-input" placeholder="CODE" aria-label="CODE" value={form.data.code} onChange={(e) => form.setData('code', e.target.value)} />
+                <select className="form-input" value={form.data.discount_type} onChange={(e) => form.setData('discount_type', e.target.value)} aria-label="Discount type">
                     <option value="percentage">percentage</option>
                     <option value="fixed">fixed</option>
                 </select>
-                <input className="form-input" type="number" step="0.01" min="0.01" placeholder="Value" value={form.data.discount_value} onChange={(e) => form.setData('discount_value', e.target.value)} />
+                <input className="form-input" type="number" step="0.01" min="0.01" placeholder="Value" aria-label="Value" value={form.data.discount_value} onChange={(e) => form.setData('discount_value', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>Save</button>
-                <input className="form-input" type="number" placeholder="Usage limit" value={form.data.usage_limit} onChange={(e) => form.setData('usage_limit', e.target.value)} />
-                <input className="form-input" type="number" placeholder="Per-user limit" value={form.data.per_user_limit} onChange={(e) => form.setData('per_user_limit', e.target.value)} />
-                <input className="form-input" type="number" step="0.01" placeholder="Min order" value={form.data.minimum_order_amount} onChange={(e) => form.setData('minimum_order_amount', e.target.value)} />
-                <input className="form-input" placeholder="Name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+                <input className="form-input" type="number" placeholder="Usage limit" aria-label="Usage limit" value={form.data.usage_limit} onChange={(e) => form.setData('usage_limit', e.target.value)} />
+                <input className="form-input" type="number" placeholder="Per-user limit" aria-label="Per-user limit" value={form.data.per_user_limit} onChange={(e) => form.setData('per_user_limit', e.target.value)} />
+                <input className="form-input" type="number" step="0.01" placeholder="Min order" aria-label="Min order" value={form.data.minimum_order_amount} onChange={(e) => form.setData('minimum_order_amount', e.target.value)} />
+                <input className="form-input" placeholder="Name" aria-label="Name" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                 <FormErrors errors={form.errors} />
             </form>
         </div>

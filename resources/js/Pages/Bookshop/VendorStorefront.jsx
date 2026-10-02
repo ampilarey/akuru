@@ -78,7 +78,7 @@ function CustomCssEditor({ css, isOwner, t, onSaved }) {
             )}
             <form onSubmit={(e) => { e.preventDefault(); form.post('/vendor/storefront/css', { preserveScroll: true, onSuccess: onSaved }); }}>
                 <textarea className="form-input w-full font-mono text-xs" rows={12} dir="ltr" spellCheck={false} value={form.data.css} onChange={(e) => form.setData('css', e.target.value)} disabled={!isOwner}
-                    placeholder={'.sf-hero h2 { letter-spacing: .05em; }\n.sf-card { border-width: 2px; }'} data-testid="css-input" />
+                    placeholder={'.sf-hero h2 { letter-spacing: .05em; }\n.sf-card { border-width: 2px; }'} aria-label={'.sf-hero h2 { letter-spacing: .05em; }\n.sf-card { border-width: 2px; }'} data-testid="css-input" />
                 <p className={`text-xs ${bytes > css.max_bytes ? 'text-red-700' : 'text-gray-500'}`}>{bytes} / {css.max_bytes} · {t.css_rules}</p>
                 <FormErrors errors={form.errors} className="mt-2" />
                 {isOwner && (
@@ -359,7 +359,7 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                             <Field label={t.map_url} hint={t.map_url_hint}><input className="form-input w-full" value={form.data.contact.map_url} onChange={(e) => form.setData('contact', { ...form.data.contact, map_url: e.target.value })} /></Field>
                             <Field label={t.opening_hours} className="md:col-span-3"><textarea className="form-input w-full" rows={2} value={form.data.hours} onChange={(e) => form.setData('hours', e.target.value)} /></Field>
                             {d.options.socials.map((n) => (
-                                <Field key={n} label={t[`social_${n}`]}><input className="form-input w-full" placeholder="https://" value={form.data.socials[n]} onChange={(e) => form.setData('socials', { ...form.data.socials, [n]: e.target.value })} data-testid={`social-${n}`} /></Field>
+                                <Field key={n} label={t[`social_${n}`]}><input className="form-input w-full" placeholder="https://" aria-label="https://" value={form.data.socials[n]} onChange={(e) => form.setData('socials', { ...form.data.socials, [n]: e.target.value })} data-testid={`social-${n}`} /></Field>
                             ))}
                         </div>
                     </Fold>
@@ -369,7 +369,7 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                         <button type="submit" className="btn-secondary" disabled={form.processing} data-testid="save-draft">{t.save_draft}</button>
                         {isOwner && (
                             <>
-                                <input className="form-input w-full min-w-0 sm:w-56" placeholder={t.version_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid="version-note" />
+                                <input className="form-input w-full min-w-0 sm:w-56" placeholder={t.version_note} aria-label={t.version_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid="version-note" />
                                 <button
                                     type="button"
                                     className="btn-primary"

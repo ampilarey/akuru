@@ -51,7 +51,7 @@ export default function Enrollments({ enrollments = [], pagination, total = 0, c
             <form onSubmit={submit} className="mb-4 flex flex-wrap items-end gap-2 rounded-lg border bg-white p-3" data-testid="enrolments-filter">
                 <label className="text-xs text-gray-600">
                     {t.enrolments_search || 'Search'}
-                    <input className="form-input mt-1 block min-w-[13rem]" name="search" value={form.search} onChange={set('search')} placeholder={t.enrolments_search_placeholder || 'Name, mobile, email…'} />
+                    <input className="form-input mt-1 block min-w-[13rem]" name="search" value={form.search} onChange={set('search')} placeholder={t.enrolments_search_placeholder || 'Name, mobile, email…'} aria-label={t.enrolments_search_placeholder || 'Name, mobile, email…'} />
                 </label>
                 <label className="text-xs text-gray-600">
                     {t.enrolments_course || 'Course'}

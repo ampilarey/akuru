@@ -48,13 +48,13 @@ function ApplyForm({ t, idL }) {
             className="grid max-w-2xl gap-3 rounded-lg border bg-white p-4"
         >
             <h2 className="text-lg font-semibold">{t.library_apply_title || 'Apply to publish with Akuru'}</h2>
-            <input className="form-input" placeholder="Display name (as shown to readers)" value={form.data.display_name} onChange={(e) => form.setData('display_name', e.target.value)} />
+            <input className="form-input" placeholder="Display name (as shown to readers)" aria-label="Display name (as shown to readers)" value={form.data.display_name} onChange={(e) => form.setData('display_name', e.target.value)} />
             {form.errors.display_name && <p className="text-sm text-red-600">{form.errors.display_name}</p>}
-            <textarea className="form-input" rows="3" placeholder="Bio" value={form.data.bio} onChange={(e) => form.setData('bio', e.target.value)} />
-            <textarea className="form-input" rows="2" placeholder="Qualifications" value={form.data.qualifications} onChange={(e) => form.setData('qualifications', e.target.value)} />
-            <input className="form-input" placeholder="Expertise (e.g. Tafsir, Arabic grammar)" value={form.data.expertise} onChange={(e) => form.setData('expertise', e.target.value)} />
-            <textarea className="form-input" rows="3" placeholder="Why do you want to publish with us?" value={form.data.motivation} onChange={(e) => form.setData('motivation', e.target.value)} />
-            <textarea className="form-input" rows="3" placeholder={t.library_apply_publications || 'Previous publications (titles, where, when)'} value={form.data.previous_publications} onChange={(e) => form.setData('previous_publications', e.target.value)} data-testid="apply-publications" />
+            <textarea className="form-input" rows="3" placeholder="Bio" aria-label="Bio" value={form.data.bio} onChange={(e) => form.setData('bio', e.target.value)} />
+            <textarea className="form-input" rows="2" placeholder="Qualifications" aria-label="Qualifications" value={form.data.qualifications} onChange={(e) => form.setData('qualifications', e.target.value)} />
+            <input className="form-input" placeholder="Expertise (e.g. Tafsir, Arabic grammar)" aria-label="Expertise (e.g. Tafsir, Arabic grammar)" value={form.data.expertise} onChange={(e) => form.setData('expertise', e.target.value)} />
+            <textarea className="form-input" rows="3" placeholder="Why do you want to publish with us?" aria-label="Why do you want to publish with us?" value={form.data.motivation} onChange={(e) => form.setData('motivation', e.target.value)} />
+            <textarea className="form-input" rows="3" placeholder={t.library_apply_publications || 'Previous publications (titles, where, when)'} aria-label={t.library_apply_publications || 'Previous publications (titles, where, when)'} value={form.data.previous_publications} onChange={(e) => form.setData('previous_publications', e.target.value)} data-testid="apply-publications" />
             <label className="grid gap-1 text-sm">
                 <span>{t.library_apply_photo || 'Portrait (optional; shown on your author page)'}</span>
                 <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('photo', e.target.files[0] ?? null)} data-testid="apply-photo" />
@@ -152,8 +152,8 @@ function ItemEditor({ item, options, onDone, t }) {
 
     return (
         <form onSubmit={submit} className="mb-4 grid gap-2 rounded-lg border bg-white p-4 md:grid-cols-4" data-testid="draft-editor">
-            <input className="form-input md:col-span-2" placeholder="Title" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-            <input className="form-input md:col-span-2" placeholder="Subtitle" value={form.data.subtitle} onChange={(e) => form.setData('subtitle', e.target.value)} />
+            <input className="form-input md:col-span-2" placeholder="Title" aria-label="Title" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+            <input className="form-input md:col-span-2" placeholder="Subtitle" aria-label="Subtitle" value={form.data.subtitle} onChange={(e) => form.setData('subtitle', e.target.value)} />
             <select className="form-input" value={form.data.content_type} onChange={(e) => form.setData('content_type', e.target.value)}>
                 {options.content_types.map((type) => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}
             </select>
@@ -162,7 +162,7 @@ function ItemEditor({ item, options, onDone, t }) {
                 <option value="free_login">free (login)</option>
                 <option value="paid">paid</option>
             </select>
-            <input className="form-input" placeholder="Suggested price (MVR)" value={form.data.price} onChange={(e) => form.setData('price', e.target.value)} />
+            <input className="form-input" placeholder="Suggested price (MVR)" aria-label="Suggested price (MVR)" value={form.data.price} onChange={(e) => form.setData('price', e.target.value)} />
             <select className="form-input" value={form.data.language} onChange={(e) => form.setData('language', e.target.value)} aria-label="Language">
                 {Object.entries(options.languages || { en: 'English' }).map(([code, label]) => <option key={code} value={code}>{label}</option>)}
             </select>
@@ -176,9 +176,9 @@ function ItemEditor({ item, options, onDone, t }) {
                 <option value="intermediate">Intermediate</option>
                 <option value="advanced">Advanced</option>
             </select>
-            <input className="form-input" type="number" min="1" placeholder="Reading time (min)" value={form.data.reading_time} onChange={(e) => form.setData('reading_time', e.target.value)} />
-            <input className="form-input" placeholder="Keywords (comma-separated)" value={form.data.tags_text} onChange={(e) => form.setData('tags_text', e.target.value)} />
-            <input className="form-input md:col-span-2" placeholder="Co-authors (comma-separated)" value={form.data.co_authors_text} onChange={(e) => form.setData('co_authors_text', e.target.value)} />
+            <input className="form-input" type="number" min="1" placeholder="Reading time (min)" aria-label="Reading time (min)" value={form.data.reading_time} onChange={(e) => form.setData('reading_time', e.target.value)} />
+            <input className="form-input" placeholder="Keywords (comma-separated)" aria-label="Keywords (comma-separated)" value={form.data.tags_text} onChange={(e) => form.setData('tags_text', e.target.value)} />
+            <input className="form-input md:col-span-2" placeholder="Co-authors (comma-separated)" aria-label="Co-authors (comma-separated)" value={form.data.co_authors_text} onChange={(e) => form.setData('co_authors_text', e.target.value)} />
             <TeacherAuthors className="md:col-span-4" teachers={options.teachers || []} value={form.data.co_author_teachers} onChange={(ids) => form.setData('co_author_teachers', ids)} t={t} />
             <DeliveryChoice
                 className="md:col-span-4"
@@ -188,19 +188,19 @@ function ItemEditor({ item, options, onDone, t }) {
                 hasPdf={Boolean(form.data.pdf || item?.has_pdf)}
                 t={t}
             />
-            <textarea className="form-input md:col-span-2" rows="2" placeholder="Description" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
-            <textarea className="form-input md:col-span-2" rows="2" placeholder="Abstract" value={form.data.abstract} onChange={(e) => form.setData('abstract', e.target.value)} />
+            <textarea className="form-input md:col-span-2" rows="2" placeholder="Description" aria-label="Description" value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
+            <textarea className="form-input md:col-span-2" rows="2" placeholder="Abstract" aria-label="Abstract" value={form.data.abstract} onChange={(e) => form.setData('abstract', e.target.value)} />
             {/* B3: the body is written, not pasted — page breaks from the toolbar. */}
             <BodyEditor className="md:col-span-4" value={form.data.body} onChange={(html) => form.setData('body', html)} placeholder={t.library_editor_body || 'Body — the text readers will read; insert a page break between pages'} labels={editorLabels(t)} />
             {isBook && (
-                <textarea className="form-input md:col-span-4" rows="4" placeholder="Table of contents (one entry per line)" value={form.data.toc} onChange={(e) => form.setData('toc', e.target.value)} />
+                <textarea className="form-input md:col-span-4" rows="4" placeholder="Table of contents (one entry per line)" aria-label="Table of contents (one entry per line)" value={form.data.toc} onChange={(e) => form.setData('toc', e.target.value)} />
             )}
             {isResearch && (
                 <>
-                    <textarea className="form-input md:col-span-4" rows="3" placeholder="Citations (one per line)" value={form.data.citations} onChange={(e) => form.setData('citations', e.target.value)} />
-                    <input className="form-input md:col-span-2" placeholder="Affiliation" value={form.data.affiliation} onChange={(e) => form.setData('affiliation', e.target.value)} />
-                    <input className="form-input" placeholder="Field" value={form.data.research_field} onChange={(e) => form.setData('research_field', e.target.value)} />
-                    <input className="form-input" placeholder="Suggested reviewer (optional)" value={form.data.suggested_reviewer} onChange={(e) => form.setData('suggested_reviewer', e.target.value)} />
+                    <textarea className="form-input md:col-span-4" rows="3" placeholder="Citations (one per line)" aria-label="Citations (one per line)" value={form.data.citations} onChange={(e) => form.setData('citations', e.target.value)} />
+                    <input className="form-input md:col-span-2" placeholder="Affiliation" aria-label="Affiliation" value={form.data.affiliation} onChange={(e) => form.setData('affiliation', e.target.value)} />
+                    <input className="form-input" placeholder="Field" aria-label="Field" value={form.data.research_field} onChange={(e) => form.setData('research_field', e.target.value)} />
+                    <input className="form-input" placeholder="Suggested reviewer (optional)" aria-label="Suggested reviewer (optional)" value={form.data.suggested_reviewer} onChange={(e) => form.setData('suggested_reviewer', e.target.value)} />
                 </>
             )}
             <label className="flex items-center gap-2 text-sm md:col-span-2">
@@ -295,10 +295,10 @@ function AuthorPageForm({ profile, items = [], onDone, t }) {
             data-testid="author-page-form"
         >
             <h3 className="text-base font-semibold md:col-span-2">{t.library_author_page_title || 'Your author page'}</h3>
-            <input className="form-input" placeholder="Display name (as shown to readers)" value={form.data.display_name} onChange={(e) => form.setData('display_name', e.target.value)} />
-            <input className="form-input" placeholder="Expertise (e.g. Tafsir, Arabic grammar)" value={form.data.expertise} onChange={(e) => form.setData('expertise', e.target.value)} />
-            <textarea className="form-input md:col-span-2" rows="3" placeholder="Bio" value={form.data.bio} onChange={(e) => form.setData('bio', e.target.value)} />
-            <textarea className="form-input md:col-span-2" rows="2" placeholder="Qualifications" value={form.data.qualifications} onChange={(e) => form.setData('qualifications', e.target.value)} />
+            <input className="form-input" placeholder="Display name (as shown to readers)" aria-label="Display name (as shown to readers)" value={form.data.display_name} onChange={(e) => form.setData('display_name', e.target.value)} />
+            <input className="form-input" placeholder="Expertise (e.g. Tafsir, Arabic grammar)" aria-label="Expertise (e.g. Tafsir, Arabic grammar)" value={form.data.expertise} onChange={(e) => form.setData('expertise', e.target.value)} />
+            <textarea className="form-input md:col-span-2" rows="3" placeholder="Bio" aria-label="Bio" value={form.data.bio} onChange={(e) => form.setData('bio', e.target.value)} />
+            <textarea className="form-input md:col-span-2" rows="2" placeholder="Qualifications" aria-label="Qualifications" value={form.data.qualifications} onChange={(e) => form.setData('qualifications', e.target.value)} />
             <label className="text-sm md:col-span-2">
                 {t.library_author_photo || 'Portrait (JPEG, PNG or WebP, up to 4 MB) — shown publicly on your author page'}
                 <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('photo', e.target.files[0] ?? null)} />
@@ -328,7 +328,7 @@ function AuthorPageForm({ profile, items = [], onDone, t }) {
                         key={key}
                         className="form-input"
                         type="url"
-                        placeholder={`${label} — https://…`}
+                        placeholder={`${label} — https://…`} aria-label={`${label} — https://…`}
                         value={form.data.social_links[key]}
                         onChange={(e) => form.setData('social_links', { ...form.data.social_links, [key]: e.target.value })}
                     />
@@ -375,9 +375,9 @@ function EarningsCard({ earnings, itemSales = [], t = {} }) {
                 }}
                 className="flex flex-wrap items-center gap-2"
             >
-                <input className="form-input w-40" placeholder="Bank name" value={bank.data.bank_name} onChange={(e) => bank.setData('bank_name', e.target.value)} />
-                <input className="form-input w-40" placeholder="Account name" value={bank.data.account_name} onChange={(e) => bank.setData('account_name', e.target.value)} />
-                <input className="form-input w-40" placeholder="Account number" value={bank.data.account_number} onChange={(e) => bank.setData('account_number', e.target.value)} />
+                <input className="form-input w-40" placeholder="Bank name" aria-label="Bank name" value={bank.data.bank_name} onChange={(e) => bank.setData('bank_name', e.target.value)} />
+                <input className="form-input w-40" placeholder="Account name" aria-label="Account name" value={bank.data.account_name} onChange={(e) => bank.setData('account_name', e.target.value)} />
+                <input className="form-input w-40" placeholder="Account number" aria-label="Account number" value={bank.data.account_number} onChange={(e) => bank.setData('account_number', e.target.value)} />
                 <button type="submit" className="btn-secondary" disabled={bank.processing}>
                     {earnings.has_bank_details ? 'Update bank details' : 'Save bank details'}
                 </button>
@@ -511,7 +511,7 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
                                                     {item.status === 'changes_requested' && item.content_type === 'research' && (
                                                         <input
                                                             className="form-input w-56 text-xs"
-                                                            placeholder={t.library_revision_note || 'What changed (for the reviewers)'}
+                                                            placeholder={t.library_revision_note || 'What changed (for the reviewers)'} aria-label={t.library_revision_note || 'What changed (for the reviewers)'}
                                                             value={notes[item.id] || ''}
                                                             onChange={(e) => setNotes({ ...notes, [item.id]: e.target.value })}
                                                             data-testid={`revision-note-${item.id}`}

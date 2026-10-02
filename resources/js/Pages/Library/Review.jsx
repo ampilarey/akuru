@@ -66,7 +66,7 @@ function AssignmentCard({ assignment, t }) {
                     <textarea
                         className="form-input mb-2 w-full"
                         rows="3"
-                        placeholder={t.review_comment_placeholder || 'Review comments for the writer'}
+                        placeholder={t.review_comment_placeholder || 'Review comments for the writer'} aria-label={t.review_comment_placeholder || 'Review comments for the writer'}
                         value={comment}
                         onChange={(e) => setComment(e.target.value)}
                     />

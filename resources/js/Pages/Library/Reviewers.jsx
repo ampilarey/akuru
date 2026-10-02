@@ -25,7 +25,7 @@ export default function Reviewers({ reviewers = [], t = {} }) {
                 className="mb-4 flex flex-wrap items-center gap-2"
                 data-testid="reviewer-add"
             >
-                <input className="form-input w-64" type="email" placeholder={t.library_reviewers_email || 'Email of an Akuru account'} value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} />
+                <input className="form-input w-64" type="email" placeholder={t.library_reviewers_email || 'Email of an Akuru account'} aria-label={t.library_reviewers_email || 'Email of an Akuru account'} value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>{t.library_reviewers_add || 'Add reviewer'}</button>
                 <a className="ms-auto text-sm underline" href="/admin/library/reviewers/export">{t.library_insights_export || 'Export CSV'}</a>
                 <a className="text-sm underline" href="/admin/library">{t.library_settings_back || 'Back to the Library office'}</a>

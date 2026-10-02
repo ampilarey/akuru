@@ -15,8 +15,8 @@ function Step({ order, to, t }) {
         <form className="flex flex-wrap items-center gap-2" onSubmit={(e) => { e.preventDefault(); form.post(`/admin/bookshop/akuru/orders/${order.id}`, { preserveScroll: true }); }}>
             {to === 'dispatched' && (
                 <>
-                    <input className="form-input w-36 text-sm" placeholder={t.carrier} value={form.data.carrier} onChange={(e) => form.setData('carrier', e.target.value)} />
-                    <input className="form-input w-44 text-sm" placeholder={t.tracking_note} value={form.data.tracking_note} onChange={(e) => form.setData('tracking_note', e.target.value)} />
+                    <input className="form-input w-36 text-sm" placeholder={t.carrier} aria-label={t.carrier} value={form.data.carrier} onChange={(e) => form.setData('carrier', e.target.value)} />
+                    <input className="form-input w-44 text-sm" placeholder={t.tracking_note} aria-label={t.tracking_note} value={form.data.tracking_note} onChange={(e) => form.setData('tracking_note', e.target.value)} />
                 </>
             )}
             {to === 'delivered' && order.status && (
@@ -35,7 +35,7 @@ function AssignDriver({ order, drivers, t }) {
 
     return (
         <form className="flex flex-wrap items-center gap-2" onSubmit={(e) => { e.preventDefault(); form.post(`/admin/bookshop/akuru/orders/${order.id}/driver`, { preserveScroll: true }); }}>
-            <select className="form-input text-sm" value={form.data.driver_id} onChange={(e) => form.setData('driver_id', e.target.value)} disabled={Boolean(picked)} data-testid={`driver-select-${order.id}`}>
+            <select className="form-input text-sm" value={form.data.driver_id} onChange={(e) => form.setData('driver_id', e.target.value)} aria-label={t.driver_assign} disabled={Boolean(picked)} data-testid={`driver-select-${order.id}`}>
                 <option value="">{t.driver_assign}</option>
                 {drivers.filter((d) => d.active).map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
             </select>
@@ -78,11 +78,11 @@ function StockForm({ product, t }) {
 
     return (
         <form className="flex flex-wrap items-center gap-2" onSubmit={(e) => { e.preventDefault(); form.post(`/admin/bookshop/akuru/stock/${product.id}`, { preserveScroll: true, onSuccess: () => form.reset('quantity', 'note') }); }}>
-            <select className="form-input text-sm" value={form.data.direction} onChange={(e) => form.setData('direction', e.target.value)} data-testid={`akuru-direction-${product.id}`}>
+            <select className="form-input text-sm" value={form.data.direction} onChange={(e) => form.setData('direction', e.target.value)} aria-label={`${t.akuru_stock_in} / ${t.akuru_stock_out}`} data-testid={`akuru-direction-${product.id}`}>
                 <option value="in">{t.akuru_stock_in}</option>
                 <option value="out">{t.akuru_stock_out}</option>
             </select>
-            <input className="form-input w-20 text-sm" type="number" min="1" value={form.data.quantity} onChange={(e) => form.setData('quantity', e.target.value)} required data-testid={`akuru-quantity-${product.id}`} />
+            <input className="form-input w-20 text-sm" type="number" min="1" value={form.data.quantity} onChange={(e) => form.setData('quantity', e.target.value)} required aria-label={t.quantity} data-testid={`akuru-quantity-${product.id}`} />
             <button type="submit" className="btn-secondary text-sm" disabled={form.processing} data-testid={`akuru-record-${product.id}`}>{t.akuru_stock_record}</button>
             {form.errors.quantity && <span className="w-full text-xs text-red-700">{form.errors.quantity}</span>}
         </form>

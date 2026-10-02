@@ -43,7 +43,7 @@ export default function Users({ users = [], pagination, total = 0, filters = {},
                 <Link href="/admin/users/otp-abuse" className="underline">{t.users_otp_abuse || 'OTP abuse events'}</Link>
             </div>
             <form onSubmit={submit} className="mb-4 flex flex-wrap gap-2" data-testid="users-filter">
-                <input className="form-input min-w-[14rem] flex-1" name="search" placeholder={t.users_search_placeholder || 'Search name, ID card, mobile, email…'} value={search} onChange={(e) => setSearch(e.target.value)} />
+                <input className="form-input min-w-[14rem] flex-1" name="search" placeholder={t.users_search_placeholder || 'Search name, ID card, mobile, email…'} aria-label={t.users_search_placeholder || 'Search name, ID card, mobile, email…'} value={search} onChange={(e) => setSearch(e.target.value)} />
                 <select className="form-input" name="role" value={role} onChange={(e) => setRole(e.target.value)} aria-label={t.users_col_role || 'Role'}>
                     <option value="">{t.users_all_roles || 'All roles'}</option>
                     {roles.map((r) => <option key={r.key} value={r.key}>{r.label}</option>)}

@@ -159,7 +159,7 @@ function Movements({ movements, kinds, filters, t }) {
                 <a href={`/vendor/stock/movements/export?${new URLSearchParams(query).toString()}`} className="btn-secondary" data-testid="export-stock-log">{t.export_csv}</a>
             </div>
             <form className="mb-2 grid grid-cols-2 gap-2 text-sm sm:flex sm:flex-wrap" onSubmit={(e) => { e.preventDefault(); go(1); }}>
-                <input className="form-input col-span-2 min-w-0 sm:w-auto" placeholder={t.search_products} value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })} data-testid="log-search" />
+                <input className="form-input col-span-2 min-w-0 sm:w-auto" placeholder={t.search_products} aria-label={t.search_products} value={f.q} onChange={(e) => setF({ ...f, q: e.target.value })} data-testid="log-search" />
                 <select className="form-input col-span-2 min-w-0 sm:w-auto" value={f.kind} onChange={(e) => setF({ ...f, kind: e.target.value })} data-testid="log-kind">
                     <option value="">{t.all_kinds}</option>
                     {kinds.map((k) => <option key={k} value={k}>{t[`movement_${k}`] || k}</option>)}

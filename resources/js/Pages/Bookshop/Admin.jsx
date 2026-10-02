@@ -150,7 +150,7 @@ function VendorEditor({ vendor, t, onDone, sectionTypes = [] }) {
                     <option value="akuru">{t.akuru_by_akuru}</option>
                 </select>
             </label>
-            <label className="text-sm">{t.akuru_handling_override}<input className="form-input w-full" type="number" step="0.01" min="0" value={form.data.akuru_handling_fee} onChange={set('akuru_handling_fee')} placeholder={t.akuru_handling_default} data-testid="vendor-handling-fee" /></label>
+            <label className="text-sm">{t.akuru_handling_override}<input className="form-input w-full" type="number" step="0.01" min="0" value={form.data.akuru_handling_fee} onChange={set('akuru_handling_fee')} placeholder={t.akuru_handling_default} aria-label={t.akuru_handling_default} data-testid="vendor-handling-fee" /></label>
             {/* B4 (plan §6.1): the office's badges; "Akuru partner" also unlocks Akuru's own palette (decision 10). */}
             <fieldset className="flex flex-wrap items-center gap-3 text-sm md:col-span-2">
                 <legend className="sr-only">{t.badges}</legend>
@@ -246,13 +246,13 @@ function Catalogue({ catalogue, t }) {
                         category.post('/admin/bookshop/categories', { preserveScroll: true, onSuccess: () => category.reset() });
                     }}
                 >
-                    <input className="form-input" placeholder={t.name} value={category.data.name} onChange={(e) => category.setData('name', e.target.value)} data-testid="category-name" required />
+                    <input className="form-input" placeholder={t.name} aria-label={t.name} value={category.data.name} onChange={(e) => category.setData('name', e.target.value)} data-testid="category-name" required />
                     <select className="form-input" value={category.data.parent_id} onChange={(e) => category.setData('parent_id', e.target.value)} aria-label={t.parent_category}>
                         <option value="">{t.parent_category}: {t.none}</option>
                         {catalogue.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                     </select>
-                    <input className="form-input" dir="rtl" placeholder={t.name_dv} value={category.data.name_dv} onChange={(e) => category.setData('name_dv', e.target.value)} />
-                    <input className="form-input" dir="rtl" placeholder={t.name_ar} value={category.data.name_ar} onChange={(e) => category.setData('name_ar', e.target.value)} />
+                    <input className="form-input" dir="rtl" placeholder={t.name_dv} aria-label={t.name_dv} value={category.data.name_dv} onChange={(e) => category.setData('name_dv', e.target.value)} />
+                    <input className="form-input" dir="rtl" placeholder={t.name_ar} aria-label={t.name_ar} value={category.data.name_ar} onChange={(e) => category.setData('name_ar', e.target.value)} />
                     <FormErrors errors={category.errors} className="md:col-span-2" />
                     <button type="submit" className="btn-secondary md:col-span-2" disabled={category.processing}>{t.add_category}</button>
                 </form>
@@ -270,7 +270,7 @@ function Catalogue({ catalogue, t }) {
                         brand.post('/admin/bookshop/brands', { preserveScroll: true, onSuccess: () => brand.reset() });
                     }}
                 >
-                    <input className="form-input flex-1" placeholder={t.name} value={brand.data.name} onChange={(e) => brand.setData('name', e.target.value)} required />
+                    <input className="form-input flex-1" placeholder={t.name} aria-label={t.name} value={brand.data.name} onChange={(e) => brand.setData('name', e.target.value)} required />
                     <button type="submit" className="btn-secondary" disabled={brand.processing}>{t.add_brand}</button>
                     <FormErrors errors={brand.errors} />
                 </form>
@@ -294,7 +294,7 @@ function SlipRow({ slip, t }) {
             <td className="p-2">
                 {slip.status === 'waiting' ? (
                     <div className="flex flex-wrap items-center gap-2">
-                        <input className="form-input w-40" placeholder={t.decision_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid={`slip-note-${slip.id}`} />
+                        <input className="form-input w-40" placeholder={t.decision_note} aria-label={t.decision_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid={`slip-note-${slip.id}`} />
                         <button type="button" className="btn-primary" onClick={() => decide('confirm')} data-testid={`confirm-slip-${slip.id}`}>{t.confirm}</button>
                         <button type="button" className="text-red-700 underline" onClick={() => decide('reject')} data-testid={`reject-slip-${slip.id}`}>{t.reject}</button>
                     </div>
@@ -434,7 +434,7 @@ function Refunds({ refunds, t }) {
                                     <td className="p-2">
                                         {r.status === 'pending' ? (
                                             <div className="flex flex-wrap items-center gap-2">
-                                                <input className="form-input w-40" placeholder={t.note} value={notes[r.id] || ''} onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })} />
+                                                <input className="form-input w-40" placeholder={t.note} aria-label={t.note} value={notes[r.id] || ''} onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })} />
                                                 <button type="button" className="btn-primary" onClick={() => process(r, 'manual')} data-testid={`refund-card-${r.id}`}>{t.refunded_to_card}</button>
                                                 <button type="button" className="text-blue-700 underline" onClick={() => process(r, 'wallet')} data-testid={`refund-wallet-${r.id}`}>{t.refund_to_wallet_instead}</button>
                                             </div>
@@ -485,8 +485,8 @@ function Money({ money, t }) {
                                     <td className="p-2">{p.bank ? <>{p.bank.bank_name}<span className="block">{p.bank.account_name}</span><span className="block font-mono" data-testid="payout-account">{p.bank.account_number}</span></> : '—'}</td>
                                     <td className="p-2">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <input className="form-input w-40" placeholder={t.payment_ref} value={field(p.id, 'reference')} onChange={set(p.id, 'reference')} data-testid={`payout-reference-${p.id}`} />
-                                            <input className="form-input w-40" placeholder={t.note} value={field(p.id, 'note')} onChange={set(p.id, 'note')} data-testid={`payout-note-${p.id}`} />
+                                            <input className="form-input w-40" placeholder={t.payment_ref} aria-label={t.payment_ref} value={field(p.id, 'reference')} onChange={set(p.id, 'reference')} data-testid={`payout-reference-${p.id}`} />
+                                            <input className="form-input w-40" placeholder={t.note} aria-label={t.note} value={field(p.id, 'note')} onChange={set(p.id, 'note')} data-testid={`payout-note-${p.id}`} />
                                             <button type="button" className="btn-primary" onClick={() => decide(p.id, 'paid')} data-testid={`payout-paid-${p.id}`}>{t.mark_paid}</button>
                                             <button type="button" className="text-red-700 underline" onClick={() => decide(p.id, 'rejected')} data-testid={`payout-reject-${p.id}`}>{t.decline}</button>
                                         </div>
@@ -538,7 +538,7 @@ function Money({ money, t }) {
                     <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
                         <h3 className="font-semibold">{t.commission_invoices}</h3>
                         <form className="flex items-center gap-2" onSubmit={(e) => { e.preventDefault(); router.post('/admin/bookshop/commission-invoices/issue', { month }, { preserveScroll: true }); }}>
-                            <input type="month" className="form-input" value={month} onChange={(e) => setMonth(e.target.value)} data-testid="invoice-month" />
+                            <input type="month" className="form-input" value={month} onChange={(e) => setMonth(e.target.value)} aria-label={t.invoice_month || t.month || 'Month'} data-testid="invoice-month" />
                             <button type="submit" className="btn-secondary" data-testid="issue-invoices">{t.issue_invoices}</button>
                         </form>
                     </div>
@@ -599,10 +599,10 @@ function ApplicationRow({ a, t }) {
             )}
             {a.status === 'pending' ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <input className="form-input w-24" type="number" min="0" max="100" step="0.5" placeholder={t.commission_rate} value={rate} onChange={(e) => setRate(e.target.value)} aria-label={t.commission_rate} data-testid={`application-rate-${a.id}`} />
-                    <input className="form-input w-20" maxLength={3} placeholder={t.code} value={code} onChange={(e) => setCode(e.target.value)} aria-label={t.code} data-testid={`application-code-${a.id}`} />
+                    <input className="form-input w-24" type="number" min="0" max="100" step="0.5" placeholder={t.commission_rate} aria-label={t.commission_rate} value={rate} onChange={(e) => setRate(e.target.value)} aria-label={t.commission_rate} data-testid={`application-rate-${a.id}`} />
+                    <input className="form-input w-20" maxLength={3} placeholder={t.code} aria-label={t.code} value={code} onChange={(e) => setCode(e.target.value)} aria-label={t.code} data-testid={`application-code-${a.id}`} />
                     <button type="button" className="btn-primary" onClick={() => decide('approve')} data-testid={`application-approve-${a.id}`}>{t.approve_open_shop}</button>
-                    <input className="form-input min-w-48 flex-1" placeholder={t.decline_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid={`application-note-${a.id}`} />
+                    <input className="form-input min-w-48 flex-1" placeholder={t.decline_note} aria-label={t.decline_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid={`application-note-${a.id}`} />
                     <button type="button" className="text-red-700 underline" onClick={() => decide('decline')} data-testid={`application-decline-${a.id}`}>{t.decline}</button>
                 </div>
             ) : (
@@ -623,7 +623,7 @@ function ListingDecision({ row, t }) {
 
     return (
         <form className="flex flex-wrap items-center gap-2" onSubmit={decide('approve')}>
-            <input className="form-input w-56 text-sm" placeholder={t.listing_note_placeholder} value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} maxLength={1000} data-testid={`listing-note-${row.id}`} />
+            <input className="form-input w-56 text-sm" placeholder={t.listing_note_placeholder} aria-label={t.listing_note_placeholder} value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} maxLength={1000} data-testid={`listing-note-${row.id}`} />
             <button type="submit" className="rounded bg-green-700 px-3 py-1 text-sm font-semibold text-white" disabled={form.processing} data-testid={`listing-approve-${row.id}`}>{t.listing_approve}</button>
             <button type="button" onClick={decide('decline')} className="rounded border border-red-300 px-3 py-1 text-sm text-red-800" disabled={form.processing} data-testid={`listing-decline-${row.id}`}>{t.listing_decline}</button>
             {form.errors.note && <span className="w-full text-xs text-red-700">{form.errors.note}</span>}
@@ -714,7 +714,7 @@ function ThemeGalleryOffice({ themes, t }) {
                             <p className="text-xs text-gray-500">{th.fonts.heading} / {th.fonts.body}</p>
                             {th.css && <pre className="mt-1 max-h-40 overflow-auto rounded bg-gray-50 p-2 text-xs" dir="ltr">{th.css}</pre>}
                             <div className="mt-2 flex flex-wrap items-center gap-2">
-                                <input className="form-input flex-1" placeholder={t.css_note_placeholder} value={notes[th.id] || ''} onChange={(e) => setNotes({ ...notes, [th.id]: e.target.value })} />
+                                <input className="form-input flex-1" placeholder={t.css_note_placeholder} aria-label={t.css_note_placeholder} value={notes[th.id] || ''} onChange={(e) => setNotes({ ...notes, [th.id]: e.target.value })} />
                                 <button type="button" className="btn-primary" onClick={() => decide(th.id, 'publish')} data-testid={`theme-publish-${th.id}`}>{t.gallery_publish}</button>
                                 <button type="button" className="btn-secondary" onClick={() => decide(th.id, 'decline')} data-testid={`theme-decline-${th.id}`}>{t.css_decline}</button>
                             </div>
@@ -761,7 +761,7 @@ function CustomCssReviews({ rows, t }) {
                             )}
                             {r.live && !r.pending && <pre className="max-h-40 overflow-auto rounded bg-gray-50 p-2 text-xs" dir="ltr">{r.live}</pre>}
                             <div className="mt-2 flex flex-wrap items-center gap-2">
-                                <input className="form-input flex-1" placeholder={t.css_note_placeholder} value={notes[r.vendor_id] || ''} onChange={(e) => setNotes({ ...notes, [r.vendor_id]: e.target.value })} data-testid={`css-note-${r.slug}`} />
+                                <input className="form-input flex-1" placeholder={t.css_note_placeholder} aria-label={t.css_note_placeholder} value={notes[r.vendor_id] || ''} onChange={(e) => setNotes({ ...notes, [r.vendor_id]: e.target.value })} data-testid={`css-note-${r.slug}`} />
                                 {r.pending && <button type="button" className="btn-primary" onClick={() => decide(r.vendor_id, 'approve')} data-testid={`css-approve-${r.slug}`}>{t.css_approve}</button>}
                                 {r.pending && <button type="button" className="btn-secondary" onClick={() => decide(r.vendor_id, 'decline')} data-testid={`css-decline-${r.slug}`}>{t.css_decline}</button>}
                                 {r.live && <button type="button" className="btn-secondary text-red-700" onClick={() => decide(r.vendor_id, 'take_down')} data-testid={`css-take-down-${r.slug}`}>{t.css_take_down}</button>}
@@ -1068,7 +1068,7 @@ function ShopOpenSwitch({ shopOpen, t }) {
                 <span className={`rounded px-2 py-1 font-semibold ${shopOpen.open ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'}`} data-testid="shop-open-state">{shopOpen.open ? t.shop_is_open : t.shop_is_closed}</span>
                 <label className="block grow">
                     <span className="mb-1 block text-xs text-gray-500">{t.shop_closed_message}</span>
-                    <input className="form-input w-full" maxLength={500} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t.closed_default} data-testid="shop-closed-message" />
+                    <input className="form-input w-full" maxLength={500} value={message} onChange={(e) => setMessage(e.target.value)} placeholder={t.closed_default} aria-label={t.closed_default} data-testid="shop-closed-message" />
                 </label>
                 <button type="submit" className="text-sm text-blue-700 underline" data-testid="save-closed-message">{t.save}</button>
                 <button type="button" className="btn-secondary" onClick={() => save(!shopOpen.open)} data-testid="toggle-shop-open">{shopOpen.open ? t.close_shop : t.open_shop}</button>
@@ -1124,7 +1124,7 @@ function Reviews({ reviews, t }) {
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
                                 <span className="text-xs">{t[`review_status_${r.status}`] || r.status}</span>
-                                <input className="form-input w-40" placeholder={t.note} value={notes[r.id] || ''} onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })} data-testid={`review-note-${r.id}`} />
+                                <input className="form-input w-40" placeholder={t.note} aria-label={t.note} value={notes[r.id] || ''} onChange={(e) => setNotes({ ...notes, [r.id]: e.target.value })} data-testid={`review-note-${r.id}`} />
                                 {r.status !== 'hidden' && <button type="button" className="text-red-700 underline" onClick={() => act(r.id, 'hide')} data-testid={`review-hide-${r.id}`}>{t.hide}</button>}
                                 {r.status !== 'published' && <button type="button" className="text-blue-700 underline" onClick={() => act(r.id, 'publish')} data-testid={`review-publish-${r.id}`}>{t.publish}</button>}
                             </div>
@@ -1156,7 +1156,7 @@ function Questions({ questions, t }) {
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
                                 <span className="text-xs">{t[`review_status_${q.status}`] || q.status}</span>
-                                <input className="form-input w-40" placeholder={t.note} value={notes[q.id] || ''} onChange={(e) => setNotes({ ...notes, [q.id]: e.target.value })} data-testid={`question-note-${q.id}`} />
+                                <input className="form-input w-40" placeholder={t.note} aria-label={t.note} value={notes[q.id] || ''} onChange={(e) => setNotes({ ...notes, [q.id]: e.target.value })} data-testid={`question-note-${q.id}`} />
                                 {q.status !== 'hidden' ? <button type="button" className="text-red-700 underline" onClick={() => act(q.id, 'hide')} data-testid={`question-hide-${q.id}`}>{t.hide}</button>
                                     : <button type="button" className="text-blue-700 underline" onClick={() => act(q.id, 'publish')} data-testid={`question-publish-${q.id}`}>{t.publish}</button>}
                             </div>
@@ -1194,11 +1194,11 @@ function ShopHome({ home, t }) {
                     <h3 className="mb-1 font-semibold">{t.hero_slides}</h3>
                     <ul className="mb-2 divide-y rounded border bg-white text-sm">{list('hero').map(row)}</ul>
                     <form className="space-y-2 rounded border bg-white p-2 text-sm" data-testid="hero-form" onSubmit={(e) => { e.preventDefault(); hero.post('/admin/bookshop/home', { forceFormData: true, preserveScroll: true, onSuccess: () => hero.reset() }); }}>
-                        <input className="form-input w-full" placeholder={t.field_heading} value={hero.data.heading} onChange={(e) => hero.setData('heading', e.target.value)} required data-testid="hero-heading" />
-                        <input className="form-input w-full" dir="rtl" placeholder={t.name_dv} value={hero.data.heading_dv} onChange={(e) => hero.setData('heading_dv', e.target.value)} />
-                        <input className="form-input w-full" placeholder={t.field_subheading} value={hero.data.subheading} onChange={(e) => hero.setData('subheading', e.target.value)} />
+                        <input className="form-input w-full" placeholder={t.field_heading} aria-label={t.field_heading} value={hero.data.heading} onChange={(e) => hero.setData('heading', e.target.value)} required data-testid="hero-heading" />
+                        <input className="form-input w-full" dir="rtl" placeholder={t.name_dv} aria-label={t.name_dv} value={hero.data.heading_dv} onChange={(e) => hero.setData('heading_dv', e.target.value)} />
+                        <input className="form-input w-full" placeholder={t.field_subheading} aria-label={t.field_subheading} value={hero.data.subheading} onChange={(e) => hero.setData('subheading', e.target.value)} />
                         <div className="flex gap-2">
-                            <select className="form-input" value={hero.data.link.kind} onChange={(e) => hero.setData('link', { kind: e.target.value, target: '' })} data-testid="hero-link-kind">
+                            <select className="form-input" value={hero.data.link.kind} onChange={(e) => hero.setData('link', { kind: e.target.value, target: '' })} aria-label={t.field_link} data-testid="hero-link-kind">
                                 <option value="">{t.no_link}</option>
                                 {o.link_kinds.map((k) => <option key={k} value={k}>{t[`home_link_${k}`] || k}</option>)}
                             </select>
@@ -1218,7 +1218,7 @@ function ShopHome({ home, t }) {
                     <h3 className="mb-1 font-semibold">{t.featured_heading}</h3>
                     <ul className="mb-2 divide-y rounded border bg-white text-sm" data-testid="home-featured">{list('product').map(row)}</ul>
                     <div className="flex gap-2">
-                        <select className="form-input flex-1" value={productId} onChange={(e) => setProductId(e.target.value)} data-testid="feature-product">
+                        <select className="form-input flex-1" value={productId} onChange={(e) => setProductId(e.target.value)} aria-label={t.featured_heading} data-testid="feature-product">
                             <option value="">—</option>
                             {o.products.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
                         </select>
@@ -1229,7 +1229,7 @@ function ShopHome({ home, t }) {
                     <h3 className="mb-1 font-semibold">{t.featured_collections}</h3>
                     <ul className="mb-2 divide-y rounded border bg-white text-sm" data-testid="home-collections">{list('collection').map(row)}</ul>
                     <div className="flex gap-2">
-                        <select className="form-input flex-1" value={collectionId} onChange={(e) => setCollectionId(e.target.value)} data-testid="feature-collection">
+                        <select className="form-input flex-1" value={collectionId} onChange={(e) => setCollectionId(e.target.value)} aria-label={t.featured_collections} data-testid="feature-collection">
                             <option value="">—</option>
                             {o.collections.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
                         </select>

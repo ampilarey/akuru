@@ -40,7 +40,7 @@ function ReviewRow({ attempt, letters, harakas }) {
                         {harakas.map((row) => <option key={row.id} value={row.id}>{row.symbol} {row.key_name}</option>)}
                     </select>
                 </div>
-                <input className="form-input mb-2 w-full" placeholder="Notes / rejection reason" value={notes} onChange={(e) => setNotes(e.target.value)} />
+                <input className="form-input mb-2 w-full" placeholder="Notes / rejection reason" aria-label="Notes / rejection reason" value={notes} onChange={(e) => setNotes(e.target.value)} />
                 <div className="flex gap-2">
                     <button type="button" className="btn-primary" onClick={() => decide(false)}>Confirm as selected</button>
                     <button type="button" className="text-sm text-red-600" onClick={() => decide(true)}>Reject audio</button>

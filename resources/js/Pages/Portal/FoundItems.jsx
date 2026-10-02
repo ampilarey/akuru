@@ -16,7 +16,7 @@ export default function FoundItems({ items = [], filters = {} }) {
                 <input
                     type="search"
                     className="form-input w-64 text-sm"
-                    placeholder="Search"
+                    placeholder="Search" aria-label="Search"
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && router.get('/portal/found-items', { q }, { preserveState: true, replace: true })}

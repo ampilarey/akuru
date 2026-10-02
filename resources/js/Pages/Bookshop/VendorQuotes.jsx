@@ -59,7 +59,7 @@ function PriceForm({ quote, t, defaultDays, maxDays }) {
             </form>
             {declining && (
                 <form className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap" onSubmit={(e) => { e.preventDefault(); decline.post(`/vendor/quotes/${quote.id}/decline`, { preserveScroll: true }); }}>
-                    <input className="form-input w-full min-w-0 flex-1" required maxLength={2000} placeholder={t.quote_decline_note} value={decline.data.note} onChange={(e) => decline.setData('note', e.target.value)} dir="auto" data-testid="quote-decline-note" />
+                    <input className="form-input w-full min-w-0 flex-1" required maxLength={2000} placeholder={t.quote_decline_note} aria-label={t.quote_decline_note} value={decline.data.note} onChange={(e) => decline.setData('note', e.target.value)} dir="auto" data-testid="quote-decline-note" />
                     <button type="submit" className="btn-secondary text-red-700" disabled={decline.processing} data-testid="quote-decline">{t.quote_decline}</button>
                 </form>
             )}

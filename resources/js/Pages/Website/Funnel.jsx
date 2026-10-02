@@ -33,7 +33,7 @@ export default function Funnel({ reports = [], course_id: courseId = null, t = {
             <form onSubmit={submit} className="mb-4 flex flex-wrap items-end gap-2 rounded-lg border bg-white p-3" data-testid="funnel-filter">
                 <label className="text-xs text-gray-600">
                     {t.funnel_course_id || 'Course id'}
-                    <input type="number" name="course_id" min="1" className="form-input mt-1 block w-32" value={course} onChange={(e) => setCourse(e.target.value)} placeholder={t.leads_all || 'All'} />
+                    <input type="number" name="course_id" min="1" className="form-input mt-1 block w-32" value={course} onChange={(e) => setCourse(e.target.value)} placeholder={t.leads_all || 'All'} aria-label={t.leads_all || 'All'} />
                 </label>
                 <button type="submit" className="btn-primary">{t.leads_filter || 'Filter'}</button>
                 {courseId && <Link href="/admin/public-site/funnel" className="btn-secondary">{t.leads_clear || 'Clear'}</Link>}

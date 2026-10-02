@@ -229,10 +229,10 @@ function ProductEditor({ product, options, t, onDone, trusted = false, simple = 
                 <p className="mb-2 text-xs text-gray-500">{t.variants_hint}</p>
                 {form.data.variants.map((v, index) => (
                     <div key={v.id ?? `new-${index}`} className="mb-2 grid gap-2 md:grid-cols-6">
-                        <input className="form-input md:col-span-2" placeholder={t.variant_name} value={v.name} onChange={(e) => setVariant(index, 'name', e.target.value)} data-testid={`variant-name-${index}`} />
-                        <input className="form-input" placeholder={t.sku} value={v.sku} onChange={(e) => setVariant(index, 'sku', e.target.value)} />
-                        <input className="form-input" type="number" step="0.01" min="0" placeholder={t.price} value={v.price} onChange={(e) => setVariant(index, 'price', e.target.value)} />
-                        <input className="form-input" type="number" min="0" placeholder={t.stock} value={v.stock} onChange={(e) => setVariant(index, 'stock', e.target.value)} data-testid={`variant-stock-${index}`} />
+                        <input className="form-input md:col-span-2" placeholder={t.variant_name} aria-label={t.variant_name} value={v.name} onChange={(e) => setVariant(index, 'name', e.target.value)} data-testid={`variant-name-${index}`} />
+                        <input className="form-input" placeholder={t.sku} aria-label={t.sku} value={v.sku} onChange={(e) => setVariant(index, 'sku', e.target.value)} />
+                        <input className="form-input" type="number" step="0.01" min="0" placeholder={t.price} aria-label={t.price} value={v.price} onChange={(e) => setVariant(index, 'price', e.target.value)} />
+                        <input className="form-input" type="number" min="0" placeholder={t.stock} aria-label={t.stock} value={v.stock} onChange={(e) => setVariant(index, 'stock', e.target.value)} data-testid={`variant-stock-${index}`} />
                         <button type="button" className="text-sm text-red-700" onClick={() => form.setData('variants', form.data.variants.filter((_, i) => i !== index))}>{t.remove}</button>
                     </div>
                 ))}
@@ -413,9 +413,9 @@ function Members({ members, isOwner, t, panels }) {
                     }}
                 >
                     <p className="text-sm text-gray-600 md:col-span-4">{t.add_member_intro}</p>
-                    <input className="form-input" placeholder={t.name} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} required />
-                    <input className="form-input" type="email" placeholder={t.contact_email} value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} required />
-                    <input className="form-input" placeholder={t.owner_phone} value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} />
+                    <input className="form-input" placeholder={t.name} aria-label={t.name} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} required />
+                    <input className="form-input" type="email" placeholder={t.contact_email} aria-label={t.contact_email} value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} required />
+                    <input className="form-input" placeholder={t.owner_phone} aria-label={t.owner_phone} value={form.data.phone} onChange={(e) => form.setData('phone', e.target.value)} />
                     <button type="submit" className="btn-primary" disabled={form.processing}>{t.add_member}</button>
                     <FormErrors errors={form.errors} className="md:col-span-4" />
                 </form>
@@ -569,7 +569,7 @@ function OwnDomain({ settings, isOwner, t, panels }) {
             )}
             <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); form.post('/vendor/host', { preserveScroll: true }); }}>
                 <label className="w-full text-sm sm:w-auto">{t.host_label}
-                    <input className="form-input block w-full sm:w-72" dir="ltr" placeholder="www.example.mv" value={form.data.custom_host} onChange={(e) => form.setData('custom_host', e.target.value)} disabled={!isOwner} data-testid="host-input" />
+                    <input className="form-input block w-full sm:w-72" dir="ltr" placeholder="www.example.mv" aria-label="www.example.mv" value={form.data.custom_host} onChange={(e) => form.setData('custom_host', e.target.value)} disabled={!isOwner} data-testid="host-input" />
                 </label>
                 {isOwner && <button type="submit" className="btn-secondary" disabled={form.processing} data-testid="host-save">{t.host_save}</button>}
                 <FormErrors errors={form.errors} className="w-full" />
@@ -826,7 +826,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                                     goPage(1);
                                 }}
                             >
-                                <input className="form-input col-span-2 sm:col-span-1 sm:w-auto" placeholder={t.search_products} value={search} onChange={(e) => setSearch(e.target.value)} />
+                                <input className="form-input col-span-2 sm:col-span-1 sm:w-auto" placeholder={t.search_products} aria-label={t.search_products} value={search} onChange={(e) => setSearch(e.target.value)} />
                                 <select className="form-input sm:w-auto" value={status} onChange={(e) => setStatus(e.target.value)}>
                                     <option value="">{t.all_statuses}</option>
                                     {options.statuses.map((s) => <option key={s} value={s}>{t[`status_${s}`] || s}</option>)}

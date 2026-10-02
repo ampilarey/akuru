@@ -41,7 +41,7 @@ function RefundForm({ payment, t }) {
                     <option value="wallet">{t.payments_refund_to_wallet || 'To wallet'}</option>
                     <option value="manual">{t.payments_refund_manual || 'Manual (returned outside)'}</option>
                 </select>
-                <input type="text" name="reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t.payments_refund_reason || 'Reason'} maxLength="500" className="form-input w-32 text-xs" />
+                <input type="text" name="reason" value={reason} onChange={(e) => setReason(e.target.value)} placeholder={t.payments_refund_reason || 'Reason'} aria-label={t.payments_refund_reason || 'Reason'} maxLength="500" className="form-input w-32 text-xs" />
                 <button type="submit" className="btn-primary px-2 py-1 text-xs" disabled={busy}>{t.payments_refund || 'Refund'}</button>
             </form>
         </details>
@@ -76,7 +76,7 @@ export default function Payments({ payments = [], pagination, total = 0, filters
             <form onSubmit={submit} className="mb-4 flex flex-wrap items-end gap-2 rounded-lg border bg-white p-3" data-testid="payments-filter">
                 <label className="text-xs text-gray-600">
                     {t.payments_search || 'Search'}
-                    <input className="form-input mt-1 block min-w-[14rem]" name="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t.payments_search_placeholder || 'Name, mobile, email, ref…'} />
+                    <input className="form-input mt-1 block min-w-[14rem]" name="search" value={search} onChange={(e) => setSearch(e.target.value)} placeholder={t.payments_search_placeholder || 'Name, mobile, email, ref…'} aria-label={t.payments_search_placeholder || 'Name, mobile, email, ref…'} />
                 </label>
                 <label className="text-xs text-gray-600">
                     {t.payments_status || 'Status'}

@@ -151,7 +151,7 @@ export default function Create({ recipients = [], classes = [] }) {
                             <input
                                 className="form-input w-full"
                                 type="text"
-                                placeholder="e.g. Will your child attend the trip?"
+                                placeholder="e.g. Will your child attend the trip?" aria-label="e.g. Will your child attend the trip?"
                                 value={form.data.poll_question}
                                 onChange={(e) => form.setData('poll_question', e.target.value)}
                             />
@@ -164,7 +164,7 @@ export default function Create({ recipients = [], classes = [] }) {
                                         key={index}
                                         className="form-input w-full"
                                         type="text"
-                                        placeholder={`Option ${index + 1}`}
+                                        placeholder={`Option ${index + 1}`} aria-label={`Option ${index + 1}`}
                                         value={option}
                                         onChange={(e) => {
                                             const next = [...form.data.poll_options];

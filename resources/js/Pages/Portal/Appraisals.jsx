@@ -95,7 +95,7 @@ function AppraisalRow({ row }) {
                             form.post(`/portal/appraisals/${row.id}/acknowledge`);
                         }}
                     >
-                        <input className="form-input" placeholder="Comment" value={form.data.staff_comment} onChange={(e) => form.setData('staff_comment', e.target.value)} />
+                        <input className="form-input" placeholder="Comment" aria-label="Comment" value={form.data.staff_comment} onChange={(e) => form.setData('staff_comment', e.target.value)} />
                         <button type="submit" className="btn-secondary" disabled={form.processing}>Acknowledge</button>
                         <FormErrors errors={form.errors} />
                     </form>
