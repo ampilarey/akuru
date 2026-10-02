@@ -92,7 +92,7 @@ const mobileLinks = await phone.locator('#nav-mobile-menu a').evaluateAll((els) 
 // phone menu is the School's map, not the whole panel.
 const wanted = ['/admin/enrollments', '/academics/years', '/people/students', '/exams/schedule', '/finance/invoices', '/hr/payroll', '/announcements', '/quran-progress'];
 const missing = wanted.filter((href) => !mobileLinks.some((h) => h && h.endsWith(href)));
-check('the hamburger opens it and says so', (await phone.locator('#nav-mobile-menu').isVisible()) && expanded === 'true', `aria-expanded=${expanded}`);
+check('the initial opens it and says so', (await phone.locator('#nav-mobile-menu').isVisible()) && expanded === 'true', `aria-expanded=${expanded}`);
 check('and the phone menu reaches the whole School the educational admin may open, and nothing of the Institute', missing.length === 0 && !mobileLinks.some((h) => h && /\/admin\/(commerce|users|settings|public-site\/pages)$/.test(h)), missing.join(', '));
 check('without Users or Settings for a plain admin', !mobileLinks.some((h) => h && (h.endsWith('/admin/users') || h.endsWith('/admin/settings'))));
 const overflow = await phone.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
