@@ -79,15 +79,15 @@ export default function AppShell({ title, children }) {
                 {n.skip_to_content || 'Skip to content'}
             </a>
             {/* The same brand bar as the Blade shell — wine gradient, the logo,
-                "Akuru Institute", white links — so an administrator moving between
-                the two shells sees one application (STATUS §5ib). Sticky from sm:.
-                On a phone it is one row: the brand and the initial. */}
+                white links — so an administrator moving between the two shells
+                sees one application (STATUS §5ib). The logo carries the name, so
+                there is no second label beside it (STATUS §5nf). Sticky from sm:.
+                On a phone it is one row: the logo and the initial. */}
             <header className="relative z-30 bg-gradient-to-br from-[#3D1219] to-[#7C2D37] text-white shadow-md sm:sticky sm:top-0">
                 <div className="mx-auto flex max-w-6xl items-center justify-between gap-x-3 px-4 py-1.5 sm:flex-wrap sm:gap-x-6 sm:gap-y-2 sm:px-6 sm:py-2">
                     <div className="flex min-w-0 items-center gap-3">
-                        <a href="/dashboard" className="flex shrink-0 items-center gap-2.5 no-underline" data-testid="shell-home">
+                        <a href="/dashboard" className="flex shrink-0 items-center no-underline" data-testid="shell-home">
                             <img src="/images/logos/akuru-logo-on-dark.svg?v=5" alt="Akuru Institute" className="h-8 w-auto object-contain" />
-                            <span className="text-[.95rem] font-bold tracking-wide text-white">Akuru Institute</span>
                         </a>
                         {/* The workspace switcher: shown only to a person who holds more
                             than one. Switching posts the choice, so the server remembers
