@@ -35,7 +35,13 @@ const PAGES = [
     '/en/admin/prayer-times/broadcasts', '/en/admin/prayer-times/broadcasts/create', '/en/admin/prayer-times/import',
     '/en/admin/operations', '/en/admin/operations/features', '/en/admin/translations',
     '/en/admin/commerce', '/en/admin/library', '/en/admin/library/reading-alerts',
+    // The screens that arrived after the 2026-09-28 sweep and were not in it
+    // (ADMIN_PANEL.md M1, 2026-10-02): the reviewers page measured 79 px wider
+    // than the phone for four days and nothing said so.
+    '/en/admin/library/insights', '/en/admin/library/promotions', '/en/admin/library/reviewers', '/en/admin/library/settings',
+    '/en/admin/lending',
     '/en/admin/pronunciation', '/en/admin/bookshop',
+    '/en/admin/bookshop/akuru', '/en/admin/bookshop/campaigns', '/en/admin/bookshop/complaints', '/en/admin/bookshop/credit', '/en/admin/bookshop/customers',
 ];
 
 const HERMETIC_ARGS = [

@@ -157,6 +157,44 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the admin-panel performance and phone audit (2026-10-02)
+
+The record is `docs/ADMIN_PANEL.md` §7 (P1–P8, M1–M9); the plan is BACKLOG
+C15. Listed here: what was a defect, and what is held with a reason.
+
+### The peer reviewers page was wider than a phone — **fixed (2026-10-02, STATUS §5nk)**
+
+`/admin/library/reviewers` measured 79 px wider than a 390 px phone, so
+Safari would zoom the page out: the Remove column's `sr-only` heading is
+positioned and the table's scroller was not, the shape of §5jq's enrolments
+list. It shipped on 2026-09-29 (R3b) and the phone sweep did not see it,
+because `admin-mobile.mjs` listed the 40 screens of 2026-09-28 and none of
+the ten added since. Fixed with `relative` on the scroller; the sweep now
+carries all 50 admin screens, so the next new screen is measured on the
+day it ships.
+
+### One script carries every page — held, planned (C15 slice 1)
+
+`app.jsx` resolves pages eagerly, so every visitor downloads all 247 page
+components (1,743 KB; 368 KB Brotli) before the first screen draws, and
+again after each deploy. Not a defect in behaviour; the largest cost on a
+phone. Lazy chunks are a one-line change verified by the build and the
+sweeps.
+
+### Most admin tables need a sideways swipe on a phone — held, planned (C15 slice 6)
+
+26 tables on 21 screens; on Manage users the Roles & access and Delete
+actions sit 443 px past the edge. Formerly ADMIN_PANEL L15 ("the usual
+pattern"); with `.table-stack` in the stylesheet since §5js it is now a
+`data-label` per cell, one group of screens per PR.
+
+### Two writes on every page view, with no pruning — held, planned (C15 slice 3)
+
+`TrackUserActivity` inserts a `user_activities` row and upserts
+`dashboard_analytics` inline on 943 routes, after the response is built and
+before it is sent; a stall there holds the page. One screen reads either
+table. To move after the response (`terminate()`) and prune at 90 days.
+
 ## Found by the owner on a phone (2026-10-01)
 
 - **A shop's own colours never reached its page; presets did** — **fixed
