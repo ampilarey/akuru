@@ -9,9 +9,7 @@
              The route's own name is a fair default: admin.pages.index → "Pages". --}}
         <title>@yield('title', \Illuminate\Support\Str::of((string) request()->route()?->getName())->replace(['admin.', '.index'], '')->replace(['.', '-'], ' ')->headline()->whenEmpty(fn ($t) => $t->append(config('app.name', 'Akuru LMS')))->when(request()->route()?->getName(), fn ($t) => $t->append(' - '.config('app.name', 'Akuru LMS'))))</title>
 
-        <!-- Fonts -->
-        <link rel="preconnect" href="https://fonts.bunny.net">
-        <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+        {{-- Fonts: Figtree comes with app.css, self-hosted (STATUS §5np); nothing from a third party. --}}
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])

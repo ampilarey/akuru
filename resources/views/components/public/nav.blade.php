@@ -497,7 +497,7 @@ function translateTo(lang) {
   var html = document.documentElement;
   html.classList.remove('gt-lang-ar', 'gt-lang-dv');
   var fontMeta = {
-    ar: { url: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap', stack: "'Cairo','Noto Sans Arabic',Arial,sans-serif" },
+    ar: { url: null /* Cairo is self-hosted with app.css, STATUS §5np */, stack: "'Cairo','Noto Sans Arabic',Arial,sans-serif" },
     dv: { url: null, stack: "'Faruma','MV Boli',sans-serif" }
   };
   if (fontMeta[lang]) {

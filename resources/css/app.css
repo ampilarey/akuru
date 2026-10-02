@@ -1,4 +1,24 @@
-@import url('https://fonts.googleapis.com/css2?family=Amiri:ital,wght@0,400;0,700;1,400;1,700&family=Cairo:wght@400;600;700&display=swap');
+/*
+ * The fonts, self-hosted (docs/ADMIN_PANEL.md §7 P6, STATUS §5np). This file
+ * used to open with an `@import` of Google Fonts for Amiri and Cairo, which
+ * held every shell page's first paint on a round trip to Google — in English
+ * too — and the Blade layouts fetched Figtree from a second third party. Each package below is a set of `@font-face` rules with a
+ * `unicode-range`, so an English page downloads the Latin files only and an
+ * Arabic page the Arabic ones; Vite copies the woff2 files into the build,
+ * where the host serves them hashed and immutable like every other asset.
+ */
+@import '@fontsource/figtree/400.css';
+@import '@fontsource/figtree/500.css';
+@import '@fontsource/figtree/600.css';
+@import '@fontsource/figtree/700.css';
+@import '@fontsource/amiri/400.css';
+@import '@fontsource/amiri/400-italic.css';
+@import '@fontsource/amiri/700.css';
+@import '@fontsource/amiri/700-italic.css';
+@import '@fontsource/cairo/400.css';
+@import '@fontsource/cairo/500.css';
+@import '@fontsource/cairo/600.css';
+@import '@fontsource/cairo/700.css';
 
 @font-face {
   font-family: 'Faruma';
