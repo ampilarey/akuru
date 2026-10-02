@@ -202,15 +202,20 @@ export default function AppShell({ title, children }) {
                         {user && (
                             <button
                                 type="button"
-                                aria-label={n.account || 'Account'}
+                                aria-label={unread > 0 ? `${n.account || 'Account'} (${unread})` : (n.account || 'Account')}
                                 aria-expanded={narrow ? open : undefined}
                                 aria-controls={narrow ? 'app-shell-more' : undefined}
                                 title={user.name}
                                 data-testid="shell-avatar"
                                 onClick={() => setOpen((value) => !value)}
-                                className={`ms-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white sm:hidden ${open ? 'bg-white/40 ring-2 ring-white' : 'bg-white/25'}`}
+                                className={`relative ms-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white sm:hidden ${open ? 'bg-white/40 ring-2 ring-white' : 'bg-white/25'}`}
                             >
                                 {(user.name || '?').slice(0, 1).toUpperCase()}
+                                {unread > 0 && (
+                                    <span data-testid="avatar-alerts" className="absolute -top-1 -end-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#D4A017] px-1 text-[10px] font-bold leading-none text-[#3D1219]">
+                                        {unread > 99 ? '99+' : unread}
+                                    </span>
+                                )}
                             </button>
                         )}
                         {user && (
@@ -242,11 +247,6 @@ export default function AppShell({ title, children }) {
                         </span>
                     </nav>
                 </div>
-                {narrow && unread > 0 && (
-                    <Link href="/portal/notifications" data-testid="alerts-banner" className="block bg-[#D4A017] px-4 py-1 text-center text-xs font-semibold text-[#3D1219]">
-                        {n.alerts || 'Alerts'} · {unread}
-                    </Link>
-                )}
                 {open && (
                     <>
                         {/* A click anywhere else closes the menu. */}
