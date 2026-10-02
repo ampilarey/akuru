@@ -316,7 +316,9 @@ await su.locator('input[type=checkbox]').first().click();
 await su.waitForFunction((was) => document.querySelector('input[type=checkbox]')?.checked === was, before, { timeout: 20000 }).catch(() => {});
 check('an operations checklist item is ticked and unticked', after !== before && (await su.locator('input[type=checkbox]').first().isChecked()) === before);
 
-await su.goto(`${BASE}/en/admin/translations?q=ops_checklist`, { waitUntil: 'networkidle' });
+// `?q=` searches on the server since STATUS §5no (it used to be ignored, so
+// any key "worked"); `dashboard` is in `common`, the editor's first group.
+await su.goto(`${BASE}/en/admin/translations?q=dashboard`, { waitUntil: 'networkidle' });
 await settle(su, 'textarea');
 const translationRows = await count(su, 'textarea');
 check('the translation editor opens with rows to correct', translationRows > 0, `${translationRows} rows`);

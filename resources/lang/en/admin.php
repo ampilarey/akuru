@@ -1047,4 +1047,15 @@ return [
     'library_settings_office_email' => 'Office email for sales',
     'library_settings_office_phone' => 'Office phone for sales',
     'library_settings_office_note' => 'Every sale reaches this address and number, as the two switches above allow. Leave empty to keep sales in the app.',
+
+    // STATUS §5no: the long pages — islands paged with a search, Feature testing folded.
+    'page_prev' => '‹ Previous',
+    'page_next' => 'Next ›',
+    'page_of' => 'Page :page of :pages',
+    'prayer_search' => 'Search island or atoll…',
+    'prayer_search_go' => 'Search',
+    'prayer_showing' => ':shown of :total islands',
+    'prayer_islands_no_match' => 'No island matches.',
+    'ft_open_all' => 'Open all',
+    'ft_close_all' => 'Close all',
 ];

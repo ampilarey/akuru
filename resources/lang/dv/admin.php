@@ -1047,4 +1047,15 @@ return [
     'library_settings_office_email' => 'ވިއްކުމުގެ ނޯޓިސްއަށް އޮފީހުގެ އީމެއިލް',
     'library_settings_office_phone' => 'ވިއްކުމުގެ ނޯޓިސްއަށް އޮފީހުގެ ފޯނު',
     'library_settings_office_note' => 'ކޮންމެ ވިއްކުމެއް މި އެޑްރެހަށާއި ނަންބަރަށް ދާނެ، މަތީގައިވާ ދެ ސްވިޗް ހުއްދަކުރާ ގޮތަށް. އެޕުގައި ބަހައްޓަން ހުސްކޮށް ބާއްވާ.',
+
+    // STATUS §5no: the long pages — islands paged with a search, Feature testing folded.
+    'prayer_search' => 'ރަށް ނުވަތަ އަތޮޅު ހޯދާ…',
+    'prayer_search_go' => 'ހޯދާ',
+    'prayer_showing' => ':total ރަށުގެ ތެރެއިން :shown',
+    'prayer_islands_no_match' => 'އެއްވެސް ރަށެއް ދިމައެއް ނުވޭ.',
+    'ft_open_all' => 'ހުރިހާ ބައިތައް ހުޅުވާ',
+    'ft_close_all' => 'ހުރިހާ ބައިތައް ލައްޕާ',
+    'page_prev' => '‹ ކުރީގެ',
+    'page_next' => 'ދެން ›',
+    'page_of' => ':pages ގެ ތެރެއިން :page ވަނަ ޞަފްޙާ',
 ];

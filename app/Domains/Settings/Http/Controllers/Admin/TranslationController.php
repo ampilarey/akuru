@@ -26,7 +26,13 @@ class TranslationController extends Controller
     public function index(Request $request, ListTranslationCatalogAction $list): Response
     {
         return Inertia::render('Settings/Translations', [
-            ...$list->execute($this->locale($request)),
+            ...$list->page(
+                $this->locale($request),
+                $request->query('group'),
+                (string) $request->query('q', ''),
+                $request->boolean('suspect'),
+                max(1, (int) $request->query('page', 1)),
+            ),
             'suggest_available' => ! (app(MachineTranslatorInterface::class) instanceof NullMachineTranslator),
         ]);
     }
