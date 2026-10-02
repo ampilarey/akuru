@@ -4778,7 +4778,12 @@ hub's first load names `t:admin:dv` and `i18n:dv`, the visit to Manage
 users sends them back and receives neither, the heading still reads
 ޔޫޒަރުން ބެލެހެއްޓުން from the remembered book, the More button އިތުރު, and
 a second screen is not resent either; `admin-hub.mjs` 25/25, `nav.mjs`
-14/14, `vendor.mjs` 32/32.
+14/14, `vendor.mjs` 32/32. The whole feature suite: 2,575 passed.
+`admin.mjs` reads 39/43 on this branch **and the same 39/43 on `main`
+after a fresh reseed** (the users-badge step looks for a System admin on
+page one of a list that now runs to two pages; the Library settings,
+insights and offers steps depend on state earlier walks leave behind) —
+walk drift, not this slice; noted for a walk-health pass.
 
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
