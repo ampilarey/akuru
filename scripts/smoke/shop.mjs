@@ -419,7 +419,7 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
     await small.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
     const clear = await small.evaluate(() => document.querySelector('[data-testid="shop-bottom-bar"]').getBoundingClientRect().top - document.querySelector('[data-testid="footer-compact"]').getBoundingClientRect().bottom);
     check('the copyright line clears the tabs, with no empty strip', clear > -1 && clear <= 2, `${clear.toFixed(1)}px between`);
-    check('the cart is still in the shop\'s links too', await small.locator('[data-testid="shop-link-cart"]').isVisible());
+    check('the cart is the bottom tab, not a second chip', await small.locator('[data-testid="bar-cart"]').isVisible() && !(await small.locator('[data-testid="shop-link-cart"]').isVisible()));
 }
 
 // ------------------------------------------------------------ the layout (STATUS §5lu, after iruali)
@@ -443,10 +443,22 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
     const phone = await newPage('shop-layout-phone', { width: 390, height: 844 });
     await phone.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
     const row = await phone.locator('[data-testid="vendor-menu-row"]').boundingBox();
-    const menuText = await phone.locator('[data-testid="vendor-menu"]').innerText();
-    check('a shop\'s phone menu is one row, with More for the rest', (await phone.locator('[data-testid="shop-links"]').count()) === 0 && row !== null && row.height <= 52 && row.height >= 44 && menuText.includes('Home') && menuText.includes('More') && !menuText.includes('Old and used books') && !(await phone.locator('[data-testid="vendor-menu-store"]').isVisible()), `${Math.round(row?.height ?? -1)}px, ${menuText.replace(/\s+/g, ' ')}`);
-    await phone.locator('[data-testid="vendor-menu-more"]').click();
-    check('More opens the rest of the shop\'s menu', await phone.locator('[data-testid="vendor-menu-store"]').isVisible());
+    const menuText = (await phone.locator('[data-testid="vendor-menu"]').innerText()).replace(/\s+/g, ' ');
+    const repeatsBottomBar = await phone.locator('[data-testid="vendor-menu-home"]').isVisible()
+        || await phone.locator('[data-testid="vendor-menu-deals"]').isVisible()
+        || await phone.locator('[data-testid="shop-link-cart"]').isVisible()
+        || await phone.locator('[data-testid="vendor-menu-orders"]').isVisible();
+    check('a shop\'s phone menu is one row and does not repeat the bottom tabs', (await phone.locator('[data-testid="shop-links"]').count()) === 0 && row !== null && row.height <= 52 && row.height >= 44 && !repeatsBottomBar && !menuText.includes('Old and used books') && await phone.locator('[data-testid="bar-home"]').isVisible() && await phone.locator('[data-testid="bar-cart"]').isVisible(), `${Math.round(row?.height ?? -1)}px, ${menuText}`);
+    const more = phone.locator('[data-testid="vendor-menu-more"]');
+    if (await more.isVisible()) {
+        await more.click();
+        check('More opens the rest of the shop\'s menu', await phone.locator('[data-testid="vendor-menu-rest"]').isVisible());
+        const openRow = await phone.locator('[data-testid="vendor-menu-row"]').boundingBox();
+        await more.click();
+        check('a second tap on More closes it', !(await phone.locator('[data-testid="vendor-menu-rest"]').isVisible()) && openRow !== null && openRow.height <= 52, `${Math.round(openRow?.height ?? -1)}px`);
+    } else {
+        check('with little to add, those links sit on the row', await phone.locator('[data-testid="vendor-menu-store"]').isVisible());
+    }
     check('the page itself does not run sideways', await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
 }
 
