@@ -32,9 +32,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Share site settings globally with all views (cached for 10 min)
+        // Share site settings globally with all views (cached for 10 min).
+        // The table check guards a host that has not migrated yet; it is an
+        // `information_schema` query, and this composer runs for every view
+        // rendered (the layout, the page, each partial), so it is asked once
+        // per process rather than once per view (ADMIN_PANEL.md §7 P4).
         View::composer('*', function ($view) {
-            if (Schema::hasTable('settings')) {
+            static $hasTable = null;
+            $hasTable ??= Schema::hasTable('settings');
+            if ($hasTable) {
                 $siteSettings = Cache::remember('site_settings', 600, fn () => Setting::allKeyed());
                 $view->with('siteSettings', $siteSettings);
             }

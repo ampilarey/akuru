@@ -4785,6 +4785,49 @@ page one of a list that now runs to two pages; the Library settings,
 insights and offers steps depend on state earlier walks leave behind) —
 walk drift, not this slice; noted for a walk-health pass.
 
+## 5nn. Bookkeeping after the response; settings read once (C15 slice 3, 2026-10-02)
+
+ADMIN_PANEL.md §7 P3 and P4.
+
+- **`TrackUserActivity` is terminable.** It sits on 943 of 1,181 routes
+  and writes a `user_activities` row and a `dashboard_analytics` upsert
+  for every signed-in page view. It did so in `handle()`, between
+  building the response and sending it — the audit's probe caught the
+  insert at 700 ms twice — so a slow write held the page for its own
+  bookkeeping. The writes now happen in `terminate()`, after the response
+  has gone (FPM and LiteSpeed flush first). Same rows, same shape; nothing
+  that reads them (`/analytics`) changes.
+- **The rows are pruned.** `akuru:prune-expired` (hourly) now deletes
+  `user_activities` and `dashboard_analytics` older than 90 days
+  (`PruneExpiredDataCommand::ACTIVITY_RETENTION_DAYS`); the analytics
+  screen reads 30. Nothing had ever deleted them.
+- **`Setting::get()` reads the table once per request.** It ran
+  `select * from settings` on every call — 12 times on the Library
+  settings screen, 6 on the Bookstore office. The table is remembered in
+  the container (one request, one test) and forgotten by `Setting::set()`
+  and `SetSettingAction`, so a saved value is the value read next; the
+  repository's `many()` is a direct query and unchanged. The view
+  composer's `Schema::hasTable('settings')` — an `information_schema`
+  query per rendered view — is asked once per process.
+- **Measured** (kernel probe, same dataset as §5nk): Library settings
+  23 → 18 queries and, in a single request, 9 fixed-cost queries against
+  15 before; System settings 11 → 8; Manage users 16 → 13; the Bookstore
+  office 79 → 72. The `settings` shape appears once on every screen.
+
+Tests: `TrackUserActivityTest` (4) — `handle()` issues no insert or
+update and leaves the table as it was, `terminate()` records the visit
+with its route, a guest records nothing, the kernel path still records;
+`SettingMemoTest` (2) — many keys, one query; a write through the Action
+or the model is read back; `PruneExpiredDataTest` gains the 90-day case
+(dry run counts, real run keeps the quarter); `SettingsRepositoryTest`'s
+raw-insert case now forgets the memo first (a raw insert goes behind the
+model's back; the app's writers all go through it). Architecture, Unit,
+Settings, Library, Admin and Support suites green (382). Walks:
+`admin-mobile.mjs` 3/3 on 50 screens; `operations.mjs` 20/21 — the one
+red ("new-order SMS is closed by the office") is the same on `main`: the
+walk's last step turns shop SMS on and the seeder does not reset the
+switch, so the next run finds it open; walk drift, noted with §5nm's.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not

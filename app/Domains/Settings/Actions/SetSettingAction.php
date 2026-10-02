@@ -28,5 +28,6 @@ class SetSettingAction
                 'label' => $label ?? $key,
             ],
         );
+        Setting::forgetMemo();
     }
 }
