@@ -23,13 +23,16 @@
 
 @section('content')
 @push('shop_links')
-{{-- STATUS §5ky, §5kz: the store's doors, on the store and on every shop's page
-     (a shop with a storefront too) — every shop, the categories, the cart, the
-     customer's orders, and the way in for a shop owner. On a shop's own page no
-     bar is fixed to the foot of a phone, so the cart is here. --}}
-@php($cartCount = app(\App\Domains\Bookshop\Actions\Cart\ResolveCartAction::class)->count(auth()->id(), session(\App\Domains\Bookshop\Actions\Cart\ResolveCartAction::SESSION_KEY)))
+{{-- The store's doors, on the store. A shop's own page has its own menu
+     (_vendor-menu): the bookstore's chip row ran off the phone. --}}
+@if($vendor)
 <div class="{{ $storefront ? '' : 'bg-brandBeige-50' }}">
-    <nav class="shop-scroll container mx-auto flex gap-2 overflow-x-auto px-4 pb-3 sm:flex-wrap sm:overflow-visible {{ $storefront ? 'pt-4' : 'pt-3' }} text-sm" aria-label="{{ __('site.store_menu') }}" data-testid="shop-links">
+    @include('public.shop._vendor-menu')
+</div>
+@else
+@php($cartCount = app(\App\Domains\Bookshop\Actions\Cart\ResolveCartAction::class)->count(auth()->id(), session(\App\Domains\Bookshop\Actions\Cart\ResolveCartAction::SESSION_KEY)))
+<div class="bg-brandBeige-50">
+    <nav class="shop-scroll container mx-auto flex min-w-0 gap-2 overflow-x-auto px-4 pb-3 pt-3 text-sm sm:flex-wrap sm:overflow-visible" aria-label="{{ __('site.store_menu') }}" data-testid="shop-links">
         <a href="{{ $home ? '#shops' : route('public.shop.index').'#shops' }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 font-semibold text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-shops">{{ __('site.shops') }}</a>
         <a href="{{ route('public.shop.deals') }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-deals">{{ __('site.store_deals') }}</a>
         {{-- LENDING_AND_USED_BOOKS_PLAN U1: old and used books. --}}
@@ -47,6 +50,7 @@
         <a href="{{ route('vendor.index') }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-owners">{{ __('site.shop_owner_signin') }}</a>
     </nav>
 </div>
+@endif
 @endpush
 @if($storefront)
 {{-- B4: the vendor's own look, inside the Akuru frame. --}}
@@ -200,7 +204,7 @@
     @if(count($chips) > 0 && ! ($compare ?? null))
         @php($currentChip = $vendor ? request('category') : (request()->routeIs('public.shop.category') ? request()->route('slug') : null))
         <div class="bg-brandBeige-50">
-            <nav class="shop-scroll container mx-auto flex gap-2 overflow-x-auto px-4 pb-4 text-sm" aria-label="{{ __('shop.bar_categories') }}" data-testid="category-chips">
+            <nav class="{{ $vendor ? 'shop-chips-wrap' : 'shop-scroll overflow-x-auto' }} container mx-auto flex min-w-0 gap-2 px-4 pb-4 text-sm" aria-label="{{ __('shop.bar_categories') }}" data-testid="category-chips">
                 <a href="{{ $vendor ? route('public.shop.vendor', $vendor['slug']) : route('public.shop.index') }}" class="shop-chip {{ $currentChip ? '' : 'is-active' }}">{{ __('shop.all_categories') }}</a>
                 @foreach($chips as $chip)
                     <a href="{{ $chip['url'] }}" class="shop-chip {{ $currentChip === $chip['slug'] ? 'is-active' : '' }}" dir="auto" data-chip="{{ $chip['slug'] }}">{{ $chip['name'] }}</a>
@@ -345,8 +349,24 @@
 @push('styles')
 <style>
     /* STATUS §5lu: rows that swipe on a phone (iruali's product rows), and the strips of links and chips. */
-    .shop-scroll { scrollbar-width: none; }
+    .shop-scroll { scrollbar-width: none; min-width: 0; max-width: 100%; }
     .shop-scroll::-webkit-scrollbar { display: none; }
+    /* A shop's menu and its category chips wrap. A sideways row of them
+       widened the phone (the owner's screenshot, 2026-10-02). */
+    .vendor-menu ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; margin: 0; padding: 0; list-style: none; }
+    .vendor-menu a { box-sizing: border-box; display: flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: .35rem; border-radius: 999px; border: 1px solid #E6D3D6; background: #fff; padding: .4rem .75rem; text-align: center; font-size: .875rem; line-height: 1.25; color: #7C2D37; }
+    .vendor-menu a:hover { background: #F8F1F2; }
+    .vendor-menu a[aria-current="page"] { border-color: #7C2D37; background: #7C2D37; color: #fff; }
+    .vendor-menu .is-wide { grid-column: 1 / -1; }
+    .vendor-menu-count { display: inline-flex; align-items: center; justify-content: center; min-width: 1.15rem; height: 1.15rem; padding: 0 .3rem; border-radius: 999px; background: #7C2D37; color: #fff; font-size: .75rem; font-weight: 600; }
+    .vendor-menu a[aria-current="page"] .vendor-menu-count { background: #fff; color: #7C2D37; }
+    .shop-chips-wrap { flex-wrap: wrap; }
+    .shop-chips-wrap .shop-chip { flex-shrink: 1; white-space: normal; max-width: 100%; }
+    @media (min-width: 640px) {
+        .vendor-menu ul { display: flex; flex-wrap: wrap; }
+        .vendor-menu .is-wide { grid-column: auto; }
+        .vendor-menu a { display: inline-flex; min-height: 2rem; width: auto; }
+    }
     .shop-row { display: flex; gap: .75rem; overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: -1rem; padding: 0 1rem .5rem; }
     .shop-row-item { flex: 0 0 46%; scroll-snap-align: start; }
     @media (min-width: 640px) { .shop-row-item { flex-basis: 31%; } }

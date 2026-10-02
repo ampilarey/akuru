@@ -103,10 +103,25 @@ it('shows a running sale on the card as a percentage off', function () {
         ->not->toMatch('#data-product="dua-cards"[^>]*>(?:(?!data-product=).)*data-badge="percent-off"#s');
 });
 
-it('keeps the store\'s links to one strip that swipes on a phone', function () {
+it('gives a shop its own menu, wrapping, instead of the store\'s sideways links', function () {
     layoutSetup();
+    $html = layoutPage(route('public.shop.vendor', 'fitrah'));
 
-    expect(layoutPage(route('public.shop.vendor', 'fitrah')))->toContain('class="shop-scroll container mx-auto flex gap-2 overflow-x-auto');
+    expect($html)->toContain('data-testid="vendor-menu"')
+        ->toContain('data-testid="vendor-menu-home"')
+        ->toContain('data-testid="vendor-menu-deals"')
+        ->toContain('href="'.e(route('public.shop.vendor', ['vendor' => 'fitrah', 'deals' => 1])).'"')
+        ->toContain('data-testid="shop-link-cart"')
+        ->toContain('data-testid="vendor-menu-store"')
+        ->toContain('href="'.route('public.shop.index').'#shops"')
+        ->toContain('shop-chips-wrap')
+        ->not->toContain('data-testid="shop-links"')
+        ->not->toContain('data-testid="shop-link-used"')
+        ->not->toContain('data-testid="shop-link-shops"');
+
+    // The store itself keeps the one strip.
+    expect(layoutPage(route('public.shop.index')))->toContain('data-testid="shop-links"')
+        ->toContain('data-testid="shop-link-used"');
 });
 
 it('reads right to left in Dhivehi, with the new words', function () {

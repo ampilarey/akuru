@@ -3,7 +3,7 @@
 @php($sf = $vendor['storefront'])
 @if(count($sf['navigation']) > 0)
     <nav class="sf-nav border-b" aria-label="{{ __('shop.storefront_menu') }}" data-testid="storefront-nav">
-        <div class="container mx-auto flex flex-wrap gap-1 overflow-x-auto px-4 text-sm">
+        <div class="container mx-auto flex min-w-0 flex-wrap gap-1 px-4 text-sm">
             <a href="{{ $sf['home_url'] }}" class="px-3 py-2 {{ url()->current() === $sf['home_url'] ? 'sf-nav-active' : '' }}">{{ __('shop.home') }}</a>
             @foreach($sf['navigation'] as $entry)
                 <a href="{{ $entry['url'] }}" class="px-3 py-2 {{ url()->current() === $entry['url'] ? 'sf-nav-active' : '' }}" dir="auto">{{ $entry['label'] }}</a>

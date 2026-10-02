@@ -345,7 +345,7 @@ it('rolls back sections, menu and pages with the version, and caches the publish
     test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor.page', ['fitrah', 'about']))->assertSee('First answers');
 });
 
-it('gives a published storefront the store\'s links, its cart among them, and the shop\'s own phone tabs (STATUS §5kz, §5lt)', function () {
+it('gives a published storefront the shop\'s own menu, its cart among the links, and the shop\'s own phone tabs (STATUS §5kz, §5lt, §5nh)', function () {
     [, $owner] = sectionsShop();
     publishTheme($owner);
     sectionsAs($owner)->post(route('vendor.storefront.publish'))->assertSessionHasNoErrors();
@@ -354,14 +354,16 @@ it('gives a published storefront the store\'s links, its cart among them, and th
     $html = test()->withoutLocalizationMiddleware()->get(route('public.shop.vendor', 'fitrah'))->assertOk()->getContent();
 
     expect($html)->toContain('data-testid="storefront"')
-        ->toContain('data-testid="shop-links"')
+        ->toContain('data-testid="vendor-menu"')
         ->toContain('data-testid="shop-link-cart"')
         ->toContain('data-testid="footer-compact"')
         // §5lt: not the site's phone bar, but the shop's own tabs.
         ->not->toContain('data-testid="bottom-bar"')
-        ->toContain('data-testid="shop-bottom-bar" data-scope="shop"');
-    // The links sit under the storefront's head, before its products.
-    expect(strpos($html, 'data-testid="shop-links"'))->toBeLessThan(strpos($html, 'data-testid="shop-grid"'));
+        ->toContain('data-testid="shop-bottom-bar" data-scope="shop"')
+        // The bookstore's sideways chip row is not on a shop's page.
+        ->not->toContain('data-testid="shop-links"');
+    // The shop's menu sits under the storefront's head, before its products.
+    expect(strpos($html, 'data-testid="vendor-menu"'))->toBeLessThan(strpos($html, 'data-testid="shop-grid"'));
 });
 
 it('shows edits that have no publish step on the live page at once — collections, pages, images, delivery, returns, the office\'s vendor details (STATUS §5mo)', function () {
