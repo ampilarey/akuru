@@ -4803,10 +4803,14 @@ ADMIN_PANEL.md §7 P3 and P4.
   screen reads 30. Nothing had ever deleted them.
 - **`Setting::get()` reads the table once per request.** It ran
   `select * from settings` on every call — 12 times on the Library
-  settings screen, 6 on the Bookstore office. The table is remembered in
-  the container (one request, one test) and forgotten by `Setting::set()`
-  and `SetSettingAction`, so a saved value is the value read next; the
-  repository's `many()` is a direct query and unchanged. The view
+  settings screen, 6 on the Bookstore office. The table is remembered for
+  the current request — the memo notes which request object it was read
+  for, because the test harness and Octane send many requests through
+  one container, and CI caught exactly that: an HR test's second request
+  read a value its raw update had changed between the two — and forgotten
+  by `Setting::set()` and `SetSettingAction`, so a saved value is the
+  value read next; the repository's `many()` is a direct query and
+  unchanged. The view
   composer's `Schema::hasTable('settings')` — an `information_schema`
   query per rendered view — is asked once per process.
 - **Measured** (kernel probe, same dataset as §5nk): Library settings

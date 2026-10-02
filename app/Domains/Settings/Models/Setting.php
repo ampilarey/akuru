@@ -59,13 +59,24 @@ class Setting extends Model
         app()->forgetInstance(self::MEMO);
     }
 
-    /** @return Collection<string, self> */
+    /**
+     * The table, read once per request. The memo remembers which request
+     * it was read for: the test harness and Octane send many requests
+     * through one container, and a value written between two of them (a
+     * test's raw update, say) must be seen by the second.
+     *
+     * @return Collection<string, self>
+     */
     private static function memo(): Collection
     {
-        if (! app()->bound(self::MEMO)) {
-            app()->instance(self::MEMO, static::all()->keyBy('key'));
+        $request = app()->bound('request') ? spl_object_id(app('request')) : 0;
+        $memo = app()->bound(self::MEMO) ? app(self::MEMO) : null;
+
+        if ($memo === null || $memo['request'] !== $request) {
+            $memo = ['request' => $request, 'rows' => static::all()->keyBy('key')];
+            app()->instance(self::MEMO, $memo);
         }
 
-        return app(self::MEMO);
+        return $memo['rows'];
     }
 }
