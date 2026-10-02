@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
+import VendorNav from '../../Components/Bookshop/VendorNav';
 import { makeReadable, normalize as normalizeHex, problems as colourProblems, withReadableText } from '../../Components/contrast';
 
 /**
@@ -198,19 +199,14 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                     </div>
                 </div>
             )}
-            <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                    <h1 className="text-2xl font-bold" data-testid="designer-heading">{t.designer_title} · {vendor.name}</h1>
-                    <p className="text-sm text-gray-600">
-                        <a href="/vendor" className="text-blue-700 underline">{t.portal_title}</a>
-                        {' · '}
-                        <a href={public_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid="open-public">{t.open_shop_page}</a>
-                        {' · '}
-                        <a href="/vendor/storefront/sections" className="text-blue-700 underline" data-testid="open-sections">{t.sections_title}</a>
-                        {' · '}
-                        {d.published_at ? t.published_on.replace(':date', d.published_at) : t.not_published_yet}
-                    </p>
-                </div>
+            <header className="mb-4">
+                <h1 className="text-2xl font-bold" data-testid="designer-heading">{t.designer_title} · {vendor.name}</h1>
+                <p className="mb-3 text-sm text-gray-600">
+                    <a href={public_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid="open-public">{t.open_shop_page}</a>
+                    {' · '}
+                    {d.published_at ? t.published_on.replace(':date', d.published_at) : t.not_published_yet}
+                </p>
+                <VendorNav t={t} current="designer" />
             </header>
 
             <div className="grid gap-6 lg:grid-cols-2">

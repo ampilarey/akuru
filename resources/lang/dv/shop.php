@@ -547,6 +547,9 @@ return [
 
     // Shop settings (B3)
     'shop_settings_heading' => 'އަނބުރާ ދިނުމާއި ޗުއްޓީ',
+    'settings_group_returns' => 'އަނބުރާ ދިނުން',
+    'settings_group_holiday' => 'ޗުއްޓީ',
+    'settings_group_pay' => 'ޑެލިވަރީއާއި ކެޝް',
     'return_window_days' => 'އަނބުރާ ދެވޭ މުއްދަތު (ދުވަސް)',
     'return_window_hint' => 'ލިބުނު ދުވަހުން ފެށިގެން މަދުވެގެން :min ދުވަސް.',
     'return_conditions' => 'އަނބުރާ ދިނުމުގެ ޝަރުތުތައް، ތިޔަ ބަހުން',

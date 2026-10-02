@@ -178,4 +178,34 @@ const saved = await saveSettings('10');
 check('the returns window saves from the phone and reads back after a reload', saved === '10', `window now ${saved} days`);
 await saveSettings(was || '7');
 
+// ------------------------------------------------------------ 6. the shop's other pages fit the same phone
+
+const subpages = [
+    ['/en/vendor/orders', 'orders-heading', 'open-orders'],
+    ['/en/vendor/money', 'money-heading', 'open-money'],
+    ['/en/vendor/stock', 'stock-heading', 'open-stock'],
+    ['/en/vendor/reviews', 'reviews-heading', 'open-reviews'],
+    ['/en/vendor/quotes', 'quotes-heading', 'open-quotes'],
+    ['/en/vendor/insights', 'insights-heading', 'open-insights'],
+    ['/en/vendor/storefront', 'designer-heading', 'open-designer'],
+    ['/en/vendor/storefront/sections', 'sections-heading', 'open-sections'],
+];
+for (const [path, heading, current] of subpages) {
+    await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle' });
+    await settle(`[data-testid="${heading}"]`);
+    const wide = await overflow();
+    const here = await page.evaluate(() => {
+        const link = document.querySelector('[data-testid="vendor-subnav"] a[aria-current="page"]');
+        const links = [...document.querySelectorAll('[data-testid="vendor-subnav"] a')];
+        return {
+            n: links.length,
+            current: link?.getAttribute('data-testid') || '',
+            short: links.filter((a) => a.getBoundingClientRect().height < 32).length,
+        };
+    });
+    check(`${path} fits the phone and its row marks this page`, (await count(`[data-testid="${heading}"]`)) === 1 && !wide.over && here.n === 9 && here.short === 0 && here.current === current, wide.over ? `wider by ${wide.by}px` : `${here.n} links, current ${here.current}`);
+}
+const groups = await page.goto(`${BASE}/en/vendor`, { waitUntil: 'networkidle' }).then(() => page.click('[data-testid="jump-settings"]')).then(() => page.waitForTimeout(400)).then(() => count('[data-testid="shop-settings"] fieldset legend'));
+check('returns, holiday, and delivery-and-cash are three groups inside the settings card', groups === 3, `${groups} groups`);
+
 await finish();

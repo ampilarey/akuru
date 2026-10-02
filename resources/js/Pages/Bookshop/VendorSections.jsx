@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
+import VendorNav from '../../Components/Bookshop/VendorNav';
 
 /**
  * BOOKSHOP_PLAN slice B5 — the storefront designer, part 2: the home's
@@ -513,7 +514,7 @@ function Library({ d, t }) {
                 router.post('/vendor/storefront/images', { images: files, alt }, { forceFormData: true, preserveScroll: true, onFinish: () => setBusy(false), onSuccess: () => { setFiles([]); setAlt(''); } });
             }}>
                 <Field label={t.upload_images}><input type="file" multiple accept="image/jpeg,image/png,image/webp" className="block text-xs" onChange={(e) => setFiles(Array.from(e.target.files || []))} data-testid="upload-images" /></Field>
-                <Field label={t.image_alt}><input className="form-input w-64" value={alt} onChange={(e) => setAlt(e.target.value)} /></Field>
+                <Field label={t.image_alt} className="min-w-0 flex-1"><input className="form-input w-full sm:w-64" value={alt} onChange={(e) => setAlt(e.target.value)} /></Field>
                 <button type="submit" className="btn-primary" disabled={busy || files.length === 0} data-testid="upload-submit">{t.upload}</button>
                 <span className="text-xs text-gray-500">{t.images_count.replace(':count', d.library.length).replace(':max', d.limits.images)} · {t.image_logo_hint}</span>
             </form>
@@ -578,33 +579,34 @@ export default function VendorSections({ t, vendor, designer, preview_url, publi
             {!d.moderation.held && d.moderation.note && <p className="mb-4 rounded border border-amber-300 bg-amber-50 p-3 text-amber-900" data-testid="moderation-note"><strong>{t.changes_required}</strong> {d.moderation.note}</p>}
             {d.moderation.locked_types.length > 0 && <p className="mb-4 text-sm text-red-800" data-testid="locked-types">{t.locked_types_notice.replace(':types', d.moderation.locked_types.map((k) => t[`section_${k}`] || k).join(', '))}</p>}
 
-            <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                    <h1 className="text-2xl font-bold" data-testid="sections-heading">{t.sections_title} · {vendor.name}</h1>
-                    <p className="text-sm text-gray-600">
-                        <a href="/vendor" className="text-blue-700 underline">{t.portal_title}</a>
-                        {' · '}
-                        <a href="/vendor/storefront" className="text-blue-700 underline" data-testid="open-identity">{t.designer_title}</a>
-                        {' · '}
-                        <a href={public_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid="open-public">{t.open_shop_page}</a>
-                        {' · '}
-                        {d.published_at ? t.published_on.replace(':date', d.published_at) : t.not_published_yet}
-                    </p>
+            <header className="mb-4">
+                <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <h1 className="text-2xl font-bold" data-testid="sections-heading">{t.sections_title} · {vendor.name}</h1>
+                        <p className="text-sm text-gray-600">
+                            <a href="/vendor/storefront" className="text-blue-700 underline" data-testid="open-identity">{t.designer_title}</a>
+                            {' · '}
+                            <a href={public_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid="open-public">{t.open_shop_page}</a>
+                            {' · '}
+                            {d.published_at ? t.published_on.replace(':date', d.published_at) : t.not_published_yet}
+                        </p>
+                    </div>
+                    {isOwner && (
+                        <span className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
+                            <input className="form-input w-full min-w-0 sm:w-48" placeholder={t.version_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid="version-note" />
+                            <button type="button" className="btn-primary" disabled={!d.exists || d.moderation.held} title={d.moderation.held ? t.storefront_held : ''} data-testid="publish" onClick={publish}>{t.publish}</button>
+                            {d.draft_dirty && <span className="text-xs text-amber-800" data-testid="draft-dirty">{t.draft_differs}</span>}
+                        </span>
+                    )}
                 </div>
-                {isOwner && (
-                    <span className="flex flex-wrap items-center gap-2">
-                        <input className="form-input w-48" placeholder={t.version_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid="version-note" />
-                        <button type="button" className="btn-primary" disabled={!d.exists || d.moderation.held} title={d.moderation.held ? t.storefront_held : ''} data-testid="publish" onClick={publish}>{t.publish}</button>
-                        {d.draft_dirty && <span className="text-xs text-amber-800" data-testid="draft-dirty">{t.draft_differs}</span>}
-                    </span>
-                )}
+                <VendorNav t={t} current="sections" />
             </header>
 
             <div className="grid gap-6 lg:grid-cols-2">
                 <div>
-                    <nav className="mb-3 flex flex-wrap gap-1 border-b text-sm" data-testid="designer-tabs">
+                    <nav className="-mx-4 mb-3 flex gap-1 overflow-x-auto border-b px-4 text-sm sm:mx-0 sm:px-0" data-testid="designer-tabs">
                         {tabs.map((k) => (
-                            <button key={k} type="button" className={`px-3 py-2 ${tab === k ? 'border-b-2 border-gray-900 font-semibold' : 'text-gray-600'}`} onClick={() => setTab(k)} data-testid={`tab-${k}`}>{t[`tab_${k}`]}</button>
+                            <button key={k} type="button" className={`inline-flex min-h-[2rem] shrink-0 items-center whitespace-nowrap px-3 py-2 ${tab === k ? 'border-b-2 border-gray-900 font-semibold' : 'text-gray-600'}`} onClick={() => setTab(k)} data-testid={`tab-${k}`}>{t[`tab_${k}`]}</button>
                         ))}
                     </nav>
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { router, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
+import VendorNav from '../../Components/Bookshop/VendorNav';
 
 /**
  * BOOKSHOP_PLAN slice B7 — the shop's reviews: every review of its products
@@ -34,7 +35,7 @@ function ReviewRow({ review: r, t }) {
             )}
             {open && (
                 <form className="mt-2 flex flex-wrap items-start gap-2" onSubmit={(e) => { e.preventDefault(); router.post(`/vendor/reviews/${r.id}/reply`, { reply: text }, { preserveScroll: true, onSuccess: () => setOpen(false) }); }}>
-                    <textarea className="form-input min-w-64 flex-1" rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder={t.reply_placeholder} maxLength={2000} data-testid={`reply-text-${r.id}`} />
+                    <textarea className="form-input w-full min-w-0 flex-1" rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder={t.reply_placeholder} maxLength={2000} data-testid={`reply-text-${r.id}`} />
                     <button type="submit" className="btn-primary" data-testid={`reply-save-${r.id}`}>{t.reply_publicly}</button>
                 </form>
             )}
@@ -65,7 +66,7 @@ function QuestionRow({ question: q, t }) {
             )}
             {open && (
                 <form className="mt-2 flex flex-wrap items-start gap-2" onSubmit={(e) => { e.preventDefault(); router.post(`/vendor/questions/${q.id}/answer`, { answer: text }, { preserveScroll: true, onSuccess: () => setOpen(false) }); }}>
-                    <textarea className="form-input min-w-64 flex-1" rows={2} dir="auto" value={text} onChange={(e) => setText(e.target.value)} placeholder={t.answer_placeholder} maxLength={2000} data-testid={`answer-text-${q.id}`} />
+                    <textarea className="form-input w-full min-w-0 flex-1" rows={2} dir="auto" value={text} onChange={(e) => setText(e.target.value)} placeholder={t.answer_placeholder} maxLength={2000} data-testid={`answer-text-${q.id}`} />
                     <button type="submit" className="btn-primary" data-testid={`answer-save-${q.id}`}>{t.answer_publicly}</button>
                 </form>
             )}
@@ -80,17 +81,18 @@ export default function VendorReviews({ t, vendor, reviews, questions = { waitin
     return (
         <AppShell title={t.reviews_heading}>
             <FormErrors errors={errors} className="mb-4" />
-            <header className="mb-4 flex flex-wrap items-end justify-between gap-3">
-                <div>
-                    <h1 className="text-2xl font-bold" data-testid="reviews-heading">{t.reviews_heading} · {vendor.name}</h1>
-                    <p className="text-sm text-gray-600">
-                        <a href="/vendor" className="text-blue-700 underline">{t.portal_title}</a>
-                        {' · '}
-                        {s.count > 0 ? t.rating_summary.replace(':avg', s.avg).replace(':count', s.count) : t.no_reviews}
-                        {s.unanswered > 0 && <span className="ms-2 text-amber-800" data-testid="unanswered">{t.unanswered_count.replace(':count', s.unanswered)}</span>}
-                    </p>
+            <header className="mb-4">
+                <div className="mb-3 flex flex-wrap items-end justify-between gap-3">
+                    <div>
+                        <h1 className="text-2xl font-bold" data-testid="reviews-heading">{t.reviews_heading} · {vendor.name}</h1>
+                        <p className="text-sm text-gray-600">
+                            {s.count > 0 ? t.rating_summary.replace(':avg', s.avg).replace(':count', s.count) : t.no_reviews}
+                            {s.unanswered > 0 && <span className="ms-2 text-amber-800" data-testid="unanswered">{t.unanswered_count.replace(':count', s.unanswered)}</span>}
+                        </p>
+                    </div>
+                    <a href="/vendor/reviews/export" className="btn-secondary">{t.export_csv}</a>
                 </div>
-                <a href="/vendor/reviews/export" className="btn-secondary">{t.export_csv}</a>
+                <VendorNav t={t} current="reviews" />
             </header>
             {reviews.reviews.length === 0 ? (
                 <p className="rounded border bg-white p-4 text-gray-600">{t.no_reviews}</p>

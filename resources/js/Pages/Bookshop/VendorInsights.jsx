@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import VendorNav from '../../Components/Bookshop/VendorNav';
 
 /**
  * BOOKSHOP_PLAN slice B9e — the shop's funnel: how many visited the shop,
@@ -51,16 +52,14 @@ function Table({ title, testid, head, rows, exportHref, t, empty }) {
             {rows.length === 0 ? (
                 <p className="rounded border bg-white p-3 text-sm text-gray-600">{empty}</p>
             ) : (
-                <div className="overflow-x-auto rounded border bg-white">
-                    <table className="w-full text-sm">
-                        <thead className="bg-gray-50"><tr>{head.map((h, i) => <th key={h} className={`p-2 ${i === 0 ? 'text-start' : 'text-end'}`}>{h}</th>)}</tr></thead>
-                        <tbody>
-                            {rows.map((cells, r) => (
-                                <tr key={r} className="border-t">{cells.map((c, i) => <td key={i} className={`p-2 ${i === 0 ? 'text-start' : 'text-end'}`} dir={i === 0 ? 'auto' : undefined}>{c}</td>)}</tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                <table className="table-stack w-full rounded border bg-white text-sm">
+                    <thead className="bg-gray-50"><tr>{head.map((h, i) => <th key={h} className={`p-2 ${i === 0 ? 'text-start' : 'text-end'}`}>{h}</th>)}</tr></thead>
+                    <tbody>
+                        {rows.map((cells, r) => (
+                            <tr key={r} className="border-t">{cells.map((c, i) => <td key={i} className={`p-2 ${i === 0 ? 'text-start' : 'sm:text-end'}`} dir={i === 0 ? 'auto' : undefined} data-label={head[i]}>{c}</td>)}</tr>
+                        ))}
+                    </tbody>
+                </table>
             )}
         </section>
     );
@@ -77,14 +76,13 @@ export default function VendorInsights({ t, vendor, report, ranges }) {
 
     return (
         <AppShell title={t.insights_title}>
-            <header className="mb-4 flex flex-wrap items-end justify-between gap-2">
-                <div>
-                    <h1 className="text-2xl font-bold" data-testid="insights-heading">{t.insights_title} · {vendor.name}</h1>
-                    <p className="text-sm text-gray-600"><a href="/vendor" className="text-blue-700 underline">{t.portal_title}</a> · {t.insights_intro}</p>
-                </div>
-                <nav className="flex gap-1" data-testid="insights-ranges">
+            <header className="mb-4">
+                <h1 className="text-2xl font-bold" data-testid="insights-heading">{t.insights_title} · {vendor.name}</h1>
+                <p className="mb-3 text-sm text-gray-600">{t.insights_intro}</p>
+                <VendorNav t={t} current="insights" />
+                <nav className="flex flex-wrap gap-2" data-testid="insights-ranges">
                     {ranges.map((d) => (
-                        <button key={d} type="button" className={`rounded px-2 py-1 text-sm ${d === days ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get('/vendor/insights', { days: d })} data-testid={`range-${d}`}>
+                        <button key={d} type="button" className={`inline-flex min-h-[2rem] items-center rounded px-3 py-1 text-sm ${d === days ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get('/vendor/insights', { days: d })} data-testid={`range-${d}`}>
                             {fill(t.insights_last_days, { days: d })}
                         </button>
                     ))}
