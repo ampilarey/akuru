@@ -8,10 +8,15 @@ use App\Domains\Identity\Models\Otp;
 use App\Domains\Identity\Models\OtpAbuseEvent;
 use App\Domains\Library\Models\LibraryReadingEvent;
 use App\Domains\Library\Models\LibrarySearchLog;
+use App\Domains\Settings\Models\DashboardAnalytics;
+use App\Domains\Settings\Models\UserActivity;
 use Illuminate\Console\Command;
 
 class PruneExpiredDataCommand extends Command
 {
+    /** Days of page-view bookkeeping kept (`user_activities`, `dashboard_analytics`). */
+    public const ACTIVITY_RETENTION_DAYS = 90;
+
     protected $signature = 'akuru:prune-expired
                             {--dry-run : Preview without deleting}';
 
@@ -124,6 +129,25 @@ class PruneExpiredDataCommand extends Command
         $this->line("OTP abuse events older than {$otpRetention} days to delete: {$abuseCount}");
         if (! $dryRun) {
             $abuseQuery->delete();
+        }
+
+        // --- Page-view bookkeeping past retention (ADMIN_PANEL.md §7 P3) ---
+        // `TrackUserActivity` writes a `user_activities` row and a
+        // `dashboard_analytics` upsert for every signed-in page view on 943
+        // routes, and nothing ever deleted them. One screen (`/analytics`)
+        // reads them, and it reads the last 30 days. Ninety keeps a quarter.
+        $activityCutoff = now('Indian/Maldives')->subDays(self::ACTIVITY_RETENTION_DAYS);
+        $activityQuery = UserActivity::query()->where('performed_at', '<', $activityCutoff);
+        $activityCount = $activityQuery->count();
+        $this->line('User activity rows older than '.self::ACTIVITY_RETENTION_DAYS." days to delete: {$activityCount}");
+        if (! $dryRun) {
+            $activityQuery->delete();
+        }
+        $metricQuery = DashboardAnalytics::query()->where('recorded_date', '<', $activityCutoff->toDateString());
+        $metricCount = $metricQuery->count();
+        $this->line('Dashboard metric rows older than '.self::ACTIVITY_RETENTION_DAYS." days to delete: {$metricCount}");
+        if (! $dryRun) {
+            $metricQuery->delete();
         }
 
         if ($dryRun) {

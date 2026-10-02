@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
+use App\Domains\Settings\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 
@@ -47,6 +48,9 @@ it('is stricter in the typed readers, which have no callers to surprise', functi
         ['key' => 'probe.int', 'value' => '42', 'created_at' => now(), 'updated_at' => now()],
         ['key' => 'probe.bool', 'value' => 'true', 'created_at' => now(), 'updated_at' => now()],
     ]);
+    // A raw insert goes behind the model's back: the table is read once per
+    // request (STATUS §5nn) and only the model's writers forget what was read.
+    Setting::forgetMemo();
 
     expect($settings->getInt('probe.int', 0))->toBe(42);
     expect($settings->getBool('probe.bool', false))->toBeTrue();

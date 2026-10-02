@@ -229,3 +229,26 @@ it('does not release a redemption whose payment landed', function () {
     expect(App\Domains\Commerce\Models\DiscountRedemption::query()
         ->where('purchase_id', $enrollment->id)->value('status'))->toBe('confirmed');
 });
+
+it('prunes page-view bookkeeping past ninety days and keeps the quarter (ADMIN_PANEL.md §7 P3)', function () {
+    $user = User::factory()->create();
+    App\Domains\Settings\Models\UserActivity::recordActivity($user->id, 'page_view', 'Page View', 'old');
+    App\Domains\Settings\Models\UserActivity::recordActivity($user->id, 'page_view', 'Page View', 'recent');
+    App\Domains\Settings\Models\UserActivity::query()->where('description', 'old')->update(['performed_at' => now()->subDays(120)]);
+    App\Domains\Settings\Models\DashboardAnalytics::recordMetric($user->id, 'page_views', 'Page Views');
+    App\Domains\Settings\Models\DashboardAnalytics::query()->create([
+        'user_id' => $user->id, 'metric_type' => 'page_views', 'metric_name' => 'Page Views', 'metric_value' => 3,
+        'metadata' => [], 'recorded_date' => now()->subDays(120)->toDateString(),
+    ]);
+
+    $this->artisan('akuru:prune-expired', ['--dry-run' => true])
+        ->expectsOutputToContain('User activity rows older than 90 days to delete: 1')
+        ->assertExitCode(0);
+    expect(App\Domains\Settings\Models\UserActivity::count())->toBe(2);
+
+    $this->artisan('akuru:prune-expired')->assertExitCode(0);
+
+    expect(App\Domains\Settings\Models\UserActivity::pluck('description')->all())->toBe(['recent'])
+        ->and(App\Domains\Settings\Models\DashboardAnalytics::count())->toBe(1)
+        ->and(App\Domains\Settings\Models\DashboardAnalytics::sole()->recorded_date->isToday())->toBeTrue();
+});

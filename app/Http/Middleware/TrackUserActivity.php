@@ -15,14 +15,25 @@ class TrackUserActivity
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $response = $next($request);
+        // Nothing here: the two writes this middleware makes happen in
+        // `terminate()`, after the response has left (ADMIN_PANEL.md §7 P3,
+        // STATUS §5nn). They used to run between building the response and
+        // sending it, so a slow insert — 700 ms twice in the audit's probe —
+        // held every page for its own bookkeeping.
+        return $next($request);
+    }
 
+    /**
+     * Record the visit once the response is on its way. Laravel calls this
+     * after the response is sent (FPM and LiteSpeed flush first); the
+     * page's own queries are no longer waiting on it.
+     */
+    public function terminate(Request $request, Response $response): void
+    {
         // Only track authenticated users
         if (auth()->check()) {
             $this->trackActivity($request);
         }
-
-        return $response;
     }
 
     private function trackActivity(Request $request)
