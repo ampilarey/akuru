@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
+import { makeReadable, normalize as normalizeHex, problems as colourProblems, withReadableText } from '../../Components/contrast';
 
 /**
  * BOOKSHOP_PLAN slice B4 — the storefront designer, part 1: identity and
@@ -154,7 +155,19 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
     const [note, setNote] = useState('');
     const publish = () => router.post('/vendor/storefront/publish', { note }, { preserveScroll: true, onSuccess: () => { setNote(''); setPreviewKey((k) => k + 1); } });
     const setTheme = (patch) => form.setData('theme', { ...form.data.theme, ...patch });
-    const setColor = (slot, value) => setTheme({ preset: '', colors: { ...form.data.theme.colors, [slot]: value } });
+    // §5mz: changing a background picks the readable text for it (white or dark), so a hand-picked
+    // colour no longer leaves Publish disabled by a pair the vendor never touched.
+    const [autoText, setAutoText] = useState([]);
+    const setColor = (slot, value) => {
+        const colors = { ...form.data.theme.colors, [slot]: value };
+        const fixed = normalizeHex(value) ? withReadableText(colors, slot) : { colors, changed: [] };
+        // A picker fires input then change; the second has nothing left to fix and must not hide the note.
+        setAutoText((prev) => (fixed.changed.length > 0 ? fixed.changed : ['on_primary', 'on_accent', 'text'].includes(slot) ? [] : prev));
+        setTheme({ preset: '', colors: fixed.colors });
+    };
+    const fixReadability = () => { setAutoText([]); setTheme({ preset: '', colors: makeReadable(form.data.theme.colors) }); };
+    // Live, as the vendor picks: the light scheme from the form, the dark one from the last save.
+    const liveProblems = [...colourProblems(form.data.theme.colors), ...d.problems.filter((p) => p.scheme === 'dark')];
     const choosePreset = (key) => setTheme({ preset: key, colors: { ...d.options.presets[key].colors } });
 
     const save = (e) => {
@@ -230,15 +243,21 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                                 </Field>
                             ))}
                         </div>
-                        {d.problems.length > 0 ? (
+                        {autoText.length > 0 && (
+                            <p className="mt-3 rounded bg-blue-50 p-2 text-sm text-blue-900" data-testid="contrast-auto">{t.contrast_auto_text.replace(':slots', autoText.map((s) => t[`color_${s}`] || s).join(', '))}</p>
+                        )}
+                        {liveProblems.length > 0 ? (
                             <ul className="mt-3 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800" data-testid="contrast-problems">
-                                <li className="mb-1 font-semibold">{t.contrast_failing}</li>
-                                {d.problems.map((p) => (
+                                <li className="mb-1 flex flex-wrap items-center justify-between gap-2 font-semibold">
+                                    <span>{t.contrast_failing}</span>
+                                    <button type="button" className="btn-primary text-xs" onClick={fixReadability} data-testid="make-readable">{t.contrast_fix}</button>
+                                </li>
+                                {liveProblems.map((p) => (
                                     <li key={`${p.scheme}-${p.pair}`}>{t.contrast_problem.replace(':pair', p.pair.split('/').map((s) => t[`color_${s}`] || s).join(' / ')).replace(':ratio', p.ratio).replace(':needed', p.needed)}{p.scheme === 'dark' ? ` (${t.dark_scheme})` : ''}</li>
                                 ))}
                             </ul>
-                        ) : d.exists && (
-                            <p className="mt-3 rounded bg-green-50 p-2 text-sm text-green-800" data-testid="contrast-ok">{t.contrast_ok}</p>
+                        ) : (d.exists || form.isDirty) && (
+                            <p className="mt-3 rounded bg-green-50 p-2 text-sm text-green-800" data-testid="contrast-ok">{form.isDirty && d.problems.length > 0 ? t.contrast_ok_save : t.contrast_ok}</p>
                         )}
 
                         <div className="mt-4 grid gap-3 md:grid-cols-3">

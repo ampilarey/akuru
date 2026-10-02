@@ -159,6 +159,12 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ## Found by the owner on a phone (2026-10-01)
 
+- **A shop's own colours never reached its page; presets did** — **fixed
+  (2026-10-02, STATUS §5mz)**. A hand-picked background left the text on it
+  unreadable, so Publish was disabled by a pair the vendor never touched.
+  The designer now picks readable text as they pick, checks live, and
+  offers *Make it readable*. The publish rule is unchanged.
+
 - **Log out from the shell drew the home page in a modal over the shell** —
   **fixed (2026-10-01, STATUS §5mw)**. The Inertia logout followed a
   redirect to a Blade page; the controller now answers an Inertia request
