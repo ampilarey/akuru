@@ -4554,6 +4554,24 @@ The logo already carries the name. The words beside it were a second
 label, in both signed-in headers. That label is gone. The logo still
 links home, and its alt text is still Akuru Institute.
 
+## 5ng. The system admin's home is grouped (2026-10-02)
+
+The owner: make the system administrator view easier to use, by grouping
+it, and make it fit a phone.
+
+The Institute home listed every screen as the same kind of card. The
+bookstore's six screens sat in a row with Commerce and the library, and
+five of them had no description, so the card printed the language key.
+
+The public site, prayer and pronunciation, the bookstore, the platform
+and the go-live checks now each have a heading. Every card has a
+description. On a phone the part links and the screens inside a card are
+rows at least 44px tall, and the cards stay in one column. A wider
+screen keeps the cards in a grid and the inner screens as chips. The
+School office is unchanged.
+
+The signed-in walk was not run here: this machine has no PHP or MySQL.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not

@@ -14,10 +14,35 @@ use App\Support\Navigation\BuildNavigationAction;
  * its screens. Everything is the navigation for this person in this
  * workspace, so a screen they could only be refused is not on the page.
  *
- * @return list<array{key: string, label: string, sections: list<array{key: string, label: string, href: string, hard: bool, description: string, children: list<array{key: string, label: string, href: string, hard: bool}>}>}>
+ * A part may also name clusters: sections that belong together (the
+ * bookstore's screens, the platform's settings) so the home can head
+ * them as one group. A cluster is omitted when fewer than two of its
+ * sections are actually on the page.
+ *
+ * @return list<array{key: string, label: string, clusters: list<array{key: string, label: string, sections: list<string>}>, sections: list<array{key: string, label: string, href: string, hard: bool, description: string, children: list<array{key: string, label: string, href: string, hard: bool}>}>}>
  */
 class ComposeWorkspaceHomeAction
 {
+    /**
+     * Sections of one part that read as one job. The home prints a heading
+     * over them; the order of the part itself does not change.
+     *
+     * @var array<string, array<string, list<string>>>
+     */
+    private const CLUSTERS = [
+        'panel_website' => [
+            'site' => ['website_cms', 'admin_instructors'],
+            'learning' => ['prayer_times', 'pronunciation_office'],
+        ],
+        'panel_money' => [
+            'bookstore' => ['bookshop', 'akuru_fulfilment', 'complaints', 'sms_campaigns', 'shop_customers', 'shop_credit'],
+        ],
+        'panel_system' => [
+            'platform' => ['system_settings', 'translations'],
+            'readiness' => ['ops_checklist', 'feature_walkthrough'],
+        ],
+    ];
+
     /** The School's groups, gathered into two parts. */
     private const SCHOOL_PARTS = [
         'school_academics' => ['school_year', 'day_loop', 'exams_group', 'catalog_group', 'teaching'],
@@ -35,10 +60,12 @@ class ComposeWorkspaceHomeAction
             if (! str_starts_with($key, 'panel_')) {
                 continue;
             }
+            $sections = array_map(fn (array $item) => $this->section($item['key'], $item['label'], $item, $item['children'] ?? []), $group['items']);
             $parts[] = [
                 'key' => $key,
                 'label' => $group['label'],
-                'sections' => array_map(fn (array $item) => $this->section($item['key'], $item['label'], $item, $item['children'] ?? []), $group['items']),
+                'clusters' => $this->clusters($key, $sections),
+                'sections' => $sections,
             ];
         }
 
@@ -53,12 +80,31 @@ class ComposeWorkspaceHomeAction
                     $sections[] = $this->section($groupKey, $group['label'], $group['items'][0], $group['items']);
                 }
                 if ($sections !== []) {
-                    $parts[] = ['key' => $partKey, 'label' => __('admin.part_'.$partKey), 'sections' => $sections];
+                    $parts[] = ['key' => $partKey, 'label' => __('admin.part_'.$partKey), 'clusters' => [], 'sections' => $sections];
                 }
             }
         }
 
         return $parts;
+    }
+
+    /**
+     * @param  list<array{key: string}>  $sections
+     * @return list<array{key: string, label: string, sections: list<string>}>
+     */
+    private function clusters(string $partKey, array $sections): array
+    {
+        $present = array_column($sections, 'key');
+        $clusters = [];
+        foreach (self::CLUSTERS[$partKey] ?? [] as $key => $members) {
+            $members = array_values(array_filter($members, fn (string $member) => in_array($member, $present, true)));
+            if (count($members) < 2) {
+                continue;
+            }
+            $clusters[] = ['key' => $key, 'label' => __('admin.cluster_'.$key), 'sections' => $members];
+        }
+
+        return $clusters;
     }
 
     /**
