@@ -154,7 +154,18 @@
                 @endauth
             </div>
 
-            {{-- ── Hamburger (mobile) ───────────────────────────────────────── --}}
+            {{-- On a phone the initial opens this menu — the same list More opens
+                 on a desk (the owner, 2026-10-02). A visitor has no initial, so
+                 they keep the menu button. --}}
+            @auth
+            <button @click="open=!open" class="sm:hidden" type="button"
+                    aria-label="Menu" aria-expanded="false" :aria-expanded="open" aria-controls="nav-mobile-menu"
+                    data-testid="shell-avatar"
+                    style="width:2.25rem;height:2.25rem;border-radius:9999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:none;cursor:pointer;color:white;font-weight:700;font-size:.875rem;background:rgba(255,255,255,.25)"
+                    :style="{ background: open ? 'rgba(255,255,255,.4)' : 'rgba(255,255,255,.25)', boxShadow: open ? '0 0 0 2px white' : 'none' }">
+                {{ strtoupper(substr($navUser->navLabel(), 0, 1)) }}
+            </button>
+            @else
             <button @click="open=!open" class="sm:hidden" type="button"
                     aria-label="Menu" aria-expanded="false" :aria-expanded="open" aria-controls="nav-mobile-menu"
                     style="padding:.5rem;border-radius:.375rem;background:rgba(255,255,255,.12);border:none;cursor:pointer">
@@ -163,6 +174,7 @@
                     <path :class="{'hidden':!open}" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                 </svg>
             </button>
+            @endauth
         </div>
     </div>
 

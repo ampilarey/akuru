@@ -40,12 +40,16 @@ it('titles every admin Blade screen from its route when the screen sets none', f
 it('gives keyboard and screen-reader users a skip link, labelled menus and a main landmark', function () {
     $admin = layoutAdmin();
     // The Quran progress list is the Blade-shell fixture: the enrolment lists are Inertia since C9 slice 4.
-    test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('quran-progress.index'))->assertOk()
+    $html = test()->withoutLocalizationMiddleware()->actingAs($admin)->get(route('quran-progress.index'))->assertOk()
         ->assertSee('href="#main"', false)
         ->assertSee('<main id="main">', false)
         ->assertSee('aria-controls="nav-more-menu"', false)
         ->assertSee('aria-label="Menu"', false)
-        ->assertSee('id="nav-mobile-menu"', false);
+        ->assertSee('id="nav-mobile-menu"', false)
+        ->getContent();
+    $initial = strtoupper(substr($admin->navLabel(), 0, 1));
+    expect($html)->toMatch('/aria-controls="nav-mobile-menu"[^>]*>\s*'.preg_quote($initial, '/').'\s*</');
+    expect($html)->not->toContain('M4 6h16M4 12h16M4 18h16');
 });
 
 it('turns the admin shell right-to-left for Dhivehi and Arabic', function () {

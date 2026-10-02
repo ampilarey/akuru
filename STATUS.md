@@ -4507,6 +4507,21 @@ the bar, a tap opens the account and the Personal links, and a second
 tap closes them. The signed-in phone walk was not run here: this machine
 has no PHP or MySQL.
 
+## 5nd. The other shell follows the same phone rule (2026-10-02)
+
+The owner: check the other areas against that rule.
+
+The Inertia shell is the one every new screen uses, and §5nc already
+moved its phone menu onto the initial. The other signed-in shell is the
+Blade bar (the School's older screens). On a phone it opened the same
+list from a hamburger, while More stayed on a desk. A signed-in phone
+now opens that list from the initial, and More stays on the wider
+screen. A visitor, who has no initial, still gets the menu button.
+
+The public website was checked and left as it is. Its phone control is
+the site menu (courses, the library, the shop, About), not the app's
+More list, and a visitor has no initial to put it on.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not
