@@ -57,7 +57,7 @@
         .storefront .sf-announce { background: var(--sf-accent); color: var(--sf-on-accent); }
         .storefront .sf-announce a { color: var(--sf-on-accent); }
         .storefront .sf-nav { background: var(--sf-card); border-color: var(--sf-secondary); }
-        .storefront .sf-nav a { color: var(--sf-text); border-bottom: 2px solid transparent; white-space: nowrap; }
+        .storefront .sf-nav a { color: var(--sf-text); border-bottom: 2px solid transparent; max-width: 100%; white-space: normal; }
         .storefront .sf-nav a:hover, .storefront .sf-nav .sf-nav-active { border-color: var(--sf-accent); }
         .storefront .sf-tile { background: var(--sf-secondary); color: var(--sf-text); border-radius: var(--sf-radius); }
         .storefront .sf-carousel { display: flex; gap: 1rem; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: .5rem; }

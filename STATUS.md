@@ -4572,6 +4572,24 @@ School office is unchanged.
 
 The signed-in walk was not run here: this machine has no PHP or MySQL.
 
+## 5nh. A shop's page has its own menu (2026-10-02)
+
+The owner, on a phone screenshot of a vendor's page: it scrolls
+sideways. A menu for that vendor, instead of the row that runs off.
+
+The bookstore's chips (Shops, Deals, old and used books, borrowing, and
+the rest) were drawn on every shop's page, in one line that does not
+wrap. On a phone that line was wider than the screen.
+
+A shop's page now has that shop's menu: its home, its deals, its
+collections and pages, the cart, orders, tracking, and one way back to
+all of Akuru Bookstore. On a phone the links sit in two columns, each
+at least 44px tall. A wider screen keeps them as a wrapping row. The
+shop's category chips wrap too. The bookstore's own page keeps its
+chip row.
+
+The signed-in walk was not run here: this machine has no PHP or MySQL.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not

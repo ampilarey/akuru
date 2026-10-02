@@ -442,8 +442,10 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
 
     const phone = await newPage('shop-layout-phone', { width: 390, height: 844 });
     await phone.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
-    const links = await phone.locator('[data-testid="shop-links"]').boundingBox();
-    check('on a phone the store\'s links are one strip, not four rows', links !== null && links.height < 70, `${Math.round(links?.height ?? -1)}px tall`);
+    const menu = await phone.locator('[data-testid="vendor-menu"]');
+    const menuText = await menu.innerText();
+    const link = await phone.locator('[data-testid="vendor-menu-home"]').boundingBox();
+    check('a shop\'s phone page has its own menu, not the store\'s sideways chips', (await phone.locator('[data-testid="shop-links"]').count()) === 0 && menuText.includes('Home') && menuText.includes('Deals') && !menuText.includes('Old and used books') && link !== null && link.height >= 44, menuText.replace(/\s+/g, ' '));
     check('the page itself does not run sideways', await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
 }
 
