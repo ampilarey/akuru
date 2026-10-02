@@ -17,14 +17,26 @@
  *
  * A test suite that fails once a fortnight for no visible reason trains people
  * to re-run CI instead of reading it, which is the real cost. Use
- * `uniqueFixtureSuffix()`.
+ * `uniqueFixtureSuffix()` in a test fixture, a static counter in a factory.
+ *
+ * The factories were outside this guard until PR #658 went red on
+ * `Duplicate entry 'hlittel@example.com' for key 'users.users_email_unique'`
+ * from `UserFactory`, on a commit that changed no PHP at all. They are inside
+ * it now.
  */
 it('never reaches for fake()->unique(), which guarantees nothing', function () {
     $offenders = [];
 
-    $files = new RecursiveIteratorIterator(
-        new RecursiveDirectoryIterator(base_path('tests'), FilesystemIterator::SKIP_DOTS)
+    $roots = array_merge(
+        [base_path('tests'), base_path('database/factories')],
+        glob(base_path('app/Domains/*/Database/factories')) ?: [],
     );
+    $files = new AppendIterator;
+    foreach ($roots as $root) {
+        $files->append(new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator($root, FilesystemIterator::SKIP_DOTS)
+        ));
+    }
 
     foreach ($files as $file) {
         if (! $file->isFile() || $file->getExtension() !== 'php') {

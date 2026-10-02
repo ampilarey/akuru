@@ -54,7 +54,7 @@ export default function Leads({ leads = [], filters = {}, sources = [], statuses
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="leads-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.leads_col_when || 'When'}</th>
@@ -70,13 +70,13 @@ export default function Leads({ leads = [], filters = {}, sources = [], statuses
                         {leads.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan="7">{t.leads_none || 'No leads yet.'}</td></tr>}
                         {leads.map((lead) => (
                             <tr key={lead.id} className="border-t align-top" data-testid="lead-row">
-                                <td className="whitespace-nowrap px-3 py-2 text-gray-500">{lead.created_at}</td>
-                                <td className="px-3 py-2 text-gray-900">{lead.course_title}</td>
-                                <td className="px-3 py-2 font-medium text-gray-900">{lead.name}</td>
-                                <td className="whitespace-nowrap px-3 py-2 text-gray-900" dir="ltr">{lead.mobile}</td>
-                                <td className="px-3 py-2 text-gray-500" dir="ltr">{lead.email || '—'}</td>
-                                <td className="px-3 py-2 text-gray-700">{sourceLabel(lead.source)}</td>
-                                <td className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_TONES[lead.status] || 'bg-gray-100 text-gray-700'}`} data-testid="lead-status">{statusLabel(lead.status)}</span></td>
+                                <td data-label={t.leads_col_when || 'When'} className="whitespace-nowrap px-3 py-2 text-gray-500">{lead.created_at}</td>
+                                <td data-label={t.leads_col_course || 'Course'} className="px-3 py-2 text-gray-900">{lead.course_title}</td>
+                                <td data-label={t.leads_col_name || 'Name'} className="px-3 py-2 font-medium text-gray-900">{lead.name}</td>
+                                <td data-label={t.leads_col_mobile || 'Mobile'} className="whitespace-nowrap px-3 py-2 text-gray-900" dir="ltr">{lead.mobile}</td>
+                                <td data-label={t.leads_col_email || 'Email'} className="px-3 py-2 text-gray-500" dir="ltr">{lead.email || '—'}</td>
+                                <td data-label={t.leads_source || 'Source'} className="px-3 py-2 text-gray-700">{sourceLabel(lead.source)}</td>
+                                <td data-label={t.leads_status || 'Status'} className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_TONES[lead.status] || 'bg-gray-100 text-gray-700'}`} data-testid="lead-status">{statusLabel(lead.status)}</span></td>
                             </tr>
                         ))}
                     </tbody>

@@ -48,7 +48,7 @@ export default function OtpAbuse({ groups = [], days = 7, total_trips = 0, limit
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Contact</th>
@@ -69,7 +69,7 @@ export default function OtpAbuse({ groups = [], days = 7, total_trips = 0, limit
                         )}
                         {groups.map((group) => (
                             <tr key={group.key} className="border-t align-top">
-                                <td className="px-3 py-2 whitespace-nowrap">
+                                <td data-label="Contact" className="px-3 py-2 whitespace-nowrap">
                                     <span className="font-mono">…{group.contact_tail}</span>
                                     <span className="ms-2 text-xs text-gray-500">{group.channel}</span>
                                     {/* For a mobile number the last four digits identify it. For an
@@ -78,11 +78,11 @@ export default function OtpAbuse({ groups = [], days = 7, total_trips = 0, limit
                                         actually tells two rows apart. */}
                                     <span className="ms-2 font-mono text-xs text-gray-400">{group.key}</span>
                                 </td>
-                                <td className="px-3 py-2">
+                                <td data-label="Account" className="px-3 py-2">
                                     {group.user ?? <span className="text-gray-400">no account yet</span>}
                                 </td>
-                                <td className="px-3 py-2 whitespace-nowrap">{group.trips}</td>
-                                <td className="px-3 py-2">
+                                <td data-label="Trips" className="px-3 py-2 whitespace-nowrap">{group.trips}</td>
+                                <td data-label="What tripped" className="px-3 py-2">
                                     {Object.entries(group.kinds).map(([kind, count]) => (
                                         <span
                                             key={kind}
@@ -92,8 +92,8 @@ export default function OtpAbuse({ groups = [], days = 7, total_trips = 0, limit
                                         </span>
                                     ))}
                                 </td>
-                                <td className="px-3 py-2 whitespace-nowrap">{group.first_seen}</td>
-                                <td className="px-3 py-2 whitespace-nowrap">{group.last_seen}</td>
+                                <td data-label="First seen" className="px-3 py-2 whitespace-nowrap">{group.first_seen}</td>
+                                <td data-label="Last seen" className="px-3 py-2 whitespace-nowrap">{group.last_seen}</td>
                             </tr>
                         ))}
                     </tbody>

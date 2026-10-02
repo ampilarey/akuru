@@ -76,7 +76,7 @@ export default function NumbersDashboard({ stats = {}, health = {}, recent = [],
                         <span className="text-xs text-gray-500">{t.numbers_recent_last || 'Last 10'}</span>
                     </div>
                     <div className="overflow-x-auto">
-                        <table className="min-w-full text-sm" data-testid="recent-enrollments">
+                        <table className="table-stack min-w-full text-sm" data-testid="recent-enrollments">
                             <thead className="bg-gray-50 text-xs text-gray-500">
                                 <tr>
                                     <th className="px-4 py-2 text-start">{t.numbers_col_student || 'Student'}</th>
@@ -90,11 +90,11 @@ export default function NumbersDashboard({ stats = {}, health = {}, recent = [],
                                 {recent.length === 0 && <tr><td className="px-4 py-8 text-center text-gray-400" colSpan="5">{t.numbers_none || 'No enrollments yet.'}</td></tr>}
                                 {recent.map((row) => (
                                     <tr key={row.id} className="border-t" data-testid="recent-row">
-                                        <td className="px-4 py-2 font-medium text-gray-900">{row.student || '—'}</td>
-                                        <td className="max-w-[180px] truncate px-4 py-2 text-gray-700">{row.course || '—'}</td>
-                                        <td className="px-4 py-2"><span className={`rounded-full px-2 py-0.5 text-xs font-bold ${STATUS_CLASS[row.status] || 'bg-gray-100 text-gray-700'}`}>{statusLabel(row.status)}</span></td>
-                                        <td className="whitespace-nowrap px-4 py-2 text-gray-700" dir="ltr">{row.fee ? `MVR ${row.fee}` : (t.numbers_free || 'Free')}</td>
-                                        <td className="whitespace-nowrap px-4 py-2 text-gray-400">{row.date}</td>
+                                        <td data-label={t.numbers_col_student || 'Student'} className="px-4 py-2 font-medium text-gray-900">{row.student || '—'}</td>
+                                        <td data-label={t.numbers_col_course || 'Course'} className="max-w-[180px] truncate px-4 py-2 text-gray-700">{row.course || '—'}</td>
+                                        <td data-label={t.numbers_col_status || 'Status'} className="px-4 py-2"><span className={`rounded-full px-2 py-0.5 text-xs font-bold ${STATUS_CLASS[row.status] || 'bg-gray-100 text-gray-700'}`}>{statusLabel(row.status)}</span></td>
+                                        <td data-label={t.numbers_col_fee || 'Fee'} className="whitespace-nowrap px-4 py-2 text-gray-700" dir="ltr">{row.fee ? `MVR ${row.fee}` : (t.numbers_free || 'Free')}</td>
+                                        <td data-label={t.numbers_col_date || 'Date'} className="whitespace-nowrap px-4 py-2 text-gray-400">{row.date}</td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -121,7 +121,7 @@ export default function Promotions({ campaigns = [], options = { categories: [],
             <CampaignForm options={options} fundingSources={funding_sources} t={t} />
 
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="campaigns">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.library_promotions_name_col || 'Campaign'}</th>
@@ -138,19 +138,19 @@ export default function Promotions({ campaigns = [], options = { categories: [],
                         {campaigns.length === 0 && <tr><td className="px-3 py-4 text-gray-500" colSpan="8">{t.library_promotions_none || 'No campaigns yet.'}</td></tr>}
                         {campaigns.map((c) => (
                             <tr key={c.id} className="border-t align-top" data-campaign={c.slug}>
-                                <td className="px-3 py-2">
+                                <td data-label={t.library_promotions_name_col || 'Campaign'} className="px-3 py-2">
                                     {c.banner_url && <img src={c.banner_url} alt="" className="mb-1 h-12 w-24 rounded object-cover" data-testid="campaign-banner-thumb" />}
                                     <p className="font-medium">{c.name}</p>
                                     {c.description && <p className="text-xs text-gray-500">{c.description}</p>}
                                     <p className="text-xs text-gray-400">{t[`library_promotions_funding_${c.funding_source}`] || c.funding_source}</p>
                                 </td>
-                                <td className="px-3 py-2 text-xs text-gray-600">{c.starts_at}<br />{c.ends_at || '—'}</td>
-                                <td className="px-3 py-2">{describe(c)}</td>
-                                <td className="px-3 py-2 text-xs text-gray-600">{c.targets.map((target, i) => <p key={i}>{targetLabel(target, options, t)}</p>)}</td>
-                                <td className="px-3 py-2">{c.uses} <span className="text-xs text-gray-500">({c.confirmed} {t.library_promotions_confirmed || 'paid'})</span></td>
-                                <td className="px-3 py-2">{c.given}</td>
-                                <td className="px-3 py-2"><span className={`rounded px-2 py-0.5 text-xs ${c.state === 'live' ? 'bg-green-50 text-green-800' : 'bg-gray-100 text-gray-700'}`} data-state={c.state}>{stateLabel(c.state)}</span></td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.library_promotions_col_window || 'Window'} className="px-3 py-2 text-xs text-gray-600">{c.starts_at}<br />{c.ends_at || '—'}</td>
+                                <td data-label={t.library_promotions_col_discount || 'Discount'} className="px-3 py-2">{describe(c)}</td>
+                                <td data-label={t.library_promotions_col_covers || 'Covers'} className="px-3 py-2 text-xs text-gray-600">{c.targets.map((target, i) => <p key={i}>{targetLabel(target, options, t)}</p>)}</td>
+                                <td data-label={t.library_promotions_col_uses || 'Uses'} className="px-3 py-2">{c.uses} <span className="text-xs text-gray-500">({c.confirmed} {t.library_promotions_confirmed || 'paid'})</span></td>
+                                <td data-label={t.library_promotions_col_given || 'Given (MVR)'} className="px-3 py-2">{c.given}</td>
+                                <td data-label={t.library_promotions_col_state || 'State'} className="px-3 py-2"><span className={`rounded px-2 py-0.5 text-xs ${c.state === 'live' ? 'bg-green-50 text-green-800' : 'bg-gray-100 text-gray-700'}`} data-state={c.state}>{stateLabel(c.state)}</span></td>
+                                <td className="table-actions px-3 py-2">
                                     {c.status === 'active' && (
                                         <button type="button" className="text-sm text-red-600" onClick={() => router.post(`/admin/library/promotions/${c.id}/end`, {}, { preserveScroll: true })} data-testid={`end-${c.slug}`}>{t.library_promotions_end || 'End now'}</button>
                                     )}

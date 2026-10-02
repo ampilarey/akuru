@@ -8,7 +8,7 @@ import AppShell from '../../Layouts/AppShell';
 function Table({ title, columns, rows, empty, testId }) {
     return (
         <div className="mb-6 overflow-x-auto rounded-lg border bg-white" data-testid={testId}>
-            <table className="min-w-full text-sm">
+            <table className="table-stack min-w-full text-sm">
                 <thead className="bg-[#F3EBE0] text-start">
                     <tr>{columns.map(([key, label]) => <th key={key} className="px-3 py-2">{label}</th>)}</tr>
                 </thead>
@@ -16,7 +16,7 @@ function Table({ title, columns, rows, empty, testId }) {
                     {rows.length === 0 && <tr><td className="px-3 py-4 text-gray-500" colSpan={columns.length}>{empty}</td></tr>}
                     {rows.map((row, i) => (
                         <tr key={i} className="border-t">
-                            {columns.map(([key]) => <td key={key} className="px-3 py-2">{row[key] ?? '—'}</td>)}
+                            {columns.map(([key, label]) => <td data-label={label} key={key} className="px-3 py-2">{row[key] ?? '—'}</td>)}
                         </tr>
                     ))}
                 </tbody>

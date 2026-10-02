@@ -35,7 +35,7 @@ export default function Reviewers({ reviewers = [], t = {} }) {
                 measures 79px wider than a phone (ADMIN_PANEL.md M1, the same
                 shape as STATUS §5jq's enrolments list). */}
             <div className="relative overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm" data-testid="reviewer-pool">
+                <table className="table-stack min-w-full text-sm" data-testid="reviewer-pool">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.library_reviewers_name || 'Reviewer'}</th>
@@ -52,12 +52,12 @@ export default function Reviewers({ reviewers = [], t = {} }) {
                         )}
                         {reviewers.map((reviewer) => (
                             <tr key={reviewer.id} className="border-t" data-testid="reviewer-row">
-                                <td className="px-3 py-2"><span className="font-medium">{reviewer.name}</span><span className="block text-xs text-gray-500">{reviewer.email}</span></td>
-                                <td className="px-3 py-2">{reviewer.open}</td>
-                                <td className={`px-3 py-2 ${reviewer.overdue ? 'font-semibold text-red-700' : ''}`}>{reviewer.overdue}</td>
-                                <td className="px-3 py-2">{reviewer.done}</td>
-                                <td className="px-3 py-2">{reviewer.average_days ?? '—'}</td>
-                                <td className="px-3 py-2 text-end">
+                                <td data-label={t.library_reviewers_name || 'Reviewer'} className="px-3 py-2"><span className="font-medium">{reviewer.name}</span><span className="block text-xs text-gray-500">{reviewer.email}</span></td>
+                                <td data-label={t.library_reviewers_open || 'Open'} className="px-3 py-2">{reviewer.open}</td>
+                                <td data-label={t.library_reviewers_overdue || 'Overdue'} className={`px-3 py-2 ${reviewer.overdue ? 'font-semibold text-red-700' : ''}`}>{reviewer.overdue}</td>
+                                <td data-label={t.library_reviewers_done || 'Reported'} className="px-3 py-2">{reviewer.done}</td>
+                                <td data-label={t.library_reviewers_days || 'Average days to report'} className="px-3 py-2">{reviewer.average_days ?? '—'}</td>
+                                <td className="table-actions px-3 py-2 text-end">
                                     <button type="button" className="text-sm text-red-600 disabled:text-gray-400" disabled={reviewer.open > 0} title={reviewer.open > 0 ? (t.library_reviewers_busy || 'Has a report open') : undefined} onClick={() => remove(reviewer)}>{t.library_reviewers_remove || 'Remove'}</button>
                                 </td>
                             </tr>

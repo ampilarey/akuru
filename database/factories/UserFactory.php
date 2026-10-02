@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Domains\Identity\Models\User>
+ * @extends Factory<User>
  */
 class UserFactory extends Factory
 {
@@ -20,15 +20,25 @@ class UserFactory extends Factory
     protected static ?string $password;
 
     /**
+     * A per-process counter folded into every address. `fake()->unique()`
+     * guarantees nothing across tests (tests/Support/UniqueFixtureHelpers.php),
+     * and it reddened PR #658 with `Duplicate entry 'hlittel@example.com'` on
+     * a commit that touched no PHP.
+     */
+    protected static int $sequence = 0;
+
+    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
      */
     public function definition(): array
     {
+        $email = fake()->safeEmail();
+
         return [
             'name' => fake()->name(),
-            'email' => fake()->unique()->safeEmail(),
+            'email' => sprintf('%s.%05d@%s', Str::before($email, '@'), ++static::$sequence, Str::after($email, '@')),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
             'remember_token' => Str::random(10),

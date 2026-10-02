@@ -140,7 +140,7 @@ export default function Admin({ gift_cards, gift_card_orders = [], discount_code
                 <a className="text-sm text-[#7C2D37] hover:underline" href="/admin/commerce/gift-card-orders/export" data-testid="gift-card-orders-export">Export CSV</a>
             </div>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white" data-testid="gift-card-orders">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Order</th>
@@ -158,13 +158,13 @@ export default function Admin({ gift_cards, gift_card_orders = [], discount_code
                         )}
                         {gift_card_orders.map((order) => (
                             <tr key={order.id} className="border-t">
-                                <td className="px-3 py-2">#{order.id}</td>
-                                <td className="px-3 py-2">{order.buyer}{order.buyer_email ? <span className="block text-xs text-gray-500">{order.buyer_email}</span> : null}</td>
-                                <td className="px-3 py-2">{order.recipient_name}</td>
-                                <td className="px-3 py-2">{order.currency} {order.amount}{order.bonus_amount ? <span className="block text-xs text-green-700" data-testid="order-bonus">+ {order.bonus_amount} bonus</span> : null}</td>
-                                <td className="px-3 py-2">{order.status}{order.gift_card_id ? ` · card #${order.gift_card_id}` : ''}</td>
-                                <td className="px-3 py-2">{order.delivered_via ? `${order.delivered_via} → ${order.delivered_to}` : '—'}</td>
-                                <td className="px-3 py-2">{order.paid_at ?? order.created_at}</td>
+                                <td data-label="Order" className="px-3 py-2">#{order.id}</td>
+                                <td data-label="Buyer" className="px-3 py-2">{order.buyer}{order.buyer_email ? <span className="block text-xs text-gray-500">{order.buyer_email}</span> : null}</td>
+                                <td data-label="For" className="px-3 py-2">{order.recipient_name}</td>
+                                <td data-label="Amount" className="px-3 py-2">{order.currency} {order.amount}{order.bonus_amount ? <span className="block text-xs text-green-700" data-testid="order-bonus">+ {order.bonus_amount} bonus</span> : null}</td>
+                                <td data-label="Status" className="px-3 py-2">{order.status}{order.gift_card_id ? ` · card #${order.gift_card_id}` : ''}</td>
+                                <td data-label="Code sent" className="px-3 py-2">{order.delivered_via ? `${order.delivered_via} → ${order.delivered_to}` : '—'}</td>
+                                <td data-label="When" className="px-3 py-2">{order.paid_at ?? order.created_at}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -173,7 +173,7 @@ export default function Admin({ gift_cards, gift_card_orders = [], discount_code
 
             <h2 className="mb-2 text-lg font-semibold">Gift cards</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Gift card</th>
@@ -192,17 +192,17 @@ export default function Admin({ gift_cards, gift_card_orders = [], discount_code
                         )}
                         {gift_cards.map((card) => (
                             <tr key={card.id} className="border-t" data-testid="gift-card-row">
-                                <td className="px-3 py-2">#{card.id}</td>
-                                <td className="px-3 py-2">{card.recipient_name ?? card.recipient_email ?? '—'}</td>
-                                <td className="px-3 py-2">{card.currency} {card.original_amount}</td>
-                                <td className="px-3 py-2">{card.balance_amount}</td>
-                                <td className="px-3 py-2">
+                                <td data-label="Gift card" className="px-3 py-2">#{card.id}</td>
+                                <td data-label="Recipient" className="px-3 py-2">{card.recipient_name ?? card.recipient_email ?? '—'}</td>
+                                <td data-label="Amount" className="px-3 py-2">{card.currency} {card.original_amount}</td>
+                                <td data-label="Balance" className="px-3 py-2">{card.balance_amount}</td>
+                                <td data-label="Status" className="px-3 py-2">
                                     {card.status}
                                     {card.status === 'deactivated' && card.deactivated_reason && <span className="block text-xs text-gray-500" data-testid="deactivated-reason">{card.deactivated_reason}</span>}
                                 </td>
-                                <td className="px-3 py-2">{card.source}</td>
-                                <td className="px-3 py-2">{card.expires_at ?? '—'}</td>
-                                <td className="px-3 py-2">
+                                <td data-label="Source" className="px-3 py-2">{card.source}</td>
+                                <td data-label="Expires" className="px-3 py-2">{card.expires_at ?? '—'}</td>
+                                <td className="table-actions px-3 py-2">
                                     {/* B10 (§15.2): a leaked code or a disputed purchase; the reason goes on the ledger. */}
                                     {['active', 'partially_used'].includes(card.status) && (
                                         <button
@@ -225,7 +225,7 @@ export default function Admin({ gift_cards, gift_card_orders = [], discount_code
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Discount code</th>
@@ -241,11 +241,11 @@ export default function Admin({ gift_cards, gift_card_orders = [], discount_code
                         )}
                         {discount_codes.map((code) => (
                             <tr key={code.id} className="border-t">
-                                <td className="px-3 py-2 font-mono">{code.code}</td>
-                                <td className="px-3 py-2">{code.discount_type}</td>
-                                <td className="px-3 py-2">{code.discount_value}</td>
-                                <td className="px-3 py-2">{code.usage_limit ?? '∞'} / {code.per_user_limit ?? '∞'} per user</td>
-                                <td className="px-3 py-2">{code.status}</td>
+                                <td data-label="Discount code" className="px-3 py-2 font-mono">{code.code}</td>
+                                <td data-label="Type" className="px-3 py-2">{code.discount_type}</td>
+                                <td data-label="Value" className="px-3 py-2">{code.discount_value}</td>
+                                <td data-label="Limits" className="px-3 py-2">{code.usage_limit ?? '∞'} / {code.per_user_limit ?? '∞'} per user</td>
+                                <td data-label="Status" className="px-3 py-2">{code.status}</td>
                             </tr>
                         ))}
                     </tbody>

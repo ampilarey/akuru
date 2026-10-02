@@ -51,7 +51,7 @@ export default function Islands({ islands = [], pagination = null, filters = {},
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="islands-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.prayer_col_id || 'ID'}</th>
@@ -68,12 +68,12 @@ export default function Islands({ islands = [], pagination = null, filters = {},
                         )}
                         {islands.map((island) => (
                             <tr key={island.id} className="border-t" data-testid="island-row">
-                                <td className="px-3 py-2">{island.id}</td>
-                                <td className="px-3 py-2">{island.name_en} <span className="text-gray-500" dir="rtl">{island.name_dv}</span></td>
-                                <td className="px-3 py-2">{island.atoll_latin}</td>
-                                <td className="px-3 py-2" dir="ltr">{island.offset_minutes}</td>
-                                <td className="px-3 py-2" dir="ltr">{island.latitude}, {island.longitude}</td>
-                                <td className="px-3 py-2">{island.is_active ? (t.prayer_yes || 'yes') : (t.prayer_no || 'no')}</td>
+                                <td data-label={t.prayer_col_id || 'ID'} className="px-3 py-2">{island.id}</td>
+                                <td data-label={t.prayer_col_island || 'Island'} className="px-3 py-2">{island.name_en} <span className="text-gray-500" dir="rtl">{island.name_dv}</span></td>
+                                <td data-label={t.prayer_col_atoll || 'Atoll'} className="px-3 py-2">{island.atoll_latin}</td>
+                                <td data-label={t.prayer_col_offset || 'Offset'} className="px-3 py-2" dir="ltr">{island.offset_minutes}</td>
+                                <td data-label={t.prayer_col_latlng || 'Lat/Lng'} className="px-3 py-2" dir="ltr">{island.latitude}, {island.longitude}</td>
+                                <td data-label={t.prayer_col_active || 'Active'} className="px-3 py-2">{island.is_active ? (t.prayer_yes || 'yes') : (t.prayer_no || 'no')}</td>
                             </tr>
                         ))}
                     </tbody>
