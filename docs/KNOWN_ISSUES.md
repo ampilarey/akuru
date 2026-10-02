@@ -181,12 +181,14 @@ again after each deploy. Not a defect in behaviour; the largest cost on a
 phone. Lazy chunks are a one-line change verified by the build and the
 sweeps.
 
-### Most admin tables need a sideways swipe on a phone — held, planned (C15 slice 6)
+### Most admin tables need a sideways swipe on a phone — **fixed (2026-10-02, STATUS §5nr, §5ns, §5nt)**
 
 26 tables on 21 screens; on Manage users the Roles & access and Delete
 actions sit 443 px past the edge. Formerly ADMIN_PANEL L15 ("the usual
 pattern"); with `.table-stack` in the stylesheet since §5js it is now a
-`data-label` per cell, one group of screens per PR.
+`data-label` per cell, one group of screens per PR. Three PRs (slices
+6b, 6c, 6d) stacked every one of them; `admin-mobile.mjs` reports no
+sideways scrolling on any of its 50 screens.
 
 ### Two writes on every page view, with no pruning — held, planned (C15 slice 3)
 
