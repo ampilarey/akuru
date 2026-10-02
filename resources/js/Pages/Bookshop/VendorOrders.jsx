@@ -82,7 +82,7 @@ function CancelForm({ order, t }) {
 
     return open ? (
         <div className="flex flex-wrap items-center gap-2" data-testid="vendor-cancel-form">
-            <input className="form-input w-full sm:w-72" placeholder={t.cancel_reason} value={reason} onChange={(e) => setReason(e.target.value)} data-testid="vendor-cancel-reason" />
+            <input className="form-input w-full sm:w-72" placeholder={t.cancel_reason} aria-label={t.cancel_reason} value={reason} onChange={(e) => setReason(e.target.value)} data-testid="vendor-cancel-reason" />
             <button type="button" className="rounded bg-red-600 px-3 py-2 text-sm text-white" data-testid="vendor-cancel-confirm" onClick={() => post(`/vendor/orders/${order.id}/cancel`, { reason })}>{t.cancel_order_refund}</button>
             <button type="button" className="text-sm underline" onClick={() => setOpen(false)}>{t.cancel}</button>
         </div>
@@ -107,7 +107,7 @@ function Slip({ order, t }) {
             </p>
             {slip.can_confirm ? (
                 <div className="mt-2 flex flex-wrap items-center gap-2">
-                    <input className="form-input w-full sm:w-56" placeholder={t.decision_note} value={note} onChange={(e) => setNote(e.target.value)} />
+                    <input className="form-input w-full sm:w-56" placeholder={t.decision_note} aria-label={t.decision_note} value={note} onChange={(e) => setNote(e.target.value)} />
                     <button type="button" className="btn-primary" data-testid="vendor-confirm-slip" onClick={() => post(`/vendor/slips/${slip.id}/decide`, { decision: 'confirm', note })}>{t.confirm}</button>
                     <button type="button" className="text-red-700 underline" onClick={() => post(`/vendor/slips/${slip.id}/decide`, { decision: 'reject', note })}>{t.reject}</button>
                 </div>
@@ -132,7 +132,7 @@ function ReturnRow({ ret, t }) {
             {ret.status === 'requested' ? (
                 <div className="mt-1 flex flex-wrap items-center gap-2">
                     <label className="flex items-center gap-1 text-sm"><input type="checkbox" checked={restock} onChange={(e) => setRestock(e.target.checked)} /> {t.restock}</label>
-                    <input className="form-input w-full sm:w-56" placeholder={t.decline_reason} value={note} onChange={(e) => setNote(e.target.value)} data-testid="return-note" />
+                    <input className="form-input w-full sm:w-56" placeholder={t.decline_reason} aria-label={t.decline_reason} value={note} onChange={(e) => setNote(e.target.value)} data-testid="return-note" />
                     <button type="button" className="btn-primary" data-testid="accept-return" onClick={() => post(`/vendor/returns/${ret.id}/decide`, { decision: 'accept', restock: restock ? 1 : 0, note })}>{t.accept_return}</button>
                     <button type="button" className="text-red-700 underline" data-testid="decline-return" onClick={() => post(`/vendor/returns/${ret.id}/decide`, { decision: 'decline', note })}>{t.decline_return}</button>
                 </div>
@@ -154,7 +154,7 @@ function Message({ order, t }) {
                 router.post(`/vendor/orders/${order.id}/message`, { body }, { preserveScroll: true, onSuccess: () => setBody('') });
             }}
         >
-            <textarea className="form-input w-full md:w-96" rows={2} placeholder={t.message_customer} value={body} onChange={(e) => setBody(e.target.value)} data-testid="vendor-message" />
+            <textarea className="form-input w-full md:w-96" rows={2} placeholder={t.message_customer} aria-label={t.message_customer} value={body} onChange={(e) => setBody(e.target.value)} data-testid="vendor-message" />
             <button type="submit" className="btn-secondary" data-testid="vendor-send-message">{t.send}</button>
             {order.message_thread_id && <a href={`/portal/messages/${order.message_thread_id}`} className="self-center text-sm text-blue-700 underline" data-testid="open-thread">{t.open_conversation}</a>}
         </form>
@@ -270,7 +270,7 @@ export default function VendorOrders({ t, vendor, orders, counts, filters }) {
                 <h1 className="text-2xl font-bold" data-testid="orders-heading">{t.orders_title} · {vendor.name}</h1>
                 <VendorNav t={t} current="orders" />
                 <form className="grid grid-cols-[1fr_auto] gap-2 sm:flex" onSubmit={(e) => { e.preventDefault(); router.get('/vendor/orders', { status: filters.status || undefined, q: q || undefined }); }}>
-                    <input className="form-input min-w-0" placeholder={t.search_orders} value={q} onChange={(e) => setQ(e.target.value)} />
+                    <input className="form-input min-w-0" placeholder={t.search_orders} aria-label={t.search_orders} value={q} onChange={(e) => setQ(e.target.value)} />
                     <button type="submit" className="btn-secondary justify-center">{t.search}</button>
                 </form>
             </header>

@@ -35,7 +35,7 @@ function ReviewRow({ review: r, t }) {
             )}
             {open && (
                 <form className="mt-2 flex flex-wrap items-start gap-2" onSubmit={(e) => { e.preventDefault(); router.post(`/vendor/reviews/${r.id}/reply`, { reply: text }, { preserveScroll: true, onSuccess: () => setOpen(false) }); }}>
-                    <textarea className="form-input w-full min-w-0 flex-1" rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder={t.reply_placeholder} maxLength={2000} data-testid={`reply-text-${r.id}`} />
+                    <textarea className="form-input w-full min-w-0 flex-1" rows={2} value={text} onChange={(e) => setText(e.target.value)} placeholder={t.reply_placeholder} aria-label={t.reply_placeholder} maxLength={2000} data-testid={`reply-text-${r.id}`} />
                     <button type="submit" className="btn-primary" data-testid={`reply-save-${r.id}`}>{t.reply_publicly}</button>
                 </form>
             )}
@@ -66,7 +66,7 @@ function QuestionRow({ question: q, t }) {
             )}
             {open && (
                 <form className="mt-2 flex flex-wrap items-start gap-2" onSubmit={(e) => { e.preventDefault(); router.post(`/vendor/questions/${q.id}/answer`, { answer: text }, { preserveScroll: true, onSuccess: () => setOpen(false) }); }}>
-                    <textarea className="form-input w-full min-w-0 flex-1" rows={2} dir="auto" value={text} onChange={(e) => setText(e.target.value)} placeholder={t.answer_placeholder} maxLength={2000} data-testid={`answer-text-${q.id}`} />
+                    <textarea className="form-input w-full min-w-0 flex-1" rows={2} dir="auto" value={text} onChange={(e) => setText(e.target.value)} placeholder={t.answer_placeholder} aria-label={t.answer_placeholder} maxLength={2000} data-testid={`answer-text-${q.id}`} />
                     <button type="submit" className="btn-primary" data-testid={`answer-save-${q.id}`}>{t.answer_publicly}</button>
                 </form>
             )}

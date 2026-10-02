@@ -17,7 +17,7 @@ function Tags({ customer, t }) {
     return (
         <form className="flex flex-wrap items-end gap-2" onSubmit={save}>
             <label className="text-sm">{t.customer_tags}
-                <input className="form-input block w-80 max-w-full" value={form.data.tags} onChange={(e) => form.setData('tags', e.target.value)} placeholder={t.customer_tags_hint} data-testid="customer-tags" />
+                <input className="form-input block w-80 max-w-full" value={form.data.tags} onChange={(e) => form.setData('tags', e.target.value)} placeholder={t.customer_tags_hint} aria-label={t.customer_tags_hint} data-testid="customer-tags" />
             </label>
             <button type="submit" className="btn-secondary" data-testid="customer-save-tags">{t.customer_save_tags}</button>
         </form>

@@ -58,10 +58,10 @@ function CampaignForm({ options, fundingSources, t }) {
     return (
         <form onSubmit={submit} className="mb-6 grid gap-2 rounded-lg border bg-white p-4 md:grid-cols-4" data-testid="campaign-form">
             <h2 className="text-lg font-semibold md:col-span-4">{t.library_promotions_new || 'Start a campaign'}</h2>
-            <input className="form-input md:col-span-2" name="name" placeholder={t.library_promotions_name || 'Name (readers see it)'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+            <input className="form-input md:col-span-2" name="name" placeholder={t.library_promotions_name || 'Name (readers see it)'} aria-label={t.library_promotions_name || 'Name (readers see it)'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
             <label className="text-sm">{t.library_promotions_starts || 'Starts'}<input className="form-input" type="datetime-local" value={form.data.starts_at} onChange={(e) => form.setData('starts_at', e.target.value)} /></label>
             <label className="text-sm">{t.library_promotions_ends || 'Ends (optional)'}<input className="form-input" type="datetime-local" value={form.data.ends_at} onChange={(e) => form.setData('ends_at', e.target.value)} /></label>
-            <textarea className="form-input md:col-span-3" rows="2" placeholder={t.library_promotions_description || 'Description (optional)'} value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
+            <textarea className="form-input md:col-span-3" rows="2" placeholder={t.library_promotions_description || 'Description (optional)'} aria-label={t.library_promotions_description || 'Description (optional)'} value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
             {/* B4c: the offer's picture, shown on the public offers page. */}
             <label className="text-sm">
                 {t.library_promotions_banner || 'Banner image (optional; JPEG, PNG or WebP)'}
@@ -71,8 +71,8 @@ function CampaignForm({ options, fundingSources, t }) {
                 <option value="percentage">{t.library_promotions_percentage || 'Percentage off'}</option>
                 <option value="fixed">{t.library_promotions_fixed || 'Fixed amount off (MVR)'}</option>
             </select>
-            <input className="form-input" name="discount_value" type="number" min="0.01" step="0.01" placeholder={t.library_promotions_value || 'Value'} value={form.data.discount_value} onChange={(e) => form.setData('discount_value', e.target.value)} />
-            <input className="form-input" type="number" min="0" step="0.01" placeholder={t.library_promotions_max || 'Maximum off (MVR, optional)'} value={form.data.max_discount_amount} onChange={(e) => form.setData('max_discount_amount', e.target.value)} />
+            <input className="form-input" name="discount_value" type="number" min="0.01" step="0.01" placeholder={t.library_promotions_value || 'Value'} aria-label={t.library_promotions_value || 'Value'} value={form.data.discount_value} onChange={(e) => form.setData('discount_value', e.target.value)} />
+            <input className="form-input" type="number" min="0" step="0.01" placeholder={t.library_promotions_max || 'Maximum off (MVR, optional)'} aria-label={t.library_promotions_max || 'Maximum off (MVR, optional)'} value={form.data.max_discount_amount} onChange={(e) => form.setData('max_discount_amount', e.target.value)} />
             <select className="form-input" value={form.data.funding_source} onChange={(e) => form.setData('funding_source', e.target.value)} aria-label={t.library_promotions_funding || 'Who funds it'}>
                 {fundingSources.map((source) => <option key={source} value={source}>{t[`library_promotions_funding_${source}`] || source}</option>)}
             </select>

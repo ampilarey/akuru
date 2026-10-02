@@ -15,7 +15,7 @@ function Delivered({ delivery, t }) {
             <label className="text-sm">{t.driver_photo}
                 <input type="file" accept="image/*" capture="environment" className="mt-1 block w-full text-sm" onChange={(e) => form.setData('photo', e.target.files[0] ?? null)} required data-testid={`proof-${delivery.id}`} />
             </label>
-            <input className="form-input text-sm" placeholder={t.driver_note} value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} maxLength={255} />
+            <input className="form-input text-sm" placeholder={t.driver_note} aria-label={t.driver_note} value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} maxLength={255} />
             {delivery.cash_due && (
                 <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.data.cash_received} onChange={(e) => form.setData('cash_received', e.target.checked)} /> {(t.cash_to_collect || '').replace(':amount', delivery.cash_due)}</label>
             )}

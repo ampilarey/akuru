@@ -16,8 +16,8 @@ export default function NewsCategories({ categories = [], t = {} }) {
             <p className="mb-4 text-sm"><Link href="/admin/public-site/news" className="text-gray-500 underline">{t.news_back || '← Back to News'}</Link></p>
             <FormErrors errors={errors} className="mb-4" />
             <form onSubmit={(e) => { e.preventDefault(); form.post('/admin/public-site/news/categories', { preserveScroll: true, onSuccess: () => form.reset() }); }} className="mb-4 flex flex-wrap gap-2" data-testid="news-category-add">
-                <input className="form-input" placeholder={t.news_category_name || 'Category name'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-                <input className="form-input w-24" type="number" min="0" placeholder={t.news_category_order || 'Order'} value={form.data.sort_order} onChange={(e) => form.setData('sort_order', e.target.value)} />
+                <input className="form-input" placeholder={t.news_category_name || 'Category name'} aria-label={t.news_category_name || 'Category name'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+                <input className="form-input w-24" type="number" min="0" placeholder={t.news_category_order || 'Order'} aria-label={t.news_category_order || 'Order'} value={form.data.sort_order} onChange={(e) => form.setData('sort_order', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>{t.news_category_add || 'Add category'}</button>
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">

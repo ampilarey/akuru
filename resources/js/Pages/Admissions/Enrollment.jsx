@@ -159,7 +159,7 @@ export default function Enrollment({ enrollment, payment_methods: paymentMethods
                             <select name="payment_method" value={method} onChange={(e) => setMethod(e.target.value)} className="form-input text-sm" aria-label={t.enrolment_record_method || 'Payment method'}>
                                 {paymentMethods.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                             </select>
-                            <input type="text" name="note" maxLength="500" value={note} onChange={(e) => setNote(e.target.value)} placeholder={t.enrolment_record_note || 'Note (e.g. receipt number)'} className="form-input w-64 text-sm" />
+                            <input type="text" name="note" maxLength="500" value={note} onChange={(e) => setNote(e.target.value)} placeholder={t.enrolment_record_note || 'Note (e.g. receipt number)'} aria-label={t.enrolment_record_note || 'Note (e.g. receipt number)'} className="form-input w-64 text-sm" />
                             <button type="submit" className="btn-primary text-sm">{t.enrolment_record || 'Record payment'}</button>
                         </form>
                     </div>

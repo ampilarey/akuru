@@ -241,7 +241,7 @@ function FieldEditor({ field, kind, settings, onChange, d, t, prefix }) {
             return <Field label={label}><input type="number" min={min} max={max} className="form-input w-24" value={text(value)} onChange={(e) => set(e.target.value)} data-testid={testid} /></Field>;
         }
         case 'video':
-            return <Field label={label}><input className="form-input w-full" placeholder="https://www.youtube.com/watch?v=…" value={text(value)} onChange={(e) => set(e.target.value)} data-testid={testid} /><span className="block text-xs text-gray-500">{t.video_hint}</span></Field>;
+            return <Field label={label}><input className="form-input w-full" placeholder="https://www.youtube.com/watch?v=…" aria-label="https://www.youtube.com/watch?v=…" value={text(value)} onChange={(e) => set(e.target.value)} data-testid={testid} /><span className="block text-xs text-gray-500">{t.video_hint}</span></Field>;
         case 'quotes':
             return (
                 <Field label={`${label} (${t.up_to_n.replace(':n', arg)})`}>
@@ -260,8 +260,8 @@ function FieldEditor({ field, kind, settings, onChange, d, t, prefix }) {
                     <Rows items={value} max={Number(arg)} blank={() => ({ question: '', answer: '' })} onChange={set} t={t} addLabel={t.add_question} testid={testid}
                         render={(item, patch, i) => (
                             <div className="flex-1 space-y-1">
-                                <input className="form-input w-full" placeholder={t.question} value={text(item.question)} onChange={(e) => patch({ question: e.target.value })} data-testid={`${testid}-${i}-question`} />
-                                <textarea className="form-input w-full" rows={2} placeholder={t.answer} value={text(item.answer)} onChange={(e) => patch({ answer: e.target.value })} data-testid={`${testid}-${i}-answer`} />
+                                <input className="form-input w-full" placeholder={t.question} aria-label={t.question} value={text(item.question)} onChange={(e) => patch({ question: e.target.value })} data-testid={`${testid}-${i}-question`} />
+                                <textarea className="form-input w-full" rows={2} placeholder={t.answer} aria-label={t.answer} value={text(item.answer)} onChange={(e) => patch({ answer: e.target.value })} data-testid={`${testid}-${i}-answer`} />
                             </div>
                         )} />
                 </Field>
@@ -313,7 +313,7 @@ function SectionsEditor({ sections, onChange, d, t, prefix }) {
                                         <input type="date" className="form-input py-1 text-xs" value={text(s.until)} onChange={(e) => update(i, { until: e.target.value || null })} aria-label={t.until} data-testid={`${prefix}-${i}-until`} />
                                     </>
                                 )}
-                                <input type="number" min="0" max="99" className="form-input w-16 py-1 text-xs" placeholder={t.mobile_order_short} title={t.mobile_order} value={text(s.mobile_order)} onChange={(e) => update(i, { mobile_order: e.target.value === '' ? null : Number(e.target.value) })} data-testid={`${prefix}-${i}-mobile-order`} />
+                                <input type="number" min="0" max="99" className="form-input w-16 py-1 text-xs" placeholder={t.mobile_order_short} aria-label={t.mobile_order_short} title={t.mobile_order} value={text(s.mobile_order)} onChange={(e) => update(i, { mobile_order: e.target.value === '' ? null : Number(e.target.value) })} data-testid={`${prefix}-${i}-mobile-order`} />
                                 <button type="button" className="btn-secondary px-2 py-1 text-xs" onClick={() => move(i, -1)} disabled={i === 0} aria-label={t.move_up} data-testid={`${prefix}-${i}-up`}>↑</button>
                                 <button type="button" className="btn-secondary px-2 py-1 text-xs" onClick={() => move(i, 1)} disabled={i === sections.length - 1} aria-label={t.move_down} data-testid={`${prefix}-${i}-down`}>↓</button>
                                 <button type="button" className="btn-secondary px-2 py-1 text-xs" onClick={() => setOpen(open === i ? null : i)} data-testid={`${prefix}-${i}-toggle`}>{open === i ? t.close : t.settings}</button>
@@ -367,7 +367,7 @@ function Pages({ d, t, activePage, setActivePage, onSaved }) {
                 <Field label={t.page_title}><input className="form-input w-full" value={draft.title} onChange={(e) => setDraft({ ...draft, title: e.target.value })} required data-testid="new-page-title" /></Field>
                 <Field label={t.title_dv}><input className="form-input w-full" dir="rtl" value={draft.title_dv} onChange={(e) => setDraft({ ...draft, title_dv: e.target.value })} /></Field>
                 <Field label={t.title_ar}><input className="form-input w-full" dir="rtl" value={draft.title_ar} onChange={(e) => setDraft({ ...draft, title_ar: e.target.value })} /></Field>
-                <Field label={t.slug_label}><input className="form-input w-full" placeholder={t.slug_from_title} value={draft.slug} onChange={(e) => setDraft({ ...draft, slug: e.target.value })} data-testid="new-page-slug" /></Field>
+                <Field label={t.slug_label}><input className="form-input w-full" placeholder={t.slug_from_title} aria-label={t.slug_from_title} value={draft.slug} onChange={(e) => setDraft({ ...draft, slug: e.target.value })} data-testid="new-page-slug" /></Field>
                 <div className="flex items-end"><button type="submit" className="btn-primary" disabled={d.pages.length >= d.limits.pages} data-testid="create-page">{t.add_page}</button></div>
             </form>
             {d.pages.length === 0 ? <p className="text-sm text-gray-600">{t.no_pages_yet}</p> : (
@@ -417,7 +417,7 @@ function Collections({ d, t }) {
                 <Field label={t.collection_name}><input className="form-input w-full" value={form.name} onChange={(e) => set({ name: e.target.value })} required data-testid="collection-name" /></Field>
                 <Field label={t.name_dv}><input className="form-input w-full" dir="rtl" value={form.name_dv} onChange={(e) => set({ name_dv: e.target.value })} /></Field>
                 <Field label={t.name_ar}><input className="form-input w-full" dir="rtl" value={form.name_ar} onChange={(e) => set({ name_ar: e.target.value })} /></Field>
-                {!form.id && <Field label={t.slug_label}><input className="form-input w-full" placeholder={t.slug_from_title} value={form.slug} onChange={(e) => set({ slug: e.target.value })} data-testid="collection-slug" /></Field>}
+                {!form.id && <Field label={t.slug_label}><input className="form-input w-full" placeholder={t.slug_from_title} aria-label={t.slug_from_title} value={form.slug} onChange={(e) => set({ slug: e.target.value })} data-testid="collection-slug" /></Field>}
                 <Field label={t.description} className={form.id ? 'md:col-span-2' : ''}><input className="form-input w-full" value={form.description} onChange={(e) => set({ description: e.target.value })} /></Field>
                 <Field label={t.collection_kind}>
                     <select className="form-input w-full" value={form.kind} onChange={(e) => set({ kind: e.target.value })} data-testid="collection-kind">
@@ -523,7 +523,7 @@ function Library({ d, t }) {
                     {d.library.map((img) => (
                         <li key={img.id} className="rounded border bg-white p-2 text-xs" data-testid={`library-image-${img.id}`}>
                             {img.url ? <img src={img.url} alt={img.alt || ''} className="mb-1 aspect-square w-full rounded object-cover" /> : <span className="block aspect-square rounded bg-gray-100" />}
-                            <input className="form-input mb-1 w-full py-1 text-xs" defaultValue={img.alt || ''} placeholder={t.image_alt} onBlur={(e) => { if (e.target.value !== (img.alt || '')) router.post(`/vendor/storefront/images/${img.id}`, { alt: e.target.value }, { preserveScroll: true }); }} />
+                            <input className="form-input mb-1 w-full py-1 text-xs" defaultValue={img.alt || ''} placeholder={t.image_alt} aria-label={t.image_alt} onBlur={(e) => { if (e.target.value !== (img.alt || '')) router.post(`/vendor/storefront/images/${img.id}`, { alt: e.target.value }, { preserveScroll: true }); }} />
                             <button type="button" className="text-red-700 underline" onClick={() => router.delete(`/vendor/storefront/images/${img.id}`, { preserveScroll: true })}>{t.remove}</button>
                         </li>
                     ))}
@@ -593,7 +593,7 @@ export default function VendorSections({ t, vendor, designer, preview_url, publi
                     </div>
                     {isOwner && (
                         <span className="flex w-full flex-wrap items-center gap-2 sm:w-auto">
-                            <input className="form-input w-full min-w-0 sm:w-48" placeholder={t.version_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid="version-note" />
+                            <input className="form-input w-full min-w-0 sm:w-48" placeholder={t.version_note} aria-label={t.version_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid="version-note" />
                             <button type="button" className="btn-primary" disabled={!d.exists || d.moderation.held} title={d.moderation.held ? t.storefront_held : ''} data-testid="publish" onClick={publish}>{t.publish}</button>
                             {d.draft_dirty && <span className="text-xs text-amber-800" data-testid="draft-dirty">{t.draft_differs}</span>}
                         </span>

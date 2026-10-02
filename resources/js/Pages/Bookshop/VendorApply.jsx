@@ -63,15 +63,15 @@ export default function VendorApply({ t, open, application, shops = [], agreemen
                         ))}
                     </fieldset>
                     <label className="text-sm">{form.data.kind === 'personal' ? t.apply_seller_name : t.apply_shop_name}<input className="form-input w-full" value={form.data.shop_name} onChange={set('shop_name')} required maxLength={120} data-testid="apply-shop-name" /></label>
-                    <label className="text-sm">{t.apply_island}<input className="form-input w-full" value={form.data.island} onChange={set('island')} required maxLength={120} placeholder={t.apply_island_hint} data-testid="apply-island" /></label>
+                    <label className="text-sm">{t.apply_island}<input className="form-input w-full" value={form.data.island} onChange={set('island')} required maxLength={120} placeholder={t.apply_island_hint} aria-label={t.apply_island_hint} data-testid="apply-island" /></label>
                     {form.data.kind === 'shop' && <label className="text-sm">{t.apply_legal_name}<input className="form-input w-full" value={form.data.legal_name} onChange={set('legal_name')} maxLength={255} data-testid="apply-legal-name" /></label>}
                     {form.data.kind === 'shop' && <label className="text-sm">{t.apply_tin}<input className="form-input w-full" value={form.data.tin} onChange={set('tin')} maxLength={40} data-testid="apply-tin" /></label>}
                     <label className="text-sm">{t.apply_email}<input className="form-input w-full" type="email" value={form.data.contact_email} onChange={set('contact_email')} required data-testid="apply-email" /></label>
                     <label className="text-sm">{t.apply_phone}<input className="form-input w-full" value={form.data.contact_phone} onChange={set('contact_phone')} required maxLength={40} data-testid="apply-phone" /></label>
                     <label className="text-sm md:col-span-2">{form.data.kind === 'personal' ? t.apply_what_personal : t.apply_what_they_sell}
-                        <textarea className="form-input w-full" rows={4} value={form.data.what_they_sell} onChange={set('what_they_sell')} required minLength={20} maxLength={2000} placeholder={form.data.kind === 'personal' ? t.apply_what_personal_hint : t.apply_what_hint} data-testid="apply-what" />
+                        <textarea className="form-input w-full" rows={4} value={form.data.what_they_sell} onChange={set('what_they_sell')} required minLength={20} maxLength={2000} placeholder={form.data.kind === 'personal' ? t.apply_what_personal_hint : t.apply_what_hint} aria-label={form.data.kind === 'personal' ? t.apply_what_personal_hint : t.apply_what_hint} data-testid="apply-what" />
                     </label>
-                    {form.data.kind === 'shop' && <label className="text-sm md:col-span-2">{t.apply_link}<input className="form-input w-full" type="url" value={form.data.link} onChange={set('link')} placeholder="https://" data-testid="apply-link" /></label>}
+                    {form.data.kind === 'shop' && <label className="text-sm md:col-span-2">{t.apply_link}<input className="form-input w-full" type="url" value={form.data.link} onChange={set('link')} placeholder="https://" aria-label="https://" data-testid="apply-link" /></label>}
                     <IdentityCardFields form={form} l={id_l} />
                     <label className="flex items-start gap-2 text-sm md:col-span-2">
                         <input type="checkbox" checked={form.data.agreement} onChange={(e) => form.setData('agreement', e.target.checked)} required data-testid="apply-agreement" />

@@ -21,10 +21,10 @@ function VersionForm() {
             }}
             className="mb-6 grid gap-2 rounded-lg border bg-white p-4 md:grid-cols-6"
         >
-            <input className="form-input" placeholder="Version name (v2)" value={form.data.version_name} onChange={(e) => form.setData('version_name', e.target.value)} />
-            <input className="form-input md:col-span-2" placeholder="Model path (.h5)" value={form.data.model_path} onChange={(e) => form.setData('model_path', e.target.value)} />
-            <input className="form-input" placeholder="Samples" value={form.data.training_sample_count} onChange={(e) => form.setData('training_sample_count', e.target.value)} />
-            <input className="form-input" placeholder="Letter acc (0–1)" value={form.data.validation_letter_accuracy} onChange={(e) => form.setData('validation_letter_accuracy', e.target.value)} />
+            <input className="form-input" placeholder="Version name (v2)" aria-label="Version name (v2)" value={form.data.version_name} onChange={(e) => form.setData('version_name', e.target.value)} />
+            <input className="form-input md:col-span-2" placeholder="Model path (.h5)" aria-label="Model path (.h5)" value={form.data.model_path} onChange={(e) => form.setData('model_path', e.target.value)} />
+            <input className="form-input" placeholder="Samples" aria-label="Samples" value={form.data.training_sample_count} onChange={(e) => form.setData('training_sample_count', e.target.value)} />
+            <input className="form-input" placeholder="Letter acc (0–1)" aria-label="Letter acc (0–1)" value={form.data.validation_letter_accuracy} onChange={(e) => form.setData('validation_letter_accuracy', e.target.value)} />
             <button type="submit" className="btn-primary" disabled={form.processing}>Register version</button>
             <FormErrors errors={form.errors} />
         </form>
@@ -68,7 +68,7 @@ export default function Admin({ pending_samples: pendingSamples, model_versions:
                                     <td className="px-3 py-2">
                                         <input
                                             className="form-input mb-1 w-48"
-                                            placeholder="Rejection reason"
+                                            placeholder="Rejection reason" aria-label="Rejection reason"
                                             value={reasons[sample.id] || ''}
                                             onChange={(e) => setReasons({ ...reasons, [sample.id]: e.target.value })}
                                         />

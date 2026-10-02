@@ -57,7 +57,7 @@ function ApplicationsQueue({ applications }) {
                             <td className="px-3 py-2">
                                 <input
                                     className="form-input mb-2 w-48"
-                                    placeholder="Note (optional)"
+                                    placeholder="Note (optional)" aria-label="Note (optional)"
                                     value={notes[app.id] || ''}
                                     onChange={(e) => setNotes({ ...notes, [app.id]: e.target.value })}
                                 />
@@ -100,7 +100,7 @@ function PayoutsQueue({ payouts }) {
                                 <td className="px-3 py-2">
                                     <input
                                         className="form-input mb-1 w-40"
-                                        placeholder="Note"
+                                        placeholder="Note" aria-label="Note"
                                         value={notes[req.id] || ''}
                                         onChange={(e) => setNotes({ ...notes, [req.id]: e.target.value })}
                                     />
@@ -195,7 +195,7 @@ function SubmissionsQueue({ submissions, reviewers = [] }) {
                                         <span className="mt-1 flex flex-wrap gap-1">
                                             <input
                                                 className="form-input w-44"
-                                                placeholder="Reviewer email"
+                                                placeholder="Reviewer email" aria-label="Reviewer email"
                                                 list="reviewer-pool"
                                                 value={reviewerEmails[sub.id] || ''}
                                                 onChange={(e) => setReviewerEmails({ ...reviewerEmails, [sub.id]: e.target.value })}
@@ -217,7 +217,7 @@ function SubmissionsQueue({ submissions, reviewers = [] }) {
                             <td className="px-3 py-2">
                                 <input
                                     className="form-input mb-2 w-56"
-                                    placeholder="Editor comment"
+                                    placeholder="Editor comment" aria-label="Editor comment"
                                     value={comments[sub.id] || ''}
                                     onChange={(e) => setComments({ ...comments, [sub.id]: e.target.value })}
                                 />
@@ -282,22 +282,22 @@ function ItemForm({ categories, options }) {
             }}
             className="mb-6 grid gap-2 rounded-lg border bg-white p-4 md:grid-cols-4"
         >
-            <input className="form-input md:col-span-2" placeholder="Title" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-            <select className="form-input" value={form.data.content_type} onChange={(e) => form.setData('content_type', e.target.value)}>
+            <input className="form-input md:col-span-2" placeholder="Title" aria-label="Title" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+            <select className="form-input" value={form.data.content_type} onChange={(e) => form.setData('content_type', e.target.value)} aria-label="Type">
                 {options.content_types.map((type) => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}
             </select>
-            <select className="form-input" value={form.data.access_type} onChange={(e) => form.setData('access_type', e.target.value)}>
+            <select className="form-input" value={form.data.access_type} onChange={(e) => form.setData('access_type', e.target.value)} aria-label="Access">
                 {options.access_types.map((type) => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}
             </select>
 
-            <input className="form-input" placeholder="Price (MVR)" value={form.data.price} onChange={(e) => form.setData('price', e.target.value)} />
-            <input className="form-input" placeholder="Subtitle" value={form.data.subtitle} onChange={(e) => form.setData('subtitle', e.target.value)} />
-            <select className="form-input" value={form.data.library_category_id} onChange={(e) => form.setData('library_category_id', e.target.value)}>
+            <input className="form-input" placeholder="Price (MVR)" aria-label="Price (MVR)" value={form.data.price} onChange={(e) => form.setData('price', e.target.value)} />
+            <input className="form-input" placeholder="Subtitle" aria-label="Subtitle" value={form.data.subtitle} onChange={(e) => form.setData('subtitle', e.target.value)} />
+            <select className="form-input" value={form.data.library_category_id} onChange={(e) => form.setData('library_category_id', e.target.value)} aria-label="Category">
                 <option value="">Category…</option>
                 {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
             </select>
-            <input className="form-input" placeholder="Authors (comma-separated)" value={form.data.authors_text} onChange={(e) => form.setData('authors_text', e.target.value)} />
-            <input className="form-input" placeholder="Tags (comma-separated)" value={form.data.tags_text} onChange={(e) => form.setData('tags_text', e.target.value)} />
+            <input className="form-input" placeholder="Authors (comma-separated)" aria-label="Authors (comma-separated)" value={form.data.authors_text} onChange={(e) => form.setData('authors_text', e.target.value)} />
+            <input className="form-input" placeholder="Tags (comma-separated)" aria-label="Tags (comma-separated)" value={form.data.tags_text} onChange={(e) => form.setData('tags_text', e.target.value)} />
 
             <TeacherAuthors className="md:col-span-4" teachers={options.teachers || []} value={form.data.teacher_ids} onChange={(ids) => form.setData('teacher_ids', ids)} t={t} />
             <DeliveryChoice
@@ -309,13 +309,13 @@ function ItemForm({ categories, options }) {
                 t={t}
             />
 
-            <textarea className="form-input md:col-span-2" rows="2" placeholder="Abstract" value={form.data.abstract} onChange={(e) => form.setData('abstract', e.target.value)} />
+            <textarea className="form-input md:col-span-2" rows="2" placeholder="Abstract" aria-label="Abstract" value={form.data.abstract} onChange={(e) => form.setData('abstract', e.target.value)} />
             <label className="text-sm">
                 Cover image (JPEG, PNG or WebP)
                 <input className="form-input" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('cover', e.target.files[0] ?? null)} />
             </label>
-            <input className="form-input" placeholder="…or a cover image URL" value={form.data.cover_image} onChange={(e) => form.setData('cover_image', e.target.value)} />
-            <input className="form-input" type="number" min="1" placeholder="Reading time (min)" value={form.data.reading_time} onChange={(e) => form.setData('reading_time', e.target.value)} />
+            <input className="form-input" placeholder="…or a cover image URL" aria-label="…or a cover image URL" value={form.data.cover_image} onChange={(e) => form.setData('cover_image', e.target.value)} />
+            <input className="form-input" type="number" min="1" placeholder="Reading time (min)" aria-label="Reading time (min)" value={form.data.reading_time} onChange={(e) => form.setData('reading_time', e.target.value)} />
             <select className="form-input" value={form.data.difficulty} onChange={(e) => form.setData('difficulty', e.target.value)} aria-label="Difficulty">
                 <option value="">Difficulty: not set</option>
                 <option value="beginner">Beginner</option>
@@ -350,7 +350,7 @@ function CategoryForm() {
             }}
             className="flex flex-wrap gap-2"
         >
-            <input className="form-input" placeholder="New category" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+            <input className="form-input" placeholder="New category" aria-label="New category" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
             <button type="submit" className="btn-secondary" disabled={form.processing}>Add</button>
             <FormErrors errors={form.errors} />
         </form>

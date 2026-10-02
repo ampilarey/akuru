@@ -4912,6 +4912,44 @@ ask no third party for a font (the Google Translate widget's own logo on
 gstatic is not one) and draw with Figtree, Faruma and Cairo from the
 build; an English page downloads no Arabic file. Architecture green (69).
 
+## 5nq. Under a thumb: 16 px controls, 44 px targets, a name on every field (C15 slice 6a, 2026-10-02)
+
+ADMIN_PANEL.md §7 M3, M4 and M5. The audit measured the panel at 390 px:
+889 of 1,246 tap targets under 32 px (the row actions, the back links,
+the chips), 204 form controls under 16 px — iOS zooms the page when one
+is tapped and leaves it zoomed — and 38 fields with a placeholder and no
+name, which a screen reader announces as nothing and a phone keyboard
+cannot pick a mode for.
+
+- **The stylesheet, below `sm`** (one block in `app.css`): every text
+  control is 16 px whatever utility class it carries — the selector's
+  `:not()` chain outranks `.text-sm`, which is why a plain `select` rule
+  did not take and the first walk still found the Destination and
+  direction selects at 14 px; a link or button in a table cell, a chip,
+  a back or section link (`*-back`, `back-link`, `*-link`) and the two
+  button classes reach 44 px; a checkbox or radio is 24 px. Desks are
+  untouched.
+- **Names**: 137 controls across 31 pages gained an `aria-label` from
+  their own placeholder (the pages the audit named and the rest of the
+  Inertia set in one pass — the Library's writing desk alone had 28);
+  eleven controls with no placeholder were named by hand (the invoice
+  month, the Akuru stock direction and quantity, the driver pick, the
+  Library item's type, access and category, the Commerce expiry and
+  discount type, the shop home's link kind and its two feature picks).
+  The first pass missed any tag whose inline arrow function came before
+  its placeholder — a `>` inside `=>` ended the match — and broke two
+  template-literal placeholders; the second pass walks the tag by brace
+  depth, and the build caught the two before any walk did.
+- **Table stacking (M2) is 6b**, one group of screens per PR; the
+  26 swipe tables are unchanged here.
+
+Walk: new `phone-targets.mjs` **5/5** — 21 admin screens at 390 px, 143
+visible text controls all 16 px and all named, 238 row actions, chips,
+back links and buttons all 44 px, 53 checkboxes and radios all 24 px.
+Re-walked on the new stylesheet: `admin-mobile.mjs` 3/3 (nothing
+overflows), `admin-hub.mjs` 25/25, `long-pages.mjs` 17/17, `vendor.mjs`
+32/32, `nav.mjs` 14/14. Architecture green (69).
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not

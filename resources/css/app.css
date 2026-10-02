@@ -258,6 +258,42 @@ html[lang="dv"] body,
     margin-inline-start: 0;
   }
 }
+/*
+ * Under a thumb (docs/ADMIN_PANEL.md §7 M3 and M4, STATUS §5nq). The audit
+ * measured the admin panel at 390px: 889 of 1,246 tap targets under 32px —
+ * the row actions, the back links, the chips — and 204 form controls under
+ * 16px, which makes iOS zoom the page when one is tapped and leave it
+ * zoomed. Apple and Android both ask for 44px. Below `sm` every text
+ * control is 16px whatever utility class it carries (the `:not()` chain
+ * outranks `.text-sm`), a link or button in a table cell, a chip, a back or
+ * section link and the two button classes reach 44px, and a checkbox or
+ * radio is 24px. Desks are untouched.
+ */
+@media (max-width: 639.98px) {
+  input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=file]):not([type=submit]):not([type=button]):not([type=hidden]),
+  select:not([hidden]),
+  textarea:not([hidden]) {
+    font-size: 1rem;
+  }
+  td > a,
+  td > button,
+  .btn-primary,
+  .btn-secondary,
+  .chip-link,
+  [data-testid$="-back"],
+  [data-testid="back-link"],
+  [data-testid$="-link"] {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+  }
+  input[type=checkbox],
+  input[type=radio] {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
+
 /* B3 (LIBRARY_PLAN §36): the article body's editor. A page break is a
    labelled rule so the writer sees where the reader's page turns; the
    placeholder shows on the empty first paragraph only. */
