@@ -2,6 +2,23 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { forgetPushDevice } from '../Platform';
 import { useEffect, useState } from 'react';
 
+/** A phone, the same cut as Tailwind's `sm` (640px). The shell hides More there. */
+function useNarrow() {
+    const query = '(max-width: 639.98px)';
+    const [narrow, setNarrow] = useState(() => typeof window !== 'undefined' && window.matchMedia(query).matches);
+
+    useEffect(() => {
+        const media = window.matchMedia(query);
+        const apply = () => setNarrow(media.matches);
+        apply();
+        media.addEventListener('change', apply);
+
+        return () => media.removeEventListener('change', apply);
+    }, []);
+
+    return narrow;
+}
+
 /**
  * The shell every Inertia screen renders inside.
  *
@@ -22,6 +39,7 @@ export default function AppShell({ title, children }) {
     const n = i18n?.nav || {};
     const [open, setOpen] = useState(false);
     const [switching, setSwitching] = useState(false);
+    const narrow = useNarrow();
     const workspaces = auth?.workspaces ?? [];
     const activeWorkspace = workspaces.find((workspace) => workspace.key === auth?.workspace);
 
@@ -128,11 +146,11 @@ export default function AppShell({ title, children }) {
                             />
                         ))}
                         </div>
-                        {/* On a phone the More panel also holds the account and the
-                            language switch (below), so the button is there for a signed-in
-                            person even when the workspace has no groups; on a desktop it is
-                            only there when there is something to list. */}
-                        {(nav.groups.length > 0 || user) && (
+                        {/* More is the desk control for the screens that are not in the
+                            bar. On a phone the initial (below) opens that same list, so a
+                            second More button is not drawn (the owner, 2026-10-02). A
+                            signed-out phone still gets More when there is a list. */}
+                        {(nav.groups.length > 0 || user) && !(narrow && user) && (
                             <button
                                 type="button"
                                 aria-expanded={open}
@@ -176,19 +194,22 @@ export default function AppShell({ title, children }) {
                             </button>
                         ))}
                         {/* The account pill and the language switch: in the bar from sm:,
-                            in the More panel on a phone. Five header rows took three fifths
+                            in this panel on a phone. Five header rows took three fifths
                             of a phone's first screen before a parent saw a word of their
                             own page (the phone-first pass, STATUS §5js); three rows is the
                             most a header gets. The initial stays in the bar so a shared
-                            phone still shows who is signed in — and opens the panel. */}
+                            phone still shows who is signed in — and it is the control that
+                            opens the list More opens on a desk. */}
                         {user && (
                             <button
                                 type="button"
                                 aria-label={n.account || 'Account'}
+                                aria-expanded={narrow ? open : undefined}
+                                aria-controls={narrow ? 'app-shell-more' : undefined}
                                 title={user.name}
                                 data-testid="shell-avatar"
                                 onClick={() => setOpen((value) => !value)}
-                                className="ms-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/25 text-sm font-bold text-white sm:hidden"
+                                className={`ms-auto flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-bold text-white sm:hidden ${open ? 'bg-white/40 ring-2 ring-white' : 'bg-white/25'}`}
                             >
                                 {(user.name || '?').slice(0, 1).toUpperCase()}
                             </button>

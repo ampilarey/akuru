@@ -4487,6 +4487,26 @@ is a heading, and a tap opens Identity and a second tap folds it. The
 signed-in walk in `vendor-mobile.mjs` now checks the same things. It was
 not run here: this machine has no PHP or MySQL.
 
+## 5nc. On a phone the initial opens the menu (2026-10-02)
+
+The owner, with the menu open on a phone: "What's the use of More? When
+F is clicked, the items in More should appear."
+
+More and the initial opened the same list, so the word More was a second
+door to the account, the language switch, and Personal (My profile, the
+libraries, the wallet, orders, and the rest).
+
+**Built:** on a phone that list opens from the initial, and More is not
+drawn. A second tap on the initial closes it. On a wider screen More
+stays, because the name and Log out are already in the bar and More is
+how the rest of the screens are reached. A signed-out phone still has
+More when there is a list to show.
+
+The phone header of this markup, at 390px: no More, the initial is in
+the bar, a tap opens the account and the Personal links, and a second
+tap closes them. The signed-in phone walk was not run here: this machine
+has no PHP or MySQL.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not
