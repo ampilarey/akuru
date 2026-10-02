@@ -223,6 +223,7 @@ return [
     // COMMERCE_PARITY_PLAN P6b.
     'deliveries' => 'توصيلاتي',
     'workspace_deliveries' => 'التوصيل',
+    'free_items' => 'أشياء مجانية',
     'my_lending' => 'إعاراتي',
     'lending_shelf' => 'كتب للاستعارة أو الاحتفاظ',
     'workspace_lending' => 'الإعارة',

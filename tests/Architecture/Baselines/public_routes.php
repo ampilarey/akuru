@@ -113,6 +113,7 @@ return [
     'GET shop/track' => 'Track an order without signing in (STATUS §5lj): only with its number AND the phone it is going to; shows status, steps, tracking note and item titles — never the address, name, money or messages. Throttled at 10 a minute against guessing.',
     'GET shop/deals' => 'The public deals page (STATUS §5lb): products of active shops on a timed sale now. Public catalogue content only. No per-person data.',
     'GET shop/used' => 'Old and used books (STATUS §5mr): products of active shops whose condition is not new. Public catalogue content only. No per-person data.',
+    'GET free-items' => 'Free items (LENDING_AND_USED_BOOKS_PLAN L5): give-aways of active, ID-checked lenders — free now, reserved, and taken in the last 30 days. The giver\'s display name and island only; never a phone, email or who took it.',
     'GET lending' => 'Books to borrow (LENDING_AND_USED_BOOKS_PLAN L1, STATUS §5ms): books of active lenders whose ID card the office has checked. Shows the lender\'s chosen display name and island, never their phone, email or legal name.',
     'GET lending/{slug}' => 'One book to borrow (L1). The same shelf gate as the list; a paused, removed or unchecked lender\'s book is a 404. The lender\'s display name and island only; the request form is for signed-in people and posts to a signed-in route.',
     'GET shop/export' => 'The public bookshop listing as CSV (every listing gets one). Only what the page shows. No per-person data.',

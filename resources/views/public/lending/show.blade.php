@@ -31,7 +31,13 @@
         </div>
         <div class="md:col-span-3">
             <div class="mb-2 flex flex-wrap gap-1 text-[11px] font-semibold text-white">
-                <span class="rounded px-1.5 py-0.5 {{ $book['status'] === 'on_loan' ? 'bg-gray-600' : 'bg-green-700' }}" data-testid="book-status">{{ $book['status_label'] }}</span>
+                @if($book['status'] === 'given')
+                    <span class="rounded bg-gray-700 px-1.5 py-0.5" data-testid="book-status" data-state="taken">{{ __('lending.taken_badge') }}</span>
+                @elseif($book['reserved'])
+                    <span class="rounded bg-amber-600 px-1.5 py-0.5" data-testid="book-status" data-state="reserved">{{ __('lending.reserved_badge') }}</span>
+                @else
+                    <span class="rounded px-1.5 py-0.5 {{ $book['status'] === 'on_loan' ? 'bg-gray-600' : 'bg-green-700' }}" data-testid="book-status">{{ $book['status_label'] }}</span>
+                @endif
                 <span class="rounded bg-amber-700 px-1.5 py-0.5">{{ __('lending.condition_label') }}: {{ $book['condition_label'] }}</span>
                 @if($book['offer'] === 'give')<span class="rounded bg-brandMaroon-700 px-1.5 py-0.5" data-testid="give-badge">{{ __('lending.give_badge') }}</span>@endif
                 @if($book['lender']['id_required'])<span class="rounded bg-brandMaroon-700 px-1.5 py-0.5" data-testid="id-required">{{ __('lending.id_required_badge') }}</span>@endif
@@ -66,6 +72,12 @@
             </section>
 
             <section class="mt-5" data-testid="ask-section">
+                @if($book['status'] === 'given')
+                    {{-- L5: taken — nothing to ask for; the way back to what is still free. --}}
+                    <p class="rounded border bg-gray-50 p-3 text-sm text-gray-700" data-testid="taken-note">{{ __('lending.taken_on', ['date' => $book['taken_on']]) }}. <a href="{{ route('public.lending.free') }}" class="text-brandMaroon-700 underline">{{ __('lending.free_see_more') }}</a></p>
+                @elseif($book['reserved'])
+                    <p class="rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" data-testid="reserved-note">{{ __('lending.reserved_note') }}</p>
+                @else
                 @guest
                     <a href="{{ route('login') }}" class="btn-primary" data-testid="ask-sign-in">{{ __('lending.ask_sign_in') }}</a>
                 @else
@@ -78,6 +90,7 @@
                         <div><button type="submit" class="btn-primary" data-testid="ask-submit">{{ $book['offer'] === 'give' ? __('lending.ask_to_take') : __('lending.ask_to_borrow') }}</button></div>
                     </form>
                 @endguest
+                @endif
             </section>
             <p class="mt-6 text-sm"><a href="{{ route('public.lending.index') }}" class="text-brandMaroon-700 underline">‹ {{ __('lending.back_to_shelf') }}</a></p>
         </div>

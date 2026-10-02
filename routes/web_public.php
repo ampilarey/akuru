@@ -62,6 +62,8 @@ Route::get('shop/deals', [\App\Domains\Bookshop\Http\Controllers\ShopController:
 Route::get('shop/used', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'used'])->name('public.shop.used');
 // LENDING_AND_USED_BOOKS_PLAN L1: books to borrow from checked lenders, and one book's page.
 Route::get('lending', [\App\Domains\Lending\Http\Controllers\LendingController::class, 'index'])->name('public.lending.index');
+// L5: the Free items page — give-aways, reserved and recently taken.
+Route::get('free-items', [\App\Domains\Lending\Http\Controllers\LendingController::class, 'free'])->name('public.lending.free');
 Route::get('lending/{slug}', [\App\Domains\Lending\Http\Controllers\LendingController::class, 'show'])->name('public.lending.show')->where('slug', '[a-z0-9-]+');
 Route::get('shop/export', [\App\Domains\Bookshop\Http\Controllers\ShopController::class, 'export'])->name('public.shop.export');
 // B7: suggestions as you type.

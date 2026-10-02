@@ -222,7 +222,7 @@ return [
     'ask_to_take' => 'Ask for it',
     'filter_offer' => 'Offered',
     'filter_offer_any' => 'Borrow or keep',
-    'shelf_free_chip' => 'Free books',
+    'shelf_free_chip' => 'Free items',
     'book_status_given' => 'Given away',
     'loan_status_given' => 'Given — it is theirs',
     'loan_given_flash' => 'Handed over. The book is theirs now.',
@@ -231,6 +231,21 @@ return [
     'notice_given_body' => ':name has given you “:title”. Enjoy it.',
     'handover_give' => 'Handed over — it is theirs',
     'books_given_note' => 'Given away',
+
+    // L5: the Free items page
+    'free_title' => 'Free items',
+    'free_intro' => 'Books and school things people give away for free. Ask for one; when the giver agrees you arrange the handover between you. No money goes through Akuru.',
+    'free_available_heading' => 'Free to take',
+    'free_taken_heading' => 'Recently taken',
+    'free_taken_intro' => 'Given away in the last :days days.',
+    'free_empty' => 'Nothing free right now. Check back soon — or give something away.',
+    'free_give_cta' => 'Give something away',
+    'free_see_more' => 'See what is still free',
+    'taken_badge' => 'Taken',
+    'taken_on' => 'Taken :date',
+    'reserved_badge' => 'Reserved',
+    'reserved_note' => 'The giver has promised this to someone. If they do not collect it, it comes back.',
+    'error_reserved' => 'The giver has promised this to someone else. If they do not collect it, it comes back.',
 
     // Office
     'admin_title' => 'Book lending',

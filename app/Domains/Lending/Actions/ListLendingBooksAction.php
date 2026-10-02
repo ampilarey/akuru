@@ -2,7 +2,9 @@
 
 namespace App\Domains\Lending\Actions;
 
+use App\Domains\Lending\Enums\BookOffer;
 use App\Domains\Lending\Enums\LendingBookStatus;
+use App\Domains\Lending\Enums\LoanStatus;
 use App\Domains\Lending\Models\Lender;
 use App\Domains\Lending\Models\LendingBook;
 use App\Domains\Lending\Support\LendingPresenter;
@@ -50,7 +52,10 @@ class ListLendingBooksAction
      */
     public function show(string $slug): ?array
     {
-        $book = $this->shelf()->where('slug', $slug)->with('lender')->first();
+        // L5: a give-away stays visible as *Taken* for a while after it is handed over.
+        $book = $this->shelf()->where('slug', $slug)->with('lender')->first()
+            ?? $this->recentlyTaken()->where('slug', $slug)->with('lender')->first();
+        $book?->loadCount(['loans as reserved_count' => fn (Builder $q) => $q->where('status', LoanStatus::Accepted->value)]);
 
         if ($book === null) {
             return null;
@@ -60,15 +65,54 @@ class ListLendingBooksAction
         return LendingPresenter::book($book, null, true) + ['lender_comments' => RateLendingAction::lenderComments((int) $book->lender_id)];
     }
 
+    /**
+     * L5, the *Free items* page: what people give away now (with *Reserved*
+     * on one a giver has promised to someone), and what was taken in the
+     * last few weeks, marked *Taken* — so the page shows the giving that
+     * happens, not only what is left.
+     *
+     * @return array{available: list<array<string, mixed>>, taken: list<array<string, mixed>>, taken_days: int}
+     */
+    public function free(): array
+    {
+        $limit = (int) config('lending.per_page', 24);
+        $available = $this->shelf()->where('offer', BookOffer::Give->value)->where('status', LendingBookStatus::Available->value)
+            ->withCount(['loans as reserved_count' => fn (Builder $q) => $q->where('status', LoanStatus::Accepted->value)])
+            ->with('lender')->orderBy('reserved_count')->orderByDesc('id')->limit($limit)->get();
+        $taken = $this->recentlyTaken()->with('lender')->orderByDesc('given_at')->limit($limit)->get();
+
+        return [
+            'available' => $available->map(fn (LendingBook $b) => LendingPresenter::book($b))->values()->all(),
+            'taken' => $taken->map(fn (LendingBook $b) => LendingPresenter::book($b))->values()->all(),
+            'taken_days' => (int) config('lending.free.taken_days', 30),
+        ];
+    }
+
     /** Books that may be shown: not paused or removed, from an active, ID-checked lender. */
     private function shelf(): Builder
     {
-        $lenderIds = Lender::query()->where('status', Lender::ACTIVE)->get(['id', 'user_id'])
-            ->filter(fn (Lender $l) => RegisterLenderAction::verified((int) $l->user_id))->pluck('id')->all();
-
         return LendingBook::query()
             ->whereIn('status', [LendingBookStatus::Available->value, LendingBookStatus::OnLoan->value])
-            ->whereIn('lender_id', $lenderIds);
+            ->whereIn('lender_id', $this->shownLenderIds());
+    }
+
+    /** L5: give-aways handed over within the window, each with the day it was taken (`given_at`). */
+    private function recentlyTaken(): Builder
+    {
+        $since = now()->subDays((int) config('lending.free.taken_days', 30));
+
+        return LendingBook::query()
+            ->where('offer', BookOffer::Give->value)->where('status', LendingBookStatus::Given->value)
+            ->whereIn('lender_id', $this->shownLenderIds())
+            ->whereHas('loans', fn (Builder $q) => $q->where('status', LoanStatus::Given->value)->where('handed_at', '>=', $since))
+            ->withMax(['loans as given_at' => fn (Builder $q) => $q->where('status', LoanStatus::Given->value)], 'handed_at');
+    }
+
+    /** @return list<int> active lenders whose ID card the office has checked */
+    private function shownLenderIds(): array
+    {
+        return Lender::query()->where('status', Lender::ACTIVE)->get(['id', 'user_id'])
+            ->filter(fn (Lender $l) => RegisterLenderAction::verified((int) $l->user_id))->pluck('id')->values()->all();
     }
 
     /**

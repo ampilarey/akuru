@@ -65,7 +65,8 @@ it('offers a book free to keep: no due date, the shelf and its filter say so, ha
     expect($loan->refresh()->status->value)->toBe('given')->and($loan->handed_at)->not->toBeNull()->and($gift->refresh()->status->value)->toBe('given');
     expect(UserNotification::query()->where('user_id', $taker->id)->latest('id')->value('title'))->toBe('The book is yours');
     giveWeb()->get(route('public.lending.index'))->assertDontSee('Old atlas');
-    giveWeb()->get(route('public.lending.show', 'old-atlas'))->assertNotFound();
+    // L5: a taken give-away stays visible as Taken on its page (and on Free items), with no request form.
+    giveWeb()->get(route('public.lending.show', 'old-atlas'))->assertOk()->assertSee('data-state="taken"', false)->assertDontSee('data-testid="ask-form"', false);
     // Nothing comes back: "returned" is refused; the giver cannot take the book down or re-offer it; both may rate.
     giveWeb()->actingAs($giver)->post(route('public.lending.loan', [$loan->id, 'returned']), [])->assertSessionHasErrors('loan');
     giveWeb()->actingAs($giver)->delete(route('public.lending.books.destroy', $gift->id))->assertSessionHasNoErrors(); // taking a given book off one's own list is allowed

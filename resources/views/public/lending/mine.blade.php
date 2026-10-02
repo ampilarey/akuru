@@ -128,7 +128,7 @@
                     </li>
                 @endforeach
             </ul>
-            <details class="rounded-lg border bg-gray-50 p-3" data-testid="add-book" @if(count($books) === 0) open @endif>
+            <details class="rounded-lg border bg-gray-50 p-3" data-testid="add-book" @if(count($books) === 0 || request('offer') === 'give') open @endif>
                 <summary class="cursor-pointer font-medium text-brandMaroon-800">{{ __('lending.add_book') }}</summary>
                 <form method="POST" action="{{ route('public.lending.books.store') }}" enctype="multipart/form-data" class="mt-3 grid gap-2 sm:grid-cols-2" data-testid="book-form">
                     @csrf

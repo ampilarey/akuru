@@ -203,6 +203,51 @@ Legend — **CODE:** implementation in repo (models/migrations/actions/routes/pa
 
 Fixed enough that the old overstatement no longer applies: SMS live-bind, `DatabaseSeeder` ≠ school, Blade parent/teacher landing, fill-grid names-only, generate-0 copy, class/year 500s, invoice drafts-only list.
 
+## 5na. Free items: a page of its own, Reserved and Taken (LENDING_AND_USED_BOOKS_PLAN L5, 2026-10-02)
+
+The owner: "Is there any give away or free item page? When it's taken it
+appears as taken. Lenders can list this." Give-aways (L3) lived on the
+lending shelf behind a filter and vanished — their page a 404 — the
+moment they were handed over.
+
+- **`/free-items`** (*Free items*): what people give away now (*Free to
+  take*), then what was taken in the last 30 days (*Recently taken*,
+  `lending.free.taken_days`), each card marked *Taken* with the day. The
+  giver's display name and island only; never a phone or who took it.
+- **Reserved**: once the giver accepts a request the item shows
+  *Reserved* on the page and its own page, and further requests are
+  refused ("The giver has promised this to someone else…"); if the taker
+  cancels it is free again.
+- **Taken**: at handover the item stays visible as *Taken* on Free items
+  and on its own page (no request form, a link to what is still free);
+  after the window it leaves both, its page a 404 as before.
+- **Listing**: lenders list as before (*Free to keep* on My lending).
+  *Give something away* on the page opens My lending with the add form
+  open and *Free to keep* already chosen (`?offer=give`).
+- **Ways in**: a *Free items* chip in the Bookstore's menu; the lending
+  shelf's chip now opens the page (was a filter); *Free items* in the
+  Lending workspace bar. The shelf card is now one partial
+  (`public/lending/_card.blade.php`) shared by both pages.
+- EN/DV/AR.
+- **Also: main was red.** Cursor's #648 added
+  `public/shop/_vendor-menu.blade.php` without its Blade-baseline entry,
+  so `NoNewBladeScreensTest` failed on `main`. Registered here with the
+  reason.
+
+Tests: new `FreeItemsTest` (42 assertions) — empty page and the giver's
+way in (form open, *Free to keep* checked); a give-away listed and a loan
+not; accepted → Reserved on both pages, no request form, a new request
+refused; cancelled → free again; handed over → Taken with the day under
+Recently taken, the taker's name nowhere, Taken on its page with no form;
+after 31 days gone and a 404. `GiveAwayTest` now expects *Taken* where it
+expected a 404. Lending, Identity, Nav, Admin, Routes, Bookshop,
+Architecture, Unit: green.
+
+Walk: `lending.mjs` 46 → **47/47** — the chip opens Free items with the
+give-away; once promised it shows *Reserved*; handed over it is off the
+borrow shelf and *Taken* on Free items and its own page. Phone-width
+screenshot: no sideways scroll.
+
 ## 5b. Phase 0 audit (2026-08-26) — findings and fixes
 
 Phase 0 re-audited against `docs/PHASE_0_CHECKLIST.md` and ROADMAP §4. Core

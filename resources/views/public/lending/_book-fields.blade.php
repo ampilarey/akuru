@@ -1,6 +1,6 @@
 {{-- L1: the fields of a lent book, for the add form and each book's edit form on My lending. --}}
 @php($new = $book === null)
-@php($offer = $new ? old('offer', 'lend') : $book['offer'])
+@php($offer = $new ? old('offer', request('offer') === 'give' ? 'give' : 'lend') : $book['offer'])
 {{-- L3: to lend, or free to keep. --}}
 <fieldset class="text-sm sm:col-span-2" data-testid="book-offer">
     <legend class="mb-1">{{ __('lending.offer_label') }}</legend>
