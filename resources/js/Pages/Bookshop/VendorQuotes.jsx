@@ -106,10 +106,10 @@ export default function VendorQuotes({ t, vendor, quotes, counts, statuses, stat
                 </div>
                 <VendorNav t={t} current="quotes" />
             </header>
-            <nav className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 text-sm sm:mx-0 sm:flex-wrap sm:px-0" data-testid="quote-filters">
-                <button type="button" className={`inline-flex min-h-[2rem] shrink-0 items-center whitespace-nowrap rounded px-3 py-1 ${!status ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get('/vendor/quotes')}>{t.all_orders}</button>
+            <nav className="mb-4 flex min-w-0 flex-wrap gap-2 text-sm" data-testid="quote-filters">
+                <button type="button" className={`inline-flex min-h-[2rem] max-w-full items-center rounded px-3 py-1 ${!status ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get('/vendor/quotes')}>{t.all_orders}</button>
                 {statuses.map((s) => (
-                    <button key={s} type="button" className={`inline-flex min-h-[2rem] shrink-0 items-center whitespace-nowrap rounded px-3 py-1 ${status === s ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get('/vendor/quotes', { status: s })} data-testid={`quote-filter-${s}`}>
+                    <button key={s} type="button" className={`inline-flex min-h-[2rem] max-w-full items-center rounded px-3 py-1 ${status === s ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get('/vendor/quotes', { status: s })} data-testid={`quote-filter-${s}`}>
                         {t[`quote_status_${s}`] || s} ({counts[s] || 0})
                     </button>
                 ))}

@@ -103,9 +103,9 @@ export default function VendorMoney({ t, vendor, money }) {
 
             <div className="mb-4"><BankDetails bank={m.bank} isOwner={isOwner} t={t} /></div>
 
-            <nav className="-mx-4 mb-3 flex gap-1 overflow-x-auto border-b px-4 text-sm sm:mx-0 sm:flex-wrap sm:px-0" data-testid="money-tabs">
+            <nav className="mb-3 flex min-w-0 flex-wrap gap-1 border-b text-sm" data-testid="money-tabs">
                 {['earnings', 'statements', 'payouts', 'invoices'].map((k) => (
-                    <button key={k} type="button" className={`inline-flex min-h-[2rem] shrink-0 items-center whitespace-nowrap px-3 py-2 ${tab === k ? 'border-b-2 border-gray-900 font-semibold' : 'text-gray-600'}`} onClick={() => setTab(k)} data-testid={`tab-${k}`}>{t[`money_tab_${k}`]}</button>
+                    <button key={k} type="button" className={`inline-flex min-h-[2rem] max-w-full items-center px-3 py-2 text-start ${tab === k ? 'border-b-2 border-gray-900 font-semibold' : 'text-gray-600'}`} onClick={() => setTab(k)} data-testid={`tab-${k}`}>{t[`money_tab_${k}`]}</button>
                 ))}
             </nav>
 

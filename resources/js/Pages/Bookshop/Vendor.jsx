@@ -283,10 +283,10 @@ function ProductEditor({ product, options, t, onDone, trusted = false, simple = 
 function SectionNav({ items, t, onJump }) {
     return (
         <nav className="sticky top-0 z-20 -mx-4 mb-4 bg-brandBeige-50/95 px-4 py-2 shadow-sm backdrop-blur sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:shadow-none" aria-label={t.on_this_page} data-testid="section-nav">
-            <ul className="flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:pb-0">
+            <ul className="flex flex-wrap gap-2">
                 {items.map(([id, label]) => (
-                    <li key={id} className="shrink-0">
-                        <a href={`#${id}`} onClick={() => onJump?.(id)} className="inline-flex min-h-[2rem] items-center whitespace-nowrap rounded-full border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:border-brandMaroon-600 hover:text-brandMaroon-600" data-testid={`jump-${id}`}>{label}</a>
+                    <li key={id} className="min-w-0 max-w-full">
+                        <a href={`#${id}`} onClick={() => onJump?.(id)} className="inline-flex min-h-[2rem] max-w-full items-center rounded-full border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:border-brandMaroon-600 hover:text-brandMaroon-600" data-testid={`jump-${id}`}>{label}</a>
                     </li>
                 ))}
             </ul>
@@ -665,7 +665,7 @@ function Notices({ settings, isOwner, t, panels }) {
                 </p>
             )}
             <form onSubmit={(e) => { e.preventDefault(); form.post('/vendor/notices', { preserveScroll: true }); }}>
-                <div className="overflow-x-auto">
+                <div className="max-w-full">
                 <table className="w-full rounded border bg-white text-sm">
                     {/* §5mp: the always-ticked "in the app" column is the intro's words; on a phone it gives its width to the event names. */}
                     <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.notice_event}</th><th className="hidden p-2 sm:table-cell">{t.in_app}</th><th className="p-2">{t.email}</th><th className="p-2">SMS</th></tr></thead>
@@ -826,7 +826,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
             ) : (
                 <>
                     {readiness && <ShopReadiness r={readiness} isOwner={isOwner} t={t} />}
-                    <SectionNav t={t} onJump={panels.show} items={[
+                    <SectionNav t={t} onJump={panels.toggle} items={[
                         ['products', t.products_heading],
                         ...(shop_settings ? [['settings', t.shop_settings_heading], ['domain', t.host_heading]] : []),
                         ['codes', t.discount_codes_heading],

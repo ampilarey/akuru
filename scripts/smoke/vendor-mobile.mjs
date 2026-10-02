@@ -197,13 +197,34 @@ for (const [path, heading, current] of subpages) {
     const here = await page.evaluate(() => {
         const link = document.querySelector('[data-testid="vendor-subnav"] a[aria-current="page"]');
         const links = [...document.querySelectorAll('[data-testid="vendor-subnav"] a')];
+        const width = Math.min(document.documentElement.clientWidth, window.screen.width);
         return {
             n: links.length,
             current: link?.getAttribute('data-testid') || '',
             short: links.filter((a) => a.getBoundingClientRect().height < 32).length,
+            outside: links.filter((a) => {
+                const r = a.getBoundingClientRect();
+                return r.right > width + 1 || r.left < -1;
+            }).length,
         };
     });
-    check(`${path} fits the phone and its row marks this page`, (await count(`[data-testid="${heading}"]`)) === 1 && !wide.over && here.n === 9 && here.short === 0 && here.current === current, wide.over ? `wider by ${wide.by}px` : `${here.n} links, current ${here.current}`);
+    check(`${path} fits the phone and its row marks this page`, (await count(`[data-testid="${heading}"]`)) === 1 && !wide.over && here.n === 9 && here.short === 0 && here.outside === 0 && here.current === current, wide.over ? `wider by ${wide.by}px` : `${here.n} links, ${here.outside} past the edge, current ${here.current}`);
+    if (current === 'open-designer') {
+        const folds = await page.evaluate(() => ({
+            look: document.querySelector('[data-testid="designer-look"]')?.dataset.open || '',
+            identity: document.querySelector('[data-testid="designer-identity"]')?.dataset.open || '',
+            preview: document.querySelector('[data-testid="designer-preview"]')?.dataset.open || '',
+        }));
+        check('Look starts open; Identity and the preview start folded', folds.look === '1' && folds.identity === '0' && folds.preview === '0', JSON.stringify(folds));
+        await page.click('[data-testid="designer-identity-toggle"]');
+        check('tapping Identity shows its details', await page.locator('[data-testid="story"]').isVisible());
+        await page.click('[data-testid="designer-identity-toggle"]');
+        check('tapping Identity again folds those details away', (await page.locator('[data-testid="designer-identity"]').getAttribute('data-open')) === '0' && !(await page.locator('[data-testid="story"]').isVisible()));
+        await page.click('[data-testid="designer-look-toggle"]');
+        check('tapping Look folds it', (await page.locator('[data-testid="designer-look"]').getAttribute('data-open')) === '0' && !(await page.locator('[data-testid="color-primary"]').isVisible()));
+        await page.click('[data-testid="designer-look-toggle"]');
+        check('tapping Look again brings the colours back', await page.locator('[data-testid="color-primary"]').isVisible());
+    }
 }
 const groups = await page.goto(`${BASE}/en/vendor`, { waitUntil: 'networkidle' }).then(() => page.click('[data-testid="jump-settings"]')).then(() => page.waitForTimeout(400)).then(() => count('[data-testid="shop-settings"] fieldset legend'));
 check('returns, holiday, and delivery-and-cash are three groups inside the settings card', groups === 3, `${groups} groups`);

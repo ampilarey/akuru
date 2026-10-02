@@ -34,6 +34,34 @@ function Swatches({ colors }) {
     );
 }
 
+/**
+ * A block the vendor can fold. On a phone only Look starts open — Identity,
+ * the preview and the rest are a heading each, and a tap shows or hides the
+ * details. On a wider screen every block starts open. The body stays mounted
+ * either way, so a folded colour or a typed note is still there when it opens.
+ */
+function useFolds(ids) {
+    const wide = typeof window !== 'undefined' && window.matchMedia('(min-width: 640px)').matches;
+    const [open, setOpen] = useState(() => Object.fromEntries(ids.map((id, i) => [id, wide || i === 0])));
+
+    return {
+        isOpen: (id) => Boolean(open[id]),
+        toggle: (id) => setOpen((o) => ({ ...o, [id]: !o[id] })),
+    };
+}
+
+function Fold({ open, onToggle, title, testid, children }) {
+    return (
+        <section className="rounded-lg border bg-white" data-testid={testid} data-open={open ? '1' : '0'}>
+            <button type="button" className="flex min-h-[2.75rem] w-full items-center justify-between gap-3 p-4 text-start" aria-expanded={open} onClick={onToggle} data-testid={`${testid}-toggle`}>
+                <span className="text-lg font-semibold">{title}</span>
+                <svg aria-hidden="true" className={`h-5 w-5 shrink-0 text-gray-500 transition-transform ${open ? 'rotate-180' : ''}`} viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06z" clipRule="evenodd" /></svg>
+            </button>
+            <div className="border-t p-4" hidden={!open}>{children}</div>
+        </section>
+    );
+}
+
 /** B10c (ADR-039): the shop's own CSS — confined to its page, cleaned, live once the office approves it. */
 function CustomCssEditor({ css, isOwner, t, onSaved }) {
     const form = useForm({ css: css.pending ?? css.live ?? '' });
@@ -41,8 +69,7 @@ function CustomCssEditor({ css, isOwner, t, onSaved }) {
     const bytes = new Blob([form.data.css]).size;
 
     return (
-        <section className="rounded-lg border bg-white p-4" data-testid="custom-css">
-            <h2 className="mb-1 text-lg font-semibold">{t.css_heading}</h2>
+        <>
             <p className="mb-2 text-sm text-gray-600">{t.css_intro}</p>
             {status && (
                 <p className={`mb-2 rounded p-2 text-sm ${status === 'approved' ? 'bg-green-50 text-green-800' : status === 'pending' ? 'bg-amber-50 text-amber-900' : 'bg-red-50 text-red-800'}`} data-testid="css-status" data-status={status}>
@@ -63,7 +90,7 @@ function CustomCssEditor({ css, isOwner, t, onSaved }) {
                     </div>
                 )}
             </form>
-        </section>
+        </>
     );
 }
 
@@ -80,8 +107,7 @@ function ThemeGallery({ gallery, isOwner, published, t, onApplied }) {
     const offer = useForm({ name: '', description: '' });
 
     return (
-        <section className="rounded-lg border bg-white p-4" data-testid="theme-gallery">
-            <h2 className="mb-1 text-lg font-semibold">{t.gallery_heading}</h2>
+        <>
             <p className="mb-3 text-sm text-gray-600">{t.gallery_intro}</p>
             <ul className="grid gap-3 sm:grid-cols-2">
                 {gallery.themes.map((theme) => (
@@ -117,8 +143,8 @@ function ThemeGallery({ gallery, isOwner, published, t, onApplied }) {
                     {(!gallery.offered || gallery.offered.status === 'declined') && (
                         published ? (
                             <form className="mt-2 flex flex-wrap items-end gap-2 text-sm" onSubmit={(e) => { e.preventDefault(); offer.post('/vendor/storefront/themes/offer', { preserveScroll: true, onSuccess: () => offer.reset() }); }}>
-                                <label>{t.gallery_offer_name}<input className="form-input block w-48" required maxLength={80} value={offer.data.name} onChange={(e) => offer.setData('name', e.target.value)} data-testid="gallery-offer-name" /></label>
-                                <label className="flex-1">{t.gallery_offer_description}<input className="form-input block w-full" maxLength={300} value={offer.data.description} onChange={(e) => offer.setData('description', e.target.value)} /></label>
+                                <label className="min-w-0">{t.gallery_offer_name}<input className="form-input block w-full min-w-0 sm:w-48" required maxLength={80} value={offer.data.name} onChange={(e) => offer.setData('name', e.target.value)} data-testid="gallery-offer-name" /></label>
+                                <label className="min-w-0 flex-1">{t.gallery_offer_description}<input className="form-input block w-full min-w-0" maxLength={300} value={offer.data.description} onChange={(e) => offer.setData('description', e.target.value)} /></label>
                                 <button type="submit" className="btn-secondary" disabled={offer.processing} data-testid="gallery-offer-send">{t.gallery_offer_send}</button>
                                 <FormErrors errors={offer.errors} className="w-full" />
                             </form>
@@ -126,7 +152,7 @@ function ThemeGallery({ gallery, isOwner, published, t, onApplied }) {
                     )}
                 </div>
             )}
-        </section>
+        </>
     );
 }
 
@@ -154,6 +180,7 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
     });
     const [previewKey, setPreviewKey] = useState(0);
     const [note, setNote] = useState('');
+    const folds = useFolds(['look', 'identity', 'preview', 'gallery', 'css', 'versions']);
     const publish = () => router.post('/vendor/storefront/publish', { note }, { preserveScroll: true, onSuccess: () => { setNote(''); setPreviewKey((k) => k + 1); } });
     const setTheme = (patch) => form.setData('theme', { ...form.data.theme, ...patch });
     // §5mz: changing a background picks the readable text for it (white or dark), so a hand-picked
@@ -210,9 +237,8 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
             </header>
 
             <div className="grid gap-6 lg:grid-cols-2">
-                <form onSubmit={save} className="space-y-6" data-testid="designer-form">
-                    <section className="rounded-lg border bg-white p-4">
-                        <h2 className="mb-3 text-lg font-semibold">{t.theme_heading}</h2>
+                <form onSubmit={save} className="min-w-0 space-y-4" data-testid="designer-form">
+                    <Fold open={folds.isOpen('look')} onToggle={() => folds.toggle('look')} title={t.theme_heading} testid="designer-look">
                         <p className="mb-2 text-sm text-gray-600">{t.presets_intro}</p>
                         <div className="mb-4 flex flex-wrap gap-2" data-testid="presets">
                             {Object.entries(d.options.presets).map(([key, preset]) => (
@@ -222,7 +248,7 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                                     disabled={preset.locked}
                                     title={preset.locked ? t.preset_locked : ''}
                                     data-testid={`preset-${key}`}
-                                    className={`flex items-center gap-2 rounded border px-3 py-2 text-sm ${form.data.theme.preset === key ? 'border-gray-900 ring-1 ring-gray-900' : ''} ${preset.locked ? 'opacity-40' : ''}`}
+                                    className={`flex max-w-full items-center gap-2 rounded border px-3 py-2 text-start text-sm ${form.data.theme.preset === key ? 'border-gray-900 ring-1 ring-gray-900' : ''} ${preset.locked ? 'opacity-40' : ''}`}
                                     onClick={() => choosePreset(key)}
                                 >
                                     <Swatches colors={preset.colors} /> {preset.label}{preset.locked ? ' 🔒' : ''}
@@ -232,9 +258,9 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                         <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-4" data-testid="colors">
                             {d.options.colors.map((slot) => (
                                 <Field key={slot} label={t[`color_${slot}`] || slot}>
-                                    <span className="flex items-center gap-2">
-                                        <input type="color" value={form.data.theme.colors[slot]} onChange={(e) => setColor(slot, e.target.value.toUpperCase())} aria-label={t[`color_${slot}`] || slot} />
-                                        <input className="form-input w-full font-mono text-xs" value={form.data.theme.colors[slot]} onChange={(e) => setColor(slot, e.target.value)} data-testid={`color-${slot}`} />
+                                    <span className="flex min-w-0 items-center gap-2">
+                                        <input type="color" className="h-10 w-10 shrink-0" value={form.data.theme.colors[slot]} onChange={(e) => setColor(slot, e.target.value.toUpperCase())} aria-label={t[`color_${slot}`] || slot} />
+                                        <input className="form-input min-w-0 font-mono text-xs" value={form.data.theme.colors[slot]} onChange={(e) => setColor(slot, e.target.value)} data-testid={`color-${slot}`} />
                                     </span>
                                 </Field>
                             ))}
@@ -301,10 +327,9 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                             {t.dark_mode}
                         </label>
                         <p className="text-xs text-gray-500">{t.dark_mode_hint}</p>
-                    </section>
+                    </Fold>
 
-                    <section className="rounded-lg border bg-white p-4">
-                        <h2 className="mb-3 text-lg font-semibold">{t.identity_heading}</h2>
+                    <Fold open={folds.isOpen('identity')} onToggle={() => folds.toggle('identity')} title={t.identity_heading} testid="designer-identity">
                         <div className="grid gap-3 md:grid-cols-3">
                             {['logo', 'logo_dark', 'banner'].map((slot) => (
                                 <Field key={slot} label={t[`image_${slot}`]} hint={t[`image_${slot}_hint`]}>
@@ -337,14 +362,14 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                                 <Field key={n} label={t[`social_${n}`]}><input className="form-input w-full" placeholder="https://" value={form.data.socials[n]} onChange={(e) => form.setData('socials', { ...form.data.socials, [n]: e.target.value })} data-testid={`social-${n}`} /></Field>
                             ))}
                         </div>
-                    </section>
+                    </Fold>
 
                     <FormErrors errors={form.errors} />
-                    <div className="flex flex-wrap items-center gap-3">
+                    <div className="flex min-w-0 flex-wrap items-center gap-3">
                         <button type="submit" className="btn-secondary" disabled={form.processing} data-testid="save-draft">{t.save_draft}</button>
                         {isOwner && (
                             <>
-                                <input className="form-input w-56" placeholder={t.version_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid="version-note" />
+                                <input className="form-input w-full min-w-0 sm:w-56" placeholder={t.version_note} value={note} onChange={(e) => setNote(e.target.value)} data-testid="version-note" />
                                 <button
                                     type="button"
                                     className="btn-primary"
@@ -361,21 +386,27 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                     </div>
                 </form>
 
-                <div className="space-y-4">
-                    <section className="rounded-lg border bg-white p-2">
-                        <div className="mb-2 flex items-center justify-between px-2 text-sm">
-                            <span className="font-semibold">{t.preview_heading}</span>
+                <div className="min-w-0 space-y-4">
+                    <Fold open={folds.isOpen('preview')} onToggle={() => folds.toggle('preview')} title={t.preview_heading} testid="designer-preview">
+                        <div className="mb-2 flex items-center justify-end text-sm">
                             <button type="button" className="text-blue-700 underline" onClick={() => setPreviewKey((k) => k + 1)}>{t.refresh}</button>
                         </div>
                         <iframe key={previewKey} title={t.preview_heading} src={preview_url} className="h-[70vh] w-full rounded border" data-testid="preview-frame" />
-                        <p className="mt-1 px-2 text-xs text-gray-500">{t.preview_hint}</p>
-                    </section>
+                        <p className="mt-1 text-xs text-gray-500">{t.preview_hint}</p>
+                    </Fold>
 
-                    {gallery && <ThemeGallery gallery={gallery} isOwner={isOwner} published={d.versions.length > 0} t={t} onApplied={() => window.location.reload()} />}
-                    {custom_css && <CustomCssEditor css={custom_css} isOwner={isOwner} t={t} onSaved={() => setPreviewKey((k) => k + 1)} />}
+                    {gallery && (
+                        <Fold open={folds.isOpen('gallery')} onToggle={() => folds.toggle('gallery')} title={t.gallery_heading} testid="theme-gallery">
+                            <ThemeGallery gallery={gallery} isOwner={isOwner} published={d.versions.length > 0} t={t} onApplied={() => window.location.reload()} />
+                        </Fold>
+                    )}
+                    {custom_css && (
+                        <Fold open={folds.isOpen('css')} onToggle={() => folds.toggle('css')} title={t.css_heading} testid="custom-css">
+                            <CustomCssEditor css={custom_css} isOwner={isOwner} t={t} onSaved={() => setPreviewKey((k) => k + 1)} />
+                        </Fold>
+                    )}
 
-                    <section className="rounded-lg border bg-white p-4" data-testid="versions">
-                        <h2 className="mb-2 text-lg font-semibold">{t.versions_heading}</h2>
+                    <Fold open={folds.isOpen('versions')} onToggle={() => folds.toggle('versions')} title={t.versions_heading} testid="versions">
                         {d.versions.length === 0 ? (
                             <p className="text-sm text-gray-600">{t.no_versions}</p>
                         ) : (
@@ -393,7 +424,7 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                                 ))}
                             </ul>
                         )}
-                    </section>
+                    </Fold>
                 </div>
             </div>
             {/* §5mq: room under the last field for the phone's Publish bar. */}

@@ -4455,6 +4455,38 @@ now also opens orders, money, stock, reviews, quotes, insights, the
 designer and sections. That walk was not run here: this machine has no
 PHP or MySQL.
 
+## 5nb. The shop links wrap, and the designer folds (2026-10-02)
+
+The owner, on the live designer after §5na: there is still horizontal
+scrolling, and the parts that are minimized cannot be opened so the
+details show — nor closed again.
+
+The scrolling row was the nine shop links (`w-max`, no wrapping). On a
+phone "Sections and pages" and everything after it ran off the screen,
+and the same nowrap row sat on Orders, Money, Stock, Reviews, Quotes,
+Insights and Sections. Tapping could not reveal the rest.
+
+**Built:**
+- Those nine links are two columns on a phone. Every label is on the
+  screen, and the page you are on is still filled in. From `sm` they
+  wrap in one row, as before.
+- Order filters, money tabs, quote filters, section tabs and the portal's
+  jump chips wrap the same way. Nothing in that row is `whitespace-nowrap`
+  or pulled wider than the screen with a negative margin.
+- Look, Identity, the preview, the gallery, the shop's own CSS and
+  Versions are folding cards. On a phone Look starts open (the colours)
+  and the others start as a heading. A tap shows the details; the same
+  tap folds them. On a wider screen they start open. The fields stay
+  mounted, so a colour or a note is still there after a fold.
+- A jump chip on the portal opens a closed settings card and folds an
+  open one. The card's own heading still does both.
+
+A 390px picture of this markup, with the built stylesheet: the nine links
+sit in two columns inside the screen (overflow 0), Look is open, Identity
+is a heading, and a tap opens Identity and a second tap folds it. The
+signed-in walk in `vendor-mobile.mjs` now checks the same things. It was
+not run here: this machine has no PHP or MySQL.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not
