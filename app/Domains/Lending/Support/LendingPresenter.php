@@ -7,6 +7,7 @@ use App\Domains\Lending\Models\Lender;
 use App\Domains\Lending\Models\LendingBook;
 use App\Domains\Lending\Models\LendingLoan;
 use App\Domains\Media\Actions\ResolvePublicImageVariantAction;
+use Illuminate\Support\Carbon;
 
 /** The arrays the lending pages print (L1). The views only print; nothing here is looked up twice. */
 final class LendingPresenter
@@ -36,6 +37,9 @@ final class LendingPresenter
             'deposit' => $book->deposit,
             'status' => $book->status->value,
             'status_label' => $book->status->label(),
+            // L5: a give-away promised to someone, and the day one was taken.
+            'reserved' => $book->status->value === 'available' && (int) ($book->getAttribute('reserved_count') ?? 0) > 0,
+            'taken_on' => $book->status->value === 'given' && $book->getAttribute('given_at') ? Carbon::parse($book->getAttribute('given_at'))->toDateString() : null,
             'office_note' => $book->office_note,
             'photo' => $book->photo_media_id !== null ? $images->execute((int) $book->photo_media_id, (int) config('lending.photo.card_width', 480)) : null,
             'photo_large' => $large && $book->photo_media_id !== null ? $images->execute((int) $book->photo_media_id, (int) config('lending.photo.large_width', 1200)) : null,

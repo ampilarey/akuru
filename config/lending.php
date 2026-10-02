@@ -11,6 +11,9 @@ return [
     // How many books one lender may list.
     'max_books' => (int) env('LENDING_MAX_BOOKS', 50),
 
+    // L5: how long a taken give-away stays on the Free items page, marked Taken.
+    'free' => ['taken_days' => (int) env('LENDING_FREE_TAKEN_DAYS', 30)],
+
     // The public shelf's page size.
     'per_page' => 24,
 

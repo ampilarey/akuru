@@ -43,6 +43,10 @@ class LendingLoanAction
             if ((int) $lender->user_id === $borrowerUserId) {
                 throw ValidationException::withMessages(['book' => __('lending.error_own_book')]);
             }
+            // L5: a give-away the giver has promised to someone is reserved until it is handed over or cancelled.
+            if ($book->offer === BookOffer::Give && LendingLoan::query()->where('lending_book_id', $book->id)->where('status', LoanStatus::Accepted->value)->exists()) {
+                throw ValidationException::withMessages(['book' => __('lending.error_reserved')]);
+            }
             if ($lender->id_required && ! app(IdentityVerificationAction::class)->anyVerified([$borrowerUserId], 'vendor') && ! app(IdentityVerificationAction::class)->anyVerified([$borrowerUserId], 'lender')) {
                 throw ValidationException::withMessages(['book' => __('lending.error_id_required')]);
             }

@@ -13,7 +13,7 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 192 (a document template, not a screen — see the documents block;
+// Count: 195 (a document template, not a screen — see the documents block;
 // the five public bookshop views of BOOKSHOP_PLAN B1b, the five customer
 // pages of B2, the two storefront partials of B4, the sections, menu and
 // vendor page of B5 and the customer's wishlist of B7 — see the public
@@ -164,7 +164,7 @@ return [
     'profile/partials/update-password-form.blade.php',
     'profile/partials/update-profile-information-form.blade.php',
 
-    // public — 62
+    // public — 65
     'public/about/index.blade.php',
     'public/achievements/index.blade.php',
     'public/admissions/apply.blade.php',
@@ -247,6 +247,10 @@ return [
     // the same public vendor page) and a vendor's own page under it.
     'public/shop/_nav.blade.php',
     'public/shop/_sections.blade.php',
+    // A shop's own menu row on its vendor page (#648, vendor menu toggle) — a partial @included by
+    // public/shop/index.blade.php; Blade because the page it sits in is. Registered 2026-10-02 (STATUS §5na):
+    // #648 merged without it, which left this test red on main.
+    'public/shop/_vendor-menu.blade.php',
     'public/shop/page.blade.php',
     // BOOKSHOP_PLAN B7 — the customer's wishlist, a sibling of the shop's
     // own customer pages (cart, orders) that are Blade for the same reason.
@@ -264,6 +268,9 @@ return [
     'public/lending/show.blade.php',
     'public/lending/mine.blade.php',
     'public/lending/_book-fields.blade.php',
+    // L5 — the Free items page, and the book card it shares with the lending shelf.
+    'public/lending/free.blade.php',
+    'public/lending/_card.blade.php',
     // L2 — the after-return rating block, @included on both sides of My lending.
     'public/lending/_rate.blade.php',
     // BOOKSHOP_PLAN B9d — a customer's bulk quotes, asked from the Blade cart

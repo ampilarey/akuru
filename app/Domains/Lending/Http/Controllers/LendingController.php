@@ -30,6 +30,12 @@ class LendingController extends Controller
         return view('public.lending.index', ['shelf' => app(ListLendingBooksAction::class)->execute($filters), 'filters' => $filters]);
     }
 
+    /** L5: the Free items page — what people give away, reserved and recently taken. */
+    public function free()
+    {
+        return view('public.lending.free', ['free' => app(ListLendingBooksAction::class)->free()]);
+    }
+
     public function show(Request $request, string $slug)
     {
         $book = app(ListLendingBooksAction::class)->show($slug);

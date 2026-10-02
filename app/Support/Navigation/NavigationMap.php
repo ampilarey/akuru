@@ -86,6 +86,7 @@ final class NavigationMap
             'lender' => [
                 ['key' => 'my_lending', 'href' => '/my-lending', 'hard' => true],
                 ['key' => 'lending_shelf', 'href' => '/lending', 'hard' => true],
+                ['key' => 'free_items', 'href' => '/free-items', 'hard' => true],
             ],
             'vendor' => [
                 ['key' => 'vendor_portal', 'href' => '/vendor'],

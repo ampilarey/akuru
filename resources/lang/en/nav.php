@@ -228,6 +228,7 @@ return [
     'deliveries' => 'My deliveries',
     'workspace_deliveries' => 'Deliveries',
     // LENDING_AND_USED_BOOKS_PLAN L4
+    'free_items' => 'Free items',
     'my_lending' => 'My lending',
     'lending_shelf' => 'Books to borrow or keep',
     'workspace_lending' => 'Lending',
