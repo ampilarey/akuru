@@ -442,10 +442,11 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
 
     const phone = await newPage('shop-layout-phone', { width: 390, height: 844 });
     await phone.goto(`${BASE}/en/shop/fitrah`, { waitUntil: 'networkidle' });
-    const menu = await phone.locator('[data-testid="vendor-menu"]');
-    const menuText = await menu.innerText();
-    const link = await phone.locator('[data-testid="vendor-menu-home"]').boundingBox();
-    check('a shop\'s phone page has its own menu, not the store\'s sideways chips', (await phone.locator('[data-testid="shop-links"]').count()) === 0 && menuText.includes('Home') && menuText.includes('Deals') && !menuText.includes('Old and used books') && link !== null && link.height >= 44, menuText.replace(/\s+/g, ' '));
+    const row = await phone.locator('[data-testid="vendor-menu-row"]').boundingBox();
+    const menuText = await phone.locator('[data-testid="vendor-menu"]').innerText();
+    check('a shop\'s phone menu is one row, with More for the rest', (await phone.locator('[data-testid="shop-links"]').count()) === 0 && row !== null && row.height <= 52 && row.height >= 44 && menuText.includes('Home') && menuText.includes('More') && !menuText.includes('Old and used books') && !(await phone.locator('[data-testid="vendor-menu-store"]').isVisible()), `${Math.round(row?.height ?? -1)}px, ${menuText.replace(/\s+/g, ' ')}`);
+    await phone.locator('[data-testid="vendor-menu-more"]').click();
+    check('More opens the rest of the shop\'s menu', await phone.locator('[data-testid="vendor-menu-store"]').isVisible());
     check('the page itself does not run sideways', await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth));
 }
 
