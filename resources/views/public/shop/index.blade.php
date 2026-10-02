@@ -351,21 +351,32 @@
     /* STATUS §5lu: rows that swipe on a phone (iruali's product rows), and the strips of links and chips. */
     .shop-scroll { scrollbar-width: none; min-width: 0; max-width: 100%; }
     .shop-scroll::-webkit-scrollbar { display: none; }
-    /* A shop's menu and its category chips wrap. A sideways row of them
+    /* A shop's menu is one row on a phone: Home, Deals, Cart, and More.
+       More opens the rest under that row. A sideways line of every link
        widened the phone (the owner's screenshot, 2026-10-02). */
-    .vendor-menu ul { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5rem; margin: 0; padding: 0; list-style: none; }
-    .vendor-menu a { box-sizing: border-box; display: flex; min-height: 2.75rem; align-items: center; justify-content: center; gap: .35rem; border-radius: 999px; border: 1px solid #E6D3D6; background: #fff; padding: .4rem .75rem; text-align: center; font-size: .875rem; line-height: 1.25; color: #7C2D37; }
-    .vendor-menu a:hover { background: #F8F1F2; }
-    .vendor-menu a[aria-current="page"] { border-color: #7C2D37; background: #7C2D37; color: #fff; }
-    .vendor-menu .is-wide { grid-column: 1 / -1; }
+    .vendor-menu-row { position: relative; display: flex; flex-wrap: nowrap; align-items: center; gap: .5rem; min-width: 0; }
+    .vendor-menu-fold { flex: 1 1 0; min-width: 0; }
+    .vendor-menu-row > a, .vendor-menu-fold > summary { box-sizing: border-box; display: flex; flex: 1 1 0; align-items: center; justify-content: center; gap: .35rem; width: 100%; min-width: 0; min-height: 2.75rem; overflow: hidden; border-radius: 999px; border: 1px solid #E6D3D6; background: #fff; padding: .4rem .75rem; text-align: center; font-size: .875rem; line-height: 1.25; color: #7C2D37; white-space: nowrap; text-overflow: ellipsis; cursor: pointer; }
+    .vendor-menu-fold > summary { list-style: none; }
+    .vendor-menu-fold > summary::-webkit-details-marker { display: none; }
+    .vendor-menu-row > a:hover, .vendor-menu-fold > summary:hover { background: #F8F1F2; }
+    .vendor-menu-row > a[aria-current="page"], .vendor-menu-fold[open] > summary { border-color: #7C2D37; background: #7C2D37; color: #fff; }
+    .vendor-menu-rest { display: none; }
+    .vendor-menu-fold[open] > .vendor-menu-rest { position: absolute; z-index: 30; inset-inline: 0; top: calc(100% + .35rem); display: flex; flex-direction: column; gap: .35rem; border: 1px solid #E6D3D6; border-radius: .75rem; background: #fff; padding: .5rem; box-shadow: 0 8px 24px rgba(63, 20, 28, .12); }
+    .vendor-menu-rest a { box-sizing: border-box; display: flex; align-items: center; min-height: 2.75rem; border-radius: .6rem; border: 1px solid #E6D3D6; background: #fff; padding: .4rem .75rem; font-size: .875rem; line-height: 1.25; color: #7C2D37; }
+    .vendor-menu-rest a:hover { background: #F8F1F2; }
+    .vendor-menu-rest a[aria-current="page"] { border-color: #7C2D37; background: #7C2D37; color: #fff; }
     .vendor-menu-count { display: inline-flex; align-items: center; justify-content: center; min-width: 1.15rem; height: 1.15rem; padding: 0 .3rem; border-radius: 999px; background: #7C2D37; color: #fff; font-size: .75rem; font-weight: 600; }
     .vendor-menu a[aria-current="page"] .vendor-menu-count { background: #fff; color: #7C2D37; }
     .shop-chips-wrap { flex-wrap: wrap; }
     .shop-chips-wrap .shop-chip { flex-shrink: 1; white-space: normal; max-width: 100%; }
     @media (min-width: 640px) {
-        .vendor-menu ul { display: flex; flex-wrap: wrap; }
-        .vendor-menu .is-wide { grid-column: auto; }
-        .vendor-menu a { display: inline-flex; min-height: 2rem; width: auto; }
+        .vendor-menu-row { flex-wrap: wrap; align-items: flex-start; }
+        .vendor-menu-row > a { flex: 0 1 auto; width: auto; min-height: 2rem; overflow: visible; }
+        .vendor-menu-fold { display: flex; flex: 1 1 auto; flex-wrap: wrap; align-items: center; gap: .5rem; width: auto; }
+        .vendor-menu-fold > summary { display: none; }
+        .vendor-menu-fold > .vendor-menu-rest { position: static; display: flex !important; flex-flow: row wrap; gap: .5rem; inset: auto; width: auto; border: 0; padding: 0; box-shadow: none; background: none; }
+        .vendor-menu-rest a { display: inline-flex; flex: 0 0 auto; width: auto; min-height: 2rem; border-radius: 999px; }
     }
     .shop-row { display: flex; gap: .75rem; overflow-x: auto; scroll-snap-type: x mandatory; margin-inline: -1rem; padding: 0 1rem .5rem; }
     .shop-row-item { flex: 0 0 46%; scroll-snap-align: start; }

@@ -112,6 +112,7 @@ it('gives a shop its own menu, wrapping, instead of the store\'s sideways links'
         ->toContain('data-testid="vendor-menu-deals"')
         ->toContain('href="'.e(route('public.shop.vendor', ['vendor' => 'fitrah', 'deals' => 1])).'"')
         ->toContain('data-testid="shop-link-cart"')
+        ->toContain('data-testid="vendor-menu-more"')
         ->toContain('data-testid="vendor-menu-store"')
         ->toContain('href="'.route('public.shop.index').'#shops"')
         ->toContain('shop-chips-wrap')

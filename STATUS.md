@@ -4590,6 +4590,18 @@ chip row.
 
 The signed-in walk was not run here: this machine has no PHP or MySQL.
 
+## 5ni. The shop menu is one row on a phone (2026-10-02)
+
+The owner: on a phone the shop's menu takes too much space. One row,
+and More for the rest.
+
+Home, Deals and Cart stay on that row, with More. More opens the
+collections, pages, orders, tracking and the way back to the bookstore,
+under the row. A wider screen shows every link and does not show More.
+The row does not scroll the page sideways.
+
+The signed-in walk was not run here: this machine has no PHP or MySQL.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not
