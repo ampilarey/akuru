@@ -5,10 +5,14 @@ namespace Database\Factories;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class CourseFactory extends Factory
 {
     protected $model = Course::class;
+
+    /** A per-process counter on the slug; see UserFactory::$sequence. */
+    protected static int $sequence = 0;
 
     public function definition(): array
     {
@@ -22,7 +26,7 @@ class CourseFactory extends Factory
         return [
             'course_category_id' => $category->id,
             'title' => $title,
-            'slug' => \Illuminate\Support\Str::slug($title).'-'.fake()->unique()->numberBetween(1, 9999),
+            'slug' => Str::slug($title).'-'.sprintf('%05d', ++static::$sequence),
             'short_desc' => fake()->paragraph(),
             'body' => fake()->paragraphs(3, true),
             'cover_image' => '',
