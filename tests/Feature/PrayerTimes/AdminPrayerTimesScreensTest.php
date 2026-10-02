@@ -1,6 +1,7 @@
 <?php
 
 use App\Domains\PrayerTimes\Models\PrayerBroadcast;
+use App\Domains\PrayerTimes\Models\PrayerIsland;
 use App\Domains\PrayerTimes\Models\PrayerRecipientGroup;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -114,4 +115,46 @@ it('drafts, previews and refuses to confirm a broadcast with nobody consented, a
             ->where('filters.status', 'previewed')->where('t.prayer_all_statuses', 'All statuses'));
     $this->withoutLocalizationMiddleware()->actingAs($office)->get(route('admin.prayer-times.broadcasts.index', ['status' => 'queued']))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('PrayerTimes/Broadcasts')->has('broadcasts', 0));
+});
+
+it('pages the islands twenty-five at a time and searches by island or atoll (ADMIN_PANEL.md §7 P5)', function () {
+    $office = actingSystemAdmin(['prayer.manage']);
+    // The fixture brings the category the islands hang off, and a few islands of its own.
+    $this->withoutLocalizationMiddleware()->actingAs($office)->post(route('admin.prayer-times.import.store'), ['seed_fixture' => 1]);
+    $base = PrayerIsland::query()->count();
+    $categoryId = (int) PrayerIsland::query()->min('category_id');
+    foreach (range(1, 30) as $n) {
+        PrayerIsland::query()->create([
+            'id' => 5000 + $n, 'category_id' => $categoryId,
+            'atoll' => 'އަތޮޅު', 'atoll_latin' => $n <= 15 ? 'Qoph' : 'Waw',
+            'name' => 'ރަށް '.$n, 'name_latin' => sprintf('Zz Island %02d', $n),
+            'offset_minutes' => 0, 'latitude' => 4.1, 'longitude' => 73.5, 'is_active' => true,
+        ]);
+    }
+    PrayerIsland::query()->create([
+        'id' => 5999, 'category_id' => $categoryId, 'atoll' => 'ޒ', 'atoll_latin' => 'Zeta', 'name' => 'ޒެޑްވިލް', 'name_latin' => 'Zedville',
+        'offset_minutes' => 2, 'latitude' => 4.2, 'longitude' => 73.6, 'is_active' => false,
+    ]);
+    $total = $base + 31;
+    $pages = (int) ceil($total / 25);
+
+    $this->withoutLocalizationMiddleware()->actingAs($office)->get(route('admin.prayer-times.islands'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('PrayerTimes/Islands')
+            ->has('islands', 25)
+            ->where('pagination.total', $total)->where('pagination.last_page', $pages)->where('pagination.current_page', 1)
+            ->where('pagination.next', fn ($url) => str_contains((string) $url, 'page=2'))
+            ->where('filters.q', ''));
+
+    $this->withoutLocalizationMiddleware()->actingAs($office)->get(route('admin.prayer-times.islands', ['page' => $pages]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->has('islands', $total - 25 * ($pages - 1))->where('pagination.current_page', $pages)->where('pagination.next', null));
+
+    $this->withoutLocalizationMiddleware()->actingAs($office)->get(route('admin.prayer-times.islands', ['q' => 'zed']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->has('islands', 1)->where('islands.0.name_en', 'Zedville')->where('filters.q', 'zed')->where('pagination.total', 1));
+
+    $this->withoutLocalizationMiddleware()->actingAs($office)->get(route('admin.prayer-times.islands', ['q' => 'Waw']))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->has('islands', 15)->where('pagination.total', 15));
+
+    // The CSV still carries every island.
+    $csv = $this->withoutLocalizationMiddleware()->actingAs($office)->get(route('admin.prayer-times.islands.export'))->assertOk()->streamedContent();
+    expect(substr_count($csv, "\n"))->toBeGreaterThanOrEqual($total);
 });

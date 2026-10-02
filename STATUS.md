@@ -4832,6 +4832,51 @@ red ("new-order SMS is closed by the office") is the same on `main`: the
 walk's last step turns shop SMS on and the seeder does not reset the
 switch, so the next run finds it open; walk drift, noted with §5nm's.
 
+## 5no. The four long pages, shortened (C15 slice 4, 2026-10-02)
+
+ADMIN_PANEL.md §7 P5 and M6. Four admin pages rendered everything they
+had — twelve to nineteen phone screens of scrolling, with the filters at
+the top and nothing to jump by.
+
+- **Prayer islands**: 25 a page with a search by island or atoll in either
+  script (`ListPrayerIslandsAction::page()`, `?q=&page=`); 205 rows,
+  1,709 DOM nodes and 11,885 px on a phone become 25 rows and 1,891 px.
+  The CSV and the broadcast form still take every island (`execute()`).
+- **Translations**: the group chips, the search and the suspect filter are
+  the URL (`?group=&q=&suspect=&page=`) and the server answers with 25
+  rows of the active group (`ListTranslationCatalogAction::page()`); the
+  whole catalog — 743 rows, 132 KB — used to travel on every visit and the
+  active group's 185 textareas drew at once (1,949 nodes, 11,419 px); now
+  25 rows and 2,011 px. The group summaries carry the count and how many
+  are suspect. The CSV still carries everything. A side effect: `?q=` is
+  honoured now — it used to be ignored, so `admin.mjs`'s
+  `?q=ops_checklist` "worked" on a key that is not in the editor's groups;
+  the walk searches `dashboard`.
+- **Feature testing**: the 17 sections fold. Each is a heading with
+  *n of m tested* and a broken count; a tap opens it; *Open all* opens
+  them all; a filter opens the sections it finds something in. Items are
+  drawn only when a section is open — 154 items, 1,349 nodes and 16,416 px
+  become 17 headings at 1,478 px.
+- **The Bookstore office**: the vendor portal's row of jump chips (§5mp),
+  now `Components/SectionNav.jsx` shared by both pages, sticky under the
+  thumb on a phone — Listings, ID, Vendors, Bank transfer slips, Orders,
+  Refunds, Money, Applications, Quotes, Insights, Hosts, Team, Low stock,
+  Catalogue — each section carrying its `id` and `scroll-mt-14`. The page
+  stays its length (folding its tables is M2's work, with the stacking).
+- EN/DV/AR: `page_prev/next/of` (the users screen's words, now shared),
+  `prayer_search`, `prayer_search_go`, `prayer_showing`,
+  `prayer_islands_no_match`, `ft_open_all`, `ft_close_all`.
+
+Tests: `AdminPrayerTimesScreensTest` gains the paging case (31 islands
+over two pages, a search by name and by atoll, the CSV whole); new
+`TranslationCatalogPagingTest` (3): one page of the active group with
+every group summarised; the page turns, the group switches, the search
+and the suspect filter work and an unknown group or an absurd page falls
+back; a saved correction is counted and exported. Architecture and Unit
+green (127; the lang parity holds). Walks: new `long-pages.mjs` **17/17**
+on a phone; `admin-mobile.mjs` 3/3; `vendor.mjs` 32/32 on the shared
+chips; `admin.mjs` 39/43 with the same four pre-existing reds as §5nm.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not

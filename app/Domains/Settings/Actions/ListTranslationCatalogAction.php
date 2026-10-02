@@ -112,6 +112,81 @@ class ListTranslationCatalogAction
     }
 
     /**
+     * One page of the editor: the group summaries (name, how many, how many
+     * suspect), and 25 rows of the active group after the search and the
+     * suspect filter (docs/ADMIN_PANEL.md §7 P5, STATUS §5no). The whole
+     * catalog — 743 rows, 132 KB — used to travel on every visit and the
+     * active group's 185 rows drew at once, each a textarea. The filtering
+     * moved here from the page so the URL carries it (`?group=&q=&suspect=`)
+     * and a page is one request. `execute()` still serves the CSV.
+     *
+     * @return array{groups: list<array{group: string, count: int, suspect: int}>, items: list<array<string, mixed>>, active_group: string, pagination: array{current_page: int, last_page: int, total: int, prev: ?string, next: ?string}, filters: array{q: string, suspect: bool}, override_count: int, total: int, locale: string, locales: list<string>}
+     */
+    public function page(string $locale, ?string $group = null, string $q = '', bool $suspectOnly = false, int $page = 1, int $perPage = 25): array
+    {
+        $catalog = $this->execute($locale);
+        $group = in_array($group, self::groups(), true) ? $group : self::groups()[0];
+        $q = trim($q);
+        $needle = mb_strtolower($q);
+
+        $summaries = [];
+        $items = [];
+        foreach ($catalog['groups'] as $entry) {
+            $summaries[] = [
+                'group' => $entry['group'],
+                'count' => count($entry['items']),
+                'suspect' => count(array_filter($entry['items'], fn (array $item) => $item['suspect'])),
+            ];
+            if ($entry['group'] === $group) {
+                $items = $entry['items'];
+            }
+        }
+
+        $items = array_values(array_filter($items, function (array $item) use ($q, $needle, $suspectOnly): bool {
+            if ($suspectOnly && ! $item['suspect']) {
+                return false;
+            }
+            if ($q === '') {
+                return true;
+            }
+
+            return str_contains(mb_strtolower($item['key']), $needle)
+                || str_contains(mb_strtolower($item['en']), $needle)
+                || str_contains((string) ($item['file_value'] ?? ''), $q)
+                || str_contains((string) ($item['override'] ?? ''), $q);
+        }));
+
+        $total = count($items);
+        $lastPage = max(1, (int) ceil($total / $perPage));
+        $page = min(max(1, $page), $lastPage);
+        $url = fn (int $target): string => route('admin.translations.index', array_filter([
+            'locale' => $locale,
+            'group' => $group,
+            'q' => $q !== '' ? $q : null,
+            'suspect' => $suspectOnly ? 1 : null,
+            'page' => $target > 1 ? $target : null,
+        ]));
+
+        return [
+            'groups' => $summaries,
+            'items' => array_slice($items, ($page - 1) * $perPage, $perPage),
+            'active_group' => $group,
+            'pagination' => [
+                'current_page' => $page,
+                'last_page' => $lastPage,
+                'total' => $total,
+                'prev' => $page > 1 ? $url($page - 1) : null,
+                'next' => $page < $lastPage ? $url($page + 1) : null,
+            ],
+            'filters' => ['q' => $q, 'suspect' => $suspectOnly],
+            'override_count' => $catalog['override_count'],
+            'total' => $catalog['total'],
+            'locale' => $locale,
+            'locales' => $catalog['locales'],
+        ];
+    }
+
+    /**
      * Flatten nested groups to dotted keys, so a nested line is an editable
      * row like any other.
      *

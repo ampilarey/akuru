@@ -3,6 +3,7 @@ import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import WorkspaceTiles from '../../Components/WorkspaceTiles';
 import FormErrors from '../../Components/FormErrors';
+import SectionNav from '../../Components/SectionNav';
 import { IdentityCardUpload } from '../../Components/IdentityCard';
 
 /**
@@ -270,27 +271,6 @@ function ProductEditor({ product, options, t, onDone, trusted = false, simple = 
                 <button type="button" className="text-sm text-gray-600 underline" onClick={onDone}>{t.cancel}</button>
             </div>
         </form>
-    );
-}
-
-/**
- * STATUS §5mp: the portal is one long page — products first, then seven
- * settings sections — and on a phone the settings start 2,300px down with
- * nothing to jump by. A row of chips, sticky under the thumb on phones
- * (the shell's header is sticky only from `sm`), static beside the header
- * on wider screens. Each chip is at least 32px tall.
- */
-function SectionNav({ items, t, onJump }) {
-    return (
-        <nav className="sticky top-0 z-20 -mx-4 mb-4 bg-brandBeige-50/95 px-4 py-2 shadow-sm backdrop-blur sm:static sm:mx-0 sm:bg-transparent sm:px-0 sm:shadow-none" aria-label={t.on_this_page} data-testid="section-nav">
-            <ul className="flex flex-wrap gap-2">
-                {items.map(([id, label]) => (
-                    <li key={id} className="min-w-0 max-w-full">
-                        <a href={`#${id}`} onClick={() => onJump?.(id)} className="inline-flex min-h-[2rem] max-w-full items-center rounded-full border border-gray-300 bg-white px-3 py-1 text-sm text-gray-800 hover:border-brandMaroon-600 hover:text-brandMaroon-600" data-testid={`jump-${id}`}>{label}</a>
-                    </li>
-                ))}
-            </ul>
-        </nav>
     );
 }
 

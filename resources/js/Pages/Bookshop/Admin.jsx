@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
+import SectionNav from '../../Components/SectionNav';
 import { IdentityChecks } from '../../Components/IdentityCard';
 
 /**
@@ -231,7 +232,7 @@ function Catalogue({ catalogue, t }) {
     const brand = useForm({ name: '' });
 
     return (
-        <section className="mt-8 grid gap-6 md:grid-cols-2">
+        <section id="catalogue" className="mt-8 scroll-mt-14 grid gap-6 md:grid-cols-2">
             <div>
                 <h2 className="text-lg font-semibold">{t.categories}</h2>
                 <p className="mb-2 text-sm text-gray-600">{t.catalogue_intro}</p>
@@ -307,7 +308,7 @@ function SlipRow({ slip, t }) {
 
 function Slips({ slips, t }) {
     return (
-        <section className="mt-8" data-testid="bank-slips">
+        <section id="bank-slips" className="mt-8 scroll-mt-14" data-testid="bank-slips">
             <h2 className="mb-2 text-lg font-semibold">{t.bank_slips}</h2>
             {slips.length === 0 ? (
                 <p className="rounded border bg-white p-4 text-gray-600">{t.no_slips}</p>
@@ -339,7 +340,7 @@ function Orders({ orders, vendors, statuses, t }) {
     const suffix = query ? `?${query}` : '';
 
     return (
-        <section className="mt-8" data-testid="office-orders">
+        <section id="orders" className="mt-8 scroll-mt-14" data-testid="office-orders">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold">{t.orders}</h2>
                 <span className="flex flex-wrap items-center gap-2 text-sm" data-testid="office-order-exports">
@@ -404,7 +405,7 @@ function Refunds({ refunds, t }) {
     const process = (r, destination) => router.post(`/admin/bookshop/refunds/${r.id}`, { destination, note: notes[r.id] || '' }, { preserveScroll: true });
 
     return (
-        <section className="mt-8" data-testid="office-refunds">
+        <section id="refunds" className="mt-8 scroll-mt-14" data-testid="office-refunds">
             <div className="mb-2 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">{t.refunds_heading} {pending.length > 0 && <span className="ms-2 rounded bg-amber-100 px-2 text-sm text-amber-800">{pending.length}</span>}</h2>
                 <a href="/admin/bookshop/refunds/export" className="btn-secondary" data-testid="export-refunds">{t.export_csv}</a>
@@ -461,7 +462,7 @@ function Money({ money, t }) {
     const c = money.currency;
 
     return (
-        <section className="mt-8" data-testid="office-money">
+        <section id="money" className="mt-8 scroll-mt-14" data-testid="office-money">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold">{t.money_title} {money.requests.length > 0 && <span className="ms-2 rounded bg-amber-100 px-2 text-sm text-amber-800">{money.requests.length}</span>}</h2>
                 <span className="flex flex-wrap gap-2">
@@ -633,7 +634,7 @@ function ListingDecision({ row, t }) {
 
 function Listings({ rows, t }) {
     return (
-        <section id="listings" className="mb-8 rounded-lg border border-amber-300 bg-white p-4" data-testid="listings">
+        <section id="listings" className="mb-8 scroll-mt-14 rounded-lg border border-amber-300 bg-white p-4" data-testid="listings">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold">{t.listings_title} ({rows.length})</h2>
                 <a href="/admin/bookshop/listings/export" className="btn-secondary" data-testid="export-listings">{t.export_csv}</a>
@@ -674,7 +675,7 @@ function Applications({ applications, open, t }) {
     const waiting = applications.filter((a) => a.status === 'pending').length;
 
     return (
-        <section className="mt-8" data-testid="office-applications">
+        <section id="applications" className="mt-8 scroll-mt-14" data-testid="office-applications">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold">{t.applications_heading} {waiting > 0 && <span className="rounded bg-amber-100 px-2 text-sm text-amber-900">{t.waiting_count.replace(':count', waiting)}</span>}</h2>
                 <span className="flex flex-wrap items-center gap-2">
@@ -701,7 +702,7 @@ function ThemeGalleryOffice({ themes, t }) {
     );
 
     return (
-        <section className="mt-8" data-testid="office-themes">
+        <section id="themes" className="mt-8 scroll-mt-14" data-testid="office-themes">
             <h2 className="mb-1 text-lg font-semibold">{t.gallery_office_heading}</h2>
             <p className="mb-2 text-sm text-gray-600">{t.gallery_office_hint}</p>
             {themes.waiting.length > 0 && (
@@ -739,7 +740,7 @@ function CustomCssReviews({ rows, t }) {
     const decide = (vendorId, decision) => router.post(`/admin/bookshop/storefronts/${vendorId}/css`, { decision, note: notes[vendorId] || '' }, { preserveScroll: true });
 
     return (
-        <section className="mt-8" data-testid="office-css">
+        <section id="css" className="mt-8 scroll-mt-14" data-testid="office-css">
             <h2 className="mb-1 text-lg font-semibold">{t.css_office_heading}</h2>
             <p className="mb-2 text-sm text-gray-600">{t.css_office_hint}</p>
             {rows.length === 0 ? (
@@ -778,7 +779,7 @@ function Team({ team, t }) {
     const form = useForm({ email: '', name: '', phone: '' });
 
     return (
-        <section className="mt-8" data-testid="office-team">
+        <section id="team" className="mt-8 scroll-mt-14" data-testid="office-team">
             <h2 className="mb-1 text-lg font-semibold">{t.team_heading}</h2>
             <p className="mb-2 text-sm text-gray-600">{t.team_intro}</p>
             {team.added && (
@@ -820,7 +821,7 @@ function Hosts({ hosts, t }) {
     const check = hosts.check;
 
     return (
-        <section className="mt-8" data-testid="office-hosts">
+        <section id="hosts" className="mt-8 scroll-mt-14" data-testid="office-hosts">
             <h2 className="mb-1 text-lg font-semibold">{t.hosts_heading}</h2>
             <p className="mb-2 text-sm text-gray-600" data-testid="shop-host">{hosts.shop_host ? t.shop_host_set.replace(':host', hosts.shop_host) : t.shop_host_unset}</p>
             {check && (
@@ -856,7 +857,7 @@ function Funnels({ insights, t }) {
     const steps = ['shop_view', 'product_view', 'cart_add', 'checkout', 'order_paid'];
 
     return (
-        <section className="mt-8" data-testid="office-insights">
+        <section id="insights" className="mt-8 scroll-mt-14" data-testid="office-insights">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold">{t.insights_office_heading}</h2>
                 <span className="flex flex-wrap gap-1">
@@ -891,7 +892,7 @@ function Quotes({ quotes, t }) {
     const statuses = ['requested', 'quoted', 'accepted', 'ordered', 'declined', 'withdrawn'];
 
     return (
-        <section className="mt-8" data-testid="office-quotes">
+        <section id="quotes" className="mt-8 scroll-mt-14" data-testid="office-quotes">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <h2 className="text-lg font-semibold">{t.quotes_title}</h2>
                 <a href="/admin/bookshop/quotes/export" className="btn-secondary" data-testid="export-quotes-all">{t.export_csv}</a>
@@ -916,7 +917,7 @@ function Quotes({ quotes, t }) {
 /** B8 (§7 Reports "low stock across vendors"). */
 function LowStockAll({ rows, t }) {
     return (
-        <section className="mt-8" data-testid="office-low-stock">
+        <section id="low-stock" className="mt-8 scroll-mt-14" data-testid="office-low-stock">
             <div className="mb-2 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">{t.low_stock_heading} <span className="text-sm font-normal text-gray-500">({rows.length})</span></h2>
                 <a href="/admin/bookshop/low-stock/export" className="btn-secondary" data-testid="export-low-stock-all">{t.export_csv}</a>
@@ -949,7 +950,7 @@ function LowStockAll({ rows, t }) {
 /** B9b (decision 7): cash on delivery for the whole bookstore; each shop then opts in. */
 function CodSwitch({ on, t }) {
     return (
-        <section className="mt-8" data-testid="office-cod">
+        <section id="cod" className="mt-8 scroll-mt-14" data-testid="office-cod">
             <h2 className="mb-1 text-lg font-semibold">{t.cod_label}</h2>
             <p className="mb-2 text-sm text-gray-600">{t.office_cod_hint}</p>
             <div className="flex flex-wrap items-center gap-3 rounded border bg-white p-3 text-sm">
@@ -970,7 +971,7 @@ function Rewards({ rewards, t }) {
     };
 
     return (
-        <section className="mt-8" data-testid="office-rewards">
+        <section id="rewards" className="mt-8 scroll-mt-14" data-testid="office-rewards">
             <h2 className="mb-1 text-lg font-semibold">{t.rewards_label}</h2>
             <p className="mb-2 max-w-3xl text-sm text-gray-600">{t.rewards_hint}</p>
             <div className="space-y-3 rounded border bg-white p-3 text-sm">
@@ -1017,7 +1018,7 @@ function Referrals({ referrals, t }) {
     };
 
     return (
-        <section className="mt-8" data-testid="office-referrals">
+        <section id="referrals" className="mt-8 scroll-mt-14" data-testid="office-referrals">
             <h2 className="mb-1 text-lg font-semibold">{t.referrals_label}</h2>
             <p className="mb-2 max-w-3xl text-sm text-gray-600">{t.referrals_hint}</p>
             <div className="space-y-3 rounded border bg-white p-3 text-sm">
@@ -1060,7 +1061,7 @@ function ShopOpenSwitch({ shopOpen, t }) {
     const save = (open) => router.post('/admin/bookshop/open', { open: open ? 1 : 0, message }, { preserveScroll: true });
 
     return (
-        <section className="mt-8" data-testid="office-shop-open">
+        <section id="shop-open" className="mt-8 scroll-mt-14" data-testid="office-shop-open">
             <h2 className="mb-1 text-lg font-semibold">{t.shop_open_label}</h2>
             <p className="mb-2 text-sm text-gray-600">{t.office_shop_open_hint}</p>
             <form className="flex flex-wrap items-end gap-3 rounded border bg-white p-3 text-sm" onSubmit={(e) => { e.preventDefault(); save(shopOpen.open); }}>
@@ -1080,7 +1081,7 @@ function NoticeSwitches({ notices, t }) {
     const form = useForm({ ...notices });
 
     return (
-        <section className="mt-8" data-testid="office-notices">
+        <section id="notices" className="mt-8 scroll-mt-14" data-testid="office-notices">
             <h2 className="mb-1 text-lg font-semibold">{t.notices_heading}</h2>
             <p className="mb-2 text-sm text-gray-600">{t.office_notices_hint}</p>
             <form className="flex flex-wrap items-center gap-4 rounded border bg-white p-3 text-sm" onSubmit={(e) => { e.preventDefault(); form.post('/admin/bookshop/notices', { preserveScroll: true }); }}>
@@ -1109,7 +1110,7 @@ function Reviews({ reviews, t }) {
     const waiting = reviews.filter((r) => r.status === 'pending').length;
 
     return (
-        <section className="mt-8" data-testid="office-reviews">
+        <section id="reviews" className="mt-8 scroll-mt-14" data-testid="office-reviews">
             <h2 className="mb-2 text-lg font-semibold">{t.reviews_heading} {waiting > 0 && <span className="ms-2 rounded bg-amber-100 px-2 text-sm text-amber-800">{waiting}</span>}</h2>
             {reviews.length === 0 ? <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_reviews}</p> : (
                 <ul className="divide-y rounded border bg-white text-sm">
@@ -1141,7 +1142,7 @@ function Questions({ questions, t }) {
     const act = (id, action) => router.post(`/admin/bookshop/questions/${id}/moderate`, { action, note: notes[id] || '' }, { preserveScroll: true });
 
     return (
-        <section className="mt-8" data-testid="office-questions">
+        <section id="questions" className="mt-8 scroll-mt-14" data-testid="office-questions">
             <h2 className="mb-2 text-lg font-semibold">{t.questions_heading}</h2>
             {questions.length === 0 ? <p className="rounded border bg-white p-3 text-sm text-gray-600">{t.no_questions}</p> : (
                 <ul className="divide-y rounded border bg-white text-sm">
@@ -1186,7 +1187,7 @@ function ShopHome({ home, t }) {
     );
 
     return (
-        <section className="mt-8" data-testid="office-home">
+        <section id="home" className="mt-8 scroll-mt-14" data-testid="office-home">
             <div className="mb-2 flex items-center justify-between"><h2 className="text-lg font-semibold">{t.shop_home_heading}</h2><a href="/shop" target="_blank" rel="noreferrer" className="text-sm text-blue-700 underline">/shop</a></div>
             <div className="grid gap-6 lg:grid-cols-3">
                 <div>
@@ -1246,6 +1247,23 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
     return (
         <AppShell title={t.office_title}>
             <FormErrors errors={errors} className="mb-4" />
+            {/* STATUS §5no: the office is ten tables one under another, 10,600px on a phone (ADMIN_PANEL.md §7 P5, M6); the chips the vendor portal got (§5mp) jump to each. */}
+            <SectionNav t={t} items={[
+                ['listings', t.listings_title],
+                ['identity', id_l?.title || 'ID'],
+                ['vendors', t.vendors],
+                ['bank-slips', t.bank_slips],
+                ['orders', t.orders],
+                ['refunds', t.refunds_heading],
+                ...(money ? [['money', t.money_title]] : []),
+                ['applications', t.applications_heading],
+                ...(quotes ? [['quotes', t.quotes_title]] : []),
+                ...(insights ? [['insights', t.insights_office_heading]] : []),
+                ...(hosts ? [['hosts', t.hosts_heading]] : []),
+                ...(team ? [['team', t.team_heading]] : []),
+                ['low-stock', t.low_stock_heading],
+                ['catalogue', t.categories],
+            ]} />
             {flash.vendor_invite && <InviteCard invite={flash.vendor_invite} t={t} signInUrl={sign_in_url} />}
 
             {slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
@@ -1254,11 +1272,11 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {applications.some((a) => a.status === 'pending') && <Applications applications={applications} open={applications_open} t={t} />}
             <Listings rows={listings} t={t} />
             {/* COMMERCE_PARITY_PLAN P2: shop owners' identity cards. */}
-            <div id="identity" className="mt-8"><IdentityChecks rows={identity_checks} l={id_l} /></div>
+            <div id="identity" className="mt-8 scroll-mt-14"><IdentityChecks rows={identity_checks} l={id_l} /></div>
 
             <InviteVendor t={t} defaultRate={default_commission_rate} />
 
-            <div className="mb-2 flex items-center justify-between">
+            <div id="vendors" className="mb-2 flex scroll-mt-14 items-center justify-between">
                 <h2 className="text-lg font-semibold">{t.vendors}</h2>
                 <span className="flex flex-wrap gap-2"><a href="/admin/bookshop/akuru" className="btn-secondary" data-testid="open-akuru">{t.akuru_page_title}</a><a href="/admin/bookshop/vendors/export" className="btn-secondary" data-testid="export-vendors">{t.export_csv}</a></span>
             </div>

@@ -3,11 +3,11 @@
 namespace App\Domains\PrayerTimes\Http\Controllers\Admin;
 
 use App\Domains\PrayerTimes\Actions\ListPrayerIslandsAction;
-use App\Domains\PrayerTimes\DTOs\IslandDTO;
 use App\Domains\Settings\Actions\GetSettingAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Inertia\Phrases;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -18,12 +18,12 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class IslandController extends Controller
 {
-    public function index(): Response
+    public function index(Request $request): Response
     {
         $this->authorizeManage();
 
         return Inertia::render('PrayerTimes/Islands', [
-            'islands' => app(ListPrayerIslandsAction::class)->execute(false)->map(fn (IslandDTO $island) => $island->toArray())->values()->all(),
+            ...app(ListPrayerIslandsAction::class)->page((string) $request->query('q', '')),
             'cache_version' => (int) app(GetSettingAction::class)->execute('prayer_times_cache_version', 1),
             'default_island_id' => app(GetSettingAction::class)->execute('prayer.default_island_id'),
             't' => Phrases::once('admin'),

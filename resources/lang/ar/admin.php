@@ -1047,4 +1047,15 @@ return [
     'library_settings_office_email' => 'بريد المكتب للمبيعات',
     'library_settings_office_phone' => 'هاتف المكتب للمبيعات',
     'library_settings_office_note' => 'تصل كل عملية بيع إلى هذا البريد وهذا الرقم كما يسمح المفتاحان أعلاه. اتركهما فارغين لإبقاء المبيعات داخل التطبيق.',
+
+    // STATUS §5no: the long pages — islands paged with a search, Feature testing folded.
+    'prayer_search' => 'ابحث عن جزيرة أو أتول…',
+    'prayer_search_go' => 'بحث',
+    'prayer_showing' => ':shown من :total جزيرة',
+    'prayer_islands_no_match' => 'لا توجد جزيرة مطابقة.',
+    'ft_open_all' => 'فتح الكل',
+    'ft_close_all' => 'إغلاق الكل',
+    'page_prev' => '‹ السابق',
+    'page_next' => 'التالي ›',
+    'page_of' => 'الصفحة :page من :pages',
 ];
