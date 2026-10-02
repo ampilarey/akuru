@@ -4546,6 +4546,14 @@ say My shop or Alerts; a count draws the number on the initial; the
 initial opens Alerts. The signed-in phone walk was not run here: this
 machine has no PHP or MySQL.
 
+## 5nf. The name beside the logo is gone (2026-10-02)
+
+The owner: remove "Akuru Institute" near the logo.
+
+The logo already carries the name. The words beside it were a second
+label, in both signed-in headers. That label is gone. The logo still
+links home, and its alt text is still Akuru Institute.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not

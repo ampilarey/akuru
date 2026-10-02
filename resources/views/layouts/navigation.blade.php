@@ -26,9 +26,8 @@
 
             {{-- ── Logo, and the workspace switcher ────────────────────────── --}}
             <div style="display:flex;align-items:center;gap:.75rem;flex-shrink:0">
-                <a href="{{ route('dashboard') }}" style="display:flex;align-items:center;gap:.625rem;text-decoration:none;flex-shrink:0">
+                <a href="{{ route('dashboard') }}" style="display:flex;align-items:center;text-decoration:none;flex-shrink:0">
                     <x-akuru-logo size="h-8" variant="on-dark" />
-                    <span style="color:white;font-weight:700;font-size:.95rem;letter-spacing:.01em">Akuru Institute</span>
                 </a>
                 @auth
                 @if(count($workspaces['list']) > 1)

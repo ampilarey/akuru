@@ -131,18 +131,21 @@ check('the user menu opens inside the viewport when the page is mirrored', box !
 
 await desk.goto(`${BASE}/en/admin/operations`, { waitUntil: 'networkidle' });
 check('the Inertia shell has the skip link and a main landmark', (await count(desk, 'a[href="#main"]')) === 1 && (await count(desk, 'main#main')) === 1);
-// The same brand bar as the Blade shell (STATUS §5ib): the logo, the wordmark
-// linking home, and the wine background — so the two shells read as one app.
+// The same brand bar as the Blade shell (STATUS §5ib): the logo linking home
+// and the wine background. The name is the logo; there is no second label
+// beside it (STATUS §5nf).
 const brand = await desk.evaluate(() => {
     const header = document.querySelector('header');
     const home = header?.querySelector('[data-testid="shell-home"]');
+    const img = home?.querySelector('img[src*="akuru-logo-on-dark"]');
     return {
-        logo: !!home?.querySelector('img[src*="akuru-logo-on-dark"]'),
-        wordmark: (home?.textContent || '').includes('Akuru Institute'),
+        logo: !!img,
+        name: img?.alt === 'Akuru Institute',
+        extraLabel: (home?.textContent || '').includes('Akuru Institute'),
         wine: getComputedStyle(header).backgroundImage.includes('gradient') && getComputedStyle(header).color === 'rgb(255, 255, 255)',
     };
 });
-check('and the brand bar: the logo, "Akuru Institute" linking home, on the wine background', brand.logo && brand.wordmark && brand.wine, JSON.stringify(brand));
+check('and the brand bar: the logo linking home, on the wine background, with no second name', brand.logo && brand.name && !brand.extraLabel && brand.wine, JSON.stringify(brand));
 check('and a language switcher', (await count(desk, 'a[href*="/dv/admin/operations"], a[href^="/dv"]')) >= 1);
 await desk.goto(`${BASE}/dv/admin/operations`, { waitUntil: 'networkidle' });
 const alerts = await desk.locator('a[href="/portal/notifications"]').innerText().catch(() => '');
