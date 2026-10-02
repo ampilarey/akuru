@@ -4983,6 +4983,40 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5nt. The Bookstore office's lists as phone cards, group three (C15 slice 6d, 2026-10-02)
+
+ADMIN_PANEL.md §7 M2 closes; continued from §5ns.
+
+- **The Bookstore office's thirteen tables are cards below `sm`**: vendors
+  (with the Edit button as the card's action row and the editor row still
+  spanning the card), bank transfer slips (the Confirm and Reject
+  controls stack under the Status label), orders, refunds, payout
+  requests, vendor balances, payout history, commission invoices (Open
+  as the action row), the tax report, the shop funnels (the five step
+  columns take their own headings as labels), low and sold out, and the
+  two small rewards and referrals ledgers. The same `table-stack`,
+  `data-label`, `table-actions` transformation as §5nr and §5ns; the
+  desk is unchanged. Where a table had no header row (payout history,
+  commission invoices) the first cell — the vendor, the invoice number —
+  stays unlabelled as the card's title and the rest take the phrase the
+  desk's neighbours use (Amount, Status, Decision, Shop name, Total).
+- **The swipe list is empty.** `admin-mobile.mjs` now prints "no
+  sideways scrolling anywhere" across its 50 screens — the 26 tables M2
+  measured on 2026-10-02 are all cards.
+- **With it, the factory flake that reddened #658** (a JSX/CSS/docs-only
+  PR): `UserFactory` drew its address from `fake()->unique()->safeEmail()`,
+  which `tests/Support/UniqueFixtureHelpers.php` already explains
+  guarantees nothing across tests; CI hit `Duplicate entry
+  'hlittel@example.com'` in `CourseConversionTest`. Every factory email
+  now carries a per-process five-digit counter before the `@`, the course
+  factory's slug the same instead of a random 1–9999, and
+  `NoFakeUniqueInFixturesTest` scans `database/factories` and the
+  domains' factories too. Shipped on #658 itself so it could go green.
+
+Walks: `admin-mobile.mjs` 3/3 with an empty swipe list; `phone-targets.mjs`
+5/5 (250 targets); a phone screenshot of each office section read top to
+bottom (vendors, orders, money, funnels). Architecture green.
+
 ## 5ns. The office's lists as phone cards, group two (C15 slice 6c, 2026-10-02)
 
 ADMIN_PANEL.md §7 M2 continued from §5nr.
