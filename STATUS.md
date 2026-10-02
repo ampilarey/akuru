@@ -4414,6 +4414,48 @@ pick-up — empty tables, not broken readers, but indistinguishable from the
 outside, so `SmokeMarkerSeeder` now plants a marker in each of the three and
 the walk is a real answer rather than a hopeful one.
 
+## 5mz. A shop's own colours reach its page (2026-10-02)
+
+The owner: "when the vendor changes the colour of the vendor page it's not
+changing, but when he changes the theme it is".
+
+- **Why.** Reproduced as Fitrah's owner on a phone: picking a light
+  primary (`#F5C542`) from the colour picker left the button text on it
+  white — 1.62 against the 4.5 it needs. The draft saved ("1 colour pairs
+  are hard to read"), **Publish was disabled**, and the live page kept the
+  old colours. A preset is built to read, so switching presets always
+  published. The vendor changed one colour and was blocked by a pair they
+  never touched.
+- **Fix, in the designer** (the rule stays — unreadable colours still do
+  not publish, BOOKSHOP_PLAN §6.2):
+  - changing a **background** (primary, accent, page, card) switches the
+    text on it to white or dark when it would no longer read, and says so
+    ("Picked Text on primary so it reads on the colour you chose");
+  - the readability check runs **live** as the vendor picks, not only
+    after saving; the green note says "save the draft, then Publish";
+  - **Make it readable** fixes every failing pair in one click: text slots
+    to white or dark; an accent too faint for the page shaded toward
+    contrast, keeping its hue; a dark page under white cards brings the
+    cards to the page's side (`#22222A`, as the derived dark scheme does).
+- `resources/js/Components/contrast.js` mirrors `Contrast` and
+  `Theme::PAIRS`; its ratios agree with the PHP to the hundredth on the
+  pairs checked (1.62, 11.22, 8.86, 1.79, 10.93, 4.48). The server is
+  unchanged and still the gate.
+- EN/DV/AR: `contrast_auto_text`, `contrast_fix`, `contrast_ok_save`.
+
+Tests: StorefrontDesignerTest, StorefrontThemeGalleryTest,
+StorefrontSectionsTest and Architecture green — no server rule moved.
+
+Walk: new `storefront-colours.mjs`, 10/10 on a phone — a gold primary from
+the picker flips the text to dark and says so; the live check is green;
+the draft saves without a warning; Publish is open; the live page wears
+`--sf-primary: #F5C542` with `#15151A` text; typed clashing colours show at
+once with *Make it readable*; one click clears them and the shaded accent
+publishes; a preset still publishes. `storefront.mjs` still passes.
+
+For vendors already stuck: opening the designer now shows *Make it
+readable* beside the red box — one click, save, Publish.
+
 ## 5my. The Lender role (LENDING_AND_USED_BOOKS_PLAN L4, 2026-10-01)
 
 The owner, on *Manage users › Roles*, with Writer and Vendor ticked for a
