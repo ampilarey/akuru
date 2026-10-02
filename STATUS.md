@@ -4602,6 +4602,21 @@ The row does not scroll the page sideways.
 
 The signed-in walk was not run here: this machine has no PHP or MySQL.
 
+## 5nj. More closes, and the phone row skips the bottom tabs (2026-10-02)
+
+The owner: tapping More does not go back, and the row repeats items
+that are already fixed at the bottom.
+
+More is a button. A second tap closes the panel under the row. On a
+phone the row no longer shows Shop, Deals, Cart or orders — those are
+the bottom tabs. It keeps collections, pages, tracking, compare, and
+the way back to the bookstore. When that is more than three, the first
+two stay on the row and More holds the rest. A wider screen has no
+bottom bar, so it still shows Home, Deals, Cart, orders and the rest,
+and does not show More.
+
+The signed-in walk was not run here: this machine has no PHP or MySQL.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not
