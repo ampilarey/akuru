@@ -16,7 +16,7 @@ function ApplicationsQueue({ applications }) {
 
     return (
         <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-            <table className="min-w-full text-sm">
+            <table className="table-stack min-w-full text-sm">
                 <thead className="bg-[#F3EBE0] text-start">
                     <tr>
                         <th className="px-3 py-2">Writer application</th>
@@ -27,7 +27,7 @@ function ApplicationsQueue({ applications }) {
                 <tbody>
                     {applications.map((app) => (
                         <tr key={app.id} className="border-t align-top">
-                            <td className="px-3 py-2">
+                            <td data-label="Writer application" className="px-3 py-2">
                                 <div className="flex items-start gap-2">
                                     {app.photo_url && <img src={app.photo_url} alt="" className="h-10 w-10 rounded-full object-cover" data-testid="application-portrait" />}
                                     <div>
@@ -37,7 +37,7 @@ function ApplicationsQueue({ applications }) {
                                     </div>
                                 </div>
                             </td>
-                            <td className="px-3 py-2 text-xs text-gray-600">
+                            <td data-label="Background" className="px-3 py-2 text-xs text-gray-600">
                                 {app.expertise && <p>{app.expertise}</p>}
                                 {app.qualifications && <p>{app.qualifications}</p>}
                                 {/* B9 (§11.1): what they have published, and the identity
@@ -54,7 +54,7 @@ function ApplicationsQueue({ applications }) {
                                     </span>
                                 )}
                             </td>
-                            <td className="px-3 py-2">
+                            <td className="table-actions px-3 py-2">
                                 <input
                                     className="form-input mb-2 w-48"
                                     placeholder="Note (optional)" aria-label="Note (optional)"
@@ -84,7 +84,7 @@ function PayoutsQueue({ payouts }) {
     return (
         <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
             {payouts.requests.length > 0 && (
-                <table className="min-w-full border-b text-sm">
+                <table className="table-stack min-w-full border-b text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Payout request</th>
@@ -95,9 +95,9 @@ function PayoutsQueue({ payouts }) {
                     <tbody>
                         {payouts.requests.map((req) => (
                             <tr key={req.id} className="border-t">
-                                <td className="px-3 py-2">{req.writer} · {req.requested_at}</td>
-                                <td className="px-3 py-2 font-medium">{req.currency} {req.amount}</td>
-                                <td className="px-3 py-2">
+                                <td data-label="Payout request" className="px-3 py-2">{req.writer} · {req.requested_at}</td>
+                                <td data-label="Amount" className="px-3 py-2 font-medium">{req.currency} {req.amount}</td>
+                                <td className="table-actions px-3 py-2">
                                     <input
                                         className="form-input mb-1 w-40"
                                         placeholder="Note" aria-label="Note"
@@ -115,7 +115,7 @@ function PayoutsQueue({ payouts }) {
                 </table>
             )}
             {payouts.writers.length > 0 && (
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Writer earnings</th>
@@ -128,11 +128,11 @@ function PayoutsQueue({ payouts }) {
                     <tbody>
                         {payouts.writers.map((row) => (
                             <tr key={row.writer} className="border-t">
-                                <td className="px-3 py-2">{row.writer}</td>
-                                <td className="px-3 py-2">{row.pending}</td>
-                                <td className="px-3 py-2">{row.available}</td>
-                                <td className="px-3 py-2">{row.paid}</td>
-                                <td className="px-3 py-2">{row.refunded}</td>
+                                <td data-label="Writer earnings" className="px-3 py-2">{row.writer}</td>
+                                <td data-label="Pending" className="px-3 py-2">{row.pending}</td>
+                                <td data-label="Available" className="px-3 py-2">{row.available}</td>
+                                <td data-label="Paid" className="px-3 py-2">{row.paid}</td>
+                                <td data-label="Refunded" className="px-3 py-2">{row.refunded}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -164,7 +164,7 @@ function SubmissionsQueue({ submissions, reviewers = [] }) {
             <datalist id="reviewer-pool">
                 {reviewers.map((reviewer) => <option key={reviewer.email} value={reviewer.email}>{`${reviewer.name} (${reviewer.open} open)`}</option>)}
             </datalist>
-            <table className="min-w-full text-sm">
+            <table className="table-stack min-w-full text-sm">
                 <thead className="bg-[#F3EBE0] text-start">
                     <tr>
                         <th className="px-3 py-2">Submitted item</th>
@@ -175,13 +175,13 @@ function SubmissionsQueue({ submissions, reviewers = [] }) {
                 <tbody>
                     {submissions.map((sub) => (
                         <tr key={sub.id} className="border-t align-top">
-                            <td className="px-3 py-2">
+                            <td data-label="Submitted item" className="px-3 py-2">
                                 <p className="font-medium">{sub.title}</p>
                                 <p className="text-xs text-gray-500">
                                     {sub.writer} · {sub.content_type} · {sub.access_type}{sub.price ? ` · MVR ${sub.price}` : ''} · {sub.submitted_at}
                                 </p>
                             </td>
-                            <td className="px-3 py-2 text-xs text-gray-600">
+                            <td data-label="History" className="px-3 py-2 text-xs text-gray-600">
                                 {sub.history.map((entry, index) => (
                                     <p key={index}>{entry.decision}{entry.comment ? ` — ${entry.comment}` : ''}</p>
                                 ))}
@@ -214,7 +214,7 @@ function SubmissionsQueue({ submissions, reviewers = [] }) {
                                     </div>
                                 )}
                             </td>
-                            <td className="px-3 py-2">
+                            <td data-label="Review" className="px-3 py-2">
                                 <input
                                     className="form-input mb-2 w-56"
                                     placeholder="Editor comment" aria-label="Editor comment"
@@ -397,7 +397,7 @@ export default function Admin({ items, categories, options, sales = [], queues =
 
             {sales.length > 0 && (
                 <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">Sales</th>
@@ -408,9 +408,9 @@ export default function Admin({ items, categories, options, sales = [], queues =
                         <tbody>
                             {sales.map((row) => (
                                 <tr key={row.library_item_id} className="border-t">
-                                    <td className="px-3 py-2">{row.title}</td>
-                                    <td className="px-3 py-2">{row.sales}</td>
-                                    <td className="px-3 py-2">{row.revenue}</td>
+                                    <td data-label="Sales" className="px-3 py-2">{row.title}</td>
+                                    <td data-label="Count" className="px-3 py-2">{row.sales}</td>
+                                    <td data-label="Revenue (MVR)" className="px-3 py-2">{row.revenue}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -419,7 +419,7 @@ export default function Admin({ items, categories, options, sales = [], queues =
             )}
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Title</th>
@@ -437,16 +437,16 @@ export default function Admin({ items, categories, options, sales = [], queues =
                         )}
                         {items.map((item) => (
                             <tr key={item.id} className="border-t">
-                                <td className="px-3 py-2">
+                                <td data-label="Title" className="px-3 py-2">
                                     <div className="font-medium">{item.title}</div>
                                     <div className="text-xs text-gray-500">/{item.slug}{item.has_pdf ? ' · PDF' : ''}</div>
                                 </td>
-                                <td className="px-3 py-2">{item.content_type?.replaceAll('_', ' ')}</td>
-                                <td className="px-3 py-2">{item.access_type?.replaceAll('_', ' ')}</td>
-                                <td className="px-3 py-2">{item.category?.name ?? '—'}</td>
-                                <td className="px-3 py-2">{item.status} {item.review_state && <ReviewStateChip state={item.review_state} t={common} />}</td>
-                                <td className="px-3 py-2">{item.published_at ?? '—'}</td>
-                                <td className="px-3 py-2 text-end whitespace-nowrap">
+                                <td data-label="Type" className="px-3 py-2">{item.content_type?.replaceAll('_', ' ')}</td>
+                                <td data-label="Access" className="px-3 py-2">{item.access_type?.replaceAll('_', ' ')}</td>
+                                <td data-label="Category" className="px-3 py-2">{item.category?.name ?? '—'}</td>
+                                <td data-label="Status" className="px-3 py-2">{item.status} {item.review_state && <ReviewStateChip state={item.review_state} t={common} />}</td>
+                                <td data-label="Published" className="px-3 py-2">{item.published_at ?? '—'}</td>
+                                <td className="table-actions px-3 py-2 text-end whitespace-nowrap">
                                     {item.status === 'published' && (
                                         <button
                                             type="button"

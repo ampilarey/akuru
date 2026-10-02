@@ -40,7 +40,7 @@ export default function Funnel({ reports = [], course_id: courseId = null, t = {
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="funnel-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.leads_col_course || 'Course'}</th>
@@ -58,15 +58,15 @@ export default function Funnel({ reports = [], course_id: courseId = null, t = {
                         {reports.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan="9">{t.funnel_none || 'No funnel events yet.'}</td></tr>}
                         {reports.map((r) => (
                             <tr key={r.course_id} className="border-t align-top" data-testid="funnel-row">
-                                <td className="px-3 py-2 font-medium text-gray-900">{r.course_title}</td>
-                                <td className="px-3 py-2 text-gray-900">{r.counts.course_view}</td>
-                                <td className="px-3 py-2 text-gray-900">{r.counts.register_click}</td>
-                                <td className="px-3 py-2 text-gray-900">{r.counts.registration_started}</td>
-                                <td className="px-3 py-2 text-gray-900">{r.counts.payment_completed}</td>
-                                <td className="px-3 py-2 text-gray-900">{r.counts.whatsapp_click}</td>
-                                <td className="px-3 py-2 text-gray-900">{r.counts.syllabus_download}</td>
-                                <td className="whitespace-nowrap px-3 py-2 text-gray-700">{rate(r.rates.view_to_register)}</td>
-                                <td className="min-w-[16rem] px-3 py-2 text-gray-700" data-testid="funnel-decision">{r.decision}</td>
+                                <td data-label={t.leads_col_course || 'Course'} className="px-3 py-2 font-medium text-gray-900">{r.course_title}</td>
+                                <td data-label={t.funnel_col_views || 'Views'} className="px-3 py-2 text-gray-900">{r.counts.course_view}</td>
+                                <td data-label={t.funnel_col_clicks || 'Register clicks'} className="px-3 py-2 text-gray-900">{r.counts.register_click}</td>
+                                <td data-label={t.funnel_col_started || 'Started'} className="px-3 py-2 text-gray-900">{r.counts.registration_started}</td>
+                                <td data-label={t.funnel_col_paid || 'Paid'} className="px-3 py-2 text-gray-900">{r.counts.payment_completed}</td>
+                                <td data-label={t.funnel_col_whatsapp || 'WhatsApp'} className="px-3 py-2 text-gray-900">{r.counts.whatsapp_click}</td>
+                                <td data-label={t.funnel_col_syllabus || 'Syllabus'} className="px-3 py-2 text-gray-900">{r.counts.syllabus_download}</td>
+                                <td data-label={t.funnel_col_rate || 'View → click'} className="whitespace-nowrap px-3 py-2 text-gray-700">{rate(r.rates.view_to_register)}</td>
+                                <td className="table-actions min-w-[16rem] px-3 py-2 text-gray-700" data-testid="funnel-decision">{r.decision}</td>
                             </tr>
                         ))}
                     </tbody>

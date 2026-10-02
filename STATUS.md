@@ -4983,6 +4983,49 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ns. The office's lists as phone cards, group two (C15 slice 6c, 2026-10-02)
+
+ADMIN_PANEL.md §7 M2 continued from §5nr.
+
+- **Fifteen more tables are cards below `sm`**: the Library office's six
+  (the items list with its Feature and Publish buttons, categories,
+  writer applications, reviews, reports, the reviewer pool), insights'
+  most-read, promotions, reading alerts, the CMS leads and funnel, the
+  OTP abuse log, Commerce's gift-card orders, gift cards and discount
+  codes, the prayer islands and the numbers dashboard's recent
+  enrolments. The same transformation as §5nr: `table-stack`,
+  `data-label` from each column's own heading, `table-actions` on the
+  action cell — including the two tables whose action heading is an
+  empty self-closing `<th />`, which the first pass skipped and a second
+  handled. The insights table is generic (its columns are a prop), so
+  its label is the column's.
+- **A labelled cell is a grid now, not a flex row.** The flex row laid a
+  cell's children side by side: the Library office's title cell — a
+  title and a slug, two blocks — read as two narrow columns squeezed
+  beside the label. The cell is a two-column grid with the label down
+  the start side spanning the rows its children take, and every child
+  stacked down the end side; a cell with one text run looks as it did.
+  This reaches the portal's cards too (STATUS §5js): a Contact cell with
+  a phone and an email now stacks them.
+- **Left**: the Bookstore office's four swipe tables (vendors, tax
+  report, the shop funnel, orders) — its tables have their own shape
+  (`w-full rounded border`) and the office page has fourteen sections;
+  group three.
+- **Caught before the walk saw it**: the generic insights table's label
+  came out as `data-label={label}` with no `label` in scope — the page
+  rendered blank. `admin-mobile.mjs` flagged it as "no menu button" (a
+  blank page has none), not as an error, because a React render error
+  is swallowed by the shell; the probe's `pageerror` named it. Worth a
+  console-error check in that sweep (noted for the walk-health pass).
+
+Walks: `admin-mobile.mjs` 3/3, its swipe list down from 16 to the
+Bookstore office's 4; `phone-targets.mjs` 5/5; `library.mjs` 32/33 — the
+one red ("the research shelf filters by year") is the same on `main`;
+`insights.mjs` 12/12 after a reseed (run twice on one dataset it counts
+every visit twice — its own doing, not the page's); `long-pages.mjs`
+17/17; `admin-hub.mjs` 25/25; `family.mjs` 3/4 with §5nr's Friday red.
+Architecture green (69).
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not

@@ -55,7 +55,7 @@ export default function ReadingAlerts({ alerts = [], open_only = true, enforcing
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">Signal</th>
@@ -77,18 +77,18 @@ export default function ReadingAlerts({ alerts = [], open_only = true, enforcing
                         )}
                         {alerts.map((alert) => (
                             <tr key={alert.id} className="border-t align-top">
-                                <td className="px-3 py-2">
+                                <td data-label="Signal" className="px-3 py-2">
                                     {alert.signal_label}
                                     {alert.detail && <p className="mt-1 text-xs text-gray-500">{alert.detail}</p>}
                                 </td>
-                                <td className="px-3 py-2">{alert.reader}</td>
-                                <td className="px-3 py-2">{alert.item_title ?? '—'}</td>
-                                <td className="px-3 py-2 whitespace-nowrap">
+                                <td data-label="Reader" className="px-3 py-2">{alert.reader}</td>
+                                <td data-label="Item" className="px-3 py-2">{alert.item_title ?? '—'}</td>
+                                <td data-label="Observed" className="px-3 py-2 whitespace-nowrap">
                                     {alert.observed} <span className="text-gray-500">/ {alert.threshold}</span>
                                 </td>
-                                <td className="px-3 py-2 whitespace-nowrap">{alert.raised_at}</td>
-                                <td className="px-3 py-2">{alert.outcome ?? <span className="text-gray-400">open</span>}</td>
-                                <td className="px-3 py-2 whitespace-nowrap">
+                                <td data-label="Raised" className="px-3 py-2 whitespace-nowrap">{alert.raised_at}</td>
+                                <td data-label="Outcome" className="px-3 py-2">{alert.outcome ?? <span className="text-gray-400">open</span>}</td>
+                                <td className="table-actions px-3 py-2 whitespace-nowrap">
                                     {!alert.reviewed_at &&
                                         OUTCOMES.map(([value, label]) => (
                                             <button

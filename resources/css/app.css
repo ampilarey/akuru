@@ -223,17 +223,32 @@ html[lang="dv"] body,
     padding: 0.5rem 0.75rem;
   }
   .table-stack td {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 0.75rem;
     padding: 0.25rem 0;
+  }
+  /* STATUS §5ns: a labelled cell is a two-column grid — the label down the
+     start side, every child of the cell stacked down the end side. It was a
+     flex row, which laid a cell's children side by side: the Library
+     office's title cell (a title and a slug, two blocks) read as two narrow
+     columns squeezed beside the label. A cell with one text run looks as it
+     did. The label spans the rows its cell's children take. */
+  .table-stack td[data-label] {
+    display: grid;
+    grid-template-columns: 38% minmax(0, 1fr);
+    column-gap: 0.75rem;
+    align-items: baseline;
+    justify-items: end;
   }
   .table-stack td[data-label]::before {
     content: attr(data-label);
-    flex: 0 0 38%;
+    grid-column: 1;
+    grid-row: 1 / span 30;
+    justify-self: start;
     font-weight: 600;
     color: #6b7280;
+  }
+  .table-stack td[data-label] > * {
+    grid-column: 2;
+    max-width: 100%;
   }
   .table-stack td[colspan] {
     display: block;
@@ -241,6 +256,7 @@ html[lang="dv"] body,
   /* An action cell — Pay, Receipt, Book, Download — is one wrapping row of
      buttons under the card's lines, not a label–value pair. */
   .table-stack td.table-actions {
+    display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
     gap: 0.5rem;
