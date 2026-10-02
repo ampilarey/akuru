@@ -5,6 +5,7 @@ namespace App\Domains\Library\Http\Controllers;
 use App\Domains\Library\Actions\ManageReviewerPoolAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +22,7 @@ class AdminLibraryReviewersController extends Controller
     {
         return Inertia::render('Library/Reviewers', [
             'reviewers' => app(ManageReviewerPoolAction::class)->list(),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

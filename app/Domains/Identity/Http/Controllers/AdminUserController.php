@@ -8,6 +8,7 @@ use App\Domains\Identity\Models\User;
 use App\Http\Controllers\Controller;
 use App\Support\Authorization\RoleLabels;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
@@ -29,7 +30,7 @@ class AdminUserController extends Controller
             'filters' => ['search' => (string) ($filters['search'] ?? ''), 'role' => (string) ($filters['role'] ?? '')],
             // Every role, by the name people read (ADR-040 slice 3).
             'roles' => collect(RoleLabels::all())->map(fn ($label, $key) => ['key' => $key, 'label' => $label])->values()->all(),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

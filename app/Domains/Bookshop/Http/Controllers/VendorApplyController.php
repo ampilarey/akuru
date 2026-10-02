@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\ResolveVendorScopeAction;
 use App\Domains\Bookshop\Actions\Shop\ApplyToSellAction;
 use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,7 +25,7 @@ class VendorApplyController extends Controller
         $apply = app(ApplyToSellAction::class);
 
         return Inertia::render('Bookshop/VendorApply', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'open' => $apply->isOpen(),
             'application' => $apply->latest($userId),
             'shops' => app(ResolveVendorScopeAction::class)->memberships($userId),

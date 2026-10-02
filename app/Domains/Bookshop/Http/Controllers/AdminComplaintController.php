@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\OrderComplaintAction;
 use App\Domains\Bookshop\Actions\ResolveVendorScopeAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,7 +24,7 @@ class AdminComplaintController extends Controller
         abort_unless($request->user()?->can('bookshop.manage'), 403);
 
         return Inertia::render('Bookshop/Complaints', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'complaints' => app(OrderComplaintAction::class)->list(),
         ]);
     }

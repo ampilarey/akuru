@@ -8,6 +8,7 @@ use App\Domains\Bookshop\Actions\Vendor\SaveVendorBankDetailsAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -29,7 +30,7 @@ class VendorMoneyController extends Controller
         $scope = $this->authorizeVendor($request);
 
         return Inertia::render('Bookshop/VendorMoney', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'vendor' => ['name' => $scope->vendorName, 'slug' => $scope->vendorSlug, 'role' => $scope->role->value],
             'money' => app(ListVendorMoneyAction::class)->execute($scope),
         ]);
@@ -64,7 +65,7 @@ class VendorMoneyController extends Controller
         $scope = $this->authorizeVendor($request);
 
         return Inertia::render('Bookshop/CommissionInvoice', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'invoice' => app(ListVendorMoneyAction::class)->invoice($scope, $invoice),
             'back_url' => route('vendor.money.index'),
         ]);

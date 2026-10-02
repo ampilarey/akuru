@@ -5,6 +5,7 @@ namespace App\Domains\Library\Http\Controllers;
 use App\Domains\Library\Actions\ListLibraryInsightsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,7 +22,7 @@ class AdminLibraryInsightsController extends Controller
         return Inertia::render('Library/Insights', [
             'insights' => app(ListLibraryInsightsAction::class)->execute((string) $request->query('period', 'month')),
             'periods' => array_keys(ListLibraryInsightsAction::PERIODS),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

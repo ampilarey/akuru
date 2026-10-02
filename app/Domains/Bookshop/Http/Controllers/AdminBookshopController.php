@@ -42,6 +42,7 @@ use App\Domains\Bookshop\Support\SectionTypes;
 use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Carbon\Carbon;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -61,7 +62,7 @@ class AdminBookshopController extends Controller
         abort_unless($request->user()?->can('bookshop.manage'), 403);
 
         return Inertia::render('Bookshop/Admin', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'vendors' => app(ListVendorsAction::class)->execute(),
             'catalogue' => app(ListCatalogueOptionsAction::class)->execute(activeOnly: false),
             'slips' => app(ListBankTransferSlipsAction::class)->execute(),
@@ -275,7 +276,7 @@ class AdminBookshopController extends Controller
         abort_unless($request->user()?->can('bookshop.manage'), 403);
 
         return Inertia::render('Bookshop/CommissionInvoice', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'invoice' => app(ListVendorMoneyReportAction::class)->invoice($invoice),
             'back_url' => route('admin.bookshop.index'),
         ]);

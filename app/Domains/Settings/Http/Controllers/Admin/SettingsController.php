@@ -5,6 +5,7 @@ namespace App\Domains\Settings\Http\Controllers\Admin;
 use App\Domains\Settings\Actions\ClearApplicationCachesAction;
 use App\Domains\Settings\Actions\ResolveIntegrationStatusAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -18,7 +19,7 @@ class SettingsController extends Controller
     public function index(): Response
     {
         return Inertia::render('Settings/Index', app(ResolveIntegrationStatusAction::class)->execute() + [
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

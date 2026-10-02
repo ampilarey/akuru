@@ -6,6 +6,7 @@ use App\Domains\Website\Models\Page;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Html\HtmlSanitizer;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -39,7 +40,7 @@ class PageController extends Controller
             'pages' => collect($pages->items())->map(fn (Page $page) => $this->present($page, false))->values()->all(),
             'pagination' => ['current_page' => $pages->currentPage(), 'last_page' => $pages->lastPage(), 'prev' => $pages->previousPageUrl(), 'next' => $pages->nextPageUrl()],
             'total' => $pages->total(),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -60,7 +61,7 @@ class PageController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Website/PageForm', ['page' => null, 't' => trans('admin')]);
+        return Inertia::render('Website/PageForm', ['page' => null, 't' => Phrases::once('admin')]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -73,12 +74,12 @@ class PageController extends Controller
 
     public function show(Page $page): Response
     {
-        return Inertia::render('Website/PagePreview', ['page' => $this->present($page, true), 't' => trans('admin')]);
+        return Inertia::render('Website/PagePreview', ['page' => $this->present($page, true), 't' => Phrases::once('admin')]);
     }
 
     public function edit(Page $page): Response
     {
-        return Inertia::render('Website/PageForm', ['page' => $this->present($page, true), 't' => trans('admin')]);
+        return Inertia::render('Website/PageForm', ['page' => $this->present($page, true), 't' => Phrases::once('admin')]);
     }
 
     public function update(Request $request, Page $page): RedirectResponse

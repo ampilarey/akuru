@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Http\Controllers;
 
 use App\Domains\Bookshop\Actions\AkuruDeliveryAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +22,7 @@ class DriverController extends Controller
         abort_unless($request->user()?->can('bookshop.deliver'), 403);
 
         return Inertia::render('Bookshop/Deliveries', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'deliveries' => app(AkuruDeliveryAction::class)->forDriver((int) $request->user()->id),
         ]);
     }

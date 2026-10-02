@@ -6,6 +6,7 @@ use App\Domains\Lending\Actions\ModerateLendingAction;
 use App\Domains\Lending\Actions\PresentLendingAdminAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,7 +25,7 @@ class AdminLendingController extends Controller
         abort_unless($request->user()?->can('bookshop.manage'), 403);
 
         return Inertia::render('Lending/Admin', [
-            't' => trans('lending'),
+            't' => Phrases::once('lending'),
             'id_l' => trans('account'),
             'admin' => app(PresentLendingAdminAction::class)->execute(),
         ]);

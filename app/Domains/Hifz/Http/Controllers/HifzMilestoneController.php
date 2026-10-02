@@ -8,6 +8,7 @@ use App\Domains\Hifz\Support\HifzDashboardRows;
 use App\Enums\Hifz\HifzMilestoneStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Hifz\StoreHifzMilestoneRequest;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -44,7 +45,7 @@ class HifzMilestoneController extends Controller
 
         return Inertia::render('Hifz/Milestones', [
             'milestones' => $milestones,
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

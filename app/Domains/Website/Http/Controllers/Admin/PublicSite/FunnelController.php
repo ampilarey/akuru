@@ -5,6 +5,7 @@ namespace App\Domains\Website\Http\Controllers\Admin\PublicSite;
 use App\Domains\Website\Actions\ComposeCourseFunnelReportAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,7 +26,7 @@ class FunnelController extends Controller
         return Inertia::render('Website/Funnel', [
             'reports' => app(ComposeCourseFunnelReportAction::class)->execute($courseId),
             'course_id' => $courseId,
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

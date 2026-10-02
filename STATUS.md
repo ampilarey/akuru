@@ -4741,6 +4741,50 @@ title function). Walks on the chunked build: `admin-hub.mjs` **25/25**,
 `nav.mjs` **14/14**, `admin-mobile.mjs` **3/3** on 50 screens, no console
 or server errors.
 
+## 5nm. The phrase books travel once (C15 slice 2, 2026-10-02)
+
+ADMIN_PANEL.md §7 P2. Every Inertia admin page carried `t`, a whole
+language file — `admin` 43.8 KB of JSON, `shop` 93.2 KB on the Bookstore
+office — and the shell added 6.2 KB of `i18n`; Inertia resends page props
+on every visit, so an administrator walking five screens downloaded the
+same 44 KB five times. Props ran 55 KB on a typical page.
+
+- **`App\Support\Inertia\Phrases::once('admin')`** wraps the file in
+  Inertia's once-prop (inertia-laravel 3.1): sent on the first load,
+  remembered by the client in its session storage under a key, and left
+  out of every visit whose `X-Inertia-Except-Once-Props` names that key.
+  The key is `t:<file>:<locale>`, so Dhivehi fetches the Dhivehi book and
+  the `shop` book is never mistaken for `admin`. 84 sites in 53
+  controllers (`admin`, `shop`, `account`, `security`, `lending`); the
+  pages do not change — `t` arrives as before, from the server or from
+  memory.
+- **The shell's strings** (`i18n`: the `learn` file, the menu words, the
+  Library and review subset of `common`) move to the middleware's
+  `shareOnce()`, keyed `i18n:<locale>`.
+- **A 30-minute TTL** (`Phrases::TTL_MINUTES`) bounds how long a
+  correction saved on `/admin/translations` ("goes live immediately")
+  takes to reach a tab that is already open; a fresh page load always has
+  the current text.
+- **Measured** on Manage users after the hub: the visit's response carries
+  `errors, locale, locales, locale_urls, rtl, auth, nav, flash, users,
+  pagination, total, filters, roles` and no `t` or `i18n` — the 50 KB
+  that used to ride along is gone from every visit after the first.
+
+Tests: `OncePropsTest` (4) — the first load carries the books under their
+keys with an expiry; a visit naming the keys gets the page without them;
+another locale or another file is sent; a full page load gets everything.
+Architecture green. Walk: new `once-props.mjs` **9/9** in Dhivehi — the
+hub's first load names `t:admin:dv` and `i18n:dv`, the visit to Manage
+users sends them back and receives neither, the heading still reads
+ޔޫޒަރުން ބެލެހެއްޓުން from the remembered book, the More button އިތުރު, and
+a second screen is not resent either; `admin-hub.mjs` 25/25, `nav.mjs`
+14/14, `vendor.mjs` 32/32. The whole feature suite: 2,575 passed.
+`admin.mjs` reads 39/43 on this branch **and the same 39/43 on `main`
+after a fresh reseed** (the users-badge step looks for a System admin on
+page one of a list that now runs to two pages; the Library settings,
+insights and offers steps depend on state earlier walks leave behind) —
+walk drift, not this slice; noted for a walk-health pass.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not

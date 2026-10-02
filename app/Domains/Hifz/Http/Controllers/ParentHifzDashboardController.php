@@ -7,6 +7,7 @@ use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Domains\Hifz\Services\HifzScopeService;
 use App\Domains\Hifz\Support\HifzDashboardRows;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -48,7 +49,7 @@ class ParentHifzDashboardController extends Controller
             'today' => $todayRecord === null ? null : HifzDashboardRows::records(collect([$todayRecord]))[0],
             'week' => HifzDashboardRows::records($weeklyRecords),
             'milestones' => HifzDashboardRows::milestones($milestones),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 }

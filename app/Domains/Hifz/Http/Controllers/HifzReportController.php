@@ -9,6 +9,7 @@ use App\Domains\Hifz\Services\HifzScopeService;
 use App\Domains\Hifz\Support\HifzDashboardRows;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -42,7 +43,7 @@ class HifzReportController extends Controller
                 ['key' => 'milestones', 'href' => route('hifz.reports.milestones')],
             ],
             'export_href' => auth()->user()->can('export_hifz_reports') ? route('hifz.reports.export', ['type' => 'sessions']) : null,
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -93,7 +94,7 @@ class HifzReportController extends Controller
 
         return Inertia::render('Hifz/ReportMilestones', [
             'milestones' => $query->paginate(30)->through(fn (HifzMilestone $milestone): array => HifzDashboardRows::milestoneRow($milestone)),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -133,7 +134,7 @@ class HifzReportController extends Controller
             'unit' => $unit,
             'tone' => $tone,
             'back_href' => route('hifz.reports.index'),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

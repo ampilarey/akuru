@@ -25,6 +25,7 @@ use App\Domains\Bookshop\Support\VendorIdentity;
 use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -51,7 +52,7 @@ class VendorPortalController extends Controller
         $page = $scope->agreementAccepted ? app(ListVendorProductsAction::class)->page($scope, $filters, (int) ($filters['page'] ?? 1)) : null;
 
         return Inertia::render('Bookshop/Vendor', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'vendor' => [
                 'id' => $scope->vendorId,
                 'name' => $scope->vendorName,

@@ -7,6 +7,7 @@ use App\Domains\Portal\Actions\ComposeAccountHomeAction;
 use App\Domains\Portal\Actions\ComposeMyEnrolmentsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use App\Support\Navigation\ResolveWorkspacesAction;
 use App\Support\Navigation\WorkspaceMap;
 use Illuminate\Http\RedirectResponse;
@@ -40,7 +41,7 @@ class MyAccountController extends Controller
 
         return Inertia::render('Portal/AccountHome', [
             ...app(ComposeAccountHomeAction::class)->execute((int) $user->id),
-            't' => trans('account'),
+            't' => Phrases::once('account'),
         ]);
     }
 
@@ -53,7 +54,7 @@ class MyAccountController extends Controller
             ...app(ComposeMyEnrolmentsAction::class)->execute((int) $user->id),
             'export_href' => route('my.enrollments.export', [], false),
             'browse_href' => '/learn/catalog',
-            't' => trans('account'),
+            't' => Phrases::once('account'),
         ]);
     }
 

@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\Vendor\VendorQuotesAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -30,7 +31,7 @@ class VendorQuotesController extends Controller
         $list = app(VendorQuotesAction::class)->list($scope, $status);
 
         return Inertia::render('Bookshop/VendorQuotes', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'vendor' => ['name' => $scope->vendorName, 'slug' => $scope->vendorSlug, 'role' => $scope->role->value],
             'quotes' => $list['quotes'],
             'counts' => $list['counts'],

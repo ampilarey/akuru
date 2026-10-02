@@ -11,6 +11,7 @@ use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Support\AkuruFulfilment;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,7 +29,7 @@ class AdminAkuruController extends Controller
         abort_unless($request->user()?->can('bookshop.manage'), 403);
 
         return Inertia::render('Bookshop/Akuru', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'orders' => app(AkuruFulfilmentAction::class)->queue(),
             'shops' => app(AkuruFulfilmentAction::class)->shops(),
             'settings' => AkuruFulfilment::settings(),

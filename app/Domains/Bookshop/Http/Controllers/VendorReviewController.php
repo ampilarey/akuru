@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Actions\Vendor\VendorReviewsAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,7 +29,7 @@ class VendorReviewController extends Controller
         $scope = $this->authorizeVendor($request);
 
         return Inertia::render('Bookshop/VendorReviews', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'vendor' => ['name' => $scope->vendorName, 'slug' => $scope->vendorSlug, 'role' => $scope->role->value],
             'reviews' => app(VendorReviewsAction::class)->list($scope),
             // §5le: the shop's product questions, on the same page.

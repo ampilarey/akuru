@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\ShopSmsCampaignAction;
 use App\Domains\Bookshop\Models\ShopSmsCampaign;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,7 +24,7 @@ class AdminSmsCampaignController extends Controller
         abort_unless($request->user()?->can('bookshop.manage'), 403);
         $campaigns = app(ShopSmsCampaignAction::class);
 
-        return Inertia::render('Bookshop/Campaigns', ['t' => trans('shop'), 'summary' => $campaigns->summary(), 'campaigns' => $campaigns->list()]);
+        return Inertia::render('Bookshop/Campaigns', ['t' => Phrases::once('shop'), 'summary' => $campaigns->summary(), 'campaigns' => $campaigns->list()]);
     }
 
     public function send(Request $request): RedirectResponse

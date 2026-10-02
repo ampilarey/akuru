@@ -8,6 +8,7 @@ use App\Domains\Settings\Actions\RecordFeatureTestAction;
 use App\Domains\Settings\Actions\ToggleOperatorCheckAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,7 +28,7 @@ class OperationsController extends Controller
 
     public function features(ListFeatureWalkthroughAction $list): Response
     {
-        return Inertia::render('Settings/Features', [...$list->execute(), 't' => trans('admin')]);
+        return Inertia::render('Settings/Features', [...$list->execute(), 't' => Phrases::once('admin')]);
     }
 
     /** One test of one feature: works, broken or blocked, with a comment; kept as history. */

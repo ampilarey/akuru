@@ -11,6 +11,7 @@ use App\Domains\Identity\Models\User;
 use App\Domains\People\Models\Teacher;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Hifz\StoreHifzProgramRequest;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -50,7 +51,7 @@ class HifzProgramController extends Controller
         return Inertia::render('Hifz/Programs', [
             'programs' => $programs,
             'can_create' => $user->can('create', HifzProgram::class),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -58,7 +59,7 @@ class HifzProgramController extends Controller
     {
         $this->authorize('create', HifzProgram::class);
 
-        return Inertia::render('Hifz/ProgramForm', ['program' => null, 't' => trans('admin')] + $this->options());
+        return Inertia::render('Hifz/ProgramForm', ['program' => null, 't' => Phrases::once('admin')] + $this->options());
     }
 
     public function store(StoreHifzProgramRequest $request): RedirectResponse
@@ -98,7 +99,7 @@ class HifzProgramController extends Controller
             'can_update' => $user->can('update', $program),
             'can_assign_supervisor' => $canAssign,
             'supervisors' => $canAssign ? $this->options()['supervisors'] : [],
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -116,7 +117,7 @@ class HifzProgramController extends Controller
                 'supervisor_id' => $program->supervisor_id,
                 'default_teacher_id' => $program->default_teacher_id,
             ],
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ] + $this->options());
     }
 

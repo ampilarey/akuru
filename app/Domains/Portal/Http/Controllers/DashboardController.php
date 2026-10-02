@@ -10,6 +10,7 @@ use App\Domains\People\Actions\CountStudentsAction;
 use App\Domains\People\Actions\CountTeachersAction;
 use App\Domains\Portal\Actions\ComposeDashboardPrayerAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use App\Support\Navigation\ResolveWorkspacesAction;
 use Illuminate\Support\Facades\DB;
 use Inertia\Inertia;
@@ -68,7 +69,7 @@ class DashboardController extends Controller
             'current_prayer' => ['prayer' => $current['prayer'] ?? null, 'time' => is_object($current['time'] ?? null) ? $current['time']->format('H:i') : ($current['time'] ?? null)],
             'home' => route('admin.index'),
             'links' => ['courses' => route('admin.courses.index'), 'enrollments' => route('admin.enrollments.index'), 'users' => route('admin.users.index'), 'settings' => route('admin.settings.index'), 'website' => route('public.home'), 'logout' => route('logout')],
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -83,7 +84,7 @@ class DashboardController extends Controller
             'can_hifz' => (bool) auth()->user()?->can('view_hifz_programs'),
             'hifz_href' => route('hifz.supervisor.dashboard'),
             'home' => route('school.index'),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

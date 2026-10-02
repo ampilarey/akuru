@@ -7,6 +7,7 @@ use App\Domains\Website\Enums\LeadSource;
 use App\Domains\Website\Enums\LeadStatus;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +29,7 @@ class LeadController extends Controller
             'filters' => ['source' => (string) ($filters['source'] ?? ''), 'status' => (string) ($filters['status'] ?? ''), 'course_id' => (string) ($filters['course_id'] ?? '')],
             'sources' => array_map(fn (LeadSource $s) => $s->value, LeadSource::cases()),
             'statuses' => array_map(fn (LeadStatus $s) => $s->value, LeadStatus::cases()),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

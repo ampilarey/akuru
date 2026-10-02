@@ -5,6 +5,7 @@ namespace App\Domains\Portal\Http\Controllers;
 use App\Domains\Portal\Actions\ComposeAdminTodayAction;
 use App\Domains\Portal\Actions\ComposeWorkspaceHomeAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use App\Support\Navigation\ResolveWorkspacesAction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -39,7 +40,7 @@ class WorkspaceHomeController extends Controller
         }
 
         return Inertia::render('Portal/WorkspaceHome', [
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
             'workspace' => $workspace,
             'parts' => app(ComposeWorkspaceHomeAction::class)->execute($user, $workspace, app()->getLocale()),
             'today' => app(ComposeAdminTodayAction::class)->execute($user, $workspace),

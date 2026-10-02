@@ -8,6 +8,7 @@ use App\Domains\Notifications\Actions\MarkUserNotificationsReadAction;
 use App\Domains\Notifications\Actions\ResolveNotificationPreferencesAction;
 use App\Domains\Notifications\Actions\SaveNotificationPreferencesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -35,7 +36,7 @@ class PortalNotificationController extends Controller
             'preferences' => app(ResolveNotificationPreferencesAction::class)->execute($userId),
             // SPEC §50: the phones the mobile app has registered for this person.
             'devices' => app(ListDevicesAction::class)->execute($userId),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

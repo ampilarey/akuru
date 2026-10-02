@@ -12,6 +12,7 @@ use App\Domains\Hifz\Support\HifzDashboardRows;
 use App\Domains\Identity\Models\User;
 use App\Domains\People\Actions\ListStudentIdsOnTheRollAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -61,7 +62,7 @@ class DeanHifzDashboardController extends Controller
                 HifzMilestone::where('status', 'supervisor_reviewed')->with('student.user')->latest()->take(10)->get()
             ),
             'links' => ['programs' => route('hifz.programs.index'), 'reports' => route('hifz.reports.index'), 'mushafs' => route('quran.mushafs.index')],
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 }

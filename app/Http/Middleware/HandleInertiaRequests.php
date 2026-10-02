@@ -3,9 +3,12 @@
 namespace App\Http\Middleware;
 
 use App\Domains\Notifications\Actions\ListUserNotificationsAction;
+use App\Support\Inertia\Phrases;
 use App\Support\Navigation\ResolveWorkspacesAction;
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use Inertia\Middleware;
+use Inertia\OnceProp;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
 
 class HandleInertiaRequests extends Middleware
@@ -119,7 +122,23 @@ class HandleInertiaRequests extends Middleware
                 'vendor_invite' => $request->session()->get('vendor_invite'),
                 'temporary_password' => $request->session()->get('temporary_password'),
             ],
-            'i18n' => [
+        ];
+    }
+
+    /**
+     * The shell's strings, sent once per locale and remembered by the client
+     * (docs/ADMIN_PANEL.md §7 P2, STATUS §5nm): 6 KB that every page used to
+     * carry on every visit. Keyed by locale, so a language switch fetches the
+     * other book; bounded by the same TTL as a page's phrase book.
+     *
+     * @return array<string, OnceProp>
+     */
+    public function shareOnce(Request $request): array
+    {
+        $locale = app()->getLocale();
+
+        return [
+            'i18n' => Inertia::once(fn () => [
                 'learn' => trans('learn'),
                 // The shell's own words — the *More* button and the menu's
                 // labels; item labels arrive already translated in `nav`.
@@ -133,7 +152,7 @@ class HandleInertiaRequests extends Middleware
                         && (str_starts_with($key, 'library_') || str_starts_with($key, 'review_')),
                     ARRAY_FILTER_USE_BOTH,
                 ),
-            ],
+            ])->as('i18n:'.$locale)->until(now()->addMinutes(Phrases::TTL_MINUTES)),
         ];
     }
 

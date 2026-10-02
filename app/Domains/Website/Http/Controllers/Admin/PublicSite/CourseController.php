@@ -12,6 +12,7 @@ use App\Domains\Courses\Models\CourseCategory;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Html\HtmlSanitizer;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -51,7 +52,7 @@ class CourseController extends Controller
             'courses' => collect($courses->items())->map(fn (Course $course) => $this->row($course))->values()->all(),
             'pagination' => ['current_page' => $courses->currentPage(), 'last_page' => $courses->lastPage(), 'prev' => $courses->previousPageUrl(), 'next' => $courses->nextPageUrl()],
             'total' => $courses->total(),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -188,7 +189,7 @@ class CourseController extends Controller
     {
         return [
             'categories' => CourseCategory::ordered()->get()->map(fn (CourseCategory $category) => ['id' => $category->id, 'name' => $category->name])->values()->all(),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ];
     }
 

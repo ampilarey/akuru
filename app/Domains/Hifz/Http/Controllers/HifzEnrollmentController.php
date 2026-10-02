@@ -8,6 +8,7 @@ use App\Domains\Hifz\Services\HifzScopeService;
 use App\Domains\People\Models\Student;
 use App\Domains\People\Models\Teacher;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -38,7 +39,7 @@ class HifzEnrollmentController extends Controller
             'program' => ['id' => $program->id, 'name' => $program->name],
             'enrollments' => $enrollments,
             'can_update' => auth()->user()->can('update', $program),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -53,7 +54,7 @@ class HifzEnrollmentController extends Controller
             'teachers' => Teacher::with('user')->get()
                 ->map(fn (Teacher $teacher): array => ['id' => (int) $teacher->id, 'name' => (string) $teacher->full_name])->values()->all(),
             'today' => now()->toDateString(),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

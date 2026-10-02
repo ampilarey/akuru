@@ -10,6 +10,7 @@ use App\Domains\Website\Enums\DailyContentStatus;
 use App\Domains\Website\Models\DailyContent;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -38,7 +39,7 @@ class DailyContentController extends Controller
             'items' => $items->all(),
             'filters' => array_map(fn ($key) => (string) ($filters[$key] ?? ''), array_combine(['month', 'status', 'content_type', 'theme_tag', 'q'], ['month', 'status', 'content_type', 'theme_tag', 'q'])),
             'month' => $month,
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -48,7 +49,7 @@ class DailyContentController extends Controller
 
         return Inertia::render('Website/DailyContentQueue', [
             'items' => app(ListDailyContentsAction::class)->approvalQueue(),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -69,7 +70,7 @@ class DailyContentController extends Controller
         return Inertia::render('Website/DailyContentForm', [
             'item' => null,
             'type' => (string) $request->input('content_type', 'ayah'),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -91,7 +92,7 @@ class DailyContentController extends Controller
         return Inertia::render('Website/DailyContentForm', [
             'item' => app(ListDailyContentsAction::class)->present($dailyContent),
             'type' => $dailyContent->content_type->value,
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

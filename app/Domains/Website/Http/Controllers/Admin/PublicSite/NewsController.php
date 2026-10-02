@@ -10,6 +10,7 @@ use App\Domains\Website\Models\Post;
 use App\Domains\Website\Models\PostCategory;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -42,7 +43,7 @@ class NewsController extends Controller
     {
         return Inertia::render('Website/News', [
             'posts' => app(ListNewsPostsAction::class)->execute(),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -62,7 +63,7 @@ class NewsController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Website/NewsForm', ['post' => null, 'categories' => $this->categories(), 't' => trans('admin')]);
+        return Inertia::render('Website/NewsForm', ['post' => null, 'categories' => $this->categories(), 't' => Phrases::once('admin')]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -74,7 +75,7 @@ class NewsController extends Controller
 
     public function show(int $post): Response
     {
-        return Inertia::render('Website/NewsPreview', ['post' => app(ListNewsPostsAction::class)->present($this->news($post)), 't' => trans('admin')]);
+        return Inertia::render('Website/NewsPreview', ['post' => app(ListNewsPostsAction::class)->present($this->news($post)), 't' => Phrases::once('admin')]);
     }
 
     public function edit(int $post): Response
@@ -82,7 +83,7 @@ class NewsController extends Controller
         return Inertia::render('Website/NewsForm', [
             'post' => app(ListNewsPostsAction::class)->present($this->news($post)),
             'categories' => $this->categories(),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -99,7 +100,7 @@ class NewsController extends Controller
             'categories' => PostCategory::query()->ordered()->withCount('posts')->get()
                 ->map(fn (PostCategory $c) => ['id' => $c->id, 'name' => $c->name, 'slug' => $c->slug, 'sort_order' => (int) $c->sort_order, 'is_active' => (bool) $c->is_active, 'posts' => (int) $c->posts_count])
                 ->values()->all(),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

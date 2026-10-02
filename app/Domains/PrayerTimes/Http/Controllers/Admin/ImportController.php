@@ -8,6 +8,7 @@ use App\Domains\PrayerTimes\Actions\SeedSyntheticPrayerTimesAction;
 use App\Domains\Settings\Actions\GetSettingAction;
 use App\Domains\Settings\Actions\SetSettingAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,7 +26,7 @@ class ImportController extends Controller
 
         return Inertia::render('PrayerTimes/Import', [
             'cache_version' => (int) app(GetSettingAction::class)->execute('prayer_times_cache_version', 1),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

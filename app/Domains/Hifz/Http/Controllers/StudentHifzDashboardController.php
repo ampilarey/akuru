@@ -8,6 +8,7 @@ use App\Domains\Hifz\Models\HifzSessionRecord;
 use App\Domains\Hifz\Services\HifzScopeService;
 use App\Domains\Hifz\Support\HifzDashboardRows;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,7 +39,7 @@ class StudentHifzDashboardController extends Controller
             'next_target' => $recentRecords->first()?->next_target,
             'recent_records' => HifzDashboardRows::records($recentRecords),
             'milestones' => HifzDashboardRows::milestones($milestones),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 }
