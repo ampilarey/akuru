@@ -12,9 +12,12 @@ import AppShell from '../../Layouts/AppShell';
  * Inertia one with a visit.
  */
 function Open({ hard, href, className, children, ...rest }) {
+    // `prefetch`: on a desk, resting the pointer on a card fetches that
+    // screen's data before the click, so the section opens at once
+    // (ADMIN_PANEL.md §7 M8). A phone has no hover and is unaffected.
     return hard
         ? <a href={href} className={className} {...rest}>{children}</a>
-        : <Link href={href} className={className} {...rest}>{children}</Link>;
+        : <Link href={href} className={className} prefetch {...rest}>{children}</Link>;
 }
 
 // Sections the server grouped (the bookstore, the platform) stay in their

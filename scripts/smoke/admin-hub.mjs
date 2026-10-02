@@ -170,7 +170,10 @@ if (SUPER) {
     await su.goto(`${BASE}/en/dashboard`, { waitUntil: 'networkidle' });
     check('a system admin’s /dashboard lands on the Institute', /\/admin$/.test(su.url()), su.url().replace(BASE, ''));
     const suParts = await texts(su, '[data-testid^="part-"] h2');
-    check('in three parts: Website & content, Shops & money, System — twelve sections', suParts.join(' | ') === 'Website & content | Shops & money | System' && (await count(su, '[data-testid^="section-"]')) === 12, `${suParts.join(' | ')} ${await count(su, '[data-testid^="section-"]')}`);
+    // Eighteen since the Lending office, the Bookstore's sub-offices and the
+    // Library's (ADMIN_PANEL.md §1 grew after this walk was written; red on
+    // main until 2026-10-02, STATUS §5nl).
+    check('in three parts: Website & content, Shops & money, System — eighteen sections', suParts.join(' | ') === 'Website & content | Shops & money | System' && (await count(su, '[data-testid^="section-"]')) === 18, `${suParts.join(' | ')} ${await count(su, '[data-testid^="section-"]')}`);
     const cmsChips = await texts(su, '[data-testid="section-website_cms"] [data-testid^="child-"]');
     check('the Website card lists its eight screens, the prayer-times card its four', cmsChips.length === 8 && cmsChips[0] === 'Pages' && (await count(su, '[data-testid="section-prayer_times"] [data-testid^="child-"]')) === 4, cmsChips.join(', '));
     const bar = (await su.locator('header nav a[aria-current], header nav a:not([hrefLang])').allInnerTexts()).map((t) => t.trim()).filter(Boolean);

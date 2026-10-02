@@ -4706,6 +4706,41 @@ BACKLOG C15.
 Tests: Architecture and Unit green (138); the peer review tests on the
 changed page green. Walk: `admin-mobile.mjs` **3/3** on 50 screens.
 
+## 5nl. Every page is its own chunk (C15 slice 1, 2026-10-02)
+
+The owner: "Start" (on the C15 plan, §5nk). ADMIN_PANEL.md §7 P1 and M8.
+
+- **Before**: `app.jsx` resolved pages with `import.meta.glob(…, { eager:
+  true })`, so the 247 page components of every workspace were one
+  1,743 KB script (404 KB gzip), downloaded before the first screen drew
+  and again after every deploy, since any page change moved its hash.
+- **Now**: the glob is lazy and `resolvePageComponent` fetches a page the
+  first time it is opened; React, the scheduler and Inertia are a named
+  `vendor` chunk (`vite.config.js` `manualChunks`) that changes only when
+  a dependency is bumped, so it stays cached across deploys. The first
+  load is the shell's 35 KB, the vendor 312 KB and the stylesheet 90 KB
+  — **437 KB, 121 KB gzip, against 1,833 KB / 420 KB** — plus the one page
+  (the hub 4 KB, Manage users 5 KB, the Bookstore office 75 KB; the
+  shell 12 KB, shared). 263 chunks; `.htaccess`'s `-XXXXXXXX.(css|js)`
+  rule gives every one of them the year's `immutable`. The editor's chunk
+  is unchanged (Rollup already split it behind `BodyEditor`'s `lazy`);
+  naming it by hand pulled the shared `use-sync-external-store` shim into
+  it and so into every first load, which is why the config names only the
+  vendor.
+- **Prefetch**: the hub's section cards and screen links carry Inertia's
+  `prefetch` (hover, 75 ms), so on a desk a section's data is fetched
+  while the pointer rests on its card. A phone has no hover and is
+  unaffected; a prefetched page is still a visit to `TrackUserActivity`,
+  which slice 3 moves after the response.
+- **Also**: `admin-hub.mjs` was red on `main` (it expected twelve sections
+  on the Institute hub; there are eighteen since the Lending, Bookstore
+  and Library offices) — the count corrected.
+
+Tests: Architecture green (67; `InertiaDocumentTitleTest` still finds the
+title function). Walks on the chunked build: `admin-hub.mjs` **25/25**,
+`nav.mjs` **14/14**, `admin-mobile.mjs` **3/3** on 50 screens, no console
+or server errors.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not
