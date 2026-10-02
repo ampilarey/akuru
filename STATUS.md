@@ -4522,6 +4522,30 @@ The public website was checked and left as it is. Its phone control is
 the site menu (courses, the library, the shop, About), not the app's
 More list, and a visitor has no initial to put it on.
 
+## 5ne. The phone header is one row (2026-10-02)
+
+The owner, on the shop at a phone width: "My shop" was in the header
+twice, and Alerts sat beside the initial. Those belong under the
+initial. A notification shows as a small number on that initial.
+The header itself should be shorter.
+
+The two "My shop" labels were the workspace pill and the bar's link to
+the shop. On a phone both are gone, and so is Alerts. The bar is one
+row: the logo, Akuru Institute, and the initial. Under the initial:
+Your accounts (the workspaces the pill used to list), Alerts, any bar
+link that is not already that workspace's home, then the language
+switch and the rest of the menu. Home still names the shop, so the
+shop is not listed a third time.
+
+When there is an unread notification, a small gold number sits on the
+initial. With none, the number is not there. On a wider screen the
+pill, the bar, More and Alerts stay where they were.
+
+The phone markup, at 390px: the closed header is one row and does not
+say My shop or Alerts; a count draws the number on the initial; the
+initial opens Alerts. The signed-in phone walk was not run here: this
+machine has no PHP or MySQL.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not

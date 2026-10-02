@@ -8,7 +8,7 @@
  *   - it loads (200) with a heading;
  *   - the navigation is there — the Blade bar with Dashboard, Enrollments and
  *     More (the hamburger on a phone), or the Inertia shell with its primary
- *     bar, More and Alerts;
+ *     bar, More and Alerts (on a phone the initial stands in for that bar);
  *   - a way home: a link to /dashboard;
  *   - on a page that is not an index, a way back: a link to its section's index
  *     in the page content;
@@ -126,9 +126,11 @@ const inspect = (parentIndex) => (page) => page.evaluate((parentIndex) => {
     const heading = document.querySelector('main h1, main h2, h1, h2')?.textContent?.trim().replace(/\s+/g, ' ').slice(0, 50) || '';
     const home = links.some((a) => ['/dashboard', '/'].includes(strip(a.getAttribute('href')).replace(/\/$/, '') || '/'));
     const back = parentIndex === null ? true : mainLinks.some((a) => strip(a.getAttribute('href')) === parentIndex.replace(/^\/en/, ''));
+    const avatar = document.querySelector('[data-testid="shell-avatar"]');
+    const avatarVisible = !!avatar && avatar.getBoundingClientRect().width > 0;
     const navOk = blade
         ? /Dashboard|Today/.test(navText) && /More/.test(navText)
-        : inertia ? /More/.test(navText) && /Alerts|އެލާޓް|التنبيهات/.test(navText) : false;
+        : inertia ? (vw < 640 ? avatarVisible : /More/.test(navText) && /Alerts|އެލާޓް|التنبيهات/.test(navText)) : false;
     const menu = document.querySelector('button[aria-controls="nav-mobile-menu"], button[aria-controls="app-shell-more"], button[aria-controls="nav-more-menu"]');
     const menus = Array.from(document.querySelectorAll('button[aria-controls="nav-mobile-menu"], button[aria-controls="app-shell-more"], button[aria-controls="nav-more-menu"]'));
     const menuVisible = menus.some((m) => { const r = m.getBoundingClientRect(); return r.width > 0 && r.right <= vw + 1 && r.left >= -1; });

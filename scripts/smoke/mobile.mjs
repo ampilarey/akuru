@@ -352,8 +352,8 @@ check(
 // ------------------------------- 7. the phone-first pass (STATUS §5js)
 
 // The header: five rows took three fifths of a phone's first screen before a
-// parent saw a word of their own page. Three rows — brand, More/Alerts/who,
-// the link strip — is the most it gets: under a fifth of the screen.
+// parent saw a word of their own page. It is now one row — the brand and the
+// initial (STATUS §5ne) — and stays under a fifth of the screen.
 await page.goto(`${BASE}/en/portal/home`, { waitUntil: 'networkidle' });
 const header = await page.evaluate(() => ({
     height: Math.round(document.querySelector('header')?.getBoundingClientRect().height ?? 0),
