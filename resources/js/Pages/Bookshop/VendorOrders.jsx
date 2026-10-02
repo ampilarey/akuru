@@ -281,7 +281,7 @@ export default function VendorOrders({ t, vendor, orders, counts, filters }) {
                 <a href={`/vendor/orders/export${exportQuery ? `?${exportQuery}` : ''}`} className="btn-secondary col-span-2 justify-center sm:col-auto" data-testid="export-vendor-orders">{t.export_orders_csv}</a>
                 <a href={`/vendor/orders/lines/export${exportQuery ? `?${exportQuery}` : ''}`} className="btn-secondary col-span-2 justify-center sm:col-auto" data-testid="export-order-lines">{t.export_lines_csv}</a>
             </div>
-            <nav className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 sm:mx-0 sm:flex-wrap sm:px-0" data-testid="order-tabs">
+            <nav className="mb-4 flex min-w-0 flex-wrap gap-2" data-testid="order-tabs">
                 {TABS.map((s) => {
                     const n = s === '' ? total : counts[s] || 0;
                     if (s !== '' && n === 0 && filters.status !== s) {
@@ -289,7 +289,7 @@ export default function VendorOrders({ t, vendor, orders, counts, filters }) {
                     }
 
                     return (
-                        <a key={s || 'all'} href={s ? `/vendor/orders?status=${s}` : '/vendor/orders'} data-testid={`tab-${s || 'all'}`} className={`inline-flex min-h-[2rem] shrink-0 items-center whitespace-nowrap rounded-full border px-3 py-1 text-sm ${(filters.status || '') === s ? 'bg-gray-900 text-white' : 'bg-white'}`}>
+                        <a key={s || 'all'} href={s ? `/vendor/orders?status=${s}` : '/vendor/orders'} data-testid={`tab-${s || 'all'}`} className={`inline-flex min-h-[2rem] max-w-full items-center rounded-full border px-3 py-1 text-sm ${(filters.status || '') === s ? 'bg-gray-900 text-white' : 'bg-white'}`}>
                             {s === '' ? t.all_orders : s === 'returns' ? t.returns_heading : s === 'pending_payment' ? t.to_confirm : t[`status_${s}`]} ({n})
                         </a>
                     );
