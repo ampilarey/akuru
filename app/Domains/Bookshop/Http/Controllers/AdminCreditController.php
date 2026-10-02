@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\ShopCreditAction;
 use App\Domains\Bookshop\Models\ShopCreditAccount;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,7 +26,7 @@ class AdminCreditController extends Controller
         $open = (int) $request->query('account', 0);
 
         return Inertia::render('Bookshop/Credit', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'accounts' => $credit->list(),
             'statement' => $open > 0 ? ['account_id' => $open, 'entries' => $credit->statement($open)] : null,
         ]);

@@ -11,6 +11,7 @@ use App\Domains\Hifz\Services\HifzReportService;
 use App\Domains\Hifz\Services\HifzScopeService;
 use App\Domains\Hifz\Support\HifzDashboardRows;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -51,7 +52,7 @@ class SupervisorHifzDashboardController extends Controller
                 HifzMilestone::whereIn('hifz_program_id', $programIds)->where('status', 'pending')->with('student.user')->latest()->take(10)->get()
             ),
             'links' => ['reports' => route('hifz.reports.index'), 'milestones' => route('hifz.milestones.index')],
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 }

@@ -6,6 +6,7 @@ use App\Domains\PrayerTimes\Actions\SavePrayerRecipientGroupAction;
 use App\Domains\PrayerTimes\Models\PrayerRecipientGroup;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -29,7 +30,7 @@ class RecipientGroupController extends Controller
                 'members' => is_array($group->member_refs) ? count($group->member_refs) : 0,
                 'is_active' => (bool) $group->is_active,
             ])->values()->all(),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -53,7 +54,7 @@ class RecipientGroupController extends Controller
     {
         abort_unless(auth()->user()?->can('prayer.manage'), 403);
 
-        return Inertia::render('PrayerTimes/GroupForm', ['group' => null, 't' => trans('admin')]);
+        return Inertia::render('PrayerTimes/GroupForm', ['group' => null, 't' => Phrases::once('admin')]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -78,7 +79,7 @@ class RecipientGroupController extends Controller
                 'member_refs' => json_encode($group->member_refs ?? [], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
                 'is_active' => (bool) $group->is_active,
             ],
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

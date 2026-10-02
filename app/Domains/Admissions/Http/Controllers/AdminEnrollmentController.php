@@ -17,6 +17,7 @@ use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Http\Controllers\Controller;
 use App\Mail\EnrollmentStatusMail;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -43,7 +44,7 @@ class AdminEnrollmentController extends Controller
             'filters' => array_map(fn ($key) => (string) ($filters[$key] ?? ''), array_combine(self::FILTERS, self::FILTERS)),
             'statuses' => ListAdminEnrollmentsAction::STATUSES,
             'payment_statuses' => ListAdminEnrollmentsAction::PAYMENT_STATUSES,
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
             'id_l' => trans('account'),
         ]);
     }
@@ -56,7 +57,7 @@ class AdminEnrollmentController extends Controller
             // Action rather than its enum (rule 3).
             'payment_methods' => app(ListManualPaymentMethodsAction::class)->execute(),
             'can_record_payment' => (bool) $request->user()?->can('payments.record'),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
             // COMMERCE_PARITY_PLAN P3: the learner's ID card, checked here after enrolment.
             'identity' => app(IdentityVerificationAction::class)->forStudents([(int) $enrollment->unified_student_id])[(int) $enrollment->unified_student_id] ?? null,
             'id_l' => trans('account'),
@@ -279,7 +280,7 @@ class AdminEnrollmentController extends Controller
             'filters' => ['search' => (string) ($filters['search'] ?? ''), 'status' => (string) ($filters['status'] ?? '')],
             'statuses' => ListAdminPaymentsAction::STATUSES,
             'can_refund' => (bool) $request->user()?->can('payments.refund'),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

@@ -3,6 +3,7 @@
 namespace App\Domains\Identity\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -30,7 +31,7 @@ class AccountController extends Controller
         return Inertia::render('Identity/SetPassword', [
             'needs_current_password' => ! $user->force_password_change,
             'store_href' => route('account.set-password.store', [], false),
-            't' => trans('account'),
+            't' => Phrases::once('account'),
         ]);
     }
 

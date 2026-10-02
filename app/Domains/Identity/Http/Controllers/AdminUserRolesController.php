@@ -7,6 +7,7 @@ use App\Domains\Identity\Actions\SetUserRolesAction;
 use App\Domains\Identity\Models\User;
 use App\Http\Controllers\Controller;
 use App\Support\Authorization\RoleLabels;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -27,7 +28,7 @@ class AdminUserRolesController extends Controller
         $superAdmins = User::query()->role('super_admin')->count();
 
         return Inertia::render('Identity/UserRoles', [
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
             'user' => [
                 'id' => (int) $user->id,
                 'name' => $user->name,

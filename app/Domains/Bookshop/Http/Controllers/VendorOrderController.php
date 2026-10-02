@@ -8,6 +8,7 @@ use App\Domains\Bookshop\Actions\Vendor\ListVendorOrdersAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,7 +34,7 @@ class VendorOrderController extends Controller
         $list = app(ListVendorOrdersAction::class)->execute($scope, $filters);
 
         return Inertia::render('Bookshop/VendorOrders', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'vendor' => ['name' => $scope->vendorName, 'slug' => $scope->vendorSlug, 'role' => $scope->role->value, 'paused' => $scope->paused],
             'orders' => $list['orders'],
             'counts' => $list['counts'],
@@ -119,7 +120,7 @@ class VendorOrderController extends Controller
         $row = app(ListVendorOrdersAction::class)->one($scope, $order);
         abort_if($row === null, 404);
 
-        return Inertia::render('Bookshop/VendorOrderPrint', ['t' => trans('shop'), 'order' => $row]);
+        return Inertia::render('Bookshop/VendorOrderPrint', ['t' => Phrases::once('shop'), 'order' => $row]);
     }
 
     /** Every listing gets a CSV (conventions); contacts masked as on screen (decision 15). */

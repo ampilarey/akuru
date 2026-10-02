@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\Vendor\VendorInsightsAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,7 +27,7 @@ class VendorInsightsController extends Controller
         $scope = $this->authorizeVendor($request);
 
         return Inertia::render('Bookshop/VendorInsights', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'vendor' => ['name' => $scope->vendorName, 'slug' => $scope->vendorSlug, 'role' => $scope->role->value],
             'report' => app(VendorInsightsAction::class)->report($scope, (int) $request->query('days', 30)),
             'ranges' => array_map('intval', (array) config('bookshop.insights.ranges')),

@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Http\Controllers;
 use App\Domains\Bookshop\Actions\ShopCustomersAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,7 +26,7 @@ class AdminCustomerController extends Controller
         $customers = app(ShopCustomersAction::class);
 
         return Inertia::render('Bookshop/Customers', [
-            't' => trans('shop'), 'filters' => $filters, 'tags' => $customers->allTags(),
+            't' => Phrases::once('shop'), 'filters' => $filters, 'tags' => $customers->allTags(),
             'customers' => $customers->list($filters['q'], $filters['tag'], $filters['follow_ups']),
         ]);
     }
@@ -36,7 +37,7 @@ class AdminCustomerController extends Controller
         $profile = app(ShopCustomersAction::class)->show($customer);
         abort_if($profile === null, 404);
 
-        return Inertia::render('Bookshop/Customer', ['t' => trans('shop'), 'customer' => $profile]);
+        return Inertia::render('Bookshop/Customer', ['t' => Phrases::once('shop'), 'customer' => $profile]);
     }
 
     public function tags(Request $request, int $customer): RedirectResponse

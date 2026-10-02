@@ -10,6 +10,7 @@ use App\Domains\Bookshop\Models\StockMovement;
 use App\Domains\Bookshop\Support\ProductSheet;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -35,7 +36,7 @@ class VendorStockController extends Controller
         $import = $token !== '' ? app(ImportVendorProductsAction::class)->show($scope, $token) : null;
 
         return Inertia::render('Bookshop/VendorStock', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'vendor' => ['name' => $scope->vendorName, 'slug' => $scope->vendorSlug, 'role' => $scope->role->value],
             'low_stock' => $stock->lowStock($scope),
             'movements' => $stock->movements($scope, $filters, (int) $request->query('page', 1)),

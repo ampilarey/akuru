@@ -7,6 +7,7 @@ use App\Domains\PrayerTimes\DTOs\IslandDTO;
 use App\Domains\Settings\Actions\GetSettingAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -25,7 +26,7 @@ class IslandController extends Controller
             'islands' => app(ListPrayerIslandsAction::class)->execute(false)->map(fn (IslandDTO $island) => $island->toArray())->values()->all(),
             'cache_version' => (int) app(GetSettingAction::class)->execute('prayer_times_cache_version', 1),
             'default_island_id' => app(GetSettingAction::class)->execute('prayer.default_island_id'),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

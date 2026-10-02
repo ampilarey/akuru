@@ -7,6 +7,7 @@ use App\Domains\HR\Actions\SaveInstructorAction;
 use App\Domains\HR\Models\Instructor;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -34,7 +35,7 @@ class InstructorController extends Controller
 
     public function index(): Response
     {
-        return Inertia::render('Instructors/Index', app(ListAdminInstructorsAction::class)->execute() + ['t' => trans('admin')]);
+        return Inertia::render('Instructors/Index', app(ListAdminInstructorsAction::class)->execute() + ['t' => Phrases::once('admin')]);
     }
 
     /**
@@ -57,7 +58,7 @@ class InstructorController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Instructors/Form', ['instructor' => null, 't' => trans('admin')]);
+        return Inertia::render('Instructors/Form', ['instructor' => null, 't' => Phrases::once('admin')]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -70,7 +71,7 @@ class InstructorController extends Controller
 
     public function edit(Instructor $instructor): Response
     {
-        return Inertia::render('Instructors/Form', ['instructor' => app(ListAdminInstructorsAction::class)->one($instructor), 't' => trans('admin')]);
+        return Inertia::render('Instructors/Form', ['instructor' => app(ListAdminInstructorsAction::class)->one($instructor), 't' => Phrases::once('admin')]);
     }
 
     public function update(Request $request, Instructor $instructor): RedirectResponse

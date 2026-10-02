@@ -8,6 +8,7 @@ use App\Domains\Commerce\Actions\SavePromotionCampaignAction;
 use App\Domains\Library\Actions\ListPromotionTargetOptionsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,7 +29,7 @@ class AdminLibraryPromotionsController extends Controller
             'campaigns' => app(ListPromotionCampaignsAction::class)->execute(),
             'options' => app(ListPromotionTargetOptionsAction::class)->execute(),
             'funding_sources' => SavePromotionCampaignAction::FUNDING_SOURCES,
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

@@ -15,6 +15,7 @@ use App\Domains\PrayerTimes\Models\PrayerBroadcast;
 use App\Domains\PrayerTimes\Models\PrayerRecipientGroup;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -49,7 +50,7 @@ class BroadcastController extends Controller
             'filters' => $filters,
             'modes' => array_column(PrayerBroadcastMode::cases(), 'value'),
             'statuses' => array_column(PrayerBroadcastStatus::cases(), 'value'),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -126,7 +127,7 @@ class BroadcastController extends Controller
             'groups' => PrayerRecipientGroup::query()->where('is_active', true)->get()->map(fn (PrayerRecipientGroup $group) => ['id' => $group->id, 'name' => $group->name_en])->values()->all(),
             'modes' => array_column(PrayerBroadcastMode::cases(), 'value'),
             'languages' => array_column(PrayerBroadcastLanguage::cases(), 'value'),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 

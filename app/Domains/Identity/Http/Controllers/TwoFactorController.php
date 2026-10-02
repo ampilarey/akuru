@@ -4,6 +4,7 @@ namespace App\Domains\Identity\Http\Controllers;
 
 use App\Domains\Identity\Actions\TwoFactorAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +22,7 @@ class TwoFactorController extends Controller
         $user = $request->user();
 
         return Inertia::render('Identity/TwoFactor', [
-            't' => trans('security'),
+            't' => Phrases::once('security'),
             'status' => $twoFactor->status($user),
             'pending' => $twoFactor->pendingFor($user),
             'recovery_codes' => $request->session()->get('two_factor_codes'),

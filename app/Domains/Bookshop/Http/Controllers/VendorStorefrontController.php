@@ -17,6 +17,7 @@ use App\Domains\Bookshop\Actions\Vendor\UploadStorefrontImagesAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\AuthorizesVendor;
 use App\Domains\Bookshop\Support\CustomCss;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -39,7 +40,7 @@ class VendorStorefrontController extends Controller
         $scope = $this->authorizeVendor($request);
 
         return Inertia::render('Bookshop/VendorStorefront', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'vendor' => ['name' => $scope->vendorName, 'slug' => $scope->vendorSlug, 'role' => $scope->role->value],
             'designer' => app(PresentStorefrontDesignerAction::class)->execute($scope),
             'preview_url' => route('vendor.storefront.preview'),
@@ -157,7 +158,7 @@ class VendorStorefrontController extends Controller
         $scope = $this->authorizeVendor($request);
 
         return Inertia::render('Bookshop/VendorSections', [
-            't' => trans('shop'),
+            't' => Phrases::once('shop'),
             'vendor' => ['name' => $scope->vendorName, 'slug' => $scope->vendorSlug, 'role' => $scope->role->value],
             'designer' => app(PresentSectionsDesignerAction::class)->execute($scope),
             'preview_url' => route('vendor.storefront.preview'),

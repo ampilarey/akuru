@@ -7,6 +7,7 @@ use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Hifz\Models\HifzSession;
 use App\Domains\Hifz\Services\HifzScopeService;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -34,7 +35,7 @@ class TeacherHifzDashboardController extends Controller
             'programs' => $programs->map(fn (HifzProgram $program): array => ['id' => $program->id, 'name' => $program->name])->values()->all(),
             'today_session' => $todaySession,
             'schedule_href' => route('teach.schedule'),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 }

@@ -5,6 +5,7 @@ namespace App\Domains\Library\Http\Controllers;
 use App\Domains\Library\Actions\ResolveLibrarySettingAction;
 use App\Domains\Library\Actions\SaveLibrarySettingsAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,7 +21,7 @@ class AdminLibrarySettingsController extends Controller
     {
         return Inertia::render('Library/Settings', [
             'settings' => app(ResolveLibrarySettingAction::class)->all(),
-            't' => trans('admin'),
+            't' => Phrases::once('admin'),
         ]);
     }
 
