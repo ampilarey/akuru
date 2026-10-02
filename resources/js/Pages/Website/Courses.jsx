@@ -30,7 +30,7 @@ export default function Courses({ courses = [], pagination, total = 0, t = {} })
                 <Link href="/admin/public-site/courses/create" className="btn-primary ms-auto" data-testid="courses-new">{t.courses_new || 'Add New Course'}</Link>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="courses-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.pages_col_title || 'Title'}</th>
@@ -51,14 +51,14 @@ export default function Courses({ courses = [], pagination, total = 0, t = {} })
                         )}
                         {courses.map((course) => (
                             <tr key={course.id} className="border-t align-top" data-testid="course-row">
-                                <td className="px-3 py-2">
+                                <td data-label={t.pages_col_title || 'Title'} className="px-3 py-2">
                                     <p className="font-medium text-gray-900">{course.title}</p>
                                     {course.short_desc && <p className="text-xs text-gray-500">{course.short_desc}</p>}
                                 </td>
-                                <td className="px-3 py-2 text-gray-900">{course.category || (t.courses_no_category || 'N/A')}</td>
-                                <td className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_CLASS[course.status] || 'bg-gray-100 text-gray-800'}`} data-testid="course-status">{statusLabel(course.status)}</span></td>
-                                <td className="whitespace-nowrap px-3 py-2 text-gray-500">{course.updated_at}</td>
-                                <td className="whitespace-nowrap px-3 py-2 text-end">
+                                <td data-label={t.courses_col_category || 'Category'} className="px-3 py-2 text-gray-900">{course.category || (t.courses_no_category || 'N/A')}</td>
+                                <td data-label={t.pages_col_status || 'Status'} className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_CLASS[course.status] || 'bg-gray-100 text-gray-800'}`} data-testid="course-status">{statusLabel(course.status)}</span></td>
+                                <td data-label={t.pages_col_updated || 'Updated'} className="whitespace-nowrap px-3 py-2 text-gray-500">{course.updated_at}</td>
+                                <td className="table-actions whitespace-nowrap px-3 py-2 text-end">
                                     <Link href={`/admin/public-site/courses/${course.slug}/edit`} className="me-3 text-xs font-semibold text-[#1D4E89] underline" data-testid="course-edit">{t.research_edit || 'Edit'}</Link>
                                     <button type="button" className="text-xs font-semibold text-red-700 underline" onClick={() => remove(course)} data-testid="course-delete">{t.pages_delete || 'Delete'}</button>
                                 </td>

@@ -24,7 +24,7 @@ export default function Index({ instructors = [], pagination, total = 0, t = {} 
             </div>
             {/* overflow-x-auto: on a phone the action column stays reachable with a swipe (docs/ADMIN_PANEL.md L12). */}
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="instructors-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.instructors_col_name || 'Name'}</th>
@@ -45,7 +45,7 @@ export default function Index({ instructors = [], pagination, total = 0, t = {} 
                         )}
                         {instructors.map((row) => (
                             <tr key={row.id} className="border-t align-top" data-testid="instructor-row">
-                                <td className="px-3 py-2">
+                                <td data-label={t.instructors_col_name || 'Name'} className="px-3 py-2">
                                     <div className="flex items-center gap-3">
                                         {row.photo_url
                                             ? <img src={row.photo_url} alt={row.name} className="h-9 w-9 shrink-0 rounded-full object-cover" data-testid="instructor-photo" />
@@ -56,14 +56,14 @@ export default function Index({ instructors = [], pagination, total = 0, t = {} 
                                         </div>
                                     </div>
                                 </td>
-                                <td className="px-3 py-2 text-gray-700">{row.specialization || '—'}</td>
-                                <td className="px-3 py-2 text-gray-700">{row.courses_count}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.instructors_col_specialization || 'Specialization'} className="px-3 py-2 text-gray-700">{row.specialization || '—'}</td>
+                                <td data-label={t.instructors_col_courses || 'Courses'} className="px-3 py-2 text-gray-700">{row.courses_count}</td>
+                                <td data-label={t.instructors_col_status || 'Status'} className="px-3 py-2">
                                     <span className={`inline-block rounded-full px-2 py-0.5 text-xs font-medium ${row.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`} data-testid="instructor-status">
                                         {row.is_active ? (t.instructors_active || 'Active') : (t.instructors_inactive || 'Inactive')}
                                     </span>
                                 </td>
-                                <td className="whitespace-nowrap px-3 py-2">
+                                <td className="table-actions whitespace-nowrap px-3 py-2">
                                     <Link href={`/admin/instructors/${row.id}/edit`} className="me-3 text-xs font-semibold text-[#1D4E89] underline" data-testid="instructor-edit">{t.instructors_edit || 'Edit'}</Link>
                                     <button type="button" className="text-xs font-semibold text-red-700 underline" onClick={() => remove(row)} data-testid="instructor-delete">{t.instructors_delete || 'Delete'}</button>
                                 </td>

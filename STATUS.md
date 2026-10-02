@@ -4950,6 +4950,39 @@ Re-walked on the new stylesheet: `admin-mobile.mjs` 3/3 (nothing
 overflows), `admin-hub.mjs` 25/25, `long-pages.mjs` 17/17, `vendor.mjs`
 32/32, `nav.mjs` 14/14. Architecture green (69).
 
+## 5nr. The office's lists as phone cards, group one (C15 slice 6b, 2026-10-02)
+
+ADMIN_PANEL.md §7 M2 (and §5 L15, held since 2026-09-26 as "the usual
+pattern"). 26 admin tables on 21 screens needed a sideways swipe on a
+phone and only 2 of 43 used the portal's `.table-stack` (STATUS §5js);
+on Manage users the Roles & access and Delete actions sat 443 px past
+the edge.
+
+- **Seven tables are cards below `sm`**: Manage users, enrolments,
+  payments, CMS pages, courses, news, instructors — `table-stack` on the
+  table, `data-label` on every cell from its own column heading (the
+  `#`, the `sr-only` *Action* heading resolved to its text), the action
+  cell `table-actions`. A card reads *Name · Contact · ID card · Role ·
+  Registered* top to bottom with Roles & access and Delete as two
+  buttons under it; a payment's *Refund…* fold sits under its card. The
+  desk is unchanged (the rules are inside the phone media query), so
+  every test and walk that reads a row's text sees what it saw.
+- **The card's actions are 44 px**: the §5mp rule gave a card's links
+  32 px and outranked §5nq's 44 px; it now asks 2.75 rem itself, which
+  the portal's own cards (Pay, Receipt, Download) get too.
+- **Left for the next groups**: the Library office, insights,
+  promotions, reviewers and reading alerts (5); leads, funnel, OTP abuse
+  (3); commerce ×2; islands; the numbers dashboard; the Bookstore
+  office ×4 — 16 swipe tables, listed by `admin-mobile.mjs`.
+
+Walks: `admin-mobile.mjs` 3/3 — its swipe list drops from 23 tables to
+16, none of the seven among them; `phone-targets.mjs` 5/5 (the card
+actions at 44 px); `admin.mjs` 39/43 with the same four pre-existing
+reds. `family.mjs` 3/4 on this branch **and on `main`** ("a register for
+today": today is a Friday, the school week's day off, so the seeder
+plants none) — the portal's own cards are untouched by the one rule that
+reached them.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not

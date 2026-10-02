@@ -90,7 +90,7 @@ export default function Enrollments({ enrollments = [], pagination, total = 0, c
                 that is not itself positioned does not contain it — it stuck out past the phone's
                 edge and made Safari zoom the whole page out (STATUS §5jq). */}
             <div className="relative overflow-x-auto rounded-lg border bg-white" data-testid="enrolments-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.enrolments_col_student || 'Student'}</th>
@@ -106,13 +106,13 @@ export default function Enrollments({ enrollments = [], pagination, total = 0, c
                         {enrollments.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan="7">{t.enrolments_none || 'No enrollments found.'}</td></tr>}
                         {enrollments.map((e) => (
                             <tr key={e.id} className="border-t align-top" data-testid="enrolment-row">
-                                <td className="px-3 py-2 font-medium text-gray-900">{e.student || '—'}</td>
-                                <td className="px-3 py-2 text-gray-700">{e.course || '—'}</td>
-                                <td className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_TONES[e.status] || 'bg-gray-100 text-gray-700'}`} data-testid="enrolment-status">{statusLabel(e.status)}</span></td>
-                                <td className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${PAYMENT_TONES[e.payment_status] || 'bg-gray-100 text-gray-600'}`} data-testid="enrolment-payment">{paymentLabel(e.payment_status)}</span></td>
-                                <td className="px-3 py-2"><IdentityStatus status={e.id_card || 'none'} l={id_l} /></td>
-                                <td className="whitespace-nowrap px-3 py-2 text-gray-500">{e.date}</td>
-                                <td className="whitespace-nowrap px-3 py-2 text-end">
+                                <td data-label={t.enrolments_col_student || 'Student'} className="px-3 py-2 font-medium text-gray-900">{e.student || '—'}</td>
+                                <td data-label={t.enrolments_col_course || 'Course'} className="px-3 py-2 text-gray-700">{e.course || '—'}</td>
+                                <td data-label={t.enrolments_col_status || 'Status'} className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${STATUS_TONES[e.status] || 'bg-gray-100 text-gray-700'}`} data-testid="enrolment-status">{statusLabel(e.status)}</span></td>
+                                <td data-label={t.enrolments_col_payment || 'Payment'} className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${PAYMENT_TONES[e.payment_status] || 'bg-gray-100 text-gray-600'}`} data-testid="enrolment-payment">{paymentLabel(e.payment_status)}</span></td>
+                                <td data-label={id_l.id_col || 'ID card'} className="px-3 py-2"><IdentityStatus status={e.id_card || 'none'} l={id_l} /></td>
+                                <td data-label={t.enrolments_col_date || 'Date'} className="whitespace-nowrap px-3 py-2 text-gray-500">{e.date}</td>
+                                <td className="table-actions whitespace-nowrap px-3 py-2 text-end">
                                     {/* The one-enrolment page is still Blade (C9 slice 5): a plain link, a full page load. */}
                                     <a href={`/admin/enrollments/${e.id}`} className="text-xs font-semibold text-[#1D4E89] underline" data-testid="enrolment-view">{t.enrolments_view || 'View'}</a>
                                 </td>

@@ -24,7 +24,7 @@ export default function Pages({ pages = [], pagination, total = 0, t = {} }) {
                 <Link href="/admin/public-site/pages/create" className="btn-primary ms-auto" data-testid="pages-new">{t.pages_new || 'Add New Page'}</Link>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="pages-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.pages_col_title || 'Title'}</th>
@@ -46,14 +46,14 @@ export default function Pages({ pages = [], pagination, total = 0, t = {} }) {
                         )}
                         {pages.map((page) => (
                             <tr key={page.id} className="border-t align-top" data-testid="page-row">
-                                <td className="px-3 py-2">
+                                <td data-label={t.pages_col_title || 'Title'} className="px-3 py-2">
                                     <p className="font-medium text-gray-900">{page.title}</p>
                                     {page.excerpt && <p className="text-xs text-gray-500">{page.excerpt}</p>}
                                 </td>
-                                <td className="px-3 py-2"><code className="rounded bg-gray-100 px-2 py-0.5 text-xs" dir="ltr">{page.slug}</code></td>
-                                <td className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${page.is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`} data-testid="page-status">{page.is_published ? (t.pages_published || 'Published') : (t.pages_draft || 'Draft')}</span></td>
-                                <td className="whitespace-nowrap px-3 py-2 text-gray-500">{page.updated_at}</td>
-                                <td className="whitespace-nowrap px-3 py-2 text-end">
+                                <td data-label={t.pages_col_slug || 'Slug'} className="px-3 py-2"><code className="rounded bg-gray-100 px-2 py-0.5 text-xs" dir="ltr">{page.slug}</code></td>
+                                <td data-label={t.pages_col_status || 'Status'} className="px-3 py-2"><span className={`inline-flex rounded-full px-2 py-0.5 text-xs font-semibold ${page.is_published ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`} data-testid="page-status">{page.is_published ? (t.pages_published || 'Published') : (t.pages_draft || 'Draft')}</span></td>
+                                <td data-label={t.pages_col_updated || 'Updated'} className="whitespace-nowrap px-3 py-2 text-gray-500">{page.updated_at}</td>
+                                <td className="table-actions whitespace-nowrap px-3 py-2 text-end">
                                     <a href={page.public_url} target="_blank" rel="noopener noreferrer" className="me-3 text-xs font-semibold text-[#1D4E89] underline">{t.pages_view || 'View'}</a>
                                     <Link href={`/admin/public-site/pages/${page.id}`} className="me-3 text-xs font-semibold text-[#1D4E89] underline" data-testid="page-preview">{t.pages_preview || 'Preview'}</Link>
                                     <Link href={`/admin/public-site/pages/${page.id}/edit`} className="me-3 text-xs font-semibold text-[#1D4E89] underline" data-testid="page-edit">{t.research_edit || 'Edit'}</Link>
