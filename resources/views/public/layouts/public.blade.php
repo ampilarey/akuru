@@ -49,7 +49,7 @@
       var m = document.cookie.match(/googtrans=\/en\/([a-z]{2,})/);
       var lang = m ? m[1] : 'en';
       var fontUrls = {
-        ar: 'https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap',
+        ar: null, // Cairo is self-hosted with app.css since STATUS §5np — no external link needed
         dv: null  // Faruma is self-hosted via @font-face — no external link needed
       };
       if (fontUrls[lang] !== undefined) {
@@ -94,8 +94,7 @@
     <link rel="shortcut icon" type="image/png" href="{{ asset('images/favicon-32x32.png') }}?v=4">
     
     <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
+    {{-- Figtree comes with app.css, self-hosted (STATUS §5np). --}}
     
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])

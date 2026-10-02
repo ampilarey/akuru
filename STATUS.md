@@ -4877,6 +4877,41 @@ green (127; the lang parity holds). Walks: new `long-pages.mjs` **17/17**
 on a phone; `admin-mobile.mjs` 3/3; `vendor.mjs` 32/32 on the shared
 chips; `admin.mjs` 39/43 with the same four pre-existing reds as §5nm.
 
+## 5np. The fonts come from the build (C15 slice 5, 2026-10-02)
+
+ADMIN_PANEL.md §7 P6 (and §5 L10). `app.css` opened with an `@import` of
+Google Fonts for Amiri and Cairo, which held every shell page's first
+paint on a round trip to Google — in English too, where neither face is
+used; the Blade shell, the guest layout and the public layout fetched
+Figtree from bunny.net; the public site's Google Translate path injected
+Cairo from Google for Arabic. Only Faruma was self-hosted (decision 14).
+
+- **`@fontsource/figtree`, `@fontsource/amiri`, `@fontsource/cairo`**
+  (v5) are dependencies; `app.css` imports Figtree 400/500/600/700, Amiri
+  400/700 with italics and Cairo 400/500/600/700. Each import is a set of
+  `@font-face` rules split by script with a `unicode-range`, so an
+  English page downloads the four Latin Figtree files and nothing Arabic;
+  Vite copies the 32 woff2 files (792 KB in all, a page takes 4–7) into
+  the build, where `.htaccess` serves them hashed and `immutable` like
+  every other asset. The stylesheet grows 90 → 108 KB (16 → 17 KB
+  compressed) for the rules.
+- **Dropped**: the Google `@import`; the bunny.net links in
+  `layouts/app`, `layouts/guest` and `public/layouts/public`; the Cairo
+  URL in the public layout's and the nav component's Google Translate font
+  map (the class and the font stack stay). A shop's own theme
+  (`public/shop/_theme.blade.php`) may still name a Google face — that
+  is the vendor's choice on the vendor's page (BOOKSHOP_PLAN B4), not the
+  shell's.
+- **Guard**: `FontsAreSelfHostedTest` (Architecture) — no font host in the
+  stylesheet or the eight layout files every page renders through, and
+  the three packages in `package.json`.
+
+Walk: new `fonts.mjs` **13/13** on a phone — the public home, the sign-in
+page, the admin hub in English, Dhivehi and Arabic, and the School office
+ask no third party for a font (the Google Translate widget's own logo on
+gstatic is not one) and draw with Figtree, Faruma and Cairo from the
+build; an English page downloads no Arabic file. Architecture green (69).
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not
