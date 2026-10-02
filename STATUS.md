@@ -4662,6 +4662,50 @@ and does not show More.
 
 The signed-in walk was not run here: this machine has no PHP or MySQL.
 
+## 5nk. The admin panel measured: performance and the phone (2026-10-02)
+
+The owner: "Can u do a full audit of system admin panel. And recommend
+enhancements for better performance and user interface specifically for
+mobile." The record is `docs/ADMIN_PANEL.md` §7; the plan it produced is
+BACKLOG C15.
+
+- **Measured**: the 48 admin pages, each dispatched through the kernel as
+  the super admin with the query log on (status, time, queries, repeated
+  shapes, props by key), each loaded in Chromium at 390 × 844 (width, DOM,
+  height, every tap target, every control's font size, every table,
+  labels, fixed bars), the Vite manifest, and the live host's headers and
+  first-byte times from outside.
+- **Held**: every page 200 in 9–79 queries, no N+1, a 15-query fixed cost
+  all under a millisecond; Brotli, HTTP/2 and a year's `immutable` on the
+  live assets; 47 of 48 pages at the phone's width, a 72 px header, no
+  console errors; the shell installable; the editor already its own chunk.
+- **Found — performance** (P1–P8): one 1,743 KB script carries all 247
+  pages of every workspace (`import.meta.glob` eager) — the biggest cost on
+  a phone; the `t` phrase book (44 KB, 93 KB on the Bookstore office) is
+  resent on every Inertia visit, props 55 KB typical and 143 KB at most;
+  two synchronous writes per page view on 943 routes; settings read whole
+  per key, 12× on one screen; four pages render everything (205 islands,
+  185 translation rows, 154 features, ten tables — 11–16 thousand px tall
+  on a phone); Google Fonts imported in the render path; and two host
+  settings for the owner (cache store, OPcache).
+- **Found — the phone** (M1–M9): **M1 fixed** — the peer reviewers page
+  was 79 px wider than a phone (a positioned `sr-only` heading in an
+  unpositioned scroller, §5jq's shape), shipped 2026-09-29 and unseen
+  because `admin-mobile.mjs` stopped at the 40 screens of 2026-09-28; the
+  sweep now carries all 50. Held with a plan: 26 tables on 21 screens need
+  a swipe and only 2 of 43 stack (Manage users' actions sit 443 px off the
+  edge); 889 of 1,246 tap targets under 32 px; 204 controls under 16 px
+  (iOS zooms); 38 fields with no label; no bottom bar on the phone, so
+  every section is two taps away; nothing prefetches.
+- **The plan, in order** (C15): lazy page chunks and prefetch; `once()`
+  props; tracking after the response and settings memoised; the long
+  pages paginated and folded; self-hosted fonts; phone rules in the
+  stylesheet and the listing tables stacked, one group per PR; a bottom
+  bar for the Institute once the owner names its tabs.
+
+Tests: Architecture and Unit green (138); the peer review tests on the
+changed page green. Walk: `admin-mobile.mjs` **3/3** on 50 screens.
+
 ## 5mz. A shop's own colours reach its page (2026-10-02)
 
 The owner: "when the vendor changes the colour of the vendor page it's not

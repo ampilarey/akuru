@@ -276,3 +276,91 @@ viewports, nothing lacking); `admin-mobile.mjs`, `admin-layout.mjs`,
   on each host (`AUTHENTICATION_GUIDE.md`, "Making a super admin").
 - Whether to fund BACKLOG C8 (a role and activation screen) and C9 (the
   panel in three languages, one screen at a time).
+- From §7 (2026-10-02): the three host settings only the owner can check
+  (P7, P8 — the cache store, OPcache, and the queue worker of BACKLOG C6),
+  and which five tabs a phone's bottom bar should carry (M7).
+
+## 7. Performance and the phone (2026-10-02, the owner: "full audit of the system admin panel, recommend enhancements for better performance and user interface specifically for mobile")
+
+The earlier passes asked whether every screen is reachable, gated,
+titled, and fits a phone. This one asks how much each screen costs and
+how it feels under a thumb. Everything below was measured on `main` at
+`79ea4aa` (#649) with the seeded dataset, so query counts are exact and
+times are indicative; the live host was probed from outside for what it
+sends, not for what it does inside.
+
+**How.** The 46 parameterless `GET` screens under `/admin/*`, plus `/admin`
+and `/dashboard/numbers` — 48 pages. (1) Each dispatched through the kernel
+as the seeded super admin with the query log on: status, wall time, queries,
+repeated query shapes, and the Inertia props payload by key. (2) Each loaded
+in Chromium at 390 × 844 under phone emulation: page width against the
+phone's, DOM size, page height, every visible tap target's box, every form
+control's font size, every table's width and whether it stacks, labels,
+fixed bars, console errors. (3) The Vite manifest, raw and compressed.
+(4) The live host: asset and page headers, time to first byte for a static
+file, `/up` and three pages. The probes were throwaway; what they found is
+here, and the width check joined `admin-mobile.mjs`.
+
+### What held
+
+- **Every screen answers 200 in 9 to 79 queries**; none has the classic
+  N+1 (one query per row). The fixed cost of a signed-in request is 15
+  queries, every one under a millisecond: the session, roles,
+  permissions (from the cache table), a student lookup, linked accounts,
+  two unread counts, two cache reads, two `settings` table checks, the
+  activity row, and the session write.
+- **The live host sends assets well**: HTTP/2 (h3 advertised), Brotli, and
+  since #633 the hashed assets carry `immutable` for a year while pages
+  are `no-store`. The 1.7 MB script arrives as 368 KB.
+- **47 of 48 pages fit a phone's width**; every page shows its menu
+  control; the header is one 72 px row (Cursor's §5nc–§5nj); no page has
+  a fixed bar stealing height; nothing errors in the console.
+- **The shell is installable**: a web manifest, `theme-color`, the Apple
+  tags and a service worker that precaches the shell and serves an
+  offline page.
+- **The rich text editor is already its own chunk** (390 KB, loaded only
+  on the screens that edit a body).
+- **Form controls are 16 px on 41 of 48 pages**, so iOS does not zoom
+  when a field is tapped (the exceptions are M4).
+
+### Findings — performance
+
+| # | Finding | Severity | Recommendation |
+|---|---|---|---|
+| P1 | **One script carries every page of every workspace.** `resources/js/app.jsx` resolves pages with `import.meta.glob(…, { eager: true })`, so the 247 page components — the vendor's shop designer, the Hifz dashboards, the parent portal, the Qur'an player — are one 1,743 KB file (368 KB Brotli, 404 KB gzip) that an administrator downloads before the first admin screen draws, and again after every deploy because the hash changes. Vite's own build prints the warning. The next largest piece is the 90 KB stylesheet (16 KB compressed). | **high** — the single largest cost on a phone | Drop `eager: true` so each page is its own chunk loaded on first visit (Inertia's documented default), with a `manualChunks` vendor split for React and Inertia so the shared part stays cached across deploys. Expected first load for an admin: the shell plus one page, well under a third of today. Zero behaviour change; verified by `npm run build` and the sweeps. **BACKLOG C15 slice 1.** |
+| P2 | **Every admin page ships its whole phrase book.** The `t` prop is `trans('admin')` — 43.8 KB of JSON on 38 of the 48 pages — or `trans('shop')`, 93.2 KB, on the six Bookstore office screens; it is sent on the first load **and on every Inertia visit**, because Inertia resends page props each time. Props run 55 KB on a typical page and 125 KB on the Bookstore office; the translations screen sends 143 KB (its 132 KB `groups`), the islands hub 100 KB (every island, P5). The shell adds 6.2 KB of `i18n.learn` to every page, admin or not. | medium | Inertia Laravel 3.1 has `Inertia::once()`: a prop sent on the first load and remembered by the client, keyed here by locale and file. Wrap `t` (and `i18n`) in it in the handful of controllers and the shared middleware; the pages do not change. Pair with P5 for the two oversized lists. **C15 slice 2.** |
+| P3 | **Two synchronous writes per page view.** `TrackUserActivity` sits on 943 of the 1,181 routes (217 of them admin). After the response is built — but before it is sent — it inserts a `user_activities` row and runs an `updateOrCreate` on `dashboard_analytics`, both inline. In this probe the insert took 700 ms twice (a local fsync stall; the point is that a stall there holds the page). The table has no pruning. | medium | Make the middleware terminable (`terminate()`, after the response has gone), record `page_view` for GETs only when the analytics screen will use it (today one screen reads either table), and prune with `model:prune` after 90 days. A queue is the fuller answer and waits on C6. **C15 slice 3.** |
+| P4 | **Settings are read whole, per key, uncached.** `Setting::get()` loads the entire `settings` table on every call: 12 times on the Library settings screen, 6 on the Bookstore office. The `View::composer('*')` in `AppServiceProvider` asks `information_schema` whether the table exists, twice per request. | low | Memoise `Setting::all()` per request (a static, cleared on `set`) behind the existing 10-minute cache; replace `Schema::hasTable` with a config flag or a `rescue`. Ten lines. **C15 slice 3.** |
+| P5 | **Four screens render everything they have.** Prayer islands: 205 rows, 1,709 DOM nodes, 11,885 px tall on a phone. Translations: 185 rows per group, 1,949 nodes, 11,419 px, each row a textarea. Feature testing: 154 items, 1,349 nodes, 16,416 px — nineteen phone screens of scrolling. The Bookstore office: ten tables one under another, 654 nodes, 10,601 px. The median admin page is 90 nodes and 1,013 px. | low | Paginate islands and translations on the server (25 a page, with the search they already have); collapse Feature testing by audience with the counts on the headings; give the Bookstore office the section jump bar the vendor portal got (STATUS §5mp) and fold each table under its heading. **C15 slice 4.** |
+| P6 | **Fonts from third parties, in the render path.** `app.css` opens with `@import url('https://fonts.googleapis.com/…')` for Amiri and Cairo, which blocks every shell page's first paint on a round trip to Google — on every page, in English too. The Blade shell still loads Figtree from `fonts.bunny.net` (L10). The public layout self-hosts (decision 14); only Faruma (15 KB) is self-hosted here. | low | Self-host subsetted `woff2` for Amiri and Cairo with `font-display: swap`, loaded by `@font-face` and preloaded only when the locale is Arabic or Dhivehi; drop the Figtree link. **C15 slice 5.** |
+| P7 | **The default cache store is the database.** `CACHE_STORE=database` in `.env.example`; Spatie's permission cache and the site settings read from the `cache` table — two queries on every request, which is why they appear in the fixed cost above. Whether production overrides it was not checked (the host's `.env` is not for this repo). | note (host) | Owner: on the cPanel host, `CACHE_STORE=file` (or APCu, or Redis if the plan has it) removes both queries; `php artisan cache:clear` after the change. Nothing in the code depends on the store. |
+| P8 | **Time to first byte on the live host, from this container**: a static file 0.9–1.2 s, `/up` 1.2–1.3 s, the sign-in page and two public pages 1.1–1.5 s. So the network from here is most of it and PHP adds 0.2–0.5 s — fine for a shared host, and the same order as the local probe's 50–130 ms once the network is taken out. Not measured: whether OPcache is on. | note (host) | Owner: `php -i | grep opcache.enable` on the host; the pull line already runs `composer install --optimize-autoloader` and `config:cache`. Adding `php artisan view:cache && php artisan event:cache` to it is safe (never `route:cache`, by rule). |
+
+### Findings — the phone
+
+| # | Finding | Severity | Outcome |
+|---|---|---|---|
+| M1 | **The peer reviewers page was 79 px wider than a phone.** Its table sits in a scroller, but the Remove column's `sr-only` heading is positioned and the scroller was not, so the heading escaped to the page — the exact shape of STATUS §5jq's enrolments list — and Safari would zoom the page out. It shipped on 2026-09-29 (R3b) and nothing said so, because `admin-mobile.mjs` listed the 40 screens of 2026-09-28 and not the ten added since. | medium | **Fixed**: `relative` on the scroller. `admin-mobile.mjs` now carries all 50 screens (the five Library office pages, Lending, the five Bookstore office pages) — **3/3**, nothing cut off, 50 of 50 at the phone's width. |
+| M2 | **26 tables on 21 screens need a sideways swipe**, and only 2 of the panel's 43 tables use `.table-stack` (Bookstore Akuru stock and Customers). On Manage users the Role, Registered and **Action** columns — Roles & access, Delete — sit 443 px past the edge; payments 368 px (the Refund form with them); the funnel 373; the Library office 326; CMS pages 296; enrolments 277; insights 256; courses 245; gift cards 233; promotions 229; islands 196. L15 held this as "the usual pattern"; with the portal's `.table-stack` (STATUS §5js) in the stylesheet it is now a `data-label` per cell. | medium | Stack the listing tables, the office's first: users, enrolments, payments, pages, courses, news, instructors, leads, funnel, subscriptions, the Library office and insights and promotions and reviewers, gift cards, islands, broadcasts, reading alerts, OTP abuse, Lending. Action cells take `table-actions`, which already gives links 32 px below `sm` (§5mp). **C15 slice 6**, one group of screens per PR. |
+| M3 | **Most tap targets are under 32 px.** 889 of the 1,246 visible targets (the skip link aside) measure under 32 px in one direction; nine screens have ten or more — Feature testing 314 (every mark pill), translations 195, CMS pages 56, users 53, courses 37, the Bookstore office 34, the Library office 20, enrolments 9, payments 7. They are the row actions (View, Roles & access, Delete, Refund), the `text-xs` links (Export CSV, the ← back links, the section chips) and the inline checkboxes. Apple and Android both ask for 44 px. | medium | A phone rule in `app.css` — below `sm`, a link or button inside `td`, a `.btn-link`, a back link and the chip rows get `min-height: 2.75rem` with matching padding, and checkboxes 1.5 rem — fixes most of it without touching pages; M2's stacking covers the row actions. **C15 slice 6.** |
+| M4 | **204 of 386 form controls are under 16 px, on 7 screens**, so iOS zooms the page when one is tapped and leaves it zoomed: the translations grid (186 textareas at `text-sm`), the refund forms on payments (12), the Akuru stock row (2), the campaign shop select, and three textareas (recipient refs, member refs, the page body). | low | One rule: below `sm`, `input, select, textarea { font-size: 16px }`. **C15 slice 6.** |
+| M5 | **38 fields on 11 screens have a placeholder and no label** — the searches on users and translations, the refund reasons, the gift-card form, the Library office's add-item fields, the pronunciation model form, the Bookstore office's note fields, news categories, promotions, the reviewer email. A placeholder vanishes when typing starts, a screen reader announces nothing, and the phone's keyboard cannot pick its mode. | low | `aria-label` (or a visible label) on each, and `inputMode`/`autoComplete` where the field is a number, an email or a phone. **C15 slice 6.** |
+| M6 | **The four long pages (P5) have no way to jump**: twelve to nineteen phone screens of scrolling with the filters at the top and nothing fixed. | low | Folded with P5: pagination, collapsed groups, a jump bar. **C15 slice 4.** |
+| M7 | **Every section is two taps away on a phone, and the hub is the only map.** Since §5nc the phone header is the logo and the initial; the bar links (Website CMS, Commerce, Library office, Bookstore, Manage users) live inside the drawer under the initial. The public site has a bottom tab bar on phones (W1, STATUS §5ki); the signed-in shell has none — every admin page measured zero fixed or sticky elements. | note (design) | A bottom bar for the Institute workspace on phones — Home, the four parts (Admissions, Website, Shops & money, System) or the five bar links, and Alerts — built from the same `NavigationMap` the hub uses, hidden from `sm:`. It is the one change that would make the panel read as an app on the owner's phone. **Owner decides the five tabs; C15 slice 7.** |
+| M8 | **Nothing prefetches.** No `<Link prefetch>` anywhere in the shell or the pages, so every section opens on a round trip. Inertia 3 prefetches on hover or mount. | note | `prefetch` on the hub's part cards and the bar links (on mount, for the phone, where there is no hover). Pairs with P1, since a prefetched page is then one small chunk. **C15 slice 1.** |
+| M9 | **Pages are `no-store`** (#633, to stop a signed-out phone showing a cached signed-in page). Safari does not keep a `no-store` page in its back-forward cache, so Back on a phone reloads the admin page it came from. | note | Accepted: correctness over a saved reload. If it matters later, `no-cache, private` keeps the revalidation and lets Safari restore. |
+
+### The plan, in order (BACKLOG C15)
+
+1. **Lazy page chunks and a vendor split; prefetch on the hub** (P1, M8) — half a day, the biggest win, no screen changes.
+2. **`Inertia::once()` for the phrase books and the shell's strings** (P2).
+3. **Tracking after the response, settings memoised** (P3, P4).
+4. **Long pages: paginate islands and translations, fold Feature testing, jump bar on the Bookstore office** (P5, M6).
+5. **Self-hosted Amiri and Cairo; Figtree dropped** (P6).
+6. **Phone rules in the stylesheet (44 px targets, 16 px controls) and the listing tables stacked, one group per PR, with labels on the 38 fields** (M2–M5).
+7. **A bottom bar for the Institute on phones** (M7) — after the owner names the tabs.
+
+Owner, meanwhile: the cache store and OPcache on the host (P7, P8), the
+queue worker (C6).
+
+**Walked**: `admin-mobile.mjs` **3/3** on 50 screens after M1's fix.

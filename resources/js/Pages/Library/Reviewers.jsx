@@ -30,7 +30,11 @@ export default function Reviewers({ reviewers = [], t = {} }) {
                 <a className="ms-auto text-sm underline" href="/admin/library/reviewers/export">{t.library_insights_export || 'Export CSV'}</a>
                 <a className="text-sm underline" href="/admin/library">{t.library_settings_back || 'Back to the Library office'}</a>
             </form>
-            <div className="overflow-x-auto rounded-lg border bg-white">
+            {/* `relative`: the Remove column's sr-only heading is positioned, and
+                an unpositioned scroller lets it escape to the page, which then
+                measures 79px wider than a phone (ADMIN_PANEL.md M1, the same
+                shape as STATUS §5jq's enrolments list). */}
+            <div className="relative overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm" data-testid="reviewer-pool">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
