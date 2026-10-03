@@ -13,7 +13,7 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 195 (a document template, not a screen — see the documents block;
+// Count: 196 (a document template, not a screen — see the documents block;
 // the five public bookshop views of BOOKSHOP_PLAN B1b, the five customer
 // pages of B2, the two storefront partials of B4, the sections, menu and
 // vendor page of B5 and the customer's wishlist of B7 — see the public
@@ -21,7 +21,9 @@
 // newsletter unsubscribe page, reached from a shop's own mailings; and B9d's
 // two "My quotes" pages, siblings of My orders; B11's shop-closed notice;
 // the Library's public offers page of LIBRARY_PLAN B4, a sibling of the
-// Blade shelf and author page it links from).
+// Blade shelf and author page it links from; C17 slice R2's ID-card scan
+// block, a partial included by the two public registration pages, not a
+// screen of its own).
 
 return [
     // (root) — 4
@@ -81,8 +83,9 @@ return [
     'components/secondary-button.blade.php',
     'components/text-input.blade.php',
 
-    // courses — 7
+    // courses — 8 (C17 R2: partials/id-scan is one block of checkout and register-continue)
     'courses/checkout.blade.php',
+    'courses/partials/id-scan.blade.php',
     'courses/register-complete.blade.php',
     'courses/register-continue.blade.php',
     'courses/register-enroll-confirm.blade.php',

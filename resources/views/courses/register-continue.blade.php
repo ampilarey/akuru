@@ -222,12 +222,14 @@
                         <p class="text-xs text-gray-500 mb-2">{{ __('account.id_learner_hint') }}</p>
                         <div class="grid gap-3 sm:grid-cols-2">
                             <label class="block text-sm">{{ __('account.id_front') }}
-                                <input type="file" name="id_front" accept="image/jpeg,image/png,image/webp,application/pdf" class="mt-1 block w-full text-sm" data-testid="learner-id-front">
+                                <input type="file" name="id_front" accept="image/jpeg,image/png,image/webp,application/pdf" class="mt-1 block w-full text-sm" data-id-scan-source data-testid="learner-id-front">
                             </label>
                             <label class="block text-sm">{{ __('account.id_back') }}
-                                <input type="file" name="id_back" accept="image/jpeg,image/png,image/webp,application/pdf" class="mt-1 block w-full text-sm" data-testid="learner-id-back">
+                                <input type="file" name="id_back" accept="image/jpeg,image/png,image/webp,application/pdf" class="mt-1 block w-full text-sm" data-id-scan-source data-testid="learner-id-back">
                             </label>
                         </div>
+                        {{-- C17 slice R2: choosing the card's photo reads it here and fills the empty details above. --}}
+                        @include('courses.partials.id-scan', ['mode' => 'uploads'])
                         @error('id_front')<p class="text-sm text-red-600 mt-1" role="alert" data-testid="learner-id-error">{{ $message }}</p>@enderror
                         @error('id_back')<p class="text-sm text-red-600 mt-1" role="alert">{{ $message }}</p>@enderror
                     </fieldset>
