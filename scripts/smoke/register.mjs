@@ -6,11 +6,15 @@
  * and `learn.mjs` checks a student who is already enrolled; both start from a
  * login that already exists.
  *
- * The funnel is longer than it looks — six screens and **two** OTP rounds:
+ * The funnel — and since STATUS §5oc, **one** OTP round:
  *
  *   course page -> checkout -> register/start -> OTP -> register/continue
- *   (review) -> register/enroll -> enroll/confirm (terms, send, second OTP)
- *   -> register/complete
+ *   (review + terms) -> register/enroll -> register/complete
+ *
+ * It used to be six screens and two OTP rounds: `enroll/confirm` sent a
+ * second code only to accept the terms, a minute after the first one had
+ * proved the same phone. The owner: "otp requires 2 times". The terms moved
+ * onto the review step, and a contact proven in this session goes straight on.
  *
  * ## What it proves
  *
@@ -171,6 +175,13 @@ const codeFor = (phone) => execSync(
 // Through local tinker, so only when the app *is* the local dev server: on any
 // other host that command reads the walker's database, not the app's, and the
 // fifth staging run reported the OTP as never sent (STATUS §5fz).
+// How many verification codes this number has been sent — the newest receipt
+// after an enrolment is the enrolment notice, which carries no code at all.
+const codesSentTo = (phone) => Number(execSync(
+  `cd /home/user/akuru && php artisan tinker --execute="echo \\Illuminate\\Support\\Facades\\DB::table('sms_receipts')->where('phone','like','%'.substr('${phone}',-7).'%')->where('body','like','%code%')->count();"`,
+  { encoding: 'utf8' }
+).trim().split('\n').pop());
+
 const LOCAL = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(BASE);
 const code = LOCAL ? codeFor(PHONE) : null;
 check('the code reaches sms_receipts', LOCAL ? Boolean(code) : true, LOCAL ? (code ? code[1] : 'no code found') : 'skipped on a remote host — sms_receipts is read through local tinker, so the funnel stops here');
@@ -190,11 +201,9 @@ if (code) {
 }
 
 // Verification is not the end of the funnel. `register/continue` is a review
-// step — it re-asks the details, then posts to `register/enroll`, which runs a
-// **second** OTP round before the enrolment exists. An enrolment is the only
-// thing that means "registered"; the account alone is not the product.
-const latestCode = () => codeFor(PHONE);
-
+// step — it re-asks the details and carries the terms, then posts to
+// `register/enroll`. An enrolment is the only thing that means "registered";
+// the account alone is not the product.
 if (p.url().includes('register/continue')) {
   const review = p.locator('form[action*="register/enroll"]').first();
   check('the review step is offered', (await review.count()) > 0);
@@ -225,38 +234,19 @@ if (p.url().includes('register/continue')) {
   await review.locator('input[name="id_front"]').setInputFiles(idImage).catch(() => {});
   await review.locator('input[name="id_back"]').setInputFiles(idImage).catch(() => {});
 
-  await review.locator('button[type=submit]:visible').first().click().catch(() => {});
+  // STATUS §5oc: the terms are on this form, and the button says what happens.
+  const terms = review.locator('[data-testid="enroll-terms-accept"]');
+  check('the review step carries the terms', (await terms.count()) === 1);
+  await terms.check().catch(() => {});
+  const submitText = (await review.locator('[data-testid="enroll-submit"]').innerText().catch(() => '')).trim();
+  check('it offers to confirm, not to send another code', /Confirm enrollment/.test(submitText), submitText);
+
+  const sentBefore = LOCAL ? codesSentTo(PHONE) : 0;
+  await review.locator('[data-testid="enroll-submit"]').click().catch(() => {});
   await p.waitForLoadState('networkidle');
-  check('the review step is accepted', !p.url().includes('register/continue'), p.url());
-
-  // The confirm page is itself two steps: tick the terms, press **Send OTP**
-  // (the button is disabled until the box is ticked), and only then does the
-  // `otp_code` field exist. An earlier version ticked the box, looked for the
-  // field and found nothing — it had never pressed send.
-  for (const box of await p.locator('input[type=checkbox]:visible').all()) {
-    await box.check().catch(() => {});
-  }
-
-  const send = p.locator('#send-otp-btn, button:has-text("Send OTP")').first();
-  if (await send.count()) {
-    await send.click().catch(() => {});
-    await p.waitForLoadState('networkidle');
-    check('asking for the confirmation code is accepted', true, p.url());
-  }
-
-  const second = p.locator('input[name="otp_code"]').first();
-  if (await second.count()) {
-    const again = codeFor(PHONE);
-    check('the confirmation code reaches sms_receipts', Boolean(again), again ? again[1] : 'none');
-    if (again) {
-      await second.fill(again[1]);
-      await p.locator('form[action*="enroll/confirm"] button[type=submit]').first().click().catch(() => {});
-      await p.waitForLoadState('networkidle');
-    }
-    check('the enrolment completes', p.url().includes('complete') || p.url().includes('my-enrollments'), p.url());
-  } else {
-    check('the confirmation code screen appears', false, 'no otp_code field after pressing send');
-  }
+  check('the enrolment completes without a second code', p.url().includes('complete') || p.url().includes('my-enrollments') || !p.url().includes(BASE), p.url());
+  const sentAfter = LOCAL ? codesSentTo(PHONE) : 0;
+  check('no second code was sent', sentAfter === sentBefore, `codes sent: ${sentBefore} before, ${sentAfter} after`);
 }
 
 // A paid course stops here with the money still outstanding: the enrolment is

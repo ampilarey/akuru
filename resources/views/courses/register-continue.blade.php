@@ -258,11 +258,29 @@
                         </ul>
                     </div>
 
-                    <p class="mt-4 text-xs text-gray-500 text-center">
-                        You will review the Terms &amp; Conditions and verify with OTP in the next step.
-                    </p>
+                    {{-- One code per registration (STATUS §5oc): the terms are accepted here. Someone who has just proved their phone or password goes straight on; a session signed in a while ago is asked one code on the next screen. --}}
+                    <div class="mt-4 rounded border border-amber-200 bg-amber-50 p-3 text-sm text-gray-700" data-testid="enroll-terms">
+                        <ul class="mb-2 list-disc ps-5 text-xs text-gray-600">
+                            <li>Enrollment is subject to seat availability and admin approval.</li>
+                            <li>Course fees are non-refundable unless the course is cancelled by Akuru Institute.</li>
+                            <li>You must attend the required number of sessions to receive a certificate.</li>
+                        </ul>
+                        <label class="flex items-start gap-2">
+                            <input type="checkbox" name="terms_accepted" value="1" class="mt-0.5 rounded border-gray-300" @checked(old('terms_accepted')) required data-testid="enroll-terms-accept">
+                            <span>I have read and agree to the <a href="{{ route('public.page.show', 'terms') }}" target="_blank" class="font-semibold text-brandMaroon-700 underline">Terms &amp; Conditions</a> and <a href="{{ route('public.page.show', 'refund-policy') }}" target="_blank" class="font-semibold text-brandMaroon-700 underline">Refund Policy</a>.</span>
+                        </label>
+                        @error('terms_accepted')<p class="mt-1 text-xs text-red-600" role="alert">{{ $message }}</p>@enderror
+                    </div>
 
-                    <button type="submit" class="btn-primary w-full py-3 mt-4">Continue to Verify &amp; Confirm <span class="rtl-flip" aria-hidden="true">→</span></button>
+                    @if($proven)
+                        <button type="submit" class="btn-primary w-full py-3 mt-4" data-testid="enroll-submit">Confirm enrollment <span class="rtl-flip" aria-hidden="true">→</span></button>
+                        @if($courses->contains(fn ($c) => $c->hasRegistrationFee()))
+                            <p class="mt-2 text-xs text-gray-500 text-center">You will go to the bank's page to pay.</p>
+                        @endif
+                    @else
+                        <button type="submit" class="btn-primary w-full py-3 mt-4" data-testid="enroll-submit">Continue <span class="rtl-flip" aria-hidden="true">→</span></button>
+                        <p class="mt-2 text-xs text-gray-500 text-center">We'll send one code to your phone to confirm it's you.</p>
+                    @endif
                 </form>
             </div>
         </div>

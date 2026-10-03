@@ -83,7 +83,7 @@
           </div>
 
           <label style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer">
-            <input id="terms-check" type="checkbox" value="1"
+            <input id="terms-check" type="checkbox" value="1" @checked($termsAccepted ?? false)
                    style="width:1.125rem;height:1.125rem;margin-top:.125rem;flex-shrink:0;accent-color:#7C2D37">
             <span style="font-size:.83rem;color:#374151;line-height:1.5">
               I have read and agree to the <strong>Terms &amp; Conditions</strong> and <strong>Refund Policy</strong>.
@@ -247,6 +247,8 @@ termsCheck.addEventListener('change', function () {
     sendBtn.style.cursor = 'not-allowed';
   }
 });
+// Accepted on the form already (STATUS §5oc): the button is live at once.
+if (termsCheck.checked) { termsCheck.dispatchEvent(new Event('change')); }
 @else
 const otpInput = document.getElementById('otp-code');
 otpInput.addEventListener('input', function () {

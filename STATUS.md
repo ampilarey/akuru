@@ -4983,6 +4983,43 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5oc. One code per registration (C17 slice R1, 2026-10-03)
+
+The owner: "can u check the registration process, its complicated, otp
+requires 2 times". It did. A new family entered a code to prove their
+phone on the code screen, filled in the details, and on `enroll/confirm`
+ticked the terms and pressed *Accept & Send OTP* for a second code — a
+minute after the first had proved the same phone (§5ds walked it as "six
+screens and two OTP rounds"). No decision asked for the second code; it was
+the consent screen's own design.
+
+- **The terms move onto the details form.** `register/continue` carries
+  the terms with a checkbox, the refund policy linked, and a button that
+  says what happens next.
+- **A proof made in this session is remembered for 30 minutes**, keyed to
+  the account: a code entered for the contact (new registration or
+  returning, including the set-password route), or the password at
+  checkout. With it, *Confirm enrollment* enrols at once and a paid course
+  goes on to the bank.
+- **One code is still asked** when nothing was proven in this session —
+  someone signed in yesterday who arrives at the form — and the code page
+  then opens with the terms already ticked. Nobody is asked twice.
+- A failure after enrolment starts (a seat gone, a duplicate) returns the
+  person to the form with what they typed, rather than to a code page.
+- The session's sign-in after a proof moved into one helper, so the proof
+  and the sign-in cannot drift apart; `session_creations` declares the
+  helper and its two callers' checks.
+
+Tests: `OneCodePerRegistrationTest` (3, new) — after a code, the form
+offers *Confirm enrollment*, refuses without the terms, enrols with them,
+and no second code exists; the checkout password counts the same; a
+session with no proof, an expired proof and somebody else's proof are each
+asked one code, the terms pre-ticked. Admissions, Identity, Finance,
+Website, the registration suites and architecture green (545). Walk:
+`register.mjs` 15/15 — a stranger registers with one code, the review step
+carries the terms, *Confirm enrollment* completes, and the number received
+exactly one code.
+
 ## 5ob. Teachers mark their own courses (C16 slice N6, 2026-10-03)
 
 OWNER_ACTIONS 16, decided 2026-10-03: "teachers mark only their own
