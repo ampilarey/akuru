@@ -260,4 +260,18 @@ const parent = await signIn(PARENT);
 landing = await hub(parent, 'parent');
 check('the hub sends the parent to the child\'s progress', landing.ok && (await text(parent)).includes(NAME), landing.detail);
 
+// ------------------------------------------------------ the pupil leaves (N4)
+// C16 slice N4 (OWNER_ACTIONS 15): the dean ends the enrolment as withdrawn;
+// the row says so with the date, and the pupil is out of the active counts.
+await dean.goto(new URL(`${programHref}/enrollments`, BASE).href, { waitUntil: 'networkidle' });
+const leaving = dean.locator('[data-testid="enrollment-row"]', { hasText: NAME }).first();
+await leaving.locator('[data-testid="enrollment-end"]').click();
+await dean.waitForSelector('[data-testid="enrollment-end-form"]');
+await dean.selectOption('[data-testid="end-status"]', 'withdrawn');
+await dean.fill('[data-testid="end-reason"]', 'Family moved (walk).');
+await dean.click('[data-testid="end-confirm"]');
+const endedFlash = await settles(dean, 'Enrolment ended: withdrawn.');
+const endedRow = dean.locator('[data-testid="enrollment-row"]', { hasText: NAME }).first();
+check('the dean ends the enrolment as withdrawn, with the date and the note', endedFlash && (await endedRow.locator('[data-testid="enrollment-status"]').innerText()) === 'withdrawn' && /Ended \d{4}-\d{2}-\d{2} — Family moved/.test(await endedRow.innerText()) && (await endedRow.locator('[data-testid="enrollment-end"]').count()) === 0, (await endedRow.innerText().catch(() => '')).replace(/\s+/g, ' '));
+
 await finish();

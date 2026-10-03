@@ -274,8 +274,9 @@ tells them the webhook will confirm the payment without them, which is true.
 
 ### 15. What a hifz enrolment should say when a pupil leaves — **decided 2026-10-03: add `withdrawn`**
 
-The owner: "Add \"withdrawn\"". A fifth value plus the screen that ends an
-enrolment. Slice N4 in STATUS §5nw's list.
+The owner: "Add \"withdrawn\"". **Built 2026-10-03 (STATUS §5nz)**: the fifth
+value, and *End enrolment* on the programme's enrolment list — withdrawn,
+transferred or completed, on a date, with a note.
 
 `hifz_enrollments.status` is `active` / `paused` / `completed` / `transferred`.
 **None of those means "left the Institute"**, and there is no screen that sets

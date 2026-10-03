@@ -1587,6 +1587,8 @@ definition of "still a pupil"; `ListStudentIdsOnTheRollAction` is its bulk form;
 Hifz asks through People's action rather than importing its model (rule 3).
 
 **Left deliberately:** the enrolment row itself. See the owner item below.
+**Closed 2026-10-03 (STATUS §5nz):** the owner chose a fifth value,
+`withdrawn`, and the enrolment list ends an enrolment with a date and a note.
 
 See STATUS §5dp.
 
