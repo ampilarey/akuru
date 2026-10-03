@@ -4,7 +4,7 @@
 return [
     // The workspace homes (STATUS §5id): the Institute's at /admin, the School's at /school.
     'institute_title' => 'Institute',
-    'institute_intro' => 'Your home: today\'s numbers, then everything the institute runs — the website, the shops and money, the system. Open a section, or go straight to a screen inside it.',
+    'institute_intro' => 'Your home: today\'s numbers, then everything the institute runs — the website, admissions, the shops and money, every product\'s settings, the system. Open a section, or go straight to a screen inside it.',
     'school_title' => 'School office',
     'school_intro' => 'Your home: today\'s numbers, then everything the school runs — admissions, academics, the office. Open a section, or go straight to a screen inside it. You see only what your role may open.',
     'part_school_academics' => 'Academics',
@@ -55,6 +55,9 @@ return [
     'desc_translations' => 'Dhivehi and Arabic corrections that go live without a deploy.',
     'desc_manage_users' => 'Every account: who can sign in, as what, and whether they still can.',
     'desc_system_settings' => 'Drivers, mail, SMS and payment status; clear the caches.',
+    // The Settings part (ADMIN_PANEL.md §8).
+    'desc_library_settings' => 'The Digital Library\'s money rules: the writer\'s share, the refund window, gift-card expiry.',
+    'desc_bookshop_settings' => 'The Bookstore\'s switches: notices, cash on delivery, rewards, referrals, open or closed.',
     // The role and access screen under Manage users (ADR-040 slice 4).
     'roles_title' => 'Roles & access',
     'roles_back' => '← All users',

@@ -163,6 +163,10 @@ final class NavigationMap
                 ['key' => 'clubs', 'href' => '/academics/clubs'],
                 ['key' => 'attendance_policy', 'href' => '/academics/attendance-policy'],
                 ['key' => 'absence_reasons', 'href' => '/academics/absence-types'],
+                // The navigation re-audit (ADMIN_PANEL.md §8): the class
+                // directory and the end-of-year promotion wizard had no door.
+                ['key' => 'classes', 'href' => '/academics/classes'],
+                ['key' => 'promotion', 'href' => '/academics/promotion'],
             ]],
             ['key' => 'people', 'items' => [
                 ['key' => 'students', 'href' => '/people/students'],
@@ -214,6 +218,8 @@ final class NavigationMap
                 ['key' => 'arabic', 'href' => '/catalog/arabic'],
                 ['key' => 'arabic_report', 'href' => '/catalog/arabic/reports'],
                 ['key' => 'quran', 'href' => '/catalog/quran'],
+                // ADMIN_PANEL.md §8: the Qur'an oversight report had no door.
+                ['key' => 'quran_oversight', 'href' => '/catalog/quran/oversight'],
                 ['key' => 'subjects', 'href' => '/catalog/subjects'],
                 ['key' => 'glossary', 'href' => '/catalog/glossary'],
                 ['key' => 'audiences', 'href' => '/catalog/audiences'],
@@ -229,6 +235,10 @@ final class NavigationMap
                 ['key' => 'teach', 'href' => '/teach/schedule', 'roles' => $staff],
                 ['key' => 'my_meetings', 'href' => '/teach/meetings', 'roles' => $staff],
                 ['key' => 'recitations', 'href' => '/teach/recitations', 'roles' => $staff],
+                // The Qur'an teacher's assignments and milestone reviews (SPEC §52):
+                // no door until the navigation re-audit (ADMIN_PANEL.md §8).
+                ['key' => 'quran_assignments', 'href' => '/teach/assignments', 'roles' => $staff],
+                ['key' => 'quran_milestones', 'href' => '/teach/milestones', 'roles' => $staff],
                 ['key' => 'pronunciation', 'href' => '/teach/pronunciation', 'roles' => ['super_admin', 'admin', 'supervisor', 'teacher']],
                 // The Hifz hub redirects to a role's dashboard, Inertia since STATUS §5jw, so a visit follows it.
                 ['key' => 'hifz', 'href' => '/hifz', 'can' => ['view_hifz_programs']],
@@ -294,6 +304,8 @@ final class NavigationMap
                 ['key' => 'manual_receipt', 'href' => '/finance/receipts/manual'],
                 ['key' => 'collections', 'href' => '/finance/collections'],
                 ['key' => 'reconciliation', 'href' => '/finance/reconciliation'],
+                // ADMIN_PANEL.md §8: the bank-statement import had no door.
+                ['key' => 'bank_statements', 'href' => '/finance/bank-statements'],
                 ['key' => 'finance_settings', 'href' => '/finance/settings'],
             ]],
             ['key' => 'hr_group', 'items' => [
@@ -337,6 +349,10 @@ final class NavigationMap
             // item in the map).
             ['key' => 'me', 'items' => [
                 ['key' => 'profile', 'href' => '/profile', 'hard' => true],
+                // The password screen (Inertia, `auth` only): until the
+                // re-audit it was an address to type — the owner, 2026-10-03:
+                // "i dont see place to change the PW" (ADMIN_PANEL.md §8).
+                ['key' => 'change_password', 'href' => '/account/set-password'],
                 // The Akuru Digital Library (L-track): the shelf, what I have and
                 // can continue, and the wallet that pays for it.
                 ['key' => 'library', 'href' => '/library', 'hard' => true],
@@ -357,37 +373,43 @@ final class NavigationMap
             // still comes off each route's own gate — `role:super_admin` hides
             // Users and Settings from everyone else, `can:commerce.manage`
             // hides Commerce.
-            // The admin panel, in four parts, each a group of its own
-            // (`adminPanel()`): Admissions belongs to the School workspace,
-            // the other three to the Institute (STATUS §5id).
+            // The admin panel, in five parts, each a group of its own
+            // (`adminPanel()`): Admissions belongs to the School workspace
+            // and, since the re-audit, the Institute too; the other four
+            // are the Institute's (STATUS §5id, §5nw).
             ...self::adminPanel(),
         ];
     }
 
     /**
-     * The admin panel as four groups, in the order the homes show them:
-     * Admissions (the School's), then Website & content, Shops & money and
-     * System (the Institute's). A section that is a cluster of screens
-     * carries them as `children`; the homes list them as chips and the
-     * More menus leave them out. The reading alerts and the OTP-abuse log
-     * stay off the map on purpose: a list that accuses people is opened
-     * from its parent screen, by decision (`AdminPagesAreReachableTest`).
+     * The admin panel as five groups, in the order the homes show them:
+     * Website & content, Admissions, Shops & money, Settings and System.
+     * A section that is a cluster of screens carries them as `children`;
+     * the homes list them as chips, the phone's tab sheets too, and the
+     * More menus leave them out.
+     *
+     * Settings (ADMIN_PANEL.md §8, the owner 2026-10-03: "make it easily
+     * accessible to different setting like bookstore, library etc") is one
+     * part with every product's settings screen: the system's, the
+     * Library's, the Bookstore's (a section of its office page, reached by
+     * its anchor) and the translations. The Library's own settings screen
+     * is also a chip under the Library office, so both roads lead there.
+     *
+     * The reading alerts and the OTP-abuse log stay off the map on
+     * purpose: a list that accuses people is opened from its parent
+     * screen, by decision (`AdminPagesAreReachableTest`).
      *
      * @return list<array{key: string, items: list<array{key: string, href: string, can?: list<string>, hard?: bool, children?: list<array{key: string, href: string, hard?: bool}>}>}>
      */
     public static function adminPanel(): array
     {
         return [
-            ['key' => 'panel_admissions', 'items' => [
-                ['key' => 'admin_enrolments', 'href' => '/admin/enrollments', 'children' => [
-                    ['key' => 'enrolment_payments', 'href' => '/admin/enrollments/payments'],
-                ]],
-            ]],
             ['key' => 'panel_website', 'items' => [
                 ['key' => 'website_cms', 'href' => '/admin/public-site/pages', 'children' => [
                     ['key' => 'cms_pages', 'href' => '/admin/public-site/pages'],
-                    // R4: the news editor.
+                    // R4: the news editor, and its categories (ADMIN_PANEL.md §8).
                     ['key' => 'cms_news', 'href' => '/admin/public-site/news'],
+                    ['key' => 'cms_news_categories', 'href' => '/admin/public-site/news/categories'],
                     ['key' => 'cms_courses', 'href' => '/admin/public-site/courses'],
                     ['key' => 'cms_daily_content', 'href' => '/admin/public-site/daily-content'],
                     ['key' => 'cms_daily_queue', 'href' => '/admin/public-site/daily-content/queue'],
@@ -405,9 +427,22 @@ final class NavigationMap
                 ]],
                 ['key' => 'pronunciation_office', 'href' => '/admin/pronunciation'],
             ]],
+            ['key' => 'panel_admissions', 'items' => [
+                ['key' => 'admin_enrolments', 'href' => '/admin/enrollments', 'children' => [
+                    ['key' => 'enrolment_payments', 'href' => '/admin/enrollments/payments'],
+                ]],
+            ]],
             ['key' => 'panel_money', 'items' => [
                 ['key' => 'commerce', 'href' => '/admin/commerce'],
-                ['key' => 'library_office', 'href' => '/admin/library'],
+                // The Library office and its four inner screens (ADMIN_PANEL.md
+                // §8): until the re-audit they were buttons on the office page
+                // only. The reading alerts stay a button there, by decision.
+                ['key' => 'library_office', 'href' => '/admin/library', 'children' => [
+                    ['key' => 'library_insights', 'href' => '/admin/library/insights'],
+                    ['key' => 'library_promotions', 'href' => '/admin/library/promotions'],
+                    ['key' => 'library_reviewers', 'href' => '/admin/library/reviewers'],
+                    ['key' => 'library_settings', 'href' => '/admin/library/settings'],
+                ]],
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
                 // COMMERCE_PARITY_PLAN P6a: the orders Akuru packs, and its charges.
                 ['key' => 'akuru_fulfilment', 'href' => '/admin/bookshop/akuru', 'can' => ['bookshop.manage']],
@@ -422,19 +457,28 @@ final class NavigationMap
                 // LENDING_AND_USED_BOOKS_PLAN L1: lenders, their ID cards, the loans (D6: the Bookstore team).
                 ['key' => 'lending_office', 'href' => '/admin/lending', 'can' => ['bookshop.manage']],
             ]],
+            // Every product's settings in one part (ADMIN_PANEL.md §8). The
+            // Bookstore's are a section of its office page: the href carries
+            // the anchor, the route gate is the page's.
+            ['key' => 'panel_settings', 'items' => [
+                ['key' => 'system_settings', 'href' => '/admin/settings'],
+                ['key' => 'library_settings', 'href' => '/admin/library/settings'],
+                ['key' => 'bookshop_settings', 'href' => '/admin/bookshop#settings', 'can' => ['bookshop.manage']],
+                ['key' => 'translations', 'href' => '/admin/translations'],
+            ]],
             ['key' => 'panel_system', 'items' => [
                 ['key' => 'manage_users', 'href' => '/admin/users'],
-                ['key' => 'system_settings', 'href' => '/admin/settings'],
                 ['key' => 'ops_checklist', 'href' => '/admin/operations'],
                 ['key' => 'feature_walkthrough', 'href' => '/admin/operations/features'],
-                ['key' => 'translations', 'href' => '/admin/translations'],
             ]],
         ];
     }
 
     /**
      * Every href the map names, once — for the test that checks each one is
-     * a real GET route, so the menu can never carry a dead link.
+     * a real GET route, so the menu can never carry a dead link. An href may
+     * carry an anchor (`/admin/bookshop#settings`): `path()` is the route's
+     * part of it.
      *
      * @return list<string>
      */
@@ -456,5 +500,14 @@ final class NavigationMap
         }
 
         return array_values(array_unique($hrefs));
+    }
+
+    /**
+     * The path of an href without its anchor or query: what a route is
+     * matched on. `/admin/bookshop#settings` is the `/admin/bookshop` route.
+     */
+    public static function path(string $href): string
+    {
+        return strtok($href, '#?') ?: '/';
     }
 }

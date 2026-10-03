@@ -64,9 +64,11 @@ the repository):
       leave `BML_WEBHOOK_SECRET` empty; the public key (`pk_production_…`) is not needed
 - [ ] `php artisan config:cache`
 - [ ] The cron line for the scheduler (`payments:reconcile` every ten minutes catches a lost webhook)
-- [ ] **One real payment of a small amount** (a test course at MVR 1): it should confirm by
-      itself within seconds; if it stays pending, the lines with `BML` in
-      `storage/logs/payments-*.log` say why (keys blanked out before sharing)
+- [x] **One real payment of a small amount** — **done 2026-10-03**: a real
+      MVR card payment on the live site confirmed by itself and the payments
+      list shows it with the bank's reference (STATUS §5nw). The keys are on
+      the server; the test course ("Payment test", slug `payment-test`) should
+      be archived or deleted now that it has served.
 
 **Watch on the first real transaction** (#362): return-URL finalisation refuses a provider
 result that does not name the payment it is answering about. BML's Get Transaction returns
@@ -94,8 +96,10 @@ cards permanently **draft** — the generate button appears to do nothing.
 `RoleSeeder` was corrected, but a seeder fix cannot tell you what a database
 already contains.
 
-- [ ] `permissions` holds all **34** dotted names
-- [ ] The six seeder-only roles exist
+- [x] `permissions` holds all **34** dotted names — **read back on production
+      2026-10-03: `permissions: 110 · roles: 14`, the same as a fresh local
+      seed (STATUS §5nw)**
+- [x] The six seeder-only roles exist — the same read-back
 
 A missing permission does not error — it silently denies, which looks like a
 broken screen rather than a misconfiguration.
@@ -107,11 +111,12 @@ broken screen rather than a misconfiguration.
 The seeded credentials are committed in `docs/AUTHENTICATION_GUIDE.md`. That is
 fine for a synthetic host and not fine for anything else.
 
-- [ ] Rotate before any real person has an account
+- [x] Rotate before any real person has an account — **done 2026-10-03,
+      through the shell's own *Change password* screen (STATUS §5nw)**
 
 ---
 
-### 6. Apply branch protection
+### 6. Apply branch protection — the owner, 2026-10-03: "keep this for later"
 
 `docs/BRANCH_PROTECTION.md` has the settings. Structurally impossible from an
 agent session, and the merge discipline in CLAUDE.md assumes it is on.
@@ -238,7 +243,10 @@ regardless.
 it, plus a backfill for every existing link) **or drop the columns.** Enforcing
 it today without a backfill would hide every child from every parent.
 
-### 14. The `resume` magic link — build it or delete it
+### 14. The `resume` magic link — **decided 2026-10-03: build it** (the owner: "Up to u"; the builder's call, recorded here)
+
+Build, as a **short-lived, single-use** link that resumes the registration
+form only — never a signed-in session. Slice N5 in STATUS §5nw's list.
 
 **Rewritten the same day it was written.** This item used to ask you to accept
 or narrow three security properties of `courses/register/resume?flow=<uuid>`:
@@ -264,7 +272,10 @@ Either way, `payments/return-missing` no longer offers the link (STATUS §5dr),
 because it was sending families who may have just paid to a dead end. It now
 tells them the webhook will confirm the payment without them, which is true.
 
-### 15. What a hifz enrolment should say when a pupil leaves
+### 15. What a hifz enrolment should say when a pupil leaves — **decided 2026-10-03: add `withdrawn`**
+
+The owner: "Add \"withdrawn\"". A fifth value plus the screen that ends an
+enrolment. Slice N4 in STATUS §5nw's list.
 
 `hifz_enrollments.status` is `active` / `paused` / `completed` / `transferred`.
 **None of those means "left the Institute"**, and there is no screen that sets
@@ -283,7 +294,11 @@ Left undecided rather than guessed, because naming it wrongly is worse than the
 gap: a report that says `transferred` when the family emigrated is a sentence
 somebody will act on.
 
-### 16. Who marks the work — and whose work they can see
+### 16. Who marks the work — and whose work they can see — **decided 2026-10-03: teachers mark their own courses**
+
+The owner: "teachers mark only their own courses". The bigger job: the
+`course_instructor` assignment screen and the scoped review queue. Slice
+N6 in STATUS §5nw's list.
 
 **The one step of the review walk that fails.** `/catalog/reviews` is titled
 "Teacher review" and answers six of the thirteen abilities SPEC §36 gives a

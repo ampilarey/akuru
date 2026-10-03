@@ -18,9 +18,11 @@ reads the same map instead of listing links by hand. The active workspace
 is the one last switched to (`POST /workspace/{key}`, from the header
 pill, the user menu or the phone menu), or the last workspace home opened
 (`RememberWorkspace`), or the first held; `HandleInertiaRequests` shares
-`auth.workspace` and `auth.workspaces`. The admin panel's four parts are
-four groups (`panel_admissions` is the School's; `panel_website`,
-`panel_money`, `panel_system` the Institute's), and the Blade-only
+`auth.workspace` and `auth.workspaces`. The admin panel's five parts are
+five groups (`panel_admissions` is the School's and, since the
+navigation re-audit of 2026-10-03, the Institute's too; `panel_website`,
+`panel_money`, `panel_settings`, `panel_system` the Institute's —
+`docs/ADMIN_PANEL.md` §8), and the Blade-only
 screens the Blade nav used to link by hand (announcements,
 substitutions, Hifz, Qur'an progress, e-learning) are map items marked
 `hard`. `docs/ADMIN_PANEL.md` §1 has the table; STATUS §5id the slice.
@@ -43,7 +45,7 @@ none of the family's fees or pick-up. The shell's More panel opens with
 **The Institute has a phone tab bar (2026-10-03, ADMIN_PANEL.md §7 M7,
 STATUS §5nu).** Below `sm` the shell draws Home, one tab per group the
 workspace names (`WorkspaceMap::tabsFor()` → `nav.tabs`: the Institute's
-Website, Shops and System) and Alerts at the foot of the screen; a
+Website, Shops, Settings and System) and Alerts at the foot of the screen; a
 group's tab opens a sheet of that group's screens and their inner
 screens, on top of the bar. Only groups that survived the route gates
 become tabs. No other workspace names any: the School's thirteen groups

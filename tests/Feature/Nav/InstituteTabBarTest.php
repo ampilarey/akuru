@@ -37,12 +37,14 @@ function tabBarPerson(array $roles, array $permissions = []): User
     return $user;
 }
 
-it('names the Institute\'s three parts as tabs, each one a group the person was given', function () {
+it('names four of the Institute\'s parts as tabs, each one a group the person was given', function () {
+    // Admissions is a card on the home and not a tab (ADMIN_PANEL.md §8):
+    // six tabs is the most a 390 px phone carries.
     $nav = app(BuildNavigationAction::class)->execute(tabBarPerson(['super_admin'], ['bookshop.manage', 'commerce.manage', 'library.manage']), 'en', 'institute');
 
-    expect(array_column($nav['tabs'], 'key'))->toBe(['panel_website', 'panel_money', 'panel_system'])
-        ->and(array_column($nav['tabs'], 'label'))->toBe(['Website', 'Shops', 'System'])
-        ->and(array_column($nav['groups'], 'key'))->toContain('panel_website', 'panel_money', 'panel_system');
+    expect(array_column($nav['tabs'], 'key'))->toBe(['panel_website', 'panel_money', 'panel_settings', 'panel_system'])
+        ->and(array_column($nav['tabs'], 'label'))->toBe(['Website', 'Shops', 'Settings', 'System'])
+        ->and(array_column($nav['groups'], 'key'))->toContain('panel_website', 'panel_admissions', 'panel_money', 'panel_settings', 'panel_system');
 });
 
 it('gives the tabs short labels in Dhivehi and Arabic too', function () {
@@ -77,7 +79,7 @@ it('leaves a tab out when its group fell to the gates', function () {
     $nav = app(BuildNavigationAction::class)->execute($user, 'en', 'institute');
     $groups = array_column($nav['groups'], 'key');
 
-    expect(array_column($nav['tabs'], 'key'))->toBe(array_values(array_intersect(['panel_website', 'panel_money', 'panel_system'], $groups)));
+    expect(array_column($nav['tabs'], 'key'))->toBe(array_values(array_intersect(['panel_website', 'panel_money', 'panel_settings', 'panel_system'], $groups)));
 });
 
 it('reaches the shell on every Institute page as a shared prop', function () {
@@ -88,7 +90,8 @@ it('reaches the shell on every Institute page as a shared prop', function () {
         ->assertOk()
         ->assertInertia(fn (Assert $page) => $page
             ->where('nav.tabs.0.key', 'panel_website')
-            ->where('nav.tabs.2.label', 'System')
+            ->where('nav.tabs.2.label', 'Settings')
+            ->where('nav.tabs.3.label', 'System')
             ->where('i18n.nav.tab_bar', 'Sections')
             ->etc());
 });

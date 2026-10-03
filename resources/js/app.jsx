@@ -1,7 +1,37 @@
-import { createInertiaApp } from '@inertiajs/react';
+import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { registerPushDevice } from './Platform';
+
+// A link with an anchor (`/admin/bookshop#settings`: the Institute's Settings
+// part opens the Bookstore office at its settings section, ADMIN_PANEL.md §8).
+// Inertia keeps an anchor only when the response's address is the one asked
+// for, and every link in the shell is unlocalised and answered by a redirect
+// to its `/en/…` address — so the anchor was dropped and the page opened at
+// the top. Remember the anchor asked for; once the page has drawn, put it
+// back and scroll to it.
+let wantedHash = '';
+router.on('start', (event) => {
+    wantedHash = event.detail.visit.url?.hash || '';
+});
+router.on('navigate', () => {
+    const hash = wantedHash;
+    wantedHash = '';
+    if (!hash || window.location.hash) {
+        return;
+    }
+    let tries = 0;
+    const scroll = () => {
+        const target = document.getElementById(hash.slice(1));
+        if (target) {
+            window.history.replaceState(window.history.state, '', `${window.location.pathname}${window.location.search}${hash}`);
+            target.scrollIntoView();
+        } else if (++tries < 30) {
+            requestAnimationFrame(scroll);
+        }
+    };
+    requestAnimationFrame(scroll);
+});
 
 // The Blade root writes the app name into <title inertia>; every page's
 // title (from AppShell's <Head>) is prefixed to it, so a tab reads

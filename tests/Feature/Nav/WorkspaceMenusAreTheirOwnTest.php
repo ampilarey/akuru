@@ -48,7 +48,7 @@ it('gives a vendor their shop and the Personal group, nothing of the school', fu
     expect($nav['workspace'])->toBe('vendor')
         ->and(array_column($nav['primary'], 'href'))->toBe(['/vendor'])
         ->and(array_column($nav['groups'], 'key'))->toBe(['me'])
-        ->and(array_column($nav['groups'][0]['items'], 'label'))->toBe(['My profile', 'Digital Library', 'My library', 'My wallet', 'Bookstore', 'My orders', 'My wishlist', 'My quotes'])
+        ->and(array_column($nav['groups'][0]['items'], 'label'))->toBe(['My profile', 'Change password', 'Digital Library', 'My library', 'My wallet', 'Bookstore', 'My orders', 'My wishlist', 'My quotes'])
         ->and(menuHrefs($vendor))->not->toContain('/portal/home', '/learn', '/learn/schedule', '/portal/homework', ...SCHOOL_COMMUNICATION);
 
     // Home is the shop, and the family home sends them there rather than

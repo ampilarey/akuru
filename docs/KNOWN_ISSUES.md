@@ -157,6 +157,35 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the owner's live walkthrough (2026-10-03)
+
+The record is STATUS §5nw; the plan is BACKLOG C16.
+
+### Twelve staff screens had no door — **fixed (2026-10-03, STATUS §5nw)**
+
+The class directory, the promotion wizard, the bank-statement import, the
+Qur'an oversight report, the Qur'an teacher's assignments and milestones,
+the Library office's insights, promotions, reviewers and settings, the news
+categories and the password screen were reachable only by their address.
+Every one is in `NavigationMap` now, and `StaffScreensHaveADoorTest` keeps
+it so (`docs/ADMIN_PANEL.md` §8).
+
+### A system admin had no Admissions — **fixed (2026-10-03, STATUS §5nw)**
+
+Enrolments and payments were the School workspace's only, so the owner,
+holding `super_admin` alone on the live host, could not find them. The
+Institute holds Admissions too; the route gate decides who opens it.
+
+### `/en/catalog/courses` answered 404 to the owner, signed in, on production — **open**
+
+Reported 2026-10-03 during the walkthrough. Signed out the host answers 302
+to the login page, as it should; locally the page answers 200 for a system
+admin. Not reproduced. Possible causes to check on the host: a stale route
+cache (`route:cache` is never to be run there, but a leftover
+`bootstrap/cache/routes-v7.php` would do this), or the request going to the
+public site's `courses` route under a different host. Until it is seen again
+the catalogue is reachable from the School workspace's Catalog group.
+
 ## Found by the admin-panel performance and phone audit (2026-10-02)
 
 The record is `docs/ADMIN_PANEL.md` §7 (P1–P8, M1–M9); the plan is BACKLOG

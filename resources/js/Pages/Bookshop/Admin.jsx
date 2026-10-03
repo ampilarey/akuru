@@ -1262,6 +1262,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
                 ...(hosts ? [['hosts', t.hosts_heading]] : []),
                 ...(team ? [['team', t.team_heading]] : []),
                 ['low-stock', t.low_stock_heading],
+                ['settings', t.settings_heading],
                 ['catalogue', t.categories],
             ]} />
             {flash.vendor_invite && <InviteCard invite={flash.vendor_invite} t={t} signInUrl={sign_in_url} />}
@@ -1297,11 +1298,17 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             <Reviews reviews={reviews} t={t} />
             <Questions questions={questions} t={t} />
             {home && <ShopHome home={home} t={t} />}
-            {notices && <NoticeSwitches key={JSON.stringify(notices)} notices={notices} t={t} />}
-            <CodSwitch on={cod_on} t={t} />
-            {rewards && <Rewards key={JSON.stringify(rewards.settings)} rewards={rewards} t={t} />}
-            {referrals && <Referrals key={JSON.stringify(referrals.settings)} referrals={referrals} t={t} />}
-            <ShopOpenSwitch shopOpen={shop_open} t={t} />
+            {/* The Bookstore's settings under one heading (ADMIN_PANEL.md §8): the
+                Settings part of the Institute and its tab open the office here. */}
+            <section id="settings" className="mt-10 scroll-mt-14 border-t border-[#E6D9C8] pt-6" data-testid="office-settings" aria-labelledby="office-settings-title">
+                <h2 id="office-settings-title" className="text-xl font-semibold text-[#3D1219]">{t.settings_heading}</h2>
+                <p className="mt-1 text-sm text-gray-600">{t.settings_hint}</p>
+                {notices && <NoticeSwitches key={JSON.stringify(notices)} notices={notices} t={t} />}
+                <CodSwitch on={cod_on} t={t} />
+                {rewards && <Rewards key={JSON.stringify(rewards.settings)} rewards={rewards} t={t} />}
+                {referrals && <Referrals key={JSON.stringify(referrals.settings)} referrals={referrals} t={t} />}
+                <ShopOpenSwitch shopOpen={shop_open} t={t} />
+            </section>
 
             <Catalogue catalogue={catalogue} t={t} />
         </AppShell>
