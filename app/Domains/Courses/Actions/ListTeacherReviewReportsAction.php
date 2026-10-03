@@ -4,13 +4,20 @@ namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Models\Activity;
 use App\Domains\Courses\Models\Assessment;
+use App\Domains\Courses\Models\Course;
 use App\Domains\Progress\Actions\ListScoredAttemptsAction;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class ListTeacherReviewReportsAction
 {
     /**
-     * @param  array{academic_year_id?: int|null, course_id?: int|null, threshold?: int|null}  $filters
+     * `course_ids`, when present, is the reviewer's own courses (C16 slice
+     * N6, OWNER_ACTIONS 16): the queue, the reports, the CSV and the course
+     * filter all narrow to them, and an empty list shows nothing with a
+     * note saying why. Absent, the whole school — the dean's view.
+     *
+     * @param  array{academic_year_id?: int|null, course_id?: int|null, threshold?: int|null, course_ids?: list<int>|null}  $filters
      * @return array<string, mixed>
      */
     public function execute(array $filters = []): array
@@ -20,9 +27,12 @@ class ListTeacherReviewReportsAction
         $courseId = $queue->positiveInt($filters['course_id'] ?? null);
         $threshold = $this->threshold($filters['threshold'] ?? null);
         $enrollmentIds = $yearId ? $queue->enrollmentIdsForYear($yearId) : [];
+        $ownCourseIds = array_key_exists('course_ids', $filters) && is_array($filters['course_ids'])
+            ? array_values(array_map('intval', $filters['course_ids']))
+            : null;
 
         $pending = $queue->execute($filters);
-        $scored = app(ListScoredAttemptsAction::class)->execute(['course_id' => $courseId])
+        $scored = app(ListScoredAttemptsAction::class)->execute(['course_id' => $courseId, 'course_ids' => $ownCourseIds])
             ->filter(fn (array $row): bool => $queue->matchesYear($row, $yearId, $enrollmentIds))
             ->values();
 
@@ -61,10 +71,16 @@ class ListTeacherReviewReportsAction
                 ->map(fn ($row): array => ['id' => (int) $row->id, 'name' => (string) $row->name])
                 ->values()
                 ->all(),
-            'courses' => app(ListEngineCoursesAction::class)->execute()->map(fn (array $course): array => [
-                'id' => $course['id'],
-                'title' => $course['title'],
-            ])->values()->all(),
+            'courses' => app(ListEngineCoursesAction::class)->execute()
+                ->filter(fn (array $course): bool => $ownCourseIds === null || in_array((int) $course['id'], $ownCourseIds, true))
+                ->map(fn (array $course): array => [
+                    'id' => $course['id'],
+                    'title' => $course['title'],
+                ])->values()->all(),
+            'scope' => [
+                'own_courses' => $ownCourseIds !== null,
+                'course_count' => $ownCourseIds === null ? null : count($ownCourseIds),
+            ],
             'rows' => $pending->all(),
             'weaknesses' => $weaknesses,
             'revisions' => $revisions,
@@ -76,10 +92,10 @@ class ListTeacherReviewReportsAction
 
     /**
      * @param  array<string, mixed>  $row
-     * @param  \Illuminate\Support\Collection<int|string, Activity>  $activities
-     * @param  \Illuminate\Support\Collection<int|string, Assessment>  $assessments
-     * @param  \Illuminate\Support\Collection<int|string, object>  $students
-     * @param  \Illuminate\Support\Collection<int|string, \App\Domains\Courses\Models\Course>  $courses
+     * @param  Collection<int|string, Activity>  $activities
+     * @param  Collection<int|string, Assessment>  $assessments
+     * @param  Collection<int|string, object>  $students
+     * @param  Collection<int|string, Course>  $courses
      * @return array<string, mixed>
      */
     private function decorateScored($row, $activities, $assessments, $students, $courses): array

@@ -6,9 +6,10 @@ import AppShell from '../../Layouts/AppShell';
  * §5je). One form for both: the edit carries the current portrait and posts
  * with a spoofed PUT, because a browser cannot send files on a real one.
  */
-export default function Form({ instructor = null, t = {} }) {
+export default function Form({ instructor = null, staff = [], t = {} }) {
     const editing = instructor !== null;
     const form = useForm({
+        user_id: instructor?.user_id ?? '',
         name: instructor?.name || '',
         qualification: instructor?.qualification || '',
         specialization: instructor?.specialization || '',
@@ -58,6 +59,17 @@ export default function Form({ instructor = null, t = {} }) {
                     <input id="instructor-photo" type="file" name="photo" accept="image/*" className="block text-sm text-gray-600" onChange={(e) => form.setData('photo', e.target.files[0] || null)} data-testid="instructor-photo-input" />
                     <p className="mt-1 text-xs text-gray-500">{t.instructors_photo_hint || 'Max 2MB. JPEG or PNG.'}</p>
                     {form.errors.photo && <p className="mt-1 text-xs text-red-700">{form.errors.photo}</p>}
+                </div>
+
+                {/* The staff login this profile belongs to (C16 slice N6): with the courses assigned on the course form, it is what opens a teacher's review queue to their own courses. */}
+                <div className="mb-4">
+                    <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor="instructor-user_id">{t.instructors_field_user || 'Staff login'}</label>
+                    <select id="instructor-user_id" name="user_id" className="form-input w-full" value={form.data.user_id} onChange={(e) => form.setData('user_id', e.target.value)} data-testid="instructor-user">
+                        <option value="">{t.instructors_user_none || '— Not linked —'}</option>
+                        {staff.map((person) => <option key={person.id} value={person.id}>{person.name}{person.email ? ` · ${person.email}` : ''}</option>)}
+                    </select>
+                    <p className="mt-1 text-xs text-gray-500">{t.instructors_user_hint || 'Link this profile to the person’s sign-in. A teacher marks the submissions of the courses this profile is assigned to on the course form.'}</p>
+                    {form.errors.user_id && <p className="mt-1 text-xs text-red-700">{form.errors.user_id}</p>}
                 </div>
 
                 <div className="mb-6 grid gap-4 sm:grid-cols-2">

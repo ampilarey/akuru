@@ -276,6 +276,11 @@ return [
     'instructors_page_prev' => '‹ Previous',
     'instructors_page_next' => 'Next ›',
     'instructors_page_of' => 'Page :page of :pages',
+    // The staff login a profile belongs to (C16 slice N6).
+    'instructors_field_user' => 'Staff login',
+    'instructors_user_none' => '— Not linked —',
+    'instructors_user_hint' => 'Link this profile to the person’s sign-in. A teacher marks the submissions of the courses this profile is assigned to on the course form.',
+    'instructors_linked_to' => 'Signs in as :name',
     // Enrolments and payments (C9 slice 4, STATUS §5jf).
     'enrolments_title' => 'Enrollments',
     'enrolments_tabs' => 'Enrolments and payments',
@@ -640,6 +645,14 @@ return [
     'courses_whatsapp_hint' => 'Digits with country code, e.g. 9607972434. Blank uses conversion.whatsapp_number, then the Viber contact number.',
     'courses_syllabus' => 'Syllabus media file id',
     'courses_syllabus_hint' => 'Public media_files id. Empty hides “Get full syllabus”.',
+    // Who teaches it (C16 slice N6).
+    'courses_instructors' => 'Instructors',
+    'courses_instructors_hint' => 'Shown on the course page. An instructor linked to a staff login marks this course’s submissions in Teacher review.',
+    'courses_instructors_none' => 'No instructors yet — add them under Instructors.',
+    'courses_instructor_marks' => 'marks',
+    // Teacher review, scoped (C16 slice N6).
+    'reviews_scope_own' => 'Showing the submissions from your own courses only (:count).',
+    'reviews_scope_none' => 'No courses are assigned to you yet. The office links your sign-in to your instructor profile and assigns courses to it on the course form; then their submissions appear here.',
     'courses_language' => 'Language',
     'courses_level' => 'Level',
     'courses_level_kids' => 'Kids',

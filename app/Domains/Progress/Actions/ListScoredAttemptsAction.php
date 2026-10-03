@@ -14,16 +14,19 @@ class ListScoredAttemptsAction
     /**
      * Latest scored attempt per student + item, with submitted/scored attempt counts.
      *
-     * @param  array{academic_year_id?: int|null, course_id?: int|null}  $filters
+     * @param  array{academic_year_id?: int|null, course_id?: int|null, course_ids?: list<int>|null}  $filters
      * @return Collection<int, array<string, mixed>>
      */
     public function execute(array $filters = []): Collection
     {
         $courseId = $this->positiveInt($filters['course_id'] ?? null);
+        // The reviewer's own courses (C16 slice N6); an empty list is nothing.
+        $courseIds = array_key_exists('course_ids', $filters) && is_array($filters['course_ids']) ? ($filters['course_ids'] ?: [0]) : null;
 
         $activityCounts = ActivityAttempt::query()
             ->whereIn('status', [ActivityAttemptStatus::Submitted, ActivityAttemptStatus::Scored])
             ->when($courseId, fn (Builder $query) => $query->where('course_id', $courseId))
+            ->when($courseIds !== null, fn (Builder $query) => $query->whereIn('course_id', $courseIds))
             ->selectRaw('student_id, activity_id, COUNT(*) as attempt_count')
             ->groupBy('student_id', 'activity_id')
             ->get()
@@ -32,6 +35,7 @@ class ListScoredAttemptsAction
         $activities = ActivityAttempt::query()
             ->where('status', ActivityAttemptStatus::Scored)
             ->when($courseId, fn (Builder $query) => $query->where('course_id', $courseId))
+            ->when($courseIds !== null, fn (Builder $query) => $query->whereIn('course_id', $courseIds))
             ->orderByDesc('submitted_at')
             ->orderByDesc('id')
             ->get()
@@ -50,6 +54,7 @@ class ListScoredAttemptsAction
         $assessmentCounts = AssessmentAttempt::query()
             ->whereIn('status', [AssessmentAttemptStatus::Submitted, AssessmentAttemptStatus::Scored])
             ->when($courseId, fn (Builder $query) => $query->where('course_id', $courseId))
+            ->when($courseIds !== null, fn (Builder $query) => $query->whereIn('course_id', $courseIds))
             ->selectRaw('student_id, assessment_id, COUNT(*) as attempt_count')
             ->groupBy('student_id', 'assessment_id')
             ->get()
@@ -58,6 +63,7 @@ class ListScoredAttemptsAction
         $assessments = AssessmentAttempt::query()
             ->where('status', AssessmentAttemptStatus::Scored)
             ->when($courseId, fn (Builder $query) => $query->where('course_id', $courseId))
+            ->when($courseIds !== null, fn (Builder $query) => $query->whereIn('course_id', $courseIds))
             ->orderByDesc('submitted_at')
             ->orderByDesc('id')
             ->get()

@@ -25,7 +25,7 @@ export default function CourseForm(props) {
     return <CourseFormBody key={props.course?.id ?? 'new'} {...props} />;
 }
 
-function CourseFormBody({ course = null, categories = [], t = {} }) {
+function CourseFormBody({ course = null, categories = [], instructors = [], t = {} }) {
     const editing = course !== null;
     // The address follows the title until the office types one of its own.
     const [slugTouched, setSlugTouched] = useState(editing);
@@ -43,6 +43,7 @@ function CourseFormBody({ course = null, categories = [], t = {} }) {
         language: course?.language || 'en',
         level: course?.level || 'kids',
         cover: null,
+        instructors: Array.isArray(course?.instructor_ids) ? course.instructor_ids : [],
         status: course?.status || 'open',
         fee: course?.fee ?? '',
         seats: course?.seats ?? '',
@@ -59,6 +60,9 @@ function CourseFormBody({ course = null, categories = [], t = {} }) {
     };
     const firstError = Object.values(form.errors)[0];
     const set = (name) => (e) => form.setData(name, e.target.value);
+    const toggleInstructor = (id) => form.setData('instructors', form.data.instructors.includes(id)
+        ? form.data.instructors.filter((value) => value !== id)
+        : [...form.data.instructors, id]);
     const label = (name, text, required = false) => (
         <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor={`course-${name}`}>{text}{required && <span className="text-red-500"> *</span>}</label>
     );
@@ -155,6 +159,22 @@ function CourseFormBody({ course = null, categories = [], t = {} }) {
                     </div>
                     {select('status', t.pages_col_status || 'Status', STATUSES, (value) => t[`courses_status_${value}`] || value)}
                 </div>
+
+                {/* Who teaches it (C16 slice N6): shown on the public course page; a linked staff login marks this course's submissions. */}
+                <fieldset className="rounded-lg border p-4" data-testid="course-instructors">
+                    <legend className="px-1 text-sm font-semibold text-gray-900">{t.courses_instructors || 'Instructors'}</legend>
+                    <p className="mb-2 text-xs text-gray-500">{t.courses_instructors_hint || 'Shown on the course page. An instructor linked to a staff login marks this course’s submissions in Teacher review.'}</p>
+                    {instructors.length === 0 && <p className="text-xs text-amber-800" data-testid="course-no-instructors">{t.courses_instructors_none || 'No instructors yet — add them under Instructors.'}</p>}
+                    <div className="grid gap-2 sm:grid-cols-2">
+                        {instructors.map((person) => (
+                            <label key={person.id} className="flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="instructors[]" value={person.id} checked={form.data.instructors.includes(person.id)} onChange={() => toggleInstructor(person.id)} className="rounded border-gray-300" data-testid={`course-instructor-${person.id}`} />
+                                <span>{person.name}{!person.is_active && <span className="ms-1 text-xs text-gray-500">({t.instructors_inactive || 'Inactive'})</span>}{person.has_login && <span className="ms-1 text-xs text-[#1D4E89]">· {t.courses_instructor_marks || 'marks'}</span>}</span>
+                            </label>
+                        ))}
+                    </div>
+                    {error('instructors')}
+                </fieldset>
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
                     {input('fee', t.courses_fee || 'Fee (MVR)', { type: 'number', min: 0, step: '0.01', dir: 'ltr' })}
                     {input('seats', t.courses_seats || 'Seats', { type: 'number', min: 1, dir: 'ltr' })}

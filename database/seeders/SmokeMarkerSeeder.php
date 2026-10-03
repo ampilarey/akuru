@@ -557,6 +557,11 @@ class SmokeMarkerSeeder extends Seeder
             'created_by' => $admin?->id,
         ]);
 
+        // Whose course it is (C16 slice N6): teacher@'s instructor profile is
+        // assigned to SMOKE-Course, so `review.mjs` can show the teacher the
+        // queue narrowed to their own course rather than a 403.
+        $this->assignTeacherToCourse($courseId);
+
         // The enrolment the player checks. `unified_student_id` is what
         // AuthorizeLessonAccessAction matches on, resolved from the student
         // linked to the seeded student login.
@@ -625,6 +630,36 @@ class SmokeMarkerSeeder extends Seeder
      * (`RegisterCourseStudentAction::forSelf`), and their courses are their
      * own, so no other walk's lists or counts move.
      */
+    /**
+     * The seeded teacher teaches SMOKE-Course (C16 slice N6, OWNER_ACTIONS
+     * 16). An instructor profile linked to teacher@ — the one already linked
+     * if there is one, else `SMOKE-Instructor` — and a `course_instructor`
+     * row; both idempotent, so the seeder can run again.
+     */
+    private function assignTeacherToCourse(int $courseId): void
+    {
+        $teacherUserId = (int) DB::table('users')->where('email', 'teacher@akuru.edu.mv')->value('id');
+        if ($teacherUserId <= 0 || $courseId <= 0) {
+            return;
+        }
+
+        $instructorId = (int) DB::table('instructors')->where('user_id', $teacherUserId)->value('id');
+        if ($instructorId <= 0) {
+            $instructorId = (int) DB::table('instructors')->where('slug', 'smoke-instructor')->value('id');
+            if ($instructorId > 0) {
+                DB::table('instructors')->where('id', $instructorId)->update(['user_id' => $teacherUserId, 'updated_at' => now()]);
+            } else {
+                $instructorId = (int) DB::table('instructors')->insertGetId([
+                    'user_id' => $teacherUserId, 'name' => 'SMOKE-Instructor', 'slug' => 'smoke-instructor',
+                    'specialization' => 'Arabic', 'is_active' => 0, 'sort_order' => 99,
+                    'created_at' => now(), 'updated_at' => now(),
+                ]);
+            }
+        }
+
+        DB::table('course_instructor')->insertOrIgnore(['course_id' => $courseId, 'instructor_id' => $instructorId]);
+    }
+
     private function learnerIdentities(?object $admin): void
     {
         $categoryId = DB::table('courses')->where('slug', 'smoke-course')->value('course_category_id');

@@ -4983,6 +4983,60 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ob. Teachers mark their own courses (C16 slice N6, 2026-10-03)
+
+OWNER_ACTIONS 16, decided 2026-10-03: "teachers mark only their own
+courses". `/catalog/reviews` is titled *Teacher review* and answers six of
+SPEC §36's thirteen teacher abilities, and the `teacher` role could not
+open it — it was gated on `courses.manage`, the authoring permission, and
+"my courses" could not be said because `course_instructor` joined courses
+to the website's instructor profiles, which knew nothing of a login, and
+had no writer (KNOWN_ISSUES 28; the review walk's one failing step,
+pinned on purpose since §5dz).
+
+- **Whose course it is.** `instructors.user_id` links a profile to a staff
+  login — one login, one profile — chosen on the Instructors form (*Staff
+  login*, offering everyone with a school staff role) and shown on the
+  list ("Signs in as …"). The CMS course form gains an *Instructors*
+  fieldset: tick who teaches it; the pivot is synced on save, the public
+  course page shows them (it always rendered the pivot, which was always
+  empty), and a profile with a login is marked *marks*.
+- **A permission that is not authoring.** `courses.review` opens the three
+  review routes; the teacher holds it (RoleGrants, synced by migration),
+  the dean and the supervisor hold it beside `courses.manage`, and
+  `course_creator` is granted it directly so it loses nothing. The route
+  group admits `teacher`; the controller admits `courses.review` or
+  `courses.manage`.
+- **The narrowing.** A reviewer without `courses.manage` sees the queue,
+  the weakness and revision reports, the CSV and the course filter
+  narrowed to `ListCoursesTaughtByUserAction` — the courses of the profile
+  their login is linked to — and is told so ("Showing the submissions from
+  your own courses only (1)"); with no assignment yet they see an empty
+  queue that says what the office must do, not a 403. Marking is checked
+  on the attempt's own row: `ReviewAttemptAction` refuses another course's
+  attempt id and writes nothing. `courses.manage` keeps the whole school.
+- **Doors.** The teacher's primary bar gains *Reviews*; the catalogue
+  group's entry is gated on either permission.
+- EN/DV/AR for the field, the fieldset and the two scope notes.
+- `SmokeMarkerSeeder` assigns teacher@'s profile (`SMOKE-Instructor`) to
+  SMOKE-Course, so `review.mjs` walks the teacher into their own queue.
+
+Tests: `TeacherMarksOwnCoursesTest` (3, new) — no profile: empty and
+said; one course: that course's row, filter and CSV only; another
+course's attempt refused and unchanged; own attempt scored; the dean
+unscoped; the Instructors form offers staff and saves the link once;
+clearing clears; the list says who signs in; the course form lists
+profiles, syncs on create, shows them on edit, unticked goes; a teacher
+without the permission is forbidden; phrases in three languages.
+`TeacherReviewLoopTest`'s pin re-pinned to the decision. Courses,
+Progress, HR, Website and Identity suites green (813); architecture,
+navigation, admin and route tests green. Walks: `review.mjs` 17/17 — the
+teacher opens the queue, is told it is their own courses only, finds the
+submission, the dean marks it, the student sees the mark; the office
+side walked once — the list says who the profile signs in as, the select
+offers the teacher, the course form's tick is saved and comes back, the
+system admin sees the whole queue without a note.
+
 ## 5oa. A link to finish a registration later — single-use, a day long, never a sign-in (C16 slice N5, 2026-10-03)
 
 OWNER_ACTIONS 14, decided 2026-10-03 ("Up to u"; the builder's call: build

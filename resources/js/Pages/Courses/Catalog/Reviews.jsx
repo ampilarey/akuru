@@ -141,9 +141,22 @@ export default function Reviews({
     pending_count = 0,
     weak_item_count = 0,
     weak_student_count = 0,
+    scope = {},
+    t = {},
 }) {
     return (
         <AppShell title="Teacher review">
+            {/* C16 slice N6: a reviewer without courses.manage sees their own courses only, and is told so — or told that none are assigned yet. */}
+            {scope.own_courses && scope.course_count > 0 && (
+                <p className="mb-4 rounded border border-[#E6D9C5] bg-[#F9F4EE] p-3 text-sm text-gray-700" data-testid="review-scope">
+                    {(t.reviews_scope_own || 'Showing the submissions from your own courses only (:count).').replace(':count', scope.course_count)}
+                </p>
+            )}
+            {scope.own_courses && !scope.course_count && (
+                <p className="mb-4 rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" data-testid="review-scope-empty">
+                    {t.reviews_scope_none || 'No courses are assigned to you yet. The office links your sign-in to your instructor profile and assigns courses to it on the course form; then their submissions appear here.'}
+                </p>
+            )}
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-gray-600">
                     {pending_count} pending · {weak_student_count} weak students · {weak_item_count} weak items

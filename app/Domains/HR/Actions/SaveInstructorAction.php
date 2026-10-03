@@ -17,13 +17,15 @@ class SaveInstructorAction
     public const PHOTO_DIRECTORY = 'instructors';
 
     /**
-     * @param  array<string, mixed>  $data  validated: name, bio, qualification, specialization, email, phone, is_active, sort_order
+     * @param  array<string, mixed>  $data  validated: name, bio, qualification, specialization, email, phone, is_active, sort_order, user_id
      */
     public function execute(?Instructor $instructor, array $data, ?UploadedFile $photo = null): Instructor
     {
         unset($data['photo']);
         $data['is_active'] = (bool) ($data['is_active'] ?? true);
         $data['sort_order'] = (int) ($data['sort_order'] ?? 0);
+        // The staff login (C16 slice N6): an empty choice clears the link.
+        $data['user_id'] = ! empty($data['user_id']) ? (int) $data['user_id'] : null;
 
         if ($photo !== null) {
             $data['photo'] = $photo->store(self::PHOTO_DIRECTORY, 'public');

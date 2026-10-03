@@ -12,12 +12,15 @@ use Illuminate\Support\Collection;
 class ListPendingReviewsAction
 {
     /**
-     * @param  array{academic_year_id?: int|null, course_id?: int|null}  $filters
+     * @param  array{academic_year_id?: int|null, course_id?: int|null, course_ids?: list<int>|null}  $filters
      * @return Collection<int, array<string, mixed>>
      */
     public function execute(array $filters = []): Collection
     {
         $courseId = $this->positiveInt($filters['course_id'] ?? null);
+        // `course_ids` is the reviewer's own courses (C16 slice N6): a list,
+        // possibly empty — and an empty list means nothing, not everything.
+        $courseIds = array_key_exists('course_ids', $filters) && is_array($filters['course_ids']) ? ($filters['course_ids'] ?: [0]) : null;
 
         // `academic_year_id` was in this method's signature and in nothing
         // else: the filter was documented, accepted and silently dropped, so a
@@ -32,6 +35,7 @@ class ListPendingReviewsAction
         $activities = ActivityAttempt::query()
             ->where('status', ActivityAttemptStatus::Submitted)
             ->when($courseId, fn (Builder $query) => $query->where('course_id', $courseId))
+            ->when($courseIds !== null, fn (Builder $query) => $query->whereIn('course_id', $courseIds))
             ->when($yearId, fn (Builder $query) => $query->where('academic_year_id', $yearId))
             ->orderBy('submitted_at')
             ->get()
@@ -42,6 +46,7 @@ class ListPendingReviewsAction
         $assessments = AssessmentAttempt::query()
             ->where('status', AssessmentAttemptStatus::Submitted)
             ->when($courseId, fn (Builder $query) => $query->where('course_id', $courseId))
+            ->when($courseIds !== null, fn (Builder $query) => $query->whereIn('course_id', $courseIds))
             ->when($yearId, fn (Builder $query) => $query->where('academic_year_id', $yearId))
             ->orderBy('submitted_at')
             ->get()

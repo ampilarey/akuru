@@ -104,7 +104,7 @@ final class RoleGrants
             'exams.manage', 'exams.enter-any',
             'finance.manage', 'finance.record-manual-payment',
             'hr.manage', 'payroll.run',
-            'courses.manage',
+            'courses.manage', 'courses.review',
             'manage_announcements', 'view_announcements', 'create_announcements', 'edit_announcements',
             'view_reports', 'generate_reports',
             'view_hifz_programs', 'manage_hifz_programs', 'assign_hifz_supervisors',
@@ -136,7 +136,7 @@ final class RoleGrants
             'registers.fill', 'registers.manage',
             'requests.submit', 'requests.review',
             'exams.manage', 'exams.enter-any',
-            'courses.manage', 'courses.publish',
+            'courses.manage', 'courses.publish', 'courses.review',
             'view_announcements', 'view_reports',
             'view_hifz_programs',
             'review_hifz_sessions', 'review_hifz_session_records',
@@ -149,7 +149,10 @@ final class RoleGrants
     /**
      * The **teacher**: their own classes — registers, attendance, grades,
      * Qur'an progress, behaviour notes, broadcasts and forms to their
-     * classes, requests, the Hifz sessions and records they teach.
+     * classes, requests, the Hifz sessions and records they teach — and,
+     * since C16 slice N6 (OWNER_ACTIONS 16: "teachers mark only their own
+     * courses"), the review queue of the courses they are assigned to:
+     * `courses.review` without `courses.manage` is that narrowing.
      *
      * @return list<string>
      */
@@ -162,6 +165,7 @@ final class RoleGrants
             'manage_attendance', 'view_attendance', 'mark_attendance',
             'manage_quran_progress', 'view_quran_progress', 'update_quran_progress',
             'view_timetables',
+            'courses.review',
             'registers.fill',
             'messages.broadcast', 'forms.manage',
             'behavior.record',

@@ -10,6 +10,7 @@ use App\Domains\Courses\Actions\SaveCourseLearningOutcomesAction;
 use App\Domains\Courses\Actions\SaveCoursePublicCtaAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
+use App\Domains\HR\Actions\ListInstructorOptionsAction;
 use App\Domains\Media\Actions\StorePublicMediaAction;
 use App\Domains\Website\Actions\ForgetHomePageCacheAction;
 use App\Http\Controllers\Controller;
@@ -54,6 +55,10 @@ class CourseController extends Controller
         'seats' => 'nullable|integer|min:1',
         'whatsapp_number' => 'nullable|string|max:32',
         'syllabus_media_file_id' => 'nullable|integer|exists:media_files,id',
+        // Who teaches it (C16 slice N6): shown on the course page, and the
+        // courses a linked teacher may mark.
+        'instructors' => 'nullable|array',
+        'instructors.*' => 'integer|exists:instructors,id',
     ];
 
     public function index(): Response
@@ -197,7 +202,7 @@ class CourseController extends Controller
     {
         $validated = $request->validate(self::RULES);
         $validated['body'] = app(HtmlSanitizer::class)->clean($validated['body'], HtmlSanitizer::PROFILE_CMS);
-        unset($validated['cover']);
+        unset($validated['cover'], $validated['instructors']);
 
         return $validated;
     }
@@ -239,9 +244,10 @@ class CourseController extends Controller
         return $slug;
     }
 
-    /** The outcomes (one per line, EN/DV/AR), the public CTA and the cover upload live in their own Actions. */
+    /** The outcomes (one per line, EN/DV/AR), the public CTA, the cover upload and the instructors. */
     private function save(Course $course, Request $request): void
     {
+        $course->instructors()->sync(array_values(array_map('intval', (array) $request->input('instructors', []))));
         if ($request->hasFile('cover')) {
             $stored = app(StorePublicMediaAction::class)->execute(
                 $request->file('cover'),
@@ -267,6 +273,7 @@ class CourseController extends Controller
     {
         return [
             'categories' => CourseCategory::ordered()->get()->map(fn (CourseCategory $category) => ['id' => $category->id, 'name' => $category->name])->values()->all(),
+            'instructors' => app(ListInstructorOptionsAction::class)->execute(),
             't' => Phrases::once('admin'),
         ];
     }
@@ -318,6 +325,7 @@ class CourseController extends Controller
             'learning_outcomes_en' => $lines('en'),
             'learning_outcomes_dv' => $lines('dv'),
             'learning_outcomes_ar' => $lines('ar'),
+            'instructor_ids' => $course->instructors()->pluck('instructors.id')->map(fn ($id): int => (int) $id)->values()->all(),
         ];
     }
 

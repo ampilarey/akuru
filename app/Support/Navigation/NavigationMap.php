@@ -50,6 +50,8 @@ final class NavigationMap
                 ['key' => 'registers', 'href' => '/academics/registers', 'can' => ['registers.manage']],
                 ['key' => 'review_notes', 'href' => '/academics/absence-notes', 'can' => ['manage_attendance']],
                 ['key' => 'teach', 'href' => '/teach/schedule'],
+                // C16 slice N6: the review queue of the courses assigned to them.
+                ['key' => 'reviews', 'href' => '/catalog/reviews', 'can' => ['courses.review']],
                 ['key' => 'check_in', 'href' => '/portal/staff-check-in'],
             ],
             'parent' => [
@@ -214,7 +216,7 @@ final class NavigationMap
                 ['key' => 'catalog', 'href' => '/catalog/courses'],
                 ['key' => 'offerings', 'href' => '/catalog/offerings'],
                 ['key' => 'questions', 'href' => '/catalog/questions'],
-                ['key' => 'reviews', 'href' => '/catalog/reviews'],
+                ['key' => 'reviews', 'href' => '/catalog/reviews', 'can' => ['courses.manage', 'courses.review']],
                 ['key' => 'arabic', 'href' => '/catalog/arabic'],
                 ['key' => 'arabic_report', 'href' => '/catalog/arabic/reports'],
                 ['key' => 'quran', 'href' => '/catalog/quran'],

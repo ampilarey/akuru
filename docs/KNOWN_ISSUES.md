@@ -1665,8 +1665,15 @@ rows already closed are not touched. **No backfill** — see STATUS §5dn.
 
 ### 28. A teacher cannot open the teacher review queue
 
-**Open — needs a decision, see `OWNER_ACTIONS` item 16. Found 2026-09-15 by
-walking the loop.**
+**Closed 2026-10-03 (STATUS §5ob).** The owner decided item 16 — teachers
+mark their own courses — and C16 slice N6 built the assignment it needed:
+`instructors.user_id` links a profile to a login, the course form assigns
+instructors, `courses.review` opens the queue narrowed to those courses, and
+a teacher with no assignment sees an empty queue that says so. The record
+of the finding stays below.
+
+**Was: open — needs a decision, see `OWNER_ACTIONS` item 16. Found 2026-09-15
+by walking the loop.**
 
 `/catalog/reviews` renders a page titled **"Teacher review"** and answers six of
 the thirteen abilities SPEC §36 gives the *Teacher / Instructor / Reviewer*:

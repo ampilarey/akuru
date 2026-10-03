@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\DB;
 class ListReviewQueueAction
 {
     /**
-     * @param  array{academic_year_id?: int|null, course_id?: int|null}  $filters
+     * @param  array{academic_year_id?: int|null, course_id?: int|null, course_ids?: list<int>|null}  $filters
      * @return Collection<int, array<string, mixed>>
      */
     public function execute(array $filters = []): Collection
