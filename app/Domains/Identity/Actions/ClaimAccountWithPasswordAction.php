@@ -41,7 +41,8 @@ class ClaimAccountWithPasswordAction
         $usesNationalId = ($data['id_type'] ?? null) === 'national_id';
 
         $user->update([
-            'name' => trim(($data['first_name'] ?? '').' '.($data['last_name'] ?? '')),
+            // First, middle (optional, C17 slice R4) and last.
+            'name' => trim(preg_replace('/\s+/', ' ', ($data['first_name'] ?? '').' '.($data['middle_name'] ?? '').' '.($data['last_name'] ?? ''))),
             'gender' => $data['gender'] ?? null,
             'date_of_birth' => $data['dob'] ?? null,
             'national_id' => $usesNationalId ? strtoupper(trim((string) ($data['national_id'] ?? ''))) : null,

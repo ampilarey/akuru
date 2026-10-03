@@ -35,7 +35,7 @@ class VerifyIssuedCertificateAction
             return null;
         }
 
-        $student = DB::table('students')->where('id', $row->student_id)->first(['first_name', 'last_name']);
+        $student = DB::table('students')->where('id', $row->student_id)->first(['first_name', 'middle_name', 'last_name']);
         $courseName = $row->course_id
             ? (string) (DB::table('courses')->where('id', $row->course_id)->value('title') ?? '')
             : '';
@@ -48,7 +48,7 @@ class VerifyIssuedCertificateAction
             'valid' => $row->revoked_at === null,
             'revoked' => $row->revoked_at !== null,
             'certificate_number' => $row->certificate_number,
-            'student_name' => $student ? trim(($student->first_name ?? '').' '.($student->last_name ?? '')) : '',
+            'student_name' => $student ? trim(preg_replace('/\s+/', ' ', ($student->first_name ?? '').' '.($student->middle_name ?? '').' '.($student->last_name ?? ''))) : '',
             'course_name' => $courseName,
             'offering_name' => $offeringName,
             'completion_date' => $row->completion_date?->toDateString(),

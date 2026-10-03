@@ -92,7 +92,8 @@ class IssueCertificateAction
         $number = 'AKU-'.now()->year.'-'.strtoupper(Str::random(6));
         $completionDate = (string) ($data['completion_date'] ?? now()->toDateString());
         $grade = trim((string) ($data['grade'] ?? $data['grade_label'] ?? '')) ?: null;
-        $studentName = trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
+        // First, middle (C17 slice R4) and last, as the learner registered.
+        $studentName = trim(preg_replace('/\s+/', ' ', ($student->first_name ?? '').' '.($student->middle_name ?? '').' '.($student->last_name ?? '')));
         $verifyUrl = url('/verify/certificates/'.$publicId);
         $face = [
             'student_name' => $studentName,

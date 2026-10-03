@@ -22,7 +22,7 @@
  */
 import { mergeIdFields, parseIdText } from './parse.js';
 
-const FIELDS = ['first_name', 'last_name', 'dob', 'gender', 'national_id', 'passport'];
+const FIELDS = ['first_name', 'middle_name', 'last_name', 'dob', 'gender', 'national_id', 'passport'];
 
 let workerPromise = null;
 

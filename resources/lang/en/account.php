@@ -129,6 +129,8 @@ return [
     'id_learner_child_title' => 'Your child\'s own ID card',
     'id_learner_hint' => 'A photo of the front of the ID card (or the passport photo page). Enrolment goes ahead; the office checks the card afterwards, and the certificate waits for that check. If the office already has this card, you can leave it empty.',
     // C17 slice R2 (STATUS §5od): fill the form from a photo of the ID card.
+    // Maldivian names: first, middle (optional), last (C17 slice R4).
+    'name_middle' => 'Middle name(s) (optional)',
     'id_scan_title' => 'Fill in from your ID card',
     'id_scan_hint' => 'Take or choose a photo of the front of the ID card, or the passport photo page. It is read on this device, and you check what it fills in.',
     'id_scan_choose' => 'Choose a photo',
@@ -142,6 +144,7 @@ return [
     'id_scan_failed' => 'The card reader could not start on this device. Please type the details.',
     'id_scan_pdf' => 'A PDF cannot be read here. Choose a photo, or type the details.',
     'id_scan_field_first_name' => 'first name',
+    'id_scan_field_middle_name' => 'middle name',
     'id_scan_field_last_name' => 'last name',
     'id_scan_field_dob' => 'date of birth',
     'id_scan_field_gender' => 'gender',

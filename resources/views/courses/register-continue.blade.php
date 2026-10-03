@@ -82,8 +82,9 @@
                             </select>
                         </div>
                         <div x-show="studentMode === 'new'" x-cloak class="space-y-4">
-                            <div class="grid sm:grid-cols-2 gap-4">
+                            <div class="grid sm:grid-cols-3 gap-4">
                                 <div><label class="block text-sm font-medium mb-1">First name <span class="text-red-500">*</span></label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'" value="{{ old('first_name') }}" required></div>
+                                <div><label class="block text-sm font-medium mb-1">{{ __('account.name_middle') }}</label><input type="text" name="middle_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'" value="{{ old('middle_name') }}"></div>
                                 <div><label class="block text-sm font-medium mb-1">Last name <span class="text-red-500">*</span></label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'parent' || studentMode !== 'new'" value="{{ old('last_name') }}" required></div>
                             </div>
                             <div class="grid sm:grid-cols-2 gap-4">
@@ -169,8 +170,9 @@
                                 ✓ Your details have been pre-filled from your profile. Please review and confirm.
                             </p>
                         @endif
-                        <div class="grid sm:grid-cols-2 gap-4">
+                        <div class="grid sm:grid-cols-3 gap-4">
                             <div><label class="block text-sm font-medium mb-1">First name <span class="text-red-500">*</span></label><input type="text" name="first_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('first_name', $prefill['first_name']) }}" required></div>
+                            <div><label class="block text-sm font-medium mb-1">{{ __('account.name_middle') }}</label><input type="text" name="middle_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('middle_name', $prefill['middle_name']) }}"></div>
                             <div><label class="block text-sm font-medium mb-1">Last name <span class="text-red-500">*</span></label><input type="text" name="last_name" class="w-full rounded-md border-gray-300" :disabled="flow !== 'adult'" value="{{ old('last_name', $prefill['last_name']) }}" required></div>
                         </div>
                         <div class="grid sm:grid-cols-2 gap-4">

@@ -21,7 +21,8 @@ Date of Expiry: 01-01-2030`;
         dob: '2000-05-05',
         gender: 'female',
         first_name: 'Aishath',
-        last_name: 'Shazna Ali',
+        middle_name: 'Shazna',
+        last_name: 'Ali',
         source: 'text',
     });
 });
@@ -53,7 +54,8 @@ LA12345675MDV9005053M3001019<<<<<<<<<<<<<<02`;
     assert.deepEqual(parseIdText(text, TODAY), {
         source: 'mrz',
         id_type: 'passport',
-        first_name: 'Mohamed Ahmed',
+        first_name: 'Mohamed',
+        middle_name: 'Ahmed',
         last_name: 'Hassan',
         passport: 'LA1234567',
         dob: '1990-05-05',
@@ -64,7 +66,8 @@ LA12345675MDV9005053M3001019<<<<<<<<<<<<<<02`;
 test('the filler after the names, misread as letters, is not a name', () => {
     const out = parseMrz(`P<MDVHASSAN<<MOHAMED<AHMED<<<<<<<LLLLLKLLILLLL
 LA12345675MDV9005053M3001019<<<<<<<<<<<<<<02`, TODAY);
-    assert.equal(out.first_name, 'Mohamed Ahmed');
+    assert.equal(out.first_name, 'Mohamed');
+    assert.equal(out.middle_name, 'Ahmed');
     assert.equal(out.last_name, 'Hassan');
     assert.equal(out.passport, 'LA1234567');
 });
@@ -79,7 +82,8 @@ LA12345675MDV9005053M3001019<<<<<<<<<P2
     assert.equal(out.passport, 'LA1234567');
     assert.equal(out.dob, '1990-05-05');
     assert.equal(out.gender, 'male');
-    assert.equal(out.first_name, 'Mohamed Ahmed');
+    assert.equal(out.first_name, 'Mohamed');
+    assert.equal(out.middle_name, 'Ahmed');
 });
 
 test('a wrong check digit drops that field instead of guessing', () => {
@@ -98,7 +102,8 @@ ALI<<AISHATH<SHAZNA<<<<<<<<<<<`, TODAY);
     assert.equal(out.id_type, 'national_id');
     assert.equal(out.dob, '2000-05-05');
     assert.equal(out.gender, 'female');
-    assert.equal(out.first_name, 'Aishath Shazna');
+    assert.equal(out.first_name, 'Aishath');
+    assert.equal(out.middle_name, 'Shazna');
     assert.equal(out.last_name, 'Ali');
 });
 
@@ -167,7 +172,8 @@ test('a real card front: the name a few lines under its label, a mark after it, 
         dob: '1992-07-14',
         gender: 'female',
         first_name: 'Hawwa',
-        last_name: 'Shifna Rasheed',
+        middle_name: 'Shifna',
+        last_name: 'Rasheed',
         source: 'text',
     });
 });
@@ -184,4 +190,15 @@ test('front then back: the front answers, the back adds nothing wrong', () => {
     const out = mergeIdFields(parseIdText(REAL_FRONT, TODAY), parseIdText(REAL_BACK, TODAY));
     assert.equal(out.dob, '1992-07-14');
     assert.equal(out.first_name, 'Hawwa');
+});
+
+test('names split the Maldivian way: first, every middle name, last', () => {
+    assert.deepEqual(
+        { ...parseIdText('REPUBLIC OF MALDIVES\nName\nAISHATH FATHIMATH SHAZNA ALI\nNumber: A111222', TODAY) },
+        { id_type: 'national_id', national_id: 'A111222', first_name: 'Aishath', middle_name: 'Fathimath Shazna', last_name: 'Ali', source: 'text' },
+    );
+    const two = parseIdText('REPUBLIC OF MALDIVES\nName: ALI HASSAN\nNumber: A111223', TODAY);
+    assert.equal(two.first_name, 'Ali');
+    assert.equal(two.middle_name, undefined);
+    assert.equal(two.last_name, 'Hassan');
 });

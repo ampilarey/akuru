@@ -31,8 +31,8 @@ class RegisterCourseStudentAction
      * An adult registering themselves: their own student record, created on
      * first registration and refreshed after.
      *
-     * @param  array{first_name: string, last_name: string, dob: string, gender?: ?string, national_id?: ?string, passport?: ?string}  $details
-     * @return array{id: int, user_id: ?int, first_name: string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}
+     * @param  array{first_name: string, middle_name?: ?string, last_name: string, dob: string, gender?: ?string, national_id?: ?string, passport?: ?string}  $details
+     * @return array{id: int, user_id: ?int, first_name: string, middle_name: ?string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}
      */
     public function forSelf(int $userId, array $details): array
     {
@@ -50,8 +50,8 @@ class RegisterCourseStudentAction
      * card or passport is reused rather than duplicated, and the parent is
      * linked to it as a guardian either way.
      *
-     * @param  array{first_name: string, last_name: string, dob: string, gender?: ?string, national_id?: ?string, passport?: ?string}  $details
-     * @return array{id: int, user_id: ?int, first_name: string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}
+     * @param  array{first_name: string, middle_name?: ?string, last_name: string, dob: string, gender?: ?string, national_id?: ?string, passport?: ?string}  $details
+     * @return array{id: int, user_id: ?int, first_name: string, middle_name: ?string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}
      */
     public function forChild(int $guardianUserId, array $details, ?string $relationship = null): array
     {
@@ -71,7 +71,7 @@ class RegisterCourseStudentAction
      * A student who has an account, found by ID card or passport. Used to
      * refuse a registration that would reuse somebody else's identity.
      *
-     * @return array{id: int, user_id: ?int, first_name: string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}|null
+     * @return array{id: int, user_id: ?int, first_name: string, middle_name: ?string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}|null
      */
     public function findWithAccountByIdentity(?string $nationalId, ?string $passport): ?array
     {
@@ -83,7 +83,7 @@ class RegisterCourseStudentAction
     /**
      * One of this parent's own children, found by ID card or passport.
      *
-     * @return array{id: int, user_id: ?int, first_name: string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}|null
+     * @return array{id: int, user_id: ?int, first_name: string, middle_name: ?string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}|null
      */
     public function findChildByIdentity(int $guardianUserId, ?string $nationalId, ?string $passport): ?array
     {
@@ -96,7 +96,7 @@ class RegisterCourseStudentAction
      * The student, if this person may register or pay for them: their own
      * record, or a child they are linked to as a guardian.
      *
-     * @return array{id: int, user_id: ?int, first_name: string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}|null
+     * @return array{id: int, user_id: ?int, first_name: string, middle_name: ?string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}|null
      */
     public function forActor(int $userId, int $studentId): ?array
     {
@@ -165,6 +165,7 @@ class RegisterCourseStudentAction
         $student->forceFill([
             'user_id' => $userId,
             'first_name' => trim($details['first_name']),
+            'middle_name' => $this->plain($details['middle_name'] ?? null),
             'last_name' => trim($details['last_name']),
             'date_of_birth' => $details['dob'],
             // The registration forms let gender be left empty, and an empty
@@ -184,6 +185,7 @@ class RegisterCourseStudentAction
     private function refresh(Student $student, array $details): Student
     {
         $student->first_name = trim($details['first_name']);
+        $student->middle_name = $this->plain($details['middle_name'] ?? null);
         $student->last_name = trim($details['last_name']);
         $student->date_of_birth = $details['dob'];
         if (($gender = $this->plain($details['gender'] ?? null)) !== null) {
@@ -251,7 +253,7 @@ class RegisterCourseStudentAction
     }
 
     /**
-     * @return array{id: int, user_id: ?int, first_name: string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}
+     * @return array{id: int, user_id: ?int, first_name: string, middle_name: ?string, last_name: string, date_of_birth: ?string, gender: ?string, national_id: ?string, passport: ?string}
      */
     private function snapshot(Student $student): array
     {
@@ -262,6 +264,7 @@ class RegisterCourseStudentAction
             'id' => (int) $student->id,
             'user_id' => $student->user_id !== null ? (int) $student->user_id : null,
             'first_name' => (string) $student->first_name,
+            'middle_name' => $this->plain($student->middle_name),
             'last_name' => (string) $student->last_name,
             'date_of_birth' => $student->date_of_birth?->format('Y-m-d'),
             'gender' => $gender !== null ? (string) $gender : null,

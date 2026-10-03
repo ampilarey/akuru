@@ -98,7 +98,8 @@ const value = (page, selector) => page.locator(selector).first().inputValue().ca
     const said = await waitForReading(page);
     check('it says what it filled and asks to check', /Filled in from the card/.test(said), said);
     check('the first name is filled', (await value(page, 'input[name="first_name"]')) === 'Aishath', await value(page, 'input[name="first_name"]'));
-    check('the last name is filled', (await value(page, 'input[name="last_name"]')) === 'Shazna Ali', await value(page, 'input[name="last_name"]'));
+    check('the middle name is filled', (await value(page, 'input[name="middle_name"]')) === 'Shazna', await value(page, 'input[name="middle_name"]'));
+    check('the last name is filled', (await value(page, 'input[name="last_name"]')) === 'Ali', await value(page, 'input[name="last_name"]'));
     check('the ID number is filled', (await value(page, 'input[name="national_id"]:not([disabled])')) === 'A654321', await value(page, 'input[name="national_id"]'));
     check('the date of birth is filled', (await value(page, 'input[name="dob"]')) === '2012-02-14', await value(page, 'input[name="dob"]'));
     check('the gender is chosen', (await page.locator('select[name="gender"]').first().inputValue()) === 'female');
@@ -147,7 +148,7 @@ const value = (page, selector) => page.locator(selector).first().inputValue().ca
     const said = await waitForReading(page);
     check('choosing the child\'s card fills the child\'s details', /Filled in from the card/.test(said), said);
     const child = (name) => page.locator(`[x-show="studentMode === 'new'"] [name="${name}"]`).first().inputValue().catch(() => '');
-    check('the child\'s name is filled', (await child('first_name')) === 'Aishath' && (await child('last_name')) === 'Shazna Ali', `${await child('first_name')} / ${await child('last_name')}`);
+    check('the child\'s name is filled, first, middle and last', (await child('first_name')) === 'Aishath' && (await child('middle_name')) === 'Shazna' && (await child('last_name')) === 'Ali', `${await child('first_name')} / ${await child('middle_name')} / ${await child('last_name')}`);
     check('the child\'s ID and birth date are filled', (await child('national_id')) === 'A654321' && (await child('dob')) === '2012-02-14', `${await child('national_id')} ${await child('dob')}`);
     check('the card stays chosen as the upload the office checks', (await page.locator('[data-testid="learner-id-front"]').evaluate((el) => el.files.length)) === 1);
     await context.close();

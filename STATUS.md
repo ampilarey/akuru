@@ -4983,6 +4983,45 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5og. A middle name on every registration form (C17 slice R4, 2026-10-03)
+
+The owner: "Now name has only 2 columns ... we use in Maldives 1st name,
+2 names and last name".
+
+- **Data.** `students.middle_name` (nullable, 150), additive (rule 9).
+  Registration stores it on the student and refreshes it with the other
+  details; `Student::full_name` reads first, middle and last with no gap
+  when there is no middle name.
+- **Forms.** The checkout form, the details form (the adult's own details
+  and a parent's new child) and the set-password form ask *First name*,
+  *Middle name(s) (optional)*, *Last name* in a three-column row on a wide
+  screen, stacked on a phone (EN/DV/AR). The three name rules live in one
+  place on the controller (`NAME_RULES`).
+- **Account name.** Every place that builds the account's name from the
+  form (new registration, claim with password, the "User" placeholder, a
+  child's account) reads first, middle and last.
+- **Prefill.** An account name with no profile yet is split the Maldivian
+  way: the first word, the last word, and everything between as the middle
+  name ("Asif Moosa Ibrahim" → Asif / Moosa / Ibrahim).
+- **ID-card reader.** A card name of three or more words fills first,
+  middle and last; a passport's given names fill first and middle.
+- **Certificates.** An issued certificate and its public verify page print
+  the full name, middle included.
+
+Not in this slice: about a hundred lists and reports (rosters, report
+cards, recipients, CSVs) still print first and last only. They read the
+same columns, so the middle name is there for them; BACKLOG C17 R4b.
+
+Tests: `MiddleNameTest` (4, new): the details form splits an account name
+into three and the enrolment keeps all three on the student and in its
+full name; no middle name leaves no gap; checkout asks for it and the
+phrase exists in three languages; a certificate's verify page prints the
+middle name. The reader's tests (18) cover the three-way split and the
+passport's given names. Architecture, Admissions, Identity, People,
+Courses and registration suites green (836). Walks: `id-scan.mjs` 21/21
+(the card fills first, middle and last, on checkout and for a parent's
+child), `register.mjs` 15/15.
+
 ## 5of. The front of the ID card is enough, and the photo is kept smaller (C17 slice R3, 2026-10-03)
 
 The owner: "How about adding front page only. Because all the important
