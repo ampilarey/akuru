@@ -4983,6 +4983,49 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5nu. The Institute's phone tab bar (C15 slice 7, 2026-10-03)
+
+ADMIN_PANEL.md §7 M7 closes; the owner (2026-10-03): "Slice 7, the bottom
+tab bar is up to u." The C15 plan's seven slices are all built; what is
+left of it is the owner's three host checks (§5nu's note to the owner,
+ADMIN_PANEL.md §6).
+
+- **Five tabs at the foot of every Institute screen on a phone**: Home,
+  Website, Shops, System, Alerts — the workspace's home, its three parts
+  and the notifications, in that order, each an icon over a word. Below
+  `sm` only; a desk is unchanged. The bar sits clear of a phone's home
+  indicator (`env(safe-area-inset-bottom)`) and the page carries matching
+  bottom padding so its last line is never under it.
+- **A part's tab opens a sheet, not a page.** "Website" is eight screens;
+  the sheet lists the group's screens as the hub does — each item, with
+  its inner screens as a row of chips (Pages, News, Courses, Daily
+  content …) — and sits on top of the bar so the next part is still one
+  tap away. The current screen's tab is marked, and so is its row in
+  the sheet. Escape, a tap outside, the close button or a page change
+  closes it.
+- **The server names the tabs.** `WorkspaceMap::tabsFor()` lists the
+  groups a workspace's bar carries (the Institute's three; every other
+  workspace none — the School has thirteen groups, a family's and a
+  shop's menus are short, so a bar would be a scroll or a repeat of the
+  drawer), and `BuildNavigationAction` returns `nav.tabs` only for the
+  groups that survived the route gates, so a tab can never open onto an
+  empty sheet. Labels are the new one-word `tab_*` phrases in EN/DV/AR,
+  falling back to the group's own.
+- **Walk health, with it**: `mobile.mjs` still asked a labelled cell to
+  be `flex`; §5ns made it a grid. The walk asks for `grid` now (19/19).
+
+Tests: `InstituteTabBarTest` (5) — the three tabs in order with their
+labels in three languages, none for the School, a family or a shop, a
+tab dropped when its group fell to the gates, and the shared prop on an
+Institute page. Walks: `admin-mobile.mjs` 10/10 — the bar on all 50
+screens with five thumb-sized named tabs and the page padded; System
+opens its sheet on the bar with Manage users and System settings in it;
+Manage users opens from the sheet, the sheet closes and System reads as
+current; Alerts opens the notifications. `nav.mjs` 14/14, `admin-hub.mjs`
+25/25, `phone-targets.mjs` 5/5, `mobile.mjs` 19/19. Phone screenshots of
+the bar on Manage users, the Website sheet, and the Shops sheet in
+Dhivehi (right-to-left, the current screen marked).
+
 ## 5nt. The Bookstore office's lists as phone cards, group three (C15 slice 6d, 2026-10-02)
 
 ADMIN_PANEL.md §7 M2 closes; continued from §5ns.

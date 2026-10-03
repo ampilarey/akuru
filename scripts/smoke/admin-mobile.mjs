@@ -138,14 +138,41 @@ const measure = () => page.evaluate(() => {
     return { overflow: doc - vw, clipped, swipe, menuVisible: mr ? mr.width > 0 && mr.right <= vw + 1 && mr.left >= -1 : false };
 });
 
+// The Institute's tab bar (ADMIN_PANEL.md §7 M7, STATUS §5nu): on every
+// screen of the workspace, five tabs of thumb size, inside the phone, with
+// the page padded so its last line is not under it.
+const tabBar = () => page.evaluate(() => {
+    const vw = Math.min(window.innerWidth, window.screen.width);
+    const vh = Math.min(window.innerHeight, window.screen.height);
+    const bar = document.querySelector('[data-testid="shell-tabs"]');
+    if (!bar) return { present: false };
+    const b = bar.getBoundingClientRect();
+    const tabs = [...bar.querySelectorAll('a, button')].map((el) => {
+        const r = el.getBoundingClientRect();
+        return { name: el.getAttribute('data-testid'), w: Math.round(r.width), h: Math.round(r.height), text: (el.textContent || '').trim() };
+    });
+    const main = document.querySelector('main');
+    const pad = main ? parseFloat(getComputedStyle(main).paddingBottom) : 0;
+    return { present: true, inside: b.left >= -1 && b.right <= vw + 1 && Math.abs(b.bottom - vh) <= 1, height: Math.round(b.height), tabs, padded: pad >= b.height };
+});
+
 const overflowing = [];
 const swipes = [];
 const noMenu = [];
+const noBar = [];
+const smallTabs = [];
+const unpadded = [];
 for (const path of PAGES) {
     const response = await page.goto(`${BASE}${path}`, { waitUntil: 'networkidle' });
     if (!response || response.status() !== 200) {
         check(path, false, `HTTP ${response?.status()}`);
         continue;
+    }
+    const bar = await tabBar();
+    if (!bar.present || !bar.inside || bar.tabs.length !== 5) noBar.push(`${path.replace('/en/admin', '')}${bar.present ? ` (${bar.tabs.length} tabs${bar.inside ? '' : ', outside the phone'})` : ''}`);
+    else {
+        for (const tab of bar.tabs) if (tab.w < 44 || tab.h < 44 || !tab.text) smallTabs.push(`${path.replace('/en/admin', '')} ${tab.name} ${tab.w}×${tab.h}`);
+        if (!bar.padded) unpadded.push(path.replace('/en/admin', ''));
     }
     const m = await measure();
     if (SHOTS) {
@@ -159,5 +186,35 @@ check(`${PAGES.length} admin screens load at 390 px`, results.length === 0);
 check('every one shows its menu button', noMenu.length === 0, noMenu.join(', '));
 check('and nothing on any of them is cut off past the phone\'s edge', overflowing.length === 0, overflowing.join(' | '));
 console.log(swipes.length ? `\nreachable by a swipe (wide tables in a scrolling wrapper):\n  ${swipes.join('\n  ')}\n` : '\nno sideways scrolling anywhere\n');
+
+check('the Institute\'s tab bar — Home, Website, Shops, System, Alerts — is at the foot of every one', noBar.length === 0, noBar.join(', '));
+check('every tab is thumb-sized and named', smallTabs.length === 0, smallTabs.slice(0, 6).join(', '));
+check('and the page is padded so its last line is not under the bar', unpadded.length === 0, unpadded.join(', '));
+
+// A tab opens its sheet; a screen in the sheet opens; the tab then reads as current.
+await page.goto(`${BASE}/en/admin`, { waitUntil: 'networkidle' });
+const homeCurrent = await page.getAttribute('[data-testid="tab-home"]', 'aria-current');
+check('on the hub the Home tab is the current one', homeCurrent === 'page', `aria-current=${homeCurrent}`);
+await page.click('[data-testid="tab-panel_system"]');
+await page.waitForSelector('[data-testid="shell-tab-sheet"]', { timeout: 5000 }).catch(() => {});
+const sheet = await page.evaluate(() => {
+    const el = document.querySelector('[data-testid="shell-tab-sheet"]');
+    if (!el) return null;
+    const vh = Math.min(window.innerHeight, window.screen.height);
+    const r = el.getBoundingClientRect();
+    const bar = document.querySelector('[data-testid="shell-tabs"]').getBoundingClientRect();
+    return { title: document.getElementById('shell-tab-sheet-title')?.textContent, links: [...el.querySelectorAll('a')].map((a) => a.getAttribute('href')), aboveBar: Math.abs(r.bottom - bar.top) <= 1, inside: r.bottom <= vh + 1 };
+});
+check('System opens a sheet of its screens, sitting on the bar', !!sheet && sheet.title === 'System' && sheet.aboveBar && sheet.inside && sheet.links.some((h) => h.endsWith('/admin/users')) && sheet.links.some((h) => h.endsWith('/admin/settings')), sheet ? `${sheet.title}: ${sheet.links.join(', ')}` : 'no sheet');
+await Promise.all([page.waitForURL(/\/admin\/users$/, { timeout: 15000 }).catch(() => {}), page.click('[data-testid="shell-tab-sheet"] a[href$="/admin/users"]')]);
+await page.waitForLoadState('networkidle');
+const afterSheet = await page.evaluate(() => ({
+    sheet: !!document.querySelector('[data-testid="shell-tab-sheet"]'),
+    current: document.querySelector('[data-testid="tab-panel_system"]')?.getAttribute('aria-current'),
+    url: location.pathname,
+}));
+check('Manage users opens from the sheet, the sheet closes and System reads as current', afterSheet.url.endsWith('/admin/users') && !afterSheet.sheet && afterSheet.current === 'true', JSON.stringify(afterSheet));
+await Promise.all([page.waitForURL(/\/portal\/notifications/, { timeout: 15000 }).catch(() => {}), page.click('[data-testid="tab-alerts"]')]);
+check('Alerts opens the notifications', page.url().includes('/portal/notifications'), page.url());
 
 await finish();

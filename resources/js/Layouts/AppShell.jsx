@@ -39,19 +39,21 @@ export default function AppShell({ title, children }) {
     const n = i18n?.nav || {};
     const [open, setOpen] = useState(false);
     const [switching, setSwitching] = useState(false);
+    // The phone tab bar's open sheet: a group key, or null (ADMIN_PANEL.md §7 M7).
+    const [sheet, setSheet] = useState(null);
     const narrow = useNarrow();
     const workspaces = auth?.workspaces ?? [];
     const activeWorkspace = workspaces.find((workspace) => workspace.key === auth?.workspace);
 
     // A menu left open across a page change is a menu the person has to close
     // twice. Close it whenever the URL moves, and on Escape.
-    useEffect(() => { setOpen(false); setSwitching(false); }, [url]);
+    useEffect(() => { setOpen(false); setSwitching(false); setSheet(null); }, [url]);
     useEffect(() => {
-        if (!open && !switching) return undefined;
-        const onKey = (event) => { if (event.key === 'Escape') { setOpen(false); setSwitching(false); } };
+        if (!open && !switching && sheet === null) return undefined;
+        const onKey = (event) => { if (event.key === 'Escape') { setOpen(false); setSwitching(false); setSheet(null); } };
         window.addEventListener('keydown', onKey);
         return () => window.removeEventListener('keydown', onKey);
-    }, [open, switching]);
+    }, [open, switching, sheet]);
 
     // Hrefs from the server carry the locale prefix (`/en/admin`); the map's
     // do not. Compare both without it.
@@ -63,6 +65,28 @@ export default function AppShell({ title, children }) {
     // there, so it is not listed a second time.
     const homePath = unlocalised(activeWorkspace?.href || '');
     const barInMenu = nav.primary.filter((item) => unlocalised(item.href) !== homePath);
+
+    // The phone tab bar (ADMIN_PANEL.md §7 M7, STATUS §5nu): Home, one tab per
+    // group the workspace names (`nav.tabs`, the server's call — only the
+    // Institute has any), and Alerts. A tab opens a sheet of that group's
+    // screens rather than one of them: the owner runs the panel from a
+    // phone, and "Website" is eight screens, not a page. Below `sm` only.
+    const tabs = (nav.tabs ?? []).map((tab) => ({ ...tab, group: nav.groups.find((group) => group.key === tab.key) })).filter((tab) => tab.group);
+    const showTabs = narrow && !!user && !!activeWorkspace && tabs.length > 0;
+    const inGroup = (group) => group.items.some((item) => isCurrent(item.href) || (item.children ?? []).some((child) => isCurrent(child.href)));
+    const openSheet = tabs.find((tab) => tab.key === sheet)?.group ?? null;
+    const TAB_ICONS = {
+        home: 'M4 11l8-7 8 7v9h-5v-6H9v6H4v-9z',
+        panel_website: 'M12 3a9 9 0 100 18 9 9 0 000-18zM3 12h18M12 3c2.5 3 2.5 15 0 18M12 3c-2.5 3-2.5 15 0 18',
+        panel_money: 'M4 10l1.5-5h13L20 10M4 10v10h16V10M4 10h16M9 20v-5h6v5',
+        panel_system: 'M4 6h16M4 12h16M4 18h16M8 4v4M16 10v4M10 16v4',
+        alerts: 'M15 17H9m6 0a3 3 0 11-6 0m6 0h3l-1.5-2V11a4.5 4.5 0 00-9 0v4L6 17h3',
+        group: 'M4 5h6v6H4V5zm10 0h6v6h-6V5zM4 15h6v6H4v-6zm10 0h6v6h-6v-6z',
+    };
+    const TabIcon = ({ name }) => (
+        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d={TAB_ICONS[name] || TAB_ICONS.group} /></svg>
+    );
+    const tabClass = (active) => `flex min-h-14 flex-col items-center justify-center gap-1 px-1 text-[11px] font-semibold leading-tight ${active ? 'text-[#7C2D37] shadow-[inset_0_3px_0_#C9A227]' : 'text-[#5E5650]'}`;
 
     // `hard`: a Blade screen, opened with a full page load — an Inertia visit
     // would get a non-Inertia response and show it in a modal.
@@ -392,7 +416,7 @@ export default function AppShell({ title, children }) {
                     </>
                 )}
             </header>
-            <main id="main" className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
+            <main id="main" className={`mx-auto max-w-6xl px-4 py-6 sm:px-6 ${showTabs ? 'has-shell-tabs' : ''}`}>
                 <h1 className="mb-4 text-xl font-semibold text-gray-900">{title}</h1>
                 {/* The one place a flash is printed (STATUS §5mu): pages do not print it again. */}
                 {flash?.success && (
@@ -422,6 +446,84 @@ export default function AppShell({ title, children }) {
                 )}
                 {children}
             </main>
+            {showTabs && (
+                <>
+                    {openSheet && (
+                        <>
+                            {/* A tap anywhere above the sheet closes it; the bar stays in reach below it. */}
+                            <button type="button" aria-label={n.close || 'Close'} onClick={() => setSheet(null)} className="fixed inset-0 z-40 cursor-default bg-black/30" data-testid="shell-tab-sheet-close" />
+                            <div
+                                id="shell-tab-sheet"
+                                role="dialog"
+                                aria-modal="true"
+                                aria-labelledby="shell-tab-sheet-title"
+                                data-testid="shell-tab-sheet"
+                                className="shell-tab-sheet fixed inset-x-0 z-50 max-h-[70vh] overflow-y-auto rounded-t-2xl border-t border-[#E6D9C8] bg-white text-gray-900 shadow-2xl"
+                            >
+                                <div className="sticky top-0 flex items-center justify-between gap-3 border-b border-[#E6D9C8] bg-white px-4 py-3">
+                                    <h2 id="shell-tab-sheet-title" className="text-base font-semibold text-[#3D1219]">{openSheet.label}</h2>
+                                    <button type="button" onClick={() => setSheet(null)} aria-label={n.close || 'Close'} className="-me-1 flex h-11 w-11 items-center justify-center text-gray-600">
+                                        <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path strokeLinecap="round" strokeWidth="2" d="M6 6l12 12M18 6L6 18" /></svg>
+                                    </button>
+                                </div>
+                                <p className="px-4 pt-3 text-xs text-gray-500">{n.tab_sheet_hint || 'The screens in this part of the panel.'}</p>
+                                <ul className="divide-y divide-[#E6D9C8] px-4 py-3" data-testid="shell-tab-sheet-items">
+                                    {openSheet.items.map((item) => (
+                                        <li key={item.href} className="py-1">
+                                            <Item item={item} className={`flex min-h-11 items-center text-base ${!item.hard && isCurrent(item.href) ? 'font-semibold text-[#7C2D37]' : 'text-gray-900'}`} />
+                                            {/* A section's inner screens, as the hub lists them: one row of chips. */}
+                                            {(item.children ?? []).length > 0 && (
+                                                <div className="flex flex-wrap gap-2 pb-2">
+                                                    {item.children.map((child) => (
+                                                        <Item key={child.href} item={child} className={`chip-link rounded-full border px-3 py-1.5 text-sm ${!child.hard && isCurrent(child.href) ? 'border-[#7C2D37] bg-[#7C2D37] text-white' : 'border-[#E6D9C8] bg-[#FDFBF8] text-gray-800'}`} />
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </>
+                    )}
+                    <nav aria-label={n.tab_bar || 'Sections'} data-testid="shell-tabs" className="shell-tabs fixed inset-x-0 bottom-0 z-50 border-t border-[#E6D9C8] bg-white sm:hidden">
+                        <div className="grid" style={{ gridTemplateColumns: `repeat(${tabs.length + 2}, minmax(0, 1fr))` }}>
+                            {/* Home is the workspace's home, a plain link as the drawer's is: a home may be a Blade page. */}
+                            <a href={activeWorkspace.href} data-testid="tab-home" aria-current={path === homePath ? 'page' : undefined} className={tabClass(path === homePath)}>
+                                <TabIcon name="home" />
+                                <span>{n.workspace_home || 'Home'}</span>
+                            </a>
+                            {tabs.map((tab) => {
+                                const active = inGroup(tab.group) || sheet === tab.key;
+                                return (
+                                    <button
+                                        key={tab.key}
+                                        type="button"
+                                        data-testid={`tab-${tab.key}`}
+                                        aria-haspopup="dialog"
+                                        aria-expanded={sheet === tab.key}
+                                        aria-controls="shell-tab-sheet"
+                                        aria-current={inGroup(tab.group) ? 'true' : undefined}
+                                        onClick={() => setSheet((value) => (value === tab.key ? null : tab.key))}
+                                        className={tabClass(active)}
+                                    >
+                                        <TabIcon name={tab.key} />
+                                        <span className="max-w-full truncate">{tab.label}</span>
+                                    </button>
+                                );
+                            })}
+                            <Link href="/portal/notifications" data-testid="tab-alerts" aria-current={isCurrent('/portal/notifications') ? 'page' : undefined} className={tabClass(isCurrent('/portal/notifications'))}>
+                                <span className="relative">
+                                    <TabIcon name="alerts" />
+                                    {unread > 0 && (
+                                        <span data-testid="tab-alerts-count" className="absolute -top-1.5 -end-2.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#D4A017] px-1 text-[11px] font-bold text-[#3D1219]">{unread > 99 ? '99+' : unread}</span>
+                                    )}
+                                </span>
+                                <span>{n.alerts || 'Alerts'}</span>
+                            </Link>
+                        </div>
+                    </nav>
+                </>
+            )}
         </div>
     );
 }

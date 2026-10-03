@@ -198,6 +198,28 @@ html[lang="dv"] body,
 }
 
 /*
+ * The Institute's phone tab bar (ADMIN_PANEL.md §7 M7, STATUS §5nu): fixed to
+ * the bottom edge, clear of a phone's home indicator, and the sheet a tab
+ * opens sits on top of it so the next tab is still a tap away. The page
+ * carries matching bottom padding (`.has-shell-tabs`) so its last line is
+ * never under the bar. Nothing here from `sm` up — the shell does not draw
+ * the bar there.
+ */
+.shell-tabs {
+  padding-bottom: env(safe-area-inset-bottom);
+  box-shadow: 0 -2px 12px rgba(63, 20, 28, 0.08);
+}
+.shell-tab-sheet {
+  bottom: calc(3.5rem + env(safe-area-inset-bottom));
+  padding-bottom: env(safe-area-inset-bottom);
+}
+@media (max-width: 639.98px) {
+  .has-shell-tabs {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+}
+
+/*
  * Phone-first tables (STATUS §5js). Below `sm` a `.table-stack` table becomes
  * a list of cards: the header row goes, each row is a block, and each cell is
  * a label–value line whose label is the cell's own `data-label`. A parent

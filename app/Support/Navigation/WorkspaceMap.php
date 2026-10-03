@@ -118,6 +118,25 @@ final class WorkspaceMap
     }
 
     /**
+     * The groups a workspace's phone tab bar carries (ADMIN_PANEL.md §7 M7,
+     * C15 slice 7). The shell draws Home, one tab per group named here and
+     * Alerts, below `sm` only; a tab opens a sheet of that group's screens.
+     * The Institute is the one workspace with a bar: its three parts are
+     * the panel's whole map, and the owner runs it from a phone. The School
+     * has thirteen groups, a family's and a shop's menus are short — a bar
+     * would be either a scroll or a repeat of the drawer, so they have none.
+     *
+     * @return list<string>
+     */
+    public static function tabsFor(string $workspace): array
+    {
+        return match ($workspace) {
+            'institute' => ['panel_website', 'panel_money', 'panel_system'],
+            default => [],
+        };
+    }
+
+    /**
      * The home route of a person in a workspace. A teacher who runs nothing
      * else lands on their own day, not the school office; a reviewer who
      * does not write lands on the review queue.

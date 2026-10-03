@@ -30,7 +30,7 @@ use Illuminate\Support\Facades\Route;
 class BuildNavigationAction
 {
     /**
-     * @return array{primary: list<array{key: string, label: string, href: string}>, groups: list<array{key: string, label: string, items: list<array{key: string, label: string, href: string}>}>, workspace?: string}
+     * @return array{primary: list<array{key: string, label: string, href: string}>, groups: list<array{key: string, label: string, items: list<array{key: string, label: string, href: string}>}>, tabs?: list<array{key: string, label: string}>, workspace?: string}
      */
     public function execute(?object $user, string $locale, ?string $workspace = null): array
     {
@@ -88,7 +88,19 @@ class BuildNavigationAction
             }
         }
 
-        return ['primary' => $primary, 'groups' => $groups, 'workspace' => $workspace];
+        // The phone's tab bar (ADMIN_PANEL.md §7 M7): one tab per group the
+        // workspace names, only where that group survived the gates above —
+        // a tab can never open onto an empty sheet. Labels are the short
+        // `tab_*` phrase where there is one, the group's own where not.
+        $present = array_column($groups, 'key');
+        $tabs = [];
+        foreach (WorkspaceMap::tabsFor($workspace) as $key) {
+            if (in_array($key, $present, true)) {
+                $tabs[] = ['key' => $key, 'label' => $this->tabLabel($key)];
+            }
+        }
+
+        return ['primary' => $primary, 'groups' => $groups, 'tabs' => $tabs, 'workspace' => $workspace];
     }
 
     /**
@@ -186,5 +198,13 @@ class BuildNavigationAction
         $translated = trans('nav.'.$key);
 
         return $translated === 'nav.'.$key ? $key : $translated;
+    }
+
+    /** A tab is a word wide: `tab_panel_money` is "Shops" where the group is "Shops & money". */
+    private function tabLabel(string $key): string
+    {
+        $translated = trans('nav.tab_'.$key);
+
+        return $translated === 'nav.tab_'.$key ? $this->label($key) : $translated;
     }
 }

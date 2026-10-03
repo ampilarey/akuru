@@ -180,6 +180,12 @@ return [
     'panel_website' => 'Website & content',
     'panel_money' => 'Shops & money',
     'panel_system' => 'System',
+    // The Institute's phone tab bar (ADMIN_PANEL.md §7 M7, STATUS §5nu): a word per tab.
+    'tab_panel_website' => 'Website',
+    'tab_panel_money' => 'Shops',
+    'tab_panel_system' => 'System',
+    'tab_bar' => 'Sections',
+    'tab_sheet_hint' => 'The screens in this part of the panel.',
     'enrolment_payments' => 'Payments',
     'cms_pages' => 'Pages',
     'cms_news' => 'News',
