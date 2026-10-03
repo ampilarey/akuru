@@ -57,16 +57,24 @@ async function bitmapOf(file) {
     }
 }
 
-/** Scale the photo to a size recognition likes and make it grey, stretched to full contrast. */
-async function prepare(file) {
-    const image = await bitmapOf(file);
+/**
+ * Scale the photo to a size recognition likes, turn it a quarter if asked
+ * (a card photographed sideways), and make it grey, stretched to full contrast.
+ */
+async function prepare(image, quarterTurns = 0) {
     const long = Math.max(image.width, image.height) || 1;
     const scale = Math.min(3, Math.max(0.5, 1800 / long));
+    const w = Math.round(image.width * scale);
+    const h = Math.round(image.height * scale);
+    const sideways = quarterTurns % 2 === 1;
     const canvas = document.createElement('canvas');
-    canvas.width = Math.round(image.width * scale);
-    canvas.height = Math.round(image.height * scale);
+    canvas.width = sideways ? h : w;
+    canvas.height = sideways ? w : h;
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
-    ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
+    ctx.translate(canvas.width / 2, canvas.height / 2);
+    ctx.rotate((quarterTurns * Math.PI) / 2);
+    ctx.drawImage(image, -w / 2, -h / 2, w, h);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     const pixels = ctx.getImageData(0, 0, canvas.width, canvas.height);
     const d = pixels.data;
     let min = 255;
@@ -189,8 +197,21 @@ function wire(root) {
             root.dataset.state = 'reading';
             try {
                 const worker = await reader(base);
-                const { data } = await worker.recognize(await prepare(file));
-                results.set(input, parseIdText(data.text));
+                const image = await bitmapOf(file);
+                // Upright first; a photo that yields almost nothing is tried
+                // a quarter turn each way, and the fullest reading kept.
+                let best = {};
+                for (const turns of [0, 1, 3]) {
+                    const { data } = await worker.recognize(await prepare(image, turns));
+                    const fields = parseIdText(data.text);
+                    if (Object.keys(fields).length > Object.keys(best).length) {
+                        best = fields;
+                    }
+                    if (Object.keys(best).length >= 4) {
+                        break;
+                    }
+                }
+                results.set(input, best);
             } catch (error) {
                 root.dataset.state = 'failed';
                 say(msg.failed ?? 'The card reader could not start on this device. Please type the details.', 'warn');

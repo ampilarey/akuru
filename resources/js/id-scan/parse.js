@@ -241,8 +241,13 @@ function findDates(text, today) {
     return found;
 }
 
+// A date just after one of these is the card's own date, never a birth date.
+const CARD_DATE_LABEL = /expir|issue|valid|until/gi;
+
 function findBirthDate(text, today) {
-    const dates = findDates(text, today);
+    const cardDates = [...text.matchAll(CARD_DATE_LABEL)].map((m) => m.index);
+    const dates = findDates(text, today)
+        .filter((d) => !cardDates.some((at) => d.index >= at && d.index - at < 40));
     if (dates.length === 0) {
         return null;
     }
@@ -253,14 +258,35 @@ function findBirthDate(text, today) {
             return after[0].iso;
         }
     }
-    // No label: a card's dates of issue and expiry are later than the birth.
+    // No label: of what is left, a birth is the earliest date.
     return dates.map((d) => d.iso).sort()[0];
 }
+
+const sexWord = (w) => (/^f(emale)?$/i.test(w) ? 'female' : /^m(ale)?$/i.test(w) ? 'male' : null);
 
 function findGender(text) {
     const labelled = text.match(/\b(?:sex|gender)\b\s*[:/\-.]?\s*(male|female|m|f)\b/i);
     if (labelled) {
-        return labelled[1].toUpperCase().startsWith('F') ? 'female' : 'male';
+        return sexWord(labelled[1]);
+    }
+    const lines = text.split('\n').map((l) => l.trim());
+    // The label on one line, the letter at the start of the next — the
+    // Maldivian card prints "Sex" over "M", beside "Date of Birth" over the date.
+    for (let i = 0; i + 1 < lines.length; i += 1) {
+        if (/\bsex\b/i.test(lines[i])) {
+            const first = sexWord(lines[i + 1].split(/\s+/)[0] ?? '');
+            if (first) {
+                return first;
+            }
+        }
+    }
+    // Recognition often drops that label line and keeps the values: a lone
+    // M or F opening the line that holds the birth date.
+    for (const line of lines) {
+        const m = line.match(/^([MF])\b[^A-Za-z0-9]*(?:\S+\s+){0,2}\d{1,2}\s?[./-]\s?\d{1,2}\s?[./-]\s?\d{4}/);
+        if (m) {
+            return sexWord(m[1]);
+        }
     }
     if (/\bfemale\b/i.test(text)) {
         return 'female';
@@ -271,32 +297,73 @@ function findGender(text) {
     return null;
 }
 
-function looksLikeName(s) {
-    const line = String(s || '').trim();
-    if (!/^[A-Za-z][A-Za-z .'-]{2,60}$/.test(line)) {
-        return false;
+/**
+ * The name-like part of a line, or null. Recognition leaves marks at the
+ * ends ("Ibrahim™") and junk after the name, which on the Maldivian card is
+ * printed in Title Case: a mixed-case line keeps its leading capitalised
+ * words; an all-capitals line keeps them all.
+ */
+function nameIn(s) {
+    const words = String(s || '')
+        .split(/\s+/)
+        .map((w) => w.replace(/^[^A-Za-z]+|[^A-Za-z.'-]+$/g, ''))
+        .filter(Boolean);
+    if (words.length === 0) {
+        return null;
     }
-    const words = line.split(/\s+/).filter(Boolean);
-    if (words.length < 1 || words.length > 6 || words.some((w) => w.replace(/[.'-]/g, '').length < 2)) {
-        return false;
+    let kept = words;
+    const capital = (w) => /^[A-Z]/.test(w);
+    if (words.some((w) => /^[a-z]/.test(w))) {
+        const end = words.findIndex((w) => !capital(w));
+        kept = end === -1 ? words : words.slice(0, end);
     }
-    return !words.some((w) => NOT_A_NAME.has(w.toUpperCase().replace(/[.'-]/g, '')));
+    if (kept.length === 0 || kept.length > 6) {
+        return null;
+    }
+    const ok = kept.every((w) => /^[A-Za-z][A-Za-z.'-]*$/.test(w)
+        && w.replace(/[.'-]/g, '').length >= 2
+        && /[aeiouy]/i.test(w)
+        && !NOT_A_NAME.has(w.toUpperCase().replace(/[.'-]/g, '')));
+    return ok ? kept.join(' ') : null;
 }
 
 function findName(text) {
     const lines = text.split('\n').map((l) => l.trim()).filter(Boolean);
     for (let i = 0; i < lines.length; i += 1) {
-        if (/\bname\b/i.test(lines[i]) && !/\b(?:father|mother|parent)/i.test(lines[i])) {
-            const rest = lines[i].replace(/.*\bname\b\s*[:\-.]?\s*/i, '').trim();
-            if (looksLikeName(rest)) {
+        if (/\bname\b/i.test(lines[i]) && !/\b(?:father|mother|parent|common|other)\b/i.test(lines[i])) {
+            const rest = nameIn(lines[i].replace(/.*\bname\b\s*[:\-.]?\s*/i, ''));
+            if (rest && rest.split(' ').length >= 2) {
                 return rest;
             }
-            if (looksLikeName(lines[i + 1])) {
-                return lines[i + 1];
+            // The Maldivian card puts the Dhivehi name beside the label and the
+            // English one a line or few below; recognition adds noise between.
+            for (let j = i + 1; j < Math.min(lines.length, i + 5); j += 1) {
+                if (/\b(?:sex|date|birth|address)\b/i.test(lines[j])) {
+                    break;
+                }
+                const found = nameIn(lines[j]);
+                if (found && found.split(' ').length >= 2) {
+                    return found;
+                }
             }
         }
     }
-    return lines.find((l) => looksLikeName(l) && l.split(/\s+/).length >= 2) ?? null;
+    // No label read: the first line of two or more name-like words, above the
+    // address — but only from a reading that is plainly of a card. Noise from
+    // a sideways or blurred photo makes word-shaped lines too.
+    if (!/republic|maldives|identity|passport|national/i.test(text) && !findNationalId(text) && !findDates(text, new Date()).length) {
+        return null;
+    }
+    for (const line of lines) {
+        if (/\baddre/i.test(line)) {
+            break;
+        }
+        const found = nameIn(line);
+        if (found && found.split(' ').length >= 2) {
+            return found;
+        }
+    }
+    return null;
 }
 
 /**

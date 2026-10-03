@@ -122,3 +122,66 @@ test('check digits follow ICAO 9303', () => {
     assert.equal(checkDigit('900505'), '3');
     assert.equal(checkDigit('<<<<<<<<<<<<<<'), '0');
 });
+
+// The real Maldivian card, as a phone photo of it reads (2026-10-03). The
+// structure and the noise are kept; every personal value is invented.
+const REAL_FRONT = `so »eo > 4 N
+RPP Sn
+REPUBLIC OF MALDIVES
+NATIONAL IDENTITY CARD (2 54225 2235005 00
+Number: A345678 240%
+Name o 2 I» 0 + AF
+t-. Ira
+D1 — ~
+Hawwa Shifna Rasheed™
+F re 14/07/1992 : ow
+afi ly J e coe R
+Addre LT / 5-14
+Nl, P0534 i
+Sea Breeze gui dg
+<1 7 prey
+Ga. Villingili BR
+NE cis cist ea in
+`;
+
+const REAL_BACK = `sN2003141
+sty S352! 7
+
+signature / Finger Print ~— sed
+Common Name a pr
+
+d
+
+J 2
+
+. 7
+oh AT
+Blood Group $32 5 | Expires on Sod P5314
+L+ 12/01/2025
+`;
+
+test('a real card front: the name a few lines under its label, a mark after it, sex at the start of the birth-date line', () => {
+    assert.deepEqual(parseIdText(REAL_FRONT, TODAY), {
+        id_type: 'national_id',
+        national_id: 'A345678',
+        dob: '1992-07-14',
+        gender: 'female',
+        first_name: 'Hawwa',
+        last_name: 'Shifna Rasheed',
+        source: 'text',
+    });
+});
+
+test('a real card back: the expiry date is not a birth date, the common name is not the name', () => {
+    assert.deepEqual(parseIdText(REAL_BACK, TODAY), {});
+});
+
+test('noise from a sideways photo is not taken for a name', () => {
+    assert.deepEqual(parseIdText('w 23\nJud Jebuid\nRH =\nEAN o', TODAY), {});
+});
+
+test('front then back: the front answers, the back adds nothing wrong', () => {
+    const out = mergeIdFields(parseIdText(REAL_FRONT, TODAY), parseIdText(REAL_BACK, TODAY));
+    assert.equal(out.dob, '1992-07-14');
+    assert.equal(out.first_name, 'Hawwa');
+});
