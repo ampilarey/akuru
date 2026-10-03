@@ -12,7 +12,7 @@
 --}}
 @if(config('registration.id_scan'))
     @php
-        $idScanFields = ['first_name', 'last_name', 'dob', 'gender', 'national_id', 'passport'];
+        $idScanFields = ['first_name', 'middle_name', 'last_name', 'dob', 'gender', 'national_id', 'passport'];
     @endphp
     <div data-id-scan
          data-testid="id-scan"

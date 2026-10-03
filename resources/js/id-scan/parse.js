@@ -20,7 +20,7 @@
  * Whatever it returns is a suggestion: the form fills empty fields and asks
  * the person to check them. Nothing is submitted for them.
  *
- * @typedef {{first_name?: string, last_name?: string, dob?: string, gender?: 'male'|'female', id_type?: 'national_id'|'passport', national_id?: string, passport?: string, source?: 'mrz'|'text'}} IdFields
+ * @typedef {{first_name?: string, middle_name?: string, last_name?: string, dob?: string, gender?: 'male'|'female', id_type?: 'national_id'|'passport', national_id?: string, passport?: string, source?: 'mrz'|'text'}} IdFields
  */
 
 const MONTHS = { JAN: 1, FEB: 2, MAR: 3, APR: 4, MAY: 5, JUN: 6, JUL: 7, AUG: 8, SEP: 9, SEPT: 9, OCT: 10, NOV: 11, DEC: 12 };
@@ -58,10 +58,18 @@ function isoDate(year, month, day, today = new Date()) {
 
 const titleCase = (s) => s.toLowerCase().replace(/(^|[\s'-])([a-z])/g, (_, p, c) => p + c.toUpperCase());
 
-/** Split a full name the way the registration form does: the first word, then the rest. */
+/**
+ * Split a full name the Maldivian way, as the form asks for it (C17 slice
+ * R4): the first word, the last word, and whatever stands between as the
+ * middle name. A middle name is left out when there is none.
+ */
 function splitName(full) {
     const words = full.trim().split(/\s+/).filter(Boolean).map(titleCase);
-    return { first_name: words[0] ?? '', last_name: words.slice(1).join(' ') };
+    const out = { first_name: words[0] ?? '', last_name: words.length > 1 ? words[words.length - 1] : '' };
+    if (words.length > 2) {
+        out.middle_name = words.slice(1, -1).join(' ');
+    }
+    return out;
 }
 
 // ---------------------------------------------------------------- the MRZ
@@ -113,7 +121,9 @@ function mrzNames(field) {
     if (!givenNames) {
         return splitName(last);
     }
-    return { first_name: givenNames, last_name: last };
+    // Given names: the first is the first name, any others are middle names.
+    const [first, ...middle] = givenNames.split(' ');
+    return { first_name: first, ...(middle.length ? { middle_name: middle.join(' ') } : {}), last_name: last };
 }
 
 const sexOf = (c) => (c === 'M' ? 'male' : c === 'F' ? 'female' : undefined);

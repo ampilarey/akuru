@@ -127,6 +127,8 @@ return [
     'id_learner_child_title' => 'بطاقة هوية طفلك نفسه',
     'id_learner_hint' => 'صورة لوجه بطاقة الهوية (أو صفحة صورة جواز السفر). يمضي التسجيل، ويتحقق المكتب من البطاقة لاحقًا، وتنتظر الشهادة هذا التحقق. إن كانت البطاقة لدى المكتب يمكنك ترك الحقل فارغًا.',
     // C17 slice R2 (STATUS §5od): fill the form from a photo of the ID card.
+    // Maldivian names: first, middle (optional), last (C17 slice R4).
+    'name_middle' => 'الاسم الأوسط (اختياري)',
     'id_scan_title' => 'املأ البيانات من بطاقة الهوية',
     'id_scan_hint' => 'التقط أو اختر صورة لوجه بطاقة الهوية أو صفحة صورة جواز السفر. تُقرأ على هذا الجهاز، وتراجع أنت ما تملؤه.',
     'id_scan_choose' => 'اختر صورة',
@@ -140,6 +142,7 @@ return [
     'id_scan_failed' => 'تعذّر تشغيل قارئ البطاقة على هذا الجهاز. يُرجى كتابة البيانات.',
     'id_scan_pdf' => 'لا يمكن قراءة ملف PDF هنا. اختر صورة، أو اكتب البيانات.',
     'id_scan_field_first_name' => 'الاسم الأول',
+    'id_scan_field_middle_name' => 'الاسم الأوسط',
     'id_scan_field_last_name' => 'اسم العائلة',
     'id_scan_field_dob' => 'تاريخ الميلاد',
     'id_scan_field_gender' => 'الجنس',

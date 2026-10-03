@@ -136,13 +136,19 @@
                         {{-- C17 slice R2: fill these from a photo of the ID card, read on the device and never submitted. --}}
                         @include('courses.partials.id-scan', ['mode' => 'photo'])
 
-                        {{-- ── Name ── --}}
-                        <div class="grid grid-cols-2 gap-3 mb-4">
+                        {{-- ── Name: first, middle (optional), last — Maldivian names (C17 slice R4) ── --}}
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">First name <span class="text-red-500">*</span></label>
                                 <input type="text" name="first_name" value="{{ old('first_name') }}" required
                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
                                 @error('first_name')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">{{ __('account.name_middle') }}</label>
+                                <input type="text" name="middle_name" value="{{ old('middle_name') }}" data-testid="middle-name"
+                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
+                                @error('middle_name')<p class="text-xs text-red-600 mt-1">{{ $message }}</p>@enderror
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Last name <span class="text-red-500">*</span></label>

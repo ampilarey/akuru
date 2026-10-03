@@ -21,7 +21,7 @@ class EnrollmentService
     /**
      * Enroll adult (18+) self. Creates/links student profile to user.
      *
-     * @param  array{first_name: string, last_name: string, dob: string, gender?: string}  $studentData
+     * @param  array{first_name: string, middle_name?: ?string, last_name: string, dob: string, gender?: string}  $studentData
      * @param  int[]  $courseIds
      */
     public function enrollAdultSelf(User $user, array $studentData, array $courseIds, ?int $termId = null): EnrollmentResult
@@ -44,7 +44,7 @@ class EnrollmentService
 
         // Auto-fix default "User" name after successful enrollment
         if ($user->name === 'User') {
-            $user->update(['name' => $studentData['first_name'].' '.$studentData['last_name']]);
+            $user->update(['name' => $this->fullName($studentData)]);
         }
 
         return $result;
@@ -53,7 +53,7 @@ class EnrollmentService
     /**
      * Enroll by parent. Creates or selects student, links guardian, enrolls.
      *
-     * @param  array{first_name: string, last_name: string, dob: string, gender?: string}|int  $studentDataOrExistingId
+     * @param  array{first_name: string, middle_name?: ?string, last_name: string, dob: string, gender?: string}|int  $studentDataOrExistingId
      * @param  array{relationship?: string}  $guardianMeta
      */
     public function enrollByParent(
@@ -73,7 +73,7 @@ class EnrollmentService
 
         // Auto-fix default "User" name after successful enrollment (parent flow)
         if ($parent->name === 'User' && is_array($studentDataOrExistingId)) {
-            $parent->update(['name' => $studentDataOrExistingId['first_name'].' '.$studentDataOrExistingId['last_name']]);
+            $parent->update(['name' => $this->fullName($studentDataOrExistingId)]);
         }
 
         return $result;
@@ -120,7 +120,7 @@ class EnrollmentService
         try {
             DB::transaction(function () use ($student, $plainPassword): void {
                 $childUser = User::create([
-                    'name' => $student['first_name'].' '.$student['last_name'],
+                    'name' => $this->fullName($student),
                     'national_id' => $student['national_id'] ?? $student['passport'],
                     'passport' => $student['passport'],
                     'date_of_birth' => $student['date_of_birth'],
@@ -371,5 +371,11 @@ class EnrollmentService
                 'contact' => ['Please verify your contact before enrolling.'],
             ]);
         }
+    }
+
+    /** First, middle (optional, C17 slice R4) and last, with single spaces. */
+    private function fullName(array $details): string
+    {
+        return trim(implode(' ', array_filter([$details['first_name'] ?? '', $details['middle_name'] ?? '', $details['last_name'] ?? ''], fn ($part) => trim((string) $part) !== '')));
     }
 }

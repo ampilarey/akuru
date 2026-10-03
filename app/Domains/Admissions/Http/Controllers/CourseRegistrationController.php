@@ -164,8 +164,7 @@ class CourseRegistrationController extends PublicRegistrationController
         // ── NEW REGISTRATION path (form includes personal info + password) ──
         if ($request->filled('first_name')) {
             $request->validate([
-                'first_name' => ['required', 'string', 'max:100'],
-                'last_name' => ['required', 'string', 'max:100'],
+                ...self::NAME_RULES,
                 'gender' => ['required', 'in:male,female'],
                 'dob' => ['required', 'date', 'before:today'],
                 'id_type' => ['required', 'in:national_id,passport'],
@@ -196,6 +195,7 @@ class CourseRegistrationController extends PublicRegistrationController
                     'contact_type' => $type,
                     'contact_value' => $normalized,
                     'first_name' => trim($request->first_name),
+                    'middle_name' => trim((string) $request->middle_name),
                     'last_name' => trim($request->last_name),
                     'gender' => $request->gender,
                     'dob' => $request->dob,
@@ -284,7 +284,7 @@ class CourseRegistrationController extends PublicRegistrationController
             $this->otpService->verifyForNewRegistration($type, $value, $request->input('code'));
 
             $user = \App\Domains\Identity\Models\User::create([
-                'name' => trim($pendingReg['first_name'].' '.$pendingReg['last_name']),
+                'name' => trim(preg_replace('/\s+/', ' ', $pendingReg['first_name'].' '.($pendingReg['middle_name'] ?? '').' '.$pendingReg['last_name'])),
                 'gender' => $pendingReg['gender'],
                 'date_of_birth' => $pendingReg['dob'],
                 'national_id' => $pendingReg['national_id'],
@@ -394,8 +394,7 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         $request->validate([
-            'first_name' => ['required', 'string', 'max:100'],
-            'last_name' => ['required', 'string', 'max:100'],
+            ...self::NAME_RULES,
             'gender' => ['required', 'in:male,female'],
             'dob' => ['required', 'date', 'before:today'],
             'id_type' => ['required', 'in:national_id,passport'],
@@ -442,6 +441,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
             $studentData = [
                 'first_name' => trim($request->first_name),
+                'middle_name' => trim((string) $request->middle_name),
                 'last_name' => trim($request->last_name),
                 'dob' => $request->dob,
                 'gender' => $request->gender,
@@ -562,12 +562,16 @@ class CourseRegistrationController extends PublicRegistrationController
             ?? ($existingProfile ? 'adult' : ($children->isNotEmpty() ? 'parent' : 'adult'));
 
         // Pre-fill data from user profile (name, gender, DOB, ID) for new users
-        $nameParts = explode(' ', $user->name ?? '', 2);
+        // A name with no profile yet splits Maldivian style: the first word,
+        // the last word, and whatever stands between (C17 slice R4).
+        $words = preg_split('/\s+/', trim((string) $user->name), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        $nameParts = [$words[0] ?? '', count($words) > 2 ? implode(' ', array_slice($words, 1, -1)) : '', count($words) > 1 ? end($words) : ''];
         $hasNationalId = ! empty($existingProfile?->national_id ?? $user->national_id);
         $hasPassport = ! empty($existingProfile?->passport);
         $prefill = [
-            'first_name' => $existingProfile?->first_name ?? $nameParts[0] ?? '',
-            'last_name' => $existingProfile?->last_name ?? $nameParts[1] ?? '',
+            'first_name' => $existingProfile?->first_name ?? $nameParts[0],
+            'middle_name' => $existingProfile ? (string) $existingProfile->middle_name : $nameParts[1],
+            'last_name' => $existingProfile?->last_name ?? $nameParts[2],
             'dob' => $existingProfile?->dob?->format('Y-m-d') ?? $user->date_of_birth?->format('Y-m-d') ?? '',
             'gender' => $existingProfile?->gender ?? $user->gender ?? '',
             'national_id' => $existingProfile?->national_id ?? $user->national_id ?? '',
@@ -1118,8 +1122,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
         if ($flow === 'parent') {
             if ($request->input('student_mode') === 'new') {
-                $rules['first_name'] = ['required', 'string', 'max:100'];
-                $rules['last_name'] = ['required', 'string', 'max:100'];
+                $rules = self::NAME_RULES;
                 $rules['dob'] = ['required', 'date', 'before:today'];
                 $rules['gender'] = ['nullable', 'in:male,female'];
                 $rules['relationship'] = ['nullable', 'in:father,mother,guardian,other'];
@@ -1133,8 +1136,7 @@ class CourseRegistrationController extends PublicRegistrationController
                 $rules['student_id'] = ['required', 'exists:students,id'];
             }
         } else {
-            $rules['first_name'] = ['required', 'string', 'max:100'];
-            $rules['last_name'] = ['required', 'string', 'max:100'];
+            $rules = self::NAME_RULES;
             $rules['dob'] = ['required', 'date', 'before:today'];
             $rules['gender'] = ['nullable', 'in:male,female'];
             $rules['id_type'] = ['required', 'in:national_id,passport'];
@@ -1366,6 +1368,13 @@ class CourseRegistrationController extends PublicRegistrationController
 
     /** How long a proof made in this session spares the terms step a second code. */
     public const PROOF_MINUTES = 30;
+
+    /** A learner's name, Maldivian style: first, middle (optional), last (C17 slice R4). */
+    public const NAME_RULES = [
+        'first_name' => ['required', 'string', 'max:100'],
+        'middle_name' => ['nullable', 'string', 'max:150'],
+        'last_name' => ['required', 'string', 'max:100'],
+    ];
 
     /**
      * Record that *this* session just proved it is this person — a code

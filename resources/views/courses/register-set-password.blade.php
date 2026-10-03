@@ -37,13 +37,19 @@
         <form method="POST" action="{{ route('courses.register.set-password.store') }}">
           @csrf
 
-          {{-- Name --}}
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.875rem;margin-bottom:1rem">
+          {{-- Name: first, middle (optional), last (C17 slice R4) --}}
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(9rem,1fr));gap:.875rem;margin-bottom:1rem">
             <div>
               <label style="display:block;font-size:.8rem;font-weight:600;color:#374151;margin-bottom:.375rem">First Name <span style="color:#DC2626">*</span></label>
               <input type="text" name="first_name" value="{{ old('first_name') }}" required
                      style="width:100%;padding:.625rem .75rem;border:1.5px solid {{ $errors->has('first_name') ? '#FCA5A5' : '#E5E7EB' }};border-radius:.5rem;font-size:.9rem;outline:none;box-sizing:border-box"
                      onfocus="this.style.borderColor='#7C2D37'" onblur="this.style.borderColor='{{ $errors->has('first_name') ? '#FCA5A5' : '#E5E7EB' }}'">
+            </div>
+            <div>
+              <label style="display:block;font-size:.8rem;font-weight:600;color:#374151;margin-bottom:.375rem">{{ __('account.name_middle') }}</label>
+              <input type="text" name="middle_name" value="{{ old('middle_name') }}" data-testid="middle-name"
+                     style="width:100%;padding:.625rem .75rem;border:1.5px solid #E5E7EB;border-radius:.5rem;font-size:.9rem;outline:none;box-sizing:border-box"
+                     onfocus="this.style.borderColor='#7C2D37'" onblur="this.style.borderColor='#E5E7EB'">
             </div>
             <div>
               <label style="display:block;font-size:.8rem;font-weight:600;color:#374151;margin-bottom:.375rem">Last Name <span style="color:#DC2626">*</span></label>

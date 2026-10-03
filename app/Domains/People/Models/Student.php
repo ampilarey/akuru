@@ -26,6 +26,7 @@ class Student extends Model
         'class_id',
         'student_id',
         'first_name',
+        'middle_name',
         'first_name_arabic',
         'first_name_dhivehi',
         'last_name',
@@ -154,9 +155,10 @@ class Student extends Model
     }
 
     // Helper methods
+    /** First, middle (optional, C17 slice R4) and last, with single spaces. */
     public function getFullNameAttribute()
     {
-        return $this->first_name.' '.$this->last_name;
+        return trim(implode(' ', array_filter([$this->first_name, $this->middle_name, $this->last_name], fn ($part) => trim((string) $part) !== '')));
     }
 
     /** Deploy 2 read compatibility: views used RegistrationStudent.dob. */
