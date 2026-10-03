@@ -5026,6 +5026,17 @@ current; Alerts opens the notifications. `nav.mjs` 14/14, `admin-hub.mjs`
 the bar on Manage users, the Website sheet, and the Shops sheet in
 Dhivehi (right-to-left, the current screen marked).
 
+**The host, the same day** (the owner at the cPanel terminal, 2026-10-03,
+ADMIN_PANEL.md §7 P7/P8, BACKLOG C6): `CACHE_STORE` was `database` on the
+live host and is `file` now, with `config:cache` and `cache:clear` run
+(P7 done). The crontab already carried `schedule:run` and `queue:work
+--stop-when-empty --tries=3 --max-time=55` every minute for the live
+folder, logging to `storage/logs` — C6 and OWNER_ACTIONS item 3 were
+done before they were asked; the instruction I gave appended a second
+copy of each, caught on `crontab -l` and removed the same minute. Open:
+OPcache — the terminal's `/usr/local/bin/php` has no opcache module, and
+the web PHP is set apart in cPanel's *Select PHP Version*.
+
 ## 5nt. The Bookstore office's lists as phone cards, group three (C15 slice 6d, 2026-10-02)
 
 ADMIN_PANEL.md §7 M2 closes; continued from §5ns.

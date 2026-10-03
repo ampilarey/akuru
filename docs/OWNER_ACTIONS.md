@@ -80,7 +80,11 @@ under rule 12.
 `QUEUE_CONNECTION=database` with nothing consuming the queue leaves report
 cards permanently **draft** — the generate button appears to do nothing.
 
-- [ ] `php artisan queue:work` (or `queue:listen`) running under a supervisor
+- [x] `php artisan queue:work` (or `queue:listen`) running under a supervisor
+      — **in place (seen 2026-10-03, STATUS §5nu)**: cron runs
+      `queue:work --stop-when-empty --tries=3 --max-time=55` and
+      `schedule:run` every minute for the live folder, logging to
+      `storage/logs/queue.log` and `schedule.log`.
 - [ ] Confirm a generated report card reaches **Ready**
 
 ---
