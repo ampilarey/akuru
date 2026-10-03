@@ -71,7 +71,7 @@ it('takes both sides with a shop application, shows them to the Bookstore office
     idWeb()->actingAs($person)->post(route('vendor.apply.store'), [
         'shop_name' => 'Noor Stationery', 'contact_email' => 'noor@example.test', 'contact_phone' => '7771234', 'island' => 'Hulhumalé',
         'what_they_sell' => 'Exercise books, pencils and alphabet charts for primary pupils.', 'agreement' => 1,
-    ])->assertSessionHasErrors(['id_front', 'id_back']);
+    ])->assertSessionHasErrors(['id_front'])->assertSessionDoesntHaveErrors(['id_back']);
 
     idWeb()->actingAs($person)->post(route('vendor.apply.store'), idCard() + [
         'shop_name' => 'Noor Stationery', 'contact_email' => 'noor@example.test', 'contact_phone' => '7771234', 'island' => 'Hulhumalé',
@@ -142,7 +142,7 @@ it('makes a writer send both sides, and keeps an unverified writer from submitti
     $office = actingSystemAdmin(['library.manage']);
 
     idWeb()->actingAs($writer)->post(route('write.apply'), ['display_name' => 'Ustadh Ali', 'agreement_accepted' => '1'])
-        ->assertSessionHasErrors(['id_front', 'id_back']);
+        ->assertSessionHasErrors(['id_front'])->assertSessionDoesntHaveErrors(['id_back']);
     idWeb()->actingAs($writer)->post(route('write.apply'), idCard() + ['display_name' => 'Ustadh Ali', 'agreement_accepted' => '1'])
         ->assertSessionHasNoErrors();
     $application = WriterApplication::query()->firstOrFail();

@@ -56,7 +56,7 @@ class RegisterLenderAction
         return $lender->refresh();
     }
 
-    public function sendCard(int $userId, UploadedFile $front, UploadedFile $back): void
+    public function sendCard(int $userId, UploadedFile $front, ?UploadedFile $back = null): void
     {
         app(IdentityVerificationAction::class)->submit($userId, 'lender', $front, $back);
     }

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Media\Actions;
 
+use App\Domains\Media\Contracts\ImageProcessorInterface;
 use App\Domains\Media\Contracts\MediaStorageInterface;
 use App\Domains\Media\Jobs\ProcessMediaFileJob;
 use App\Domains\Media\Models\MediaFile;
@@ -11,13 +12,19 @@ use Illuminate\Validation\ValidationException;
 
 class StorePrivateMediaAction
 {
-    public function __construct(private readonly MediaStorageInterface $storage) {}
+    public function __construct(
+        private readonly MediaStorageInterface $storage,
+        private readonly ImageProcessorInterface $images,
+    ) {}
 
     /**
      * @param  list<string>  $allowedMimes
+     * @param  int|null  $shrinkPhotosTo  a JPEG, PNG or WebP photo is scaled down to this
+     *                                    many pixels on its long side and re-saved as JPEG
+     *                                    (C17 slice R3: identity cards); null keeps it as sent
      * @return array{id: int, mime: string, original_name: string, process_status: string, visibility: string}
      */
-    public function execute(UploadedFile $file, ?int $uploadedBy = null, array $allowedMimes = [], ?int $maxBytes = null): array
+    public function execute(UploadedFile $file, ?int $uploadedBy = null, array $allowedMimes = [], ?int $maxBytes = null, ?int $shrinkPhotosTo = null): array
     {
         // `getMimeType()` sniffs the file's contents; `getClientMimeType()` is
         // the browser's claim and is only the fallback. SPEC §30: "Reject
@@ -41,8 +48,16 @@ class StorePrivateMediaAction
         }
 
         $extension = strtolower((string) ($file->guessExtension() ?: $file->getClientOriginalExtension()));
-        $path = 'course-media/'.now()->format('Y/m').'/'.Str::uuid().($extension !== '' ? '.'.$extension : '');
         $contents = (string) file_get_contents($file->getRealPath());
+        if ($shrinkPhotosTo !== null && in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) {
+            $smaller = $this->images->shrinkForStorage($contents, $shrinkPhotosTo);
+            // Kept only when it really is smaller: a photo already small and
+            // full of detail can come out larger, and then it stays as sent.
+            if ($smaller !== null && strlen($smaller) < strlen($contents)) {
+                [$contents, $mime, $extension, $size] = [$smaller, 'image/jpeg', 'jpg', strlen($smaller)];
+            }
+        }
+        $path = 'course-media/'.now()->format('Y/m').'/'.Str::uuid().($extension !== '' ? '.'.$extension : '');
         $this->storage->put('local', $path, $contents);
 
         $media = MediaFile::query()->create([

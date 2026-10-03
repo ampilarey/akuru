@@ -594,7 +594,7 @@ function ApplicationRow({ a, t }) {
             {a.identity && (
                 <p className="mt-1 flex gap-3 text-sm">
                     <a href={a.identity.front_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`application-id-front-${a.id}`}>ID front</a>
-                    <a href={a.identity.back_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`application-id-back-${a.id}`}>ID back</a>
+                    {a.identity.back_url && <a href={a.identity.back_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`application-id-back-${a.id}`}>ID back</a>}
                 </p>
             )}
             {a.status === 'pending' ? (
