@@ -31,6 +31,7 @@ class Assessment extends Model
         'show_results',
         'show_correct_answers',
         'requires_teacher_marking',
+        'rubric_id',
         'settings',
         'created_by',
         'legacy_quiz_id',

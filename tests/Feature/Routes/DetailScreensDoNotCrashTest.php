@@ -165,6 +165,7 @@ function detailDeclaredParams(): array
         'catalog/courses/{course}/outline' => $course,
         'catalog/courses/{course}/activities' => $course,
         'catalog/courses/{course}/assessments' => $course,
+        'catalog/courses/{course}/rubrics' => $course,
         'catalog/offerings/{offering}/sessions' => fn (array $s): array => ['offering' => $s['offering']],
         // The only two-parameter route here, and the reason this map is keyed
         // by URI: `{session}` means an *offering* session on this route and a

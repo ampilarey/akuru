@@ -82,6 +82,7 @@ class SaveActivityAttemptAction
             'last_saved_at' => optional($attempt->last_saved_at)?->toIso8601String(),
             'submitted_at' => optional($attempt->submitted_at)?->toIso8601String(),
             'feedback' => $attempt->feedback,
+            'rubric_scores' => $attempt->rubric_scores,
             'reviewed_at' => optional($attempt->reviewed_at)?->toIso8601String(),
         ];
     }

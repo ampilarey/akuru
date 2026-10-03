@@ -2,6 +2,7 @@ import { router, usePage } from '@inertiajs/react';
 import { useEffect, useMemo, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 import HandwritingCanvas from '../../../Components/HandwritingCanvas';
+import RubricResult from '../../../Components/RubricResult';
 
 function initialAnswers(activity, attempt) {
     if (attempt?.answers) {
@@ -115,7 +116,7 @@ function Attachments({ activity, attachments, submitted }) {
     );
 }
 
-export default function Activity({ activity, enrollment, attempt, retake = null }) {
+export default function Activity({ activity, enrollment, attempt, retake = null, teach = {} }) {
     const t = usePage().props.i18n?.learn || {};
     const [answers, setAnswers] = useState(() => initialAnswers(activity, attempt));
 
@@ -308,6 +309,7 @@ export default function Activity({ activity, enrollment, attempt, retake = null 
             {attempt?.feedback && (
                 <p className="mb-3 rounded-lg border bg-white p-3 text-sm">Teacher feedback: {attempt.feedback}</p>
             )}
+            <RubricResult scores={attempt?.rubric_scores} t={teach} />
             {canRetake && (
                 <div className="mb-3 rounded-lg border bg-white p-3 text-sm">
                     <p className="mb-2 text-gray-700">

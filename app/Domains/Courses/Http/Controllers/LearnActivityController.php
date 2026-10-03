@@ -12,6 +12,7 @@ use App\Domains\Progress\Actions\ResolveRetakeStateAction;
 use App\Domains\Progress\Actions\SaveActivityAttemptAction;
 use App\Domains\Progress\Actions\SubmitActivityAttemptAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -36,6 +37,7 @@ class LearnActivityController extends Controller
                 'course_id' => $access['course_id'],
             ],
             'attempt' => $attempt,
+            'teach' => Phrases::once('teach'),
             // The retake policy the author set, told to the person it is about.
             // It was configured, enforced on submit and reported on in the
             // teacher's revision list, and never reached the player — so the

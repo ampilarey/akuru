@@ -4983,6 +4983,55 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5oi. Rubrics for teacher-marked work (Moodle parity slice M2, 2026-10-03)
+
+The second of the three Moodle slices (BACKLOG C18). ROADMAP §8 had
+"Rubrics for teacher-marked work … design into teacher review from the
+start" for Phase 2; this builds it into the review that exists.
+
+- **Build.** Each course on the catalog has *Rubrics*
+  (`/catalog/courses/{id}/rubrics`). A rubric has a title, a description and
+  criteria, each with two to eight levels worth 0–100 points; a new one
+  starts with *Content: Not yet 0 · Good 2 · Excellent 4*. It says which of
+  the course's activities and assessments it marks (teacher-marked ones are
+  labelled). Up to twenty criteria. Criteria keep their ids across edits.
+- **Mark.** On the review queue (`/catalog/reviews`), an item with a rubric
+  shows the grid instead of the score boxes. The marker picks one level per
+  criterion and is told the mark before saving: the points out of the best
+  possible, scaled to what the item is marked out of (6 of 8 on a 10-mark
+  item is 8). Every criterion must have a level. `MarkSubmissionAction`
+  scores it in Courses and hands the score to Progress's
+  `ReviewAttemptAction`, which keeps the levels chosen on the attempt
+  (`rubric_scores`) as they read that day.
+- **Learner.** The activity and assessment pages show *How it was marked*:
+  each criterion, the level, its points, and the total. On an assessment
+  that hides results it is hidden with the mark.
+- **Edits and deletes.** Editing a rubric never moves a mark already given.
+  Deleting one puts its items back on a typed score (the key is
+  `nullOnDelete`). A copied course (§5oh) brings its rubrics, and the copy's
+  items are marked by the copy's.
+- **Data.** `rubrics` (course, title, description, criteria JSON),
+  `activities.rubric_id`, `assessments.rubric_id`, and `rubric_scores` on
+  both attempt tables. All additive. Progress reads no Courses model: a new
+  `ReadAttemptItemAction` tells Courses which item an attempt belongs to.
+  `rubric` is registered in `config/morph-map.php` (every domain model is),
+  and the rubrics screen joins the course routes the detail-screen sweep
+  loads. CI caught both on the first push; the whole suite (2,755) now runs
+  green locally before each push.
+
+Tests: `RubricMarkingTest` (4, new): building a rubric through the route and
+attaching it, the page, a criterion with one level refused; marking: the
+queue carries the rubric, a missing level refused, 4+2 of 8 on a 10-mark
+item gives 8 and ignores a typed score, the levels on the attempt and on the
+learner's page, an edit leaving the mark alone, a delete detaching the item;
+a copied course's rubric and its items; refused without `courses.manage`.
+Architecture, Courses and Progress suites green (539). Walks: `rubric.mjs`
+14/14 (the dean builds a two-criterion rubric in the browser, the student
+hands in, the dean marks by clicking Excellent and Weak and is told 4 of 8
+so 3 out of 5, the student sees 3/5 and each criterion, the rubric is
+deleted and the mark keeps it); `review.mjs` 17/17 (a typed score still
+works where there is no rubric).
+
 ## 5oh. Copy a whole course (Moodle parity slice M1, 2026-10-03)
 
 The owner asked whether Akuru has course building tools like Moodle's. The

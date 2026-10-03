@@ -22,6 +22,7 @@ class ActivityAttempt extends Model
         'last_saved_at',
         'submitted_at',
         'feedback',
+        'rubric_scores',
         'reviewed_by',
         'reviewed_at',
     ];
@@ -31,6 +32,7 @@ class ActivityAttempt extends Model
         return [
             'status' => ActivityAttemptStatus::class,
             'answers' => 'array',
+            'rubric_scores' => 'array',
             'started_at' => 'datetime',
             'last_saved_at' => 'datetime',
             'submitted_at' => 'datetime',

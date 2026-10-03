@@ -1,6 +1,7 @@
 import { router, usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
+import RubricResult from '../../../Components/RubricResult';
 
 /**
  * SPEC §17 Pattern 3 covers two shapes: orderings ("arrange words", "arrange
@@ -109,7 +110,7 @@ function formatRemaining(seconds) {
     return `${m}:${String(s).padStart(2, '0')}`;
 }
 
-export default function Assessment({ assessment, enrollment, attempt, retake = null, mediaShowUrl = '/learn/media' }) {
+export default function Assessment({ assessment, enrollment, attempt, retake = null, mediaShowUrl = '/learn/media', teach = {} }) {
     const t = usePage().props.i18n?.learn || {};
     // The server now refuses a submit that leaves a §21-required question
     // blank. A refusal the page does not render is the same invisible refusal
@@ -207,6 +208,7 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
             {attempt?.feedback && (
                 <p className="mb-4 rounded-lg border bg-white p-3 text-sm">Teacher feedback: {attempt.feedback}</p>
             )}
+            <RubricResult scores={attempt?.rubric_scores} t={teach} />
             {/* `retake_limit` has always been configurable and enforced on the
                 server, and this page never learned of it — so once an attempt
                 existed every control was disabled for ever and nobody could

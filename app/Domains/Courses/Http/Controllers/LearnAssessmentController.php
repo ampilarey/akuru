@@ -10,6 +10,7 @@ use App\Domains\Progress\Actions\SaveAssessmentAttemptAction;
 use App\Domains\Progress\Actions\StartAssessmentAttemptAction;
 use App\Domains\Progress\Actions\SubmitAssessmentAttemptAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -32,6 +33,7 @@ class LearnAssessmentController extends Controller
                 'classroom_id' => $access['classroom_id'],
             ],
             'attempt' => $attempt,
+            'teach' => Phrases::once('teach'),
             // The retake policy the author set, told to the person it is about.
             // `retake_limit` has always been configurable and enforced, and the
             // player never learned of it — so once an attempt existed this page

@@ -271,6 +271,8 @@ return [
     'quiz_attempt' => \App\Domains\Academics\Legacy\Models\QuizAttempt::class,
     'quiz_question' => \App\Domains\Academics\Legacy\Models\QuizQuestion::class,
     'question' => \App\Domains\Courses\Models\Question::class,
+    // Moodle parity slice M2 (STATUS §5oi): a course's marking rubric.
+    'rubric' => \App\Domains\Courses\Models\Rubric::class,
     'quran_ayah' => \App\Domains\Courses\Components\Quran\Models\QuranAyah::class,
     'quran_translation' => \App\Domains\Courses\Components\Quran\Models\QuranTranslation::class,
     'quran_mushaf' => \App\Domains\Courses\Components\Quran\Models\QuranMushaf::class,

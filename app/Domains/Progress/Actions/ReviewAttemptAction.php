@@ -19,6 +19,9 @@ class ReviewAttemptAction
     {
         $score = max(0, (int) ($data['score'] ?? 0));
         $feedback = trim((string) ($data['feedback'] ?? ''));
+        // Moodle parity slice M2: the rubric levels chosen, as Courses scored
+        // them; null when the item has no rubric.
+        $rubricScores = is_array($data['rubric_scores'] ?? null) ? $data['rubric_scores'] : null;
         $now = now();
 
         if ($kind === 'activity') {
@@ -33,6 +36,7 @@ class ReviewAttemptAction
                 'score' => min($score, $max),
                 'max_score' => $max,
                 'feedback' => $feedback !== '' ? $feedback : null,
+                'rubric_scores' => $rubricScores,
                 'reviewed_by' => $reviewerId,
                 'reviewed_at' => $now,
             ]);
@@ -53,6 +57,7 @@ class ReviewAttemptAction
                 'max_score' => $max,
                 'item_scores' => is_array($data['item_scores'] ?? null) ? $data['item_scores'] : $attempt->item_scores,
                 'feedback' => $feedback !== '' ? $feedback : null,
+                'rubric_scores' => $rubricScores,
                 'reviewed_by' => $reviewerId,
                 'reviewed_at' => $now,
             ]);

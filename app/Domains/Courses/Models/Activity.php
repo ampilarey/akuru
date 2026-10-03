@@ -22,6 +22,7 @@ class Activity extends Model
         'settings',
         'max_score',
         'passing_score',
+        'rubric_id',
         'is_required',
         'created_by',
     ];
