@@ -4983,6 +4983,38 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5nz. A Hifz enrolment can end: `withdrawn` (C16 slice N4, 2026-10-03)
+
+OWNER_ACTIONS 15, decided 2026-10-03: "Add \"withdrawn\"". Until now
+`hifz_enrollments.status` had four words and no screen set any of them,
+so a pupil who had left read `active` for ever (KNOWN_ISSUES 27 contained
+the consequences and left the row alone, by design, for this decision).
+
+- **A fifth value**, `withdrawn` — left the Institute — beside `active`,
+  `paused`, `completed`, `transferred`; the enum column is widened in
+  place (additive, rule 9) and the row gains `ended_at`, `end_reason`,
+  `ended_by`. `HifzEnrollmentStatus::endings()` names the three ways an
+  enrolment ends; `paused` is not one.
+- **A way to end one.** On a programme's enrolment list, whoever may
+  update the programme (the dean; a supervisor within scope) has **End
+  enrolment** on every live row: how it ended (withdrawn, transferred,
+  completed), the date, an optional note. `EndHifzEnrollmentAction`
+  writes the row; an ended enrolment cannot end again. The row then reads
+  the status with "Ended 2026-10-01 — note" under it and no button.
+- **Every active count moves the same moment** — the session generator,
+  the dean's card, the teacher's and the pupil's dashboards all ask
+  `where('status', 'active')`, and withdrawn is not active. Nothing else
+  about the row changes; the history stays.
+- EN/DV/AR for the status and the form's words.
+
+Tests: `HifzEndEnrollmentTest` (2, new) — the dean ends an enrolment as
+withdrawn and the list, the row and the active count say so; a second
+ending, `paused` and a bad date are refused; a teacher is forbidden; an
+enrolment reached through another programme's address is a 404; phrases
+in three languages. The Hifz suite stays green. Walk: `hifz.mjs` gained a
+last step — the dean ends the walk's enrolment as withdrawn and the row
+reads so with the date and the note.
+
 ## 5ny. The OTP screen counts the wait down (C16 slice N3, 2026-10-03)
 
 The owner, waiting for a code on the live site (§5nw): "its not auto

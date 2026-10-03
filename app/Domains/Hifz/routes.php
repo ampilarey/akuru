@@ -33,6 +33,8 @@ Route::prefix('hifz')->name('hifz.')->middleware(['auth', 'trackActivity'])->gro
     Route::get('programs/{program}/enrollments', [HifzEnrollmentController::class, 'index'])->name('enrollments.index');
     Route::get('programs/{program}/enrollments/create', [HifzEnrollmentController::class, 'create'])->name('enrollments.create');
     Route::post('programs/{program}/enrollments', [HifzEnrollmentController::class, 'store'])->name('enrollments.store');
+    // C16 slice N4: end an enrolment (withdrawn, transferred, completed).
+    Route::post('programs/{program}/enrollments/{enrollment}/end', [HifzEnrollmentController::class, 'end'])->name('enrollments.end')->whereNumber('enrollment');
 
     Route::get('milestones', [HifzMilestoneController::class, 'index'])->name('milestones.index');
     Route::post('milestones', [HifzMilestoneController::class, 'store'])->name('milestones.store');

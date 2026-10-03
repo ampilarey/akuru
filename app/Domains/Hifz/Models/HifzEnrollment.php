@@ -15,11 +15,14 @@ class HifzEnrollment extends Model
         'hifz_program_id', 'student_id', 'teacher_id', 'supervisor_id',
         'start_date', 'target_completion_date', 'current_surah_id',
         'current_juz', 'current_page', 'status', 'notes',
+        // C16 slice N4: how and when the enrolment ended.
+        'ended_at', 'end_reason', 'ended_by',
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'target_completion_date' => 'date',
+        'ended_at' => 'date',
         'status' => HifzEnrollmentStatus::class,
     ];
 
