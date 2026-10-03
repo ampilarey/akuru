@@ -4983,6 +4983,57 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5oj. A discussion forum on every course (Moodle parity slice M3, 2026-10-03)
+
+The third of the three Moodle slices (BACKLOG C18). Forums had been parked
+behind ROADMAP §7's revisit trigger; the owner's "Yes build" is the
+decision, recorded in ADR-043.
+
+- **Who.** A course's forum is its learners' (an active, approved or
+  completed enrolment) and its teachers' (assigned through their instructor
+  profile, C16 slice N6), and the people who run courses
+  (`courses.manage`). Nobody else reads or writes; a learner of another
+  course gets 403. `ResolveForumAccessAction` decides.
+- **Where.** `/learn/courses/{id}/forum`. The course page offers
+  *Discussion*; the catalog row has *Forum*; Teacher review lists a
+  teacher's own course forums.
+- **Use.** Topics, pinned first and then the liveliest; a topic with its
+  replies in order and a reply box. Teachers' posts are marked *Teacher*.
+- **Moderate.** Teachers pin, lock (only teachers reply to a locked topic,
+  and the learner is told why) and hide a topic or a reply; hiding is undone
+  by showing. A hidden topic is not listed for learners and is not found; a
+  hidden reply is not shown; teachers see both, marked.
+- **Notices.** A new topic tells the course's teachers; a reply tells the
+  starter and everyone who replied before, never the writer. Through
+  `SendUserNotificationAction` under a new *Course discussions* category,
+  which a person can switch off.
+- **Data.** `course_forum_topics` and `course_forum_posts`, each with the
+  academic year it was written in (rule 10). Posting is throttled (20
+  topics and 60 replies per 10 minutes). Phrases in a new `forum` book
+  (EN/DV/AR). `course_forum_topic` and `course_forum_post` are in
+  `config/morph-map.php`.
+
+Tests: `CourseForumTest` (3, new): a learner finds the forum from the course
+page, starts a topic, the teacher is told; the teacher replies and the
+starter is told; a second learner replies and the starter and teacher are
+told, not the writer; replies marked *Teacher*; pin, lock (the learner's
+reply refused, the teacher's taken), hide and show a reply (the count
+follows), hide a topic (not listed, 404 for learners, marked for the
+teacher); outsiders and other courses' learners refused, no *Discussion*
+link for them, a topic of another course not reachable through this one.
+The whole suite green locally (2,758). Walk:
+`forum.mjs` 15/15 (the student starts a topic from the course page; the
+teacher finds it from Teacher review, replies, pins and locks; the student
+sees the reply marked Teacher, no reply box and why, the topic on top, and a
+notice of the reply; the teacher hides it and it leaves the list).
+
+The three Moodle walks join `scripts/smoke/all.mjs` (`rubric`,
+`course-copy`, `forum`). `rubric.mjs` now marks its own seeded
+`SMOKE-Rubric-Activity`, so it and `review.mjs` each hand in work in one
+pass, and the smoke seeder clears a rubric or forum topic an interrupted run
+left on SMOKE-Course. Run back to back after a reseed: rubric 14/14, review
+17/17, forum 15/15.
+
 ## 5oi. Rubrics for teacher-marked work (Moodle parity slice M2, 2026-10-03)
 
 The second of the three Moodle slices (BACKLOG C18). ROADMAP §8 had

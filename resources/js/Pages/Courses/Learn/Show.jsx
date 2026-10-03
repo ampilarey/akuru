@@ -10,6 +10,7 @@ export default function Show({
     assessments = [],
     offering = null,
     certificate = null,
+    forum_href: forumHref = null,
 }) {
     const t = usePage().props.i18n?.learn || {};
 
@@ -26,6 +27,11 @@ export default function Show({
                     </span>
                 )}
             </p>
+
+            {/* Moodle parity slice M3: the course's discussion forum. */}
+            {forumHref && (
+                <a className="btn-secondary mb-4 inline-block" href={forumHref} data-testid="course-forum-link">{t.forum_open || 'Discussion'}</a>
+            )}
 
             {/* §24 "Certificate eligibility status". The rules engine existed
                 and ran only when an admin issued the certificate, so a student

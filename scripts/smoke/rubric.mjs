@@ -4,14 +4,15 @@
  *
  *   1. the dean opens SMOKE-Course's rubrics from the catalog, builds one with
  *      two criteria (Content: Not yet 0 · Good 2 · Excellent 4; Language:
- *      Weak 0 · Strong 4), and has it mark SMOKE-Review-Activity;
+ *      Weak 0 · Strong 4), and has it mark SMOKE-Rubric-Activity (its own
+ *      activity, so `review.mjs` keeps SMOKE-Review-Activity);
  *   2. the student hands in that activity;
  *   3. the dean, on the review queue, sees the rubric instead of a score box,
  *      picks Excellent and Weak, is told 4 of 8 points so 3 out of 5, and
  *      releases it;
  *   4. the student sees 3/5 and how it was marked, criterion by criterion;
  *   5. the dean deletes the rubric, and the activity goes back to a typed
- *      score — so `review.mjs`, which types one, still walks.
+ *      score.
  *
  * The student needs an unsubmitted attempt, so reseed first:
  *
@@ -28,7 +29,7 @@ const MARKER = process.env.SMOKE_MARKER ?? 'headmaster@akuru.edu.mv';
 const STUDENT = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const COURSE = 'SMOKE-Course';
-const ACTIVITY = 'SMOKE-Review-Activity';
+const ACTIVITY = 'SMOKE-Rubric-Activity';
 const RUBRIC = 'SMOKE-Rubric';
 const ANSWER = 'SMOKE-Rubric-Answer: a lagoon, a reef, a harbour.';
 

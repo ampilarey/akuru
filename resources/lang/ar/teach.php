@@ -44,4 +44,6 @@ return [
     'rubric_default_low' => 'ليس بعد',
     'rubric_default_mid' => 'جيد',
     'rubric_default_high' => 'ممتاز',
+    'forum' => 'المنتدى',
+    'forums' => 'منتديات المقررات',
 ];

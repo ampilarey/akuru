@@ -63,4 +63,6 @@ return [
     'waiting_payment' => 'ފައިސާ ދެއްކުމަށް މަޑުކުރަނީ',
     'waiting_approval' => 'އޮފީހުގެ ހުއްދައަށް މަޑުކުރަނީ',
     'waiting_details' => 'ރަޖިސްޓްރީތަކާއި ފައިސާ',
+    // Moodle parity slice M3: the course's discussion forum.
+    'forum_open' => 'ވާހަކަ ދެއްކުން',
 ];

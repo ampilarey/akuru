@@ -44,4 +44,6 @@ return [
     'rubric_default_low' => 'އަދި ނޫން',
     'rubric_default_mid' => 'ރަނގަޅު',
     'rubric_default_high' => 'ވަރަށް ރަނގަޅު',
+    'forum' => 'ފޯރަމް',
+    'forums' => 'ކޯސް ފޯރަމްތައް',
 ];
