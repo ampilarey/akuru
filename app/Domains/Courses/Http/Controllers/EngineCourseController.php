@@ -2,6 +2,7 @@
 
 namespace App\Domains\Courses\Http\Controllers;
 
+use App\Domains\Courses\Actions\CopyCourseAction;
 use App\Domains\Courses\Actions\ListCourseSubjectsAction;
 use App\Domains\Courses\Actions\ListEngineCoursesAction;
 use App\Domains\Courses\Actions\RecordCourseReviewDecisionAction;
@@ -13,6 +14,7 @@ use App\Domains\Courses\Enums\UnlockMode;
 use App\Domains\Courses\Models\Course;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -50,6 +52,7 @@ class EngineCourseController extends Controller
             'subjects' => app(ListCourseSubjectsAction::class)->execute()->values(),
             'statuses' => array_map(fn (CourseWorkflowStatus $status) => $status->value, CourseWorkflowStatus::cases()),
             'canPublish' => (bool) $request->user()?->can('courses.publish'),
+            't' => Phrases::once('teach'),
             'unlockModes' => array_map(
                 fn (UnlockMode $mode) => ['value' => $mode->value, 'label' => $mode->label()],
                 UnlockMode::courseLevelCases(),
@@ -121,6 +124,20 @@ class EngineCourseController extends Controller
         );
 
         return redirect()->route('catalog.courses.index')->with('success', 'Review recorded.');
+    }
+
+    /**
+     * Moodle parity slice M1: copy the whole course as a new draft, and open
+     * the copy's outline (CopyCourseAction says what comes with it).
+     */
+    public function copy(Request $request, int $course): RedirectResponse
+    {
+        abort_unless($request->user()?->can('courses.manage'), 403);
+        $data = $request->validate(['title' => ['nullable', 'string', 'max:255']]);
+
+        $copy = app(CopyCourseAction::class)->execute(Course::query()->findOrFail($course), $data, $request->user()?->id);
+
+        return redirect()->route('catalog.courses.outline', $copy->id)->with('success', __('teach.copy_done', ['title' => $copy->title]));
     }
 
     public function transition(Request $request, int $course): RedirectResponse
