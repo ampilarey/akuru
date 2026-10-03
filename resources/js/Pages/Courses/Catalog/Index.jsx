@@ -53,7 +53,45 @@ function ReviewDecision({ row, decisions, canPublish }) {
     );
 }
 
-export default function Index({ rows, subjects, canPublish, unlockModes = [], decisions = [] }) {
+/**
+ * Moodle parity slice M1: copy the whole course as a new draft. The copy's
+ * outline opens next, so the teacher carries on in the copy.
+ */
+function CopyCourse({ row, t }) {
+    const [open, setOpen] = useState(false);
+    const [title, setTitle] = useState(`${row.title} (copy)`);
+    const [busy, setBusy] = useState(false);
+
+    if (!open) {
+        return (
+            <button type="button" className="btn-secondary" data-testid={`copy-course-${row.id}`} onClick={() => setOpen(true)}>
+                {t.copy || 'Copy'}
+            </button>
+        );
+    }
+
+    return (
+        <form
+            className="mt-2 space-y-2"
+            data-testid={`copy-course-form-${row.id}`}
+            onSubmit={(e) => {
+                e.preventDefault();
+                setBusy(true);
+                router.post(`/catalog/courses/${row.id}/copy`, { title }, { onFinish: () => setBusy(false) });
+            }}
+        >
+            <label className="block text-xs text-gray-600" htmlFor={`copy-title-${row.id}`}>{t.copy_title || 'Title of the copy'}</label>
+            <input id={`copy-title-${row.id}`} className="form-input" value={title} onChange={(e) => setTitle(e.target.value)} maxLength={255} />
+            <p className="text-xs text-gray-500">{t.copy_hint}</p>
+            <div className="flex gap-2">
+                <button type="submit" className="btn-primary" disabled={busy || title.trim() === ''}>{t.copy_make || 'Make the copy'}</button>
+                <button type="button" className="btn-secondary" onClick={() => setOpen(false)}>{t.copy_cancel || 'Cancel'}</button>
+            </div>
+        </form>
+    );
+}
+
+export default function Index({ rows, subjects, canPublish, unlockModes = [], decisions = [], t = {} }) {
     const form = useForm({
         title: '',
         title_dv: '',
@@ -164,6 +202,7 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                                     {row.workflow_status === 'published' && (
                                         <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'archived' })}>Archive</button>
                                     )}
+                                    <div className="mt-2"><CopyCourse row={row} t={t} /></div>
                                 </td>
                             </tr>
                             {(row.review_decisions || []).length > 0 && (

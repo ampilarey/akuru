@@ -1462,6 +1462,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('courses', [EngineCourseController::class, 'store'])->name('catalog.courses.store');
         Route::put('courses/{course}', [EngineCourseController::class, 'update'])->name('catalog.courses.update')->whereNumber('course');
         Route::post('courses/{course}/transition', [EngineCourseController::class, 'transition'])->name('catalog.courses.transition')->whereNumber('course');
+        Route::post('courses/{course}/copy', [EngineCourseController::class, 'copy'])->name('catalog.courses.copy')->whereNumber('course');
         // SPEC §35 "Approve courses · Reject courses · Request changes" and
         // §34 "View supervisor comments". `transition` moves a course and
         // records no reason; this records the reason and moves it.

@@ -4983,6 +4983,47 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5oh. Copy a whole course (Moodle parity slice M1, 2026-10-03)
+
+The owner asked whether Akuru has course building tools like Moodle's. The
+answer listed what it has and what it lacks: forums, SCORM/H5P, rubrics,
+badges, peer assessment, course copy and import, wiki/choice, plagiarism.
+The three that matter most for teaching were offered: copying a course,
+rubrics, forums. The owner: "Yes build". Three slices, M1–M3 (BACKLOG C18).
+Forums had been parked behind a revisit trigger (ROADMAP §7, §8.3); the
+owner's request is the decision to build them now.
+
+- **Copy.** Each row of the course catalog (`/catalog/courses`) has *Copy*.
+  It asks for the copy's title (the original's, with "(copy)"), says what
+  comes with it, and opens the copy's outline. `CopyCourseAction` copies the
+  design: details, modules, lessons, content blocks, activities, assessments
+  with their questions, the lessons' glossary links and the course's own
+  certificate templates.
+- **Never what happened in it.** No enrolments, attempts, progress, payments,
+  offerings, issued certificates, review decisions, published revisions,
+  teacher assignments or leads. The copy is a draft, closed, not featured,
+  with no dates, and goes through review like any new course. The original is
+  untouched.
+- **Questions.** A question that belongs to the course is copied, so an edit
+  in the copy never changes the original's tests; a shared-bank question is
+  linked, as it is the bank's.
+- **Ids re-pointed.** A quiz embedded in a block, a lesson unlocked by passing
+  a test, and a certificate that asks for a test all point at the copy's own.
+  Media is shared, as a duplicated block's is. A classroom's own assessment
+  stays with its class. The copy records `meta.copied_from_course_id`.
+- No migration. Phrases in a new `teach` book (EN/DV/AR) for M1–M3.
+
+Tests: `CopyCourseTest` (3, new): a full course (module, two lessons, a text
+block and a quiz embed, the course's own question and a bank question on a
+quiz, a required activity, a pass-the-test unlock, a certificate naming the
+test, an enrolled learner) is copied through the route, and every piece is
+checked in the copy, re-pointed, with no enrolment, and the original still
+published; the default title and the catalog's phrase; refused without
+`courses.manage`. Architecture and Courses suites green (500). Walk:
+`course-copy.mjs` 10/10 (the dean copies SMOKE-Course from the catalog,
+lands on the copy's outline with every module, lesson and block, as drafts;
+the original stays published).
+
 ## 5og. A middle name on every registration form (C17 slice R4, 2026-10-03)
 
 The owner: "Now name has only 2 columns ... we use in Maldives 1st name,
