@@ -133,6 +133,9 @@
                         <hr class="my-5 border-gray-100">
                         <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-4">Your details</p>
 
+                        {{-- C17 slice R2: fill these from a photo of the ID card, read on the device and never submitted. --}}
+                        @include('courses.partials.id-scan', ['mode' => 'photo'])
+
                         {{-- ── Name ── --}}
                         <div class="grid grid-cols-2 gap-3 mb-4">
                             <div>

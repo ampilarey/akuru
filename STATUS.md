@@ -4983,6 +4983,58 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5od. Fill the registration form from a photo of the ID card (C17 slice R2, 2026-10-03)
+
+The owner: "cant u add an user friendly way like when id card is uploaded
+it reads the data and auto fills". Now it does, on both registration
+forms, read in the person's own browser.
+
+- **Where.** The checkout form has *Fill in from your ID card* above the
+  details: choose or take a photo of the card's front, or the passport
+  photo page. That photo has no field name, so it is never sent with the
+  form. On the details form, choosing the ID card's front as the upload
+  the office checks also fills the details above it. That works for an
+  adult, and for a parent adding a new child, whose fields it fills.
+- **How it reads.** tesseract.js runs in the browser and is self-hosted
+  under `public/vendor/tesseract/7.0.0`: the worker, the three engine
+  builds a browser picks between, and the compact English model.
+  `npm run vendor:ocr` refreshes it. It loads only when a photo is picked,
+  so about 7 MB downloads once and is then cached; the page itself gains
+  a 10 KB script. The photo is scaled, greyed and contrast-stretched first.
+  The text goes to `resources/js/id-scan/parse.js`, which reads a passport's
+  or ID card's machine-readable lines first, taking a field only when its
+  check digit agrees. It then reads the printed card: "A" and six digits for
+  the ID number, mapping the letters recognition mistakes for digits; the
+  labelled date of birth, else the earliest real date; sex; and the English
+  name line.
+- **What it does with it.** It chooses the ID card or passport option and
+  fills only **empty** fields, then says what it filled and asks the
+  person to check. A field already typed differently is kept: the form
+  names it and offers *Use the card's details*. It never submits. A PDF,
+  an unreadable photo or a reader that cannot start each say so, and the
+  form works as before. `REGISTRATION_ID_SCAN=false` hides it entirely.
+- **What it cannot read**: the Dhivehi name on the card (the model is
+  English), and a blurred or angled photo. The printed English name and
+  the numbers are what it is for.
+- EN/DV/AR for every message and field name.
+
+Tests: `tests/js/id-scan.test.mjs` (13, node's runner), run by
+`IdScanParserTest`. That covers an ID front as recognition returns it, OCR
+noise in the number, an unlabelled date, impossible and future dates, a
+passport's two machine lines with check digits, a wrong check digit
+dropping the field, misread filler, line two with dropped filler (the
+browser's real reading), an ID card's three machine lines, a printed
+passport number, nothing read, front and back merged. The second test
+checks every reader file is on disk. The architecture suite is green; the
+partial is declared in `blade_screens` as one block of the two existing
+registration pages. Walk: `id-scan.mjs` 20/20 in Chromium with real
+recognition. A photographed ID front fills name, ID, date of birth and
+sex on checkout. A passport photo chooses the passport option and fills
+its number and birth date. A first name typed differently is kept and
+named, then replaced by the button. Signed in as a parent, the child's
+card as the upload fills the child's details and stays the upload. Every
+reader file came from this site with a 200. `register.mjs` stays 15/15.
+
 ## 5oc. One code per registration (C17 slice R1, 2026-10-03)
 
 The owner: "can u check the registration process, its complicated, otp

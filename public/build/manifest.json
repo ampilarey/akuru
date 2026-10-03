@@ -77,6 +77,11 @@
     "file": "assets/index-BjtuyMK1.js",
     "name": "index"
   },
+  "_index-C6xHUsg2.js": {
+    "file": "assets/index-C6xHUsg2.js",
+    "name": "index",
+    "isDynamicEntry": true
+  },
   "_recorder-DJJgXrTD.js": {
     "file": "assets/recorder-DJJgXrTD.js",
     "name": "recorder"
@@ -342,7 +347,7 @@
     "src": "node_modules/@fontsource/figtree/files/figtree-latin-ext-700-normal.woff2"
   },
   "resources/css/app.css": {
-    "file": "assets/app-mZt33Qlh.css",
+    "file": "assets/app-5Q-NamCp.css",
     "src": "resources/css/app.css",
     "isEntry": true,
     "names": [
@@ -3175,12 +3180,16 @@
     ]
   },
   "resources/js/app.js": {
-    "file": "assets/app-Bc-ZlxG-.js",
+    "file": "assets/app-DUIsImXs.js",
     "name": "app",
     "src": "resources/js/app.js",
     "isEntry": true,
     "imports": [
+      "_vendor-DZ1rq1AS.js",
       "_index-BjtuyMK1.js"
+    ],
+    "dynamicImports": [
+      "resources/js/id-scan/scan.js"
     ]
   },
   "resources/js/app.jsx": {
@@ -3440,6 +3449,18 @@
       "resources/js/Pages/Website/PageForm.jsx",
       "resources/js/Pages/Website/PagePreview.jsx",
       "resources/js/Pages/Website/Pages.jsx"
+    ]
+  },
+  "resources/js/id-scan/scan.js": {
+    "file": "assets/scan-gLrp3yTi.js",
+    "name": "scan",
+    "src": "resources/js/id-scan/scan.js",
+    "isDynamicEntry": true,
+    "imports": [
+      "_vendor-DZ1rq1AS.js"
+    ],
+    "dynamicImports": [
+      "_index-C6xHUsg2.js"
     ]
   }
 }

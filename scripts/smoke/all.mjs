@@ -114,6 +114,7 @@ const WALKS = [
     { name: 'hifz', writes: true, asks: 'Does what survives of the Hifz app still work for the people who use it?' },
     { name: 'reader', writes: true, asks: 'Can a reader read a protected book and keep their place, and does a gift card become wallet money?' },
     { name: 'cms-courses', writes: true, asks: 'Can the office put a course on the website from the CMS alone — a category, the form, a cover, Publish?' },
+    { name: 'id-scan', writes: false, asks: 'Does a photo of an ID card or passport fill in the registration form, read in the browser and never overwriting what was typed?' },
     { name: 'family', writes: true, asks: 'Does the daily habit work — homework, the noticeboard, a message and its reply, a class poll?' },
     { name: 'signup', writes: true, asks: 'Does a sign-up sheet with a fee reach one class, wait for the parent, bill the family, and close?' },
     { name: 'school-day', writes: true, asks: 'Does a late mark reach the office\'s lists and the family, and does the calendar show families what is theirs?' },
