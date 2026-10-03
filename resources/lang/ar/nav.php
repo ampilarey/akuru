@@ -183,6 +183,7 @@ return [
     'library_promotions' => 'العروض الترويجية',
     'library_reviewers' => 'المراجعون',
     'cms_news_categories' => 'فئات الأخبار',
+    'cms_course_categories' => 'فئات الدورات',
     'change_password' => 'تغيير كلمة المرور',
     'classes' => 'الفصول',
     'promotion' => 'الترفيع',

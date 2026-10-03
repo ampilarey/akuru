@@ -120,6 +120,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->quranCycle();
         $this->hifzCycle();
         $this->readerCycle();
+        $this->cmsCourseWalk();
         $this->familyCycle();
         $this->signupCycle();
         $this->schoolDayCycle();
@@ -2344,6 +2345,27 @@ class SmokeMarkerSeeder extends Seeder
      * gift card and its wallet credit are money and stay (rule 12 — the
      * ledger is append-only, and each run issues a fresh card).
      */
+    /**
+     * What `cms-courses.mjs` leaves behind (C16 slice N2): a published course
+     * is kept by Delete (SPEC §29, it has an offering) and the category it
+     * uses cannot go while it does. Cleared here, offerings first.
+     */
+    private function cmsCourseWalk(): void
+    {
+        $courseIds = DB::table('courses')->where('title', 'like', 'SMOKE Course %')->pluck('id');
+        if ($courseIds->isNotEmpty()) {
+            $offeringIds = DB::table('course_offerings')->whereIn('course_id', $courseIds)->pluck('id');
+            if ($offeringIds->isNotEmpty() && \Illuminate\Support\Facades\Schema::hasTable('course_offering_sessions')) {
+                DB::table('course_offering_sessions')->whereIn('course_offering_id', $offeringIds)->delete();
+            }
+            DB::table('course_offerings')->whereIn('id', $offeringIds)->delete();
+            // The walk opens the public course page, which records a funnel event.
+            DB::table('funnel_events')->whereIn('course_id', $courseIds)->delete();
+            DB::table('courses')->whereIn('id', $courseIds)->delete();
+        }
+        DB::table('course_categories')->where('name', 'like', 'SMOKE Walk %')->delete();
+    }
+
     private function readerCycle(): void
     {
         // `smoke-primer-upload` is what the walk's own upload step makes.

@@ -48,6 +48,13 @@ class DeleteCourseAction
         'student_lesson_progress' => 'progress records',
         'issued_certificates' => 'issued certificates',
         'payment_items' => 'payment records',
+        // Not in §29's list, but a published course always has one: publishing
+        // makes its self-learning offering (`EnsureSelfLearningOfferingAction`),
+        // and `course_offerings.course_id` restricts the delete — so a course
+        // the website had shown answered 500 to Delete (the CMS walk, C16
+        // slice N2, STATUS §5nx). A published course is not "draft content"
+        // either way, so it is kept, as §29 says.
+        'course_offerings' => 'offerings',
     ];
 
     /**

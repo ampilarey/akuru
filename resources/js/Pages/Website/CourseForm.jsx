@@ -1,4 +1,5 @@
 import { Link, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 
 const LANGUAGES = ['en', 'ar', 'dv', 'mixed'];
@@ -11,13 +12,23 @@ const STATUSES = ['open', 'closed', 'upcoming'];
  * syllabus CTA. The body is authored HTML, sanitised on write by the
  * controller; the form is keyed on the course so new and edit never share
  * state (STATUS §5jj).
+ *
+ * BACKLOG C16 slice N2, from the owner's walk of the live form ("Slug *
+ * what is this?", "Cover Image URL *"): the address is filled from the
+ * title as it is typed and can be left alone; the cover is an upload with
+ * the current one shown; the category field says when there are none and
+ * links to the screen that adds them.
  */
+const slugify = (text) => text.toString().normalize('NFKD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80);
+
 export default function CourseForm(props) {
     return <CourseFormBody key={props.course?.id ?? 'new'} {...props} />;
 }
 
 function CourseFormBody({ course = null, categories = [], t = {} }) {
-        const editing = course !== null;
+    const editing = course !== null;
+    // The address follows the title until the office types one of its own.
+    const [slugTouched, setSlugTouched] = useState(editing);
     const form = useForm({
         course_category_id: course?.course_category_id ?? '',
         title: course?.title || '',
@@ -31,15 +42,20 @@ function CourseFormBody({ course = null, categories = [], t = {} }) {
         syllabus_media_file_id: course?.syllabus_media_file_id ?? '',
         language: course?.language || 'en',
         level: course?.level || 'kids',
-        cover_image: course?.cover_image || '',
+        cover: null,
         status: course?.status || 'open',
         fee: course?.fee ?? '',
         seats: course?.seats ?? '',
     });
     const submit = (e) => {
         e.preventDefault();
-        if (editing) form.put(`/admin/public-site/courses/${course.slug}`, { preserveScroll: true });
-        else form.post('/admin/public-site/courses', { preserveScroll: true });
+        // A file upload cannot travel in a PUT: the update is a POST with the method spoofed (the news editor's way).
+        form.transform((data) => ({ ...data, ...(editing ? { _method: 'put' } : {}) }));
+        form.post(editing ? `/admin/public-site/courses/${course.slug}` : '/admin/public-site/courses', { preserveScroll: true, forceFormData: true });
+    };
+    const setTitle = (e) => {
+        const title = e.target.value;
+        form.setData((data) => ({ ...data, title, ...(slugTouched ? {} : { slug: slugify(title) }) }));
     };
     const firstError = Object.values(form.errors)[0];
     const set = (name) => (e) => form.setData(name, e.target.value);
@@ -78,15 +94,28 @@ function CourseFormBody({ course = null, categories = [], t = {} }) {
 
             <form onSubmit={submit} action={editing ? `/admin/public-site/courses/${course.slug}` : '/admin/public-site/courses'} method="post" className="max-w-3xl space-y-5 rounded-lg border bg-white p-6" data-testid="course-form">
                 <div>
-                    {label('course_category_id', t.courses_category || 'Category', true)}
+                    <div className="mb-1 flex items-baseline justify-between gap-3">
+                        {label('course_category_id', t.courses_category || 'Category', true)}
+                        <Link href="/admin/public-site/courses/categories" className="text-xs text-[#1D4E89] underline" data-testid="course-manage-categories">{t.courses_manage_categories || 'Manage categories →'}</Link>
+                    </div>
                     <select id="course-course_category_id" name="course_category_id" required className={`form-input w-full ${form.errors.course_category_id ? 'border-red-500' : ''}`} value={form.data.course_category_id} onChange={set('course_category_id')}>
                         <option value="">{t.courses_select_category || 'Select Category'}</option>
                         {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
                     </select>
+                    {categories.length === 0 && <p className="mt-1 text-xs text-amber-800" data-testid="course-no-categories">{t.courses_no_categories || 'No categories yet — add one first.'}</p>}
                     {error('course_category_id')}
                 </div>
-                {input('title', t.pages_col_title || 'Title', { required: true, type: 'text' })}
-                {input('slug', t.pages_col_slug || 'Slug', { required: true, type: 'text', placeholder: 'url-friendly-slug', dir: 'ltr' })}
+                <div>
+                    {label('title', t.pages_col_title || 'Title', true)}
+                    <input id="course-title" name="title" type="text" required className={`form-input w-full ${form.errors.title ? 'border-red-500' : ''}`} value={form.data.title} onChange={setTitle} />
+                    {error('title')}
+                </div>
+                <div>
+                    {label('slug', t.courses_slug_label || 'Web address')}
+                    <input id="course-slug" name="slug" type="text" dir="ltr" className={`form-input w-full ${form.errors.slug ? 'border-red-500' : ''}`} value={form.data.slug} onChange={(e) => { setSlugTouched(true); form.setData('slug', e.target.value); }} data-testid="course-slug" />
+                    <p className="mt-1 text-xs text-gray-500">{(t.courses_slug_hint || 'Filled from the title. The course page will be akuru.edu.mv/courses/:slug').replace(':slug', form.data.slug || '…')}</p>
+                    {error('slug')}
+                </div>
                 {textarea('short_desc', t.courses_short_desc || 'Short Description', { required: true, rows: 2 })}
                 <div>
                     {textarea('body', t.pages_content || 'Content', { required: true, rows: 8, dir: 'ltr' })}
@@ -117,7 +146,13 @@ function CourseFormBody({ course = null, categories = [], t = {} }) {
                     {select('level', t.courses_level || 'Level', LEVELS, (value) => t[`courses_level_${value}`] || value)}
                 </div>
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
-                    {input('cover_image', t.pages_cover || 'Cover Image URL', { required: true, type: 'text', placeholder: 'e.g. /images/course.jpg', dir: 'ltr' })}
+                    <div>
+                        {label('cover', t.courses_cover || 'Cover image (JPEG, PNG or WebP, up to 5 MB)', !editing && !course?.cover_url)}
+                        {course?.cover_url && <img src={course.cover_url} alt="" className="mb-2 h-24 rounded object-cover" data-testid="course-cover-current" />}
+                        <input id="course-cover" name="cover" type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('cover', e.target.files[0] ?? null)} data-testid="course-cover" />
+                        <p className="mt-1 text-xs text-gray-500">{t.courses_cover_hint || 'Shown on the course page, the courses list and the home page.'}</p>
+                        {error('cover')}
+                    </div>
                     {select('status', t.pages_col_status || 'Status', STATUSES, (value) => t[`courses_status_${value}`] || value)}
                 </div>
                 <div className="grid grid-cols-1 gap-5 md:grid-cols-2">

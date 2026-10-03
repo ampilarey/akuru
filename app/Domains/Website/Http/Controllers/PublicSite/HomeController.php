@@ -7,6 +7,7 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Website\Actions\ComposeHomepageDailyAction;
 use App\Domains\Website\Actions\ComposeHomepageProductsAction;
 use App\Domains\Website\Actions\ComposeHomepageTrustAction;
+use App\Domains\Website\Actions\ForgetHomePageCacheAction;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\GalleryAlbum;
 use App\Domains\Website\Models\HeroBanner;
@@ -23,7 +24,7 @@ class HomeController extends Controller
         $locale = app()->getLocale();
 
         // Cache courses/posts/events/stats for 10 minutes; gallery+testimonials are fetched fresh
-        $cached = Cache::remember("homepage_data_v8_{$locale}", 600, function () use ($locale) {
+        $cached = Cache::remember(ForgetHomePageCacheAction::key($locale), 600, function () use ($locale) {
             return $this->buildHomepageData($locale);
         });
 

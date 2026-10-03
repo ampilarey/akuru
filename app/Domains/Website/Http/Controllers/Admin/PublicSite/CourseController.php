@@ -4,11 +4,14 @@ namespace App\Domains\Website\Http\Controllers\Admin\PublicSite;
 
 use App\Domains\Courses\Actions\DeleteCourseAction;
 use App\Domains\Courses\Actions\ListDeletedCoursesAction;
+use App\Domains\Courses\Actions\PublishCourseAction;
 use App\Domains\Courses\Actions\RestoreCourseAction;
 use App\Domains\Courses\Actions\SaveCourseLearningOutcomesAction;
 use App\Domains\Courses\Actions\SaveCoursePublicCtaAction;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseCategory;
+use App\Domains\Media\Actions\StorePublicMediaAction;
+use App\Domains\Website\Actions\ForgetHomePageCacheAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Html\HtmlSanitizer;
@@ -16,7 +19,7 @@ use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -26,15 +29,24 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * §5jm), with its strings keyed for Dhivehi and Arabic. `role:super_admin`
  * on the route group. The body is authored HTML, sanitised here on every
  * write because `public/courses/show.blade.php` renders it raw.
+ *
+ * BACKLOG C16 slice N2 (STATUS §5nx), from the owner's walk of the live
+ * form ("Slug * what is this?", "Cover Image URL *", "in the website it
+ * doesnt show any course"): the address is filled from the title, the
+ * cover is an upload, and a course is published to the website from the
+ * list here rather than from the catalogue's workflow screen.
  */
 class CourseController extends Controller
 {
     private const RULES = [
         'course_category_id' => 'required|exists:course_categories,id',
         'title' => 'required|string|max:255',
+        'slug' => 'nullable|string|max:255',
         'short_desc' => 'required|string',
         'body' => 'required|string',
-        'cover_image' => 'required|string|max:255',
+        // The cover is an upload since N2; the stored path stays in
+        // `cover_image`, which the public pages read as storage/<path>.
+        'cover' => 'nullable|file|mimes:jpeg,jpg,png,webp|max:5120',
         'language' => 'required|in:en,ar,dv,mixed',
         'level' => 'required|in:kids,youth,adult,all',
         'fee' => 'nullable|numeric|min:0',
@@ -52,6 +64,10 @@ class CourseController extends Controller
             'courses' => collect($courses->items())->map(fn (Course $course) => $this->row($course))->values()->all(),
             'pagination' => ['current_page' => $courses->currentPage(), 'last_page' => $courses->lastPage(), 'prev' => $courses->previousPageUrl(), 'next' => $courses->nextPageUrl()],
             'total' => $courses->total(),
+            // Publishing needs `courses.publish` (the engine's rule); the
+            // button is offered only to a person who holds it.
+            'can_publish' => (bool) request()->user()?->can('courses.publish'),
+            'categories_count' => CourseCategory::query()->count(),
             't' => Phrases::once('admin'),
         ]);
     }
@@ -78,24 +94,36 @@ class CourseController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        // Scoped to live rows so the generic "already been taken" fires only
-        // when there is a course the admin can actually go and look at. A
-        // deleted row holding the slug is handled below, with a message that
-        // says so.
-        $validated = $this->validated($request, ['slug' => ['required', 'string', 'max:255', Rule::unique('courses', 'slug')->whereNull('deleted_at')]]);
+        $validated = $this->validated($request);
+        $validated['slug'] = $this->slugFor($validated, null);
 
-        // A deleted course keeps its slug, deliberately: the slug is the
-        // course's public address, and handing it to different content would
-        // silently re-point every link and bookmark that already exists. A 404
-        // is recoverable; serving unrelated content under a known URL is not.
-        // So the answer is to refuse, and to say which course is holding it.
-        if ($deleted = Course::onlyTrashed()->where('slug', $validated['slug'])->first()) {
-            return back()->withInput()->withErrors(['slug' => trans('admin.courses_slug_held', ['title' => $deleted->title])]);
-        }
-
-        $this->save(Course::create($validated), $request);
+        $course = Course::create($validated);
+        $this->save($course, $request);
 
         return redirect()->route('admin.courses.index')->with('success', trans('admin.courses_flash_created'));
+    }
+
+    /**
+     * Publish to the website (N2): `PublishCourseAction` walks the engine's
+     * workflow to Published with the engine's own gate; the home page's
+     * ten-minute cache is forgotten so the course shows at once.
+     */
+    public function publish(Request $request, Course $course): RedirectResponse
+    {
+        $canPublish = (bool) $request->user()?->can('courses.publish');
+        if (! $canPublish) {
+            return back()->withErrors(['workflow_status' => trans('admin.courses_publish_forbidden')]);
+        }
+
+        $result = app(PublishCourseAction::class)->execute((int) $course->id, $canPublish);
+        if ($result['outcome'] === 'archived') {
+            return back()->withErrors(['workflow_status' => trans('admin.courses_publish_archived')]);
+        }
+        if ($result['outcome'] === 'published') {
+            app(ForgetHomePageCacheAction::class)->execute();
+        }
+
+        return back()->with('success', trans('admin.courses_flash_published', ['title' => $result['title']]));
     }
 
     public function edit(Course $course): Response
@@ -105,7 +133,8 @@ class CourseController extends Controller
 
     public function update(Request $request, Course $course): RedirectResponse
     {
-        $validated = $this->validated($request, ['slug' => 'required|string|max:255|unique:courses,slug,'.$course->id]);
+        $validated = $this->validated($request);
+        $validated['slug'] = $this->slugFor($validated, $course);
         $course->update($validated);
         $this->save($course, $request);
 
@@ -159,21 +188,70 @@ class CourseController extends Controller
 
     /**
      * Validate and sanitise the body (PROFILE_CMS: the public site renders it raw).
+     * The cover file is validated here and stored in `save()`; it is not a
+     * column, so it leaves the array.
      *
-     * @param  array<string, mixed>  $slugRule
      * @return array<string, mixed>
      */
-    private function validated(Request $request, array $slugRule): array
+    private function validated(Request $request): array
     {
-        $validated = $request->validate(self::RULES + $slugRule);
+        $validated = $request->validate(self::RULES);
         $validated['body'] = app(HtmlSanitizer::class)->clean($validated['body'], HtmlSanitizer::PROFILE_CMS);
+        unset($validated['cover']);
 
         return $validated;
     }
 
-    /** The outcomes (one per line, EN/DV/AR) and the public CTA live in their own Actions. */
+    /**
+     * The course's address (N2). Typed, it is kept and must be free; blank, it
+     * is the title's slug, made unique with a number. Scoped to live rows so
+     * the "already in use" fires only when there is a course the admin can go
+     * and look at; a deleted row holding the slug is refused with a message
+     * that says so. A deleted course keeps its slug, deliberately: the slug
+     * is the course's public address, and handing it to different content
+     * would silently re-point every link and bookmark that already exists.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    private function slugFor(array $validated, ?Course $course): string
+    {
+        $typed = Str::slug((string) ($validated['slug'] ?? ''));
+        $base = $typed !== '' ? $typed : (Str::slug((string) $validated['title']) ?: 'course');
+        $live = fn (string $slug) => Course::query()->where('slug', $slug)->when($course, fn ($q) => $q->whereKeyNot($course->id))->exists();
+        $deletedHolder = fn (string $slug) => Course::onlyTrashed()->where('slug', $slug)->when($course, fn ($q) => $q->whereKeyNot($course->id))->first();
+
+        if ($typed !== '') {
+            if ($live($typed)) {
+                throw ValidationException::withMessages(['slug' => trans('admin.courses_slug_taken')]);
+            }
+            if ($deleted = $deletedHolder($typed)) {
+                throw ValidationException::withMessages(['slug' => trans('admin.courses_slug_held', ['title' => $deleted->title])]);
+            }
+
+            return $typed;
+        }
+
+        $slug = $base;
+        for ($n = 2; $live($slug) || $deletedHolder($slug) !== null; $n++) {
+            $slug = $base.'-'.$n;
+        }
+
+        return $slug;
+    }
+
+    /** The outcomes (one per line, EN/DV/AR), the public CTA and the cover upload live in their own Actions. */
     private function save(Course $course, Request $request): void
     {
+        if ($request->hasFile('cover')) {
+            $stored = app(StorePublicMediaAction::class)->execute(
+                $request->file('cover'),
+                $request->user()?->id,
+                ['image/jpeg', 'image/png', 'image/webp'],
+                ['alt' => $course->title],
+                'course-covers',
+            );
+            $course->forceFill(['cover_image' => $stored['path']])->save();
+        }
         app(SaveCourseLearningOutcomesAction::class)->execute((int) $course->id, [
             'en' => $request->input('learning_outcomes_en', ''),
             'dv' => $request->input('learning_outcomes_dv', ''),
@@ -205,6 +283,10 @@ class CourseController extends Controller
             'short_desc' => $course->short_desc ? Str::limit($course->short_desc, 60) : null,
             'category' => $course->category->name ?? null,
             'status' => $course->status,
+            'workflow_status' => $course->workflow_status instanceof \BackedEnum ? (string) $course->workflow_status->value : (string) $course->workflow_status,
+            // The public listing wants Published and Open or Upcoming
+            // (`Course::scopeOpenForPublicListing`); the list says which is missing.
+            'on_website' => $course->isPublished() && in_array($course->status, ['open', 'upcoming'], true),
             'updated_at' => $course->updated_at?->format('M d, Y'),
         ];
     }
@@ -225,6 +307,7 @@ class CourseController extends Controller
             'short_desc' => $course->short_desc,
             'body' => $course->body,
             'cover_image' => $course->cover_image,
+            'cover_url' => $course->cover_image ? asset('storage/'.$course->cover_image) : null,
             'language' => $course->language,
             'level' => $course->level,
             'status' => $course->status,

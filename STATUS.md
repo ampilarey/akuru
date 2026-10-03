@@ -4983,6 +4983,57 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5nx. The CMS course form the office can read, and Publish from the list (C16 slice N2, 2026-10-03)
+
+From the owner's walk of the live form (§5nw): "Slug * what is this?",
+"Cover Image URL *", "there is no cat", "but in the website it doesnt
+show any course".
+
+- **The address fills itself.** *Slug* is *Web address*: typing the
+  title fills it, the hint shows the page it makes
+  (`akuru.edu.mv/courses/<address>`), and it may be left alone. Blank on
+  save, the title's slug is used and numbered when taken; typed, it is
+  kept and refused when a live course holds it, or a deleted one (named,
+  as before — a deleted course keeps its address on purpose).
+- **The cover is an upload**, JPEG, PNG or WebP to 5 MB, through the Media
+  domain's public store (`course-covers/`), the way the news editor's is;
+  the edit form shows the current one. `courses.cover_image` is nullable
+  now (additive, rule 9) so a course can be saved before it has a cover;
+  the public pages already read `@if`.
+- **Course categories have a screen** (`/admin/public-site/courses/
+  categories`): list in order with how many courses use each, add,
+  rename and reorder in the row, delete only when unused — a category in
+  use says how many courses to move first. The form links to it beside
+  the Category field and says when there are none; the hub lists it as
+  a chip under Website CMS (ten now).
+- **Publish from the list.** A Website column reads Draft / In review /
+  Published / Archived with "On the website" or why not ("Published, but
+  not listed while its status is Closed"), and a **Publish** button
+  walks the engine's workflow Draft → In review → Published through
+  `PublishCourseAction` with the engine's own `courses.publish` gate,
+  then forgets the home page's ten-minute cache
+  (`ForgetHomePageCacheAction`, one key for `HomeController` and the
+  CMS) so the course shows at once. An archived course is refused with
+  a reason. The hint above the table says a new course is a draft until
+  published.
+- **Found by the walk, fixed with it**: deleting a course the website had
+  shown answered **500** — publishing makes its self-learning offering and
+  `course_offerings.course_id` restricts the delete; `DeleteCourseAction`
+  did not count offerings. It does now, so a published course is kept
+  (soft, SPEC §29) and the flash says "1 offering".
+
+Tests: `AdminCoursesWorkflowTest` (4, new — the address rules, the cover
+upload and refusal of a PDF, the categories CRUD and the in-use refusal,
+publishing with the cache forgotten and the archived refusal, phrases in
+three languages); `AdminHubTest` and `WorkspacesTest` re-pinned for the
+tenth CMS chip; `BaselineArchitectureTest` kept the CMS controller off
+the Courses enum (the publish walk lives in the Courses action). Walks:
+`cms-courses.mjs` **16/16**, new — a category added, the form read as the
+owner would, a cover uploaded, Publish, the public page with the cover,
+Delete keeping the published course; `admin-hub.mjs` 26/26,
+`admin-pages.mjs` 3/3. `SmokeMarkerSeeder` clears the walk's course and
+category.
+
 ## 5nw. The navigation re-audit: every staff screen has a door, and a Settings part (C16 slice N1, 2026-10-03)
 
 The owner walked the live site on 2026-10-03 and then: "keep all

@@ -161,6 +161,21 @@ a question with a default, so "do nothing" is always a legible choice.
 
 The record is STATUS §5nw; the plan is BACKLOG C16.
 
+### Deleting a course the website had shown answered 500 — **fixed (2026-10-03, STATUS §5nx)**
+
+Publishing a course makes its self-learning offering, and
+`course_offerings.course_id` restricts the delete; `DeleteCourseAction`
+counted enrolments, attempts, progress, certificates and payments but not
+offerings, so Delete on any published course was a foreign-key error.
+Found by the new `cms-courses.mjs` walk. Offerings are a dependent now: a
+published course is kept, soft, and the flash says what it holds.
+
+### The CMS course form asked for a slug and a cover URL — **fixed (2026-10-03, STATUS §5nx)**
+
+The owner: "Slug * what is this?", "Cover Image URL *", "there is no cat".
+The address fills from the title, the cover is an upload, categories have
+a screen, and a course is published to the website from the list.
+
 ### Twelve staff screens had no door — **fixed (2026-10-03, STATUS §5nw)**
 
 The class directory, the promotion wizard, the bank-statement import, the

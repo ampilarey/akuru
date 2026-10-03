@@ -187,6 +187,7 @@ return [
     'library_promotions' => 'ޕްރޮމޯޝަން',
     'library_reviewers' => 'ރިވިއުކުރާ ފަރާތްތައް',
     'cms_news_categories' => 'ޚަބަރުގެ ބައިތައް',
+    'cms_course_categories' => 'ކޯސްތަކުގެ ބައިތައް',
     'change_password' => 'ޕާސްވޯޑް ބަދަލުކުރޭ',
     'classes' => 'ކްލާސްތައް',
     'promotion' => 'ޕްރޮމޯޝަން (އަހަރު ނިމުން)',

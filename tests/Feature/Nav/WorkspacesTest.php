@@ -198,7 +198,7 @@ it('composes the Institute and the School homes from the workspace’s own menu'
             ->where('t.institute_title', 'Institute')
             ->has('parts', 5)
             ->where('parts.0.key', 'panel_website')->where('parts.0.label', 'Website & content')->has('parts.0.sections', 4)
-            ->where('parts.0.sections.0.key', 'website_cms')->has('parts.0.sections.0.children', 9)->where('parts.0.sections.0.hard', false)
+            ->where('parts.0.sections.0.key', 'website_cms')->has('parts.0.sections.0.children', 10)->where('parts.0.sections.0.hard', false)
             ->where('parts.0.sections.1.key', 'admin_instructors')
             ->where('parts.0.sections.2.key', 'prayer_times')->has('parts.0.sections.2.children', 4)
             ->where('parts.1.key', 'panel_admissions')->has('parts.1.sections', 1)

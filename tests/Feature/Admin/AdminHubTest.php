@@ -44,7 +44,7 @@ it('shows the system admin every Institute section, each inner screen a real rou
         ->assertInertia(fn (Assert $page) => $page
             ->where('parts', fn ($parts) => collect($parts)->pluck('key')->all() === ['panel_website', 'panel_admissions', 'panel_money', 'panel_settings', 'panel_system'])
             ->where('parts.0.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['website_cms', 'admin_instructors', 'prayer_times', 'pronunciation_office'])
-            ->where('parts.0.sections.0.children', fn ($children) => collect($children)->pluck('key')->all() === ['cms_pages', 'cms_news', 'cms_news_categories', 'cms_courses', 'cms_daily_content', 'cms_daily_queue', 'cms_subscriptions', 'cms_leads', 'cms_funnel'])
+            ->where('parts.0.sections.0.children', fn ($children) => collect($children)->pluck('key')->all() === ['cms_pages', 'cms_news', 'cms_news_categories', 'cms_courses', 'cms_course_categories', 'cms_daily_content', 'cms_daily_queue', 'cms_subscriptions', 'cms_leads', 'cms_funnel'])
             ->where('parts.0.clusters', fn ($clusters) => collect($clusters)->pluck('key')->all() === ['site', 'learning'])
             ->where('parts.1.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['admin_enrolments'])
             ->where('parts.2.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['commerce', 'library_office', 'bookshop', 'akuru_fulfilment', 'complaints', 'sms_campaigns', 'shop_customers', 'shop_credit', 'lending_office']
