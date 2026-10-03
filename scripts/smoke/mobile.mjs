@@ -417,13 +417,15 @@ const stacked = await page.evaluate(() => {
         table: Boolean(table),
         headVisible: (table?.querySelector('thead')?.getClientRects().length ?? 0) > 0,
         label: cell ? getComputedStyle(cell, '::before').content : 'no cell',
-        stacked: cell ? getComputedStyle(cell).display === 'flex' : false,
+        // A labelled cell was a flex row until STATUS §5ns made it a grid, so
+        // a cell's children stack under each other rather than beside the label.
+        stacked: cell ? getComputedStyle(cell).display === 'grid' : false,
     };
 });
 check(
     'a table reads as cards on a phone, each cell labelled',
     stacked.table && !stacked.headVisible && stacked.stacked && /Name/.test(stacked.label),
-    `header ${stacked.headVisible ? 'shown' : 'hidden'} · first label ${stacked.label} · cell display ${stacked.stacked ? 'flex' : 'not flex'}`,
+    `header ${stacked.headVisible ? 'shown' : 'hidden'} · first label ${stacked.label} · cell display ${stacked.stacked ? 'grid' : 'not grid'}`,
 );
 
 // Back to the student for the recorder.

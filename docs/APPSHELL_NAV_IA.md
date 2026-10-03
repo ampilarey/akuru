@@ -40,6 +40,15 @@ item in a group several workspaces share may name its `workspaces`
 none of the family's fees or pick-up. The shell's More panel opens with
 *Home*, the active workspace's home.
 
+**The Institute has a phone tab bar (2026-10-03, ADMIN_PANEL.md §7 M7,
+STATUS §5nu).** Below `sm` the shell draws Home, one tab per group the
+workspace names (`WorkspaceMap::tabsFor()` → `nav.tabs`: the Institute's
+Website, Shops and System) and Alerts at the foot of the screen; a
+group's tab opens a sheet of that group's screens and their inner
+screens, on top of the bar. Only groups that survived the route gates
+become tabs. No other workspace names any: the School's thirteen groups
+would not fit, and a family's or a shop's drawer is already short.
+
 ## Implemented (2026-09-24)
 
 - **`App\Support\Navigation\NavigationMap`** — the map: a primary bar per
