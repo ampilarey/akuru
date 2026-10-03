@@ -53,6 +53,7 @@ export default function Index({ instructors = [], pagination, total = 0, t = {} 
                                         <div>
                                             <p className="font-medium text-gray-900">{row.name}</p>
                                             {row.qualification && <p className="text-xs text-gray-500">{row.qualification}</p>}
+                                            {row.user_name && <p className="text-xs text-[#1D4E89]" data-testid="instructor-login">{(t.instructors_linked_to || 'Signs in as :name').replace(':name', row.user_name)}</p>}
                                         </div>
                                     </div>
                                 </td>

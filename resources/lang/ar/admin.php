@@ -275,6 +275,11 @@ return [
     'instructors_page_prev' => '‹ السابق',
     'instructors_page_next' => 'التالي ›',
     'instructors_page_of' => 'الصفحة :page من :pages',
+    // The staff login a profile belongs to (C16 slice N6).
+    'instructors_field_user' => 'حساب الموظف',
+    'instructors_user_none' => '— غير مرتبط —',
+    'instructors_user_hint' => 'اربط هذا الملف بتسجيل دخول الشخص. يصحّح المعلّم تسليمات الدورات المسندة إلى هذا الملف في نموذج الدورة.',
+    'instructors_linked_to' => 'يسجّل الدخول باسم :name',
     // Enrolments and payments (C9 slice 4, STATUS §5jf).
     'enrolments_title' => 'التسجيلات',
     'enrolments_tabs' => 'التسجيلات والمدفوعات',
@@ -639,6 +644,14 @@ return [
     'courses_whatsapp_hint' => 'أرقام مع رمز الدولة، مثل 9607972434. الفراغ يستخدم conversion.whatsapp_number ثم رقم فايبر.',
     'courses_syllabus' => 'معرّف ملف المنهج',
     'courses_syllabus_hint' => 'معرّف media_files عام. الفراغ يخفي «احصل على المنهج الكامل».',
+    // Who teaches it (C16 slice N6).
+    'courses_instructors' => 'المدرّسون',
+    'courses_instructors_hint' => 'يظهر في صفحة الدورة. المدرّس المرتبط بحساب موظف يصحّح تسليمات هذه الدورة في مراجعة المعلّم.',
+    'courses_instructors_none' => 'لا مدرّسين بعد — أضفهم من صفحة المدرّسين.',
+    'courses_instructor_marks' => 'يصحّح',
+    // Teacher review, scoped (C16 slice N6).
+    'reviews_scope_own' => 'تُعرض تسليمات دوراتك فقط (:count).',
+    'reviews_scope_none' => 'لم تُسند إليك دورات بعد. يربط المكتب تسجيل دخولك بملف المدرّس الخاص بك ويسند إليه الدورات في نموذج الدورة؛ عندها تظهر تسليماتها هنا.',
     'courses_language' => 'اللغة',
     'courses_level' => 'المستوى',
     'courses_level_kids' => 'أطفال',

@@ -5,11 +5,13 @@ namespace App\Domains\HR\Http\Controllers;
 use App\Domains\HR\Actions\ListAdminInstructorsAction;
 use App\Domains\HR\Actions\SaveInstructorAction;
 use App\Domains\HR\Models\Instructor;
+use App\Domains\Identity\Actions\ListStaffLoginsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -18,6 +20,11 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * The instructors shown on the public website (docs/ADMIN_PANEL.md).
  * Inertia since C9 slice 3 (STATUS §5je), with its strings keyed for
  * Dhivehi and Arabic. `role:super_admin` on the route group.
+ *
+ * Since C16 slice N6 a profile can name the **staff login** it belongs to
+ * (`user_id`, one login per profile): that link, with the courses the
+ * profile is assigned on the course form, is what lets a teacher's review
+ * queue show their own courses (OWNER_ACTIONS 16).
  */
 class InstructorController extends Controller
 {
@@ -58,12 +65,12 @@ class InstructorController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Instructors/Form', ['instructor' => null, 't' => Phrases::once('admin')]);
+        return Inertia::render('Instructors/Form', ['instructor' => null] + $this->formProps());
     }
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate(self::RULES);
+        $data = $request->validate(self::RULES + ['user_id' => ['nullable', 'integer', 'exists:users,id', Rule::unique('instructors', 'user_id')]]);
         app(SaveInstructorAction::class)->execute(null, $data, $request->file('photo'));
 
         return redirect()->route('admin.instructors.index')->with('success', trans('admin.instructors_created'));
@@ -71,15 +78,23 @@ class InstructorController extends Controller
 
     public function edit(Instructor $instructor): Response
     {
-        return Inertia::render('Instructors/Form', ['instructor' => app(ListAdminInstructorsAction::class)->one($instructor), 't' => Phrases::once('admin')]);
+        return Inertia::render('Instructors/Form', ['instructor' => app(ListAdminInstructorsAction::class)->one($instructor)] + $this->formProps());
     }
 
     public function update(Request $request, Instructor $instructor): RedirectResponse
     {
-        $data = $request->validate(self::RULES);
+        $data = $request->validate(self::RULES + ['user_id' => ['nullable', 'integer', 'exists:users,id', Rule::unique('instructors', 'user_id')->ignore($instructor->id)]]);
         app(SaveInstructorAction::class)->execute($instructor, $data, $request->file('photo'));
 
         return redirect()->route('admin.instructors.index')->with('success', trans('admin.instructors_updated'));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function formProps(): array
+    {
+        return ['staff' => app(ListStaffLoginsAction::class)->execute(), 't' => Phrases::once('admin')];
     }
 
     public function destroy(Instructor $instructor): RedirectResponse

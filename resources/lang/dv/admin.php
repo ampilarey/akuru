@@ -275,6 +275,11 @@ return [
     'instructors_page_prev' => '‹ ކުރީގެ',
     'instructors_page_next' => 'ދެން ›',
     'instructors_page_of' => ':pages ގެ ތެރެއިން :page ވަނަ ޞަފްޙާ',
+    // The staff login a profile belongs to (C16 slice N6).
+    'instructors_field_user' => 'މުވައްޒަފުގެ ލޮގިން',
+    'instructors_user_none' => '— ގުޅުވާފައެއް ނެތް —',
+    'instructors_user_hint' => 'މި ޕްރޮފައިލް އެމީހާގެ ސައިން-އިން އާ ގުޅުވާށެވެ. ކޯސް ފޯމުގައި މި ޕްރޮފައިލަށް ހަވާލުކުރެވޭ ކޯސްތަކުގެ ހުށަހެޅުންތައް މުދައްރިސް މާކުކުރާނެއެވެ.',
+    'instructors_linked_to' => ':name ގެ ގޮތުގައި ސައިން-އިން ވޭ',
     // Enrolments and payments (C9 slice 4, STATUS §5jf).
     'enrolments_title' => 'އެންރޯލްމަންޓްތައް',
     'enrolments_tabs' => 'އެންރޯލްމަންޓްތަކާއި ފައިސާ ދެއްކުން',
@@ -639,6 +644,14 @@ return [
     'courses_whatsapp_hint' => 'ޤައުމީ ކޯޑާއެކު އަދަދުތައް، މިސާލު: 9607972434. ހުސްނަމަ conversion.whatsapp_number، ދެން ވައިބަރ ނަންބަރު ބޭނުންކުރާނެ.',
     'courses_syllabus' => 'ސިލަބަސް މީޑިއާ ފައިލް އައިޑީ',
     'courses_syllabus_hint' => 'ޢާންމު media_files އައިޑީ. ހުސްނަމަ "ފުރިހަމަ ސިލަބަސް ހޯދާ" ނުދައްކާނެ.',
+    // Who teaches it (C16 slice N6).
+    'courses_instructors' => 'މުދައްރިސުން',
+    'courses_instructors_hint' => 'ކޯސް ޞަފްޙާގައި ދައްކާނެއެވެ. މުވައްޒަފުގެ ލޮގިން އާ ގުޅުވާފައިވާ މުދައްރިސަކު މި ކޯހުގެ ހުށަހެޅުންތައް ޓީޗަރ ރިވިއުގައި މާކުކުރާނެއެވެ.',
+    'courses_instructors_none' => 'އަދި މުދައްރިސަކު ނެތް — މުދައްރިސުންގެ ދަށުން އިތުރުކުރައްވާ.',
+    'courses_instructor_marks' => 'މާކުކުރޭ',
+    // Teacher review, scoped (C16 slice N6).
+    'reviews_scope_own' => 'ދައްކަނީ ތިބާގެ އަމިއްލަ ކޯސްތަކުގެ ހުށަހެޅުންތައް އެކަންޏެވެ (:count).',
+    'reviews_scope_none' => 'އަދި ތިބާއަށް ކޯހެއް ހަވާލުކޮށްފައެއް ނެތެވެ. އޮފީހުން ތިބާގެ ސައިން-އިން މުދައްރިސް ޕްރޮފައިލާ ގުޅުވައި، ކޯސް ފޯމުގައި ކޯސްތައް ހަވާލުކުރުމުން އެ ކޯސްތަކުގެ ހުށަހެޅުންތައް މިތަނުން ފެންނާނެއެވެ.',
     'courses_language' => 'ބަސް',
     'courses_level' => 'ފެންވަރު',
     'courses_level_kids' => 'ކުޑަކުދިން',

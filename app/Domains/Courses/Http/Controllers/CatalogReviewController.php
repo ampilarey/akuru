@@ -2,31 +2,45 @@
 
 namespace App\Domains\Courses\Http\Controllers;
 
+use App\Domains\Courses\Actions\ListCoursesTaughtByUserAction;
 use App\Domains\Courses\Actions\ListTeacherReviewReportsAction;
 use App\Domains\Progress\Actions\ReviewAttemptAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
+/**
+ * Teacher review (SPEC §36): the queue of work a machine cannot mark, the
+ * weakness and revision reports, and the CSV.
+ *
+ * Two doors since C16 slice N6 (OWNER_ACTIONS 16, decided 2026-10-03:
+ * "teachers mark only their own courses"). `courses.manage` — the dean,
+ * the supervisor, a course creator — sees and marks the whole school's
+ * work, as before. `courses.review` alone — the teacher — sees and marks
+ * the courses assigned to them through their instructor profile
+ * (`course_instructor`, `instructors.user_id`), and nothing else; a
+ * teacher with no assignment sees an empty queue that says so.
+ */
 class CatalogReviewController extends Controller
 {
     public function index(Request $request): Response
     {
-        abort_unless($request->user()?->can('courses.manage'), 403);
+        $this->authorizeReviewer($request);
 
         return Inertia::render(
             'Courses/Catalog/Reviews',
-            app(ListTeacherReviewReportsAction::class)->execute($this->filters($request)),
+            app(ListTeacherReviewReportsAction::class)->execute($this->filters($request)) + ['t' => Phrases::once('admin')],
         );
     }
 
     public function export(Request $request): StreamedResponse
     {
-        abort_unless($request->user()?->can('courses.manage'), 403);
+        $this->authorizeReviewer($request);
         $payload = app(ListTeacherReviewReportsAction::class)->execute($this->filters($request));
 
         return response()->streamDownload(function () use ($payload): void {
@@ -107,26 +121,54 @@ class CatalogReviewController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        abort_unless($request->user()?->can('courses.manage'), 403);
+        $this->authorizeReviewer($request);
         app(ReviewAttemptAction::class)->execute(
             (string) $request->input('kind'),
             (int) $request->input('attempt_id'),
             $request->only(['score', 'max_score', 'feedback', 'item_scores']),
             (int) $request->user()->id,
+            $this->ownCourseIds($request),
         );
 
         return redirect()->route('catalog.reviews.index')->with('success', 'Review saved.');
     }
 
+    private function authorizeReviewer(Request $request): void
+    {
+        $user = $request->user();
+        abort_unless($user !== null && ($user->can('courses.manage') || $user->can('courses.review')), 403);
+    }
+
     /**
-     * @return array{academic_year_id?: int|null, course_id?: int|null, threshold?: int|null}
+     * The courses this reviewer is narrowed to — `null` for the whole school.
+     *
+     * @return list<int>|null
+     */
+    private function ownCourseIds(Request $request): ?array
+    {
+        $user = $request->user();
+        if ($user === null || $user->can('courses.manage')) {
+            return null;
+        }
+
+        return app(ListCoursesTaughtByUserAction::class)->execute((int) $user->id);
+    }
+
+    /**
+     * @return array{academic_year_id?: int|null, course_id?: int|null, threshold?: int|null, course_ids?: list<int>|null}
      */
     private function filters(Request $request): array
     {
-        return [
+        $filters = [
             'academic_year_id' => $request->integer('academic_year_id') ?: null,
             'course_id' => $request->integer('course_id') ?: null,
             'threshold' => $request->integer('threshold') ?: null,
         ];
+        $own = $this->ownCourseIds($request);
+        if ($own !== null) {
+            $filters['course_ids'] = $own;
+        }
+
+        return $filters;
     }
 }

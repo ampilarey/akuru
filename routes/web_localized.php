@@ -1385,6 +1385,16 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // The permission check inside each controller is unchanged and still the
     // real gate; `course_creator` holds `courses.manage` without
     // `courses.publish`, which is §8.3's "should not publish courses directly".
+    // Teacher review (SPEC §36) admits the teacher too since C16 slice N6
+    // (OWNER_ACTIONS 16): `courses.review` is the door, and the controller
+    // narrows a reviewer without `courses.manage` to the courses assigned
+    // to them. The rest of the catalogue stays the authoring roles' below.
+    Route::prefix('catalog')->middleware(['role:super_admin|admin|headmaster|supervisor|course_creator|teacher'])->group(function () {
+        Route::get('reviews/export', [CatalogReviewController::class, 'export'])->name('catalog.reviews.export');
+        Route::get('reviews', [CatalogReviewController::class, 'index'])->name('catalog.reviews.index');
+        Route::post('reviews', [CatalogReviewController::class, 'store'])->name('catalog.reviews.store');
+    });
+
     Route::prefix('catalog')->middleware(['role:super_admin|admin|headmaster|supervisor|course_creator'])->group(function () {
         Route::get('glossary/export', [GlossaryController::class, 'export'])->name('catalog.glossary.export');
         Route::get('glossary', [GlossaryController::class, 'index'])->name('catalog.glossary.index');
@@ -1443,9 +1453,6 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::put('arabic/letters/{letter}', [CatalogArabicReferenceController::class, 'updateLetter'])->name('catalog.arabic.letters.update')->whereNumber('letter');
         Route::post('arabic/harakas', [CatalogArabicReferenceController::class, 'storeHarakah'])->name('catalog.arabic.harakas.store');
         Route::put('arabic/harakas/{harakah}', [CatalogArabicReferenceController::class, 'updateHarakah'])->name('catalog.arabic.harakas.update')->whereNumber('harakah');
-        Route::get('reviews/export', [CatalogReviewController::class, 'export'])->name('catalog.reviews.export');
-        Route::get('reviews', [CatalogReviewController::class, 'index'])->name('catalog.reviews.index');
-        Route::post('reviews', [CatalogReviewController::class, 'store'])->name('catalog.reviews.store');
         Route::get('questions/export', [CatalogQuestionController::class, 'export'])->name('catalog.questions.export');
         Route::get('questions', [CatalogQuestionController::class, 'index'])->name('catalog.questions.index');
         Route::post('questions', [CatalogQuestionController::class, 'store'])->name('catalog.questions.store');

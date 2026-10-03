@@ -301,9 +301,13 @@ somebody will act on.
 
 ### 16. Who marks the work — and whose work they can see — **decided 2026-10-03: teachers mark their own courses**
 
-The owner: "teachers mark only their own courses". The bigger job: the
-`course_instructor` assignment screen and the scoped review queue. Slice
-N6 in STATUS §5nw's list.
+The owner: "teachers mark only their own courses". **Built 2026-10-03
+(STATUS §5ob)**: an instructor profile links to a staff login (Instructors
+form, *Staff login*), the CMS course form assigns instructors to a course,
+and `courses.review` — held by the teacher, beside `courses.manage` for the
+dean and the supervisor — opens Teacher review narrowed to those courses.
+Marking another course's work is refused on the attempt's own row. The
+second option below, as chosen; `courses.manage` was not widened.
 
 **The one step of the review walk that fails.** `/catalog/reviews` is titled
 "Teacher review" and answers six of the thirteen abilities SPEC §36 gives a

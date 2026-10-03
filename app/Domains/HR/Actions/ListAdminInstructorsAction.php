@@ -18,7 +18,7 @@ class ListAdminInstructorsAction
 
     public function query(): Builder
     {
-        return Instructor::withCount('courses')->ordered();
+        return Instructor::withCount('courses')->with('user:id,name,email')->ordered();
     }
 
     /**
@@ -67,6 +67,10 @@ class ListAdminInstructorsAction
             'sort_order' => (int) ($row->sort_order ?? 0),
             'courses_count' => (int) ($row->courses_count ?? $row->courses()->count()),
             'photo_url' => $row->photo ? Storage::disk('public')->url($row->photo) : null,
+            // The staff login this profile belongs to (C16 slice N6).
+            'user_id' => $row->user_id !== null ? (int) $row->user_id : null,
+            'user_name' => $row->user?->name,
+            'user_email' => $row->user?->email,
         ];
     }
 }

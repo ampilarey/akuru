@@ -10,8 +10,11 @@ use App\Domains\Identity\Models\User;
 use App\Domains\Progress\Actions\SubmitActivityAttemptAction;
 use App\Domains\Progress\Enums\ActivityAttemptStatus;
 use App\Domains\Progress\Models\ActivityAttempt;
+use App\Support\Authorization\RoleGrants;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 uses(RefreshDatabase::class);
 
@@ -141,33 +144,37 @@ it('carries work from a student to a marker and the mark back again', function (
 });
 
 /**
- * The finding the walk above was written to look for.
+ * The finding the walk above was written to look for — and its answer.
  *
  * `/catalog/reviews` is titled "Teacher review", answers six of §36's thirteen
- * teacher abilities, and is gated on `courses.manage` — which the `teacher`
- * role does not hold. A teacher who sets written work cannot see it come in.
+ * teacher abilities, and was gated on `courses.manage` — which the `teacher`
+ * role does not hold. A teacher who set written work could not see it come
+ * in. It was pinned rather than fixed because the fix was a decision: the
+ * queue was school-wide and `course_instructor` had no writer, so "my own
+ * courses" could not be said (OWNER_ACTIONS item 16).
  *
- * This is pinned rather than fixed because the fix is a decision, not a line.
- * `courses.manage` is the **authoring** permission: it opens courses, lessons,
- * questions, offerings and the glossary, so granting it would hand every
- * teacher the whole catalog. The narrow alternative — a `courses.review`
- * permission — runs into the fact that the queue is school-wide and there is
- * nothing to narrow it by: `course_instructor` exists as a table with
- * **no reader and no writer anywhere in the application** and zero rows, so
- * "the submissions from my own courses" cannot be expressed today. Either
- * every teacher sees every pupil's work, or course-instructor assignment gets
- * built first. That is `OWNER_ACTIONS` item 16.
- *
- * When it is decided, this test should fail and be changed on purpose.
+ * Decided 2026-10-03, "teachers mark only their own courses" (C16 slice N6,
+ * STATUS §5ob): the teacher holds `courses.review`, the queue admits them
+ * and narrows to the courses their instructor profile is assigned — and a
+ * teacher nobody has assigned yet sees an empty queue that says so, not a
+ * 403. The full loop is in `TeacherMarksOwnCoursesTest`.
  */
-it('refuses a teacher the teacher review queue, today', function () {
+it('admits a teacher to the review queue, narrowed to their own courses — none yet, so empty and said', function () {
     $teacher = User::factory()->create();
-    $teacher->assignRole(Role::findOrCreate('teacher', 'web'));
+    $role = Role::findOrCreate('teacher', 'web');
+    $role->syncPermissions(RoleGrants::teacher());
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    $teacher->assignRole($role);
 
-    expect($teacher->can('courses.manage'))->toBeFalse();
+    expect($teacher->fresh()->can('courses.manage'))->toBeFalse()
+        ->and($teacher->fresh()->can('courses.review'))->toBeTrue();
 
     $this->withoutLocalizationMiddleware()
-        ->actingAs($teacher)
+        ->actingAs($teacher->fresh())
         ->get(route('catalog.reviews.index'))
-        ->assertForbidden();
+        ->assertOk()
+        ->assertInertia(fn (AssertableInertia $page) => $page
+            ->has('rows', 0)
+            ->where('scope.own_courses', true)
+            ->where('scope.course_count', 0));
 });

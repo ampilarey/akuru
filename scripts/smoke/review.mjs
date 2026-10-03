@@ -23,11 +23,11 @@
  *
  * ## The marker
  *
- * `SMOKE_MARKER` is who does the marking, and it is **not** the teacher login
- * by default. `/catalog/reviews` is gated on `courses.manage`, which the
- * `teacher` role does not hold; step 0 below records that separately rather
- * than hiding it, because a review queue the teacher cannot open is a finding
- * and not a broken script.
+ * `SMOKE_MARKER` is who does the marking — the dean by default, who holds
+ * `courses.manage` and sees the whole school. The teacher login is walked
+ * too: since C16 slice N6 (OWNER_ACTIONS item 16) it holds `courses.review`
+ * and sees the queue narrowed to the courses its instructor profile is
+ * assigned, which the seeder makes SMOKE-Course.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/review.mjs
@@ -232,29 +232,21 @@ if (activityUrl && editable) {
     check('there is no feedback yet', !after.includes('Teacher feedback'));
 }
 
-// ------------------------------------------------- the teacher, who may not
+// ---------------------------------------------------- the teacher, own course
 
-// The question the walk exists to ask, recorded as the **current** answer
-// rather than as a failure.
-//
-// It used to assert a green 200 and therefore always failed, deliberately — and
-// that made this walk permanently red, which is fine for a person reading it
-// once and useless for `all.mjs`, where a walk that can never pass makes the
-// whole run a false alarm for ever. A gate nobody can ever satisfy gets
-// ignored, and then the real failures go with it.
-//
-// So it asserts the 403 that is true today. When the owner settles
-// `OWNER_ACTIONS` item 16 and teachers gain the queue, **this step fails** and
-// has to be changed on purpose — exactly like the Pest test beside it
-// (`TeacherReviewLoopTest`), and exactly the behaviour a pinned decision wants.
+// Until C16 slice N6 this step asserted the 403 that was true: the queue was
+// gated on `courses.manage`, which the teacher role does not hold, and
+// `course_instructor` had no writer, so "my courses" could not be said. The
+// owner decided OWNER_ACTIONS item 16 on 2026-10-03 — "teachers mark only
+// their own courses" — and the seeder now assigns teacher@'s instructor
+// profile to SMOKE-Course. So the teacher opens the queue, is told it is
+// narrowed to their own courses, and finds the submission in it.
 const teacher = await signIn(TEACHER);
 const teacherQueue = await teacher.goto(`${BASE}/en/catalog/reviews`, { waitUntil: 'networkidle' });
-check(
-    'a teacher is still shut out of the review queue (OWNER_ACTIONS item 16)',
-    teacherQueue.status() === 403,
-    `HTTP ${teacherQueue.status()} for ${TEACHER} — /catalog/reviews is gated on courses.manage, `
-        + 'which the teacher role does not hold. Change this step when that is decided.',
-);
+const teacherText = await text(teacher);
+check('a teacher opens the review queue (OWNER_ACTIONS item 16, decided)', teacherQueue.status() === 200, `HTTP ${teacherQueue.status()} for ${TEACHER}`);
+check('the teacher is told the queue is their own courses only', /your \d+ courses? only|courses only/i.test(teacherText), teacherText.slice(0, 160));
+check('the submission from their course is in it', teacherText.includes(ACTIVITY), teacherText.slice(0, 160));
 
 // ----------------------------------------------------------------- the marker
 
