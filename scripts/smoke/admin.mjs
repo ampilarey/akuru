@@ -220,15 +220,18 @@ check(`all ${instituteLandings.length} Institute landing pages open for the syst
 const paidToday = await su.goto(`${BASE}/en/admin/enrollments/payments`, { waitUntil: 'networkidle' });
 check('and the enrolment payments list, which the Institute home’s "paid today" tile opens', paidToday?.status() === 200);
 // The users screen names the roles as the owner does (STATUS §5if).
-// The list is newest first, so the seeded logins are filtered to by role.
+// The list is newest first and paged, so every seeded login is reached by
+// its role filter — the system admin too, who had slipped off page one as
+// the walks registered vendors, drivers and lenders after them (STATUS §5nv).
 await su.goto(`${BASE}/en/admin/users`, { waitUntil: 'networkidle' });
-const badges = await su.locator('[data-testid="role-badge"]').allTextContents();
 const filterOptions = await su.locator('select[name="role"] option').allTextContents();
+await su.goto(`${BASE}/en/admin/users?role=super_admin`, { waitUntil: 'networkidle' });
+const badges = await su.locator('[data-testid="role-badge"]').allTextContents();
 await su.goto(`${BASE}/en/admin/users?role=admin`, { waitUntil: 'networkidle' });
 const adminBadges = await su.locator('[data-testid="role-badge"]').allTextContents();
 await su.goto(`${BASE}/en/admin/users?role=headmaster`, { waitUntil: 'networkidle' });
 const deanBadges = await su.locator('[data-testid="role-badge"]').allTextContents();
-check('the users screen badges read System admin, Educational admin, Dean — never "Super Admin"', badges.some((b) => b.trim() === 'System admin') && adminBadges.length > 0 && adminBadges.every((b) => b.trim() === 'Educational admin') && deanBadges.length > 0 && deanBadges.every((b) => b.trim() === 'Dean') && !badges.some((b) => /Super Admin|Headmaster/.test(b)), [...new Set([...badges, ...adminBadges, ...deanBadges].map((b) => b.trim()))].join(', '));
+check('the users screen badges read System admin, Educational admin, Dean — never "Super Admin"', badges.length > 0 && badges.every((b) => b.trim() === 'System admin') && adminBadges.length > 0 && adminBadges.every((b) => b.trim() === 'Educational admin') && deanBadges.length > 0 && deanBadges.every((b) => b.trim() === 'Dean') && !badges.some((b) => /Super Admin|Headmaster/.test(b)), [...new Set([...badges, ...adminBadges, ...deanBadges].map((b) => b.trim()))].join(', '));
 check('and its filter offers every role by that name', filterOptions.map((o) => o.trim()).includes('Dean') && filterOptions.map((o) => o.trim()).includes('Bookstore admin'), filterOptions.map((o) => o.trim()).join(', '));
 
 // The role and access screen (STATUS §5ig): the seeded parent is made a
@@ -350,22 +353,30 @@ await su.locator('[data-testid="library-settings"] input[name="refund_window_day
 await su.click('[data-testid="library-settings"] button[type=submit]');
 await su.waitForFunction(() => document.body.innerText.includes('Library settings saved.'), null, { timeout: 20000 }).catch(() => {});
 
-// STATUS §5lq: the important Library notices by email too — off by default; on, read back, off again.
+// STATUS §5lq: the important Library notices by email and SMS — off by
+// default then, on by default since COMMERCE_PARITY_PLAN P5 (STATUS §5me),
+// the office may switch either off. The walk no longer assumes a starting
+// state: it flips email, reads the flip back, and puts it back (STATUS §5nv).
 await su.goto(`${BASE}/en/admin/library/settings`, { waitUntil: 'networkidle' });
 await settle(su, '[data-testid="library-settings"]');
-const noticesBefore = await su.locator('[data-testid="library-setting-notices_email"]').isChecked();
-check('the Library settings offer email and SMS for the important notices, both off to start', !noticesBefore && !(await su.locator('[data-testid="library-setting-notices_sms"]').isChecked()) && (await text(su)).includes('Reader reminders and office alerts stay in the app'));
-await su.check('[data-testid="library-setting-notices_email"]');
+const emailBefore = await su.locator('[data-testid="library-setting-notices_email"]').isChecked();
+const smsBefore = await su.locator('[data-testid="library-setting-notices_sms"]').isChecked();
+check('the Library settings offer email and SMS switches for the important notices, and say the reader nudges stay in the app', (await count(su, '[data-testid="library-setting-notices_email"]')) === 1 && (await count(su, '[data-testid="library-setting-notices_sms"]')) === 1 && (await text(su)).includes('Reader reminders and office alerts stay in the app'), `email ${emailBefore ? 'on' : 'off'} · SMS ${smsBefore ? 'on' : 'off'}`);
+await su.locator('[data-testid="library-setting-notices_email"]').setChecked(!emailBefore);
 await su.click('[data-testid="library-settings"] button[type=submit]');
 await su.waitForFunction(() => document.body.innerText.includes('Library settings saved.'), null, { timeout: 20000 }).catch(() => {});
 await su.goto(`${BASE}/en/admin/library/settings`, { waitUntil: 'networkidle' });
 await settle(su, '[data-testid="library-settings"]');
-check('turned on, the email switch reads back on', await su.locator('[data-testid="library-setting-notices_email"]').isChecked());
-await su.uncheck('[data-testid="library-setting-notices_email"]');
+check(`flipped ${emailBefore ? 'off' : 'on'}, the email switch reads back that way`, (await su.locator('[data-testid="library-setting-notices_email"]').isChecked()) === !emailBefore);
+await su.locator('[data-testid="library-setting-notices_email"]').setChecked(emailBefore);
 await su.click('[data-testid="library-settings"] button[type=submit]');
 await su.waitForFunction(() => document.body.innerText.includes('Library settings saved.'), null, { timeout: 20000 }).catch(() => {});
 
 // B14 (LIBRARY_PLAN §29, STATUS §5it): the Library over a period, with its CSV.
+// A page is opened first: the counts are of this dataset's reading, and a
+// reseed empties it — the step used to pass only because `library.mjs` had
+// read before this walk ran (STATUS §5nv).
+await su.goto(`${BASE}/en/library/smoke-primer/read`, { waitUntil: 'networkidle' });
 await su.goto(`${BASE}/en/admin/library/insights?period=all`, { waitUntil: 'networkidle' });
 await settle(su, '[data-testid="insights-headline"]');
 const pagesOpened = Number(await su.locator('[data-testid="headline-pages_opened"]').innerText());

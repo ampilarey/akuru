@@ -687,8 +687,11 @@ class SmokeMarkerSeeder extends Seeder
             $userId = (int) app(\App\Domains\Identity\Actions\CreateUserAction::class)->execute('SMOKE Web-Parent', $email, 'password')['id'];
         }
         DB::table('users')->where('id', $userId)->update(['email_verified_at' => now()]);
-        $parentRole = DB::table('roles')->where('name', 'parent')->value('id');
-        DB::table('model_has_roles')->where('model_type', 'user')->where('model_id', $userId)->where('role_id', $parentRole)->delete();
+        // "No role" means none: the `parent` role the verification gives, and
+        // anything else a run left (a `lender` role stayed on from a lending
+        // walk that once ticked this row by a substring match on "parent@",
+        // and sent the parent to My lending instead of My account — STATUS §5nv).
+        DB::table('model_has_roles')->where('model_type', 'user')->where('model_id', $userId)->delete();
         app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
 
         $child = app(\App\Domains\People\Actions\RegisterCourseStudentAction::class)->forChild($userId, [
@@ -2345,7 +2348,7 @@ class SmokeMarkerSeeder extends Seeder
     {
         // `smoke-primer-upload` is what the walk's own upload step makes.
         $itemIds = DB::table('library_items')
-            ->where(fn ($q) => $q->whereIn('slug', ['smoke-primer', 'smoke-primer-pdf'])->orWhere('slug', 'like', 'smoke-primer-upload%'))
+            ->where(fn ($q) => $q->whereIn('slug', ['smoke-primer', 'smoke-primer-pdf', 'smoke-primer-paid', 'smoke-research-published'])->orWhere('slug', 'like', 'smoke-primer-upload%'))
             ->pluck('id');
         DB::table('library_bookmarks')->whereIn('library_item_id', $itemIds)->delete();
         DB::table('library_reading_progress')->whereIn('library_item_id', $itemIds)->delete();
@@ -2388,6 +2391,41 @@ class SmokeMarkerSeeder extends Seeder
             ], null, $pdf);
             app(\App\Domains\Library\Actions\PublishLibraryItemAction::class)->execute($pdfItem->id, (int) $approverId);
         }
+
+        // The shelf's one paid book (STATUS §5nv). A live campaign covers paid
+        // items only, so `admin.mjs`'s offers step needs a priced card to
+        // strike — and until this the smoke shelf had none: the step passed
+        // only when `library.mjs` had uploaded a paid book earlier in the same
+        // session, and went red on its own.
+        $paid = app(\App\Domains\Library\Actions\SaveLibraryItemAction::class)->execute([
+            'title' => 'SMOKE-Primer-Paid',
+            'slug' => 'smoke-primer-paid',
+            'content_type' => 'book',
+            'access_type' => 'paid',
+            'price' => 50,
+            'description' => 'Planted by SmokeMarkerSeeder: the shelf\'s one paid book.',
+            'body' => '<p>SMOKE-Primer-Paid-Page-One</p>',
+        ]);
+        app(\App\Domains\Library\Actions\PublishLibraryItemAction::class)->execute($paid->id, (int) $approverId);
+
+        // One research paper already out, planted as R2's import plants them
+        // (reviewed and published elsewhere), so the research shelf has a year
+        // to filter by (`library.mjs`, R1 F12). The walks' own research stays
+        // a draft until peer review accepts it (R3) — that is what those walks
+        // test — so it can never be the one that gives the shelf its years.
+        $research = app(\App\Domains\Library\Actions\SaveLibraryItemAction::class)->execute([
+            'title' => 'SMOKE-Research-Published',
+            'slug' => 'smoke-research-published',
+            'content_type' => 'research',
+            'access_type' => 'free_public',
+            'description' => 'Planted by SmokeMarkerSeeder as a paper that was reviewed and published before the Library existed.',
+            'body' => '<p>SMOKE-Research-Published: the sun letters, assimilated.</p>',
+        ]);
+        $research->forceFill([
+            'status' => \App\Domains\Library\Enums\LibraryItemStatus::Published,
+            'published_at' => '2025-03-01 09:00:00',
+            'approved_by' => (int) $approverId,
+        ])->save();
     }
 
     /**

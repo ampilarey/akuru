@@ -173,7 +173,7 @@ the ten added since. Fixed with `relative` on the scroller; the sweep now
 carries all 50 admin screens, so the next new screen is measured on the
 day it ships.
 
-### One script carries every page — held, planned (C15 slice 1)
+### One script carries every page — **fixed (2026-10-02, STATUS §5nl, C15 slice 1)**
 
 `app.jsx` resolves pages eagerly, so every visitor downloads all 247 page
 components (1,743 KB; 368 KB Brotli) before the first screen draws, and
@@ -190,7 +190,7 @@ pattern"); with `.table-stack` in the stylesheet since §5js it is now a
 6b, 6c, 6d) stacked every one of them; `admin-mobile.mjs` reports no
 sideways scrolling on any of its 50 screens.
 
-### Two writes on every page view, with no pruning — held, planned (C15 slice 3)
+### Two writes on every page view, with no pruning — **fixed (2026-10-02, STATUS §5nn, C15 slice 3)**
 
 `TrackUserActivity` inserts a `user_activities` row and upserts
 `dashboard_analytics` inline on 943 routes, after the response is built and

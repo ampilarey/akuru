@@ -118,7 +118,11 @@ await reader.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
 const shelfHeading = (await reader.locator('h1').first().innerText()).trim();
 const siteLinks = await reader.locator('header a, nav a, footer a').evaluateAll((els) => els.map((el) => [el.innerText.trim(), el.getAttribute('href') ?? '']));
 check('the shelf is called the Akuru Digital Library', shelfHeading === 'Akuru Digital Library' && !(await text(reader)).includes('Knowledge Library'), shelfHeading);
-check('the site menu and footer link to it as Digital Library', siteLinks.filter(([t, h]) => t === 'Digital Library' && /\/library$/.test(h)).length >= 2, siteLinks.filter(([, h]) => /\/library$/.test(h)).map(([t]) => t).join(' · ') || 'no library links');
+// Since W1 the header's product entry carries a second line ("E-books,
+// articles and research") and since W3 the footer names the library by its
+// group, so a link is read by its first line (STATUS §5nv).
+const libraryLinks = siteLinks.filter(([, h]) => /\/library$/.test(h)).map(([t]) => t.split('\n')[0].trim());
+check('the site menu links to it as Digital Library, twice, and never as Knowledge Library', libraryLinks.filter((t) => t === 'Digital Library').length >= 2 && !siteLinks.some(([t]) => /Knowledge Library/.test(t)), libraryLinks.join(' · ') || 'no library links');
 for (const [locale, name] of [['dv', 'އަކުރު ޑިޖިޓަލް ލައިބްރަރީ'], ['ar', 'مكتبة أكورو الرقمية']]) {
     await reader.goto(`${BASE}/${locale}/library`, { waitUntil: 'networkidle' });
     const heading = (await reader.locator('h1').first().innerText()).trim();
