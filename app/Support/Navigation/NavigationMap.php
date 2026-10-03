@@ -411,6 +411,8 @@ final class NavigationMap
                     ['key' => 'cms_news', 'href' => '/admin/public-site/news'],
                     ['key' => 'cms_news_categories', 'href' => '/admin/public-site/news/categories'],
                     ['key' => 'cms_courses', 'href' => '/admin/public-site/courses'],
+                    // C16 slice N2: the course categories, a screen of their own.
+                    ['key' => 'cms_course_categories', 'href' => '/admin/public-site/courses/categories'],
                     ['key' => 'cms_daily_content', 'href' => '/admin/public-site/daily-content'],
                     ['key' => 'cms_daily_queue', 'href' => '/admin/public-site/daily-content/queue'],
                     ['key' => 'cms_subscriptions', 'href' => '/admin/public-site/daily-subscriptions'],

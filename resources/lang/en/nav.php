@@ -188,6 +188,7 @@ return [
     'library_promotions' => 'Promotions',
     'library_reviewers' => 'Reviewers',
     'cms_news_categories' => 'News categories',
+    'cms_course_categories' => 'Course categories',
     'change_password' => 'Change password',
     'classes' => 'Classes',
     'promotion' => 'Promotion',

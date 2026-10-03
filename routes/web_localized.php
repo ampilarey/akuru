@@ -751,6 +751,14 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('courses/deleted', [AdminCourseController::class, 'deleted'])->name('admin.courses.deleted');
         Route::post('courses/{course}/restore', [AdminCourseController::class, 'restore'])
             ->name('admin.courses.restore')->whereNumber('course');
+        // BACKLOG C16 slice N2: the course categories screen (before the
+        // resource for the same reason as `courses/deleted`), and publishing
+        // to the website from the CMS list.
+        Route::get('courses/categories', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseCategoryController::class, 'index'])->name('admin.courses.categories');
+        Route::post('courses/categories', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseCategoryController::class, 'store'])->name('admin.courses.categories.store');
+        Route::put('courses/categories/{category}', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseCategoryController::class, 'update'])->name('admin.courses.categories.update')->whereNumber('category');
+        Route::delete('courses/categories/{category}', [\App\Domains\Website\Http\Controllers\Admin\PublicSite\CourseCategoryController::class, 'destroy'])->name('admin.courses.categories.destroy')->whereNumber('category');
+        Route::post('courses/{course}/publish', [AdminCourseController::class, 'publish'])->name('admin.courses.publish');
 
         Route::resource('courses', AdminCourseController::class)->except('show')->names([
             'index' => 'admin.courses.index',

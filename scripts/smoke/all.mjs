@@ -18,7 +18,7 @@
  *
  * ## Read-only and writing walks are separated, on purpose
  *
- * Six of these only look at screens. The other **thirty-two write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, sell a course for wallet money, tag an Arabic skill activity, set and mark a recitation and map a halaqa, enrol a pupil in a halaqa and approve their milestone, issue and redeem a gift card and read a protected book, set homework, post a notice, message a teacher and poll a class, send a trip sign-up with a fee and close it, publish a calendar day and mark a pupil late, double-book a teacher and be refused, record and revoke a family's consent, ask the school for a day off and be answered, enrol a
+ * Six of these only look at screens. The other **thirty-three write**: they build a course for a student, run a scheduled intake, set and sit an assessment, issue a certificate, sell a course for wallet money, tag an Arabic skill activity, set and mark a recitation and map a halaqa, enrol a pupil in a halaqa and approve their milestone, issue and redeem a gift card and read a protected book, set homework, post a notice, message a teacher and poll a class, send a trip sign-up with a fee and close it, publish a calendar day and mark a pupil late, double-book a teacher and be refused, record and revoke a family's consent, ask the school for a day off and be answered, enrol a
  * stranger on a course, submit and approve an absence note, request that a
  * child be collected, book a parent-teacher meeting, publish an article to
  * the library, publish an exam and a term's report cards to families, bill a
@@ -113,6 +113,7 @@ const WALKS = [
     { name: 'quran', writes: true, asks: 'Does a recitation range reach the student as a passage and come back marked, and does a halaqa map onto an offering?' },
     { name: 'hifz', writes: true, asks: 'Does what survives of the Hifz app still work for the people who use it?' },
     { name: 'reader', writes: true, asks: 'Can a reader read a protected book and keep their place, and does a gift card become wallet money?' },
+    { name: 'cms-courses', writes: true, asks: 'Can the office put a course on the website from the CMS alone — a category, the form, a cover, Publish?' },
     { name: 'family', writes: true, asks: 'Does the daily habit work — homework, the noticeboard, a message and its reply, a class poll?' },
     { name: 'signup', writes: true, asks: 'Does a sign-up sheet with a fee reach one class, wait for the parent, bill the family, and close?' },
     { name: 'school-day', writes: true, asks: 'Does a late mark reach the office\'s lists and the family, and does the calendar show families what is theirs?' },
