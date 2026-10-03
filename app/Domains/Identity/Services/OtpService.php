@@ -4,6 +4,7 @@ namespace App\Domains\Identity\Services;
 
 use App\Domains\Identity\Models\Otp;
 use App\Domains\Identity\Models\UserContact;
+use App\Domains\Identity\Support\Wait;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Domains\Notifications\Notifications\OtpEmailNotification;
 use Illuminate\Support\Facades\Hash;
@@ -73,7 +74,7 @@ class OtpService
             $seconds = RateLimiter::availableIn($sendKey);
             $this->recordAbuse('send_rate', $contact, $purpose, $this->maxSends() + 1, $this->maxSends());
             throw ValidationException::withMessages([
-                'contact' => ['Too many OTP requests. Please try again in '.ceil($seconds / 60).' minutes.'],
+                'contact' => ['Too many OTP requests. Please try again in '.Wait::describe($seconds).'.'],
             ]);
         }
 
@@ -82,7 +83,7 @@ class OtpService
             $seconds = RateLimiter::availableIn($cooldownKey);
             $this->recordAbuse('resend_cooldown', $contact, $purpose, 1, 1);
             throw ValidationException::withMessages([
-                'contact' => ["Please wait {$seconds} seconds before requesting a new code."],
+                'contact' => ['Please wait '.Wait::describe($seconds).' before requesting a new code.'],
             ]);
         }
 
@@ -103,6 +104,27 @@ class OtpService
         RateLimiter::hit($cooldownKey, $this->resendCooldownSeconds());
     }
 
+    /**
+     * How long before another code may be sent to this contact for this
+     * purpose: the resend cooldown, or the send window when its quota is
+     * spent, whichever is longer; 0 when a code may be sent now. The verify
+     * screens count it down and hold the Resend button until it ends
+     * (C16 slice N3 — the owner: "its not auto counting down").
+     */
+    public function retryAfterSeconds(UserContact $contact, string $purpose): int
+    {
+        $this->validatePurpose($purpose);
+        $wait = 0;
+        if (RateLimiter::tooManyAttempts($this->sendRateLimitKey($contact, $purpose), $this->maxSends())) {
+            $wait = max($wait, RateLimiter::availableIn($this->sendRateLimitKey($contact, $purpose)));
+        }
+        if (RateLimiter::tooManyAttempts($this->resendCooldownKey($contact, $purpose), 1)) {
+            $wait = max($wait, RateLimiter::availableIn($this->resendCooldownKey($contact, $purpose)));
+        }
+
+        return max(0, (int) $wait);
+    }
+
     public function verify(UserContact $contact, string $purpose, string $code): void
     {
         $this->validatePurpose($purpose);
@@ -112,7 +134,7 @@ class OtpService
             $seconds = RateLimiter::availableIn($key);
             $this->recordAbuse('verify_rate', $contact, $purpose, $this->maxVerifyAttempts() + 1, $this->maxVerifyAttempts());
             throw ValidationException::withMessages([
-                'code' => ['Too many verification attempts. Please try again in '.ceil($seconds / 60).' minutes.'],
+                'code' => ['Too many verification attempts. Please try again in '.Wait::describe($seconds).'.'],
             ]);
         }
 
@@ -249,7 +271,7 @@ class OtpService
             $this->recordAbuseForValue('send_rate', $normalizedValue, $type, 'verify_contact',
                 $this->maxSends() + 1, $this->maxSends());
             throw ValidationException::withMessages([
-                'contact_value' => ['Too many OTP requests. Please try again in '.ceil($seconds / 60).' minutes.'],
+                'contact_value' => ['Too many OTP requests. Please try again in '.Wait::describe($seconds).'.'],
             ]);
         }
         if (RateLimiter::tooManyAttempts($cooldownKey, 1)) {
@@ -307,7 +329,7 @@ class OtpService
             $this->recordAbuseForValue('verify_rate', $normalizedValue, $type, 'verify_contact',
                 $this->maxVerifyAttempts() + 1, $this->maxVerifyAttempts());
             throw ValidationException::withMessages([
-                'code' => ['Too many attempts. Please try again in '.ceil($seconds / 60).' minutes.'],
+                'code' => ['Too many attempts. Please try again in '.Wait::describe($seconds).'.'],
             ]);
         }
 

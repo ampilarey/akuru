@@ -38,9 +38,16 @@
             </form>
 
             <div class="flex justify-between text-sm text-gray-500 mt-5">
-                <form method="POST" action="{{ route('password.otp.resend') }}">
+                {{-- C16 slice N3: the resend wait counts down and the button is held until it ends. --}}
+                <form method="POST" action="{{ route('password.otp.resend') }}" data-testid="otp-resend-form">
                     @csrf
-                    <button type="submit" class="hover:underline">Resend code</button>
+                    <button type="submit" id="otp-resend" data-testid="otp-resend" class="hover:underline disabled:cursor-not-allowed disabled:opacity-60"
+                            data-retry-after="{{ (int) ($retryAfter ?? 0) }}"
+                            data-label="{{ __('security.otp_resend') }}"
+                            data-waiting="{{ __('security.otp_resend_in', ['time' => ':time']) }}"
+                            @if(($retryAfter ?? 0) > 0) disabled aria-disabled="true" @endif>
+                        {{ ($retryAfter ?? 0) > 0 ? __('security.otp_resend_in', ['time' => gmdate('i:s', (int) $retryAfter)]) : __('security.otp_resend') }}
+                    </button>
                 </form>
                 <a href="{{ route('password.otp.request') }}" class="hover:underline">Use different number</a>
             </div>
@@ -52,5 +59,24 @@
 document.getElementById('code').addEventListener('input', function () {
     this.value = this.value.replace(/\D/g, '');
 });
+(function () {
+    const button = document.getElementById('otp-resend');
+    let left = parseInt(button.dataset.retryAfter, 10) || 0;
+    if (left <= 0) return;
+    const tick = () => {
+        if (left <= 0) {
+            button.disabled = false;
+            button.removeAttribute('aria-disabled');
+            button.textContent = button.dataset.label;
+            return;
+        }
+        const m = Math.floor(left / 60), s = left % 60;
+        button.textContent = button.dataset.waiting.replace(':time', `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
+        button.disabled = true;
+        left -= 1;
+        setTimeout(tick, 1000);
+    };
+    tick();
+})();
 </script>
 @endsection

@@ -88,7 +88,13 @@ class OtpLoginController extends Controller
                 ->withErrors(['identifier' => 'Please enter your email or phone number first.']);
         }
 
-        return view('auth.otp-verify');
+        // C16 slice N3: the screen counts the resend wait down and holds the
+        // button until it ends, instead of a static "try again in N minutes".
+        $contact = UserContact::find(session('otp_login_contact_id'));
+
+        return view('auth.otp-verify', [
+            'retryAfter' => $contact ? $this->otpService->retryAfterSeconds($contact, 'login') : 0,
+        ]);
     }
 
     /**
