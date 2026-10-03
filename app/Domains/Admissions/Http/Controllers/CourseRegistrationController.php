@@ -112,7 +112,8 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         RateLimiter::clear($throttleKey);
-        Auth::login($user);
+        // The password is the proof; the terms step will not ask for a code too.
+        $this->signInProven($user);
 
         // Carry course into session for the continue form
         session([
@@ -310,7 +311,7 @@ class CourseRegistrationController extends PublicRegistrationController
             session()->forget('reg_pending_data');
             session(['checkout_flow' => $pendingReg['flow_type'] ?? 'adult']);
 
-            Auth::login($user);
+            $this->signInProven($user);
             $this->notifyAdminNewRegistration($user);
 
             return redirect()->route('courses.register.continue');
@@ -333,7 +334,7 @@ class CourseRegistrationController extends PublicRegistrationController
             return $this->sendToSetPassword($user);
         }
 
-        Auth::login($user);
+        $this->signInProven($user);
 
         return redirect()->route('courses.register.continue');
     }
@@ -583,6 +584,8 @@ class CourseRegistrationController extends PublicRegistrationController
             'children' => $children,
             'defaultFlow' => $defaultFlow,
             'prefill' => $prefill,
+            // Whether confirming here goes straight on, or one code is still asked (STATUS §5oc).
+            'proven' => $this->contactRecentlyProven((int) $user->id),
         ]);
     }
 
@@ -600,6 +603,15 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         $flow = $request->input('flow', 'adult');
+
+        // One code per registration (STATUS §5oc). Someone who proved their
+        // contact or password in this session a moment ago accepts the terms
+        // on this form and goes straight on; asking for a second code to
+        // confirm what they just proved was the funnel's second OTP round.
+        $proven = $this->contactRecentlyProven((int) $user->id);
+        if ($proven && ! $request->boolean('terms_accepted')) {
+            return back()->withInput()->withErrors(['terms_accepted' => 'Please accept the Terms & Conditions to continue.']);
+        }
 
         $courseValidator = Validator::make($request->all(), [
             'course_ids' => ['required', 'array', 'min:1'],
@@ -739,7 +751,15 @@ class CourseRegistrationController extends PublicRegistrationController
                                                : null,
         ]);
 
-        // Store the contact ID in session so the OTP page can send OTP on demand
+        if ($request->boolean('terms_accepted')) {
+            session(['enroll_terms_accepted' => true]);
+        }
+
+        if ($proven) {
+            return $this->processEnrollmentFromSession($user, viaCode: false);
+        }
+
+        // Signed in a while ago: one code confirms it is still them.
         $mobileContact = $user->contacts()->where('type', 'mobile')->whereNotNull('verified_at')->first();
         if ($mobileContact) {
             session(['enroll_otp_contact_id' => $mobileContact->id]);
@@ -797,7 +817,7 @@ class CourseRegistrationController extends PublicRegistrationController
         return view('courses.register-enroll-confirm', compact(
             'courses', 'totalFee', 'maskedContact', 'otpSent',
             'availableContacts', 'currentContactId', 'contactsForDisplay'
-        ));
+        ) + ['termsAccepted' => (bool) session('enroll_terms_accepted')]);
     }
 
     /** Verify enrollment consent OTP + T&C → process enrollment */
@@ -893,7 +913,7 @@ class CourseRegistrationController extends PublicRegistrationController
     }
 
     /** Process enrollment from session data (called after OTP consent) */
-    protected function processEnrollmentFromSession(\App\Domains\Identity\Models\User $user): RedirectResponse
+    protected function processEnrollmentFromSession(\App\Domains\Identity\Models\User $user, bool $viaCode = true): RedirectResponse
     {
         $flow = session('enroll_pending_flow', 'adult');
         $data = session('enroll_pending_data', []);
@@ -933,18 +953,11 @@ class CourseRegistrationController extends PublicRegistrationController
                 $result = $this->enrollmentService->enrollAdultSelf($user, $data, $courseIds, $termId);
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
-            session()->forget('enroll_otp_sent');
-            $contactId = session('enroll_otp_contact_id');
-            if ($contactId) {
-                $contact = \App\Domains\Identity\Models\UserContact::find($contactId);
-                if ($contact) {
-                    try {
-                        $this->otpService->send($contact, 'login');
-                        session(['enroll_otp_sent' => true]);
-                    } catch (\Throwable) {
-                    }
-                }
+            if (! $viaCode) {
+                // Straight from the form: back to it, with what they typed.
+                return back()->withInput()->withErrors($e->errors());
             }
+            $this->resendEnrollCode();
 
             return redirect()->route('courses.register.enroll.otp')
                 ->withErrors($e->errors())
@@ -1055,7 +1068,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
     protected function clearEnrollPendingSession(): void
     {
-        session()->forget(['enroll_pending_data', 'enroll_pending_flow', 'enroll_pending_course_ids', 'enroll_pending_term_id', 'enroll_pending_email', 'enroll_pending_student_mode', 'enroll_pending_child_password', 'enroll_otp_contact_id', 'enroll_otp_sent', 'enroll_otp_sent_before']);
+        session()->forget(['enroll_pending_data', 'enroll_pending_flow', 'enroll_pending_course_ids', 'enroll_pending_term_id', 'enroll_pending_email', 'enroll_pending_student_mode', 'enroll_pending_child_password', 'enroll_otp_contact_id', 'enroll_otp_sent', 'enroll_otp_sent_before', 'enroll_terms_accepted']);
     }
 
     public function complete(Request $request): View|RedirectResponse
@@ -1309,6 +1322,7 @@ class CourseRegistrationController extends PublicRegistrationController
     protected function sendToSetPassword(\App\Domains\Identity\Models\User $user): RedirectResponse
     {
         session(['otp_verified_user_id' => $user->id]);
+        $this->markContactProven((int) $user->id);
 
         return redirect()->route('courses.register.set-password');
     }
@@ -1348,6 +1362,54 @@ class CourseRegistrationController extends PublicRegistrationController
     protected function otpWasVerifiedFor(int $userId): bool
     {
         return (int) session('otp_verified_user_id') === $userId;
+    }
+
+    /** How long a proof made in this session spares the terms step a second code. */
+    public const PROOF_MINUTES = 30;
+
+    /**
+     * Record that *this* session just proved it is this person — a code
+     * entered for their contact, or their password at checkout. Keyed to the
+     * user id, like `otp_verified_user_id`, so a proof for one account never
+     * stands for another; and timed, so a session left open does not enrol
+     * anyone tomorrow without asking (STATUS §5oc).
+     */
+    /** Sign in someone this session has just proved is them, and remember the proof. */
+    protected function signInProven(\App\Domains\Identity\Models\User $user): void
+    {
+        Auth::login($user);
+        $this->markContactProven((int) $user->id);
+    }
+
+    /** The enrolment failed after the code was spent: send a fresh one, quietly. */
+    private function resendEnrollCode(): void
+    {
+        session()->forget('enroll_otp_sent');
+        $contact = \App\Domains\Identity\Models\UserContact::find((int) session('enroll_otp_contact_id'));
+        if ($contact === null) {
+            return;
+        }
+        try {
+            $this->otpService->send($contact, 'login');
+            session(['enroll_otp_sent' => true]);
+        } catch (\Throwable) {
+            // The page says a code was sent; Resend is there if it was not.
+        }
+    }
+
+    protected function markContactProven(int $userId): void
+    {
+        session(['registration_proven' => ['user_id' => $userId, 'at' => now()->getTimestamp()]]);
+    }
+
+    protected function contactRecentlyProven(int $userId): bool
+    {
+        $proof = session('registration_proven');
+
+        return is_array($proof)
+            && (int) ($proof['user_id'] ?? 0) === $userId
+            && $userId > 0
+            && (int) ($proof['at'] ?? 0) >= now()->subMinutes(self::PROOF_MINUTES)->getTimestamp();
     }
 
     protected function clearPendingSession(): void
