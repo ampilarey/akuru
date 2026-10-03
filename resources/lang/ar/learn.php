@@ -63,4 +63,6 @@ return [
     'waiting_payment' => 'بانتظار الدفع',
     'waiting_approval' => 'بانتظار موافقة المكتب',
     'waiting_details' => 'التسجيلات والمدفوعات',
+    // Moodle parity slice M3: the course's discussion forum.
+    'forum_open' => 'النقاش',
 ];

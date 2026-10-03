@@ -468,6 +468,10 @@ class SmokeMarkerSeeder extends Seeder
 
         DB::table('activity_attempts')->where('course_id', $courseId)->delete();
         DB::table('activities')->where('course_id', $courseId)->delete();
+        // A rubric or a forum topic an interrupted `rubric.mjs` or `forum.mjs`
+        // left behind (Moodle parity slices M2, M3); replies go with topics.
+        DB::table('rubrics')->where('course_id', $courseId)->delete();
+        DB::table('course_forum_topics')->where('course_id', $courseId)->delete();
         DB::table('student_lesson_progress')->whereIn('enrollment_id', $enrollmentIds)->delete();
         DB::table('content_blocks')->where('course_id', $courseId)->delete();
         DB::table('lessons')->whereIn('id', $lessonIds)->update(['current_revision_id' => null]);
@@ -552,6 +556,23 @@ class SmokeMarkerSeeder extends Seeder
             'max_score' => 5,
             'data' => [
                 'prompt' => 'SMOKE-Review-Question: write a sentence using a sun letter.',
+                'submission_kind' => 'written',
+            ],
+            'created_by' => $admin?->id,
+        ]);
+
+        // A second one for `rubric.mjs` (Moodle parity slice M2), so the
+        // rubric walk and `review.mjs` each hand in work of their own and
+        // both run in one `all.mjs` pass.
+        app(SaveActivityAction::class)->execute([
+            'course_id' => $courseId,
+            'course_module_id' => $moduleId,
+            'lesson_id' => $lessonId,
+            'title' => 'SMOKE-Rubric-Activity',
+            'pattern' => 'teacher_marked',
+            'max_score' => 5,
+            'data' => [
+                'prompt' => 'SMOKE-Rubric-Question: describe your island in three sentences.',
                 'submission_kind' => 'written',
             ],
             'created_by' => $admin?->id,

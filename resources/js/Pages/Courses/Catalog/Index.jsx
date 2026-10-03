@@ -157,6 +157,7 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                                     <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/outline`}>{row.title}</a>
                                     <a className="ms-3 text-xs text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/activities`}>Activities</a>
                                     <a className="ms-3 text-xs text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/rubrics`}>{t.rubrics || 'Rubrics'}</a>
+                                    <a className="ms-3 text-xs text-[#7C2D37] hover:underline" href={`/learn/courses/${row.id}/forum`}>{t.forum || 'Forum'}</a>
                                 </td>
                                 <td className="px-3 py-2">{row.subject_name || '—'}</td>
                                 <td className="px-3 py-2">{row.workflow_status}</td>

@@ -217,6 +217,15 @@ export default function Reviews({
                     {(t.reviews_scope_own || 'Showing the submissions from your own courses only (:count).').replace(':count', scope.course_count)}
                 </p>
             )}
+            {/* Moodle parity slice M3: a teacher's own course forums, which they moderate. */}
+            {scope.own_courses && courses.length > 0 && (
+                <p className="mb-4 flex flex-wrap gap-3 text-sm" data-testid="review-forums">
+                    <span className="text-gray-600">{teach.forums || 'Course forums'}:</span>
+                    {courses.map((course) => (
+                        <a key={course.id} className="text-[#7C2D37] hover:underline" href={`/learn/courses/${course.id}/forum`}>{course.title}</a>
+                    ))}
+                </p>
+            )}
             {scope.own_courses && !scope.course_count && (
                 <p className="mb-4 rounded border border-amber-200 bg-amber-50 p-3 text-sm text-amber-900" data-testid="review-scope-empty">
                     {t.reviews_scope_none || 'No courses are assigned to you yet. The office links your sign-in to your instructor profile and assigns courses to it on the course form; then their submissions appear here.'}

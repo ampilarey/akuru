@@ -56,6 +56,7 @@ use App\Domains\Courses\Http\Controllers\CatalogReviewController;
 use App\Domains\Courses\Http\Controllers\CatalogRubricController;
 use App\Domains\Courses\Http\Controllers\CourseCertificateController;
 use App\Domains\Courses\Http\Controllers\CourseCompletionReportController;
+use App\Domains\Courses\Http\Controllers\CourseForumController;
 use App\Domains\Courses\Http\Controllers\CourseLevelController;
 use App\Domains\Courses\Http\Controllers\CourseOutlineController;
 use App\Domains\Courses\Http\Controllers\CourseSubjectController;
@@ -354,6 +355,14 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/learn/catalog', [LearnCatalogController::class, 'index'])->name('learn.catalog');
     Route::post('/learn/courses/{course}/enroll', [LearnCatalogController::class, 'enroll'])->name('learn.courses.enroll')->whereNumber('course');
     Route::get('/learn/courses/{course}', [LearnCourseController::class, 'show'])->name('learn.courses.show')->whereNumber('course');
+    // Moodle parity slice M3 (STATUS §5oj): the course's discussion forum,
+    // for its learners and teachers (ResolveForumAccessAction).
+    Route::get('/learn/courses/{course}/forum', [CourseForumController::class, 'index'])->name('courses.forum.index')->whereNumber('course');
+    Route::post('/learn/courses/{course}/forum', [CourseForumController::class, 'store'])->name('courses.forum.store')->whereNumber('course')->middleware('throttle:20,10,forum-topic');
+    Route::get('/learn/courses/{course}/forum/{topic}', [CourseForumController::class, 'show'])->name('courses.forum.topic')->whereNumber('course')->whereNumber('topic');
+    Route::post('/learn/courses/{course}/forum/{topic}/replies', [CourseForumController::class, 'reply'])->name('courses.forum.reply')->whereNumber('course')->whereNumber('topic')->middleware('throttle:60,10,forum-reply');
+    Route::post('/learn/courses/{course}/forum/{topic}/moderate', [CourseForumController::class, 'moderateTopic'])->name('courses.forum.moderate')->whereNumber('course')->whereNumber('topic');
+    Route::post('/learn/courses/{course}/forum/posts/{post}/moderate', [CourseForumController::class, 'moderatePost'])->name('courses.forum.posts.moderate')->whereNumber('course')->whereNumber('post');
     Route::get('/learn/lessons/{lesson}', [LearnLessonController::class, 'show'])->name('learn.lessons.show')->whereNumber('lesson');
     Route::post('/learn/lessons/{lesson}/complete', [LearnLessonController::class, 'complete'])->name('learn.lessons.complete')->whereNumber('lesson');
     Route::get('/learn/media/{media}', [LearnMediaController::class, 'show'])->name('learn.media.show')->whereNumber('media');

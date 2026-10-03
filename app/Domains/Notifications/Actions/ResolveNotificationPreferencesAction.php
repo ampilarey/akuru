@@ -35,6 +35,9 @@ class ResolveNotificationPreferencesAction
         // orders to fulfil, the office's slips to confirm.
         'shop' => 'Bookstore orders',
         'lending' => 'Book lending',
+        // Moodle parity slice M3 (2026-10-03): replies in a course forum,
+        // and new topics to the course's teachers.
+        'courses' => 'Course discussions',
     ];
 
     /**

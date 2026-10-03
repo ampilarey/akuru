@@ -3,6 +3,7 @@
 namespace App\Domains\Courses\Http\Controllers;
 
 use App\Domains\Courses\Actions\ListCourseLearningAction;
+use App\Domains\Courses\Actions\ResolveForumAccessAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,7 +17,12 @@ class LearnCourseController extends Controller
 
         return Inertia::render(
             'Courses/Learn/Show',
-            app(ListCourseLearningAction::class)->execute($course, (int) $request->user()->id),
+            app(ListCourseLearningAction::class)->execute($course, (int) $request->user()->id) + [
+                // Moodle parity slice M3: the course's forum, for whoever may use it.
+                'forum_href' => app(ResolveForumAccessAction::class)->execute($course, $request->user()) !== null
+                    ? route('courses.forum.index', $course, false)
+                    : null,
+            ],
         );
     }
 }

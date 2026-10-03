@@ -63,4 +63,6 @@ return [
     'waiting_payment' => 'Awaiting payment',
     'waiting_approval' => 'Awaiting approval by the office',
     'waiting_details' => 'Enrolments and payments',
+    // Moodle parity slice M3: the course's discussion forum.
+    'forum_open' => 'Discussion',
 ];

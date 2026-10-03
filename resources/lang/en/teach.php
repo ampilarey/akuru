@@ -44,4 +44,6 @@ return [
     'rubric_default_low' => 'Not yet',
     'rubric_default_mid' => 'Good',
     'rubric_default_high' => 'Excellent',
+    'forum' => 'Forum',
+    'forums' => 'Course forums',
 ];

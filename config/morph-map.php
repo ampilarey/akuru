@@ -68,6 +68,9 @@ return [
     'cpd_record' => \App\Domains\HR\Models\CpdRecord::class,
     'course_category' => \App\Domains\Courses\Models\CourseCategory::class,
     'course_level' => \App\Domains\Courses\Models\CourseLevel::class,
+    // Moodle parity slice M3 (STATUS §5oj): a course's discussion forum.
+    'course_forum_post' => \App\Domains\Courses\Models\CourseForumPost::class,
+    'course_forum_topic' => \App\Domains\Courses\Models\CourseForumTopic::class,
     'course_module' => \App\Domains\Courses\Models\CourseModule::class,
     'attendance_record' => \App\Domains\Offerings\Models\AttendanceRecord::class,
     'course_offering' => \App\Domains\Offerings\Models\CourseOffering::class,
