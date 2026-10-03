@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Actions;
 use App\Domains\Courses\Models\Activity;
 use App\Domains\Courses\Models\Assessment;
 use App\Domains\Courses\Models\Course;
+use App\Domains\Courses\Models\Rubric;
 use App\Domains\Progress\Actions\ListPendingReviewsAction;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -29,23 +30,30 @@ class ListReviewQueueAction
         $courses = $this->courses($pending->pluck('course_id')->all());
         $activities = Activity::query()
             ->whereIn('id', $pending->where('kind', 'activity')->pluck('activity_id')->filter()->all() ?: [0])
-            ->get(['id', 'title', 'data'])
+            ->get(['id', 'title', 'data', 'rubric_id'])
             ->keyBy('id');
         $assessments = Assessment::query()
             ->whereIn('id', $pending->where('kind', 'assessment')->pluck('assessment_id')->filter()->all() ?: [0])
-            ->get(['id', 'title'])
+            ->get(['id', 'title', 'rubric_id'])
+            ->keyBy('id');
+        // Moodle parity slice M2: the marker is shown the item's rubric.
+        $rubrics = Rubric::query()
+            ->whereIn('id', $activities->pluck('rubric_id')->merge($assessments->pluck('rubric_id'))->filter()->unique()->all() ?: [0])
+            ->get()
             ->keyBy('id');
 
-        return $pending->map(function (array $row) use ($students, $courses, $activities, $assessments): array {
+        return $pending->map(function (array $row) use ($students, $courses, $activities, $assessments, $rubrics): array {
+            $item = null;
             if (($row['kind'] ?? '') === 'activity') {
-                $activity = $activities->get($row['activity_id'] ?? 0);
+                $item = $activity = $activities->get($row['activity_id'] ?? 0);
                 $row['title'] = $activity?->title ?? 'Activity';
                 $row['prompt'] = $activity?->data['prompt'] ?? null;
             }
             if (($row['kind'] ?? '') === 'assessment') {
-                $assessment = $assessments->get($row['assessment_id'] ?? 0);
+                $item = $assessment = $assessments->get($row['assessment_id'] ?? 0);
                 $row['title'] = $assessment?->title ?? 'Assessment';
             }
+            $row['rubric'] = $item?->rubric_id ? $rubrics->get($item->rubric_id)?->present() : null;
 
             $student = $students->get($row['student_id'] ?? 0);
             $course = $courses->get($row['course_id'] ?? 0);

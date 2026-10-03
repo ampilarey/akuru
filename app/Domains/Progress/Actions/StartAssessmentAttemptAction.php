@@ -108,6 +108,9 @@ class StartAssessmentAttemptAction
             // mark. A teacher who wrote a comment meant the student to read it.
             'feedback' => $attempt->feedback,
             'item_scores' => $hideScore ? null : $attempt->item_scores,
+            // Moodle parity slice M2: the rubric levels chosen carry points,
+            // so they are part of the mark and follow `show_results`.
+            'rubric_scores' => $hideScore ? null : $attempt->rubric_scores,
             'reviewed_at' => optional($attempt->reviewed_at)?->toIso8601String(),
             // SPEC §31: the countdown is served, not inferred. A client that
             // computes remaining time from its own clock disagrees with the

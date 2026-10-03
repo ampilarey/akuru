@@ -4,7 +4,7 @@ namespace App\Domains\Courses\Http\Controllers;
 
 use App\Domains\Courses\Actions\ListCoursesTaughtByUserAction;
 use App\Domains\Courses\Actions\ListTeacherReviewReportsAction;
-use App\Domains\Progress\Actions\ReviewAttemptAction;
+use App\Domains\Courses\Actions\MarkSubmissionAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Inertia\Phrases;
@@ -34,7 +34,7 @@ class CatalogReviewController extends Controller
 
         return Inertia::render(
             'Courses/Catalog/Reviews',
-            app(ListTeacherReviewReportsAction::class)->execute($this->filters($request)) + ['t' => Phrases::once('admin')],
+            app(ListTeacherReviewReportsAction::class)->execute($this->filters($request)) + ['t' => Phrases::once('admin'), 'teach' => Phrases::once('teach')],
         );
     }
 
@@ -122,10 +122,10 @@ class CatalogReviewController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $this->authorizeReviewer($request);
-        app(ReviewAttemptAction::class)->execute(
+        app(MarkSubmissionAction::class)->execute(
             (string) $request->input('kind'),
             (int) $request->input('attempt_id'),
-            $request->only(['score', 'max_score', 'feedback', 'item_scores']),
+            $request->only(['score', 'max_score', 'feedback', 'item_scores', 'rubric']),
             (int) $request->user()->id,
             $this->ownCourseIds($request),
         );

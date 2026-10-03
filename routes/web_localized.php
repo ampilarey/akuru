@@ -53,6 +53,7 @@ use App\Domains\Courses\Http\Controllers\CatalogQuestionController;
 use App\Domains\Courses\Http\Controllers\CatalogQuranOversightController;
 use App\Domains\Courses\Http\Controllers\CatalogReportsController;
 use App\Domains\Courses\Http\Controllers\CatalogReviewController;
+use App\Domains\Courses\Http\Controllers\CatalogRubricController;
 use App\Domains\Courses\Http\Controllers\CourseCertificateController;
 use App\Domains\Courses\Http\Controllers\CourseCompletionReportController;
 use App\Domains\Courses\Http\Controllers\CourseLevelController;
@@ -1481,6 +1482,11 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('courses/{course}/activities', [CatalogActivityController::class, 'store'])->name('catalog.courses.activities.store')->whereNumber('course');
         Route::put('courses/{course}/activities/{activity}', [CatalogActivityController::class, 'update'])->name('catalog.courses.activities.update')->whereNumber('course')->whereNumber('activity');
         Route::delete('courses/{course}/activities/{activity}', [CatalogActivityController::class, 'destroy'])->name('catalog.courses.activities.destroy')->whereNumber('course')->whereNumber('activity');
+        // Moodle parity slice M2 (STATUS §5oi): a course's marking rubrics.
+        Route::get('courses/{course}/rubrics', [CatalogRubricController::class, 'index'])->name('catalog.courses.rubrics.index')->whereNumber('course');
+        Route::post('courses/{course}/rubrics', [CatalogRubricController::class, 'store'])->name('catalog.courses.rubrics.store')->whereNumber('course');
+        Route::put('courses/{course}/rubrics/{rubric}', [CatalogRubricController::class, 'update'])->name('catalog.courses.rubrics.update')->whereNumber('course')->whereNumber('rubric');
+        Route::delete('courses/{course}/rubrics/{rubric}', [CatalogRubricController::class, 'destroy'])->name('catalog.courses.rubrics.destroy')->whereNumber('course')->whereNumber('rubric');
         Route::get('courses/{course}/outline', [CourseOutlineController::class, 'show'])->name('catalog.courses.outline')->whereNumber('course');
         Route::post('courses/{course}/modules', [CourseOutlineController::class, 'storeModule'])->name('catalog.courses.modules.store')->whereNumber('course');
         // SPEC §12 Module Management: edit, reorder, publish/unpublish. Only

@@ -27,6 +27,7 @@ class AssessmentAttempt extends Model
         'submitted_at',
         'feedback',
         'item_scores',
+        'rubric_scores',
         'reviewed_by',
         'reviewed_at',
     ];
@@ -36,6 +37,7 @@ class AssessmentAttempt extends Model
         return [
             'status' => AssessmentAttemptStatus::class,
             'answers' => 'array',
+            'rubric_scores' => 'array',
             'snapshots' => 'array',
             'item_scores' => 'array',
             'started_at' => 'datetime',

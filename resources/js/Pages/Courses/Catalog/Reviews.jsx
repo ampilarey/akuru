@@ -62,14 +62,65 @@ function Submission({ answers }) {
     );
 }
 
-function ReviewRow({ row }) {
+/**
+ * Moodle parity slice M2 (STATUS §5oi): with a rubric, the marker picks one
+ * level per criterion and the score follows — the points out of the best,
+ * scaled to what the item is marked out of. The server does the same sum and
+ * is the one that counts; this only shows it before saving.
+ */
+function RubricMarker({ rubric, chosen, onChoose, outOf, tt }) {
+    const points = rubric.criteria.reduce((sum, c) => sum + (Number(c.levels.find((l) => l.id === chosen[c.id])?.points) || 0), 0);
+    const complete = rubric.criteria.every((c) => chosen[c.id]);
+    const score = Math.round((points / Math.max(1, rubric.max_points)) * outOf);
+
+    return (
+        <div className="mb-3 overflow-x-auto rounded border border-[#E6D9C5]" data-testid="rubric-marker">
+            <p className="bg-[#F3EBE0] px-3 py-2 text-sm font-medium">{rubric.title}</p>
+            <table className="min-w-full text-sm">
+                <tbody>
+                    {rubric.criteria.map((criterion) => (
+                        <tr key={criterion.id} className="border-t align-top">
+                            <th className="px-2 py-2 text-start font-medium">{criterion.title}</th>
+                            {criterion.levels.map((level) => (
+                                <td key={level.id} className="px-1 py-1">
+                                    <label className={`block cursor-pointer rounded border p-2 ${chosen[criterion.id] === level.id ? 'border-[#7C2D37] bg-[#F9F4EE]' : 'border-transparent'}`}>
+                                        <input
+                                            type="radio"
+                                            className="me-1"
+                                            name={`rubric-${criterion.id}`}
+                                            checked={chosen[criterion.id] === level.id}
+                                            onChange={() => onChoose(criterion.id, level.id)}
+                                        />
+                                        {level.label}
+                                        <span className="block text-xs text-gray-500">{level.points}</span>
+                                    </label>
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+            <p className="px-3 py-2 text-sm" data-testid="rubric-total">
+                {complete
+                    ? (tt.rubric_mark_total || 'Rubric: :points of :max points, so :score out of :out_of')
+                        .replace(':points', points).replace(':max', rubric.max_points).replace(':score', score).replace(':out_of', outOf)
+                    : `${points} / ${rubric.max_points}`}
+            </p>
+        </div>
+    );
+}
+
+function ReviewRow({ row, tt = {} }) {
     const form = useForm({
         kind: row.kind,
         attempt_id: row.id,
         score: row.score || 0,
         max_score: row.max_score || 1,
         feedback: row.feedback || '',
+        rubric: {},
     });
+    const rubric = row.rubric || null;
+    const outOf = Number(row.max_score) || rubric?.max_points || 1;
     const waiting = row.waiting_hours == null
         ? ''
         : (row.waiting_hours >= 24 ? `${Math.floor(row.waiting_hours / 24)}d` : `${row.waiting_hours}h`);
@@ -80,6 +131,15 @@ function ReviewRow({ row }) {
             <p className="mb-1 text-sm text-gray-700">{row.student_name || 'Student'} · {row.course_title || 'Course'}{waiting ? ` · waiting ${waiting}` : ''}</p>
             <p className="mb-3 text-sm text-gray-600">{row.prompt || 'Teacher-marked submission'}</p>
             <Submission answers={row.answers} />
+            {rubric && (
+                <RubricMarker
+                    rubric={rubric}
+                    chosen={form.data.rubric}
+                    outOf={outOf}
+                    tt={tt}
+                    onChoose={(criterionId, levelId) => form.setData('rubric', { ...form.data.rubric, [criterionId]: levelId })}
+                />
+            )}
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
@@ -87,8 +147,12 @@ function ReviewRow({ row }) {
                 }}
                 className="grid gap-3 md:grid-cols-4"
             >
-                <input className="form-input" type="number" min="0" value={form.data.score} onChange={(e) => form.setData('score', e.target.value)} aria-label="Score" />
-                <input className="form-input" type="number" min="1" value={form.data.max_score} onChange={(e) => form.setData('max_score', e.target.value)} aria-label="Max score" />
+                {!rubric && (
+                    <>
+                        <input className="form-input" type="number" min="0" value={form.data.score} onChange={(e) => form.setData('score', e.target.value)} aria-label="Score" />
+                        <input className="form-input" type="number" min="1" value={form.data.max_score} onChange={(e) => form.setData('max_score', e.target.value)} aria-label="Max score" />
+                    </>
+                )}
                 <input className="form-input md:col-span-2" placeholder="Feedback" value={form.data.feedback} onChange={(e) => form.setData('feedback', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>Score and release</button>
                 <FormErrors errors={form.errors} />
@@ -143,6 +207,7 @@ export default function Reviews({
     weak_student_count = 0,
     scope = {},
     t = {},
+    teach = {},
 }) {
     return (
         <AppShell title="Teacher review">
@@ -179,7 +244,7 @@ export default function Reviews({
             <h2 className="mb-2 text-sm font-medium">Pending review</h2>
             {rows.length === 0 && <p className="mb-6 text-sm text-gray-500">No submitted work waiting for review.</p>}
             <div className="mb-8 space-y-3">
-                {rows.map((row) => <ReviewRow key={`${row.kind}-${row.id}`} row={row} />)}
+                {rows.map((row) => <ReviewRow key={`${row.kind}-${row.id}`} row={row} tt={teach} />)}
             </div>
 
             <h2 className="mb-2 text-sm font-medium">Weakness</h2>

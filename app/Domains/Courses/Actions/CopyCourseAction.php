@@ -16,6 +16,7 @@ use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\Lesson;
 use App\Domains\Courses\Models\LessonGlossaryItem;
 use App\Domains\Courses\Models\Question;
+use App\Domains\Courses\Models\Rubric;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -26,7 +27,7 @@ use Illuminate\Support\Str;
  *
  * **What is copied** is the course's design: its details, modules, lessons,
  * content blocks, activities, assessments with their questions, the lessons'
- * glossary links, and its own certificate templates.
+ * glossary links, its own certificate templates, and its marking rubrics.
  *
  * **What is not** is anything that happened in it: enrolments, attempts,
  * progress, payments, offerings, certificates issued, review decisions,
@@ -71,6 +72,12 @@ class CopyCourseAction
                     'created_by' => $actorId,
                 ],
             );
+            // Moodle parity slice M2: the course's rubrics come too, and the
+            // copy's items are marked by the copy's rubrics.
+            $rubrics = $this->copyRows(
+                Rubric::query()->where('course_id', $source->id)->get(),
+                fn (Rubric $rubric): array => ['course_id' => $copy->id, 'created_by' => $actorId],
+            );
             $questions = $this->copyRows(
                 Question::query()->where('course_id', $source->id)->get(),
                 fn (Question $question): array => ['course_id' => $copy->id, 'legacy_quiz_question_id' => null, 'legacy_assignment_id' => null, 'created_by' => $actorId],
@@ -82,6 +89,7 @@ class CopyCourseAction
                     'course_module_id' => $modules[(int) $assessment->course_module_id] ?? null,
                     'lesson_id' => $lessons[(int) $assessment->lesson_id] ?? null,
                     'status' => AssessmentStatus::Draft,
+                    'rubric_id' => $rubrics[(int) $assessment->rubric_id] ?? null,
                     'legacy_quiz_id' => null,
                     'legacy_assignment_id' => null,
                     'created_by' => $actorId,
@@ -100,6 +108,7 @@ class CopyCourseAction
                     'course_id' => $copy->id,
                     'course_module_id' => $modules[(int) $activity->course_module_id] ?? null,
                     'lesson_id' => $lessons[(int) $activity->lesson_id] ?? null,
+                    'rubric_id' => $rubrics[(int) $activity->rubric_id] ?? null,
                     'created_by' => $actorId,
                 ],
             );
