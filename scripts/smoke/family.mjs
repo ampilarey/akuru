@@ -159,12 +159,20 @@ check('the pupil has a name', NAME.length > 0, NAME || 'no h2 on /portal/perform
 // 1. homework, in the register — the only place it is written
 const teacher = await signIn(TEACHER);
 check('the teacher signs in', !teacher.url().includes('/login'), teacher.url());
-await teacher.goto(`${BASE}/en/academics/registers/today`, { waitUntil: 'networkidle' });
+// The school week is Sunday to Thursday: on a Friday or a Saturday in the
+// Maldives there is no register for today by design, and this walk went red
+// every weekend (STATUS §5nv). It takes the last school day instead — the
+// page and its generate button both take a date.
+let schoolDay = new Date(new Date().toLocaleString('en-US', { timeZone: 'Indian/Maldives' }));
+while ([5, 6].includes(schoolDay.getDay())) schoolDay = new Date(schoolDay.getTime() - 86400000);
+const DATE = `${schoolDay.getFullYear()}-${String(schoolDay.getMonth() + 1).padStart(2, '0')}-${String(schoolDay.getDate()).padStart(2, '0')}`;
+const REGISTERS = `${BASE}/en/academics/registers/today?date=${DATE}`;
+await teacher.goto(REGISTERS, { waitUntil: 'networkidle' });
 const generate = teacher.locator('button:has-text("Generate my registers")').first();
 if (await generate.count()) {
     await generate.click();
     await teacher.waitForTimeout(2500);
-    await teacher.goto(`${BASE}/en/academics/registers/today`, { waitUntil: 'networkidle' });
+    await teacher.goto(REGISTERS, { waitUntil: 'networkidle' });
 }
 
 // The register that has this pupil on its roster, found by looking rather
@@ -179,7 +187,7 @@ for (const href of [...new Set((await hrefs(teacher)).filter((h) => /\/academics
         break;
     }
 }
-check('a register for today has the pupil on its roster', Boolean(registerUrl) && CLASS.length > 0, registerUrl ? `${registerUrl.replace(BASE, '')} · ${CLASS}` : `no register today lists ${NAME}`);
+check('a register for the school day has the pupil on its roster', Boolean(registerUrl) && CLASS.length > 0, registerUrl ? `${DATE} · ${registerUrl.replace(BASE, '')} · ${CLASS}` : `no register on ${DATE} lists ${NAME}`);
 if (!registerUrl) {
     await finish();
 }

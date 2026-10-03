@@ -85,6 +85,15 @@ context.setDefaultNavigationTimeout(60000);
 await context.route('**/*', (route) => (route.request().url().startsWith(BASE) ? route.continue() : route.abort()));
 const page = await context.newPage();
 page.on('pageerror', (error) => problems.push(`page error: ${String(error).slice(0, 140)}`));
+// A console error is a broken screen the layout checks cannot see: a React
+// render error is swallowed by the shell and the page is simply blank — the
+// sweep saw one as "no menu button" (STATUS §5ns). The browser's own 404 for
+// a missing favicon is not one.
+page.on('console', (message) => {
+    if (message.type() === 'error' && !/favicon/i.test(message.text())) {
+        problems.push(`console on ${page.url().replace(BASE, '')}: ${message.text().slice(0, 140)}`);
+    }
+});
 page.on('response', (response) => {
     if (response.status() >= 500) {
         problems.push(`HTTP ${response.status()} ${response.url()}`);
@@ -216,5 +225,6 @@ const afterSheet = await page.evaluate(() => ({
 check('Manage users opens from the sheet, the sheet closes and System reads as current', afterSheet.url.endsWith('/admin/users') && !afterSheet.sheet && afterSheet.current === 'true', JSON.stringify(afterSheet));
 await Promise.all([page.waitForURL(/\/portal\/notifications/, { timeout: 15000 }).catch(() => {}), page.click('[data-testid="tab-alerts"]')]);
 check('Alerts opens the notifications', page.url().includes('/portal/notifications'), page.url());
+check('and no screen raised a page, console or server error', problems.length === 0, problems.slice(0, 3).join(' | '));
 
 await finish();

@@ -202,7 +202,10 @@ check('duplicated: a draft copy of the tracing book', (await inner(vendor, `[dat
 
 // ------------------------------------------------------------ 6. notices
 
-check('new-order SMS is closed by the office', await vendor.locator('[data-testid="notice-new_order-sms"]').isDisabled() && (await count(vendor, '[data-testid="notices-office-off"]')) === 1);
+// COMMERCE_PARITY_PLAN P5 (STATUS §5me): the office's switches are on by
+// default, so a shop may choose SMS for its notices from the start; the
+// office closing shop SMS, and what Fitrah then sees, is section 8's.
+check('with the office\'s shop-SMS switch on (P5\'s default), Fitrah can choose SMS for new orders', !(await vendor.locator('[data-testid="notice-new_order-sms"]').isDisabled()) && (await count(vendor, '[data-testid="notices-office-off"]')) === 0);
 await vendor.uncheck('[data-testid="notice-new_order-email"]');
 await vendor.click('[data-testid="save-notices"]');
 await settle(vendor, '[data-testid="flash-success"]');
@@ -226,10 +229,18 @@ await settle(office, '[data-testid="office-low-stock"]');
 check('the office sees low stock across shops', (await inner(office, '[data-testid="office-low-stock"]')).includes('Wooden Quran Stand'), (await inner(office, '[data-testid="office-low-stock"]')).slice(0, 160));
 const officeLines = await csvOf(office, await office.locator('[data-testid="export-order-lines"]').getAttribute('href'));
 check('and exports order lines for every shop', officeLines.status === 200 && officeLines.text.startsWith('number,status,vendor'));
+// The office closes shop SMS: Fitrah's SMS choice is disabled and the note
+// says why. Then open again — the default — so the next run finds it so
+// (this walk used to leave the switch flipped, STATUS §5nv).
+await office.uncheck('[data-testid="switch-vendor_sms"]');
+await office.click('[data-testid="save-switches"]');
+await settle(office, '[data-testid="flash-success"]');
+await vendor.goto(`${BASE}/en/vendor`, { waitUntil: 'networkidle' });
+check('with shop SMS closed by the office, Fitrah cannot choose SMS and is told why', await vendor.locator('[data-testid="notice-new_order-sms"]').isDisabled() && (await count(vendor, '[data-testid="notices-office-off"]')) === 1);
 await office.check('[data-testid="switch-vendor_sms"]');
 await office.click('[data-testid="save-switches"]');
 await settle(office, '[data-testid="flash-success"]');
 await vendor.goto(`${BASE}/en/vendor`, { waitUntil: 'networkidle' });
-check('with shop SMS on, Fitrah can choose SMS for new orders', !(await vendor.locator('[data-testid="notice-new_order-sms"]').isDisabled()));
+check('and opened again, the choice returns', !(await vendor.locator('[data-testid="notice-new_order-sms"]').isDisabled()));
 
 await finish();

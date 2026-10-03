@@ -4983,6 +4983,56 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5nv. Walk health: eight stale steps, two causes that were data, one check added (2026-10-03)
+
+The owner: "Is there anything left?" — the walks' known reds were the one
+engineering item with no decision attached. Every red was reproduced on
+`main` first; none was a defect in the product. Three kinds:
+
+- **Steps that asserted a default P5 had flipped** (COMMERCE_PARITY_PLAN
+  P5, STATUS §5me, turned the Library's and the Bookstore's notice
+  switches on by default): `admin.mjs` wanted the Library's email and SMS
+  switches off to start — it now flips email, reads the flip back and
+  restores it, whatever the start; `operations.mjs` wanted the office's
+  shop-SMS switch closed — section 6 now expects it open, section 8 has
+  the office close it (Fitrah's choice is disabled, the note says why),
+  then open it again, so the walk no longer leaves the switch flipped.
+- **Steps that depended on data another walk happened to make first**:
+  `admin.mjs`'s offers step struck a price on a card only when
+  `library.mjs` had uploaded a paid book earlier in the session, because
+  the smoke shelf had no paid item; its insights step counted reading
+  only when `library.mjs` had read first. `library.mjs`'s research shelf
+  had no year to filter by, because every smoke research item is a draft
+  until peer review accepts it — which is what those walks test.
+  `SmokeMarkerSeeder` now plants `SMOKE-Primer-Paid` (MVR 50) and
+  `SMOKE-Research-Published` (2025, planted as R2's import plants
+  already-reviewed papers), and `admin.mjs` opens a page in the reader
+  before it counts.
+- **The walks' own doing**: `admin.mjs` read the users badges from page
+  one, and the system admin had slipped off it as the walks registered
+  vendors, drivers and lenders — it filters by role now. `family.mjs`
+  asked for today's register and went red every Friday and Saturday,
+  which the school week does not have — it takes the last school day
+  (Indian/Maldives), which the page and its generate button both accept.
+  `gift.mjs` counted links whose whole text was "Digital Library"; since
+  W1 the header's product entry has a second line and since W3 the
+  footer names the library by its group — it reads a link's first line.
+  The website parent `SmokeMarkerSeeder` plants with "no role" had a
+  `lender` role left on from a lending run that once ticked the wrong row
+  by a substring match on "parent@", and landed on My lending instead of
+  My account; the seeder strips every role from that login now.
+- **Added**: `admin-mobile.mjs` records console errors and fails on any
+  (STATUS §5ns found a blank page that the layout checks read as "no menu
+  button"); the favicon's 404 is not one.
+
+Walks after: `admin.mjs` 43/43, `operations.mjs` 22/22, `family.mjs`
+40/40, `library.mjs` 31/31, `gift.mjs` 17/17, `admin-mobile.mjs` 11/11,
+and — with the two new shelf items — `reader.mjs` 39/39, `mobile.mjs`
+19/19, `website.mjs` 54/54, `identity.mjs` 47/47, `lending.mjs` 47/47,
+`peer-review.mjs` 18/18, `checkout.mjs` 49/49, `earnings.mjs` 13/13.
+KNOWN_ISSUES: the C15 slice 1 and slice 3 entries read "fixed" instead of
+"held, planned".
+
 ## 5nu. The Institute's phone tab bar (C15 slice 7, 2026-10-03)
 
 ADMIN_PANEL.md §7 M7 closes; the owner (2026-10-03): "Slice 7, the bottom
