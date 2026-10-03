@@ -27,8 +27,11 @@ it('renders the shell from the shared nav rather than a flat list of links', fun
         ->and($shell)->toContain('aria-expanded')
         // The screens live in App\Support\Navigation\NavigationMap, not here.
         // The account link, Alerts, and set-password are the only literal
-        // destinations. The phone menu repeats Alerts, so that is four.
-        ->and(substr_count($shell, '<Link href="'))->toBeLessThanOrEqual(4)
+        // destinations. The phone menu repeats Alerts, so that is four; the
+        // phone tab bar (STATUS §5nu) repeats it once more, so five. Its
+        // other tabs come from `nav.tabs` — the server's list, not the shell's.
+        ->and(substr_count($shell, '<Link href="'))->toBeLessThanOrEqual(5)
+        ->and($shell)->toContain('nav.tabs')
         ->and($shell)->not->toContain('href="/academics/years"')
         ->and($shell)->not->toContain('href="/hr/payroll"');
 });
