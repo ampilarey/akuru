@@ -4983,6 +4983,39 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5oe. The ID-card reader tuned on a real Maldivian card (C17 slice R2b, 2026-10-03)
+
+The owner sent a phone photo of a real card, front and back, to test §5od.
+The first reading got the ID number and the birth date and missed the
+rest. Run through the browser reader here; the photos were not kept, and
+the tests below use invented values in the card's real layout.
+
+- **Name.** The card prints the Dhivehi name beside the *Name* label and
+  the English one a few lines below, and recognition put noise between
+  them and a mark after the name. The reader now looks up to four lines
+  under the label, strips marks at the ends of words, keeps the leading
+  capitalised words of a mixed-case line, and wants a vowel in every word.
+  An unlabelled line is taken as a name only from a reading that is plainly
+  of a card (a heading, an ID number or a date): before, a junk header line
+  had become the name.
+- **Sex.** Recognition dropped the *Sex / Date of Birth* label line and
+  kept the values, so a lone M or F opening the line that holds the birth
+  date is now read as the sex, as is the letter under a *Sex* label.
+- **Never the card's own dates.** A date just after *Expires*, *Issued* or
+  *Valid* is never a birth date. The back's expiry date had been the only
+  date there, and would have been taken.
+- **Sideways photos.** The back was photographed sideways and read as
+  noise. A photo that yields almost nothing is now read again a quarter
+  turn each way and the fullest reading kept; the back then reads upright
+  and correctly adds nothing (a nickname and the expiry date).
+- *Common name* on the back is not the name.
+
+Result on the owner's photos: the front fills name, ID number, date of
+birth and sex, all correct; the back fills nothing. Tests:
+`tests/js/id-scan.test.mjs` 17 (4 new, built from the real card's reading
+with invented values). Admissions and architecture green (116). Walks:
+`id-scan.mjs` 20/20, `register.mjs` 15/15.
+
 ## 5od. Fill the registration form from a photo of the ID card (C17 slice R2, 2026-10-03)
 
 The owner: "cant u add an user friendly way like when id card is uploaded
