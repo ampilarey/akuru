@@ -19,13 +19,21 @@ class RegistrationFlow extends Model
         'status',
         'payload',
         'expires_at',
+        // C16 slice N5: the single-use resume link.
+        'resume_token_hash',
+        'resume_sent_at',
+        'resumed_at',
     ];
+
+    protected $hidden = ['resume_token_hash'];
 
     protected function casts(): array
     {
         return [
             'payload' => 'array',
             'expires_at' => 'datetime',
+            'resume_sent_at' => 'datetime',
+            'resumed_at' => 'datetime',
         ];
     }
 

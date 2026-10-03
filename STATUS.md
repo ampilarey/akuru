@@ -4983,6 +4983,53 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5oa. A link to finish a registration later — single-use, a day long, never a sign-in (C16 slice N5, 2026-10-03)
+
+OWNER_ACTIONS 14, decided 2026-10-03 ("Up to u"; the builder's call: build
+it). `registration_flows` had two readers and no writer since February,
+so `courses/register/resume` always answered "No active registration
+found" and the payments page had stopped offering it (§5dr).
+
+- **Asked for, not assumed.** The continue form — the step a family reaches
+  once their contact is verified — offers *Send me a link*. The link goes
+  to their verified contact, mobile first (SMS through the Notifications
+  contract, the Dhiraagu gateway where live) else email
+  (`RegistrationResumeLinkNotification`), with the courses named.
+- **Short-lived and single-use.** `IssueRegistrationResumeLinkAction`
+  writes (or refreshes) the person's flow with the courses, term and
+  checkout kind, a 40-character token's sha256 — never the token — and a
+  24-hour expiry. `ConsumeRegistrationResumeLinkAction` accepts a token
+  once, in constant time, while the flow is unexpired and unresumed;
+  everything else is "already been used or has expired", without saying
+  which. Three times in ten minutes per address for asking.
+- **The form, not a session.** Opening the link puts the chosen courses
+  back into the session, forgets any earlier verification, sends a fresh
+  code to the contact the link went to and lands on the code screen —
+  the returning-user path the registration already had. The link alone
+  signs nobody in, so a forwarded or leaked link is worth nothing without
+  the phone or inbox. The resume handler's old `Auth::login()` is gone.
+
+Tests: `RegistrationResumeLinkTest` (2, new) — the form offers it; the
+SMS carries the uuid and a token but not the hash; the flow row is as
+described and hides the hash; a stranger with the link gets the courses
+back, a code is sent, nobody is signed in; the same link again and a
+tampered token are refused; email when that is the contact; an expired
+link refused; no verified session, no link; nothing chosen, no link. The
+Admissions, Identity, Finance, Website and Routes suites stay green
+(498). The architecture gates moved with it: the new POST is declared in
+`public_routes` and `unguarded_write_routes` (guarded in the handler by
+the verified session; throttled), the `session_creations` line for
+`resume` is deleted because the handler no longer signs anyone in, and
+the Finance pin that waited for `registration_flows` to gain a writer
+(`LostPaymentReferenceTellsTheTruthTest`) fired and now pins the other
+way — the writer exists, and `payments/return-missing` still offers no
+bare link to the route, because the link is a token the family asks for.
+The notification is Admissions' own and the action takes ids and
+strings, not another domain's models (rule 3). Walk: signed in, from a
+course page to the continue form, *Send me a link*, the flash names the
+contact, the link from the log opens on the code screen with the course
+restored and nobody signed in.
+
 ## 5nz. A Hifz enrolment can end: `withdrawn` (C16 slice N4, 2026-10-03)
 
 OWNER_ACTIONS 15, decided 2026-10-03: "Add \"withdrawn\"". Until now

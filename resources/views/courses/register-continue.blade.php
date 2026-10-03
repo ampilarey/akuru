@@ -11,6 +11,16 @@
             @if($errors->any())
                 <div class="mb-4 p-3 bg-red-100 text-red-800 rounded">{{ $errors->first() }}</div>
             @endif
+            @if(session('success'))
+                <div class="mb-4 p-3 bg-green-100 text-green-800 rounded text-sm" data-testid="resume-link-sent">{{ session('success') }}</div>
+            @endif
+
+            {{-- C16 slice N5: a single-use link to come back to this form later (OWNER_ACTIONS 14). --}}
+            <form method="POST" action="{{ route('courses.register.resume-link') }}" class="mb-6 flex flex-wrap items-center gap-3 rounded border border-dashed border-gray-300 bg-gray-50 p-3 text-sm text-gray-700" data-testid="resume-link-form">
+                @csrf
+                <span class="grow">Not finishing now? We can send you a link to come back to this form — it works once, for 24 hours.</span>
+                <button type="submit" class="btn-secondary" data-testid="resume-link-send">Send me a link</button>
+            </form>
 
             <div x-data="enrollFlow()" x-init="init()">
                 <div class="mb-6">

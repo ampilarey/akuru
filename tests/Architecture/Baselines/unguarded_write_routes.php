@@ -58,6 +58,7 @@ return [
     'courses/register/enroll' => 'CourseRegistrationController@enroll — public funnel step.',
     'courses/register/enroll/confirm' => 'CourseRegistrationController@enrollConfirm — OTP-proved.',
     'courses/register/enroll/resend' => 'CourseRegistrationController@enrollResendOtp — throttled.',
+    'courses/register/resume-link' => 'CourseRegistrationController@sendResumeLink — a verified registration session (verifiedPendingUser or auth) asks for a link to its OWN verified contact; nothing from the request names the person. Throttled 3/10 (register-resume-link). C16 slice N5.',
     'courses/{course}/checkout/login' => 'CourseRegistrationController@checkoutLogin — public checkout login.',
     'courses/{course}/syllabus' => 'PublicSite\CourseController@syllabus — READ: sends a public marketing course its published syllabus; writes nothing.',
     'courses/{course}/waitlist' => 'PublicSite\CourseController@waitlist — public waitlist signup.',

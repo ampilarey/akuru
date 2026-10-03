@@ -56,5 +56,4 @@ return [
     'app/Domains/Identity/Actions/SwitchAccountAction.php' => 'Switches to an account already linked to the signed-in one: re-reads the verified link from the database and refuses anything not linked, so the request names which account and never grants one. The session id is regenerated, which is what stops this being session fixation.',
 
     // --- A bearer token ----------------------------------------------------
-    'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php::resume' => 'A random v4 UUID from `?flow=`, matched on its own for an anonymous caller — so the link IS the credential. Defensible: 24-hour expiry, never sent by SMS or email, lives only in the returning visitor\'s own URL. Recorded in KNOWN_ISSUES with what nobody had written down: not single-use, survives in browser history, and grants a **full** session rather than one scoped to finishing a registration. Narrowing those is a product decision.',
 ];

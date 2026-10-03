@@ -281,6 +281,9 @@ Route::get('courses/register/complete', [\App\Domains\Admissions\Http\Controller
     ->name('courses.register.complete');
 Route::get('courses/register/resume', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'resume'])
     ->name('courses.register.resume');
+// C16 slice N5: a single-use link to finish later, sent to the verified contact.
+Route::post('courses/register/resume-link', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'sendResumeLink'])
+    ->name('courses.register.resume-link')->middleware('throttle:3,10,register-resume-link');
 Route::get('courses/register/payment/retry', [\App\Domains\Admissions\Http\Controllers\CourseRegistrationController::class, 'retryPayment'])
     ->name('courses.register.payment.retry');
 
