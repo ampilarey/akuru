@@ -1,7 +1,8 @@
 import { useForm } from '@inertiajs/react';
 
 /**
- * COMMERCE_PARITY_PLAN P2/P3: identity cards, front and back.
+ * COMMERCE_PARITY_PLAN P2/P3: identity cards — the front, and an optional
+ * back (C17 slice R3, STATUS §5of: everything needed is on the front).
  *
  *  - <IdentityCardFields>: the two file inputs, inside a form that already
  *    exists (an application); the form must post with forceFormData.
@@ -25,7 +26,7 @@ export function IdentityCardFields({ form, l, required = true }) {
                     {form.errors.id_front && <span className="text-xs text-red-700">{form.errors.id_front}</span>}
                 </label>
                 <label className="text-sm">{l.id_back}
-                    <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" required={required} className="mt-1 block w-full text-sm"
+                    <input type="file" accept="image/jpeg,image/png,image/webp,application/pdf" className="mt-1 block w-full text-sm"
                         onChange={(e) => form.setData('id_back', e.target.files[0] ?? null)} data-testid="id-back" />
                     {form.errors.id_back && <span className="text-xs text-red-700">{form.errors.id_back}</span>}
                 </label>
@@ -95,7 +96,7 @@ export function IdentityChecks({ rows = [], l, title }) {
                                     <td className="p-2"><div className="font-medium" dir="auto">{row.name}</div><div className="text-xs text-gray-500" dir="ltr">{row.phone || row.email}</div><div className="text-xs text-gray-500">{row.submitted_at}</div></td>
                                     <td className="p-2">
                                         <a href={row.front_url} target="_blank" rel="noreferrer" className="me-2 text-blue-700 underline" data-testid={`identity-front-${row.id}`}>{l.id_front}</a>
-                                        <a href={row.back_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`identity-back-${row.id}`}>{l.id_back}</a>
+                                        {row.back_url && <a href={row.back_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`identity-back-${row.id}`}>{l.id_back}</a>}
                                     </td>
                                     <td className="p-2"><IdentityStatus status={row.status} l={l} />{row.note && <div className="text-xs text-gray-600">{row.note}</div>}</td>
                                     <td className="p-2">{row.status === 'pending' ? <DecideRow row={row} l={l} /> : <span className="text-xs text-gray-500">{row.decided_at}</span>}</td>

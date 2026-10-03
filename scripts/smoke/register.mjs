@@ -226,13 +226,13 @@ if (p.url().includes('register/continue')) {
     if (await el.count()) { await el.selectOption({ index: 1 }).catch(() => {}); }
   }
 
-  // COMMERCE_PARITY_PLAN P3: both sides of the learner's ID card, asked here and
-  // never holding the enrolment up — the office checks it afterwards.
+  // COMMERCE_PARITY_PLAN P3: the learner's ID card, never holding the enrolment
+  // up — the office checks it afterwards. The front only since C17 slice R3
+  // (STATUS §5of): "all the important informations are on front page only".
   const card = review.locator('[data-testid="learner-id-card"]');
-  check('the review step asks for both sides of the ID card', (await card.count()) === 1 && (await review.locator('input[name="id_front"]').count()) === 1 && (await review.locator('input[name="id_back"]').count()) === 1);
+  check('the review step asks for the front of the ID card only', (await card.count()) === 1 && (await review.locator('input[name="id_front"]').count()) === 1 && (await review.locator('input[name="id_back"]').count()) === 0);
   const idImage = { name: 'smoke-id.png', mimeType: 'image/png', buffer: await p.screenshot({ clip: { x: 0, y: 0, width: 80, height: 80 } }) };
   await review.locator('input[name="id_front"]').setInputFiles(idImage).catch(() => {});
-  await review.locator('input[name="id_back"]').setInputFiles(idImage).catch(() => {});
 
   // STATUS §5oc: the terms are on this form, and the button says what happens.
   const terms = review.locator('[data-testid="enroll-terms-accept"]');

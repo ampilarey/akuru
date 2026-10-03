@@ -50,7 +50,7 @@ function ApplicationsQueue({ applications }) {
                                 {app.identity && (
                                     <span className="mt-1 flex gap-2">
                                         <a className="text-[#7C2D37] underline" href={app.identity.front_url} target="_blank" rel="noopener" data-testid="application-id-front">ID front</a>
-                                        <a className="text-[#7C2D37] underline" href={app.identity.back_url} target="_blank" rel="noopener" data-testid="application-id-back">ID back</a>
+                                        {app.identity.back_url && <a className="text-[#7C2D37] underline" href={app.identity.back_url} target="_blank" rel="noopener" data-testid="application-id-back">ID back</a>}
                                     </span>
                                 )}
                             </td>

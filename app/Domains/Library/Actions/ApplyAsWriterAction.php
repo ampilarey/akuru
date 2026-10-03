@@ -52,7 +52,7 @@ class ApplyAsWriterAction
         }
         // COMMERCE_PARITY_PLAN P2: both sides of the ID card, kept by Identity and
         // checked by the office (the old single `id_document` is read for old rows only).
-        if ($idFront !== null && $idBack !== null) {
+        if ($idFront !== null) {
             app(IdentityVerificationAction::class)->submit($userId, 'writer', $idFront, $idBack);
         } elseif (IdentityVerificationAction::enforced()) {
             throw ValidationException::withMessages(['id_front' => __('validation.required', ['attribute' => __('account.id_front')])]);

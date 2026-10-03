@@ -156,4 +156,16 @@ class WebPImageService implements ImageProcessorInterface
 
         return (string) $image->toPng();
     }
+
+    public function shrinkForStorage(string $contents, int $maxSide, int $quality = 80): ?string
+    {
+        try {
+            $image = ImageManager::gd()->read($contents);
+            $image->scaleDown($maxSide, $maxSide);
+
+            return (string) $image->toJpeg($quality);
+        } catch (\Throwable) {
+            return null;
+        }
+    }
 }

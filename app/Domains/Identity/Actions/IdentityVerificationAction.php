@@ -11,7 +11,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
- * COMMERCE_PARITY_PLAN P2/P3: a person's identity card, front and back, and
+ * COMMERCE_PARITY_PLAN P2/P3: a person's identity card — the front, and the
+ * back when they send it (optional since C17 slice R3, STATUS §5of: the owner,
+ * "all the important informations are on front page only") — and
  * the office's verdict — the one place shops (`vendor`), writers (`writer`)
  * and learners (`learner`, with the child's student id) keep it (rule 11).
  * Other domains call this Action; they never read the table.
@@ -29,21 +31,23 @@ class IdentityVerificationAction
 
     public const MAX_BYTES = 8 * 1048576;
 
-    /** Validation rules for the two files, for the forms that take them. */
+    /** Photos are kept at most this many pixels on the long side, re-saved as JPEG (C17 slice R3). */
+    public const MAX_SIDE = 1600;
+
+    /** Validation rules for the files, for the forms that take them: the front, and an optional back. */
     public static function fileRules(bool $required = true): array
     {
-        $rule = [$required ? 'required' : 'nullable', 'file', 'mimes:jpeg,jpg,png,webp,pdf', 'max:8192'];
+        $file = ['file', 'mimes:jpeg,jpg,png,webp,pdf', 'max:8192'];
 
-        return ['id_front' => $rule, 'id_back' => $rule];
+        return ['id_front' => [$required ? 'required' : 'nullable', ...$file], 'id_back' => ['nullable', ...$file]];
     }
 
     /** A new card for checking. A card already verified stays verified; this one waits. */
-    public function submit(int $userId, string $purpose, UploadedFile $front, UploadedFile $back, ?int $studentId = null): IdentityVerification
+    public function submit(int $userId, string $purpose, UploadedFile $front, ?UploadedFile $back = null, ?int $studentId = null): IdentityVerification
     {
         $this->guardPurpose($purpose);
-        $store = app(StorePrivateMediaAction::class);
-        $frontId = $store->execute($front, $userId, self::MIMES, self::MAX_BYTES)['id'];
-        $backId = $store->execute($back, $userId, self::MIMES, self::MAX_BYTES)['id'];
+        $frontId = $this->storeSide($front, $userId);
+        $backId = $back !== null ? $this->storeSide($back, $userId) : null;
 
         return IdentityVerification::query()->create([
             'user_id' => $userId,
@@ -55,14 +59,20 @@ class IdentityVerificationAction
         ]);
     }
 
-    /** P3: store one side now (a form that finishes later), for `submitStored`. */
+    /**
+     * Store one side. A photo is kept smaller — scaled to MAX_SIDE on its long
+     * side and re-saved as JPEG, which also drops what the camera wrote into it
+     * (location among it) — in the same private store as before, whenever that
+     * copy is smaller than what was sent; a PDF is kept as sent (C17 slice R3,
+     * STATUS §5of).
+     */
     public function storeSide(UploadedFile $file, int $userId): int
     {
-        return (int) app(StorePrivateMediaAction::class)->execute($file, $userId, self::MIMES, self::MAX_BYTES)['id'];
+        return (int) app(StorePrivateMediaAction::class)->execute($file, $userId, self::MIMES, self::MAX_BYTES, self::MAX_SIDE)['id'];
     }
 
-    /** P3: a card whose two sides were stored earlier by `storeSide`. */
-    public function submitStored(int $userId, string $purpose, int $frontId, int $backId, ?int $studentId = null): IdentityVerification
+    /** P3: a card whose sides were stored earlier by `storeSide` (the back may be absent). */
+    public function submitStored(int $userId, string $purpose, int $frontId, ?int $backId = null, ?int $studentId = null): IdentityVerification
     {
         $this->guardPurpose($purpose);
 
@@ -240,7 +250,9 @@ class IdentityVerificationAction
             return null;
         }
 
-        return app(ReadPrivateMediaAction::class)->execute((int) ($side === 'front' ? $row->front_media_file_id : $row->back_media_file_id));
+        $mediaId = $side === 'front' ? $row->front_media_file_id : $row->back_media_file_id;
+
+        return $mediaId === null ? null : app(ReadPrivateMediaAction::class)->execute((int) $mediaId);
     }
 
     /**
@@ -293,7 +305,7 @@ class IdentityVerificationAction
             'submitted_at' => $v->created_at?->toDateTimeString(),
             'decided_at' => $v->decided_at?->toDateTimeString(),
             'front_url' => route('identity.document', [$v->id, 'front']),
-            'back_url' => route('identity.document', [$v->id, 'back']),
+            'back_url' => $v->back_media_file_id !== null ? route('identity.document', [$v->id, 'back']) : null,
             'decide_url' => route('identity.decide', $v->id),
         ];
     }

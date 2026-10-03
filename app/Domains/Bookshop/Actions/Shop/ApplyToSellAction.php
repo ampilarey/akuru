@@ -77,7 +77,7 @@ class ApplyToSellAction
             throw ValidationException::withMessages(['agreement' => __('shop.error_agreement_required')]);
         }
         // COMMERCE_PARITY_PLAN P2: both sides of the owner's ID card, checked by the office.
-        if ($idFront !== null && $idBack !== null) {
+        if ($idFront !== null) {
             app(IdentityVerificationAction::class)->submit($userId, 'vendor', $idFront, $idBack);
         } elseif (IdentityVerificationAction::enforced()) {
             throw ValidationException::withMessages(['id_front' => __('validation.required', ['attribute' => __('account.id_front')])]);

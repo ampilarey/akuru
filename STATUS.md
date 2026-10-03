@@ -4983,6 +4983,43 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5of. The front of the ID card is enough, and the photo is kept smaller (C17 slice R3, 2026-10-03)
+
+The owner: "How about adding front page only. Because all the important
+informations are on front page only. And how about saving a reduced file
+size of id to same space".
+
+- **Front only.** The back of the card is now optional for every identity
+  check: learners, shops, writers, lenders. The column becomes nullable
+  (additive, rule 9). The registration form no longer has a back upload;
+  the shop, writer, lender and My account forms keep one, labelled *Back
+  (optional)*. The office sees the front, and the back link only when a
+  back was sent. Every hint and error now says "the front" (EN/DV/AR).
+- **Kept smaller, in the same store.** A JPEG, PNG or WebP photo of a card
+  is scaled to 1,600 px on its long side, turned upright, and re-saved as
+  a JPEG at quality 80. That also drops the camera's metadata, location
+  included. It is stored in the same private store as before
+  (`StorePrivateMediaAction`, local disk, private), through the Media
+  domain's image service (`shrinkForStorage`). The smaller copy is kept
+  only when it really is smaller; otherwise the photo stays as sent. A PDF
+  is kept as sent. The owner's own two photos went from about 450 KB to
+  about 150 KB each; a phone camera's 3–5 MB original lands at about the
+  same size. Cards already on file are not touched.
+
+Tests: `IdCardFrontOnlyTest` (3, new) covers four cases. Enrolment with
+the front alone: the form has no back upload, the card has no back, the
+photo is stored as a JPEG of 1,600 px under half the bytes sent, and the
+office gets no back link. A back sent is kept, and a small photo is never
+enlarged. A dense small photo is never stored bigger, and a PDF is kept
+as sent. Only the front is required by every form. Three tests that
+pinned "both sides required" now pin "front required, back not".
+Identity, Admissions, Bookshop, Lending, Library, Portal, Media,
+registration and architecture suites green (764). Walks: `register.mjs`
+15/15 (the review step asks for the front only), `id-scan.mjs` 20/20,
+`lending.mjs` 47/47, `library.mjs` 31/31. `apply.mjs` is 16/17 on main
+too: the step "the portal is their shop, as owner, the agreement already
+accepted" fails with or without this change and is not about the card.
+
 ## 5oe. The ID-card reader tuned on a real Maldivian card (C17 slice R2b, 2026-10-03)
 
 The owner sent a phone photo of a real card, front and back, to test §5od.

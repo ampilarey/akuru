@@ -81,7 +81,7 @@
                     <form method="POST" action="{{ route('public.lending.identity') }}" enctype="multipart/form-data" class="mt-2 grid gap-2 sm:grid-cols-3" data-testid="identity-form">
                         @csrf
                         <label class="text-sm">{{ __('account.id_front') }}<input type="file" name="id_front" accept="image/jpeg,image/png,image/webp,application/pdf" required class="form-input w-full text-sm" data-testid="id-front"></label>
-                        <label class="text-sm">{{ __('account.id_back') }}<input type="file" name="id_back" accept="image/jpeg,image/png,image/webp,application/pdf" required class="form-input w-full text-sm" data-testid="id-back"></label>
+                        <label class="text-sm">{{ __('account.id_back') }}<input type="file" name="id_back" accept="image/jpeg,image/png,image/webp,application/pdf" class="form-input w-full text-sm" data-testid="id-back"></label>
                         <div class="self-end"><button type="submit" class="btn-primary text-sm" data-testid="identity-submit">{{ __('account.id_submit') }}</button></div>
                         <p class="text-xs text-gray-500 sm:col-span-3">{{ __('account.id_hint') }}</p>
                     </form>

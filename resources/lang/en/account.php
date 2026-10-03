@@ -89,10 +89,10 @@ return [
     'phone_set_password_now' => 'Welcome! Set a password now — next time you sign in with your number and this password.',
     'phone_sign_in_link' => 'Sign in with your mobile number',
     // COMMERCE_PARITY_PLAN P2/P3: identity cards, front and back.
-    'id_title' => 'Your identity card, both sides',
-    'id_hint' => 'A photo or scan of the front and the back of your ID card (or passport photo page and its back cover). JPEG, PNG, WebP or PDF, up to 8 MB each. Only the Akuru office sees them.',
+    'id_title' => 'Your identity card',
+    'id_hint' => 'A photo or scan of the front of your ID card (or the passport photo page): everything we need is there. The back is optional. JPEG, PNG, WebP or PDF, up to 8 MB. Photos are kept smaller. Only the Akuru office sees them.',
     'id_front' => 'Front',
-    'id_back' => 'Back',
+    'id_back' => 'Back (optional)',
     'id_submit' => 'Send for checking',
     'id_verify_title' => 'Verify your identity',
     'id_vendor_blurb' => 'Before your shop can put products on sale or ask for a payout, the office checks the owner\'s ID card. Upload both sides here.',
@@ -125,9 +125,9 @@ return [
     'id_decided_body_verified' => 'Thank you — the office has checked your ID card.',
     'id_decided_body_rejected' => 'The office could not accept your ID card: :note. Please send it again.',
     // COMMERCE_PARITY_PLAN P3: a learner's ID card.
-    'id_learner_title' => 'Your ID card, both sides',
-    'id_learner_child_title' => 'Your child\'s own ID card, both sides',
-    'id_learner_hint' => 'A photo of the front and the back (or the passport photo page and its back cover). Enrolment goes ahead; the office checks the card afterwards, and the certificate waits for that check. If the office already has this card, you can leave these empty.',
+    'id_learner_title' => 'Your ID card',
+    'id_learner_child_title' => 'Your child\'s own ID card',
+    'id_learner_hint' => 'A photo of the front of the ID card (or the passport photo page). Enrolment goes ahead; the office checks the card afterwards, and the certificate waits for that check. If the office already has this card, you can leave it empty.',
     // C17 slice R2 (STATUS §5od): fill the form from a photo of the ID card.
     'id_scan_title' => 'Fill in from your ID card',
     'id_scan_hint' => 'Take or choose a photo of the front of the ID card, or the passport photo page. It is read on this device, and you check what it fills in.',
@@ -147,7 +147,7 @@ return [
     'id_scan_field_gender' => 'gender',
     'id_scan_field_national_id' => 'ID card number',
     'id_scan_field_passport' => 'passport number',
-    'id_learner_needed' => 'Add both sides of the ID card.',
+    'id_learner_needed' => 'Add a photo of the front of the ID card.',
     'id_certificate_waits' => 'Your certificate is ready once the office has checked the ID card.',
     'id_col' => 'ID card',
 ];

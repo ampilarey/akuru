@@ -77,6 +77,6 @@ it('refuses a portrait that is not an image, an ID card of the wrong kind, and a
 
     $this->withoutLocalizationMiddleware()->actingAs($applicant)
         ->post(route('write.apply'), ['display_name' => 'Ustadha Aminath', 'agreement_accepted' => '1'])
-        ->assertSessionHasErrors(['id_front', 'id_back']);
+        ->assertSessionHasErrors(['id_front'])->assertSessionDoesntHaveErrors(['id_back']);
     expect(WriterApplication::query()->count())->toBe(0);
 });
