@@ -1,5 +1,7 @@
 <?php
 
+use App\Domains\Admissions\Actions\ConsumeRegistrationResumeLinkAction;
+use App\Domains\Admissions\Actions\IssueRegistrationResumeLinkAction;
 use App\Domains\Admissions\Models\RegistrationFlow;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -33,10 +35,14 @@ uses(RefreshDatabase::class);
  *
  * ## Why the second test is a grep
  *
- * The page's copy is only true while `registration_flows` stays unwritten. The
- * day somebody builds the resume feature, that assertion should fail and send
- * them back here — the two have to move together, and a comment would not
- * have made that happen.
+ * The page's copy was only true while `registration_flows` stayed unwritten,
+ * so a grep pinned that and sent whoever built the resume feature back here.
+ * It fired on 2026-10-03: C16 slice N5 (STATUS §5oa) gave the table its
+ * writer, `IssueRegistrationResumeLinkAction`. The link it issues is a
+ * single-use token a family asks for on the continue form and receives at
+ * their verified contact — so a *bare* link to `courses.register.resume`
+ * from this page is still a dead end, and the page still offers none. The
+ * grep now pins the other way: the writer exists, and must keep existing.
  */
 it('tells a family their payment will still be confirmed, and offers no dead end', function () {
     $response = $this->withoutLocalizationMiddleware()
@@ -58,7 +64,7 @@ it('still shows the reference when the bank sent one it does not know', function
         ->assertSee('AKURU-NOT-A-PAYMENT', false);
 });
 
-it('has no writer for the table the resume route reads', function () {
+it('has a writer for the table the resume route reads, and still offers no bare link to it', function () {
     $sources = '';
 
     foreach (['app', 'routes', 'database'] as $directory) {
@@ -76,13 +82,13 @@ it('has no writer for the table the resume route reads', function () {
     $writes = preg_match('/RegistrationFlow::(create|firstOrCreate|updateOrCreate|make)\b/', $sources)
         || preg_match('/new RegistrationFlow\b/', $sources);
 
-    expect($writes)->toBeFalsy(
-        'Something now creates a RegistrationFlow, so the resume route may work — which is good, and '
-        ."means `payments/return-missing` should offer it again.\n\n"
-        .'That page currently tells families the payment will be confirmed without them and gives them no '
-        .'resume link, because there was nothing to resume. Update the page and this test together.'
+    expect($writes)->toBeTruthy(
+        'Nothing creates a RegistrationFlow any more, so the resume link (C16 slice N5) cannot be issued. '
+        .'If the feature was removed on purpose, this test and payments/return-missing move together.'
     );
 
-    // And the readers are still there, so this is a gap rather than a removal.
-    expect(method_exists(RegistrationFlow::class, 'findResumable'))->toBeTrue();
+    // The readers are still there, and the token is the credential — not the uuid alone.
+    expect(method_exists(RegistrationFlow::class, 'findResumable'))->toBeTrue()
+        ->and(class_exists(IssueRegistrationResumeLinkAction::class))->toBeTrue()
+        ->and(class_exists(ConsumeRegistrationResumeLinkAction::class))->toBeTrue();
 });

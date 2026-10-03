@@ -246,7 +246,11 @@ it today without a backfill would hide every child from every parent.
 ### 14. The `resume` magic link — **decided 2026-10-03: build it** (the owner: "Up to u"; the builder's call, recorded here)
 
 Build, as a **short-lived, single-use** link that resumes the registration
-form only — never a signed-in session. Slice N5 in STATUS §5nw's list.
+form only — never a signed-in session. **Built 2026-10-03 (STATUS §5oa)**:
+asked for on the continue form, sent to the verified contact, good for 24
+hours, spent on first use; opening it restores the chosen courses and asks
+for a fresh code. The three properties this item once asked about are now
+settled by construction: single-use, a day long, no session granted.
 
 **Rewritten the same day it was written.** This item used to ask you to accept
 or narrow three security properties of `courses/register/resume?flow=<uuid>`:

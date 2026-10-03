@@ -14,13 +14,13 @@
     @endif
     {{--
         This used to offer "resume your registration", linking to
-        `courses.register.resume`. That link could never work: `registration_flows`
-        has two readers and no writer anywhere in the application, so the resume
-        route always answers "No active registration found. Please start again
-        from a course page." A family who may have just paid was being sent to a
-        dead end and told to start over.
+        `courses.register.resume` bare. At the time that link could never
+        work — `registration_flows` had no writer — and since C16 slice N5
+        (STATUS §5oa) it is a single-use token the family *asks for* on the
+        continue form and receives at their verified contact. A bare link to
+        the route is still a dead end, so none is offered here.
 
-        What replaces it is what actually happens. The bank's webhook is the
+        What is offered is what actually happens. The bank's webhook is the
         authority on payment (rule 12), and confirming a payment activates the
         enrolment inside that same transaction — `PaymentConfirmed` is what
         domains listen to. So a lost return reference costs the family nothing

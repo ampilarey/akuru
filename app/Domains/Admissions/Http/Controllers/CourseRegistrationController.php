@@ -3,6 +3,8 @@
 namespace App\Domains\Admissions\Http\Controllers;
 
 use App\Domains\Admissions\Actions\AnnounceFreeEnrollmentsAction;
+use App\Domains\Admissions\Actions\ConsumeRegistrationResumeLinkAction;
+use App\Domains\Admissions\Actions\IssueRegistrationResumeLinkAction;
 use App\Domains\Admissions\Actions\LearnerIdCardAction;
 use App\Domains\Admissions\Models\RegistrationFlow;
 use App\Domains\Admissions\Services\Enrollment\EnrollmentService;
@@ -25,6 +27,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class CourseRegistrationController extends PublicRegistrationController
@@ -1159,49 +1162,78 @@ class CourseRegistrationController extends PublicRegistrationController
      * Resume a registration that may have lost session state.
      * Accepts ?flow=<uuid> or finds the latest active flow for the authenticated user.
      */
+    /**
+     * Send a link to finish later (C16 slice N5). Offered on the continue
+     * form, to a person who has proved their contact in this session or is
+     * signed in; goes to their verified contact, mobile first.
+     */
+    public function sendResumeLink(Request $request): RedirectResponse
+    {
+        $user = $request->user() ?: $this->verifiedPendingUser();
+        if (! $user) {
+            return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
+        }
+        $courseIds = array_values(array_filter(array_map('intval', (array) session('pending_selected_course_ids', []))));
+        if ($courseIds === [] && session('pending_course_id')) {
+            $courseIds = [(int) session('pending_course_id')];
+        }
+        if ($courseIds === []) {
+            return back()->with('error', 'No course selected. Please start registration from a course page.');
+        }
+        $contact = $user->contacts()->whereNotNull('verified_at')->orderByRaw("CASE WHEN type = 'mobile' THEN 0 ELSE 1 END")->first();
+        if (! $contact) {
+            return back()->with('error', 'Please verify your contact first.');
+        }
+
+        app(IssueRegistrationResumeLinkAction::class)->execute((int) $user->id, (int) $contact->id, (string) $contact->type, (string) $contact->value, [
+            'course_ids' => $courseIds,
+            'term_id' => session('pending_term_id'),
+            'checkout_flow' => session('checkout_flow'),
+            'course_titles' => Course::whereIn('id', $courseIds)->pluck('title')->all(),
+        ]);
+
+        return back()->with('success', 'We sent a link to '.$contact->value.'. Open it any time in the next 24 hours to finish; it works once and will ask you for a code.');
+    }
+
+    /**
+     * Open a resume link (C16 slice N5): single-use and good for a day. The
+     * flow's courses come back into the session and a fresh code is sent to
+     * the contact the link went to; the person then verifies as a returning
+     * user does. The link itself signs nobody in, so a forwarded or leaked
+     * link is worth nothing without the phone or inbox it was sent to.
+     */
     public function resume(Request $request): RedirectResponse
     {
-        $user = $request->user();
+        $flow = app(ConsumeRegistrationResumeLinkAction::class)->execute($request->query('flow'), $request->query('t'));
 
-        $flowUuid = $request->query('flow');
-        $flow = null;
-
-        if ($flowUuid) {
-            $flow = RegistrationFlow::findResumable($flowUuid, $user?->id);
-        } elseif ($user) {
-            $flow = RegistrationFlow::latestActiveForUser($user->id);
-        }
-
-        if (! $flow) {
+        if (! $flow || ! $flow->contact_id || ! $flow->user_id) {
             return redirect()->route('public.courses.index')
-                ->with('error', 'No active registration found. Please start again from a course page.');
+                ->with('error', 'This link has already been used or has expired. Please start again from the course page.');
         }
 
-        // Re-hydrate session from DB-backed payload
         $payload = $flow->payload ?? [];
-        if (! empty($payload['course_ids'])) {
-            session([
-                'pending_selected_course_ids' => $payload['course_ids'],
-                'pending_term_id' => $payload['term_id'] ?? null,
-            ]);
-        }
+        session([
+            'pending_selected_course_ids' => array_values(array_map('intval', $payload['course_ids'] ?? [])),
+            'pending_course_id' => $payload['course_ids'][0] ?? null,
+            'pending_term_id' => $payload['term_id'] ?? null,
+            'checkout_flow' => $payload['checkout_flow'] ?? null,
+            'pending_contact_id' => $flow->contact_id,
+            'pending_user_id' => $flow->user_id,
+        ]);
+        session()->forget('otp_verified_user_id');
 
-        if ($flow->user_id && ! $user) {
-            $user = \App\Domains\Identity\Models\User::find($flow->user_id);
-            if ($user) {
-                Auth::login($user);
+        $contact = UserContact::find($flow->contact_id);
+        if ($contact) {
+            try {
+                $this->otpService->send($contact, 'verify_contact');
+            } catch (ValidationException $e) {
+                // Rate-limited: the form still opens, and says how long to wait.
+                return redirect()->route('courses.register.otp')->withErrors($e->errors());
             }
         }
 
-        if (! $user || ! $user->hasVerifiedContact()) {
-            session(['pending_contact_id' => $flow->contact_id, 'pending_user_id' => $flow->user_id]);
-
-            return redirect()->route('courses.register.otp')
-                ->with('info', 'Please verify your contact to continue.');
-        }
-
-        return redirect()->route('courses.register.continue')
-            ->with('info', 'Welcome back! Please complete your enrollment.');
+        return redirect()->route('courses.register.otp')
+            ->with('info', 'Welcome back. Enter the code we just sent to continue your registration.');
     }
 
     /**

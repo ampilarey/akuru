@@ -909,7 +909,9 @@ anyone in**. Starting a session is left to each caller, after its own checks.
 Fixing one door and not the other is how a door stays open, so both went
 together.
 
-### `resume` is a 24-hour magic link — **recorded, no change**
+### `resume` is a 24-hour magic link — **recorded, no change; then closed 2026-10-03 (STATUS §5oa)**
+
+**Closed:** the owner decided OWNER_ACTIONS 14 and C16 slice N5 rebuilt the link — asked for on the continue form, sent to the verified contact, a 40-character token whose hash alone is stored, 24 hours, spent on first use, and it **never signs anyone in**: opening it restores the chosen courses and asks for a fresh code. The three things below that were "worth an owner's eye" are all settled by construction. The record of what it was stays.
 
 `courses/register/resume?flow=<uuid>` calls `Auth::login()` for the flow's
 owner, and `RegistrationFlow::findResumable` matches on UUID alone when the
