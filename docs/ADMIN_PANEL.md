@@ -38,7 +38,7 @@ one per job, `App\Support\Navigation\WorkspaceMap`:
 
 | Workspace | Roles | Home | Bar | More |
 |---|---|---|---|---|
-| Institute | `super_admin` | `/admin` | Website CMS · Commerce · Library office · Bookstore · Manage users | Website & content · Shops & money · System · Personal |
+| Institute | `super_admin` | `/admin` | Website CMS · Commerce · Library office · Bookstore · Manage users | Website & content · Admissions · Shops & money · Settings · System · Personal (§8, 2026-10-03) |
 | School | `admin`, `headmaster`, `supervisor`, `teacher` | `/school` (a teacher: their day) | the office's or the teacher's bar | Admissions · School year · People · Day loop · Exams · Catalog · Teaching · Finance · HR · Library · Communication · My work · Personal |
 | Bookstore office | `bookshop_manager` | `/admin/bookshop` | Bookstore · Shop | Personal |
 | Family / Learn | `parent` / `student` | the family portal | the family's or the pupil's bar | Communication · Education · Evaluation · Other · Personal |
@@ -280,9 +280,10 @@ viewports, nothing lacking); `admin-mobile.mjs`, `admin-layout.mjs`,
   (P7, P8 — the cache store, OPcache, and the queue worker of BACKLOG C6).
   **Two of three done 2026-10-03** (STATUS §5nu): `CACHE_STORE=file` on the
   host and the config rebuilt; the queue worker and scheduler were
-  already in the crontab. Open: whether the web PHP has OPcache (the
-  terminal's `/usr/local/bin/php` has no opcache module; the web PHP is
-  set in cPanel's *Select PHP Version*).
+  already in the crontab. **The third done the same day**: OPcache ticked
+  in cPanel's *Select PHP Version* (the account's PHP 8.4), after a first
+  tick was refused with "pdo_mysql skipped as conflicting" and the owner
+  tried again (STATUS §5nw). Nothing of §7 is left to the owner.
   The tab bar's five (M7) were left to the builder on 2026-10-03 and are
   built (STATUS §5nu).
 
@@ -370,3 +371,67 @@ Owner, meanwhile: the cache store and OPcache on the host (P7, P8), the
 queue worker (C6).
 
 **Walked**: `admin-mobile.mjs` **3/3** on 50 screens after M1's fix.
+
+## 8. The navigation re-audit (2026-10-03, the owner: "reaudit the admin because many items are not linked, and make it easy now its complicated, make it easily accessible to different setting like bookstore, library etc")
+
+The owner walked the live panel on 2026-10-03 and could not find the
+enrolments, the payments, the place to change their password, or where a
+product's settings live. The first audit (§1) checked that every `/admin/*`
+landing was in the map; this one diffed **every staff GET route** against
+`NavigationMap::hrefs()` by machine: 182 staff screens, 165 hrefs in the
+map, **45 screens with no way in but their address**. Twenty-one of them are
+a parent screen's own (a form, a print view, the family's portal pages, a
+vendor's sub-pages) and are reached from it. The rest were not:
+
+| Screen | Was | Now |
+|---|---|---|
+| `/admin/library/settings`, `/insights`, `/promotions`, `/reviewers` | buttons on the Library office page only | chips under **Library office** on the hub and in the Shops sheet; Library settings also in **Settings** |
+| `/admin/public-site/news/categories` | a link on the news list | a chip under **Website CMS** |
+| `/account/set-password` | an address to type (the owner: "i dont see place to change the PW") | **Change password**, second in every workspace's Personal group |
+| `/academics/classes` (the class directory), `/academics/promotion` (end-of-year promotion) | nothing | items of **School year** |
+| `/finance/bank-statements` | nothing | an item of **Finance** |
+| `/catalog/quran/oversight` | nothing | an item of **Catalog** |
+| `/teach/assignments`, `/teach/milestones` (the Qur'an teacher's) | nothing | items of **Teaching** |
+| the Bookstore's switches (notices, cash on delivery, rewards, referrals, open or closed) | five sections scattered down a 9,000 px office page | one **Bookstore settings** section with its own heading and jump chip, `/admin/bookshop#settings` |
+| `/admin/enrollments` and its payments | the School's only (the owner, running the Institute alone: "i cpuld not find enrolment") | **Admissions** is a part of the Institute too; the School keeps it |
+
+Kept off the menus on purpose, as before: the reading alerts and the
+OTP-abuse log (a list that accuses people is opened from its parent
+screen, by decision), the deleted courses bin, the ayah preview, the
+developer's language preview.
+
+**Simpler, not just complete.** The Institute's More menu, home and
+phone bar now read the same way: **Website & content · Admissions ·
+Shops & money · Settings · System**. *Settings* is new and is the answer
+to the owner's "different setting like bookstore, library": one part
+with every product's settings screen — System settings, Library
+settings, Bookstore settings, Translations — so a setting is one tap
+from the home and from the Settings tab, whichever product it belongs
+to. System settings and Translations moved there from *System*, which
+is now Manage users and the two go-live screens. The phone bar is six
+tabs (Home · Website · Shops · Settings · System · Alerts); Admissions
+is a card on the home, not a tab, because six is what a 390 px phone
+carries.
+
+**A guard so it stays true.** `StaffScreensHaveADoorTest` diffs the
+staff routes (academics, exams, finance, HR, people, catalog,
+circulation, teaching) against the map on every CI run, with a four-line
+allowlist that must name the parent screen and may not name a route the
+map already carries. `AdminPagesAreReachableTest` gained the same
+no-stale-entries rule and lost the ten entries that were stale (the
+CMS's inner screens had been "opened from the hub" since they were
+children in the map).
+
+**Anchors in the map.** `/admin/bookshop#settings` is the first href
+with an anchor. `NavigationMap::path()` gives the route behind an href,
+`BuildNavigationAction` gates on that, and `app.jsx` carries the anchor
+across the locale redirect every unlocalised link is answered with (Inertia
+drops an anchor when the response's address is not the one asked for)
+and scrolls to the section once the page has drawn.
+
+**Walked**: `admin-hub.mjs` 26/26 (five parts, twenty-one sections, the
+Settings part's four), `admin-mobile.mjs` 13/13 (six tabs on all 50
+screens; the Settings sheet; Bookstore settings opens the office
+scrolled to its section), `nav.mjs` 14/14, `sections.mjs` 25/25,
+`long-pages.mjs` 17/17, `phone-targets.mjs` 5/5, `logout.mjs` 8/8.
+STATUS §5nw.

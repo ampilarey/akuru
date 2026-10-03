@@ -4983,6 +4983,116 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5nw. The navigation re-audit: every staff screen has a door, and a Settings part (C16 slice N1, 2026-10-03)
+
+The owner walked the live site on 2026-10-03 and then: "keep all
+remaining for later, i need u to fix all that needed to be fixed from
+previous things, and i need u to reaudit the admin because many itmes are
+not linked, and make it easy now its complicated, make it easily
+accecilbe to different setting like bookstore, library ect". The record
+of the audit is `docs/ADMIN_PANEL.md` §8; the six-slice plan it starts is
+BACKLOG C16.
+
+- **The audit, by machine.** Every GET route a member of staff may open
+  (182) against `NavigationMap::hrefs()` (165): 45 screens had no way in
+  but their address. Twenty-one are a parent's own and are reached from
+  it; twelve were simply unlinked — the class directory, the end-of-year
+  promotion wizard, the bank-statement import, the Qur'an oversight
+  report, the Qur'an teacher's assignments and milestones, the Library
+  office's insights, promotions, reviewers and settings, the news
+  categories, and the password screen (the owner, the same afternoon: "i
+  dont see place to change the PW"). Every one has a door now: items of
+  School year, Finance, Catalog and Teaching; chips under the Library
+  office and the Website CMS; **Change password** second in every
+  workspace's Personal group.
+- **A Settings part.** The Institute's menu, home and phone bar read
+  **Website & content · Admissions · Shops & money · Settings · System**.
+  Settings holds every product's settings screen — System settings,
+  Library settings, Bookstore settings, Translations — so a setting is one
+  tap away whichever product it belongs to. The Bookstore's five switches
+  (notices, cash on delivery, rewards, referrals, open or closed) were
+  scattered down a 9,000 px office page; they sit under one **Bookstore
+  settings** heading now, with a jump chip, and the Settings part opens
+  the office there (`/admin/bookshop#settings`, the map's first anchored
+  href — `NavigationMap::path()` gives the route behind it, and `app.jsx`
+  carries the anchor across the locale redirect Inertia would otherwise
+  lose it to, then scrolls to the section). System is Manage users and the
+  two go-live screens.
+- **Admissions is the Institute's too.** The owner, holding `super_admin`
+  alone on the live host: "i cpuld not find enrolment". Enrolments and
+  their payments were the School workspace's only (ADR-040's reading of
+  "education"); the website's course registrations and their card
+  payments are the business's as much as the school's, so the group is in
+  both workspaces and the route gate decides who opens it. A card on the
+  Institute home, not a tab: the phone bar is six (Home · Website · Shops
+  · Settings · System · Alerts), which is what 390 px carries.
+- **A guard.** `StaffScreensHaveADoorTest` diffs the staff routes against
+  the map on every run, with a four-line allowlist that must name the
+  parent screen and may not name a route the map already carries;
+  `AdminPagesAreReachableTest` gained the same rule and shed ten stale
+  entries. "A page nobody can navigate to is not shipped" now covers the
+  whole office, not `/admin/*` alone.
+
+Tests: `StaffScreensHaveADoorTest` (2, new); `AdminHubTest`,
+`AdminPanelAuditTest`, `WorkspacesTest`, `InstituteTabBarTest`,
+`WorkspaceMenusAreTheirOwnTest`, `NavigationIsGroupedByRoleTest` and
+`AdminPagesAreReachableTest` re-pinned to the five parts, the four tabs
+and the new doors — 198 across the nav, admin, routes, docs and
+architecture suites. Walks: `admin-hub.mjs` 26/26, `admin-mobile.mjs`
+13/13 (six tabs on all 50 screens; the Settings sheet lists the four;
+Bookstore settings lands the office scrolled to its section),
+`nav.mjs` 14/14, `sections.mjs` 25/25, `long-pages.mjs` 17/17,
+`phone-targets.mjs` 5/5, `logout.mjs` 8/8.
+
+**The live walkthrough, the same day — what was found and what was
+decided.** Recorded here because the owner asked for the rest "for
+later" and a list nobody wrote down is a list nobody does.
+
+*Done on the host by the owner, read back:* `CACHE_STORE=file`
+(§5nu); the scheduler and queue worker in the crontab (§5nu); **OPcache
+ticked** in cPanel's *Select PHP Version* for the account's PHP 8.4
+(first refused — "pdo_mysql skipped as conflicting" — then taken);
+`APP_ENV=production`, `APP_DEBUG=false`, `LOG_LEVEL=error`; **SMS live
+through Dhiraagu** — a test message and an OTP-shaped message both
+arrived, after a false alarm that was the resend guard holding earlier
+codes and a log level that hides the gateway's info lines; **a real MVR
+card payment confirmed** with the bank's reference in the payments
+list (OWNER_ACTIONS 2 closes); `permissions: 110 · roles: 14` on
+production, the same as a fresh local seed (OWNER_ACTIONS 4 closes); the
+super-admin password rotated through the shell's own screen
+(OWNER_ACTIONS 5 closes); the course categories seeded on production
+(`CourseCategorySeeder` — real content, run once; the demo and smoke
+seeders never). The owner's screenshot of `.env` exposed part of the SMS
+gateway's key and password; they were told to treat both as exposed and
+rotate them with the gateway.
+
+*Decided by the owner (OWNER_ACTIONS 14–16 updated):* the registration
+resume link is **built**, short-lived and single-use, resuming the form
+only (N5); Hifz gets a **`withdrawn`** status and a screen to end an
+enrolment (N4); **teachers mark only their own courses**, which needs the
+`course_instructor` assignment screen and a scoped review queue (N6).
+Payouts stay off until an accountant confirms; a writer's bank details
+are entered on the writer's desk already. Machine translations stand
+until the system admin corrects them on the Translations screen, which
+already works.
+
+*Found and queued (BACKLOG C16):* the CMS course form asks for a *Slug*
+and a *Cover Image URL* the office does not understand, there is no
+categories screen, and a CMS draft is not public until the catalog
+publishes it (N2); the OTP screen's wait does not count down and says
+"1 minutes" (N3).
+
+*Parked by the owner, "for later":* branch protection (OWNER_ACTIONS 6),
+an office email and phone for notices, the Qur'an read switch, dropping
+the archived tables, PDF OCR.
+
+*Open:* `/en/catalog/courses` answered 404 to the owner, signed in, on
+production; signed out the host answers 302 and locally the page answers
+200. Not reproduced — in KNOWN_ISSUES with the two things to check on the
+host. The "Payment test" course (slug `payment-test`) is live on the
+public site and should be archived or deleted now that the payment is
+proven.
+
 ## 5nv. Walk health: eight stale steps, two causes that were data, one check added (2026-10-03)
 
 The owner: "Is there anything left?" — the walks' known reds were the one

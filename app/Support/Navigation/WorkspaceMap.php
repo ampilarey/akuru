@@ -57,7 +57,14 @@ final class WorkspaceMap
     public static function all(): array
     {
         return [
-            'institute' => ['roles' => ['super_admin'], 'groups' => ['panel_website', 'panel_money', 'panel_system', 'me'], 'home' => 'admin.index'],
+            // The Institute holds Admissions too since the navigation re-audit
+            // (ADMIN_PANEL.md §8, STATUS §5nw): the website's course
+            // registrations and their payments are the business's, and the
+            // owner, running the Institute alone, "could not find enrolment".
+            // The School keeps the group as well; the route gate decides who
+            // may open it. Settings is a part of its own: every product's
+            // settings screen in one place.
+            'institute' => ['roles' => ['super_admin'], 'groups' => ['panel_website', 'panel_admissions', 'panel_money', 'panel_settings', 'panel_system', 'me'], 'home' => 'admin.index'],
             'school' => ['roles' => ['admin', 'headmaster', 'supervisor', 'teacher'], 'groups' => ['panel_admissions', 'school_year', 'people', 'day_loop', 'exams_group', 'catalog_group', 'teaching', 'finance_group', 'hr_group', 'library_group', 'communication', 'my_work', 'me'], 'home' => 'school.index'],
             'bookstore' => ['roles' => ['bookshop_manager'], 'groups' => ['me'], 'home' => 'admin.bookshop.index'],
             'family' => ['roles' => ['parent'], 'groups' => self::HOUSEHOLD, 'home' => 'portal.home'],
@@ -121,17 +128,19 @@ final class WorkspaceMap
      * The groups a workspace's phone tab bar carries (ADMIN_PANEL.md §7 M7,
      * C15 slice 7). The shell draws Home, one tab per group named here and
      * Alerts, below `sm` only; a tab opens a sheet of that group's screens.
-     * The Institute is the one workspace with a bar: its three parts are
-     * the panel's whole map, and the owner runs it from a phone. The School
-     * has thirteen groups, a family's and a shop's menus are short — a bar
-     * would be either a scroll or a repeat of the drawer, so they have none.
+     * The Institute is the one workspace with a bar: Website, Shops,
+     * Settings and System are the panel's map, and the owner runs it from
+     * a phone (Admissions is one card on the home, not a tab — six tabs is
+     * the most a 390 px phone carries). The School has thirteen groups, a
+     * family's and a shop's menus are short — a bar would be either a
+     * scroll or a repeat of the drawer, so they have none.
      *
      * @return list<string>
      */
     public static function tabsFor(string $workspace): array
     {
         return match ($workspace) {
-            'institute' => ['panel_website', 'panel_money', 'panel_system'],
+            'institute' => ['panel_website', 'panel_money', 'panel_settings', 'panel_system'],
             default => [],
         };
     }

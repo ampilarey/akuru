@@ -8,8 +8,8 @@ use App\Support\Navigation\BuildNavigationAction;
  * A workspace's home page (`/admin` for the Institute, `/school` for the
  * School; STATUS §5id): the workspace's *More* menu laid out as parts of
  * cards, so the whole workspace is one page to read. The admin panel's
- * parts (Admissions; Website & content; Shops & money; System) come with
- * each section's description and inner screens. The School's academic and
+ * parts (Website & content; Admissions; Shops & money; Settings; System)
+ * come with each section's description and inner screens. The School's academic and
  * office groups become two more parts, each group a card whose chips are
  * its screens. Everything is the navigation for this person in this
  * workspace, so a screen they could only be refused is not on the page.
@@ -37,8 +37,10 @@ class ComposeWorkspaceHomeAction
         'panel_money' => [
             'bookstore' => ['bookshop', 'akuru_fulfilment', 'complaints', 'sms_campaigns', 'shop_customers', 'shop_credit'],
         ],
+        // System settings and the translations moved to the Settings part
+        // in the navigation re-audit (ADMIN_PANEL.md §8), so the platform
+        // cluster went with them; Settings is one job and needs no heading.
         'panel_system' => [
-            'platform' => ['system_settings', 'translations'],
             'readiness' => ['ops_checklist', 'feature_walkthrough'],
         ],
     ];

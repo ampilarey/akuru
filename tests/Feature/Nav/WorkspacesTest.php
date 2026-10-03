@@ -79,10 +79,11 @@ it('builds the bar and the More menu for the active workspace only', function ()
     $nav = app(BuildNavigationAction::class)->execute($super, 'en');
     expect($nav['workspace'])->toBe('institute')
         ->and(array_column($nav['primary'], 'label'))->toBe(['Website CMS', 'Commerce', 'Library office', 'Akuru Bookstore', 'Manage users'])
-        ->and(array_column($nav['groups'], 'key'))->toBe(['panel_website', 'panel_money', 'panel_system', 'me']);
+        // Admissions and a Settings part since the navigation re-audit (ADMIN_PANEL.md §8).
+        ->and(array_column($nav['groups'], 'key'))->toBe(['panel_website', 'panel_admissions', 'panel_money', 'panel_settings', 'panel_system', 'me']);
     $hrefs = navHrefs($nav);
-    expect($hrefs)->toContain('/admin/public-site/pages', '/admin/instructors', '/admin/prayer-times/islands', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/users', '/admin/settings', '/admin/translations')
-        ->not->toContain('/admin/enrollments', '/academics/years', '/hr/payroll', '/exams/schedule');
+    expect($hrefs)->toContain('/admin/public-site/pages', '/admin/instructors', '/admin/prayer-times/islands', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/users', '/admin/settings', '/admin/translations', '/admin/enrollments', '/admin/library/settings', '/admin/bookshop#settings', '/account/set-password')
+        ->not->toContain('/academics/years', '/hr/payroll', '/exams/schedule');
 
     $admin = workspaceUser(['admin'], SCHOOL_PERMISSIONS);
     $nav = app(BuildNavigationAction::class)->execute($admin, 'en');
@@ -195,13 +196,16 @@ it('composes the Institute and the School homes from the workspace’s own menu'
         ->assertInertia(fn (Assert $page) => $page->component('Portal/WorkspaceHome')
             ->where('workspace', 'institute')
             ->where('t.institute_title', 'Institute')
-            ->has('parts', 3)
+            ->has('parts', 5)
             ->where('parts.0.key', 'panel_website')->where('parts.0.label', 'Website & content')->has('parts.0.sections', 4)
-            ->where('parts.0.sections.0.key', 'website_cms')->has('parts.0.sections.0.children', 8)->where('parts.0.sections.0.hard', false)
+            ->where('parts.0.sections.0.key', 'website_cms')->has('parts.0.sections.0.children', 9)->where('parts.0.sections.0.hard', false)
             ->where('parts.0.sections.1.key', 'admin_instructors')
             ->where('parts.0.sections.2.key', 'prayer_times')->has('parts.0.sections.2.children', 4)
-            ->where('parts.1.key', 'panel_money')->has('parts.1.sections', 9)
-            ->where('parts.2.key', 'panel_system')->has('parts.2.sections', 5)->where('parts.2.sections.0.key', 'manage_users')
+            ->where('parts.1.key', 'panel_admissions')->has('parts.1.sections', 1)
+            ->where('parts.2.key', 'panel_money')->has('parts.2.sections', 9)->has('parts.2.sections.1.children', 4)
+            ->where('parts.3.key', 'panel_settings')->where('parts.3.label', 'Settings')->has('parts.3.sections', 4)
+            ->where('parts.3.sections.2.key', 'bookshop_settings')->where('parts.3.sections.2.href', '/admin/bookshop#settings')
+            ->where('parts.4.key', 'panel_system')->has('parts.4.sections', 3)->where('parts.4.sections.0.key', 'manage_users')
             ->has('today.tiles', 2)->where('today.tiles.0.key', 'new_accounts')->where('today.tiles.1.key', 'paid_today')
             ->where('today.more.href', '/dashboard/numbers'));
 
@@ -215,7 +219,7 @@ it('composes the Institute and the School homes from the workspace’s own menu'
             ->where('parts.0.sections.0.key', 'admin_enrolments')->where('parts.0.sections.0.href', '/admin/enrollments')->where('parts.0.sections.0.hard', false)->has('parts.0.sections.0.children', 1)
             ->where('parts.1.key', 'school_academics')->where('parts.1.label', 'Academics')
             ->where('parts.1.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['school_year', 'day_loop', 'exams_group', 'catalog_group', 'teaching'])
-            ->where('parts.1.sections.0.href', '/academics/years')->where('parts.1.sections.0.hard', false)->has('parts.1.sections.0.children', 11)
+            ->where('parts.1.sections.0.href', '/academics/years')->where('parts.1.sections.0.hard', false)->has('parts.1.sections.0.children', 13)
             ->where('parts.1.sections.0.description', 'Years, terms, rooms, periods, the timetable, calendar, events and clubs.')
             ->where('parts.2.key', 'school_office')->where('parts.2.label', 'Office')
             ->where('parts.2.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['people', 'finance_group', 'hr_group', 'library_group'])
@@ -272,6 +276,7 @@ it('renders the Blade shell from the same map, with the switcher for a person wh
     // dashboards are Inertia (C9 slices 12 and 13). The nav alone.
     $cms = $this->withoutLocalizationMiddleware()->actingAs($super)->get(route('substitutions.requests.index'))->assertOk()->getContent();
     $nav = substr($cms, 0, (int) strpos($cms, '</nav>'));
-    expect($nav)->toContain('data-nav-section="panel_website"')->toContain('/admin/commerce')
-        ->not->toContain('data-nav-section="school_year"')->not->toContain('/admin/enrollments');
+    // Admissions is the Institute's too since the re-audit (ADMIN_PANEL.md §8).
+    expect($nav)->toContain('data-nav-section="panel_website"')->toContain('/admin/commerce')->toContain('data-nav-section="panel_settings"')->toContain('/admin/enrollments')
+        ->not->toContain('data-nav-section="school_year"')->not->toContain('/academics/years');
 });

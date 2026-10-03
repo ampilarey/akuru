@@ -148,7 +148,8 @@ const measure = () => page.evaluate(() => {
 });
 
 // The Institute's tab bar (ADMIN_PANEL.md §7 M7, STATUS §5nu): on every
-// screen of the workspace, five tabs of thumb size, inside the phone, with
+// screen of the workspace, six tabs of thumb size (Home, Website, Shops,
+// Settings, System, Alerts — ADMIN_PANEL.md §8), inside the phone, with
 // the page padded so its last line is not under it.
 const tabBar = () => page.evaluate(() => {
     const vw = Math.min(window.innerWidth, window.screen.width);
@@ -178,7 +179,7 @@ for (const path of PAGES) {
         continue;
     }
     const bar = await tabBar();
-    if (!bar.present || !bar.inside || bar.tabs.length !== 5) noBar.push(`${path.replace('/en/admin', '')}${bar.present ? ` (${bar.tabs.length} tabs${bar.inside ? '' : ', outside the phone'})` : ''}`);
+    if (!bar.present || !bar.inside || bar.tabs.length !== 6) noBar.push(`${path.replace('/en/admin', '')}${bar.present ? ` (${bar.tabs.length} tabs${bar.inside ? '' : ', outside the phone'})` : ''}`);
     else {
         for (const tab of bar.tabs) if (tab.w < 44 || tab.h < 44 || !tab.text) smallTabs.push(`${path.replace('/en/admin', '')} ${tab.name} ${tab.w}×${tab.h}`);
         if (!bar.padded) unpadded.push(path.replace('/en/admin', ''));
@@ -214,7 +215,7 @@ const sheet = await page.evaluate(() => {
     const bar = document.querySelector('[data-testid="shell-tabs"]').getBoundingClientRect();
     return { title: document.getElementById('shell-tab-sheet-title')?.textContent, links: [...el.querySelectorAll('a')].map((a) => a.getAttribute('href')), aboveBar: Math.abs(r.bottom - bar.top) <= 1, inside: r.bottom <= vh + 1 };
 });
-check('System opens a sheet of its screens, sitting on the bar', !!sheet && sheet.title === 'System' && sheet.aboveBar && sheet.inside && sheet.links.some((h) => h.endsWith('/admin/users')) && sheet.links.some((h) => h.endsWith('/admin/settings')), sheet ? `${sheet.title}: ${sheet.links.join(', ')}` : 'no sheet');
+check('System opens a sheet of its screens, sitting on the bar', !!sheet && sheet.title === 'System' && sheet.aboveBar && sheet.inside && sheet.links.some((h) => h.endsWith('/admin/users')) && sheet.links.some((h) => h.endsWith('/admin/operations')), sheet ? `${sheet.title}: ${sheet.links.join(', ')}` : 'no sheet');
 await Promise.all([page.waitForURL(/\/admin\/users$/, { timeout: 15000 }).catch(() => {}), page.click('[data-testid="shell-tab-sheet"] a[href$="/admin/users"]')]);
 await page.waitForLoadState('networkidle');
 const afterSheet = await page.evaluate(() => ({
@@ -225,6 +226,29 @@ const afterSheet = await page.evaluate(() => ({
 check('Manage users opens from the sheet, the sheet closes and System reads as current', afterSheet.url.endsWith('/admin/users') && !afterSheet.sheet && afterSheet.current === 'true', JSON.stringify(afterSheet));
 await Promise.all([page.waitForURL(/\/portal\/notifications/, { timeout: 15000 }).catch(() => {}), page.click('[data-testid="tab-alerts"]')]);
 check('Alerts opens the notifications', page.url().includes('/portal/notifications'), page.url());
+
+// The Settings tab (ADMIN_PANEL.md §8): every product's settings in one
+// sheet, and the Bookstore's — a section of its office page — opens scrolled
+// to that section.
+await page.click('[data-testid="tab-panel_settings"]');
+await page.waitForSelector('[data-testid="shell-tab-sheet"]', { timeout: 5000 }).catch(() => {});
+const settingsSheet = await page.evaluate(() => {
+    const el = document.querySelector('[data-testid="shell-tab-sheet"]');
+    return el ? { title: document.getElementById('shell-tab-sheet-title')?.textContent, links: [...el.querySelectorAll('a')].map((a) => a.getAttribute('href')) } : null;
+});
+const settingsWanted = ['/admin/settings', '/admin/library/settings', '/admin/bookshop#settings', '/admin/translations'];
+check('Settings opens a sheet with the system, Library, Bookstore and translation settings', !!settingsSheet && settingsSheet.title === 'Settings' && settingsWanted.every((w) => settingsSheet.links.some((h) => h.endsWith(w))), settingsSheet ? settingsSheet.links.join(', ') : 'no sheet');
+await Promise.all([page.waitForURL(/\/admin\/bookshop/, { timeout: 20000 }).catch(() => {}), page.click('[data-testid="shell-tab-sheet"] a[href$="/admin/bookshop#settings"]')]);
+await page.waitForLoadState('networkidle');
+await page.waitForTimeout(600);
+const bookshopSettings = await page.evaluate(() => {
+    const el = document.getElementById('settings');
+    if (!el) return { present: false };
+    const r = el.getBoundingClientRect();
+    const vh = Math.min(window.innerHeight, window.screen.height);
+    return { present: true, top: Math.round(r.top), inView: r.top >= -2 && r.top < vh, heading: document.getElementById('office-settings-title')?.textContent, hash: location.hash };
+});
+check('Bookstore settings opens the office scrolled to its Settings section', bookshopSettings.present && bookshopSettings.inView && bookshopSettings.heading === 'Bookstore settings', JSON.stringify(bookshopSettings));
 check('and no screen raised a page, console or server error', problems.length === 0, problems.slice(0, 3).join(' | '));
 
 await finish();

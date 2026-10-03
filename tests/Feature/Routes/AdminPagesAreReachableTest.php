@@ -35,32 +35,18 @@ function adminLandingRoutes(): array
 }
 
 // Pages legitimately opened from a parent screen rather than the menu.
-// Add here only with the parent named.
+// Add here only with the parent named. Until the navigation re-audit
+// (ADMIN_PANEL.md §8) this list also carried the sections' inner screens
+// (the CMS's, the prayer times', the enrolment payments) as "opened from
+// the hub"; they are `children` in the map and the first test now refuses
+// an entry the map already names, so the list says only what is true.
 function adminPagesOpenedFromAParent(): array
 {
     return [
-        'admin.prayer-times.groups.index' => 'opened from the admin.prayer-times.islands hub',
-        'admin.prayer-times.broadcasts.index' => 'opened from the admin.prayer-times.islands hub',
-        'admin.daily-content.queue' => 'opened from admin.daily-content.index',
         'admin.daily-content.ayah-preview' => 'opened from admin.daily-content.index',
-        'admin.enrollments.payments' => 'opened from admin.enrollments.index',
-        'admin.leads.index' => 'opened from the Website CMS hub (admin.pages.index)',
-        'admin.funnel.index' => 'opened from the Website CMS hub (admin.pages.index)',
-        'admin.daily-content.index' => 'opened from the Website CMS hub (admin.pages.index)',
-        'admin.daily-subscriptions.index' => 'opened from the Website CMS hub (admin.pages.index)',
-        'admin.courses.index' => 'opened from the Website CMS hub (admin.pages.index)',
-        // R4: the news editor and its categories.
-        'admin.news.index' => 'opened from the Website CMS hub (admin.pages.index)',
-        'admin.news.categories' => 'opened from admin.news.index',
         // Deliberately not in the menu: a list that accuses readers of
         // theft should take a decision to open, not sit in a nav bar.
         'admin.library.reading-alerts' => 'opened from the Library admin hub (admin.library.index)',
-        // R3b: the peer-reviewer pool, a button on the Library office page.
-        'admin.library.reviewers' => 'opened from the Library admin hub (admin.library.index)',
-        // B12: the money rules, behind a Settings button on the same hub.
-        'admin.library.settings' => 'opened from the Library admin hub (admin.library.index)',
-        'admin.library.insights' => 'opened from the Library admin hub (admin.library.index)',
-        'admin.library.promotions' => 'opened from the Library admin hub (admin.library.index)',
         // Same call as the reading alerts: a security log naming contacts that
         // have been refused should be opened deliberately, not sat in a menu.
         'admin.users.otp-abuse' => 'opened from User management (admin.users.index)',
@@ -71,16 +57,27 @@ function adminPagesOpenedFromAParent(): array
 }
 
 it('names every admin landing page in the map, Blade screens marked for a full page load', function () {
-    $hrefs = NavigationMap::hrefs();
+    $hrefs = array_map(NavigationMap::path(...), NavigationMap::hrefs());
     $orphans = [];
+    $stale = [];
     foreach (adminLandingRoutes() as $name => $uri) {
-        if (array_key_exists($name, adminPagesOpenedFromAParent()) || in_array('/'.$uri, $hrefs, true)) {
+        $inMap = in_array('/'.$uri, $hrefs, true);
+        if (array_key_exists($name, adminPagesOpenedFromAParent())) {
+            // An allowlist entry for a page the map now carries is a stale
+            // reason: drop it, so the list says only what is true.
+            if ($inMap) {
+                $stale[] = "{$name}  (/{$uri})";
+            }
+
             continue;
         }
-        $orphans[] = "{$name}  (/{$uri})";
+        if (! $inMap) {
+            $orphans[] = "{$name}  (/{$uri})";
+        }
     }
 
-    expect($orphans)->toBeEmpty("Admin pages missing from NavigationMap (both shells render it):\n  ".implode("\n  ", $orphans));
+    expect($orphans)->toBeEmpty("Admin pages missing from NavigationMap (both shells render it):\n  ".implode("\n  ", $orphans))
+        ->and($stale)->toBeEmpty("Admin pages allowlisted as opened from a parent but now in NavigationMap:\n  ".implode("\n  ", $stale));
 
     // Every Blade admin screen in the map is marked `hard`; every Inertia one
     // is not — the sections and the screens inside them alike. Since C9
@@ -140,9 +137,21 @@ it('reaches every admin landing page from a Blade screen, as the role that runs 
     $school = $this->withoutLocalizationMiddleware()->actingAs($seed('admin', ['registers.manage', 'exams.manage']))
         ->get(route('quran-progress.index'))->assertOk()->getContent();
 
+    // A section's inner screens (the map's `children`) are reached from the
+    // section — the hub and the phone's tab sheets list them as chips; the
+    // menus, Blade's among them, carry the section alone.
+    $children = [];
+    foreach (NavigationMap::groups() as $group) {
+        foreach ($group['items'] as $item) {
+            foreach ($item['children'] ?? [] as $child) {
+                $children[] = NavigationMap::path($child['href']);
+            }
+        }
+    }
+
     $unreachable = [];
     foreach (adminLandingRoutes() as $name => $uri) {
-        if (array_key_exists($name, adminPagesOpenedFromAParent())) {
+        if (array_key_exists($name, adminPagesOpenedFromAParent()) || in_array('/'.$uri, $children, true)) {
             continue;
         }
         if (! str_contains($institute, '/'.$uri.'"') && ! str_contains($school, '/'.$uri.'"')) {

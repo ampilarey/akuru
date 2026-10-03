@@ -9,7 +9,7 @@
  * Inertia one with a visit; the More menu is the School's; at 390 px the
  * cards stack and nothing is cut off. As the seeded system admin
  * (SMOKE_SUPER_ADMIN, `superadmin@` by default): /dashboard lands on the
- * Institute, with Website & content, Shops & money and System, the CMS
+ * Institute, with Website & content, Admissions, Shops & money, Settings and System, the CMS
  * card's eight screens, the Institute bar, and the full dashboard a link
  * away.
  *
@@ -106,7 +106,7 @@ const parts = await texts(office, '[data-testid^="part-"] h2');
 check('then the School in three parts: Admissions, Academics, Office', parts.join(' | ') === 'Admissions | Academics | Office', parts.join(' | '));
 check('Admissions holds Enrolments with its Payments screen', (await count(office, '[data-testid="section-admin_enrolments"] [data-testid="child-enrolment_payments"]')) === 1);
 const yearChips = await texts(office, '[data-testid="section-school_year"] [data-testid^="child-"]');
-check('the School year card lists its eleven screens', yearChips.length === 11 && yearChips[0] === 'Years', yearChips.join(', '));
+check('the School year card lists its thirteen screens', yearChips.length === 13 && yearChips[0] === 'Years', yearChips.join(', '));
 check('the Office part holds People, Finance, HR and the lending library', (await count(office, '[data-testid="part-school_office"] [data-testid^="section-"]')) === 4);
 check('a Blade screen inside a section is a plain link; an Inertia one a visit', (await office.locator('[data-testid="child-enrolment_payments"]').evaluate((el) => el.tagName)) === 'A' && (await office.locator('[data-testid="child-years"]').evaluate((el) => el.getAttribute('href')))?.endsWith('/academics/years'));
 
@@ -170,16 +170,18 @@ if (SUPER) {
     await su.goto(`${BASE}/en/dashboard`, { waitUntil: 'networkidle' });
     check('a system admin’s /dashboard lands on the Institute', /\/admin$/.test(su.url()), su.url().replace(BASE, ''));
     const suParts = await texts(su, '[data-testid^="part-"] h2');
-    // Eighteen since the Lending office, the Bookstore's sub-offices and the
-    // Library's (ADMIN_PANEL.md §1 grew after this walk was written; red on
-    // main until 2026-10-02, STATUS §5nl).
-    check('in three parts: Website & content, Shops & money, System — eighteen sections', suParts.join(' | ') === 'Website & content | Shops & money | System' && (await count(su, '[data-testid^="section-"]')) === 18, `${suParts.join(' | ')} ${await count(su, '[data-testid^="section-"]')}`);
+    // Twenty-one since the navigation re-audit (ADMIN_PANEL.md §8, STATUS
+    // §5nw): Admissions joined the Institute and a Settings part holds every
+    // product's settings — system, Library, Bookstore, translations.
+    check('in five parts: Website & content, Admissions, Shops & money, Settings, System — twenty-one sections', suParts.join(' | ') === 'Website & content | Admissions | Shops & money | Settings | System' && (await count(su, '[data-testid^="section-"]')) === 21, `${suParts.join(' | ')} ${await count(su, '[data-testid^="section-"]')}`);
     const cmsChips = await texts(su, '[data-testid="section-website_cms"] [data-testid^="child-"]');
-    check('the Website card lists its eight screens, the prayer-times card its four', cmsChips.length === 8 && cmsChips[0] === 'Pages' && (await count(su, '[data-testid="section-prayer_times"] [data-testid^="child-"]')) === 4, cmsChips.join(', '));
+    check('the Website card lists its nine screens, the prayer-times card its four, the Library office its four', cmsChips.length === 9 && cmsChips[0] === 'Pages' && (await count(su, '[data-testid="section-prayer_times"] [data-testid^="child-"]')) === 4 && (await count(su, '[data-testid="section-library_office"] [data-testid^="child-"]')) === 4, cmsChips.join(', '));
+    const settings = await texts(su, '[data-testid="part-panel_settings"] [data-testid^="open-"]');
+    check('the Settings part: System settings, Library settings, Bookstore settings, Translations', settings.join(' | ') === 'System settings | Library settings | Bookstore settings | Translations', settings.join(' | '));
     const bar = (await su.locator('header nav a[aria-current], header nav a:not([hrefLang])').allInnerTexts()).map((t) => t.trim()).filter(Boolean);
     check('the Institute bar: Website CMS, Commerce, Library office, Akuru Bookstore, Manage users', ['Website CMS', 'Commerce', 'Library office', 'Akuru Bookstore', 'Manage users'].every((label) => bar.includes(label)), bar.join(' | '));
     const institute = await moreGroups(su);
-    check('the More menu: Website & content, Shops & money, System, Personal — nothing of the School', institute.groups.join(',') === 'Website & content,Shops & money,System,Personal', institute.groups.join(' | '));
+    check('the More menu: Website & content, Admissions, Shops & money, Settings, System, Personal — nothing of the School', institute.groups.join(',') === 'Website & content,Admissions,Shops & money,Settings,System,Personal', institute.groups.join(' | '));
     check('and the full dashboard a link away', (await su.getAttribute('[data-testid="today-more"]', 'href') || '').endsWith('/dashboard/numbers'));
     if (SUPER !== ADMIN) {
         check('no switcher for one workspace', (await count(su, '[data-testid="workspace-switcher"]')) === 0);

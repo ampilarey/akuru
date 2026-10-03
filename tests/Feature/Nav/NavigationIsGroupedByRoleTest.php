@@ -48,8 +48,10 @@ function hrefsIn(array $nav): array
 it('names only real GET routes, so the menu cannot carry a dead link', function () {
     $routes = Route::getRoutes()->getRoutesByMethod()['GET'];
 
+    // An href may carry an anchor (`/admin/bookshop#settings`, ADMIN_PANEL.md
+    // §8): the route is the page's.
     foreach (NavigationMap::hrefs() as $href) {
-        expect(isset($routes[ltrim($href, '/')]))->toBeTrue("no GET route for {$href}");
+        expect(isset($routes[ltrim(NavigationMap::path($href), '/')]))->toBeTrue("no GET route for {$href}");
     }
 });
 

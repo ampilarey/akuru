@@ -36,19 +36,28 @@ function hubUser(string $role, array $permissions = []): User
 
 it('shows the system admin every Institute section, each inner screen a real route inside its section, and sends others to their own home', function () {
     // The system admin passes every gate by design (Gate::before), so the
-    // Institute home is the whole panel less Admissions, which is the School's.
+    // Institute home is the whole panel, in five parts since the navigation
+    // re-audit (ADMIN_PANEL.md §8): Admissions joined it, and every
+    // product's settings screen sits in a Settings part of its own.
     $super = hubUser('super_admin', HUB_PERMISSIONS);
     test()->withoutLocalizationMiddleware()->actingAs($super)->get(route('admin.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page
-            ->where('parts', fn ($parts) => collect($parts)->pluck('key')->all() === ['panel_website', 'panel_money', 'panel_system'])
+            ->where('parts', fn ($parts) => collect($parts)->pluck('key')->all() === ['panel_website', 'panel_admissions', 'panel_money', 'panel_settings', 'panel_system'])
             ->where('parts.0.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['website_cms', 'admin_instructors', 'prayer_times', 'pronunciation_office'])
+            ->where('parts.0.sections.0.children', fn ($children) => collect($children)->pluck('key')->all() === ['cms_pages', 'cms_news', 'cms_news_categories', 'cms_courses', 'cms_daily_content', 'cms_daily_queue', 'cms_subscriptions', 'cms_leads', 'cms_funnel'])
             ->where('parts.0.clusters', fn ($clusters) => collect($clusters)->pluck('key')->all() === ['site', 'learning'])
-            ->where('parts.1.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['commerce', 'library_office', 'bookshop', 'akuru_fulfilment', 'complaints', 'sms_campaigns', 'shop_customers', 'shop_credit', 'lending_office']
+            ->where('parts.1.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['admin_enrolments'])
+            ->where('parts.2.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['commerce', 'library_office', 'bookshop', 'akuru_fulfilment', 'complaints', 'sms_campaigns', 'shop_customers', 'shop_credit', 'lending_office']
                 && collect($sections)->every(fn ($section) => is_string($section['description']) && ! str_starts_with($section['description'], 'admin.')))
-            ->where('parts.1.clusters', fn ($clusters) => collect($clusters)->pluck('key')->all() === ['bookstore']
+            ->where('parts.2.sections.1.children', fn ($children) => collect($children)->pluck('href')->all() === ['/admin/library/insights', '/admin/library/promotions', '/admin/library/reviewers', '/admin/library/settings'])
+            ->where('parts.2.clusters', fn ($clusters) => collect($clusters)->pluck('key')->all() === ['bookstore']
                 && $clusters[0]['sections'] === ['bookshop', 'akuru_fulfilment', 'complaints', 'sms_campaigns', 'shop_customers', 'shop_credit'])
-            ->where('parts.2.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['manage_users', 'system_settings', 'ops_checklist', 'feature_walkthrough', 'translations'])
-            ->where('parts.2.clusters', fn ($clusters) => collect($clusters)->pluck('key')->all() === ['platform', 'readiness']));
+            ->where('parts.3.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['system_settings', 'library_settings', 'bookshop_settings', 'translations']
+                && collect($sections)->every(fn ($section) => is_string($section['description']) && ! str_starts_with($section['description'], 'admin.')))
+            ->where('parts.3.sections.2.href', '/admin/bookshop#settings')
+            ->where('parts.3.clusters', [])
+            ->where('parts.4.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['manage_users', 'ops_checklist', 'feature_walkthrough'])
+            ->where('parts.4.clusters', fn ($clusters) => collect($clusters)->pluck('key')->all() === ['readiness']));
 
     // Every inner screen is a real route inside its section.
     $routes = Route::getRoutes()->getRoutesByMethod()['GET'];

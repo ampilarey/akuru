@@ -85,14 +85,14 @@ it('exports the instructors, the prayer recipient groups, the CMS pages and the 
 });
 
 it('offers the admin panel in the Inertia More menu by workspace, Blade screens marked for a full page load and gated by their routes', function () {
-    // The Institute's three parts to the system admin; Admissions to the
-    // school office; nothing of the panel to a teacher (STATUS §5id).
+    // The Institute's five parts to the system admin — Admissions among them
+    // since the navigation re-audit (ADMIN_PANEL.md §8); Admissions alone to
+    // the school office; nothing of the panel to a teacher (STATUS §5id).
     $super = auditAdmin('super_admin', ['commerce.manage', 'library.manage', 'prayer.manage', 'pronunciation.manage', 'operations.manage', 'translations.manage', 'bookshop.manage']);
     $nav = app(BuildNavigationAction::class)->execute($super, 'en');
-    expect(array_column($nav['groups'], 'key'))->toBe(['panel_website', 'panel_money', 'panel_system', 'me']);
+    expect(array_column($nav['groups'], 'key'))->toBe(['panel_website', 'panel_admissions', 'panel_money', 'panel_settings', 'panel_system', 'me']);
     $items = collect($nav['groups'])->flatMap(fn ($group) => $group['items'])->keyBy('href');
-    expect($items->keys()->all())->toContain('/admin/instructors', '/admin/public-site/pages', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/prayer-times/islands', '/admin/pronunciation', '/admin/translations', '/admin/operations', '/admin/users', '/admin/settings')
-        ->not->toContain('/admin/enrollments');
+    expect($items->keys()->all())->toContain('/admin/instructors', '/admin/public-site/pages', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/prayer-times/islands', '/admin/pronunciation', '/admin/translations', '/admin/operations', '/admin/users', '/admin/settings', '/admin/enrollments', '/admin/library/settings', '/admin/bookshop#settings');
     // C9 slice 12: every admin screen is Inertia, so nothing in the panel is
     // marked for a full page load any more. (The Personal group's Library and
     // Bookstore pages are Blade and carry `hard` since SIGN_IN_PLAN ID1; they
