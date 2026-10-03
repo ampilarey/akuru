@@ -36,4 +36,6 @@ return [
     'challenge_button' => 'تسجيل الدخول',
     'challenge_back' => 'العودة لتسجيل الدخول',
     'link' => 'تسجيل الدخول بخطوتين',
+    'otp_resend' => 'إعادة إرسال الرمز',
+    'otp_resend_in' => 'إعادة الإرسال بعد :time',
 ];

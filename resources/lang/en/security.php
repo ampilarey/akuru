@@ -36,4 +36,7 @@ return [
     'challenge_button' => 'Sign in',
     'challenge_back' => 'Back to sign in',
     'link' => 'Two-step sign-in',
+    // C16 slice N3: the OTP screens' resend button and its countdown.
+    'otp_resend' => 'Resend code',
+    'otp_resend_in' => 'Resend code in :time',
 ];

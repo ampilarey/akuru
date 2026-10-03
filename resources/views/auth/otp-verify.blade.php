@@ -65,11 +65,16 @@
            onmouseover="this.style.color='#374151'" onmouseout="this.style.color='#6B7280'">
             ← Use different account
         </a>
-        <form method="POST" action="{{ route('otp.resend') }}" style="display:inline">
+        {{-- C16 slice N3: the resend wait counts down here and the button is held until it ends. --}}
+        <form method="POST" action="{{ route('otp.resend') }}" style="display:inline" data-testid="otp-resend-form">
             @csrf
-            <button type="submit"
+            <button type="submit" id="otp-resend" data-testid="otp-resend"
+                    data-retry-after="{{ (int) ($retryAfter ?? 0) }}"
+                    data-label="{{ __('security.otp_resend') }}"
+                    data-waiting="{{ __('security.otp_resend_in', ['time' => ':time']) }}"
+                    @if(($retryAfter ?? 0) > 0) disabled aria-disabled="true" @endif
                     style="background:none;border:none;cursor:pointer;font-size:.82rem;color:#7C2D37;font-weight:600;text-decoration:underline;padding:0">
-                Resend code
+                {{ ($retryAfter ?? 0) > 0 ? __('security.otp_resend_in', ['time' => gmdate('i:s', (int) $retryAfter)]) : __('security.otp_resend') }}
             </button>
         </form>
     </div>
@@ -80,6 +85,27 @@
         this.value = this.value.replace(/\D/g, '');
         if (this.value.length === 6) this.form.submit();
     });
+    (function () {
+        const button = document.getElementById('otp-resend');
+        let left = parseInt(button.dataset.retryAfter, 10) || 0;
+        if (left <= 0) return;
+        const tick = () => {
+            if (left <= 0) {
+                button.disabled = false;
+                button.removeAttribute('aria-disabled');
+                button.style.opacity = '';
+                button.textContent = button.dataset.label;
+                return;
+            }
+            const m = Math.floor(left / 60), s = left % 60;
+            button.textContent = button.dataset.waiting.replace(':time', `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`);
+            button.disabled = true;
+            button.style.opacity = '.6';
+            left -= 1;
+            setTimeout(tick, 1000);
+        };
+        tick();
+    })();
     </script>
 
 @endif

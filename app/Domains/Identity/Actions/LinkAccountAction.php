@@ -5,6 +5,7 @@ namespace App\Domains\Identity\Actions;
 use App\Domains\Identity\Models\AccountLinkEvent;
 use App\Domains\Identity\Models\LinkedAccount;
 use App\Domains\Identity\Models\User;
+use App\Domains\Identity\Support\Wait;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
@@ -37,7 +38,7 @@ class LinkAccountAction
         if (RateLimiter::tooManyAttempts($key, self::MAX_ATTEMPTS)) {
             throw ValidationException::withMessages([
                 'identifier' => 'Too many attempts. Try again in '
-                    .ceil(RateLimiter::availableIn($key) / 60).' minutes.',
+                    .Wait::describe(RateLimiter::availableIn($key)).'.',
             ]);
         }
 

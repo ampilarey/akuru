@@ -4983,6 +4983,30 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ny. The OTP screen counts the wait down (C16 slice N3, 2026-10-03)
+
+The owner, waiting for a code on the live site (§5nw): "its not auto
+counting down" — and the refusal read "Please try again in 1 minutes".
+
+- **The verify screens know the wait.** `OtpService::retryAfterSeconds()`
+  reads the resend cooldown and, when the send quota is spent, the send
+  window — whichever is longer — and both OTP screens (sign-in and
+  password reset) receive it. The Resend button is disabled and reads
+  "Resend code in 00:59", counting down each second, and becomes
+  "Resend code" when the wait ends; a refusal from the server still
+  shows, and the screen it lands on counts down from the server's figure.
+- **Waits are said the way a person would.** `Identity\Support\Wait`
+  gives "45 seconds", "1 minute", "2 minutes"; the five OTP messages and
+  the account-link throttle use it. "1 minutes" is gone.
+- EN/DV/AR for the button's two states (`security.otp_resend*`).
+
+Tests: `OtpResendCountdownTest` (3, new) — the wait's wording, the
+service's figure before and after a send with the refusal's wording, and
+both screens rendering the wait, the disabled button and the first
+reading; `OtpRateLimitTest`, `TwoFactorTest` and the Auth suite still
+green. Walked by hand in the browser: the button counts from 00:59 to
+"Resend code" and submits after.
+
 ## 5nx. The CMS course form the office can read, and Publish from the list (C16 slice N2, 2026-10-03)
 
 From the owner's walk of the live form (§5nw): "Slug * what is this?",

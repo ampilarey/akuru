@@ -68,7 +68,12 @@ class OtpPasswordResetController extends Controller
             return redirect()->route('password.otp.request');
         }
 
-        return view('auth.passwords.otp-verify');
+        // C16 slice N3: the resend wait, counted down on the screen.
+        $contact = session('password_reset_contact_id') ? UserContact::find(session('password_reset_contact_id')) : null;
+
+        return view('auth.passwords.otp-verify', [
+            'retryAfter' => $contact ? $this->otpService->retryAfterSeconds($contact, 'password_reset') : 0,
+        ]);
     }
 
     /** Step 2 – verify OTP */
