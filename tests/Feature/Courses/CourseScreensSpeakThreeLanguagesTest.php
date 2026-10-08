@@ -3,6 +3,14 @@
 use App\Domains\Courses\Actions\DeleteCourseAction;
 use App\Domains\Courses\Actions\NormalizeTextAnswerAction;
 use App\Domains\Courses\Actions\SaveEngineCourseAction;
+use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentStatus;
+use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentType;
+use App\Domains\Courses\Components\Quran\Enums\QuranLaneResult;
+use App\Domains\Courses\Components\Quran\Enums\QuranMistakeSeverity;
+use App\Domains\Courses\Components\Quran\Enums\QuranMistakeType;
+use App\Domains\Courses\Components\Quran\Enums\QuranRevisionResult;
+use App\Domains\Courses\Components\Quran\Enums\QuranSessionOverallStatus;
+use App\Domains\Courses\Components\Quran\Enums\RecitationSubmissionStatus;
 use App\Domains\Courses\Enums\ActivityPattern;
 use App\Domains\Courses\Enums\AssessmentStatus;
 use App\Domains\Courses\Enums\AssessmentType;
@@ -17,6 +25,8 @@ use App\Domains\Courses\Enums\UnlockMode;
 use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\CourseSubject;
 use App\Domains\Identity\Models\User;
+use App\Enums\Hifz\HifzMilestoneStatus;
+use App\Enums\Hifz\HifzMilestoneType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -57,6 +67,10 @@ function translatedCourseScreens(): array
         'Courses/Taxonomy/Levels' => 'teach',
         'Courses/Taxonomy/Audiences' => 'teach',
         'Courses/DeletedCourses' => 'admin',
+        'Courses/Teach/QuranAssignments' => 'teach',
+        'Courses/Teach/QuranMilestones' => 'teach',
+        'Courses/Teach/QuranSessionSheet' => 'teach',
+        'Courses/Teach/RecitationQueue' => 'teach',
     ];
 }
 
@@ -328,4 +342,49 @@ it('serves the reports, the taxonomy and deleted courses in Dhivehi, and says wh
     app()->setLocale('en');
     expect(__('teach.flash_subject_saved'))->toBe('Subject saved.')
         ->and(__('admin.courses_deleted_title'))->toBe('Deleted courses');
+});
+
+it('names every Qur’an code the teacher’s screens show, in all three languages', function () {
+    // The `quran` book (slice CT5a): one name per code, for the teacher's
+    // screens and the learner's alike.
+    $needed = [
+        'all',
+        ...array_map(fn ($case) => 'assignment_type_'.$case->value, QuranAssignmentType::cases()),
+        ...array_map(fn ($case) => 'status_'.$case->value, [...QuranAssignmentStatus::cases(), ...RecitationSubmissionStatus::cases(), ...HifzMilestoneStatus::cases()]),
+        ...array_map(fn ($case) => 'milestone_type_'.$case->value, HifzMilestoneType::cases()),
+        ...array_map(fn ($case) => 'mistake_'.$case->value, QuranMistakeType::cases()),
+        ...array_map(fn ($case) => 'severity_'.$case->value, QuranMistakeSeverity::cases()),
+        ...array_map(fn ($case) => 'result_'.$case->value, [...QuranLaneResult::cases(), ...QuranRevisionResult::cases()]),
+        ...array_map(fn ($case) => 'overall_'.$case->value, QuranSessionOverallStatus::cases()),
+        ...array_map(fn ($status) => 'attendance_'.$status, ['present', 'late', 'absent', 'excused']),
+    ];
+    [$en, $dv, $ar] = [teachBook('en', 'quran'), teachBook('dv', 'quran'), teachBook('ar', 'quran')];
+
+    foreach (array_unique($needed) as $key) {
+        expect(array_key_exists($key, $en))->toBeTrue("quran.{$key} is missing in English")
+            ->and($dv[$key] ?? $en[$key] ?? null)->not->toBe($en[$key] ?? null, "quran.{$key} is missing or English in Dhivehi")
+            ->and($ar[$key] ?? $en[$key] ?? null)->not->toBe($en[$key] ?? null, "quran.{$key} is missing or English in Arabic");
+    }
+});
+
+it('serves the Teach Qur’an screens in Dhivehi, with the screen’s book and the Qur’an book', function () {
+    $admin = actingPeopleAdmin(['courses.manage']);
+    [$dv, $quran] = [teachBook('dv'), teachBook('dv', 'quran')];
+
+    app()->setLocale('dv');
+    foreach ([
+        'teach.assignments' => ['Courses/Teach/QuranAssignments', 'qassign_title'],
+        'teach.milestones' => ['Courses/Teach/QuranMilestones', 'qmile_title'],
+        'teach.recitations' => ['Courses/Teach/RecitationQueue', 'qrec_title'],
+    ] as $route => [$component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($admin)
+            ->get(route($route))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)
+                ->where("t.{$key}", $dv[$key])
+                ->where('q.status_passed', $quran['status_passed']));
+    }
+
+    app()->setLocale('en');
+    expect(__('teach.flash_qrec_reviewed'))->toBe('Recitation reviewed.')
+        ->and(__('quran.mistake_wrong_haraka'))->toBe('wrong haraka');
 });

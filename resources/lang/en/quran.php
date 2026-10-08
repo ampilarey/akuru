@@ -1,0 +1,69 @@
+<?php
+
+/**
+ * The Qur'an component's codes, named (C19 slice CT5a, STATUS §5or): an
+ * assignment's type, the status of an assignment, a recitation or a
+ * milestone, a mistake and its severity, a halaqa sheet's results and
+ * attendance, a milestone's type. One book, so the teacher's screens and the
+ * learner's name a code the same way. Each key is a family prefix and the
+ * enum's value.
+ */
+return [
+
+    // Assignments, recitations and milestones (slice CT5a, STATUS §5or).
+    'all' => 'all',
+    'assignment_type_letter_haraka_practice' => 'letter and haraka practice',
+    'assignment_type_new_memorization' => 'new memorization',
+    'assignment_type_revision' => 'revision',
+    'assignment_type_correction_repeat' => 'correction repeat',
+    'assignment_type_assessment' => 'assessment',
+    'status_assigned' => 'assigned',
+    'status_in_progress' => 'in progress',
+    'status_submitted' => 'submitted',
+    'status_needs_repeat' => 'needs repeat',
+    'status_passed' => 'passed',
+    'status_failed' => 'failed',
+    'status_cancelled' => 'cancelled',
+    'status_ai_checked' => 'checked by AI',
+    'status_teacher_reviewed' => 'teacher reviewed',
+    'status_supervisor_reviewed' => 'supervisor reviewed',
+    'status_dean_reviewed' => 'dean reviewed',
+    'status_ai_processed_later' => 'AI check later',
+    'status_pending' => 'pending',
+    'status_approved' => 'approved',
+    'status_rejected' => 'rejected',
+    'milestone_type_surah_completed' => 'surah completed',
+    'milestone_type_juz_completed' => 'juz completed',
+    'milestone_type_page_completed' => 'page completed',
+    'milestone_type_quran_completed' => 'Qur’an completed',
+    'milestone_type_custom' => 'custom',
+    'mistake_wrong_letter' => 'wrong letter',
+    'mistake_wrong_haraka' => 'wrong haraka',
+    'mistake_missed_word' => 'missed word',
+    'mistake_added_word' => 'added word',
+    'mistake_repeated_word' => 'repeated word',
+    'mistake_wrong_word' => 'wrong word',
+    'mistake_pronunciation_issue' => 'pronunciation issue',
+    'mistake_waqf_issue' => 'waqf issue',
+    'mistake_madd_issue' => 'madd issue',
+    'mistake_ghunnah_issue' => 'ghunnah issue',
+    'mistake_tajweed_issue' => 'tajweed issue',
+    'mistake_other' => 'other',
+    'severity_minor' => 'minor',
+    'severity_medium' => 'medium',
+    'severity_major' => 'major',
+    'result_pass' => 'pass',
+    'result_pass_with_notes' => 'pass with notes',
+    'result_repeat' => 'repeat',
+    'result_not_prepared' => 'not prepared',
+    'result_not_done' => 'not done',
+    'overall_excellent' => 'excellent',
+    'overall_good' => 'good',
+    'overall_needs_revision' => 'needs revision',
+    'overall_weak' => 'weak',
+    'overall_absent' => 'absent',
+    'attendance_present' => 'present',
+    'attendance_late' => 'late',
+    'attendance_absent' => 'absent',
+    'attendance_excused' => 'excused',
+];

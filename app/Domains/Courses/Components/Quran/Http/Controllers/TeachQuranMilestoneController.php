@@ -9,6 +9,7 @@ use App\Domains\People\Actions\ResolveTeacherForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Contracts\HalaqaMilestoneWriter;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -49,6 +50,8 @@ class TeachQuranMilestoneController extends Controller
         }
 
         return Inertia::render('Courses/Teach/QuranMilestones', $payload + [
+            't' => Phrases::once('teach'),
+            'q' => Phrases::once('quran'),
             'status' => $status,
             'can_decide' => (bool) $request->user()->can('courses.manage'),
         ]);
@@ -73,7 +76,7 @@ class TeachQuranMilestoneController extends Controller
             'recommended_by' => (int) $request->user()->id,
         ]);
 
-        return back()->with('success', 'Milestone recommended.');
+        return back()->with('success', __('teach.flash_qmile_recommended'));
     }
 
     public function review(Request $request, int $milestone): RedirectResponse
@@ -87,7 +90,7 @@ class TeachQuranMilestoneController extends Controller
             $data['note'] ?? null,
         );
 
-        return back()->with('success', 'Milestone reviewed.');
+        return back()->with('success', __('teach.flash_qmile_reviewed'));
     }
 
     public function decide(Request $request, int $milestone): RedirectResponse
@@ -105,7 +108,7 @@ class TeachQuranMilestoneController extends Controller
             $data['note'] ?? null,
         );
 
-        return back()->with('success', 'Milestone decided.');
+        return back()->with('success', __('teach.flash_qmile_decided'));
     }
 
     /**

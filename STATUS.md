@@ -4983,6 +4983,75 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5or. The Teach Qur'an screens in Dhivehi and Arabic, and a Qur'an phrase book (C19 slice CT5a, 2026-10-08)
+
+The four screens a Qur'an teacher works on were English only:
+- *Qur'an assignments* (`/teach/assignments`);
+- *Memorization milestones* (`/teach/milestones`);
+- the halaqa session sheet (`/teach/quran-sessions/{id}`);
+- the recitation review queue (`/teach/recitations`).
+
+All four printed every code they were sent with its underscores turned to
+spaces (*new memorization*, *supervisor reviewed*, *wrong haraka*).
+
+- **A `quran` phrase book** names those codes, one family per enum:
+  - assignment types;
+  - the statuses of assignments, recitations and milestones (one `status_`
+    family, since several values are shared);
+  - milestone types;
+  - mistake types and severities;
+  - the sheet's lane and revision results (one `result_` family);
+  - overall standing and attendance;
+  - *all*.
+
+  That is 55 rows in each language. The screens get it as `q` beside their
+  `teach` book `t`. One book means the learner's Qur'an page can name a
+  code the same way the teacher's does.
+- **The screens.** Forms, placeholders, tables, buttons, filters and empty
+  rows are all translated, and every field has a name. That is 95 new
+  `teach` rows.
+  - The sheet's record form names each of its fields.
+  - The queue's review form covers the listen, no-recording and correction
+    lines.
+  - A milestone's detail is a phrase (*Surah :n*).
+  - A surah is named in Arabic on a Dhivehi or Arabic page. The
+    assignments and the queue now also send the Arabic name, as the sheet
+    did.
+- **What was saved.** The eight flashes are `teach.flash_q*`, including the
+  recitation review's two. The one validation message is translated too
+  (*No teacher profile to assign as.*).
+
+**Found, and recorded rather than built here** (BACKLOG C19):
+- **The halaqa sheet has no door.** The teacher's schedule links a session
+  only to the general attendance screen, and nothing links
+  `/teach/quran-sessions/{id}`. Linking it for Qur'an sessions alone
+  would put a subject branch into the Offerings core (rule 6), so it
+  wants the Qur'an component to offer its own session tool.
+- **The learner's Qur'an page** (`Learn/Quran.jsx`) still prints the same
+  codes raw. It can use the `quran` book unchanged.
+
+Tests:
+- `CourseScreensSpeakThreeLanguagesTest` holds nineteen screens in 9 tests,
+  two new:
+  - every value of the ten Qur'an enums, plus attendance and *all*, is in
+    the `quran` book in all three languages, and is not English in
+    Dhivehi or Arabic;
+  - the assignments, the milestones and the queue are served in Dhivehi
+    with both books.
+- `TeachQuranAssignmentController::index` stays at the 36-line limit (the
+  two books share a line).
+- `SmokeMarkerSeeder` plants one engine session on SMOKE-Offering, titled
+  `SMOKE-Halaqa-Sheet`, so the sheet can be opened before `quran.mjs` has
+  added one. It runs twice cleanly.
+
+Walks:
+- `course-screens-language.mjs` opens the four new screens; the dean finds
+  the sheet through the offering's sessions screen. 116/116 on a fresh
+  seed.
+- Then `quran.mjs` 22/22, `recite.mjs` 13/13 and `hifz.mjs` 21/21 in
+  English, which left a recitation and a milestone on the screens. Then
+  116/116 again.
+
 ## 5oq. The course reports, the taxonomy and deleted courses in Dhivehi and Arabic (C19 slice CT4, 2026-10-08)
 
 CT1–CT3 (§5ok, §5ol, §5on) translated the nine screens a course is built

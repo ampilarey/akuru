@@ -9,6 +9,7 @@ use App\Domains\Media\Actions\StorePrivateMediaAction;
 use App\Domains\People\Actions\ResolveTeacherForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -51,6 +52,8 @@ class TeachRecitationController extends Controller
         }
 
         return Inertia::render('Courses/Teach/RecitationQueue', $payload + [
+            't' => Phrases::once('teach'),
+            'q' => Phrases::once('quran'),
             'status' => $status,
             'teacher' => $teacher,
         ]);
@@ -96,8 +99,8 @@ class TeachRecitationController extends Controller
         ]);
 
         return back()->with('success', $correctionMediaId !== null
-            ? 'Recitation reviewed, with your correction recording attached.'
-            : 'Recitation reviewed.');
+            ? __('teach.flash_qrec_reviewed_with_correction')
+            : __('teach.flash_qrec_reviewed'));
     }
 
     /**
