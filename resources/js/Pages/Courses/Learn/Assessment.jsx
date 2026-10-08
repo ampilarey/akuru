@@ -141,6 +141,9 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
     // the §13 lesson player had — HTTP 200 and a button that appears to do
     // nothing.
     const submitError = usePage().props.errors?.answers;
+    // The attempt itself refused — out of retakes, time up, not started —
+    // came back under `attempt` and was shown nowhere (slice CT6b-2a).
+    const attemptError = usePage().props.errors?.attempt;
     const submitted = attempt && attempt.status !== 'in_progress';
     const [answers, setAnswers] = useState(() => blankAnswers(attempt?.snapshots || [], attempt?.answers || {}));
 
@@ -396,11 +399,11 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
                     );
                 })}
             </div>
-            {submitError && (
-                <p role="alert" className="mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-900">
-                    {submitError}
+            {[submitError, attemptError].filter(Boolean).map((message) => (
+                <p key={message} role="alert" className="mt-4 rounded-lg border border-red-300 bg-red-50 p-3 text-sm text-red-900">
+                    {message}
                 </p>
-            )}
+            ))}
             <div className="mt-4 flex flex-wrap gap-3">
                 <button
                     type="button"

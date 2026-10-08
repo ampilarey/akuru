@@ -16,13 +16,13 @@ class RecordLessonProgressAction
     {
         $status = LessonProgressStatus::tryFrom((string) ($data['status'] ?? LessonProgressStatus::InProgress->value));
         if ($status === null) {
-            throw ValidationException::withMessages(['status' => 'Invalid progress status.']);
+            throw ValidationException::withMessages(['status' => __('learn.error_progress_status')]);
         }
 
         $revisionId = (int) ($data['lesson_revision_id'] ?? 0);
         if ($revisionId < 1) {
             throw ValidationException::withMessages([
-                'lesson_revision_id' => 'Progress must store the published lesson revision.',
+                'lesson_revision_id' => __('learn.error_progress_revision'),
             ]);
         }
 

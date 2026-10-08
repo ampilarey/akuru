@@ -32,7 +32,7 @@ class SubmitAssessmentAttemptAction
 
         if ($attempt === null) {
             throw ValidationException::withMessages([
-                'attempt' => ['Start the assessment before submitting.'],
+                'attempt' => [__('learn.error_start_before_submitting')],
             ]);
         }
 
@@ -62,7 +62,7 @@ class SubmitAssessmentAttemptAction
 
             if ($missing !== []) {
                 throw ValidationException::withMessages([
-                    'answers' => ['Answer the required questions first: '.implode(', ', $missing).'.'],
+                    'answers' => [__('learn.error_answers_missing', ['questions' => implode(', ', $missing)])],
                 ]);
             }
         }

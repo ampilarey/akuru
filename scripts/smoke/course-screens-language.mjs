@@ -36,7 +36,8 @@
  * halaqa session's attendance (slice CT8); the pupil opens their performance
  * page. Before the session is filled in, it is saved empty and refused in
  * Dhivehi; a term saved empty from the Arabic glossary is refused in Arabic
- * (slice CT6b-1).
+ * (slice CT6b-1). The pupil types a code that does not exist against a priced
+ * course on the Dhivehi catalog and is told why in Dhivehi (slice CT6b-2a).
  *
  *   node scripts/smoke/course-screens-language.mjs
  *
@@ -234,6 +235,21 @@ if (await sitAgain.count()) {
 await pupil.getByRole('button', { name: learn.submit, exact: true }).click();
 const assessmentTold = await flashReads(pupil, learn.flash_assessment_submitted);
 check('the pupil hands in an assessment in Dhivehi and is told so in Dhivehi', Boolean(learn.flash_assessment_submitted) && assessmentTold === learn.flash_assessment_submitted, `said: ${assessmentTold ?? 'nothing'}`);
+
+// A code that does not exist, typed on the Dhivehi catalog against the priced
+// SMOKE-Wallet-Course (slice CT6b-2a). The code is checked before anything is
+// made, so nothing is bought or held. The catalog read no errors before: the
+// button did nothing, and the reason was English.
+await pupil.goto(`${BASE}/dv/learn/catalog`, { waitUntil: 'networkidle' });
+const walletRow = pupil.locator('tr', { hasText: 'SMOKE-Wallet-Course' }).first();
+await walletRow.getByLabel(learn.discount_code, { exact: true }).fill('SMOKE-NO-SUCH-CODE');
+await walletRow.locator('button.btn-primary').first().click();
+const codeRefusal = (await pupil.locator('main ul[role="alert"]').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+check(
+    'a discount code refused on the Dhivehi catalog says why in Dhivehi',
+    Boolean(codeRefusal) && /\p{Script=Thaana}/u.test(codeRefusal) && !/[A-Za-z]{3,}/.test(codeRefusal),
+    `said: ${codeRefusal ?? 'nothing'}`,
+);
 
 // A session added to SMOKE-Offering from the Dhivehi page (slice CT8).
 // Nobody is enrolled on SMOKE-Offering, so its attendance sheet has no one to

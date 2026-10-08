@@ -1,5 +1,6 @@
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import FormErrors from '../../../Components/FormErrors';
 import AppShell from '../../../Layouts/AppShell';
 
 function PaidEnroll({ row, t, offeringId = null, fee = row.fee }) {
@@ -82,11 +83,16 @@ function Intakes({ row, t }) {
 }
 
 export default function Catalog({ rows }) {
-    const t = usePage().props.i18n?.learn || {};
+    const { i18n, errors } = usePage().props;
+    const t = i18n?.learn || {};
 
     return (
         <AppShell title={t.catalog_title || 'Learn catalog'}>
             <p className="mb-4 text-sm text-gray-600">{t.catalog_intro || 'Published courses. Enroll self-paced, or choose an intake where one is open.'}</p>
+            {/* An enrol refused — a discount code, a full intake, no student
+                profile — said here; the buttons alone would just do nothing
+                (slice CT6b-2a). */}
+            <FormErrors errors={errors} className="mb-4" />
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

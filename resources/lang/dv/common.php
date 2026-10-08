@@ -218,4 +218,14 @@ return [
     'review_my_reports' => 'މި ޕޭޕަރާ ބެހޭ ގޮތުން ކުރިން ތިޔަބޭފުޅާ ދިން ރިޕޯޓުތައް',
     'library_revision_note' => 'ބަދަލުކުރި ގޮތް (ރިވިއުއަރުންނަށް)',
     'library_reviewers_link' => 'ރިވިއުއަރުން',
+
+    // A discount code refused at any checkout — a course, the Library, the Bookstore (slice CT6b-2a)
+    'error_discount_not_found' => 'ޑިސްކައުންޓް ކޯޑު ނުފެނުނު، ނުވަތަ އެ ކޯޑު ހުއްޓާލާފައި ވޭ.',
+    'error_discount_not_here' => 'މި ކޯޑު މި ގަތުމަށް ބޭނުންކުރެވޭކަށް ނެތް.',
+    'error_discount_not_yet' => 'މި ޑިސްކައުންޓް ކޯޑު އަދި ފަށާފައެއް ނުވޭ.',
+    'error_discount_ended' => 'މި ޑިސްކައުންޓް ކޯޑުގެ މުއްދަތު ހަމަވެއްޖެ.',
+    'error_discount_no_wallet' => 'ވޯލެޓުން ފައިސާ ދައްކާއިރު މި ކޯޑު ބޭނުންކުރެވޭކަށް ނެތް.',
+    'error_discount_below_minimum' => 'މި ކޯޑު ބޭނުންކުރެވޭ އެންމެ ދަށް އަދަދަށްވުރެ އޯޑަރު ކުޑަ.',
+    'error_discount_used_up' => 'މި ޑިސްކައުންޓް ކޯޑު ބޭނުންކުރެވޭ ފަހަރުތައް ހަމަވެއްޖެ.',
+    'error_discount_used_by_you' => 'ތިބާ މި ކޯޑު ކުރިން ބޭނުންކޮށްފައި ވޭ.',
 ];

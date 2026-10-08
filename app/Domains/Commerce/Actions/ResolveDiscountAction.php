@@ -18,36 +18,36 @@ class ResolveDiscountAction
     {
         $discount = DiscountCode::query()->where('code', strtoupper(trim($code)))->first();
         if ($discount === null || $discount->status !== 'active') {
-            throw ValidationException::withMessages(['discount_code' => 'Discount code not found or inactive.']);
+            throw ValidationException::withMessages(['discount_code' => __('common.error_discount_not_found')]);
         }
         // BOOKSHOP_PLAN B7: a code scoped to one seller (a vendor-funded code)
         // is good only where the caller says it is buying from that seller;
         // callers that pass no scope (the library, courses) accept 'all' codes only.
         $appliesTo = (string) ($discount->applies_to_type ?: 'all');
         if ($appliesTo !== 'all' && ($appliesTo !== $scopeType || (int) $discount->applies_to_id !== (int) $scopeId)) {
-            throw ValidationException::withMessages(['discount_code' => 'This code is not valid for this purchase.']);
+            throw ValidationException::withMessages(['discount_code' => __('common.error_discount_not_here')]);
         }
         if ($discount->starts_at !== null && $discount->starts_at->isFuture()) {
-            throw ValidationException::withMessages(['discount_code' => 'Discount code is not active yet.']);
+            throw ValidationException::withMessages(['discount_code' => __('common.error_discount_not_yet')]);
         }
         if ($discount->ends_at !== null && $discount->ends_at->isPast()) {
-            throw ValidationException::withMessages(['discount_code' => 'Discount code has ended.']);
+            throw ValidationException::withMessages(['discount_code' => __('common.error_discount_ended')]);
         }
         if ($payingWithWallet && ! $discount->can_use_with_wallet) {
-            throw ValidationException::withMessages(['discount_code' => 'This code cannot be combined with wallet payment.']);
+            throw ValidationException::withMessages(['discount_code' => __('common.error_discount_no_wallet')]);
         }
         if ($discount->minimum_order_amount !== null && $orderAmount < (float) $discount->minimum_order_amount) {
-            throw ValidationException::withMessages(['discount_code' => 'Order is below this code\'s minimum amount.']);
+            throw ValidationException::withMessages(['discount_code' => __('common.error_discount_below_minimum')]);
         }
 
         $counting = fn ($query) => $query->whereIn('status', ['pending', 'confirmed']);
         if ($discount->usage_limit !== null
             && $counting($discount->redemptions())->count() >= $discount->usage_limit) {
-            throw ValidationException::withMessages(['discount_code' => 'Discount code has been fully used.']);
+            throw ValidationException::withMessages(['discount_code' => __('common.error_discount_used_up')]);
         }
         if ($discount->per_user_limit !== null
             && $counting($discount->redemptions()->where('user_id', $userId))->count() >= $discount->per_user_limit) {
-            throw ValidationException::withMessages(['discount_code' => 'You have already used this code.']);
+            throw ValidationException::withMessages(['discount_code' => __('common.error_discount_used_by_you')]);
         }
 
         $off = $discount->discount_type?->value === 'percentage'

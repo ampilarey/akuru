@@ -31,18 +31,18 @@ class SubmitRecitationAction
             : app(ResolveLatestEnrollmentIdAction::class)->execute($studentId);
         if ($enrollmentId === null || $enrollmentId === 0) {
             throw ValidationException::withMessages([
-                'course_enrollment_id' => 'Student has no engine enrollment — run halaqa:backfill-structure first.',
+                'course_enrollment_id' => __('quran.error_no_enrolment'),
             ]);
         }
 
         $mode = RecitationMode::tryFrom((string) ($data['mode'] ?? RecitationMode::Manual->value));
         if ($mode === null) {
-            throw ValidationException::withMessages(['mode' => 'Invalid recitation mode.']);
+            throw ValidationException::withMessages(['mode' => __('quran.error_recitation_mode')]);
         }
 
         $surahId = isset($data['surah_id']) && $data['surah_id'] !== '' ? (int) $data['surah_id'] : null;
         if ($surahId !== null && app(QuranReferenceReader::class)->findSurah($surahId) === null) {
-            throw ValidationException::withMessages(['surah_id' => 'Unknown surah.']);
+            throw ValidationException::withMessages(['surah_id' => __('quran.error_unknown_surah')]);
         }
 
         // §52.19: a submission may answer an assignment; submitting moves it on.
@@ -51,7 +51,7 @@ class SubmitRecitationAction
             $assignment = QuranHifzAssignment::query()->find((int) $data['quran_hifz_assignment_id']);
             if ($assignment === null || (int) $assignment->student_id !== $studentId) {
                 throw ValidationException::withMessages([
-                    'quran_hifz_assignment_id' => 'Assignment not found for this student.',
+                    'quran_hifz_assignment_id' => __('quran.error_assignment_not_found'),
                 ]);
             }
         }

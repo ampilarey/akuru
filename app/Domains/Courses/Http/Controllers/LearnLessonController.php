@@ -25,7 +25,7 @@ class LearnLessonController extends Controller
             )
             : null;
         $snapshot = app(ResolvePublishedLessonAction::class)->execute($lesson, $pinnedRevision);
-        abort_unless($snapshot !== null, 404, 'This lesson has no published revision.');
+        abort_unless($snapshot !== null, 404, __('learn.error_lesson_unpublished'));
 
         if ($access['enrollment'] !== null) {
             app(StartOrCompleteLessonProgressAction::class)->execute($lesson, $request->user(), 'in_progress');

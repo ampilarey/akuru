@@ -67,7 +67,7 @@ class ResolveEnrollmentAccessWindowAction
 
         if ($startsAt !== null && $endsAt !== null && $endsAt->lt($startsAt)) {
             throw ValidationException::withMessages([
-                'access_ends_at' => ['Access cannot end before it starts.'],
+                'access_ends_at' => [__('admin.error_access_end_before_start')],
             ]);
         }
 
@@ -79,10 +79,12 @@ class ResolveEnrollmentAccessWindowAction
 
     private function message(string $reason, mixed $startsAt, mixed $endsAt): string
     {
+        // In the page's language, the date in figures — a weekday or month
+        // name spelt in English would undo the sentence around it.
         return match ($reason) {
-            self::PENDING => 'Your access to this course starts on '.$startsAt->toDayDateTimeString().'.',
-            self::EXPIRED => 'Your access to this course ended on '.$endsAt->toDayDateTimeString().'.',
-            default => 'This course is not open to you at the moment.',
+            self::PENDING => __('learn.error_access_starts', ['date' => $startsAt->format('Y-m-d H:i')]),
+            self::EXPIRED => __('learn.error_access_ended', ['date' => $endsAt->format('Y-m-d H:i')]),
+            default => __('learn.error_access_closed'),
         };
     }
 
@@ -98,7 +100,7 @@ class ResolveEnrollmentAccessWindowAction
             return \Illuminate\Support\Carbon::parse((string) $value);
         } catch (\Throwable) {
             throw ValidationException::withMessages([
-                'access_starts_at' => ['That is not a date this can read.'],
+                'access_starts_at' => [__('admin.error_date_unreadable')],
             ]);
         }
     }

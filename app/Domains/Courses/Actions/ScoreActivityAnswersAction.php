@@ -16,7 +16,7 @@ class ScoreActivityAnswersAction
     {
         $pattern = ActivityPattern::tryFrom((string) ($activity['pattern'] ?? ''));
         if ($pattern === null) {
-            throw ValidationException::withMessages(['pattern' => 'Unknown activity pattern.']);
+            throw ValidationException::withMessages(['pattern' => __('learn.error_activity_pattern')]);
         }
 
         $max = max(1, (int) ($activity['max_score'] ?? 1));

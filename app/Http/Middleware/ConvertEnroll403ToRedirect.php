@@ -12,8 +12,6 @@ use Symfony\Component\HttpFoundation\Response;
  */
 class ConvertEnroll403ToRedirect
 {
-    private const MESSAGE = 'Your session may have expired or this contact is already registered. Please go back to the course and start enrollment again, or use a different mobile/email.';
-
     public function handle(Request $request, Closure $next): Response
     {
         $path = $request->path();
@@ -32,7 +30,7 @@ class ConvertEnroll403ToRedirect
 
             if ($isEnrollRoute && in_array($response->getStatusCode(), [401, 403], true)) {
                 return redirect()->back()
-                    ->withErrors(['_authorization' => self::MESSAGE])
+                    ->withErrors(['_authorization' => $this->message()])
                     ->withInput();
             }
 
@@ -46,8 +44,14 @@ class ConvertEnroll403ToRedirect
             }
 
             return redirect()->back()
-                ->withErrors(['_authorization' => self::MESSAGE])
+                ->withErrors(['_authorization' => $this->message()])
                 ->withInput();
         }
+    }
+
+    /** In the page's language; the learner's own enrol and the public registration both say it. */
+    private function message(): string
+    {
+        return __('learn.error_enrol_forbidden');
     }
 }

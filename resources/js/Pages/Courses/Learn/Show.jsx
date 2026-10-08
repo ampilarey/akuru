@@ -1,4 +1,5 @@
 import { router, usePage } from '@inertiajs/react';
+import FormErrors from '../../../Components/FormErrors';
 import AppShell from '../../../Layouts/AppShell';
 
 export default function Show({
@@ -12,7 +13,8 @@ export default function Show({
     certificate = null,
     forum_href: forumHref = null,
 }) {
-    const t = usePage().props.i18n?.learn || {};
+    const { i18n, errors } = usePage().props;
+    const t = i18n?.learn || {};
 
     return (
         <AppShell title={course.title}>
@@ -72,6 +74,7 @@ export default function Show({
             {!enrollment && (
                 <div className="mb-4">
                     <button type="button" className="btn-primary" onClick={() => router.post(`/learn/courses/${course.id}/enroll`)}>{t.enroll || 'Enroll'}</button>
+                    <FormErrors errors={errors} className="mt-2" />
                 </div>
             )}
             {upcoming_sessions.length > 0 && (

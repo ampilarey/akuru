@@ -17,16 +17,16 @@ class AuthorizeAssessmentAccessAction
     public function execute(int $assessmentId, int $userId): array
     {
         $assessment = Assessment::query()->findOrFail($assessmentId);
-        abort_unless($assessment->status === AssessmentStatus::Published, 403, 'Assessment is not published.');
+        abort_unless($assessment->status === AssessmentStatus::Published, 403, __('learn.error_assessment_unpublished'));
 
         $student = app(ResolveStudentForUserAction::class)->execute($userId);
-        abort_unless($student !== null, 403, 'A student profile is required.');
+        abort_unless($student !== null, 403, __('learn.error_needs_student'));
 
         if ($assessment->classroom_id) {
             abort_unless(
                 app(StudentIsOnClassRosterAction::class)->execute((int) $student['id'], (int) $assessment->classroom_id),
                 403,
-                'Class roster membership is required.',
+                __('learn.error_needs_roster'),
             );
 
             return [
@@ -39,14 +39,14 @@ class AuthorizeAssessmentAccessAction
             ];
         }
 
-        abort_unless($assessment->course_id, 403, 'Assessment is not attached to a course or class.');
+        abort_unless($assessment->course_id, 403, __('learn.error_assessment_unattached'));
 
         $enrollment = CourseEnrollment::query()
             ->where('course_id', $assessment->course_id)
             ->where('unified_student_id', $student['id'])
             ->whereIn('status', ['active', 'approved', 'completed'])
             ->first();
-        abort_unless($enrollment !== null, 403, 'Enrollment is required.');
+        abort_unless($enrollment !== null, 403, __('learn.error_needs_enrolment'));
 
         return [
             'assessment_id' => $assessment->id,

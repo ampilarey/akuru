@@ -121,6 +121,9 @@ function Attachments({ activity, attachments, submitted, t }) {
 
 export default function Activity({ activity, enrollment, attempt, retake = null, teach = {} }) {
     const t = usePage().props.i18n?.learn || {};
+    // A refused attempt — no retakes, the limit reached — came back under
+    // `attempt` and was shown nowhere (slice CT6b-2a).
+    const attemptError = usePage().props.errors?.attempt;
     const locale = usePage().props.locale || 'en';
     const [answers, setAnswers] = useState(() => initialAnswers(activity, attempt));
 
@@ -350,6 +353,9 @@ export default function Activity({ activity, enrollment, attempt, retake = null,
             )}
             {finished && !retrying && retake && !retake.can_retake && retake.remaining === 0 && (
                 <p className="mb-3 text-sm text-gray-500">{t.retake_none || 'No goes left on this one.'}</p>
+            )}
+            {attemptError && (
+                <p role="alert" className="mb-3 rounded border border-red-300 bg-red-50 p-2 text-sm text-red-800">{attemptError}</p>
             )}
             <div className="flex flex-wrap gap-3">
                 <button

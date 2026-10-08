@@ -4983,6 +4983,70 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pb. What a learner is told when a step is refused, in the page's language, and shown (C19 slice CT6b-2a, 2026-10-08)
+
+The learner's refusals were written in English inside the actions —
+*Retake limit reached.*, *This offering has no remaining seats.*, *Discount
+code not found or inactive.* Several of them were shown by no page at all:
+- the catalog and the course page read no errors, so a wrong discount code,
+  a full intake or a missing student profile left the Enroll button doing
+  nothing;
+- the activity and the assessment read only their own field's error, so a
+  refused attempt (no retakes, the limit reached, time up) was silent.
+
+**Through the phrase books:**
+- `learn` gains 30 rows:
+  - the attempt refusals and the enrol ones (an unpublished course, no
+    student profile, an intake of another course, a full intake);
+  - *Enrolled.* and *Paid with wallet — you are enrolled.*;
+  - the reasons a page will not open (*Enrollment is required.*, a lesson
+    locked or unpublished, the access window). The window's date is now in
+    figures, so no English month sits in a Dhivehi sentence;
+  - *Question :id*, the label of an unnamed required question;
+  - the enrol middleware's refusal.
+- `common` gains the eight discount refusals, shared by every checkout (a
+  course, the Library, the Bookstore).
+- `quran` gains the recitation's four. The first no longer tells a learner
+  to run `halaqa:backfill-structure`.
+- `admin` gains the office's two access-date refusals.
+- The English is unchanged, so English pages read as before.
+
+**On the pages:**
+- The catalog and the course page show an enrol's refusal (`FormErrors`).
+- The activity and the assessment show a refused attempt beside the
+  submit button.
+
+**Tests:** `LearnerRefusalsSpeakThreeLanguagesTest`, 8 tests.
+- No string in the 25 learner files reads as an English sentence. The
+  check uses the tokenizer, so comments do not count.
+- Every key those files use is in Dhivehi and Arabic.
+- Served:
+  - past the retake limit, from a Dhivehi page — refused in Dhivehi;
+  - an unknown code at a priced course's checkout — refused in Dhivehi,
+    with no enrolment left waiting;
+  - a full intake, from an Arabic page — refused in Arabic;
+  - enrolling — told so in Dhivehi, and *Enrolled.* on an English page;
+  - an activity opened without enrolling — 403 says why in Dhivehi;
+  - the access window — a Dhivehi or Arabic sentence with the date in
+    figures.
+- Two deliberate breaks each fail it: one English literal put back, one
+  Dhivehi row taken out.
+
+**Walk:** `course-screens-language.mjs`, **377/377**.
+- The pupil types a code that does not exist against SMOKE-Wallet-Course
+  on the Dhivehi catalog and reads *ޑިސްކައުންޓް ކޯޑު ނުފެނުނު، ނުވަތަ އެ ކޯޑު
+  ހުއްޓާލާފައި ވޭ.* Nothing is bought or held.
+- The same step against a build of the old catalog reads nothing: the
+  refusal was silent.
+
+**Still open (CT6b-2b):**
+- One learner-facing list was found after this slice's run: a course
+  page's *Still needed for this certificate:* reasons
+  (`CheckCertificateEligibilityAction` — *Progress is below the minimum.*)
+  are English. They lead the next slice.
+- The teacher's and the office's refusals: the course, offering and
+  Qur'an authoring actions, about 100 of the 122.
+
 ## 5pa. The learner pages' first Dhivehi phrases were pasted placeholders (slice LT1, 2026-10-08)
 
 Found while scoping CT6b-2. The `learn` book's first Dhivehi batch was a few

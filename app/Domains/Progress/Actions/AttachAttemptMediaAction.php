@@ -85,7 +85,7 @@ class AttachAttemptMediaAction
         $attempt = $this->openAttempt($activityId, $enrollmentId);
         if ($attempt === null) {
             throw ValidationException::withMessages([
-                'attempt' => ['There is no open attempt to remove a file from.'],
+                'attempt' => [__('learn.error_no_open_attempt')],
             ]);
         }
 

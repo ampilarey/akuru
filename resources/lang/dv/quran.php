@@ -82,4 +82,10 @@ return [
     'frequency_daily' => 'ކޮންމެ ދުވަހަކު',
     'frequency_weekly' => 'ކޮންމެ ހަފްތާއަކު',
     'frequency_monthly' => 'ކޮންމެ މަހަކު',
+
+    // A recitation refused (slice CT6b-2a)
+    'error_no_enrolment' => 'މި ދަރިވަރު އެއްވެސް ކޯހަކަށް ވަދެފައެއް ނުވާތީ ރެކޯޑުކުރެވޭކަށް ނެތް. ފުރަތަމަ އޮފީހުން ކޯހަށް ވައްދަންޖެހޭ.',
+    'error_recitation_mode' => 'ތިލާވަތް ރެކޯޑުކުރާ ގޮތް ރަނގަޅެއް ނޫން.',
+    'error_unknown_surah' => 'އެ ސޫރަތެއް ނުފެނުނު.',
+    'error_assignment_not_found' => 'މި ދަރިވަރަށް އެ އެސައިންމަންޓެއް ނުފެނުނު.',
 ];

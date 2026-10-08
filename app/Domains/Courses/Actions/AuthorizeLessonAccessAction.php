@@ -24,7 +24,7 @@ class AuthorizeLessonAccessAction
             return ['lesson' => $lesson, 'enrollment' => null, 'via' => 'staff'];
         }
 
-        abort_unless($lesson->current_revision_id !== null, 404, 'This lesson has no published revision.');
+        abort_unless($lesson->current_revision_id !== null, 404, __('learn.error_lesson_unpublished'));
 
         $student = app(ResolveStudentForUserAction::class)->execute((int) $user->getAuthIdentifier());
         $enrollment = $student
@@ -52,7 +52,7 @@ class AuthorizeLessonAccessAction
         $window = app(ResolveEnrollmentAccessWindowAction::class)->execute($enrollment);
         abort_unless($window['open'], 403, (string) $window['message']);
 
-        abort_unless($this->isUnlocked($lesson, $enrollment->id), 403, 'This lesson is locked.');
+        abort_unless($this->isUnlocked($lesson, $enrollment->id), 403, __('learn.error_lesson_locked'));
 
         return ['lesson' => $lesson, 'enrollment' => $enrollment, 'via' => 'enrollment'];
     }

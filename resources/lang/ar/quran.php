@@ -82,4 +82,10 @@ return [
     'frequency_daily' => 'يومي',
     'frequency_weekly' => 'أسبوعي',
     'frequency_monthly' => 'شهري',
+
+    // A recitation refused (slice CT6b-2a)
+    'error_no_enrolment' => 'لا يوجد تسجيل في دورة لهذا الطالب ليُسجَّل عليه. يجب أن يسجّله المكتب أولًا.',
+    'error_recitation_mode' => 'طريقة التلاوة غير صحيحة.',
+    'error_unknown_surah' => 'سورة غير معروفة.',
+    'error_assignment_not_found' => 'لم يُعثر على هذا الواجب لهذا الطالب.',
 ];

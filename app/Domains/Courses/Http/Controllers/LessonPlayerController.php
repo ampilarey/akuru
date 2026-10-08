@@ -15,7 +15,7 @@ class LessonPlayerController extends Controller
     {
         abort_unless($request->user() !== null, 403);
         $snapshot = app(ResolvePublishedLessonAction::class)->execute($lesson);
-        abort_unless($snapshot !== null, 404, 'This lesson has no published revision.');
+        abort_unless($snapshot !== null, 404, __('learn.error_lesson_unpublished'));
 
         return Inertia::render('Courses/Player/Show', [
             'snapshot' => $snapshot,
