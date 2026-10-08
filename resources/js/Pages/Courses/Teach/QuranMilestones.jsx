@@ -1,11 +1,11 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
-import FormErrors from '../../../Components/FormErrors';
+import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 
 // A code the server sends, named from the `quran` book (slice CT5a).
 const named = (q, family, code) => (code ? q[`${family}${code}`] || code.replaceAll('_', ' ') : '—');
 
-function RecommendForm({ t, q, targets, options }) {
+function RecommendForm({ t, q, targets, options, actOn }) {
     const form = useForm({
         hifz_program_id: '',
         student_id: '',
@@ -30,7 +30,9 @@ function RecommendForm({ t, q, targets, options }) {
         <form
             onSubmit={(e) => {
                 e.preventDefault();
-                form.post('/teach/milestones', { preserveScroll: true, onSuccess: () => form.reset() });
+                // Marks the form as the last thing acted on, so a row's
+                // refusal list does not repeat the form's.
+                actOn('recommend', () => form.post('/teach/milestones', { preserveScroll: true, onSuccess: () => form.reset() }));
             }}
             className="mb-6 grid gap-2 rounded-lg border bg-white p-4 md:grid-cols-4"
         >
@@ -64,6 +66,9 @@ export default function QuranMilestones({ rows, targets, options, status, can_de
         row.juz_number && (t.qmile_detail_juz || 'Juz :n').replace(':n', row.juz_number),
         row.page_number && (t.qmile_detail_page || 'Page :n').replace(':n', row.page_number),
     ].filter(Boolean).join(', ') || '—';
+    // Review, Approve and Reject post with `router`, and a refusal of any of
+    // them was shown nowhere (slice CT6b-2c); it is said on its row.
+    const refusals = useRowRefusals();
 
     return (
         <AppShell title={t.qmile_title || 'Memorization milestones'}>
@@ -83,7 +88,7 @@ export default function QuranMilestones({ rows, targets, options, status, can_de
                 <a className="btn-secondary" href={`/teach/milestones?status=${status}&format=csv`}>{t.catalog_export || 'Export CSV'}</a>
             </div>
 
-            <RecommendForm t={t} q={q} targets={targets} options={options} />
+            <RecommendForm t={t} q={q} targets={targets} options={options} actOn={refusals.actOn} />
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
@@ -113,20 +118,21 @@ export default function QuranMilestones({ rows, targets, options, status, can_de
                                 {can_decide && (
                                     <td className="px-3 py-2 text-end">
                                         {row.status === 'pending' && (
-                                            <button type="button" className="btn-secondary me-1" onClick={() => router.post(`/teach/milestones/${row.id}/review`, {}, { preserveScroll: true })}>
+                                            <button type="button" className="btn-secondary me-1" onClick={() => refusals.actOn(`milestone:${row.id}`, () => router.post(`/teach/milestones/${row.id}/review`, {}, { preserveScroll: true }))}>
                                                 {t.qt_review || 'Review'}
                                             </button>
                                         )}
                                         {(row.status === 'pending' || row.status === 'supervisor_reviewed') && (
                                             <>
-                                                <button type="button" className="btn-primary me-1" onClick={() => router.post(`/teach/milestones/${row.id}/decide`, { approved: true }, { preserveScroll: true })}>
+                                                <button type="button" className="btn-primary me-1" onClick={() => refusals.actOn(`milestone:${row.id}`, () => router.post(`/teach/milestones/${row.id}/decide`, { approved: true }, { preserveScroll: true }))}>
                                                     {t.qmile_approve || 'Approve'}
                                                 </button>
-                                                <button type="button" className="text-sm text-red-600" onClick={() => router.post(`/teach/milestones/${row.id}/decide`, { approved: false }, { preserveScroll: true })}>
+                                                <button type="button" className="text-sm text-red-600" onClick={() => refusals.actOn(`milestone:${row.id}`, () => router.post(`/teach/milestones/${row.id}/decide`, { approved: false }, { preserveScroll: true }))}>
                                                     {t.qmile_reject || 'Reject'}
                                                 </button>
                                             </>
                                         )}
+                                        <FormErrors errors={refusals.errorsFor(`milestone:${row.id}`)} className="mt-1 text-start" />
                                     </td>
                                 )}
                             </tr>

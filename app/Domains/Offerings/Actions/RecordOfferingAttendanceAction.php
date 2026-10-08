@@ -20,21 +20,21 @@ class RecordOfferingAttendanceAction
         $session = CourseOfferingSession::query()->findOrFail((int) $data['course_offering_session_id']);
         $status = AttendanceStatus::tryFrom((string) ($data['status'] ?? ''));
         if ($status === null) {
-            throw ValidationException::withMessages(['status' => 'Invalid attendance status.']);
+            throw ValidationException::withMessages(['status' => __('teach.error_attendance_status')]);
         }
 
         $mode = isset($data['attendance_mode']) && $data['attendance_mode'] !== ''
             ? AttendanceMode::tryFrom((string) $data['attendance_mode'])
             : null;
         if (isset($data['attendance_mode']) && $data['attendance_mode'] !== '' && $mode === null) {
-            throw ValidationException::withMessages(['attendance_mode' => 'Invalid attendance mode.']);
+            throw ValidationException::withMessages(['attendance_mode' => __('teach.error_attendance_mode')]);
         }
 
         $enrollmentId = (int) $data['enrollment_id'];
         $roster = collect(app(ListEnrollmentsForOfferingAction::class)->execute($session->course_offering_id))
             ->firstWhere('id', $enrollmentId);
         if ($roster === null) {
-            throw ValidationException::withMessages(['enrollment_id' => 'Enrollment is not on this offering.']);
+            throw ValidationException::withMessages(['enrollment_id' => __('teach.error_attendance_not_on_offering')]);
         }
 
         $row = AttendanceRecord::query()->firstOrNew([

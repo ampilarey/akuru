@@ -986,4 +986,21 @@ return [
     'error_question_media' => 'ސުވާލަށް ގުޅާ ފައިލަކީ އަޑެއް، ފޮޓޯއެއް، PDF އެއް، ނުވަތަ ވީޑިއޯއެއް ކަމުގައި ވާން ޖެހޭ. :mime އަކީ އެއިން އެއްވެސް އެއްޗެއް ނޫން.',
     'error_arabic_letter_fields' => 'ކީ، އަކުރު، އަދި ދައްކާ ނަން ލިޔަން ޖެހޭ.',
     'error_arabic_harakah_fields' => 'ކީ، ނިޝާން، އަދި ދައްކާ ނަން ލިޔަން ޖެހޭ.',
+
+    // What the office is told when an offering, a session, attendance or a halaqa link refuses a step (slice CT6b-2c)
+    'error_offering_delivery_mode' => 'ކިޔަވައިދޭ ގޮތް ރަނގަޅެއް ނޫން.',
+    'error_offering_slug' => 'އޮފަރިންގްގެ ސްލަގަކީ މި ކޯހުގެ އެހެން އެއްވެސް އޮފަރިންގެއްގެ ސްލަގާ އެއްގޮތް ނުވާ އެއްޗަކަށް ވާން ޖެހޭ.',
+    'error_offering_audience' => 'އެ ފަރާތެއް ހޮވޭކަށް ނެތް.',
+    'error_offering_level' => 'އެ ލެވެލެއް ހޮވޭކަށް ނެތް.',
+    'error_offering_move' => 'އޮފަރިންގެއް :from އިން :to އަށް ބަދަލެއް ނުކުރެވޭނެ.',
+    'error_session_type' => 'ސެޝަންގެ ބާވަތް ރަނގަޅެއް ނޫން.',
+    'error_session_start' => 'ސެޝަން ފަށާ ވަގުތު ލިޔަން ޖެހޭ.',
+    'error_attendance_status' => 'ހާޒިރީގެ ހާލަތު ރަނގަޅެއް ނޫން.',
+    'error_attendance_mode' => 'ހާޒިރުވި ގޮތް ރަނގަޅެއް ނޫން.',
+    'error_attendance_not_on_offering' => 'މި ދަރިވަރު މި އޮފަރިންގްގައި ނުހިމެނޭ.',
+    'error_hifz_program' => 'ހިފްޒު ޕްރޮގްރާމެއް ނޭނގޭ.',
+    'error_hifz_session' => 'ހިފްޒު ސެޝަނެއް ނޭނގޭ.',
+    'error_hifz_session_program' => 'ހިފްޒު ސެޝަން ވާން ޖެހޭނީ ގުޅިފައިވާ ޕްރޮގްރާމުގެ ސެޝަނަކަށް.',
+    'error_dual_write_off' => 'ހަލަޤާގެ ޑުއަލް-ރައިޓް ހުއްޓާލާފައި ވޭ.',
+    'error_dual_write_link' => 'ޑުއަލް-ރައިޓް ސިންކްކުރުމުގެ ކުރިން ހިފްޒު ޕްރޮގްރާމެއް ގުޅުއްވާ.',
 ];

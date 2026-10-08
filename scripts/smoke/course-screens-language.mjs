@@ -41,7 +41,9 @@
  * The dean publishes an empty module from the Dhivehi outline and is told why
  * beside the module, in Dhivehi, then deletes it; and is refused a certificate
  * the pupil has not earned on the Arabic page, the reason in Arabic (slice
- * CT6b-2b). `SmokeMarkerSeeder` removes the module and the template.
+ * CT6b-2b). `SmokeMarkerSeeder` removes the module and the template. A
+ * second SMOKE-Offering, from the Dhivehi offerings page, is refused in
+ * Dhivehi (slice CT6b-2c).
  *
  *   node scripts/smoke/course-screens-language.mjs
  *
@@ -344,6 +346,26 @@ check(
     Boolean(pupilOption) && Boolean(certRefusal) && certRefusal.includes('تلزم موافقة المعلم.') && !/[A-Za-z]{2,}/.test(certRefusal),
     `${pupilName || 'no pupil name'} — said: ${certRefusal ?? 'nothing'}`,
 );
+
+// A second SMOKE-Offering on SMOKE-Course, from the Dhivehi offerings page
+// (slice CT6b-2c). The slug is made from the title, so it collides; the form
+// showed its status and certificate-rule refusals only, and this one said
+// nothing. Nothing is made.
+await page.goto(`${BASE}/dv/catalog/offerings`, { waitUntil: 'networkidle' });
+const offeringsT = (await props(page)).t ?? {};
+const offeringsBefore = ((await props(page)).rows || []).length;
+const offeringForm = page.locator('main form').first();
+await offeringForm.getByLabel(offeringsT.offerings_course, { exact: true }).selectOption({ label: COURSE });
+await offeringForm.getByLabel(offeringsT.offerings_offering_title, { exact: true }).fill('SMOKE-Offering');
+await offeringForm.getByRole('button', { name: offeringsT.offerings_save, exact: true }).click();
+const offeringRefusal = (await offeringForm.locator('ul[role="alert"]').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+check(
+    'a second SMOKE-Offering is refused on the Dhivehi page, and says why in Dhivehi',
+    Boolean(offeringsT.error_offering_slug) && offeringRefusal === offeringsT.error_offering_slug,
+    `said: ${offeringRefusal ?? 'nothing'}`,
+);
+await page.goto(`${BASE}/dv/catalog/offerings`, { waitUntil: 'networkidle' });
+check('and no offering is made', ((await props(page)).rows || []).length === offeringsBefore, `${offeringsBefore} → ${((await props(page)).rows || []).length}`);
 
 const screens = [
     '/catalog/courses',

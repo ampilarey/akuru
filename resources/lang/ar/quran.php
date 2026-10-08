@@ -88,4 +88,18 @@ return [
     'error_recitation_mode' => 'طريقة التلاوة غير صحيحة.',
     'error_unknown_surah' => 'سورة غير معروفة.',
     'error_assignment_not_found' => 'لم يُعثر على هذا الواجب لهذا الطالب.',
+
+    // What a teacher is told when a recitation review, an assignment, a milestone or a session sheet refuses a step (slice CT6b-2c)
+    'error_review_outcome' => 'اختر إحدى نتائج المراجعة.',
+    'error_mistake_type' => 'اختر نوع الخطأ، أو الحرف أو الحركة التي وقع فيها.',
+    'error_mistake_severity' => 'درجة الخطأ غير صحيحة.',
+    'error_memorization_status' => 'حالة الحفظ غير صحيحة.',
+    'error_assignment_type' => 'نوع الواجب غير صحيح.',
+    'error_assignment_status' => 'حالة الواجب غير صحيحة.',
+    'error_milestone_type' => 'نوع المرحلة غير صحيح.',
+    'error_unknown_program' => 'برنامج غير معروف.',
+    'error_not_on_session' => 'هذا التسجيل ليس في الدورة المطروحة لهذه الجلسة.',
+    'error_invalid_value' => 'قيمة غير صحيحة.',
+    'error_schedule_date' => 'يلزم تاريخ الموعد.',
+    'error_schedule_status' => 'حالة جدول المراجعة غير صحيحة.',
 ];

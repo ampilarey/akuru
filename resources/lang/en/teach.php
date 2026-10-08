@@ -986,4 +986,21 @@ return [
     'error_question_media' => 'A question attachment must be audio, an image, a PDF, or a video. :mime is none of those.',
     'error_arabic_letter_fields' => 'Key, character, and display name are required.',
     'error_arabic_harakah_fields' => 'Key, symbol, and display name are required.',
+
+    // What the office is told when an offering, a session, attendance or a halaqa link refuses a step (slice CT6b-2c)
+    'error_offering_delivery_mode' => 'Invalid delivery mode.',
+    'error_offering_slug' => 'Offering slug must be unique within the course.',
+    'error_offering_audience' => 'That audience is not available.',
+    'error_offering_level' => 'That level is not available.',
+    'error_offering_move' => 'An offering cannot go from :from to :to.',
+    'error_session_type' => 'Invalid session type.',
+    'error_session_start' => 'Session start is required.',
+    'error_attendance_status' => 'Invalid attendance status.',
+    'error_attendance_mode' => 'Invalid attendance mode.',
+    'error_attendance_not_on_offering' => 'Enrollment is not on this offering.',
+    'error_hifz_program' => 'Unknown Hifz program.',
+    'error_hifz_session' => 'Unknown Hifz session.',
+    'error_hifz_session_program' => 'Hifz session must belong to the linked program.',
+    'error_dual_write_off' => 'Halaqa dual-write is disabled.',
+    'error_dual_write_link' => 'Link a Hifz program before dual-write sync.',
 ];

@@ -34,11 +34,12 @@ class TransitionOfferingStatusAction
 
         if (! $from->canTransitionTo($to)) {
             throw ValidationException::withMessages([
-                'status' => sprintf(
-                    'An offering cannot go from %s to %s.',
-                    $from->label(),
-                    $to->label(),
-                ),
+                // Both statuses named as the offerings screen names them, in
+                // the page's language (slice CT6b-2c).
+                'status' => __('teach.error_offering_move', [
+                    'from' => __('teach.offering_status_'.$from->value),
+                    'to' => __('teach.offering_status_'.$to->value),
+                ]),
             ]);
         }
 

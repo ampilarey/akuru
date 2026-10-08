@@ -17,12 +17,12 @@ class SaveOfferingSessionAction
         $offering = CourseOffering::query()->findOrFail((int) $data['course_offering_id']);
         $type = SessionType::tryFrom((string) ($data['session_type'] ?? ''));
         if ($type === null) {
-            throw ValidationException::withMessages(['session_type' => 'Invalid session type.']);
+            throw ValidationException::withMessages(['session_type' => __('teach.error_session_type')]);
         }
 
         $starts = $data['starts_at'] ?? null;
         if ($starts === null || $starts === '') {
-            throw ValidationException::withMessages(['starts_at' => 'Session start is required.']);
+            throw ValidationException::withMessages(['starts_at' => __('teach.error_session_start')]);
         }
 
         $payload = [

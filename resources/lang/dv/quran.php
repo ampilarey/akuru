@@ -88,4 +88,18 @@ return [
     'error_recitation_mode' => 'ތިލާވަތް ރެކޯޑުކުރާ ގޮތް ރަނގަޅެއް ނޫން.',
     'error_unknown_surah' => 'އެ ސޫރަތެއް ނުފެނުނު.',
     'error_assignment_not_found' => 'މި ދަރިވަރަށް އެ އެސައިންމަންޓެއް ނުފެނުނު.',
+
+    // What a teacher is told when a recitation review, an assignment, a milestone or a session sheet refuses a step (slice CT6b-2c)
+    'error_review_outcome' => 'ރިވިއުގެ ނަތީޖާއެއް ހޮއްވަވާ.',
+    'error_mistake_type' => 'ކުށުގެ ބާވަތް ހޮއްވަވާ، ނުވަތަ ކުށް ހުރި އަކުރު ނުވަތަ ހަރަކާތް ހޮއްވަވާ.',
+    'error_mistake_severity' => 'ކުށުގެ ބޮޑުމިން ރަނގަޅެއް ނޫން.',
+    'error_memorization_status' => 'ހިފްޒުގެ ހާލަތު ރަނގަޅެއް ނޫން.',
+    'error_assignment_type' => 'މަސައްކަތުގެ ބާވަތް ރަނގަޅެއް ނޫން.',
+    'error_assignment_status' => 'މަސައްކަތުގެ ހާލަތު ރަނގަޅެއް ނޫން.',
+    'error_milestone_type' => 'މައިލްސްޓޯނުގެ ބާވަތް ރަނގަޅެއް ނޫން.',
+    'error_unknown_program' => 'ޕްރޮގްރާމެއް ނޭނގޭ.',
+    'error_not_on_session' => 'މި ދަރިވަރު މި ސެޝަންގެ އޮފަރިންގްގައި ނުހިމެނޭ.',
+    'error_invalid_value' => 'ރަނގަޅު އަގެއް ނޫން.',
+    'error_schedule_date' => 'ތާރީޚު ހޮވަން ޖެހޭ.',
+    'error_schedule_status' => 'މުރާޖަޢާގެ ތާވަލުގެ ހާލަތު ރަނގަޅެއް ނޫން.',
 ];

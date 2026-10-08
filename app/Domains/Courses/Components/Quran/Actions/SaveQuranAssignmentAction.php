@@ -22,19 +22,19 @@ class SaveQuranAssignmentAction
     {
         $type = QuranAssignmentType::tryFrom((string) ($data['assignment_type'] ?? ''));
         if ($type === null) {
-            throw ValidationException::withMessages(['assignment_type' => 'Invalid assignment type.']);
+            throw ValidationException::withMessages(['assignment_type' => __('quran.error_assignment_type')]);
         }
 
         $status = QuranAssignmentStatus::tryFrom(
             (string) ($data['status'] ?? QuranAssignmentStatus::Assigned->value)
         );
         if ($status === null) {
-            throw ValidationException::withMessages(['status' => 'Invalid assignment status.']);
+            throw ValidationException::withMessages(['status' => __('quran.error_assignment_status')]);
         }
 
         $surahId = isset($data['surah_id']) && $data['surah_id'] !== '' ? (int) $data['surah_id'] : null;
         if ($surahId !== null && app(QuranReferenceReader::class)->findSurah($surahId) === null) {
-            throw ValidationException::withMessages(['surah_id' => 'Unknown surah.']);
+            throw ValidationException::withMessages(['surah_id' => __('quran.error_unknown_surah')]);
         }
 
         $payload = [

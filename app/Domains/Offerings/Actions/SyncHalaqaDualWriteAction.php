@@ -17,7 +17,7 @@ class SyncHalaqaDualWriteAction
     {
         if (! config('quran.halaqa_dual_write')) {
             throw ValidationException::withMessages([
-                'dual_write' => ['Halaqa dual-write is disabled.'],
+                'dual_write' => [__('teach.error_dual_write_off')],
             ]);
         }
 
@@ -25,7 +25,7 @@ class SyncHalaqaDualWriteAction
         $link = OfferingHalaqaLink::query()->where('course_offering_id', $offering->id)->first();
         if ($link === null) {
             throw ValidationException::withMessages([
-                'halaqa' => ['Link a Hifz program before dual-write sync.'],
+                'halaqa' => [__('teach.error_dual_write_link')],
             ]);
         }
 

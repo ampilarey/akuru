@@ -228,4 +228,8 @@ return [
     'error_discount_below_minimum' => 'قيمة الطلب أقل من الحد الأدنى لهذا الرمز.',
     'error_discount_used_up' => 'استُنفدت مرات استخدام رمز الخصم.',
     'error_discount_used_by_you' => 'لقد استخدمت هذا الرمز من قبل.',
+
+    // A seat limit's refusals, for whichever screen holds the seats (slice CT6b-2c)
+    'error_no_seats' => 'لا توجد مقاعد متبقية.',
+    'error_resource_missing' => 'لم يُعثر على المطلوب.',
 ];

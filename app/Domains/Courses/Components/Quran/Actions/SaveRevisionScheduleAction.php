@@ -18,19 +18,19 @@ class SaveRevisionScheduleAction
     public function execute(array $data, ?QuranRevisionSchedule $schedule = null): QuranRevisionSchedule
     {
         if (empty($data['scheduled_date'])) {
-            throw ValidationException::withMessages(['scheduled_date' => 'Scheduled date is required.']);
+            throw ValidationException::withMessages(['scheduled_date' => __('quran.error_schedule_date')]);
         }
 
         $status = RevisionScheduleStatus::tryFrom(
             (string) ($data['status'] ?? RevisionScheduleStatus::Scheduled->value)
         );
         if ($status === null) {
-            throw ValidationException::withMessages(['status' => 'Invalid revision schedule status.']);
+            throw ValidationException::withMessages(['status' => __('quran.error_schedule_status')]);
         }
 
         $surahId = isset($data['surah_id']) && $data['surah_id'] !== '' ? (int) $data['surah_id'] : null;
         if ($surahId !== null && app(QuranReferenceReader::class)->findSurah($surahId) === null) {
-            throw ValidationException::withMessages(['surah_id' => 'Unknown surah.']);
+            throw ValidationException::withMessages(['surah_id' => __('quran.error_unknown_surah')]);
         }
 
         $payload = [

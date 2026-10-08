@@ -33,7 +33,7 @@ class EnforceSeatLimitAction
         string $foreignKey,
         array $occupyingStatuses,
         ?string $waitlistEnabledColumn = null,
-        string $fullMessage = 'No remaining seats.',
+        ?string $fullMessage = null,
         string $waitlistStatus = 'waitlisted',
         bool $respectSoftDeletes = false,
     ): array {
@@ -49,10 +49,13 @@ class EnforceSeatLimitAction
             $waitlistStatus,
             $respectSoftDeletes,
         ): array {
+            // A caller names its own "full" (an intake, an event); the rest
+            // are told in the page's language (slice CT6b-2c).
+            $fullMessage ??= __('common.error_no_seats');
             $row = DB::table($resourceTable)->where('id', $resourceId)->lockForUpdate()->first();
             if ($row === null) {
                 throw ValidationException::withMessages([
-                    $foreignKey => 'Resource not found.',
+                    $foreignKey => __('common.error_resource_missing'),
                 ]);
             }
 

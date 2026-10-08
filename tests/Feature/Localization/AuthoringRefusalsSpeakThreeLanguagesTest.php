@@ -73,61 +73,10 @@ function authoringRefusalSources(): array
     ];
 }
 
-/**
- * A file's English left where a page will read it: any string literal that
- * reads as a sentence, and any literal with words in it inside a
- * `withMessages(...)` call — where a refusal built of pieces ("This course
- * has " … ". Move or delete those first.") hides from a sentence pattern.
- * Comments are not tokens of this kind, so they do not count.
- *
- * @return list<string>
- */
-function authoringEnglishIn(string $file): array
-{
-    $tokens = token_get_all(file_get_contents(base_path($file)));
-    $found = [];
-    $depth = 0;
-    $inside = false;
-
-    foreach ($tokens as $index => $token) {
-        if (is_array($token) && $token[0] === T_STRING && $token[1] === 'withMessages') {
-            $inside = true;
-            $depth = 0;
-
-            continue;
-        }
-        if ($inside && ($token === '(' || $token === '[')) {
-            $depth++;
-        } elseif ($inside && ($token === ')' || $token === ']')) {
-            $depth--;
-            if ($depth === 0) {
-                $inside = false;
-            }
-        }
-        if (! is_array($token) || ! in_array($token[0], [T_CONSTANT_ENCAPSED_STRING, T_ENCAPSED_AND_WHITESPACE], true)) {
-            continue;
-        }
-
-        $text = $token[0] === T_CONSTANT_ENCAPSED_STRING ? substr($token[1], 1, -1) : $token[1];
-        $sentence = preg_match('/^[A-Z][\w\'’-]*( \S+)+[.!?]$/u', $text) === 1;
-        $words = $inside && preg_match('/[A-Za-z]{2,} [A-Za-z]{2,}/', $text) === 1;
-        if ($sentence || $words) {
-            $found[] = "{$file}:{$token[2]} {$text}";
-        }
-    }
-
-    return $found;
-}
-
 /** @return list<string> every phrase-book key the files name, the ones built from a part included */
 function authoringRefusalKeys(): array
 {
-    $keys = [];
-    foreach (authoringRefusalSources() as $file) {
-        // A whole key, not the front of one a file finishes with a code.
-        preg_match_all("/(?:__|trans_choice)\\('([a-z]+\\.[a-z_]+)'\\s*[,)]/", file_get_contents(base_path($file)), $found);
-        $keys = array_merge($keys, $found[1]);
-    }
+    $keys = refusalKeysIn(authoringRefusalSources());
 
     // Keys a file builds from a code: what a module still holds, a glossary
     // slot's kind, a course's workflow status, a block's type, an
@@ -174,7 +123,10 @@ function certificateLearner(Course $course, int $progress): array
 }
 
 it('leaves no authoring refusal in English inside the code', function () {
-    $left = array_merge(...array_map('authoringEnglishIn', authoringRefusalSources()));
+    // `refusalEnglishIn` (tests/Support) reads a file two ways: a literal
+    // that reads as a sentence, and a literal with words inside a
+    // `withMessages(...)` call, where a refusal built of pieces hides.
+    $left = array_merge(...array_map('refusalEnglishIn', authoringRefusalSources()));
 
     expect($left)->toBe([]);
 });
@@ -348,10 +300,6 @@ it('has every page whose buttons post with router say their refusals beside the 
 
         // A `router` visit that is not marked with the row it came from is a
         // button whose refusal nobody shows.
-        foreach (explode("\n", $source) as $number => $line) {
-            if (preg_match('/router\.(post|put|patch|delete)\(/', $line)) {
-                expect(str_contains($line, 'actOn('))->toBeTrue("{$path}:".($number + 1).' posts without saying where');
-            }
-        }
+        expect(routerVisitsWithoutRow($path))->toBe([]);
     }
 });

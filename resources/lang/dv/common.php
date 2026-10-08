@@ -228,4 +228,8 @@ return [
     'error_discount_below_minimum' => 'މި ކޯޑު ބޭނުންކުރެވޭ އެންމެ ދަށް އަދަދަށްވުރެ އޯޑަރު ކުޑަ.',
     'error_discount_used_up' => 'މި ޑިސްކައުންޓް ކޯޑު ބޭނުންކުރެވޭ ފަހަރުތައް ހަމަވެއްޖެ.',
     'error_discount_used_by_you' => 'ތިބާ މި ކޯޑު ކުރިން ބޭނުންކޮށްފައި ވޭ.',
+
+    // A seat limit's refusals, for whichever screen holds the seats (slice CT6b-2c)
+    'error_no_seats' => 'ޖާގައެއް ބާކީއެއް ނުވޭ.',
+    'error_resource_missing' => 'ހޯދި އެއްޗެއް ނުފެނުނު.',
 ];

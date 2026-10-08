@@ -4983,6 +4983,68 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pd. What the office and a Qur'an teacher are told when an offering, a session or a recitation refuses a step, in the page's language, and shown (C19 slice CT6b-2c, 2026-10-08)
+
+The Offerings domain's refusals and the Qur'an component's were English
+inside the actions: *Offering slug must be unique within the course.*, *An
+offering cannot go from Completed to Draft.*, *Review status must be
+teacher_reviewed, needs_repeat, passed or failed.* Their pages dropped most
+of them:
+- the offerings form showed its status and certificate-rule refusals only.
+  A second intake of the same name collides on the slug its title makes,
+  and said nothing;
+- the recitation review showed its correction audio's refusal only;
+- Pin now, Sync dual-write, a session's halaqa link, a milestone's Review,
+  Approve and Reject, and an assignment's Cancel showed none.
+
+**Through the phrase books:**
+- `teach` gains 15 rows: the offering, session, attendance and halaqa-link
+  refusals.
+- `quran` gains 12: the recitation review, the assignments, the milestones,
+  the session sheet and the revision schedule.
+- `common` gains the seat limit's two. Its *No remaining seats.* is said in
+  the page's language when a caller names no "full" of its own (the intake
+  and the event each do).
+- An offering's move names both statuses as the offerings screen names
+  them.
+- The English is unchanged except for two that spoke codes: the review's
+  outcome (*Choose one of the review outcomes.*) and a mistake's type
+  (*Choose the mistake's type, or the letter or haraka it was on.*).
+- The translation import stays English: only `quran:import-translations`
+  calls it, as with the other console commands.
+
+**On the pages:**
+- The offerings, sessions, milestones and assignments use `useRowRefusals`
+  (§5pc). A refused button says what came back on its row. Sync dual-write
+  says it under the halaqa form.
+- The offerings form and the recitation review list every refused field.
+
+**Tests:** `OfferingAndQuranRefusalsSpeakThreeLanguagesTest`, 8 tests.
+- No English left in the 15 files.
+- Every key, and every offering status, is in Dhivehi and Arabic.
+- Served:
+  - a second intake of the same name is refused in Dhivehi, and none is
+    made;
+  - an offering's move is refused in Arabic, both statuses named in Arabic;
+  - Sync dual-write with dual-write off is refused in Dhivehi;
+  - a full intake is refused in Dhivehi when the caller names no "full";
+  - a milestone of no known type is refused in Dhivehi.
+- Every `router` visit on the four pages says which row it came from. The
+  offerings form and the recitation review list every refused field.
+- The tokenizer scan, the key finder and the router-visit check now live in
+  `tests/Support/SourceReadingHelpers.php`, and CT6b-2b's test uses them
+  too.
+
+**Walk:** `course-screens-language.mjs`, **383/383**.
+- The dean makes a second SMOKE-Offering on SMOKE-Course from the Dhivehi
+  offerings page and reads *އޮފަރިންގްގެ ސްލަގަކީ …*. No offering is made.
+- Against `main`'s build the same step reads nothing (382/383).
+
+**Still open:** C19's course and learner screens now say their refusals in
+the page's language. Outside it: the public site's event registration says
+*This event has no remaining seats.* and *Student not found.* in English
+(`RegisterForEventAction`, BACKLOG C20).
+
 ## 5pc. What an author, a marker and the certificate office are told when a step is refused, in the page's language, and shown (C19 slice CT6b-2b, 2026-10-08)
 
 The course domain's refusals were English inside the actions: *Cannot move
