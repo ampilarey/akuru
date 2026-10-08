@@ -4983,6 +4983,72 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5oq. The course reports, the taxonomy and deleted courses in Dhivehi and Arabic (C19 slice CT4, 2026-10-08)
+
+CT1–CT3 (§5ok, §5ol, §5on) translated the nine screens a course is built
+and marked on. They left the screens around those English, and this slice
+takes the first six:
+
+- **Completion reports** (`/catalog/reports/completions`): the filters,
+  the three tables and their empty rows. An enrolment's status was printed
+  as its code (`active`) and is now named. All seven values
+  `course_enrollments.status` can hold have a name.
+- **Reports** (`/catalog/reports`, SPEC §33):
+  - the eight figures with their details;
+  - the two summary tables and the links;
+  - "Payment reports are deferred", word for word in English, since
+    `CatalogReportsTest` holds it.
+  - Counts are sentences with a number in them now (*Marked attempts: 3*,
+    *Revoked: 1*), which read in every language. Before, an English plural
+    was built on the screen.
+- **The taxonomy** (`/catalog/subjects`, `/catalog/levels`,
+  `/catalog/audiences`):
+  - the forms, with their *(EN)/(DV)/(AR)* name fields named by language and
+    typed in the right direction;
+  - the tables, the yes and no, and an empty row.
+  - A subject, level or audience, and a subject's parent, are listed in the
+    page's language. One with no name in that language shows its English.
+  - The slug column is headed *Address*, as the course form calls it since
+    §5nx.
+  - The six flashes are `teach.flash_*`.
+- **Deleted courses** (`/admin/public-site/courses/deleted`): the two
+  explanations, the table, the restore confirmation and the footnote. It
+  is a screen of the website's course list and reads that list's book
+  (`admin`), as the list does since C9 slice 11.
+  - What keeps a deleted course is named, table by table. That includes
+    the offering a published course has, which printed as
+    `course_offerings` in every language since §5nx made offerings a
+    dependent.
+
+There are 83 new `teach` rows and 20 `admin` rows. The controllers pass
+the book as `t`, as on the other course screens.
+
+Tests: `CourseScreensSpeakThreeLanguagesTest` now holds fifteen screens in
+7 tests, one new. The screen list says which book each screen reads.
+- The seven enrolment statuses are in the enum check.
+- The new test serves the five catalog screens in Dhivehi.
+- It saves a subject, a level and an audience on a Dhivehi page, and each
+  says so in Dhivehi.
+- Deleted courses is served with the `admin` book.
+- Every table `DeleteCourseAction` keeps a course for has a name in all
+  three languages.
+
+Walks:
+- `course-screens-language.mjs` opens all fifteen screens. The dean opens
+  the fourteen catalog ones and the system admin opens Deleted courses.
+  With a deleted course on it (left by `cms-courses.mjs`) it went 91/91;
+  the first run, before the offerings phrase, failed on `course_offerings`
+  in both languages.
+- `cms-courses.mjs` 16/16, `sweep.mjs` 25/25, `admin-pages.mjs` 3/3,
+  `admin-mobile.mjs` 13/13.
+
+Still English on the course side, for CT5 and CT6 (BACKLOG C19):
+- the Teach Qur'an screens (assignments, milestones, the session sheet, the
+  recitation queue);
+- Qur'an oversight and reference, mushafs and pages;
+- the Arabic reference and report, the i18n preview, the clubs screens;
+- the course actions' validation messages.
+
 ## 5op. A student is called by the whole name, everywhere (C17 slice R4b, 2026-10-08)
 
 Slice R4 (§5og) gave a student a middle name on the registration forms, at

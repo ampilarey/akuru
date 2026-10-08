@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Courses\Actions\DeleteCourseAction;
 use App\Domains\Courses\Actions\NormalizeTextAnswerAction;
 use App\Domains\Courses\Actions\SaveEngineCourseAction;
 use App\Domains\Courses\Enums\ActivityPattern;
@@ -15,6 +16,7 @@ use App\Domains\Courses\Enums\QuestionType;
 use App\Domains\Courses\Enums\UnlockMode;
 use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\CourseSubject;
+use App\Domains\Identity\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
 
@@ -32,19 +34,29 @@ use Inertia\Testing\AssertableInertia as Assert;
  */
 uses(RefreshDatabase::class);
 
-/** The screens translated so far; each slice adds its own. */
+/**
+ * The screens translated so far, and the phrase book each reads; each slice
+ * adds its own. Deleted courses is a screen of the website's course list, so
+ * it reads that list's book (slice CT4).
+ */
 function translatedCourseScreens(): array
 {
     return [
-        'Courses/Catalog/Index',
-        'Courses/Catalog/Outline',
-        'Courses/Catalog/Rubrics',
-        'Courses/Catalog/Activities',
-        'Courses/Catalog/Assessments',
-        'Courses/Catalog/Questions',
-        'Courses/Catalog/Glossary',
-        'Courses/Catalog/Certificates',
-        'Courses/Catalog/Reviews',
+        'Courses/Catalog/Index' => 'teach',
+        'Courses/Catalog/Outline' => 'teach',
+        'Courses/Catalog/Rubrics' => 'teach',
+        'Courses/Catalog/Activities' => 'teach',
+        'Courses/Catalog/Assessments' => 'teach',
+        'Courses/Catalog/Questions' => 'teach',
+        'Courses/Catalog/Glossary' => 'teach',
+        'Courses/Catalog/Certificates' => 'teach',
+        'Courses/Catalog/Reviews' => 'teach',
+        'Courses/Catalog/CompletionReports' => 'teach',
+        'Courses/Catalog/Reports' => 'teach',
+        'Courses/Taxonomy/Subjects' => 'teach',
+        'Courses/Taxonomy/Levels' => 'teach',
+        'Courses/Taxonomy/Audiences' => 'teach',
+        'Courses/DeletedCourses' => 'admin',
     ];
 }
 
@@ -54,9 +66,9 @@ function sameInEveryLanguage(): array
     return ['block_pdf'];
 }
 
-function teachBook(string $locale): array
+function teachBook(string $locale, string $book = 'teach'): array
 {
-    return require base_path("resources/lang/{$locale}/teach.php");
+    return require base_path("resources/lang/{$locale}/{$book}.php");
 }
 
 /**
@@ -80,21 +92,20 @@ function unnamedFields(string $source): array
 }
 
 it('keys every string on the translated course screens in three languages', function () {
-    [$en, $dv, $ar] = [teachBook('en'), teachBook('dv'), teachBook('ar')];
-
-    foreach (translatedCourseScreens() as $screen) {
+    foreach (translatedCourseScreens() as $screen => $book) {
+        [$en, $dv, $ar] = [teachBook('en', $book), teachBook('dv', $book), teachBook('ar', $book)];
         $source = file_get_contents(resource_path("js/Pages/{$screen}.jsx"));
         preg_match_all("/t\\.([a-z][a-z0-9_]+) \\|\\| '((?:[^'\\\\]|\\\\.)*)'/", $source, $uses, PREG_SET_ORDER);
         expect($uses)->not->toBeEmpty("{$screen} uses no phrases");
 
         foreach ($uses as [, $key, $fallback]) {
-            expect(array_key_exists($key, $en))->toBeTrue("{$screen}: teach.{$key} is missing in English")
-                ->and(array_key_exists($key, $dv))->toBeTrue("{$screen}: teach.{$key} is missing in Dhivehi")
-                ->and(array_key_exists($key, $ar))->toBeTrue("{$screen}: teach.{$key} is missing in Arabic")
-                ->and($en[$key])->toBe(stripslashes($fallback), "{$screen}: teach.{$key} says something else in English than the screen");
+            expect(array_key_exists($key, $en))->toBeTrue("{$screen}: {$book}.{$key} is missing in English")
+                ->and(array_key_exists($key, $dv))->toBeTrue("{$screen}: {$book}.{$key} is missing in Dhivehi")
+                ->and(array_key_exists($key, $ar))->toBeTrue("{$screen}: {$book}.{$key} is missing in Arabic")
+                ->and($en[$key])->toBe(stripslashes($fallback), "{$screen}: {$book}.{$key} says something else in English than the screen");
             if (! in_array($key, sameInEveryLanguage(), true)) {
-                expect($dv[$key])->not->toBe($en[$key], "teach.{$key} is English in Dhivehi")
-                    ->and($ar[$key])->not->toBe($en[$key], "teach.{$key} is English in Arabic");
+                expect($dv[$key])->not->toBe($en[$key], "{$book}.{$key} is English in Dhivehi")
+                    ->and($ar[$key])->not->toBe($en[$key], "{$book}.{$key} is English in Arabic");
             }
         }
 
@@ -124,6 +135,8 @@ it('names every status, decision, unlock rule, block type, pattern, assessment a
         ...array_map(fn ($case) => 'certificate_kind_'.$case->value, CertificateKind::cases()),
         ...array_map(fn ($status) => 'cert_status_'.$status, ['issued', 'revoked']),
         ...array_map(fn ($kind) => 'review_kind_'.$kind, ['activity', 'assessment']),
+        // Every value `course_enrollments.status` may hold (slice CT4).
+        ...array_map(fn ($status) => 'enrol_status_'.$status, ['pending', 'approved', 'rejected', 'active', 'completed', 'cancelled', 'suspended']),
     ];
 
     foreach (['en', 'dv', 'ar'] as $locale) {
@@ -268,4 +281,51 @@ it('serves the glossary, certificates and the marking queue in Dhivehi, and says
     app()->setLocale('en');
     expect(__('teach.flash_certificate_issued', ['number' => 'AK-1']))->toBe('Certificate issued: AK-1')
         ->and(__('teach.review_retry', ['title' => 'Choose meaning']))->toBe('Retry Choose meaning');
+});
+
+it('serves the reports, the taxonomy and deleted courses in Dhivehi, and says what was saved in Dhivehi', function () {
+    $admin = actingPeopleAdmin(['courses.manage']);
+    $dv = teachBook('dv');
+
+    app()->setLocale('dv');
+    foreach ([
+        'catalog.reports.index' => ['Courses/Catalog/Reports', 'reports_total_students'],
+        'catalog.reports.completions' => ['Courses/Catalog/CompletionReports', 'completion_roster'],
+        'catalog.subjects.index' => ['Courses/Taxonomy/Subjects', 'taxonomy_save_subject'],
+        'catalog.levels.index' => ['Courses/Taxonomy/Levels', 'taxonomy_save_level'],
+        'catalog.audiences.index' => ['Courses/Taxonomy/Audiences', 'taxonomy_save_audience'],
+    ] as $route => [$component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($admin)
+            ->get(route($route))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("t.{$key}", $dv[$key]));
+    }
+
+    foreach ([
+        'catalog.subjects.store' => 'flash_subject_saved',
+        'catalog.levels.store' => 'flash_level_saved',
+        'catalog.audiences.store' => 'flash_audience_saved',
+    ] as $route => $flash) {
+        $this->withoutLocalizationMiddleware()->actingAs($admin)
+            ->post(route($route), ['name_en' => "CT4 {$flash}", 'name_dv' => 'ސީޓީ ހަތަރު'])
+            ->assertSessionHas('success', $dv[$flash]);
+    }
+
+    // Deleted courses is the website course list's screen, and reads its book.
+    $office = User::factory()->create();
+    $office->assignRole('super_admin');
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->get(route('admin.courses.deleted'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Courses/DeletedCourses')
+            ->where('t.courses_deleted_title', trans('admin.courses_deleted_title', [], 'dv')));
+
+    // Every table that keeps a deleted course is named on the screen.
+    foreach (array_keys((new ReflectionClassConstant(DeleteCourseAction::class, 'DEPENDENTS'))->getValue()) as $table) {
+        foreach (['en', 'dv', 'ar'] as $locale) {
+            expect(array_key_exists("courses_deleted_hold_{$table}", teachBook($locale, 'admin')))->toBeTrue("admin.courses_deleted_hold_{$table} is missing in {$locale}");
+        }
+    }
+
+    app()->setLocale('en');
+    expect(__('teach.flash_subject_saved'))->toBe('Subject saved.')
+        ->and(__('admin.courses_deleted_title'))->toBe('Deleted courses');
 });

@@ -152,7 +152,7 @@ class CourseController extends Controller
      */
     public function deleted(): Response
     {
-        return Inertia::render('Courses/DeletedCourses', app(ListDeletedCoursesAction::class)->execute());
+        return Inertia::render('Courses/DeletedCourses', app(ListDeletedCoursesAction::class)->execute() + ['t' => Phrases::once('admin')]);
     }
 
     public function restore(int $course): RedirectResponse

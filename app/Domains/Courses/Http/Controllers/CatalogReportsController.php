@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Http\Controllers;
 use App\Domains\Courses\Actions\ComposeCatalogReportsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -25,7 +26,7 @@ class CatalogReportsController extends Controller
 
         return Inertia::render(
             'Courses/Catalog/Reports',
-            app(ComposeCatalogReportsAction::class)->execute($this->filters($request)),
+            app(ComposeCatalogReportsAction::class)->execute($this->filters($request)) + ['t' => Phrases::once('teach')],
         );
     }
 

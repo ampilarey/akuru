@@ -7,6 +7,7 @@ use App\Domains\Courses\Actions\SaveCourseLevelAction;
 use App\Domains\Courses\Models\CourseLevel;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,6 +22,7 @@ class CourseLevelController extends Controller
 
         return Inertia::render('Courses/Taxonomy/Levels', [
             'rows' => app(ListCourseLevelsAction::class)->execute()->values(),
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -29,7 +31,7 @@ class CourseLevelController extends Controller
         abort_unless($request->user()?->can('courses.manage'), 403);
         app(SaveCourseLevelAction::class)->execute($this->validated($request));
 
-        return redirect()->route('catalog.levels.index')->with('success', 'Level saved.');
+        return redirect()->route('catalog.levels.index')->with('success', __('teach.flash_level_saved'));
     }
 
     public function update(Request $request, CourseLevel $level): RedirectResponse
@@ -37,7 +39,7 @@ class CourseLevelController extends Controller
         abort_unless($request->user()?->can('courses.manage'), 403);
         app(SaveCourseLevelAction::class)->execute($this->validated($request), $level);
 
-        return redirect()->route('catalog.levels.index')->with('success', 'Level updated.');
+        return redirect()->route('catalog.levels.index')->with('success', __('teach.flash_level_updated'));
     }
 
     public function export(Request $request): StreamedResponse
