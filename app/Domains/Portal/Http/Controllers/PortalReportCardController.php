@@ -9,6 +9,7 @@ use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
 use App\Support\Contracts\PdfConverterInterface;
 use App\Support\Http\DocumentResponse;
+use App\Support\PersonName;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -33,7 +34,7 @@ class PortalReportCardController extends Controller
         return Inertia::render('Portal/ReportCards', [
             'children' => $children->map(fn ($child) => [
                 'id' => $child->id,
-                'name' => trim(($child->first_name ?? '').' '.($child->last_name ?? '')),
+                'name' => PersonName::ofStudent($child),
             ])->values(),
             'studentId' => $studentId,
             'pdf_available' => app(PdfConverterInterface::class)->enabled(),

@@ -6,6 +6,7 @@ use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Models\AbsenceNote;
 use App\Domains\Academics\Models\ClassAttendance;
 use App\Domains\People\Actions\ListEmergencyContactsAction;
+use App\Support\PersonName;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -56,7 +57,7 @@ class ListAbsencesForDayAction
 
         $students = DB::table('students')
             ->whereIn('id', $studentIds)
-            ->get(['id', 'first_name', 'last_name', 'student_id'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'student_id'])
             ->keyBy('id');
         $classes = DB::table('classes')
             ->whereIn('id', $marks->pluck('class_id')->unique())
@@ -83,7 +84,7 @@ class ListAbsencesForDayAction
 
                 return [
                     'student_id' => (int) $studentId,
-                    'student_name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                    'student_name' => PersonName::ofStudent($student),
                     'student_number' => $student->student_id ?? null,
                     'class_id' => (int) $first->class_id,
                     'class_name' => trim(($class->name ?? '').' '.($class->section ?? '')),

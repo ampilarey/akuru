@@ -8,6 +8,7 @@ use App\Domains\Website\Actions\GetEventRegistrationAction;
 use App\Domains\Website\Actions\ListPortalEventBoardAction;
 use App\Domains\Website\Actions\RegisterForEventAction;
 use App\Http\Controllers\Controller;
+use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,7 +26,7 @@ class PortalEventController extends Controller
         return Inertia::render('Portal/Events', [
             'children' => $children->map(fn ($child) => [
                 'id' => $child->id,
-                'name' => trim(($child->first_name ?? '').' '.($child->last_name ?? '')),
+                'name' => PersonName::ofStudent($child),
             ])->values(),
             'events' => $board['events'],
             'registrations' => $board['registrations'],

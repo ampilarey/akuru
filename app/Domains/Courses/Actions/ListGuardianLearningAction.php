@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Actions;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
+use App\Support\PersonName;
 
 class ListGuardianLearningAction
 {
@@ -38,7 +39,7 @@ class ListGuardianLearningAction
 
                 return [
                     'id' => (int) $child->id,
-                    'name' => trim(($child->first_name ?? '').' '.($child->last_name ?? '')),
+                    'name' => PersonName::ofStudent($child),
                     'relationship' => $child->relationship,
                     'enrollments' => $enrollments,
                 ];

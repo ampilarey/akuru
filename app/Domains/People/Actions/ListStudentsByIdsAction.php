@@ -2,6 +2,7 @@
 
 namespace App\Domains\People\Actions;
 
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -20,10 +21,10 @@ class ListStudentsByIdsAction
 
         return DB::table('students')
             ->whereIn('id', $ids)
-            ->get(['id', 'first_name', 'last_name', 'student_id', 'class_id', 'status'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'student_id', 'class_id', 'status'])
             ->map(fn ($row) => [
                 'id' => (int) $row->id,
-                'name' => trim($row->first_name.' '.$row->last_name),
+                'name' => PersonName::ofStudent($row),
                 'student_number' => $row->student_id,
                 'class_id' => $row->class_id ? (int) $row->class_id : null,
                 'status' => $row->status,

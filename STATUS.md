@@ -4983,6 +4983,78 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5op. A student is called by the whole name, everywhere (C17 slice R4b, 2026-10-08)
+
+Slice R4 (§5og) gave a student a middle name on the registration forms, at
+the owner's word: *"we use in Maldives 1st name, 2 names and last name"*.
+Everything else went on joining the first name and the last. Now:
+
+- **One rule.** `App\Support\PersonName` joins a name from its parts and
+  leaves out the empty ones: `ofStudent()` for a row or model,
+  `studentSql()` for a query. `Student::full_name` goes through it too.
+- **The office's forms.** The add-student form and the profile form on a
+  student's page have a *Middle name* field. It is validated like the
+  registration forms' (150 characters, optional), and stored as NULL when
+  it is emptied, never as an empty string.
+- **The directory.** It lists a student by the whole name. Its search finds
+  them by the middle name alone, by the whole name, and still by the first
+  and last (*Zunaira Qasim* finds Zunaira Hassan Qasim). Its CSV has a
+  `middle_name` column between the first and the last. The student page is
+  titled with the whole name.
+- **The lists other screens build.** Some fifty-five actions and
+  controllers in nine domains selected `first_name, last_name` and joined
+  them. Each now selects the middle name and names the student through
+  `PersonName`:
+  - class rosters, registers, attendance, tardies, absences and absence notes
+  - behaviour records, school requests, meeting slots
+  - report cards, transcripts, transfer certificates, ID cards, awards and
+    achievements, the gradebook and exam rosters
+  - the review queue, issued certificates, enrolment and performance
+    reports, a guardian's learning
+  - form responses and confirmations, message recipients, event
+    registrations
+  - the portal's children, homework, invoices, exams and the rest
+
+  The roster's candidate search finds a student by the middle name too.
+  A registration that knows the person (`CourseRegistrationController`,
+  `EnrollmentService`) names the account by the whole name.
+- **A parent's children**, confirmed and waiting, carry the middle name.
+
+Staff, teachers and guardians have no middle-name column, and their names
+are as they were.
+
+The walk found §5oo on its way. It lends the seeded pupil a middle name and
+takes it back, and the second run found the pupil's portal empty. That fix
+shipped first, as its own PR. This walk now checks after each save that the
+pupil's own page still names them. `SmokeMarkerSeeder::middleNameCycle()`
+takes back a middle name that a stopped run left on the pupil.
+
+Tests:
+- `StudentNamesCarryTheMiddleNameTest` (4 tests):
+  - the rule;
+  - the office types a middle name, then finds, shows and exports the
+    student by it, and an emptied middle name is stored as NULL;
+  - the roster, the by-id list, the certificate options, the student behind
+    an account and a parent's children carry it;
+  - a guard that fails on any new first-and-last join of a student that
+    does not go through `PersonName`.
+- `MiddleNameCycleSmokeResetTest` covers the seeder reset.
+- Baselines: `StudentDirectoryController::show` drops 76 → 72 and
+  `validatedStudent` 43 → 40 (the optional fields are a constant now). The
+  soft-delete baseline follows two files' moved lines.
+
+Walks:
+- `middle-name.mjs` (new, in the runner): 21/21, twice in a row (the second
+  run finds the first run's student).
+- The walks that name students, through the runner: `sweep` 25/25,
+  `own-data` ok, `certify` 16/16, `family` 40/40, `signup` 17/17,
+  `school-day` 14/14, `consent` 19/19, `requests` 23/23, `review` 17/17,
+  `absence` 13/13, `pickup` 16/16, `meetings` 11/11, `fees` 31/31, `gate`
+  12/12, `events` 3/3.
+- `exams` went 22/27 in that run because no queue worker was running (the
+  report cards render on the queue, and the walk says so). Reseeded and
+  run with `queue:work`, it went 29/29.
+
 ## 5oo. Saving a student's profile no longer unlinks their account (2026-10-08)
 
 Found by the walk for C17 slice R4b, which types a middle name on the seeded

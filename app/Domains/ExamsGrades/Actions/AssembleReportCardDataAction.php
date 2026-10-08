@@ -10,6 +10,7 @@ use App\Domains\ExamsGrades\Models\ReportCard;
 use App\Domains\ExamsGrades\Models\ReportCardTemplate;
 use App\Domains\ExamsGrades\Models\StudentAward;
 use App\Domains\ExamsGrades\Models\TermGrade;
+use App\Support\PersonName;
 use Illuminate\Support\Facades\DB;
 
 class AssembleReportCardDataAction
@@ -95,7 +96,7 @@ class AssembleReportCardDataAction
             ],
             'student' => [
                 'id' => (int) $card->student_id,
-                'name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'name' => PersonName::ofStudent($student),
                 'number' => $student->student_id ?? null,
             ],
             'class' => [

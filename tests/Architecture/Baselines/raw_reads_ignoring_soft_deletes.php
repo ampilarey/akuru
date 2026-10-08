@@ -24,11 +24,11 @@ return [
     'app/Domains/Courses/Actions/VerifyIssuedCertificateAction.php:40' => 'Public certificate verification. A certificate for a deleted course must still verify and still name the course, or deleting a course silently invalidates every certificate ever issued for it.',
     'app/Domains/Courses/Actions/VerifyIssuedCertificateAction.php:43' => 'As above, for the offering title.',
     'app/Domains/Courses/Actions/VerifyIssuedCertificateAction.php:45' => 'As above, for the template name.',
-    'app/Domains/Courses/Actions/ListIssuedCertificatesAction.php:30' => 'The admin list of issued certificates. Same reason: the row is a record of something that happened, and it has to keep naming it.',
-    'app/Domains/Courses/Actions/ListIssuedCertificatesAction.php:33' => 'As above, for the offering title.',
-    'app/Domains/Courses/Actions/ListIssuedCertificatesAction.php:36' => 'As above, for the template name.',
+    'app/Domains/Courses/Actions/ListIssuedCertificatesAction.php:31' => 'The admin list of issued certificates. Same reason: the row is a record of something that happened, and it has to keep naming it.',
+    'app/Domains/Courses/Actions/ListIssuedCertificatesAction.php:34' => 'As above, for the offering title.',
+    'app/Domains/Courses/Actions/ListIssuedCertificatesAction.php:37' => 'As above, for the template name.',
     'app/Domains/Courses/Actions/IssueCertificateAction.php:84' => 'The offering title stamped onto a certificate at the moment of issue.',
-    'app/Domains/Courses/Actions/BuildEnrollmentReportRowsAction.php:33' => 'Offering titles for an enrolment report. An enrolment on a retired offering still belongs in the report, under the name it had.',
+    'app/Domains/Courses/Actions/BuildEnrollmentReportRowsAction.php:34' => 'Offering titles for an enrolment report. An enrolment on a retired offering still belongs in the report, under the name it had.',
 
     // --- Deliberately about deleted things ---------------------------------
     'app/Domains/Courses/Actions/ListDeletedCoursesAction.php:52' => 'The screen listing deleted courses, counting the enrolments each one holds. Filtering deleted rows out of a report about deleted rows would empty it. **Worth a second look one day:** the count includes soft-deleted *enrolments* too, which may overstate what restoring the course would bring back.',

@@ -8,6 +8,7 @@ use App\Domains\Forms\Actions\ListPendingConfirmationsAction;
 use App\Domains\Forms\Actions\SubmitFormResponseAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,7 +32,7 @@ class PortalFormController extends Controller
                 ->executeForGuardianUserId((int) $user->id)
                 ->map(fn ($c): array => [
                     'id' => (int) $c->id,
-                    'name' => trim(($c->first_name ?? '').' '.($c->last_name ?? '')),
+                    'name' => PersonName::ofStudent($c),
                 ])->values(),
         ]);
     }

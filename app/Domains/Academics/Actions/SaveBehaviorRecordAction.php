@@ -6,6 +6,7 @@ use App\Domains\Academics\Enums\BehaviorType;
 use App\Domains\Academics\Events\BehaviorRecordLogged;
 use App\Domains\Academics\Models\BehaviorRecord;
 use App\Domains\Academics\Models\BehaviorRecordAudit;
+use App\Support\PersonName;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Validation\ValidationException;
@@ -89,12 +90,12 @@ class SaveBehaviorRecordAction
             return;
         }
 
-        $student = DB::table('students')->where('id', $record->student_id)->first(['first_name', 'last_name']);
+        $student = DB::table('students')->where('id', $record->student_id)->first(['first_name', 'middle_name', 'last_name']);
 
         Event::dispatch(new BehaviorRecordLogged(
             recordId: (int) $record->id,
             studentId: (int) $record->student_id,
-            studentName: trim((string) ($student->first_name ?? '').' '.(string) ($student->last_name ?? '')),
+            studentName: PersonName::ofStudent($student),
             type: $type->value,
             date: (string) ($record->date instanceof \DateTimeInterface
                 ? $record->date->format('Y-m-d')

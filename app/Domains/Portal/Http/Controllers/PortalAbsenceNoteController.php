@@ -7,6 +7,7 @@ use App\Domains\Academics\Actions\ListPeriodOptionsAction;
 use App\Domains\Academics\Actions\SubmitAbsenceNoteAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,7 +25,7 @@ class PortalAbsenceNoteController extends Controller
         return Inertia::render('Portal/AbsenceNotes', [
             'children' => $children->map(fn ($child) => [
                 'id' => $child->id,
-                'name' => trim(($child->first_name ?? '').' '.($child->last_name ?? '')),
+                'name' => PersonName::ofStudent($child),
             ])->values(),
             'notes' => $childIds === []
                 ? collect()

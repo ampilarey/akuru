@@ -3,6 +3,7 @@
 namespace App\Domains\Academics\Actions;
 
 use App\Domains\Academics\Models\SchoolRequest;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -35,7 +36,7 @@ class ListSchoolRequestsAction
 
         $students = DB::table('students')
             ->whereIn('id', $rows->where('regarding_type', 'student')->pluck('regarding_id')->unique()->all())
-            ->get(['id', 'first_name', 'last_name'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name'])
             ->keyBy('id');
 
         return $rows->map(function (SchoolRequest $row) use ($requesters, $students): array {
@@ -49,7 +50,7 @@ class ListSchoolRequestsAction
                 'payload' => $row->payload,
                 'review_notes' => $row->review_notes,
                 'requester_name' => (string) ($requesters[(int) $row->requester_id] ?? ''),
-                'regarding_name' => $student ? trim($student->first_name.' '.$student->last_name) : null,
+                'regarding_name' => $student ? PersonName::ofStudent($student) : null,
                 'submitted_at' => $row->created_at?->toDateString(),
                 'reviewed_at' => $row->reviewed_at?->toDateString(),
             ];

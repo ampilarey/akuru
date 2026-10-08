@@ -4,6 +4,7 @@ namespace App\Domains\Academics\Actions;
 
 use App\Domains\Academics\Models\BehaviorRecord;
 use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -28,7 +29,7 @@ class ListBehaviorRecordsAction
 
         $students = DB::table('students')
             ->whereIn('id', $rows->pluck('student_id')->unique())
-            ->get(['id', 'first_name', 'last_name'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name'])
             ->keyBy('id');
 
         return $rows->map(function (BehaviorRecord $row) use ($students) {
@@ -37,7 +38,7 @@ class ListBehaviorRecordsAction
             return [
                 'id' => $row->id,
                 'student_id' => $row->student_id,
-                'student_name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'student_name' => PersonName::ofStudent($student),
                 'academic_year_id' => $row->academic_year_id,
                 'type' => $row->type?->value,
                 'category' => $row->category,

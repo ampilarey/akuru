@@ -8,6 +8,7 @@ use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\Identity\Models\User;
 use App\Domains\People\Actions\RegisterCourseStudentAction;
+use App\Support\PersonName;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
@@ -311,7 +312,7 @@ class EnrollmentService
                 );
 
                 if ($user->name === 'User') {
-                    $user->update(['name' => $data['first_name'].' '.$data['last_name']]);
+                    $user->update(['name' => PersonName::ofStudent($data)]);
                 }
             } else {
                 // parent flow

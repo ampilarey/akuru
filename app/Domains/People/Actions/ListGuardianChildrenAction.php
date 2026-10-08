@@ -44,6 +44,7 @@ class ListGuardianChildrenAction
             ->map(fn (object $row): object => (object) [
                 'id' => (int) $row->id,
                 'first_name' => $row->first_name,
+                'middle_name' => $row->middle_name,
                 'last_name' => $row->last_name,
                 'relationship' => $row->relationship,
                 'verification_status' => $row->verification_status,
@@ -64,6 +65,7 @@ class ListGuardianChildrenAction
                 'students.user_id',
                 'students.student_id',
                 'students.first_name',
+                'students.middle_name',
                 'students.last_name',
                 'students.status',
                 'guardian_student.relationship',

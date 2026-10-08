@@ -4,6 +4,7 @@ namespace App\Domains\ExamsGrades\Actions;
 
 use App\Domains\Media\Actions\StoreGeneratedDocumentAction;
 use App\Support\Contracts\DocumentRendererInterface;
+use App\Support\PersonName;
 use App\Support\Services\StudentNumberQr;
 use Illuminate\Support\Facades\DB;
 
@@ -28,7 +29,7 @@ class GenerateIdCardAction
             'dir' => 'ltr',
             'student' => [
                 'id' => $studentId,
-                'name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'name' => PersonName::ofStudent($student),
                 'number' => $number,
                 'photo' => $photo,
             ],
@@ -39,7 +40,7 @@ class GenerateIdCardAction
             'student',
             $studentId,
             'id_card',
-            sprintf('ID card — %s', trim(($student->first_name ?? '').' '.($student->last_name ?? ''))),
+            sprintf('ID card — %s', PersonName::ofStudent($student)),
             $html,
             'html',
             $actorId,

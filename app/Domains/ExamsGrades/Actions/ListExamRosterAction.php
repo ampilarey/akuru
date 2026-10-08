@@ -3,6 +3,7 @@
 namespace App\Domains\ExamsGrades\Actions;
 
 use App\Domains\ExamsGrades\Models\Exam;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -29,7 +30,7 @@ class ListExamRosterAction
 
         $students = DB::table('students')
             ->whereIn('id', $rows->pluck('student_id'))
-            ->get(['id', 'first_name', 'last_name', 'student_id'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'student_id'])
             ->keyBy('id');
 
         return $rows
@@ -41,7 +42,7 @@ class ListExamRosterAction
 
                 return [
                     'student_id' => (int) $student->id,
-                    'name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                    'name' => PersonName::ofStudent($student),
                     'student_number' => $student->student_id,
                 ];
             })

@@ -4,6 +4,7 @@ namespace App\Domains\Website\Actions;
 
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\EventRegistration;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -36,7 +37,7 @@ class ListEventRegistrationsAction
                 'event_id' => $row->event_id,
                 'student_id' => $row->student_id,
                 'student_name' => $student
-                    ? trim(($student->first_name ?? '').' '.($student->last_name ?? ''))
+                    ? PersonName::ofStudent($student)
                     : $row->name,
                 'parent_user_id' => $row->parent_user_id,
                 'name' => $row->name,

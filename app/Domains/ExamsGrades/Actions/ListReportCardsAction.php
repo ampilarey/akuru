@@ -5,6 +5,7 @@ namespace App\Domains\ExamsGrades\Actions;
 use App\Domains\ExamsGrades\Enums\ReportCardStatus;
 use App\Domains\ExamsGrades\Models\ReportCard;
 use App\Domains\ExamsGrades\Models\ReportCardTemplate;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -25,7 +26,7 @@ class ListReportCardsAction
 
         $students = DB::table('students')
             ->whereIn('id', $rows->pluck('student_id')->unique())
-            ->get(['id', 'first_name', 'last_name', 'student_id'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'student_id'])
             ->keyBy('id');
         $classes = DB::table('classes')
             ->whereIn('id', $rows->pluck('class_id')->unique())
@@ -59,7 +60,7 @@ class ListReportCardsAction
             return [
                 'id' => $card->id,
                 'student_id' => $card->student_id,
-                'student_name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'student_name' => PersonName::ofStudent($student),
                 'student_number' => $student->student_id ?? null,
                 'class_id' => $card->class_id,
                 'class_name' => trim(($class->name ?? '').' '.($class->section ?? '')),

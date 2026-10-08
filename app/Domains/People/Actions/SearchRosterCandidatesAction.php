@@ -2,6 +2,7 @@
 
 namespace App\Domains\People\Actions;
 
+use App\Support\PersonName;
 use Illuminate\Support\Facades\DB;
 
 class SearchRosterCandidatesAction
@@ -32,6 +33,7 @@ class SearchRosterCandidatesAction
                 'students.id',
                 'students.student_id',
                 'students.first_name',
+                'students.middle_name',
                 'students.last_name',
                 'students.national_id',
                 'students.date_of_birth',
@@ -42,6 +44,8 @@ class SearchRosterCandidatesAction
                 $inner->where('students.first_name', 'like', $like)
                     ->orWhere('students.last_name', 'like', $like)
                     ->orWhereRaw("concat(students.first_name, ' ', students.last_name) like ?", [$like])
+                    ->orWhere('students.middle_name', 'like', $like)
+                    ->orWhereRaw(PersonName::studentSql().' like ?', [$like])
                     ->orWhere('students.first_name_dhivehi', 'like', $like)
                     ->orWhere('students.last_name_dhivehi', 'like', $like)
                     ->orWhere('students.first_name_arabic', 'like', $like)
@@ -56,7 +60,7 @@ class SearchRosterCandidatesAction
             ->get();
 
         $mapped = $rows->map(function (object $student): array {
-            $name = trim($student->first_name.' '.$student->last_name);
+            $name = PersonName::ofStudent($student);
             $class = trim(($student->class_name ?? '').' '.($student->class_section ?? ''));
             $dob = $student->date_of_birth
                 ? substr((string) $student->date_of_birth, 0, 10)

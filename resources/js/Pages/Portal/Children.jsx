@@ -13,7 +13,7 @@ export default function Children({ children, pending = [] }) {
                     <ul className="mt-2 list-disc ps-5 text-sm text-amber-900">
                         {pending.map((child) => (
                             <li key={child.id}>
-                                {child.first_name} {child.last_name}
+                                {[child.first_name, child.middle_name, child.last_name].filter(Boolean).join(' ')}
                                 {child.relationship ? ` · ${child.relationship}` : ''}
                                 {child.verification_status === 'rejected' ? ' · not accepted' : ''}
                             </li>
@@ -42,7 +42,7 @@ export default function Children({ children, pending = [] }) {
                         )}
                         {children.map((child) => (
                             <tr key={child.id} className="border-t">
-                                <td className="px-3 py-2" data-label="Name">{child.first_name} {child.last_name}</td>
+                                <td className="px-3 py-2" data-label="Name">{[child.first_name, child.middle_name, child.last_name].filter(Boolean).join(' ')}</td>
                                 <td className="px-3 py-2" data-label="Number">{child.student_id}</td>
                                 <td className="px-3 py-2" data-label="Relationship">{child.relationship}</td>
                                 <td className="px-3 py-2" data-label="Status">{child.status}</td>

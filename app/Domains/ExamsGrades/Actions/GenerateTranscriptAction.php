@@ -5,6 +5,7 @@ namespace App\Domains\ExamsGrades\Actions;
 use App\Domains\ExamsGrades\Models\TermGrade;
 use App\Domains\Media\Actions\StoreGeneratedDocumentAction;
 use App\Support\Contracts\DocumentRendererInterface;
+use App\Support\PersonName;
 use Illuminate\Support\Facades\DB;
 
 class GenerateTranscriptAction
@@ -60,7 +61,7 @@ class GenerateTranscriptAction
             'dir' => $rtl ? 'rtl' : 'ltr',
             'student' => [
                 'id' => $studentId,
-                'name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'name' => PersonName::ofStudent($student),
                 'number' => $student->student_id ?? null,
             ],
             'rows' => $rows,

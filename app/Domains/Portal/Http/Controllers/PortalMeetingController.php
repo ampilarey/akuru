@@ -9,6 +9,7 @@ use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -95,14 +96,14 @@ class PortalMeetingController extends Controller
         if ($self !== null) {
             $people[] = [
                 'id' => $self['id'],
-                'name' => trim($self['first_name'].' '.$self['last_name']),
+                'name' => PersonName::ofStudent($self),
                 'relationship' => 'self',
             ];
         }
         foreach (app(ListGuardianChildrenAction::class)->executeForGuardianUserId($userId) as $child) {
             $people[] = [
                 'id' => (int) $child->id,
-                'name' => trim(($child->first_name ?? '').' '.($child->last_name ?? '')),
+                'name' => PersonName::ofStudent($child),
                 'relationship' => (string) ($child->relationship ?? 'child'),
             ];
         }

@@ -7,6 +7,7 @@ use App\Domains\Academics\Actions\ListTeacherContactsForStudentAction;
 use App\Domains\People\Actions\ListFamilyUserIdsForStudentsAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 
 /**
@@ -32,12 +33,12 @@ class ListMessageRecipientsAction
         $self = app(ResolveStudentForUserAction::class)->execute($userId);
         if ($self !== null) {
             $studentIds[] = (int) $self['id'];
-            $labels[(int) $self['id']] = trim($self['first_name'].' '.$self['last_name']);
+            $labels[(int) $self['id']] = PersonName::ofStudent($self);
         }
 
         foreach (app(ListGuardianChildrenAction::class)->executeForGuardianUserId($userId) as $child) {
             $studentIds[] = (int) $child->id;
-            $labels[(int) $child->id] = trim(($child->first_name ?? '').' '.($child->last_name ?? ''));
+            $labels[(int) $child->id] = PersonName::ofStudent($child);
         }
 
         $studentIds = array_values(array_unique($studentIds));

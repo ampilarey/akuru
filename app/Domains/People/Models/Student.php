@@ -10,6 +10,7 @@ use App\Domains\Hifz\Models\QuranProgress;
 use App\Domains\Identity\Models\User;
 use App\Domains\People\Enums\StudentStatus;
 use App\Domains\Settings\Models\School;
+use App\Support\PersonName;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -158,7 +159,7 @@ class Student extends Model
     /** First, middle (optional, C17 slice R4) and last, with single spaces. */
     public function getFullNameAttribute()
     {
-        return trim(implode(' ', array_filter([$this->first_name, $this->middle_name, $this->last_name], fn ($part) => trim((string) $part) !== '')));
+        return PersonName::ofStudent($this);
     }
 
     /** Deploy 2 read compatibility: views used RegistrationStudent.dob. */

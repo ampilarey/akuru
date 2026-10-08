@@ -3,6 +3,7 @@
 namespace App\Domains\Courses\Actions;
 
 use App\Domains\Courses\Models\IssuedCertificate;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -25,7 +26,7 @@ class ListIssuedCertificatesAction
         $rows = $query->get();
         $students = DB::table('students')
             ->whereIn('id', $rows->pluck('student_id')->all() ?: [0])
-            ->get(['id', 'first_name', 'last_name'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name'])
             ->keyBy('id');
         $courses = DB::table('courses')
             ->whereIn('id', $rows->pluck('course_id')->filter()->all() ?: [0])
@@ -44,7 +45,7 @@ class ListIssuedCertificatesAction
                 'id' => $row->id,
                 'public_id' => $row->public_id,
                 'certificate_number' => $row->certificate_number,
-                'student_name' => $student ? trim(($student->first_name ?? '').' '.($student->last_name ?? '')) : '',
+                'student_name' => $student ? PersonName::ofStudent($student) : '',
                 'template' => $templates[$row->certificate_template_id] ?? '',
                 'course_name' => $courses[$row->course_id] ?? '',
                 'offering_name' => $offerings[$row->course_offering_id] ?? '',

@@ -5,6 +5,7 @@ namespace App\Domains\Portal\Http\Controllers;
 use App\Domains\ExamsGrades\Actions\ListPublishedAwardsForGuardianAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\PersonName;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +29,7 @@ class PortalAwardController extends Controller
         return Inertia::render('Portal/Awards', [
             'children' => $children->map(fn ($child) => [
                 'id' => $child->id,
-                'name' => trim(($child->first_name ?? '').' '.($child->last_name ?? '')),
+                'name' => PersonName::ofStudent($child),
             ])->values(),
             'studentId' => $studentId,
             'awards' => app(ListPublishedAwardsForGuardianAction::class)->execute(

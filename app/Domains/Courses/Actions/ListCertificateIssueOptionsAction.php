@@ -2,6 +2,7 @@
 
 namespace App\Domains\Courses\Actions;
 
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -22,10 +23,10 @@ class ListCertificateIssueOptionsAction
             'students' => DB::table('students')
                 ->orderBy('last_name')
                 ->orderBy('first_name')
-                ->get(['id', 'first_name', 'last_name'])
+                ->get(['id', 'first_name', 'middle_name', 'last_name'])
                 ->map(fn ($row): array => [
                     'id' => (int) $row->id,
-                    'name' => trim(($row->first_name ?? '').' '.($row->last_name ?? '')),
+                    'name' => PersonName::ofStudent($row),
                 ])
                 ->values(),
             'years' => DB::table('academic_years')

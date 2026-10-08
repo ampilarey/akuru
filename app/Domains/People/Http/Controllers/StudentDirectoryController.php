@@ -36,6 +36,19 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class StudentDirectoryController extends Controller
 {
+    /**
+     * An optional field left empty arrives as '' and is kept as NULL — a
+     * field the form sent, only. Every key used to be merged, sent or not,
+     * and the profile form carries no account, email, passport or notes:
+     * each save unlinked the student's sign-in and wiped the other three
+     * (STATUS §5oo).
+     */
+    private const OPTIONAL_FIELDS = [
+        'school_id', 'class_id', 'user_id', 'guardian_id', 'student_id', 'admission_date',
+        'national_id', 'passport', 'email', 'place_of_birth', 'phone', 'address', 'notes', 'middle_name',
+        'first_name_arabic', 'last_name_arabic', 'first_name_dhivehi', 'last_name_dhivehi',
+    ];
+
     public function index(Request $request): Response
     {
         $filters = $request->only(['search', 'status', 'class_id', 'awaiting_verification']);
@@ -88,13 +101,14 @@ class StudentDirectoryController extends Controller
 
         return response()->streamDownload(function () use ($students): void {
             $handle = fopen('php://output', 'w');
-            Csv::put($handle, ['id', 'student_number', 'first_name', 'last_name', 'national_id', 'status', 'class']);
+            Csv::put($handle, ['id', 'student_number', 'first_name', 'middle_name', 'last_name', 'national_id', 'status', 'class']);
 
             foreach ($students as $student) {
                 Csv::put($handle, [
                     $student->id,
                     $student->student_id,
                     $student->first_name,
+                    $student->middle_name,
                     $student->last_name,
                     $student->national_id,
                     $student->status,
@@ -122,6 +136,7 @@ class StudentDirectoryController extends Controller
                 'id' => $student->id,
                 'student_id' => $student->student_id,
                 'first_name' => $student->first_name,
+                'middle_name' => $student->middle_name,
                 'last_name' => $student->last_name,
                 'first_name_dhivehi' => $student->first_name_dhivehi,
                 'last_name_dhivehi' => $student->last_name_dhivehi,
@@ -161,13 +176,8 @@ class StudentDirectoryController extends Controller
                 // in one place rather than twice.
                 ...app(RecordGuardianLinkPolicyAction::class)->serialize($student, $guardian),
             ]),
-            'availableGuardians' => ParentGuardian::query()
-                ->orderBy('last_name')
-                ->get(['id', 'first_name', 'last_name'])
-                ->map(fn (ParentGuardian $guardian) => [
-                    'id' => $guardian->id,
-                    'name' => $guardian->full_name,
-                ]),
+            'availableGuardians' => ParentGuardian::query()->orderBy('last_name')->get(['id', 'first_name', 'last_name'])
+                ->map(fn (ParentGuardian $guardian) => ['id' => $guardian->id, 'name' => $guardian->full_name]),
             'relationships' => $options['relationships'],
             'statuses' => $options['statuses'],
             'schools' => $options['schools'],
@@ -330,20 +340,13 @@ class StudentDirectoryController extends Controller
      */
     private function validatedStudent(Request $request, ?int $studentId = null): array
     {
-        // An optional field left empty arrives as '' and is kept as NULL — a
-        // field the form sent, only. Every key used to be merged, sent or
-        // not, and the profile form carries no account, email, passport or
-        // notes: each save unlinked the student's sign-in and wiped the
-        // other three (STATUS §5oo).
-        $request->merge(collect([
-            'school_id', 'class_id', 'user_id', 'guardian_id', 'student_id', 'admission_date',
-            'national_id', 'passport', 'email', 'place_of_birth', 'phone', 'address', 'notes',
-            'first_name_arabic', 'last_name_arabic', 'first_name_dhivehi', 'last_name_dhivehi',
-        ])->filter(fn (string $key): bool => $request->has($key))
+        $request->merge(collect(self::OPTIONAL_FIELDS)->filter(fn (string $key): bool => $request->has($key))
             ->mapWithKeys(fn (string $key): array => [$key => $this->emptyToNull($request->input($key))])->all());
 
         return $request->validate([
             'first_name' => ['required', 'string', 'max:255'],
+            // R4b: as on the registration forms (slice R4).
+            'middle_name' => ['nullable', 'string', 'max:150'],
             'last_name' => ['required', 'string', 'max:255'],
             'first_name_arabic' => ['nullable', 'string', 'max:255'],
             'last_name_arabic' => ['nullable', 'string', 'max:255'],

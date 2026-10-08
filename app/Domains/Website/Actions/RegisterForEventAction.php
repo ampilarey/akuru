@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ListAcademicYearsAction;
 use App\Domains\Offerings\Actions\EnforceSeatLimitAction;
 use App\Domains\Website\Models\Event;
 use App\Domains\Website\Models\EventRegistration;
+use App\Support\PersonName;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -37,7 +38,7 @@ class RegisterForEventAction
                     throw ValidationException::withMessages(['student_id' => 'Student not found.']);
                 }
                 if ($name === '') {
-                    $name = trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
+                    $name = PersonName::ofStudent($student);
                 }
                 if ($email === '' && isset($data['fallback_email'])) {
                     $email = trim((string) $data['fallback_email']);

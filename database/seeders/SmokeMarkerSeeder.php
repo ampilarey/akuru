@@ -126,6 +126,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->schoolDayCycle();
         $this->timetableCycle($year);
         $this->consentCycle($studentId, $admin);
+        $this->middleNameCycle($studentId);
         $this->requestsCycle($class);
         $this->vendorCycle();
         $this->verifiedIdentityCards();
@@ -1450,6 +1451,16 @@ class SmokeMarkerSeeder extends Seeder
             'media_path' => 'smoke/photo.jpg', 'document_type' => 'photo', 'title' => 'SMOKE-Photo',
             'uploaded_by' => $admin?->id, 'created_at' => now(), 'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * `scripts/smoke/middle-name.mjs` lends the pupil a middle name on their
+     * profile and takes it back. A run stopped in between leaves it on, and
+     * the next run starts from a pupil with no middle name (STATUS §5op).
+     */
+    private function middleNameCycle(int $studentId): void
+    {
+        DB::table('students')->where('id', $studentId)->update(['middle_name' => null]);
     }
 
     /**

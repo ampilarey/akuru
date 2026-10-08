@@ -5,6 +5,7 @@ namespace App\Domains\Forms\Actions;
 use App\Domains\Forms\Models\FormResponse;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -55,7 +56,7 @@ class ListPendingConfirmationsAction
                     'response_id' => (int) $row->id,
                     'form_id' => (int) $row->form_id,
                     'form_title' => (string) ($row->form?->title ?? ''),
-                    'child_name' => trim(($child->first_name ?? '').' '.($child->last_name ?? '')),
+                    'child_name' => PersonName::ofStudent($child),
                     'submitted_at' => $row->submitted_at?->toIso8601String(),
                     'answers' => $row->answers ?? [],
                     'fields' => $row->form?->fields ?? [],

@@ -10,6 +10,7 @@ use App\Domains\Academics\Events\StudentMarkedAbsent;
 use App\Domains\Academics\Models\AbsenceNote;
 use App\Domains\Academics\Models\ClassAttendance;
 use App\Domains\Academics\Models\LessonLog;
+use App\Support\PersonName;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -196,8 +197,8 @@ class RecordClassAttendanceAction implements AttendanceWriterInterface
             return;
         }
 
-        $student = DB::table('students')->where('id', $dto->studentId)->first(['first_name', 'last_name']);
-        $name = trim(($student->first_name ?? '').' '.($student->last_name ?? ''));
+        $student = DB::table('students')->where('id', $dto->studentId)->first(['first_name', 'middle_name', 'last_name']);
+        $name = PersonName::ofStudent($student);
 
         event(new StudentMarkedAbsent(
             studentId: $dto->studentId,

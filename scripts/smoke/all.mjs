@@ -28,7 +28,7 @@
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
  *   node scripts/smoke/all.mjs --read     the eleven that only look
- *   node scripts/smoke/all.mjs --write    the thirty-nine that change data
+ *   node scripts/smoke/all.mjs --write    the forty that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -148,6 +148,7 @@ const WALKS = [
     { name: 'public-rtl', writes: false, asks: 'Does the website read right to left in Dhivehi and Arabic, on a desk and on a phone?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
     { name: 'course-screens-language', writes: false, asks: 'Do the screens teachers build courses on read in Dhivehi and Arabic, with a name on every field?' },
+    { name: 'middle-name', writes: true, asks: 'Is a student called by the whole name — first, middle and last — in the directory, its search and CSV, the class roster and a parent\'s list?' },
 ];
 
 const args = process.argv.slice(2);

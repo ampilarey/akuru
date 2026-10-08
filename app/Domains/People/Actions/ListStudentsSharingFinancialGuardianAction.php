@@ -2,6 +2,7 @@
 
 namespace App\Domains\People\Actions;
 
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -32,6 +33,7 @@ class ListStudentsSharingFinancialGuardianAction
             ->select([
                 'students.id as student_id',
                 'students.first_name',
+                'students.middle_name',
                 'students.last_name',
                 'parent_guardians.id as guardian_id',
                 'parent_guardians.first_name as guardian_first_name',
@@ -41,7 +43,7 @@ class ListStudentsSharingFinancialGuardianAction
             ->unique('student_id')
             ->map(fn ($row) => [
                 'student_id' => (int) $row->student_id,
-                'student_name' => trim($row->first_name.' '.$row->last_name),
+                'student_name' => PersonName::ofStudent($row),
                 'guardian_id' => (int) $row->guardian_id,
                 'guardian_name' => trim($row->guardian_first_name.' '.$row->guardian_last_name),
             ])

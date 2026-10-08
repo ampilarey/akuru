@@ -6,6 +6,7 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Offerings\Actions\GetOfferingAttendancePercentAction;
 use App\Domains\Progress\Actions\ListLessonProgressAction;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +25,7 @@ class BuildEnrollmentReportRowsAction
 
         $students = DB::table('students')
             ->whereIn('id', $enrollments->pluck('unified_student_id')->filter()->all() ?: [0])
-            ->get(['id', 'first_name', 'last_name'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name'])
             ->keyBy('id');
         $courses = Course::query()
             ->whereIn('id', $enrollments->pluck('course_id')->all() ?: [0])
@@ -55,7 +56,7 @@ class BuildEnrollmentReportRowsAction
             return [
                 'enrollment_id' => $enrollment->id,
                 'student_id' => $enrollment->unified_student_id ? (int) $enrollment->unified_student_id : null,
-                'student_name' => $student ? trim(($student->first_name ?? '').' '.($student->last_name ?? '')) : '',
+                'student_name' => $student ? PersonName::ofStudent($student) : '',
                 'course_id' => $courseId,
                 'course_title' => (string) ($courses->get($courseId)?->title ?? ''),
                 'offering_id' => $offeringId,

@@ -21,6 +21,7 @@ use App\Domains\Website\Actions\RecordFunnelEventAction;
 use App\Http\Requests\Registration\SetPasswordRequest;
 use App\Http\Requests\Registration\StartRegistrationRequest;
 use App\Http\Requests\Registration\VerifyOtpRequest;
+use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -461,7 +462,7 @@ class CourseRegistrationController extends PublicRegistrationController
                     ->with('course')
                     ->first();
                 $idLabel = $searchNid ? "ID card {$searchNid}" : "Passport {$searchPassport}";
-                $realName = trim($candidate['first_name'].' '.$candidate['last_name']);
+                $realName = PersonName::ofStudent($candidate);
                 if ($existingEnrollment) {
                     $title = $existingEnrollment->course?->title
                               ?? \App\Domains\Courses\Models\Course::whereIn('id', $courseIds)->first()?->title ?? 'this course';
@@ -672,7 +673,7 @@ class CourseRegistrationController extends PublicRegistrationController
                                ?? 'this course';
                 $status = $this->humanEnrollmentStatus($existing);
                 $known = app(RegisterCourseStudentAction::class)->forActor($user->id, $studentId);
-                $studentName = $known !== null ? trim($known['first_name'].' '.$known['last_name']) : 'This student';
+                $studentName = $known !== null ? PersonName::ofStudent($known) : 'This student';
 
                 return back()->withInput()
                     ->withErrors(['student_id' => "{$studentName} is already enrolled in \"{$title}\" — {$status}."]);
@@ -697,7 +698,7 @@ class CourseRegistrationController extends PublicRegistrationController
                     ->first();
 
                 // The ID belongs to a known student — always report the real name
-                $realName = trim($existingStudent['first_name'].' '.$existingStudent['last_name']);
+                $realName = PersonName::ofStudent($existingStudent);
                 $idLabel = $searchNid ? "ID card {$searchNid}" : "Passport {$searchPassport}";
 
                 if ($existing) {

@@ -3,6 +3,7 @@
 namespace App\Domains\Academics\Actions;
 
 use App\Domains\Academics\Models\AbsenceNote;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -24,7 +25,7 @@ class ListAbsenceNotesAction
 
         $students = DB::table('students')
             ->whereIn('id', $notes->pluck('student_id')->unique())
-            ->get(['id', 'first_name', 'last_name', 'student_id'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'student_id'])
             ->keyBy('id');
 
         $periods = \App\Domains\Academics\Models\Period::query()->pluck('name', 'id');
@@ -35,7 +36,7 @@ class ListAbsenceNotesAction
             return [
                 'id' => $note->id,
                 'student_id' => $note->student_id,
-                'student_name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'student_name' => PersonName::ofStudent($student),
                 'date' => $note->date?->toDateString(),
                 'period_id' => $note->period_id,
                 'reason' => $note->reason,
