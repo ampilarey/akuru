@@ -157,6 +157,24 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the course-screens language walk (2026-10-08)
+
+### A save on a Dhivehi or Arabic page answered in English — **fixed (2026-10-08, STATUS §5os)**
+
+The Inertia screens send their forms to addresses without a language
+(`/catalog/glossary`, `/quran/mushafs`), and LaravelLocalization leaves POST,
+PUT, PATCH and DELETE alone (`httpMethodsIgnored`), so those ran in the
+default language. Every translated "saved" message the course screens gained
+in C19 came back in English, though the page the person returned to was in
+their language. Found when a mushaf uploaded from the Dhivehi form said
+*Mushaf created.* A change sent to a bare address now takes the language of
+the page it came from (this site's Referer), or else the session's. Blade
+forms were never affected: they post to `route()` addresses, which carry the
+language.
+
+Laravel's own validation messages are still English in every language —
+there is no `validation.php` in `resources/lang` (BACKLOG C19, slice CT6).
+
 ## Found by the middle-name walk (2026-10-08)
 
 ### Saving a student's profile unlinked their sign-in and wiped their email, passport and notes — **fixed (2026-10-08, STATUS §5oo)**
