@@ -204,15 +204,19 @@ await student.locator('label', { hasText: RIGHT }).first().click();
 await student.locator('button:has-text("Submit"), button[type=submit]').first().click();
 await settles(student, 'Try again');
 const marked = await text(student);
-check('the engine scores it 1/1, no teacher and no AI', /scored/.test(marked) && /1\s*\/\s*1/.test(marked), marked.match(/scored[^A-Za-z]*1\s*\/\s*1/)?.[0] ?? marked.slice(0, 160));
+// The attempt's state is named, "Marked", where the page printed the code
+// "scored" (slice CT7b).
+check('the engine scores it 1/1, no teacher and no AI', /Marked · 1\s*\/\s*1/.test(marked), marked.match(/Marked[^A-Za-z]*1\s*\/\s*1/)?.[0] ?? marked.slice(0, 160));
 
 // 3. the two reports
 await student.goto(`${BASE}/en/learn/arabic-report`, { waitUntil: 'networkidle' });
 const mine = await rowText(student, TITLE);
-check('the student\'s Arabic report lists it under reading, with the attempt', mine.includes('reading') && /\b1\b/.test(mine), mine || (await text(student)).slice(0, 160));
+// Both reports name the skill, "Reading", where they printed the code (slices
+// CT6a and CT7a) — which this walk read as a word, and so failed from then on.
+check('the student\'s Arabic report lists it under reading, with the attempt', /Reading/.test(mine) && /\b1\b/.test(mine), mine || (await text(student)).slice(0, 160));
 
 await admin.goto(`${BASE}/en/catalog/arabic/reports`, { waitUntil: 'networkidle' });
 const theirs = await rowText(admin, TITLE);
-check('the office\'s Arabic report lists it with the letter and the attempt', theirs.includes('reading') && theirs.includes(LETTER.character) && /\b1\b/.test(theirs), theirs || (await text(admin)).slice(0, 160));
+check('the office\'s Arabic report lists it with the letter and the attempt', /Reading/.test(theirs) && theirs.includes(LETTER.character) && /\b1\b/.test(theirs), theirs || (await text(admin)).slice(0, 160));
 
 await finish();

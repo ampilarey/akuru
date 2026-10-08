@@ -1,8 +1,18 @@
 <?php
 
+use App\Domains\Courses\Actions\AttachAssessmentQuestionAction;
 use App\Domains\Courses\Actions\DeleteCourseAction;
+use App\Domains\Courses\Actions\EnrollSelfLearningAction;
 use App\Domains\Courses\Actions\NormalizeTextAnswerAction;
+use App\Domains\Courses\Actions\PublishLessonAction;
+use App\Domains\Courses\Actions\SaveActivityAction;
+use App\Domains\Courses\Actions\SaveAssessmentAction;
+use App\Domains\Courses\Actions\SaveContentBlockAction;
+use App\Domains\Courses\Actions\SaveCourseModuleAction;
 use App\Domains\Courses\Actions\SaveEngineCourseAction;
+use App\Domains\Courses\Actions\SaveLessonAction;
+use App\Domains\Courses\Actions\SaveQuestionAction;
+use App\Domains\Courses\Actions\TransitionCourseWorkflowAction;
 use App\Domains\Courses\Components\Quran\Enums\MemorizationStatus;
 use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentStatus;
 use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentType;
@@ -16,6 +26,7 @@ use App\Domains\Courses\Components\Quran\Enums\RevisionScheduleStatus;
 use App\Domains\Courses\Components\Quran\Models\QuranMushaf;
 use App\Domains\Courses\Components\Quran\Models\Surah;
 use App\Domains\Courses\Enums\ActivityPattern;
+use App\Domains\Courses\Enums\ActivitySubmissionKind;
 use App\Domains\Courses\Enums\AssessmentStatus;
 use App\Domains\Courses\Enums\AssessmentType;
 use App\Domains\Courses\Enums\CertificateKind;
@@ -33,9 +44,13 @@ use App\Domains\Identity\Models\User;
 use App\Domains\Offerings\Enums\DeliveryMode;
 use App\Domains\Offerings\Models\CourseOffering;
 use App\Domains\Progress\Enums\LessonProgressStatus;
+use App\Domains\Progress\Models\ActivityAttempt;
 use App\Enums\Hifz\HifzMilestoneStatus;
 use App\Enums\Hifz\HifzMilestoneType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Queue;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Role;
 
@@ -100,6 +115,12 @@ function translatedCourseScreens(): array
         'Courses/Learn/Schedule' => 'learn',
         'Courses/Learn/ArabicReport' => 'learn',
         'Pronunciation/Practice' => 'learn',
+        // Slice CT7b: an activity, an assessment, the lesson player, and the
+        // handwriting canvas the activity draws.
+        'Courses/Learn/Activity' => 'learn',
+        'Courses/Learn/Assessment' => 'learn',
+        'Courses/Player/Show' => 'learn',
+        '../Components/HandwritingCanvas' => 'learn',
     ];
 }
 
@@ -138,7 +159,9 @@ it('keys every string on the translated course screens in three languages', func
     foreach (translatedCourseScreens() as $screen => $book) {
         [$en, $dv, $ar] = [teachBook('en', $book), teachBook('dv', $book), teachBook('ar', $book)];
         $source = file_get_contents(resource_path("js/Pages/{$screen}.jsx"));
-        preg_match_all("/t\\.([a-z][a-z0-9_]+) \\|\\| '((?:[^'\\\\]|\\\\.)*)'/", $source, $uses, PREG_SET_ORDER);
+        // `t.` on its own: `current.text || ''` is not the phrase `text`
+        // (slice CT7b).
+        preg_match_all("/(?<![\\w\$.])t\\.([a-z][a-z0-9_]+) \\|\\| '((?:[^'\\\\]|\\\\.)*)'/", $source, $uses, PREG_SET_ORDER);
         expect($uses)->not->toBeEmpty("{$screen} uses no phrases");
 
         foreach ($uses as [, $key, $fallback]) {
@@ -530,6 +553,11 @@ it('names every code the learner’s pages show, in all three languages', functi
         ...array_map(fn ($status) => 'assessment_status_'.$status, ['not_started', 'in_progress', 'submitted', 'scored']),
         ...array_map(fn ($status) => 'pronounce_status_'.$status, ['submitted', 'ai_checked', 'pending_review', 'teacher_reviewed', 'used_for_training']),
         ...array_map(fn ($skill) => 'skill_'.$skill, ['listening', 'speaking', 'reading', 'writing']),
+        // Slice CT7b: what an activity asks to be handed in, and the three
+        // tones of an instruction block. An activity attempt's states are
+        // an assessment attempt's, named above.
+        ...array_map(fn ($case) => 'submission_kind_'.$case->value, ActivitySubmissionKind::cases()),
+        ...array_map(fn ($tone) => 'tone_'.$tone, ['note', 'tip', 'warning']),
     ];
     [$en, $dv, $ar] = [teachBook('en', 'learn'), teachBook('dv', 'learn'), teachBook('ar', 'learn')];
 
@@ -557,4 +585,76 @@ it('serves the learner’s own pages in Dhivehi', function () {
             ->get(route($route))->assertOk()
             ->assertInertia(fn (Assert $page) => $page->component($component)->where("i18n.learn.{$key}", $learn[$key]));
     }
+});
+
+it('serves an activity, an assessment and a lesson to a pupil in Dhivehi, and says what was saved in Dhivehi', function () {
+    // Slice CT7b. Every saved message on the three pages is a `learn` phrase,
+    // so a pupil working in Dhivehi is answered in Dhivehi.
+    Queue::fake();
+    $admin = actingPeopleAdmin(['courses.manage', 'courses.publish']);
+    $course = app(SaveEngineCourseAction::class)->execute([
+        'title' => 'Dhivehi player '.uniqueFixtureSuffix(),
+        'subject_id' => CourseSubject::query()->value('id'),
+        'created_by' => $admin->id,
+    ]);
+    app(TransitionCourseWorkflowAction::class)->execute($course, CourseWorkflowStatus::InReview, true);
+    app(TransitionCourseWorkflowAction::class)->execute($course->fresh(), CourseWorkflowStatus::Published, true);
+    $module = app(SaveCourseModuleAction::class)->execute(['course_id' => $course->id, 'title' => 'One', 'created_by' => $admin->id]);
+    $lesson = app(SaveLessonAction::class)->execute(['course_module_id' => $module->id, 'title' => 'First', 'created_by' => $admin->id]);
+    app(SaveContentBlockAction::class)->execute(['lesson_id' => $lesson->id, 'type' => 'text', 'data' => ['body' => 'Body'], 'created_by' => $admin->id]);
+    app(PublishLessonAction::class)->execute($lesson->fresh(), $admin->id);
+    $typed = app(SaveActivityAction::class)->execute([
+        'course_id' => $course->id, 'title' => 'Type it', 'pattern' => 'text_input', 'max_score' => 1,
+        'data' => ['prompt' => 'Type salam', 'acceptable' => ['salam']],
+    ]);
+    $upload = app(SaveActivityAction::class)->execute([
+        'course_id' => $course->id, 'title' => 'Hand it in', 'pattern' => 'teacher_marked', 'max_score' => 5,
+        'data' => ['prompt' => 'Upload your page', 'submission_kind' => 'file'],
+    ]);
+    $question = app(SaveQuestionAction::class)->execute([
+        'question_type' => 'mcq_single', 'question_text' => 'Which one?',
+        'options' => [['id' => 'a', 'label' => 'This'], ['id' => 'b', 'label' => 'That']], 'correct_answer' => ['a'],
+    ]);
+    $assessment = app(SaveAssessmentAction::class)->execute([
+        'course_id' => $course->id, 'title' => 'Quiz', 'status' => 'published', 'retake_limit' => 3, 'created_by' => $admin->id,
+    ]);
+    app(AttachAssessmentQuestionAction::class)->execute(['assessment_id' => $assessment->id, 'question_id' => $question->id]);
+    $pupil = User::factory()->create();
+    makeStudent(['user_id' => $pupil->id]);
+    app(EnrollSelfLearningAction::class)->execute($pupil->id, $course->id);
+    $learn = teachBook('dv', 'learn');
+    $as = fn () => $this->withoutLocalizationMiddleware()->actingAs($pupil);
+
+    app()->setLocale('dv');
+    foreach ([
+        [route('learn.activities.show', $typed->id), 'Courses/Learn/Activity', 'your_answer'],
+        [route('learn.assessments.show', $assessment->id), 'Courses/Learn/Assessment', 'class_assessment'],
+        [route('learn.lessons.show', $lesson->id), 'Courses/Player/Show', 'published_revision'],
+    ] as [$url, $component, $key]) {
+        $as()->get($url)->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("i18n.learn.{$key}", $learn[$key]));
+    }
+
+    $as()->post(route('learn.activities.submit', $typed->id), ['answers' => ['text' => 'salam']])
+        ->assertSessionHas('success', $learn['flash_activity_submitted']);
+    $as()->post('/learn/activities/'.$upload->id.'/upload', ['file' => UploadedFile::fake()->create('page.pdf', 12, 'application/pdf')])
+        ->assertSessionHas('success', $learn['flash_file_uploaded']);
+    $media = (int) ActivityAttempt::query()->where('activity_id', $upload->id)->firstOrFail()->answers['attachments'][0]['id'];
+    $as()->delete('/learn/activities/'.$upload->id.'/attachments/'.$media)
+        ->assertSessionHas('success', $learn['flash_file_removed']);
+    $as()->post(route('learn.assessments.submit', $assessment->id), ['answers' => [(string) $question->id => ['selected_ids' => ['a']]]])
+        ->assertSessionHas('success', $learn['flash_assessment_submitted']);
+    $as()->post(route('learn.assessments.retake', $assessment->id))
+        ->assertSessionHas('success', $learn['flash_started_again']);
+    $as()->post(route('learn.lessons.complete', $lesson->id))
+        ->assertSessionHas('success', $learn['flash_lesson_complete']);
+    $as()->post(route('learn.pronounce.store'), [
+        'expected_letter_id' => (int) DB::table('arabic_letters')->where('key_name', 'baa')->value('id'),
+        'expected_haraka_id' => (int) DB::table('arabic_harakas')->where('key_name', 'fatha')->value('id'),
+        'audio' => UploadedFile::fake()->create('attempt.webm', 40, 'audio/webm'),
+    ])->assertSessionHas('success', $learn['flash_recording_submitted']);
+
+    app()->setLocale('en');
+    expect(__('learn.flash_lesson_complete'))->toBe('Lesson marked complete.')
+        ->and(__('learn.flash_assessment_submitted'))->toBe('Assessment submitted.');
 });

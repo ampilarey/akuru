@@ -44,7 +44,7 @@ function blankAnswers(snapshots, existing) {
  * — showed their text and nothing else. Mirrors the lesson player's markup so a
  * sound file behaves the same wherever a student meets it.
  */
-function QuestionMedia({ media, mediaShowUrl }) {
+function QuestionMedia({ media, mediaShowUrl, t }) {
     if (!media || media.length === 0) {
         return null;
     }
@@ -61,7 +61,7 @@ function QuestionMedia({ media, mediaShowUrl }) {
                             key={`embed-${index}`}
                             className="aspect-video w-full rounded border-0"
                             src={item.embed_url}
-                            title={label || 'Question video'}
+                            title={label || t.question_video || 'Question video'}
                             allow="fullscreen"
                         />
                     );
@@ -72,7 +72,9 @@ function QuestionMedia({ media, mediaShowUrl }) {
                     // whether their connection dropped.
                     return (
                         <p key={`missing-${index}`} className="text-sm text-amber-700">
-                            An attachment for this question is unavailable{label ? `: ${label}` : '.'}
+                            {label
+                                ? `${t.attachment_unavailable_named || 'An attachment for this question is unavailable:'} ${label}`
+                                : (t.attachment_unavailable || 'An attachment for this question is unavailable.')}
                         </p>
                     );
                 }
@@ -88,14 +90,14 @@ function QuestionMedia({ media, mediaShowUrl }) {
                 if (item.kind === 'pdf') {
                     return (
                         <a key={src} className="inline-block text-sm text-[#7C2D37] hover:underline" href={src}>
-                            {label || 'Open PDF'}
+                            {label || t.open_pdf || 'Open PDF'}
                         </a>
                     );
                 }
 
                 return (
                     <a key={src} className="inline-block text-sm text-[#7C2D37] hover:underline" href={src}>
-                        {label || 'Open attachment'}
+                        {label || t.open_attachment || 'Open attachment'}
                     </a>
                 );
             })}
@@ -195,13 +197,13 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
                 >
                     {outOfTime ? (
                         <>
-                            <strong>Time is up.</strong> Answers saved before the deadline have been kept;
-                            anything typed after it will not be counted.
+                            <strong>{t.time_up || 'Time is up.'}</strong>{' '}
+                            {t.time_up_body || 'Answers saved before the deadline have been kept; anything typed after it will not be counted.'}
                         </>
                     ) : (
                         <>
-                            <strong>Time remaining: {formatRemaining(remaining)}</strong>
-                            {attempt?.time_limit_minutes ? ` of ${attempt.time_limit_minutes} minutes` : ''}.
+                            <strong>{(t.time_remaining || 'Time remaining: :time').replace(':time', formatRemaining(remaining))}</strong>
+                            {attempt?.time_limit_minutes ? ` ${(t.time_of_minutes || 'of :minutes minutes').replace(':minutes', attempt.time_limit_minutes)}` : ''}.
                         </>
                     )}
                 </div>
@@ -210,9 +212,9 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
                 {enrollment?.course_id ? (
                     <a className="text-[#7C2D37] hover:underline" href={`/learn/courses/${enrollment.course_id}`}>{t.course || 'Course'}</a>
                 ) : (
-                    <span>Class assessment</span>
+                    <span>{t.class_assessment || 'Class assessment'}</span>
                 )}
-                {attempt?.status ? ` · ${attempt.status}` : ''}
+                {attempt?.status ? ` · ${t[`assessment_status_${attempt.status}`] || attempt.status}` : ''}
                 {attempt?.score != null ? ` · ${attempt.score}/${attempt.max_score}` : ''}
             </p>
             {/* §19: an attempt held for a teacher, or a mark the teacher chose
@@ -224,11 +226,11 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
             )}
             {attempt?.show_results === false && attempt?.status !== 'submitted' && (
                 <p className="mb-4 rounded-lg border bg-white p-3 text-sm text-gray-600">
-                    {t.marks_not_published || 'Your teacher has not published marks for this assessment.'}
+                    {t.marks_withheld || 'Your teacher has not published marks for this assessment.'}
                 </p>
             )}
             {attempt?.feedback && (
-                <p className="mb-4 rounded-lg border bg-white p-3 text-sm">Teacher feedback: {attempt.feedback}</p>
+                <p className="mb-4 rounded-lg border bg-white p-3 text-sm">{t.teacher_feedback || 'Teacher feedback'}: {attempt.feedback}</p>
             )}
             <RubricResult scores={attempt?.rubric_scores} t={teach} />
             {/* `retake_limit` has always been configurable and enforced on the
@@ -241,8 +243,10 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
                 <div className="mb-4 rounded-lg border bg-white p-3 text-sm">
                     <p className="mb-2 text-gray-700">
                         {retake.remaining === null
-                            ? 'You can sit this again.'
-                            : `You can sit this again — ${retake.remaining} ${retake.remaining === 1 ? 'go' : 'goes'} left.`}
+                            ? (t.retake_sit_open || 'You can sit this again.')
+                            : retake.remaining === 1
+                                ? (t.retake_sit_one || 'You can sit this again — 1 go left.')
+                                : (t.retake_sit_many || 'You can sit this again — :count goes left.').replace(':count', retake.remaining)}
                     </p>
                     <button
                         type="button"
@@ -254,7 +258,7 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
                 </div>
             )}
             {submitted && retake && !retake.can_retake && retake.remaining === 0 && (
-                <p className="mb-4 text-sm text-gray-500">No goes left on this one.</p>
+                <p className="mb-4 text-sm text-gray-500">{t.retake_none || 'No goes left on this one.'}</p>
             )}
             <div className="space-y-4">
                 {(attempt?.snapshots || []).map((snapshot, index) => {
@@ -281,7 +285,7 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
                             {snapshot.secondary_text && (
                                 <p className="mb-2 whitespace-pre-line text-sm text-gray-700">{snapshot.secondary_text}</p>
                             )}
-                            <QuestionMedia media={snapshot.media} mediaShowUrl={mediaShowUrl} />
+                            <QuestionMedia media={snapshot.media} mediaShowUrl={mediaShowUrl} t={t} />
                             {snapshot.pattern === 'selection' && (
                                 <ul className="space-y-2">
                                     {(snapshot.options || []).map((option) => (
@@ -316,13 +320,14 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
                                             <span className="min-w-40">{option.label}</span>
                                             <select
                                                 className="form-input"
+                                                aria-label={(t.match_for || 'Match for :item').replace(':item', () => option.label)}
                                                 disabled={submitted}
                                                 value={(current.pairs || {})[option.id] || ''}
                                                 onChange={(e) => setAnswer(snapshot.question_id, {
                                                     pairs: { ...(current.pairs || {}), [option.id]: e.target.value },
                                                 })}
                                             >
-                                                <option value="">{t.choose || '—'}</option>
+                                                <option value="">—</option>
                                                 {snapshot.targets.map((target) => (
                                                     <option key={target.id} value={target.id}>{target.label}</option>
                                                 ))}
@@ -358,6 +363,7 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
                             {snapshot.pattern === 'text_input' && (
                                 <input
                                     className="form-input"
+                                    aria-label={t.your_answer || 'Your answer'}
                                     disabled={submitted}
                                     value={current.text || ''}
                                     onChange={(e) => setAnswer(snapshot.question_id, { text: e.target.value })}
@@ -366,13 +372,14 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
                             {snapshot.pattern === 'teacher_marked' && (
                                 <textarea
                                     className="form-input min-h-24"
+                                    aria-label={t.your_answer || 'Your answer'}
                                     disabled={submitted}
                                     value={current.text || ''}
                                     onChange={(e) => setAnswer(snapshot.question_id, { text: e.target.value })}
                                 />
                             )}
                             {snapshot.correct_answer && (
-                                <p className="mt-2 text-sm text-green-700">Correct: {correctAnswer(snapshot)}</p>
+                                <p className="mt-2 text-sm text-green-700">{t.correct_answer || 'Correct answer'}: {correctAnswer(snapshot)}</p>
                             )}
                             {/* §20 gives a question an `explanation`, and §21
                                 requires the snapshot to carry it "if needed".
@@ -401,7 +408,7 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
                     disabled={submitted}
                     onClick={() => router.post(`/learn/assessments/${assessment.id}/autosave`, { answers }, { preserveScroll: true })}
                 >
-                    {t.save || 'Save draft'}
+                    {t.save_draft || 'Save draft'}
                 </button>
                 <button
                     type="button"

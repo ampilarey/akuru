@@ -168,8 +168,7 @@ function blockTextProps(block, courseLanguage) {
     return { dir: direction, lang: language, style };
 }
 
-function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}, courseLanguage = null }) {
-    const direction = block.settings?.direction || 'auto';
+function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}, courseLanguage = null, t = {} }) {
     const textProps = blockTextProps(block, courseLanguage);
     const src = block.data?.media_id ? mediaSrc(mediaShowUrl, block.data.media_id) : null;
 
@@ -197,7 +196,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
     if (block.type === 'instruction') {
         return (
             <aside className="rounded-lg border border-amber-200 bg-amber-50 p-4" {...textProps}>
-                <p className="mb-1 text-xs uppercase tracking-wide text-amber-800">{block.data?.tone || 'note'}</p>
+                <p className="mb-1 text-xs uppercase tracking-wide text-amber-800">{t[`tone_${block.data?.tone || 'note'}`] || block.data?.tone || 'note'}</p>
                 <p className="whitespace-pre-wrap text-sm">{wrapPlainText(block.data?.body, glossary, onSelectTerm)}</p>
             </aside>
         );
@@ -227,7 +226,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
                     <iframe
                         className="aspect-video w-full rounded border-0"
                         src={block.data.embed_url}
-                        title={block.title || 'Lesson video'}
+                        title={block.title || t.lesson_video || 'Lesson video'}
                         allow="fullscreen"
                     />
                 </article>
@@ -247,7 +246,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
             <article className="rounded-lg border bg-white p-4" {...textProps}>
                 {block.title && <h2 className="mb-2 font-medium">{block.title}</h2>}
                 <iframe className="h-[36rem] w-full rounded border" src={src} title={block.data?.original_name || 'PDF'} />
-                <a className="mt-2 inline-block text-sm text-[#7C2D37] hover:underline" href={src}>{block.data?.original_name || 'Open PDF'}</a>
+                <a className="mt-2 inline-block text-sm text-[#7C2D37] hover:underline" href={src}>{block.data?.original_name || t.open_pdf || 'Open PDF'}</a>
             </article>
         );
     }
@@ -281,26 +280,34 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
         );
     }
     if (block.type === 'flashcard' && block.data?.cards?.length) {
-        return <FlashcardView cards={block.data.cards} title={block.title} direction={direction} />;
+        // The card's own text settings. It spread a `textProps` that only
+        // existed here, so a lesson with a flashcard threw on render and the
+        // whole player went blank (slice CT7b).
+        return <FlashcardView cards={block.data.cards} title={block.title} textProps={textProps} t={t} />;
     }
     if (block.type === 'download' && src) {
         return (
             <article className="rounded-lg border bg-white p-4" {...textProps}>
                 {block.title && <h2 className="mb-2 font-medium">{block.title}</h2>}
                 <a className="text-sm text-[#7C2D37] hover:underline" href={src} download={block.data?.original_name || true}>
-                    {block.data?.original_name || 'Download'}
+                    {block.data?.original_name || t.download || 'Download'}
                 </a>
             </article>
         );
     }
     if (block.type === 'quiz_embed' || block.type === 'assignment_embed') {
-        const label = block.data?.title || (block.type === 'quiz_embed' ? `Quiz ${block.data?.quiz_id || ''}`.trim() : `Assignment ${block.data?.assignment_id || ''}`.trim());
+        const quiz = block.type === 'quiz_embed';
+        const id = quiz ? block.data?.quiz_id : block.data?.assignment_id;
+        const kind = quiz ? (t.embed_quiz || 'Quiz') : (t.embed_assignment || 'Assignment');
+        const label = block.data?.title || (id ? `${kind} ${id}` : '');
         return (
             <article className="rounded-lg border bg-white p-4" {...textProps}>
-                <p className="mb-1 text-xs uppercase tracking-wide text-gray-500">{block.type === 'quiz_embed' ? 'Quiz' : 'Assignment'}</p>
-                <p className="font-medium">{label || 'Embedded activity'}</p>
-                {block.data?.url && <a className="mt-2 inline-block text-sm text-[#7C2D37] hover:underline" href={block.data.url}>Open</a>}
-                {!block.data?.url && <p className="mt-2 text-sm text-gray-500">Linked by id only — player engine ships later.</p>}
+                <p className="mb-1 text-xs uppercase tracking-wide text-gray-500">{kind}</p>
+                <p className="font-medium">{label || t.embedded_activity || 'Embedded activity'}</p>
+                {block.data?.url && <a className="mt-2 inline-block text-sm text-[#7C2D37] hover:underline" href={block.data.url}>{t.open || 'Open'}</a>}
+                {/* A quiz or assignment named by id alone has no player of its
+                    own yet; the pupil is told so in words, not engine terms. */}
+                {!block.data?.url && <p className="mt-2 text-sm text-gray-500">{t.embed_not_here || 'This cannot be opened from the lesson yet.'}</p>}
             </article>
         );
     }
@@ -323,7 +330,7 @@ function BlockView({ block, mediaShowUrl, glossary = [], onSelectTerm = () => {}
  * vocabulary entry most needs, and the first item §22 lists — was invisible.
  * (Nothing uploaded one either; both ends were shut.)
  */
-function TermMedia({ item, mediaShowUrl }) {
+function TermMedia({ item, mediaShowUrl, t }) {
     const audio = item.audio_media_id;
     const exampleAudio = item.example_audio_media_id;
     const image = item.image_media_id;
@@ -337,13 +344,13 @@ function TermMedia({ item, mediaShowUrl }) {
         <div className="mt-2 space-y-2">
             {audio && (
                 <label className="block text-xs text-gray-600">
-                    Pronunciation
+                    {t.term_pronunciation || 'Pronunciation'}
                     <audio className="w-full" controls preload="none" src={mediaSrc(mediaShowUrl, audio)} />
                 </label>
             )}
             {exampleAudio && (
                 <label className="block text-xs text-gray-600">
-                    Example
+                    {t.term_example || 'Example'}
                     <audio className="w-full" controls preload="none" src={mediaSrc(mediaShowUrl, exampleAudio)} />
                 </label>
             )}
@@ -351,13 +358,13 @@ function TermMedia({ item, mediaShowUrl }) {
                 <img className="max-h-56 w-full object-contain" src={mediaSrc(mediaShowUrl, image)} alt={item.term || ''} />
             )}
             {diagram && (
-                <img className="max-h-56 w-full object-contain" src={mediaSrc(mediaShowUrl, diagram)} alt={`${item.term || ''} diagram`} />
+                <img className="max-h-56 w-full object-contain" src={mediaSrc(mediaShowUrl, diagram)} alt={(t.term_diagram || ':term diagram').replace(':term', () => item.term || '')} />
             )}
         </div>
     );
 }
 
-function FlashcardView({ cards, title, direction }) {
+function FlashcardView({ cards, title, textProps, t }) {
     const [index, setIndex] = useState(0);
     const [showBack, setShowBack] = useState(false);
     const card = cards[index];
@@ -370,12 +377,12 @@ function FlashcardView({ cards, title, direction }) {
             </button>
             <div className="mt-2 flex items-center justify-between text-xs text-gray-500">
                 <span>{index + 1} / {cards.length}</span>
-                <span>{showBack ? 'Back' : 'Front'} · tap to flip</span>
+                <span>{showBack ? (t.card_back || 'Back') : (t.card_front || 'Front')} · {t.card_flip || 'tap to flip'}</span>
             </div>
             {cards.length > 1 && (
                 <div className="mt-2 flex gap-2">
-                    <button type="button" className="btn-secondary" disabled={index === 0} onClick={() => { setIndex((value) => value - 1); setShowBack(false); }}>Previous</button>
-                    <button type="button" className="btn-secondary" disabled={index === cards.length - 1} onClick={() => { setIndex((value) => value + 1); setShowBack(false); }}>Next</button>
+                    <button type="button" className="btn-secondary" disabled={index === 0} onClick={() => { setIndex((value) => value - 1); setShowBack(false); }}>{t.card_previous || 'Previous'}</button>
+                    <button type="button" className="btn-secondary" disabled={index === cards.length - 1} onClick={() => { setIndex((value) => value + 1); setShowBack(false); }}>{t.card_next || 'Next'}</button>
                 </div>
             )}
         </article>
@@ -403,9 +410,9 @@ export default function Show({
     const completionError = usePage().props.errors?.lesson;
 
     return (
-        <AppShell title={snapshot.title || 'Lesson'}>
+        <AppShell title={snapshot.title || t.lesson || 'Lesson'}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm text-gray-600">Published revision {snapshot.revision_number}</p>
+                <p className="text-sm text-gray-600">{(t.published_revision || 'Published revision :number').replace(':number', snapshot.revision_number)}</p>
                 {canComplete && completeUrl && (
                     <button type="button" className="btn-primary" onClick={() => router.post(completeUrl, {}, { preserveScroll: true })}>{t.mark_complete || 'Mark complete'}</button>
                 )}
@@ -416,7 +423,7 @@ export default function Show({
             {snapshot.description && <p className="mb-4">{wrapPlainText(snapshot.description, glossary, setSelected)}</p>}
             {selected && (
                 <aside className="mb-4 rounded-lg border border-[#7C2D37]/30 bg-white p-4" dir="auto">
-                    <p className="text-xs uppercase tracking-wide text-gray-500">Definition</p>
+                    <p className="text-xs uppercase tracking-wide text-gray-500">{t.definition || 'Definition'}</p>
                     <p className="font-medium" dir={dirForLabel(selected.term, selected)}>{selected.term}</p>
                     {selected.transliteration && <p className="text-sm text-gray-600">{selected.transliteration}</p>}
                     {meaningFor(selected, locale) && <p className="mt-1 text-sm">{meaningFor(selected, locale)}</p>}
@@ -427,8 +434,8 @@ export default function Show({
                             {selected.example_translation && locale === 'en' ? ` — ${selected.example_translation}` : ''}
                         </p>
                     )}
-                    <TermMedia item={selected} mediaShowUrl={mediaShowUrl} />
-                    <button type="button" className="mt-2 text-xs text-[#7C2D37] hover:underline" onClick={() => setSelected(null)}>Close</button>
+                    <TermMedia item={selected} mediaShowUrl={mediaShowUrl} t={t} />
+                    <button type="button" className="mt-2 text-xs text-[#7C2D37] hover:underline" onClick={() => setSelected(null)}>{t.close || 'Close'}</button>
                 </aside>
             )}
             <div className="space-y-4">
@@ -440,12 +447,13 @@ export default function Show({
                         glossary={glossary}
                         onSelectTerm={setSelected}
                         courseLanguage={courseLanguage}
+                        t={t}
                     />
                 ))}
             </div>
             {glossary.length > 0 && (
                 <section className="mt-6 rounded-lg border bg-white p-4">
-                    <h2 className="mb-3 font-medium">Glossary</h2>
+                    <h2 className="mb-3 font-medium">{t.glossary || 'Glossary'}</h2>
                     <dl className="space-y-3">
                         {glossary.map((item) => (
                             <div key={item.id}>
@@ -453,11 +461,11 @@ export default function Show({
                                     <button type="button" className="glossary-term" dir="auto" onClick={() => setSelected(item)}>{item.term}</button>
                                     {item.term_dv && <span className="ms-2 text-sm font-normal" dir="rtl">{item.term_dv}</span>}
                                     {item.term_ar && <span className="ms-2 text-sm font-normal" dir="rtl">{item.term_ar}</span>}
-                                    {item.is_required && <span className="ms-2 text-xs uppercase text-amber-800">required</span>}
+                                    {item.is_required && <span className="ms-2 text-xs uppercase text-amber-800">{t.required || 'required'}</span>}
                                 </dt>
                                 <dd className="text-sm text-gray-700" dir="auto">
                                     {meaningFor(item, locale) || descriptionFor(item, locale) || '—'}
-                                    <TermMedia item={item} mediaShowUrl={mediaShowUrl} />
+                                    <TermMedia item={item} mediaShowUrl={mediaShowUrl} t={t} />
                                 </dd>
                             </div>
                         ))}

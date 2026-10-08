@@ -47,6 +47,6 @@ class LearnLessonController extends Controller
     {
         app(StartOrCompleteLessonProgressAction::class)->execute($lesson, $request->user(), 'completed');
 
-        return redirect()->route('learn.lessons.show', $lesson)->with('success', 'Lesson marked complete.');
+        return redirect()->route('learn.lessons.show', $lesson)->with('success', __('learn.flash_lesson_complete'));
     }
 }
