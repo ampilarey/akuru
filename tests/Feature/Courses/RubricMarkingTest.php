@@ -118,7 +118,7 @@ it('marks by rubric: a level per criterion, the mark scaled to the item, the lev
         ->get(route('catalog.reviews.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('rows.0.rubric.title', 'Paragraph rubric')
             ->where('rows.0.rubric.max_points', 8)
-            ->where('teach.rubric_mark_total', 'Rubric: :points of :max points, so :score out of :out_of'));
+            ->where('t.rubric_mark_total', 'Rubric: :points of :max points, so :score out of :out_of'));
 
     // Every criterion must have a level.
     $this->withoutLocalizationMiddleware()->actingAs($admin)

@@ -154,10 +154,10 @@ class ListTeacherReviewReportsAction
     private function reason(array $item, int $threshold): string
     {
         if ($this->passingPercent($item) !== null && $this->isWeak($item, $threshold)) {
-            return 'Below passing score';
+            return __('teach.review_reason_below_passing');
         }
 
-        return 'Below '.$threshold.'% threshold';
+        return __('teach.review_reason_below_threshold', ['threshold' => $threshold]);
     }
 
     /**
@@ -187,10 +187,10 @@ class ListTeacherReviewReportsAction
     {
         $remaining = $this->retakesRemaining($item);
         if ($remaining === null || $remaining > 0) {
-            return 'Retry '.$item['title'];
+            return __('teach.review_retry', ['title' => $item['title']]);
         }
 
-        return 'Teacher review — retake not available';
+        return __('teach.review_with_teacher');
     }
 
     /**

@@ -5,6 +5,7 @@ use App\Domains\Courses\Actions\SaveEngineCourseAction;
 use App\Domains\Courses\Enums\ActivityPattern;
 use App\Domains\Courses\Enums\AssessmentStatus;
 use App\Domains\Courses\Enums\AssessmentType;
+use App\Domains\Courses\Enums\CertificateKind;
 use App\Domains\Courses\Enums\ContentBlockType;
 use App\Domains\Courses\Enums\CourseReviewDecision;
 use App\Domains\Courses\Enums\CourseWorkflowStatus;
@@ -41,6 +42,9 @@ function translatedCourseScreens(): array
         'Courses/Catalog/Activities',
         'Courses/Catalog/Assessments',
         'Courses/Catalog/Questions',
+        'Courses/Catalog/Glossary',
+        'Courses/Catalog/Certificates',
+        'Courses/Catalog/Reviews',
     ];
 }
 
@@ -117,6 +121,9 @@ it('names every status, decision, unlock rule, block type, pattern, assessment a
         ...array_map(fn ($flag) => 'flag_'.$flag, NormalizeTextAnswerAction::flags()),
         ...array_map(fn ($mode) => 'mode_'.$mode, NormalizeTextAnswerAction::modes()),
         ...array_map(fn ($difficulty) => 'difficulty_'.$difficulty, ['easy', 'medium', 'hard']),
+        ...array_map(fn ($case) => 'certificate_kind_'.$case->value, CertificateKind::cases()),
+        ...array_map(fn ($status) => 'cert_status_'.$status, ['issued', 'revoked']),
+        ...array_map(fn ($kind) => 'review_kind_'.$kind, ['activity', 'assessment']),
     ];
 
     foreach (['en', 'dv', 'ar'] as $locale) {
@@ -227,4 +234,38 @@ it('serves activities, assessments and the question bank in Dhivehi, names what 
 
     app()->setLocale('en');
     expect(__('teach.flash_question_saved'))->toBe('Question saved.');
+});
+
+it('serves the glossary, certificates and the marking queue in Dhivehi, and says what was saved in Dhivehi', function () {
+    $admin = actingPeopleAdmin(['courses.manage']);
+    $dv = teachBook('dv');
+    $named = fn (string $prefix) => fn ($values) => collect($values)->every(fn ($value) => isset($dv[$prefix.$value['value']]));
+
+    app()->setLocale('dv');
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->get(route('catalog.glossary.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Courses/Catalog/Glossary')
+            ->where('t.glossary_save', $dv['glossary_save'])
+            ->where('levels', fn ($levels) => collect($levels)->every(fn ($level) => filled($level['name_dv']) && filled($level['name_ar']))));
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->get(route('catalog.certificates.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Courses/Catalog/Certificates')
+            ->where('t.cert_save_template', $dv['cert_save_template'])
+            ->where('kinds', $named('certificate_kind_')));
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->get(route('catalog.reviews.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Courses/Catalog/Reviews')
+            ->where('t.review_score_release', $dv['review_score_release'])
+            ->missing('teach'));
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('catalog.glossary.store'), ['term' => 'Tajweed'])
+        ->assertSessionHas('success', $dv['flash_term_saved']);
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('catalog.certificates.store'), ['name' => 'Completion', 'kind' => 'course_completion'])
+        ->assertSessionHas('success', $dv['flash_template_saved']);
+
+    app()->setLocale('en');
+    expect(__('teach.flash_certificate_issued', ['number' => 'AK-1']))->toBe('Certificate issued: AK-1')
+        ->and(__('teach.review_retry', ['title' => 'Choose meaning']))->toBe('Retry Choose meaning');
 });
