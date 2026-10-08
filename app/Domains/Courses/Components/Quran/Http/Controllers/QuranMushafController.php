@@ -7,6 +7,7 @@ use App\Domains\Courses\Components\Quran\Models\QuranMushaf;
 use App\Domains\Courses\Components\Quran\Models\QuranWord;
 use App\Domains\Courses\Components\Quran\Services\QuranMushafImportService;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -44,6 +45,7 @@ class QuranMushafController extends Controller
                 ])
                 ->all(),
             'can_manage' => request()->user()?->can('manage', QuranMushaf::class) ?? false,
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -51,7 +53,7 @@ class QuranMushafController extends Controller
     {
         $this->authorize('manage', QuranMushaf::class);
 
-        return Inertia::render('Courses/Quran/Mushafs/Create');
+        return Inertia::render('Courses/Quran/Mushafs/Create', ['t' => Phrases::once('teach')]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -83,7 +85,7 @@ class QuranMushafController extends Controller
         }
 
         return redirect()->route('quran.mushafs.show', $mushaf)
-            ->with('success', 'Mushaf created.');
+            ->with('success', __('teach.flash_mushaf_created'));
     }
 
     public function show(QuranMushaf $mushaf): Response
@@ -108,6 +110,7 @@ class QuranMushafController extends Controller
             'can_manage' => $user?->can('manage', QuranMushaf::class) ?? false,
             'can_approve' => $user?->can('approve', $mushaf) ?? false,
             'can_lock' => $user?->can('lock', $mushaf) ?? false,
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -116,7 +119,7 @@ class QuranMushafController extends Controller
         $this->authorize('approve', $mushaf);
         $this->importService->activate($mushaf, (int) auth()->id());
 
-        return back()->with('success', 'Mushaf approved and activated.');
+        return back()->with('success', __('teach.flash_mushaf_approved'));
     }
 
     public function lock(QuranMushaf $mushaf): RedirectResponse
@@ -124,7 +127,7 @@ class QuranMushafController extends Controller
         $this->authorize('lock', $mushaf);
         $this->importService->lock($mushaf);
 
-        return back()->with('success', 'Mushaf locked.');
+        return back()->with('success', __('teach.flash_mushaf_locked'));
     }
 
     public function importAyah(Request $request, QuranMushaf $mushaf): RedirectResponse
@@ -173,6 +176,6 @@ class QuranMushafController extends Controller
             );
         }
 
-        return back()->with('success', 'Ayah imported.');
+        return back()->with('success', __('teach.flash_mushaf_ayah_imported'));
     }
 }

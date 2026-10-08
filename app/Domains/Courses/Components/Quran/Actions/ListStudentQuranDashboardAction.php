@@ -31,6 +31,10 @@ class ListStudentQuranDashboardAction
         $surahName = fn (?int $id): ?string => $id !== null
             ? ($surahs->get($id)['english_name'] ?? null)
             : null;
+        // A Dhivehi or Arabic page names a surah in Arabic (slice CT5b).
+        $surahArabic = fn (?int $id): ?string => $id !== null
+            ? ($surahs->get($id)['arabic_name'] ?? null)
+            : null;
 
         $submissions = QuranRecitationSubmission::query()
             ->where('student_id', $studentId)
@@ -41,6 +45,7 @@ class ListStudentQuranDashboardAction
             ->map(fn (QuranRecitationSubmission $row): array => [
                 'id' => $row->id,
                 'surah' => $surahName($row->surah_id ? (int) $row->surah_id : null),
+                'surah_arabic' => $surahArabic($row->surah_id ? (int) $row->surah_id : null),
                 'start_ayah_number' => $row->start_ayah_number,
                 'end_ayah_number' => $row->end_ayah_number,
                 'mode' => $row->mode?->value,
@@ -66,6 +71,7 @@ class ListStudentQuranDashboardAction
             ->map(fn (QuranMemorizationProgress $row): array => [
                 'id' => $row->id,
                 'surah' => $surahName($row->surah_id ? (int) $row->surah_id : null),
+                'surah_arabic' => $surahArabic($row->surah_id ? (int) $row->surah_id : null),
                 'start_ayah_number' => $row->start_ayah_number,
                 'end_ayah_number' => $row->end_ayah_number,
                 'status' => $row->status?->value,
@@ -87,6 +93,7 @@ class ListStudentQuranDashboardAction
             ->map(fn (QuranRevisionSchedule $row): array => [
                 'id' => $row->id,
                 'surah' => $surahName($row->surah_id ? (int) $row->surah_id : null),
+                'surah_arabic' => $surahArabic($row->surah_id ? (int) $row->surah_id : null),
                 'start_ayah_number' => $row->start_ayah_number,
                 'end_ayah_number' => $row->end_ayah_number,
                 'scheduled_date' => $row->scheduled_date?->toDateString(),
@@ -110,6 +117,7 @@ class ListStudentQuranDashboardAction
                 'id' => $row->id,
                 'assignment_type' => $row->assignment_type?->value,
                 'surah' => $surahName($row->surah_id ? (int) $row->surah_id : null),
+                'surah_arabic' => $surahArabic($row->surah_id ? (int) $row->surah_id : null),
                 'start_ayah_number' => $row->start_ayah_number,
                 'end_ayah_number' => $row->end_ayah_number,
                 'due_date' => $row->due_date?->toDateString(),
@@ -132,6 +140,7 @@ class ListStudentQuranDashboardAction
                 ->map(fn (array $surah): array => [
                     'id' => $surah['id'],
                     'name' => $surah['english_name'] ?? ('Surah '.$surah['id']),
+                    'arabic_name' => $surah['arabic_name'] ?? null,
                     'ayah_count' => $surah['ayah_count'] ?? null,
                 ])
                 ->values()

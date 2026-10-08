@@ -66,4 +66,20 @@ return [
     'attendance_late' => 'late',
     'attendance_absent' => 'absent',
     'attendance_excused' => 'excused',
+
+    // A memorized range, a revision and how often it comes round (slice CT5b, STATUS §5ot).
+    'progress_not_started' => 'not started',
+    'progress_learning' => 'learning',
+    'progress_submitted' => 'submitted',
+    'progress_passed' => 'passed',
+    'progress_needs_revision' => 'needs revision',
+    'progress_weak' => 'weak',
+    'progress_strong' => 'strong',
+    'revision_scheduled' => 'scheduled',
+    'revision_completed' => 'completed',
+    'revision_missed' => 'missed',
+    'revision_cancelled' => 'cancelled',
+    'frequency_daily' => 'daily',
+    'frequency_weekly' => 'weekly',
+    'frequency_monthly' => 'monthly',
 ];

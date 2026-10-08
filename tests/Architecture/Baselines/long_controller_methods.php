@@ -42,7 +42,7 @@ return [
     'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php::validateEnrollRequest' => 50,
     'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php::verify' => 49,
     'app/Domains/Courses/Components/Quran/Http/Controllers/QuranMushafController.php::importAyah' => 43,
-    'app/Domains/Courses/Components/Quran/Http/Controllers/QuranPageController.php::show' => 47,
+    'app/Domains/Courses/Components/Quran/Http/Controllers/QuranPageController.php::show' => 44,
     'app/Domains/Courses/Http/Controllers/CatalogQuestionController.php::payload' => 37,
     'app/Domains/Courses/Http/Controllers/CatalogReviewController.php::export' => 79,
     'app/Domains/Courses/Http/Controllers/CourseOutlineController.php::storeBlock' => 48,

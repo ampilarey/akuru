@@ -66,4 +66,20 @@ return [
     'attendance_late' => 'متأخر',
     'attendance_absent' => 'غائب',
     'attendance_excused' => 'معذور',
+
+    // A memorized range, a revision and how often it comes round (slice CT5b, STATUS §5ot).
+    'progress_not_started' => 'لم يبدأ',
+    'progress_learning' => 'قيد الحفظ',
+    'progress_submitted' => 'مُرسل',
+    'progress_passed' => 'ناجح',
+    'progress_needs_revision' => 'يحتاج إلى مراجعة',
+    'progress_weak' => 'ضعيف',
+    'progress_strong' => 'متقن',
+    'revision_scheduled' => 'مجدولة',
+    'revision_completed' => 'مكتملة',
+    'revision_missed' => 'فائتة',
+    'revision_cancelled' => 'ملغاة',
+    'frequency_daily' => 'يومي',
+    'frequency_weekly' => 'أسبوعي',
+    'frequency_monthly' => 'شهري',
 ];

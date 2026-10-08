@@ -7,6 +7,7 @@ use App\Domains\Courses\Components\Quran\Actions\SubmitRecitationAction;
 use App\Domains\Media\Actions\StorePrivateMediaAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -48,7 +49,7 @@ class LearnQuranController extends Controller
             ? app(ListStudentQuranDashboardAction::class)->execute((int) $student['id'])
             : ['submissions' => [], 'progress' => [], 'schedules' => []];
 
-        return Inertia::render('Courses/Learn/Quran', $payload + ['student' => $student]);
+        return Inertia::render('Courses/Learn/Quran', $payload + ['student' => $student, 'q' => Phrases::once('quran')]);
     }
 
     /**
@@ -102,6 +103,6 @@ class LearnQuranController extends Controller
             'audio_media_file_id' => (int) $stored['id'],
         ]);
 
-        return back()->with('success', 'Recitation submitted — your teacher will listen to it.');
+        return back()->with('success', __('learn.flash_recitation_submitted'));
     }
 }

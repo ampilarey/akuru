@@ -1,10 +1,11 @@
 /**
  * Do the course-building screens read in Dhivehi and Arabic? (BACKLOG C19,
- * slices CT1–CT5a, STATUS §5ok on.)
+ * slices CT1–CT5b, STATUS §5ok on.)
  *
  * The dean opens every translated course screen under /dv and /ar — the
- * system admin the one the website's course list owns, Deleted courses — and the
- * walk lists what is still in Latin letters: every text node in the page's
+ * system admin the one the website's course list owns, Deleted courses, and
+ * the seeded pupil their own Qur'an page — and the walk lists what is still
+ * in Latin letters: every text node in the page's
  * main, and every placeholder, aria-label and title in it. What a screen shows
  * of the data it was sent — a course's title, a question's text, a letter's
  * name, an author's typed label — is the author's, not the screen's, so a
@@ -18,16 +19,23 @@
  * Each page must also be right to left, and every field in it must have a
  * name a screen reader can say.
  *
+ * The dean also uploads a mushaf through the Dhivehi form (slice CT5b) and is
+ * told so in Dhivehi; the walk opens it, its pages and the word-mapping form.
+ * It never imports an ayah — with no mushaf active, every mushaf's ayahs are
+ * read as the Qur'an, so walk-made text must not exist. `SmokeMarkerSeeder`
+ * removes what a run uploaded.
+ *
  *   node scripts/smoke/course-screens-language.mjs
  *
- * Environment: SMOKE_BASE_URL, SMOKE_MARKER, SMOKE_SUPER_ADMIN, SMOKE_PASSWORD,
- * SMOKE_CHROMIUM.
+ * Environment: SMOKE_BASE_URL, SMOKE_MARKER, SMOKE_SUPER_ADMIN, SMOKE_STUDENT,
+ * SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const DEAN = process.env.SMOKE_MARKER ?? 'headmaster@akuru.edu.mv';
 const SUPER = process.env.SMOKE_SUPER_ADMIN ?? 'superadmin@akuru.edu.mv';
+const PUPIL = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const COURSE = 'SMOKE-Course';
 
@@ -56,8 +64,11 @@ const props = (page) => page.evaluate(() => JSON.parse(document.querySelector('s
 // An English name (`name_en`) is the author's only when the page's language
 // has none: a level somebody typed in English alone is shown in English, and
 // that is right; a subject with a Dhivehi name shown in English is not.
-function authorsWords(value, locale, key = '', out = [], owner = {}) {
-    if (CODE_KEYS.has(key) || (key.endsWith('_en') && owner[key.replace(/_en$/, `_${locale}`)])) {
+//
+// `own` names the code keys a screen shows on purpose: the Qur'an reference
+// has a column of English surah names (slice CT5b).
+function authorsWords(value, locale, own = [], key = '', out = [], owner = {}) {
+    if ((CODE_KEYS.has(key) && !own.includes(key)) || (key.endsWith('_en') && owner[key.replace(/_en$/, `_${locale}`)])) {
         return out;
     }
     if (typeof value === 'string') {
@@ -65,9 +76,9 @@ function authorsWords(value, locale, key = '', out = [], owner = {}) {
             out.push(value.trim());
         }
     } else if (Array.isArray(value)) {
-        value.forEach((item) => authorsWords(item, locale, key, out));
+        value.forEach((item) => authorsWords(item, locale, own, key, out));
     } else if (value && typeof value === 'object') {
-        Object.entries(value).forEach(([k, v]) => authorsWords(v, locale, k, out, value));
+        Object.entries(value).forEach(([k, v]) => authorsWords(v, locale, own, k, out, value));
     }
     return out;
 }
@@ -104,6 +115,8 @@ const page = await signIn(DEAN);
 // Deleted courses is a screen of the website's course list, which only the
 // system admin opens (slice CT4).
 const office = await signIn(SUPER);
+// The learner's own Qur'an page (slice CT5b).
+const pupil = await signIn(PUPIL);
 
 await page.goto(`${BASE}/en/catalog/courses`, { waitUntil: 'networkidle' });
 const course = ((await props(page)).rows || []).find((row) => row.title === COURSE);
@@ -120,6 +133,25 @@ if (sessionsHref) {
     halaqaSession = ((await props(page)).sessions || []).find((row) => row.title === 'SMOKE-Halaqa-Sheet');
 }
 check('the dean finds the planted halaqa session', Boolean(halaqaSession), sessionsHref ?? 'no sessions link for SMOKE-Offering');
+
+// The dean uploads a mushaf in Dhivehi with two page placeholders, and is
+// told so in Dhivehi (slice CT5b). No ayah is imported — see the top.
+const mushafName = `SMOKE-Mushaf-${Date.now()}`;
+await page.goto(`${BASE}/dv/quran/mushafs/create`, { waitUntil: 'networkidle' });
+const created = (await props(page)).t?.flash_mushaf_created;
+await page.fill('#name', mushafName);
+await page.fill('#page_count', '2');
+await page.locator('main button[type=submit]').click();
+await page.waitForURL(/\/quran\/mushafs\/\d+$/, { timeout: 15000 }).catch(() => {});
+const told = await page.getByTestId('flash-success').textContent({ timeout: 10000 }).catch(() => null);
+check('the dean uploads a mushaf in Dhivehi and is told so in Dhivehi', Boolean(created) && told?.trim() === created, `said: ${told ?? 'nothing'}`);
+// The page's script tag still holds the form's props after a client-side
+// visit; a fresh load reads the mushaf's.
+await page.goto(page.url(), { waitUntil: 'networkidle' });
+const uploaded = await props(page);
+const mushafId = uploaded.mushaf?.name === mushafName ? uploaded.mushaf.id : null;
+check('the uploaded mushaf opens', Boolean(mushafId), page.url().replace(BASE, ''));
+check('with the two pages it was given', uploaded.mushaf?.pages_count === 2, `pages_count=${uploaded.mushaf?.pages_count}`);
 
 const screens = [
     '/catalog/courses',
@@ -141,15 +173,32 @@ const screens = [
     '/teach/milestones',
     '/teach/recitations',
     `/teach/quran-sessions/${halaqaSession?.id}`,
+    // Slice CT5b.
+    '/catalog/quran/oversight',
+    ['/catalog/quran', page, { own: ['english_name'] }],
+    ['/catalog/quran?surah=1', page, { own: ['english_name'] }],
+    '/quran/mushafs',
+    '/quran/mushafs/create',
+    `/quran/mushafs/${mushafId}`,
+    // Page 1 with the word-mapping form open; page 2 is the last.
+    [`/quran/mushafs/${mushafId}/pages/1`, page, { open: (viewer) => viewer.locator('main button.mb-4').click() }],
+    `/quran/mushafs/${mushafId}/pages/2`,
+    ['/learn/quran', pupil],
 ];
+
+// A step's name, with no record's id in it.
+const label = (locale, path) => `${locale}${path.replace(/\/\d+(?=\/|$|\?)/g, '/{id}')}`;
 
 for (const locale of ['dv', 'ar']) {
     for (const entry of screens) {
-        const [path, viewer] = Array.isArray(entry) ? entry : [entry, page];
+        const [path, viewer, options = {}] = Array.isArray(entry) ? entry : [entry, page];
         const response = await viewer.goto(`${BASE}/${locale}${path}`, { waitUntil: 'networkidle' });
         if (!(await viewer.locator('main').count())) {
-            check(`${locale}${path.replace(/\/\d+\//, '/{id}/')}: the screen opens`, false, `HTTP ${response?.status()} ${viewer.url().replace(BASE, '')}`);
+            check(`${label(locale, path)}: the screen opens`, false, `HTTP ${response?.status()} ${viewer.url().replace(BASE, '')}`);
             continue;
+        }
+        if (options.open) {
+            await options.open(viewer);
         }
         const found = await viewer.evaluate(() => {
             const main = document.querySelector('main');
@@ -178,10 +227,10 @@ for (const locale of ['dv', 'ar']) {
                 .map((el) => el.outerHTML.slice(0, 90));
             return { dir: document.documentElement.getAttribute('dir'), texts, unnamed };
         });
-        const left = english(found.texts, authorsWords(await props(viewer), locale));
-        check(`${locale}${path.replace(/\/\d+\//, '/{id}/')}: right to left`, found.dir === 'rtl', `dir=${found.dir}`);
-        check(`${locale}${path.replace(/\/\d+\//, '/{id}/')}: nothing in English`, left.length === 0, [...new Set(left)].slice(0, 12).join(' | '));
-        check(`${locale}${path.replace(/\/\d+\//, '/{id}/')}: every field has a name`, found.unnamed.length === 0, found.unnamed.slice(0, 4).join(' | '));
+        const left = english(found.texts, authorsWords(await props(viewer), locale, options.own ?? []));
+        check(`${label(locale, path)}: right to left`, found.dir === 'rtl', `dir=${found.dir}`);
+        check(`${label(locale, path)}: nothing in English`, left.length === 0, [...new Set(left)].slice(0, 12).join(' | '));
+        check(`${label(locale, path)}: every field has a name`, found.unnamed.length === 0, found.unnamed.slice(0, 4).join(' | '));
     }
 }
 
