@@ -1,8 +1,9 @@
 /**
  * Do the course-building screens read in Dhivehi and Arabic? (BACKLOG C19,
- * slices CT1–CT3, STATUS §5ok on.)
+ * slices CT1–CT4, STATUS §5ok on.)
  *
- * The dean opens every translated course screen under /dv and /ar, and the
+ * The dean opens every translated course screen under /dv and /ar — the
+ * system admin the one the website's course list owns, Deleted courses — and the
  * walk lists what is still in Latin letters: every text node in the page's
  * main, and every placeholder, aria-label and title in it. What a screen shows
  * of the data it was sent — a course's title, a question's text, a letter's
@@ -19,12 +20,14 @@
  *
  *   node scripts/smoke/course-screens-language.mjs
  *
- * Environment: SMOKE_BASE_URL, SMOKE_MARKER, SMOKE_PASSWORD, SMOKE_CHROMIUM.
+ * Environment: SMOKE_BASE_URL, SMOKE_MARKER, SMOKE_SUPER_ADMIN, SMOKE_PASSWORD,
+ * SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const DEAN = process.env.SMOKE_MARKER ?? 'headmaster@akuru.edu.mv';
+const SUPER = process.env.SMOKE_SUPER_ADMIN ?? 'superadmin@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const COURSE = 'SMOKE-Course';
 
@@ -83,14 +86,22 @@ function english(strings, allowed) {
     });
 }
 
-const page = await (await browser.newContext()).newPage();
-page.on('pageerror', (e) => problems.push(`page error: ${String(e).slice(0, 140)}`));
-page.on('response', (r) => { if (r.status() >= 500) problems.push(`HTTP ${r.status()} ${r.url()}`); });
-await page.goto(`${BASE}/en/login`, { waitUntil: 'domcontentloaded' });
-await page.fill('input[name="identifier"]', DEAN);
-await page.fill('input[name="password"]', PASSWORD);
-await page.click('button[type=submit]');
-await page.waitForLoadState('networkidle');
+async function signIn(email) {
+    const page = await (await browser.newContext()).newPage();
+    page.on('pageerror', (e) => problems.push(`page error: ${String(e).slice(0, 140)}`));
+    page.on('response', (r) => { if (r.status() >= 500) problems.push(`HTTP ${r.status()} ${r.url()}`); });
+    await page.goto(`${BASE}/en/login`, { waitUntil: 'domcontentloaded' });
+    await page.fill('input[name="identifier"]', email);
+    await page.fill('input[name="password"]', PASSWORD);
+    await page.click('button[type=submit]');
+    await page.waitForLoadState('networkidle');
+    return page;
+}
+
+const page = await signIn(DEAN);
+// Deleted courses is a screen of the website's course list, which only the
+// system admin opens (slice CT4).
+const office = await signIn(SUPER);
 
 await page.goto(`${BASE}/en/catalog/courses`, { waitUntil: 'networkidle' });
 const course = ((await props(page)).rows || []).find((row) => row.title === COURSE);
@@ -106,12 +117,23 @@ const screens = [
     '/catalog/glossary',
     '/catalog/certificates',
     '/catalog/reviews',
+    '/catalog/reports',
+    '/catalog/reports/completions',
+    '/catalog/subjects',
+    '/catalog/levels',
+    '/catalog/audiences',
+    ['/admin/public-site/courses/deleted', office],
 ];
 
 for (const locale of ['dv', 'ar']) {
-    for (const path of screens) {
-        await page.goto(`${BASE}/${locale}${path}`, { waitUntil: 'networkidle' });
-        const found = await page.evaluate(() => {
+    for (const entry of screens) {
+        const [path, viewer] = Array.isArray(entry) ? entry : [entry, page];
+        const response = await viewer.goto(`${BASE}/${locale}${path}`, { waitUntil: 'networkidle' });
+        if (!(await viewer.locator('main').count())) {
+            check(`${locale}${path.replace(/\/\d+\//, '/{id}/')}: the screen opens`, false, `HTTP ${response?.status()} ${viewer.url().replace(BASE, '')}`);
+            continue;
+        }
+        const found = await viewer.evaluate(() => {
             const main = document.querySelector('main');
             const texts = [];
             const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
@@ -138,7 +160,7 @@ for (const locale of ['dv', 'ar']) {
                 .map((el) => el.outerHTML.slice(0, 90));
             return { dir: document.documentElement.getAttribute('dir'), texts, unnamed };
         });
-        const left = english(found.texts, authorsWords(await props(page), locale));
+        const left = english(found.texts, authorsWords(await props(viewer), locale));
         check(`${locale}${path.replace(/\/\d+\//, '/{id}/')}: right to left`, found.dir === 'rtl', `dir=${found.dir}`);
         check(`${locale}${path.replace(/\/\d+\//, '/{id}/')}: nothing in English`, left.length === 0, [...new Set(left)].slice(0, 12).join(' | '));
         check(`${locale}${path.replace(/\/\d+\//, '/{id}/')}: every field has a name`, found.unnamed.length === 0, found.unnamed.slice(0, 4).join(' | '));

@@ -7,6 +7,7 @@ use App\Domains\Courses\Actions\SaveAudienceAction;
 use App\Domains\Courses\Models\Audience;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,6 +22,7 @@ class AudienceController extends Controller
 
         return Inertia::render('Courses/Taxonomy/Audiences', [
             'rows' => app(ListAudiencesAction::class)->execute()->values(),
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -29,7 +31,7 @@ class AudienceController extends Controller
         abort_unless($request->user()?->can('courses.manage'), 403);
         app(SaveAudienceAction::class)->execute($this->validated($request));
 
-        return redirect()->route('catalog.audiences.index')->with('success', 'Audience saved.');
+        return redirect()->route('catalog.audiences.index')->with('success', __('teach.flash_audience_saved'));
     }
 
     public function update(Request $request, Audience $audience): RedirectResponse
@@ -37,7 +39,7 @@ class AudienceController extends Controller
         abort_unless($request->user()?->can('courses.manage'), 403);
         app(SaveAudienceAction::class)->execute($this->validated($request), $audience);
 
-        return redirect()->route('catalog.audiences.index')->with('success', 'Audience updated.');
+        return redirect()->route('catalog.audiences.index')->with('success', __('teach.flash_audience_updated'));
     }
 
     public function export(Request $request): StreamedResponse

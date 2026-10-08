@@ -1126,4 +1126,28 @@ return [
     'prayer_islands_no_match' => 'No island matches.',
     'ft_open_all' => 'Open all',
     'ft_close_all' => 'Close all',
+
+    // Deleted courses, beside the course list it comes from (slice CT4, STATUS §5oq).
+    'courses_deleted_title' => 'Deleted courses',
+    'courses_deleted_back' => '← Manage Courses',
+    'courses_deleted_intro' => 'Courses that were deleted but kept, because something of somebody’s is attached to them. Nothing listed below was removed — the enrolments, attempts, progress and payment records are why each course survived deletion, and they are all still on the record.',
+    'courses_deleted_not_archive' => 'This is not the catalogue’s Archive, which is a status on an ordinary visible course and is changed from the Catalog screen. These courses are gone from every other list.',
+    'courses_deleted_col_course' => 'Course',
+    'courses_deleted_col_holds' => 'What it holds',
+    'courses_deleted_col_deleted' => 'Deleted',
+    'courses_deleted_none' => 'Nothing has been deleted.',
+    'courses_deleted_nothing' => 'nothing',
+    'courses_deleted_restore' => 'Restore',
+    'courses_deleted_restore_confirm' => 'Restore ":title"? It comes back as a draft, not on the public site.',
+    'courses_deleted_footnote' => 'Restoring brings a course back as a draft. Deleting is usually a withdrawal, and a restore that re-listed it publicly would put content back on the website as a side effect of clicking a button.',
+    'courses_deleted_hold_course_enrollments' => 'enrolments',
+    'courses_deleted_hold_attendance_records' => 'attendance records',
+    'courses_deleted_hold_activity_attempts' => 'activity attempts',
+    'courses_deleted_hold_assessment_attempts' => 'assessment attempts',
+    'courses_deleted_hold_student_lesson_progress' => 'progress records',
+    'courses_deleted_hold_issued_certificates' => 'issued certificates',
+    'courses_deleted_hold_payment_items' => 'payment records',
+
+    // A published course keeps its offering when it is deleted (slice CT4, STATUS §5oq).
+    'courses_deleted_hold_course_offerings' => 'offerings',
 ];

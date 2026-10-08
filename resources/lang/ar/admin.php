@@ -1123,4 +1123,28 @@ return [
     'page_prev' => '‹ السابق',
     'page_next' => 'التالي ›',
     'page_of' => 'الصفحة :page من :pages',
+
+    // Deleted courses, beside the course list it comes from (slice CT4, STATUS §5oq).
+    'courses_deleted_title' => 'الدورات المحذوفة',
+    'courses_deleted_back' => '← إدارة الدورات',
+    'courses_deleted_intro' => 'دورات حُذفت لكنها حُفظت، لأن لأحدٍ ما شيئاً مرتبطاً بها. لم يُحذف شيء مما يظهر أدناه: التسجيلات والمحاولات والتقدم وسجلات الدفع هي سبب بقاء كل دورة، وكلها ما زالت محفوظة.',
+    'courses_deleted_not_archive' => 'هذا ليس «الأرشيف» في الفهرس، فذلك حالة لدورة ظاهرة عادية تُغيَّر من شاشة الفهرس. هذه الدورات غابت عن كل قائمة أخرى.',
+    'courses_deleted_col_course' => 'الدورة',
+    'courses_deleted_col_holds' => 'ما تحتويه',
+    'courses_deleted_col_deleted' => 'حُذفت',
+    'courses_deleted_none' => 'لم يُحذف شيء.',
+    'courses_deleted_nothing' => 'لا شيء',
+    'courses_deleted_restore' => 'استعادة',
+    'courses_deleted_restore_confirm' => 'استعادة ":title"؟ ستعود مسودّةً، لا على الموقع العام.',
+    'courses_deleted_footnote' => 'الاستعادة تُعيد الدورة مسودّةً. الحذف عادةً سحبٌ للدورة، والاستعادة التي تعيد نشرها ستُرجع المحتوى إلى الموقع أثراً جانبياً لضغطة زر.',
+    'courses_deleted_hold_course_enrollments' => 'تسجيلات',
+    'courses_deleted_hold_attendance_records' => 'سجلات حضور',
+    'courses_deleted_hold_activity_attempts' => 'محاولات أنشطة',
+    'courses_deleted_hold_assessment_attempts' => 'محاولات تقييمات',
+    'courses_deleted_hold_student_lesson_progress' => 'سجلات تقدم',
+    'courses_deleted_hold_issued_certificates' => 'شهادات صادرة',
+    'courses_deleted_hold_payment_items' => 'سجلات دفع',
+
+    // A published course keeps its offering when it is deleted (slice CT4, STATUS §5oq).
+    'courses_deleted_hold_course_offerings' => 'دفعات',
 ];

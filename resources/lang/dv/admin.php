@@ -1123,4 +1123,28 @@ return [
     'page_prev' => '‹ ކުރީގެ',
     'page_next' => 'ދެން ›',
     'page_of' => ':pages ގެ ތެރެއިން :page ވަނަ ޞަފްޙާ',
+
+    // Deleted courses, beside the course list it comes from (slice CT4, STATUS §5oq).
+    'courses_deleted_title' => 'ފުހެލެވިފައިވާ ކޯސްތައް',
+    'courses_deleted_back' => '← ކޯސްތައް ބެލެހެއްޓުން',
+    'courses_deleted_intro' => 'ފުހެލެވުނަސް ރައްކާކޮށްފައިވާ ކޯސްތައް. ސަބަބަކީ އެ ކޯހާ ގުޅިގެން ބަޔަކުގެ އެއްޗެއް ހުރުމެވެ. ތިރީގައިވާ އެއްވެސް އެއްޗެއް ފުހެލެވިފައެއް ނުވެއެވެ. ރަޖިސްޓްރޭޝަން، މަސައްކަތް، ކުރިއެރުމާއި ފައިސާގެ ރެކޯޑުތައް އެއީ ކޮންމެ ކޯހެއް ރައްކާވި ސަބަބެވެ. އެ ހުރިހާ ރެކޯޑެއް އަދިވެސް ހުރީއެވެ.',
+    'courses_deleted_not_archive' => 'މިއީ ކެޓަލޮގުގެ އާކައިވް ނޫނެވެ. އާކައިވަކީ ފެންނަ ކޯހެއްގެ ހާލަތެކެވެ. އެ ބަދަލުކުރެވެނީ ކެޓަލޮގުގެ ސްކްރީނުންނެވެ. މި ކޯސްތައް އެހެން އެއްވެސް ލިސްޓެއްގައި ނުފެނެއެވެ.',
+    'courses_deleted_col_course' => 'ކޯސް',
+    'courses_deleted_col_holds' => 'އޭގައި ހުރި އެއްޗެހި',
+    'courses_deleted_col_deleted' => 'ފުހެލެވުނު',
+    'courses_deleted_none' => 'އެއްވެސް ކޯހެއް ފުހެލެވިފައެއް ނުވޭ.',
+    'courses_deleted_nothing' => 'އެއްވެސް އެއްޗެއް ނެތް',
+    'courses_deleted_restore' => 'އަނބުރާ ގެންނަވާ',
+    'courses_deleted_restore_confirm' => '":title" އަނބުރާ ގެންނަވާނަންތޯ؟ އެ އަންނާނީ ޑްރާފްޓެއްގެ ގޮތުގައި، ވެބްސައިޓުގައި ނުފެންނަ ގޮތަށް.',
+    'courses_deleted_footnote' => 'އަނބުރާ ގެނެވޭ ކޯހެއް އަންނާނީ ޑްރާފްޓެއްގެ ގޮތުގައެވެ. ފުހެލުމަކީ އާންމުކޮށް ކޯހެއް ނަގާލުމެވެ. އަނބުރާ ގެނައުމުން އެ ކޯސް ވެބްސައިޓަށް އަލުން ލެވުނީނަމަ، ބަޓަނަކަށް ފިތުމުގެ ސަބަބުން ވެބްސައިޓަށް ކޮންޓެންޓް އަނބުރާ ލެވިގެންދާނެއެވެ.',
+    'courses_deleted_hold_course_enrollments' => 'ރަޖިސްޓްރޭޝަން',
+    'courses_deleted_hold_attendance_records' => 'ހާޒިރީގެ ރެކޯޑު',
+    'courses_deleted_hold_activity_attempts' => 'އެކްޓިވިޓީގެ މަސައްކަތް',
+    'courses_deleted_hold_assessment_attempts' => 'އެސެސްމަންޓުގެ މަސައްކަތް',
+    'courses_deleted_hold_student_lesson_progress' => 'ކުރިއެރުމުގެ ރެކޯޑު',
+    'courses_deleted_hold_issued_certificates' => 'ދޫކުރެވުނު ސެޓްފިކެޓް',
+    'courses_deleted_hold_payment_items' => 'ފައިސާގެ ރެކޯޑު',
+
+    // A published course keeps its offering when it is deleted (slice CT4, STATUS §5oq).
+    'courses_deleted_hold_course_offerings' => 'ކްލާސްތައް',
 ];

@@ -7,6 +7,7 @@ use App\Domains\Courses\Actions\SaveCourseSubjectAction;
 use App\Domains\Courses\Models\CourseSubject;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,6 +22,7 @@ class CourseSubjectController extends Controller
 
         return Inertia::render('Courses/Taxonomy/Subjects', [
             'rows' => app(ListCourseSubjectsAction::class)->execute()->values(),
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -29,7 +31,7 @@ class CourseSubjectController extends Controller
         abort_unless($request->user()?->can('courses.manage'), 403);
         app(SaveCourseSubjectAction::class)->execute($this->validated($request));
 
-        return redirect()->route('catalog.subjects.index')->with('success', 'Subject saved.');
+        return redirect()->route('catalog.subjects.index')->with('success', __('teach.flash_subject_saved'));
     }
 
     public function update(Request $request, CourseSubject $subject): RedirectResponse
@@ -37,7 +39,7 @@ class CourseSubjectController extends Controller
         abort_unless($request->user()?->can('courses.manage'), 403);
         app(SaveCourseSubjectAction::class)->execute($this->validated($request), $subject);
 
-        return redirect()->route('catalog.subjects.index')->with('success', 'Subject updated.');
+        return redirect()->route('catalog.subjects.index')->with('success', __('teach.flash_subject_updated'));
     }
 
     public function export(Request $request): StreamedResponse
