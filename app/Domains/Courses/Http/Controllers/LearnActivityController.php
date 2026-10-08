@@ -83,7 +83,7 @@ class LearnActivityController extends Controller
             $access['academic_year_id'],
         );
 
-        return back()->with('success', 'Activity submitted.');
+        return back()->with('success', __('learn.flash_activity_submitted'));
     }
 
     /**
@@ -121,7 +121,7 @@ class LearnActivityController extends Controller
             $access['academic_year_id'],
         );
 
-        return back()->with('success', 'File uploaded.');
+        return back()->with('success', __('learn.flash_file_uploaded'));
     }
 
     public function removeAttachment(Request $request, int $activity, int $media): RedirectResponse
@@ -131,7 +131,7 @@ class LearnActivityController extends Controller
 
         app(AttachAttemptMediaAction::class)->detach($access['activity_id'], $access['enrollment_id'], $media);
 
-        return back()->with('success', 'File removed.');
+        return back()->with('success', __('learn.flash_file_removed'));
     }
 
     private function submissionKind(int $activity): ActivitySubmissionKind

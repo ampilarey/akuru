@@ -222,9 +222,9 @@ if (!activityHref) {
             // which is to say it tested nothing at all. `selection` is the one
             // pattern the engine scores itself, so the right answer must come
             // back scored 1/1.
-            // Wait for the **Try again** control, not for the word "scored".
+            // Wait for the **Try again** control, not for the word "Marked".
             //
-            // On a re-run the previous attempt's "scored · 1/1" is already on
+            // On a re-run the previous attempt's "Marked · 1/1" is already on
             // the page while the retake is being answered, so polling for it
             // matched instantly and the assertions below read the screen
             // mid-flight. The button is the one thing that is absent during an
@@ -242,9 +242,11 @@ if (!activityHref) {
             }
             marked = (await page.innerText('main')).replace(/\s+/g, ' ');
 
+            // The attempt's state is named, not printed as its code: "Marked",
+            // where the page used to say "scored" (slice CT7b).
             check(
                 'the answer is accepted and marked right',
-                marked.includes('scored') && marked.includes('1/1'),
+                marked.includes('Marked · 1/1'),
                 marked.slice(0, 160),
             );
 

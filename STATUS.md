@@ -4983,6 +4983,85 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ox. An activity, an assessment and the lesson player in Dhivehi and Arabic (C19 slice CT7b, 2026-10-08)
+
+The three screens a learner works on: an activity (`Learn/Activity`), an
+assessment (`Learn/Assessment`) and the lesson player (`Player/Show`). They
+read the shell's `learn` book like the rest of the learner's pages (§5ov), and
+were English throughout. The handwriting canvas the activity draws is
+translated with them.
+
+**Phrases.** The `learn` book gains 71 rows:
+- the screens' labels, buttons, retake offers and the assessment's clock;
+- two code families: what an activity asks to be handed in
+  (`submission_kind_`) and an instruction block's tone (`tone_`);
+- seven saved messages: an activity handed in, a file uploaded or removed,
+  an assessment started again or handed in, a lesson completed, and the
+  pronunciation page's recording. CT7a had left that one English.
+
+**Codes named, not printed:**
+- an activity's pattern;
+- an attempt's state — *In progress*, *Awaiting marking*, *Marked*. An
+  activity attempt has an assessment attempt's three states, so it reads the
+  same names;
+- what an upload asks for (it was the server's English label);
+- an instruction's tone;
+- a surah, named in Arabic on a Dhivehi or Arabic page.
+
+**On the screens:**
+- Every field has a name: the typed answer, each pairing, and the written
+  answer.
+- An activity's right answer is shown by its options' labels, not their ids
+  (it printed "a"), in the same way as the assessment's (§5ow).
+- `Assessment` read the CT7a key `marks_not_published` with a longer English;
+  it reads `marks_withheld` now.
+- A quiz embedded by id no longer tells a learner "player engine ships
+  later". It says it cannot be opened from the lesson yet.
+
+**A crash, fixed with it.** A lesson with a flashcard block threw on render
+and opened to an empty page, for every learner, since 2026-09-13
+(KNOWN_ISSUES). The flashcard view now gets its text settings from the block
+around it.
+
+**Tests:** `CourseScreensSpeakThreeLanguagesTest` holds 42 screens in 14
+tests.
+- The three screens and the canvas are held against the `learn` book.
+- The codes test holds the two new families.
+- A new test serves the three screens to a pupil in Dhivehi and hands in,
+  uploads, removes, retakes, completes and records. Each of the seven saved
+  messages comes back in Dhivehi.
+- The test's phrase pattern now needs `t.` to stand alone, because
+  `current.text || ''` had read as a phrase called `text`.
+
+**Fixtures (`SmokeMarkerSeeder`):**
+- SMOKE-Lesson gains an instruction, two flashcards, a quiz embedded by id,
+  and SMOKE-Term as a required glossary term. None is required for
+  completion, so `learn.mjs` still marks the lesson complete.
+- SMOKE-Course gains three activities: an ordering, a typed answer on
+  al-Fātiḥah, and a file upload.
+- `learnerLanguage()` plants two assessments, cleared on every run:
+  - `SMOKE-Lang-Timed`: all five answer controls, a 30-minute clock, and an
+    attachment that never reached the media system;
+  - `SMOKE-Lang-Marked`: auto-marked, with answers shown, a matching question
+    among them.
+
+**Walks:**
+- `course-screens-language.mjs`:
+  - The pupil hands in the typed activity and the marked assessment from
+    the Dhivehi pages and is told so in Dhivehi.
+  - It then opens five activities, both assessments, and the lesson with
+    its term's definition open, in Dhivehi and Arabic.
+  - **297/297.** A second run without a re-seed takes the *Try again* path
+    on both hand-ins and passes too.
+  - With the old player back, it fails both lesson pages on
+    `ReferenceError: textProps is not defined`.
+  - Its own rule changed: a bare `{id, label}` is an option, an item or a
+    target the author wrote, so its label is the author's. It had counted
+    every `label` as a code.
+- `learn.mjs`, `assess.mjs` and `arabic.mjs` read *Marked* and *In
+  progress*. `arabic.mjs` reads *Reading* too, and had failed on it since
+  CT6a.
+
 ## 5ow. A matching question keeps its pairs, and a marked one shows them (slice MQ1, 2026-10-08)
 
 Found while scoping CT7b, the assessment player's translation.

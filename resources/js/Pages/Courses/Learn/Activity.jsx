@@ -39,18 +39,21 @@ function isMapping(activity) {
  * SPEC §36 asks the teacher to "play audio/voice submissions" and "view
  * uploaded files". Neither was possible, because a teacher-marked activity had
  * no way to take a file at all: `submission_kind` was stored and never read,
- * and this page rendered a `<textarea>` whichever kind the author chose.
+ * and this page rendered a text box whichever kind the author chose.
  *
  * The upload posts straight to the server rather than riding along in
  * `answers`, so the media id is minted where the file is stored and the client
  * never gets to name one of its own.
  */
-function Attachments({ activity, attachments, submitted }) {
+function Attachments({ activity, attachments, submitted, t }) {
     // A refusal the student cannot see is worse than one they can act on: the
     // browser walk for this slice uploaded a file the MIME allowlist rejected,
     // and the page answered "Nothing uploaded yet" with no reason given. The
     // guard was right and silent, which is indistinguishable from broken.
     const error = usePage().props.errors?.file;
+    // What the author asked for, named in the page's language; the server's
+    // English label is the last resort, for a kind this book does not know.
+    const kind = t[`submission_kind_${activity.submission?.kind}`] || activity.submission?.label;
 
     const upload = (file) => {
         if (!file) {
@@ -63,32 +66,32 @@ function Attachments({ activity, attachments, submitted }) {
 
     return (
         <section className="mb-4 rounded-lg border bg-white p-4">
-            <p className="mb-2 text-sm font-medium">{activity.submission?.label || 'Upload'}</p>
+            <p className="mb-2 text-sm font-medium">{kind || t.upload || 'Upload'}</p>
             {/* SPEC §51.6 lists "Handwriting canvas" and "Handwriting image
                 upload" as two ways to hand in the same thing. The upload half
                 shipped with §36; this is the other, and it posts through the
                 very same endpoint — the canvas just exports a PNG, so there is
                 one upload path and one MIME allowlist (rule 11). */}
             {!submitted && activity.submission?.is_canvas && (
-                <HandwritingCanvas onExport={upload} />
+                <HandwritingCanvas onExport={upload} t={t} />
             )}
             {!submitted && !activity.submission?.is_canvas && (
                 <input
                     type="file"
                     className="form-input mb-3"
                     accept={activity.submission?.accept || undefined}
-                    aria-label={activity.submission?.label || 'Upload a file'}
+                    aria-label={kind || t.upload_a_file || 'Upload a file'}
                     onChange={(e) => upload(e.target.files?.[0])}
                 />
             )}
             {error && <p className="mb-3 rounded border border-red-300 bg-red-50 p-2 text-sm text-red-800">{error}</p>}
-            {attachments.length === 0 && <p className="text-sm text-gray-500">Nothing uploaded yet.</p>}
+            {attachments.length === 0 && <p className="text-sm text-gray-500">{t.nothing_uploaded || 'Nothing uploaded yet.'}</p>}
             <ul className="space-y-2">
                 {attachments.map((file) => (
                     <li key={file.id} className="rounded border p-2 text-sm">
                         <div className="flex flex-wrap items-center justify-between gap-2">
                             <a className="text-[#7C2D37] hover:underline" href={`/learn/media/${file.id}`}>
-                                {file.original_name || `File ${file.id}`}
+                                {file.original_name || (t.file_number || 'File :id').replace(':id', file.id)}
                             </a>
                             {!submitted && (
                                 <button
@@ -99,7 +102,7 @@ function Attachments({ activity, attachments, submitted }) {
                                         { preserveScroll: true },
                                     )}
                                 >
-                                    Remove
+                                    {t.remove || 'Remove'}
                                 </button>
                             )}
                         </div>
@@ -107,7 +110,7 @@ function Attachments({ activity, attachments, submitted }) {
                             <audio className="mt-2 w-full" controls preload="none" src={`/learn/media/${file.id}`} />
                         )}
                         {(file.mime || '').startsWith('image/') && (
-                            <img className="mt-2 max-h-64 rounded" src={`/learn/media/${file.id}`} alt={file.original_name || 'Upload'} />
+                            <img className="mt-2 max-h-64 rounded" src={`/learn/media/${file.id}`} alt={file.original_name || t.upload || 'Upload'} />
                         )}
                     </li>
                 ))}
@@ -118,6 +121,7 @@ function Attachments({ activity, attachments, submitted }) {
 
 export default function Activity({ activity, enrollment, attempt, retake = null, teach = {} }) {
     const t = usePage().props.i18n?.learn || {};
+    const locale = usePage().props.locale || 'en';
     const [answers, setAnswers] = useState(() => initialAnswers(activity, attempt));
 
     /**
@@ -162,6 +166,17 @@ export default function Activity({ activity, enrollment, attempt, retake = null,
         return (answers.order || []).map((id) => byId[id]).filter(Boolean);
     }, [activity.data.items, answers.order]);
 
+    // The answer key names options and items by id; a pupil is shown what
+    // they read, not "a" or "2".
+    const optionLabel = (id) => (activity.data.options || []).find((row) => String(row.id) === String(id))?.label ?? id;
+    const itemLabel = (id) => (activity.data.items || []).find((row) => String(row.id) === String(id))?.label ?? id;
+    // A surah is named in Arabic on a Dhivehi or Arabic page (slice CT5b).
+    const surah = activity.quran?.surah;
+    const surahName = surah ? ((locale === 'en' ? surah.english_name : surah.arabic_name) || surah.english_name) : '';
+    const goesLeft = (remaining) => (remaining === 1
+        ? (t.retake_try_one || 'You can try this again — 1 go left.')
+        : (t.retake_try_many || 'You can try this again — :count goes left.').replace(':count', remaining));
+
     const move = (index, direction) => {
         const next = [...(answers.order || [])];
         const swap = index + direction;
@@ -186,17 +201,19 @@ export default function Activity({ activity, enrollment, attempt, retake = null,
 
     return (
         <AppShell title={activity.title}>
+            {/* The pattern and the attempt's state are codes; an activity
+                attempt has the same three states as an assessment's. */}
             <p className="mb-4 text-sm text-gray-600">
                 <a className="text-[#7C2D37] hover:underline" href={`/learn/courses/${enrollment.course_id}`}>{t.course || 'Course'}</a>
                 {' · '}
-                {activity.pattern}
-                {attempt?.status ? ` · ${attempt.status}` : ''}
+                {t[`pattern_${activity.pattern}`] || activity.pattern}
+                {attempt?.status ? ` · ${t[`assessment_status_${attempt.status}`] || attempt.status}` : ''}
                 {attempt?.score != null ? ` · ${attempt.score}/${attempt.max_score}` : ''}
             </p>
             {activity.quran && (
                 <div className="mb-4 rounded-lg border bg-white p-4">
                     <p className="mb-2 text-sm text-gray-600">
-                        {activity.quran.surah.english_name} {activity.quran.ayah_start}–{activity.quran.ayah_end}
+                        {surahName} {activity.quran.ayah_start}–{activity.quran.ayah_end}
                     </p>
                     <div className="space-y-2 text-lg" dir="rtl">
                         {(activity.quran.ayahs || []).map((ayah) => (
@@ -227,6 +244,7 @@ export default function Activity({ activity, enrollment, attempt, retake = null,
             {activity.pattern === 'text_input' && (
                 <input
                     className="form-input mb-4"
+                    aria-label={t.your_answer || 'Your answer'}
                     value={answers.text || ''}
                     onChange={(e) => setAnswers({ ...answers, text: e.target.value })}
                     disabled={submitted}
@@ -239,6 +257,7 @@ export default function Activity({ activity, enrollment, attempt, retake = null,
                             <span className="min-w-40">{item.label}</span>
                             <select
                                 className="form-input"
+                                aria-label={(t.match_for || 'Match for :item').replace(':item', () => item.label)}
                                 disabled={submitted}
                                 value={(answers.pairs || {})[item.id] || ''}
                                 onChange={(e) => setAnswers({
@@ -246,7 +265,7 @@ export default function Activity({ activity, enrollment, attempt, retake = null,
                                     pairs: { ...(answers.pairs || {}), [item.id]: e.target.value },
                                 })}
                             >
-                                <option value="">{t.choose || '—'}</option>
+                                <option value="">—</option>
                                 {activity.data.targets.map((target) => (
                                     <option key={target.id} value={target.id}>{target.label}</option>
                                 ))}
@@ -262,8 +281,8 @@ export default function Activity({ activity, enrollment, attempt, retake = null,
                             <span>{item.label}</span>
                             {!submitted && (
                                 <span className="flex gap-2">
-                                    <button type="button" className="btn-secondary" onClick={() => move(index, -1)}>Up</button>
-                                    <button type="button" className="btn-secondary" onClick={() => move(index, 1)}>Down</button>
+                                    <button type="button" className="btn-secondary" onClick={() => move(index, -1)}>{t.move_up || 'Up'}</button>
+                                    <button type="button" className="btn-secondary" onClick={() => move(index, 1)}>{t.move_down || 'Down'}</button>
                                 </span>
                             )}
                         </li>
@@ -275,6 +294,7 @@ export default function Activity({ activity, enrollment, attempt, retake = null,
                     {(activity.submission?.accepts_text ?? true) && (
                         <textarea
                             className="form-input mb-4 min-h-32"
+                            aria-label={t.your_answer || 'Your answer'}
                             value={answers.text || ''}
                             onChange={(e) => setAnswers({ ...answers, text: e.target.value })}
                             disabled={submitted}
@@ -293,29 +313,28 @@ export default function Activity({ activity, enrollment, attempt, retake = null,
                             activity={activity}
                             attachments={attempt?.answers?.attachments || []}
                             submitted={submitted}
+                            t={t}
                         />
                     )}
                 </>
             )}
             {activity.data.correct_ids && (
-                <p className="mb-3 text-sm text-green-700">Correct: {(activity.data.correct_ids || []).join(', ')}</p>
+                <p className="mb-3 text-sm text-green-700">{t.correct_answer || 'Correct answer'}: {activity.data.correct_ids.map(optionLabel).join(', ')}</p>
             )}
             {activity.data.acceptable && (
-                <p className="mb-3 text-sm text-green-700">Accepted: {(activity.data.acceptable || []).join(', ')}</p>
+                <p className="mb-3 text-sm text-green-700">{t.accepted_answers || 'Accepted answers'}: {activity.data.acceptable.join(', ')}</p>
             )}
             {activity.data.correct_order && (
-                <p className="mb-3 text-sm text-green-700">Order: {(activity.data.correct_order || []).join(', ')}</p>
+                <p className="mb-3 text-sm text-green-700">{t.correct_order || 'Correct order'}: {activity.data.correct_order.map(itemLabel).join(', ')}</p>
             )}
             {attempt?.feedback && (
-                <p className="mb-3 rounded-lg border bg-white p-3 text-sm">Teacher feedback: {attempt.feedback}</p>
+                <p className="mb-3 rounded-lg border bg-white p-3 text-sm">{t.teacher_feedback || 'Teacher feedback'}: {attempt.feedback}</p>
             )}
             <RubricResult scores={attempt?.rubric_scores} t={teach} />
             {canRetake && (
                 <div className="mb-3 rounded-lg border bg-white p-3 text-sm">
                     <p className="mb-2 text-gray-700">
-                        {retake.remaining === null
-                            ? 'You can try this again.'
-                            : `You can try this again — ${retake.remaining} ${retake.remaining === 1 ? 'go' : 'goes'} left.`}
+                        {retake.remaining === null ? (t.retake_try_open || 'You can try this again.') : goesLeft(retake.remaining)}
                     </p>
                     <button
                         type="button"
@@ -330,7 +349,7 @@ export default function Activity({ activity, enrollment, attempt, retake = null,
                 </div>
             )}
             {finished && !retrying && retake && !retake.can_retake && retake.remaining === 0 && (
-                <p className="mb-3 text-sm text-gray-500">No goes left on this one.</p>
+                <p className="mb-3 text-sm text-gray-500">{t.retake_none || 'No goes left on this one.'}</p>
             )}
             <div className="flex flex-wrap gap-3">
                 <button
@@ -339,7 +358,7 @@ export default function Activity({ activity, enrollment, attempt, retake = null,
                     disabled={submitted}
                     onClick={() => router.post(`/learn/activities/${activity.id}/autosave`, { answers }, { preserveScroll: true })}
                 >
-                    {t.save || 'Save draft'}
+                    {t.save_draft || 'Save draft'}
                 </button>
                 <button
                     type="button"

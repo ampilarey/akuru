@@ -128,7 +128,7 @@ class LearnAssessmentController extends Controller
             $access['classroom_id'],
         );
 
-        return back()->with('success', 'Started again.');
+        return back()->with('success', __('learn.flash_started_again'));
     }
 
     public function autosave(Request $request, int $assessment): RedirectResponse
@@ -156,7 +156,7 @@ class LearnAssessmentController extends Controller
             $access['student_id'],
         );
 
-        return back()->with('success', 'Assessment submitted.');
+        return back()->with('success', __('learn.flash_assessment_submitted'));
     }
 
     /**

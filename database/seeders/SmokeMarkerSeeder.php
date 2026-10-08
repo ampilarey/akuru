@@ -5,12 +5,17 @@ namespace Database\Seeders;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Commerce\Actions\CreditWalletAction;
+use App\Domains\Courses\Actions\AttachAssessmentQuestionAction;
+use App\Domains\Courses\Actions\AttachLessonGlossaryItemAction;
 use App\Domains\Courses\Actions\PublishLessonAction;
 use App\Domains\Courses\Actions\SaveActivityAction;
+use App\Domains\Courses\Actions\SaveAssessmentAction;
 use App\Domains\Courses\Actions\SaveContentBlockAction;
+use App\Domains\Courses\Actions\SaveQuestionAction;
 use App\Domains\Courses\Components\Clubs\Actions\AddClubMemberAction;
 use App\Domains\Courses\Models\Lesson;
 use App\Domains\People\Models\StaffProfile;
+use App\Support\Contracts\QuranReferenceReader;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -94,6 +99,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->awards($year, $studentId);
         $this->catalog();
         $this->learner($admin);
+        $this->learnerLanguage($admin);
         $this->learnerIdentities($admin);
         $this->webParent();
         $this->accountHolder();
@@ -528,6 +534,32 @@ class SmokeMarkerSeeder extends Seeder
             'created_by' => $admin?->id,
         ]);
 
+        // The lesson player's other words (slice CT7b): an instruction, a set
+        // of flashcards and a quiz named by id, and SMOKE-Term on the lesson,
+        // so the player draws its glossary. None is required, so marking the
+        // lesson complete works exactly as `learn.mjs` expects. A flashcard
+        // block threw on render until CT7b, and nothing planted one.
+        app(SaveContentBlockAction::class)->execute([
+            'lesson_id' => $lessonId, 'type' => 'instruction', 'position' => 2, 'title' => 'SMOKE-Tip',
+            'data' => ['tone' => 'tip', 'body' => 'SMOKE-Tip-Body'], 'is_required' => false, 'created_by' => $admin?->id,
+        ]);
+        app(SaveContentBlockAction::class)->execute([
+            'lesson_id' => $lessonId, 'type' => 'flashcard', 'position' => 3, 'title' => 'SMOKE-Cards',
+            'data' => ['cards' => [
+                ['front' => 'SMOKE-Front-1', 'back' => 'SMOKE-Back-1'],
+                ['front' => 'SMOKE-Front-2', 'back' => 'SMOKE-Back-2'],
+            ]],
+            'is_required' => false, 'created_by' => $admin?->id,
+        ]);
+        app(SaveContentBlockAction::class)->execute([
+            'lesson_id' => $lessonId, 'type' => 'quiz_embed', 'position' => 4, 'title' => 'SMOKE-Quiz-Block',
+            'data' => ['quiz_id' => 1], 'is_required' => false, 'created_by' => $admin?->id,
+        ]);
+        $termId = (int) DB::table('glossary_items')->where('term', 'SMOKE-Term')->value('id');
+        if ($termId > 0) {
+            app(AttachLessonGlossaryItemAction::class)->execute(Lesson::query()->findOrFail($lessonId), $termId, true);
+        }
+
         app(PublishLessonAction::class)->execute(Lesson::query()->findOrFail($lessonId), $admin?->id);
 
         // One activity, so the walk can go past reading and actually answer
@@ -593,6 +625,40 @@ class SmokeMarkerSeeder extends Seeder
             'created_by' => $admin?->id,
         ]);
 
+        // Three more patterns for the language walk (slice CT7b): an ordering,
+        // a typed answer on a Qur'an passage, and a file to hand in. The walk
+        // opens the ordering and the upload, and hands the typed answer in,
+        // in Dhivehi; once it is marked, it shows its accepted answers.
+        // Planted after the three above, so `learn.mjs` still opens
+        // SMOKE-Activity first.
+        foreach ([
+            ['SMOKE-Lang-Order', 'arrange', 1, [
+                'prompt' => 'SMOKE-Order-Question',
+                'items' => [['id' => '1', 'label' => 'SMOKE-First'], ['id' => '2', 'label' => 'SMOKE-Second']],
+                'correct_order' => ['1', '2'],
+            ], []],
+            ['SMOKE-Lang-Type', 'text_input', 1, [
+                'prompt' => 'SMOKE-Type-Question',
+                'acceptable' => ['SMOKE-Answer'],
+            ], ['show_correct_answer' => true] + (app(QuranReferenceReader::class)->findSurah(1) !== null ? ['surah_id' => 1] : [])],
+            ['SMOKE-Lang-Upload', 'teacher_marked', 5, [
+                'prompt' => 'SMOKE-Upload-Question',
+                'submission_kind' => 'file',
+            ], []],
+        ] as [$title, $pattern, $max, $data, $settings]) {
+            app(SaveActivityAction::class)->execute([
+                'course_id' => $courseId,
+                'course_module_id' => $moduleId,
+                'lesson_id' => $lessonId,
+                'title' => $title,
+                'pattern' => $pattern,
+                'max_score' => $max,
+                'data' => $data,
+                'settings' => $settings,
+                'created_by' => $admin?->id,
+            ]);
+        }
+
         // Whose course it is (C16 slice N6): teacher@'s instructor profile is
         // assigned to SMOKE-Course, so `review.mjs` can show the teacher the
         // queue narrowed to their own course rather than a 403.
@@ -654,6 +720,75 @@ class SmokeMarkerSeeder extends Seeder
             'created_by_user_id' => $admin?->id,
             'created_at' => now(), 'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * Two assessments on SMOKE-Course for the language walk (slice CT7b,
+     * STATUS §5ox). `SMOKE-Lang-Timed` carries every answer control, a time
+     * limit and an attachment that never reached the media system; the walk
+     * opens it and leaves it in progress. `SMOKE-Lang-Marked` is auto-marked
+     * only, with its answers shown, a matching question among them: the walk
+     * hands it in, in Dhivehi, and reads the marked attempt back. Cleared and
+     * planted again on every run, attempts first.
+     */
+    private function learnerLanguage(?object $admin): void
+    {
+        $courseId = (int) DB::table('courses')->where('title', 'SMOKE-Course')->value('id');
+        if ($courseId === 0) {
+            return;
+        }
+
+        $assessmentIds = DB::table('assessments')->whereIn('title', ['SMOKE-Lang-Timed', 'SMOKE-Lang-Marked'])->pluck('id');
+        $questionIds = DB::table('questions')->where('question_text', 'like', 'SMOKE-Lang-Q%')->pluck('id');
+        DB::table('assessment_attempts')->whereIn('assessment_id', $assessmentIds)->delete();
+        DB::table('assessment_questions')->whereIn('assessment_id', $assessmentIds)->orWhereIn('question_id', $questionIds)->delete();
+        DB::table('assessments')->whereIn('id', $assessmentIds)->delete();
+        DB::table('questions')->whereIn('id', $questionIds)->delete();
+
+        $question = fn (array $data) => app(SaveQuestionAction::class)->execute($data + ['course_id' => $courseId, 'created_by' => $admin?->id]);
+        $choice = $question([
+            'question_type' => 'mcq_single', 'question_text' => 'SMOKE-Lang-Q1: which is a sun letter?',
+            'options' => [['id' => 'a', 'label' => 'SMOKE-Sun'], ['id' => 'b', 'label' => 'SMOKE-Moon']], 'correct_answer' => ['a'],
+        ]);
+        $typed = $question([
+            'question_type' => 'short_answer', 'question_text' => 'SMOKE-Lang-Q2: type the word.',
+            'options' => [], 'correct_answer' => ['SMOKE-Word'],
+        ]);
+        $order = $question([
+            'question_type' => 'arrange', 'question_text' => 'SMOKE-Lang-Q3: put these in order.',
+            'options' => [['id' => '1', 'label' => 'SMOKE-One'], ['id' => '2', 'label' => 'SMOKE-Two']], 'correct_answer' => ['1', '2'],
+        ]);
+        // As the bank's form sends it, so the pairing is kept (slice MQ1).
+        $match = $question([
+            'question_type' => 'matching', 'question_text' => 'SMOKE-Lang-Q4: match the letters.',
+            'options' => [['id' => '1', 'label' => 'SMOKE-Alif'], ['id' => '2', 'label' => 'SMOKE-Baa']],
+            'correct_answer' => json_encode(['1' => 'SMOKE-A', '2' => 'SMOKE-B']),
+        ]);
+        // A legacy attachment: a path that never entered the media system,
+        // which the player names as unavailable.
+        $essay = $question([
+            'question_type' => 'essay', 'question_text' => 'SMOKE-Lang-Q5: write a sentence.',
+            'attachments' => [['path' => 'smoke/missing.png', 'kind' => 'image', 'original_name' => 'SMOKE-Missing']],
+        ]);
+
+        $timed = app(SaveAssessmentAction::class)->execute([
+            'course_id' => $courseId, 'title' => 'SMOKE-Lang-Timed', 'status' => 'published', 'assessment_type' => 'lesson_quiz',
+            'time_limit_minutes' => 30, 'created_by' => $admin?->id,
+        ]);
+        foreach ([$choice, $typed, $order, $match, $essay] as $position => $row) {
+            app(AttachAssessmentQuestionAction::class)->execute(['assessment_id' => $timed->id, 'question_id' => $row->id, 'position' => $position + 1]);
+        }
+
+        $marked = app(SaveAssessmentAction::class)->execute([
+            'course_id' => $courseId, 'title' => 'SMOKE-Lang-Marked', 'status' => 'published', 'assessment_type' => 'module_test',
+            'show_correct_answers' => true, 'retake_limit' => 5, 'created_by' => $admin?->id,
+        ]);
+        foreach ([$choice, $typed, $order, $match] as $position => $row) {
+            // Not required, so the walk can hand it in as it stands.
+            app(AttachAssessmentQuestionAction::class)->execute([
+                'assessment_id' => $marked->id, 'question_id' => $row->id, 'position' => $position + 1, 'is_required' => false,
+            ]);
+        }
     }
 
     /**

@@ -255,10 +255,12 @@ await pairing.nth(1).selectOption('Baa');
 await student.locator('button:has-text("Submit")').click();
 check('submitting is acknowledged', await settles(student, 'Assessment submitted.'), (await text(student)).slice(0, 160));
 const scored = await text(student);
-const mark = scored.match(/scored · (\d+\/\d+)/)?.[1] ?? null;
-check('and the engine scores it 3/3 with no teacher', /scored/.test(scored) && mark === '3/3', mark ?? scored.slice(0, 160));
+// The attempt's state is named, not printed as its code (slice CT7b): a
+// marked attempt reads "Marked", an open one "In progress".
+const mark = scored.match(/Marked · (\d+\/\d+)/)?.[1] ?? null;
+check('and the engine scores it 3/3 with no teacher', mark === '3/3', mark ?? scored.slice(0, 160));
 // Answers shown: the pairs read back by name. This page threw on a pairing.
-check('and, answers shown, reads the pairs back', scored.includes('A = Alif, B = Baa'), scored.match(/Correct:[^.]*SMOKE-Q3|A = [^,]*/)?.[0] ?? scored.slice(0, 200));
+check('and, answers shown, reads the pairs back', scored.includes('A = Alif, B = Baa'), scored.match(/A = [^,]*/)?.[0] ?? scored.slice(0, 200));
 
 // 5. the author edits the first question; the attempt keeps its snapshot
 await author.goto(`${BASE}/en/catalog/questions`, { waitUntil: 'networkidle' });
@@ -269,14 +271,14 @@ check('the author edits the question in the bank', await settles(author, 'SMOKE-
 
 await student.reload({ waitUntil: 'networkidle' });
 const after = await text(student);
-const markAfter = after.match(/scored · (\d+\/\d+)/)?.[1] ?? null;
+const markAfter = after.match(/Marked · (\d+\/\d+)/)?.[1] ?? null;
 check('the student\'s attempt still shows the question they answered, at the same mark', after.includes(Q1) && !after.includes('(edited)') && markAfter === mark, `${after.match(/SMOKE-Q1[^?]*\?/)?.[0] ?? after.slice(0, 120)} · ${markAfter}`);
 
 // 6. try again, where allowed
 const again = student.locator('button:has-text("Try again")');
 if (await again.count()) {
     await again.click();
-    check('a second attempt starts unscored', await settles(student, 'Started again.') && /in_progress/.test(await text(student)) && !/scored ·/.test(await text(student)), (await text(student)).slice(0, 160));
+    check('a second attempt starts unscored', await settles(student, 'Started again.') && /In progress/.test(await text(student)) && !/Marked ·/.test(await text(student)), (await text(student)).slice(0, 160));
 } else {
     check('a second attempt starts unscored', false, 'no Try again — retake_limit reached or the control is missing');
 }

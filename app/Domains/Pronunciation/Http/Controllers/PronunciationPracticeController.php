@@ -57,6 +57,6 @@ class PronunciationPracticeController extends Controller
             $request->file('audio'),
         );
 
-        return back()->with('success', 'Recording submitted — your teacher will hear it.');
+        return back()->with('success', __('learn.flash_recording_submitted'));
     }
 }

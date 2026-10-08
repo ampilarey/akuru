@@ -25,7 +25,7 @@ import { useEffect, useRef, useState } from 'react';
  * This is a drawing surface, not an engine: nothing here knows what an Arabic
  * letter is.
  */
-export default function HandwritingCanvas({ onExport, disabled = false, rtl = true }) {
+export default function HandwritingCanvas({ onExport, disabled = false, rtl = true, t = {} }) {
     const canvasRef = useRef(null);
     const drawingRef = useRef(false);
     const dirtyRef = useRef(false);
@@ -136,16 +136,16 @@ export default function HandwritingCanvas({ onExport, disabled = false, rtl = tr
                 onPointerUp={end}
                 onPointerLeave={end}
                 onPointerCancel={end}
-                aria-label="Handwriting canvas"
+                aria-label={t.canvas_label || 'Handwriting canvas'}
             />
             <div className="mt-2 flex flex-wrap gap-3">
                 <button type="button" className="btn-secondary" onClick={clear} disabled={disabled || !dirty}>
-                    Clear
+                    {t.canvas_clear || 'Clear'}
                 </button>
                 <button type="button" className="btn-primary" onClick={save} disabled={disabled || !dirty}>
-                    Save handwriting
+                    {t.canvas_save || 'Save handwriting'}
                 </button>
-                {!dirty && <span className="self-center text-xs text-gray-500">Write in the box above.</span>}
+                {!dirty && <span className="self-center text-xs text-gray-500">{t.canvas_hint || 'Write in the box above.'}</span>}
             </div>
         </div>
     );

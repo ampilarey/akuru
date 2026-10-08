@@ -1,6 +1,6 @@
 /**
  * Do the course-building screens read in Dhivehi and Arabic? (BACKLOG C19,
- * slices CT1–CT7a, STATUS §5ok on.)
+ * slices CT1–CT7b, STATUS §5ok on.)
  *
  * The dean opens every translated course screen under /dv and /ar — the
  * system admin the one the website's course list owns, Deleted courses, and
@@ -24,6 +24,12 @@
  * It never imports an ayah — with no mushaf active, every mushaf's ayahs are
  * read as the Qur'an, so walk-made text must not exist. `SmokeMarkerSeeder`
  * removes what a run uploaded.
+ *
+ * The pupil hands in a typed activity and a marked assessment from the
+ * Dhivehi pages and is told so in Dhivehi (slice CT7b); the walk then opens
+ * an activity of every pattern the seeder plants, both assessments — one left
+ * in progress against its clock, one marked with its answers shown — and the
+ * lesson, with its glossary term opened.
  *
  *   node scripts/smoke/course-screens-language.mjs
  *
@@ -73,8 +79,13 @@ const props = (page) => page.evaluate(() => JSON.parse(document.querySelector('s
 // Taken for the author's, it excused a raw "selection" and "teacher_marked"
 // on the learner's course page and on the activities screen, and both passed
 // (slice CT7a).
+//
+// `label` is a code's English name almost everywhere it is sent — a submission
+// kind's, a decision's. An option, an item or a target is the exception: a
+// bare `{id, label}` the author wrote, and its label is theirs (slice CT7b).
 function authorsWords(value, locale, own = [], key = '', out = [], owner = {}) {
-    if ((CODE_KEYS.has(key) && !own.includes(key)) || (key.endsWith('_en') && owner[key.replace(/_en$/, `_${locale}`)])
+    const authorsLabel = key === 'label' && 'id' in owner && Object.keys(owner).every((k) => k === 'id' || k === 'label');
+    if ((CODE_KEYS.has(key) && !own.includes(key) && !authorsLabel) || (key.endsWith('_en') && owner[key.replace(/_en$/, `_${locale}`)])
         || (key === 'activity_type' && value === owner.pattern)) {
         return out;
     }
@@ -116,6 +127,18 @@ async function signIn(email) {
     await page.click('button[type=submit]');
     await page.waitForLoadState('networkidle');
     return page;
+}
+
+// The flash a save leaves, once it reads `expected` — or what it read when the
+// wait ran out. A second save on the same page leaves its own text, so the wait
+// is on the words, not on the element.
+async function flashReads(viewer, expected) {
+    await viewer.waitForFunction(
+        (want) => document.querySelector('[data-testid="flash-success"]')?.textContent?.trim() === want,
+        expected,
+        { timeout: 10000 },
+    ).catch(() => {});
+    return (await viewer.getByTestId('flash-success').textContent({ timeout: 1000 }).catch(() => null))?.trim() ?? null;
 }
 
 const page = await signIn(DEAN);
@@ -166,6 +189,42 @@ await page.goto(`${BASE}/en/academics/clubs`, { waitUntil: 'networkidle' });
 const club = ((await props(page)).clubs || []).find((row) => row.title === 'SMOKE-Club');
 check('the dean finds SMOKE-Club among the clubs', Boolean(club));
 
+// The pupil's activities, assessments and lesson on SMOKE-Course (slice CT7b),
+// found the way the pupil finds them: on the course page.
+await pupil.goto(`${BASE}/en/learn/courses/${course?.id}`, { waitUntil: 'networkidle' });
+const learnerCourse = await props(pupil);
+const activityId = (title) => (learnerCourse.activities || []).find((row) => row.title === title)?.id;
+const assessmentId = (title) => (learnerCourse.assessments || []).find((row) => row.title === title)?.id;
+const lessonId = (learnerCourse.modules || []).flatMap((row) => row.lessons || []).find((row) => row.title === 'SMOKE-Lesson')?.id;
+const pupilActivities = ['SMOKE-Activity', 'SMOKE-Review-Activity', 'SMOKE-Lang-Order', 'SMOKE-Lang-Type', 'SMOKE-Lang-Upload'].map(activityId);
+check('the pupil finds the seeded activities, both assessments and the lesson', pupilActivities.every(Boolean) && assessmentId('SMOKE-Lang-Timed') && assessmentId('SMOKE-Lang-Marked') && lessonId,
+    JSON.stringify({ activities: pupilActivities, timed: assessmentId('SMOKE-Lang-Timed'), marked: assessmentId('SMOKE-Lang-Marked'), lesson: lessonId }));
+
+// The typed activity, handed in from the Dhivehi page. A run before this one
+// left it marked, so a second go is taken first.
+await pupil.goto(`${BASE}/dv/learn/activities/${activityId('SMOKE-Lang-Type')}`, { waitUntil: 'networkidle' });
+const learn = (await props(pupil)).i18n?.learn ?? {};
+const again = pupil.getByRole('button', { name: learn.try_again });
+if (await again.count()) {
+    await again.click();
+}
+await pupil.getByLabel(learn.your_answer).fill('SMOKE-Answer');
+await pupil.getByRole('button', { name: learn.submit, exact: true }).click();
+const activityTold = await flashReads(pupil, learn.flash_activity_submitted);
+check('the pupil hands in an activity in Dhivehi and is told so in Dhivehi', Boolean(learn.flash_activity_submitted) && activityTold === learn.flash_activity_submitted, `said: ${activityTold ?? 'nothing'}`);
+
+// The marked assessment, the same way: a second go if one was taken already,
+// and handed in as it stands — its questions are not required.
+await pupil.goto(`${BASE}/dv/learn/assessments/${assessmentId('SMOKE-Lang-Marked')}`, { waitUntil: 'networkidle' });
+const sitAgain = pupil.getByRole('button', { name: learn.try_again });
+if (await sitAgain.count()) {
+    await sitAgain.click();
+    await flashReads(pupil, learn.flash_started_again);
+}
+await pupil.getByRole('button', { name: learn.submit, exact: true }).click();
+const assessmentTold = await flashReads(pupil, learn.flash_assessment_submitted);
+check('the pupil hands in an assessment in Dhivehi and is told so in Dhivehi', Boolean(learn.flash_assessment_submitted) && assessmentTold === learn.flash_assessment_submitted, `said: ${assessmentTold ?? 'nothing'}`);
+
 const screens = [
     '/catalog/courses',
     `/catalog/courses/${course?.id}/outline`,
@@ -211,6 +270,13 @@ const screens = [
     ['/learn/schedule', pupil],
     ['/learn/arabic-report', pupil],
     ['/learn/pronounce', pupil],
+    // Slice CT7b: an activity of every planted pattern, the assessment left in
+    // progress and the marked one, and the lesson with its term's definition
+    // open.
+    ...pupilActivities.map((id) => [`/learn/activities/${id}`, pupil]),
+    [`/learn/assessments/${assessmentId('SMOKE-Lang-Timed')}`, pupil],
+    [`/learn/assessments/${assessmentId('SMOKE-Lang-Marked')}`, pupil],
+    [`/learn/lessons/${lessonId}`, pupil, { open: (viewer) => viewer.locator('main button.glossary-term').first().click() }],
 ];
 
 // A step's name, with no record's id in it.

@@ -157,6 +157,27 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the lesson player's language walk (2026-10-08)
+
+### A lesson with a flashcard block was a blank page — **fixed (2026-10-08, STATUS §5ox)**
+
+Since §15.3's text settings reached the lesson player (2026-09-13, #301), the
+flashcard view spread a `textProps` that only existed in the block view around
+it. Rendering a flashcard threw `ReferenceError: textProps is not defined`, so
+any lesson with one — for every learner, in every language — opened to an
+empty page. The tests read the published snapshot, not the drawn page, and no
+walk planted a flashcard. The player now hands the card its text settings, and
+`SmokeMarkerSeeder` puts a flashcard on SMOKE-Lesson; with the old player
+back, the language walk fails both lesson pages on that error.
+
+### The walks read three of the learner's codes as words — **fixed (2026-10-08, STATUS §5ox)**
+
+`arabic.mjs` read the skill reports for `reading` and the activity for
+`scored`. Since the office's report (CT6a) and the learner's (CT7a) named the
+skill *Reading*, its last two steps had failed; `learn.mjs` and `assess.mjs`
+would have failed the same way once the attempt's state was named *Marked*.
+All three read the named words now.
+
 ## Found while scoping the assessment player's translation (2026-10-08)
 
 ### A matching question saved from the bank lost its pairs, and a marked one blanked the page — **fixed (2026-10-08, STATUS §5ow)**
