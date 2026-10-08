@@ -1,5 +1,5 @@
 @extends('public.layouts.public')
-@section('title', $seo['title'] ?? 'Daily content')
+@section('title', $seo['title'] ?? __('public.Daily content'))
 @section('description', $seo['description'] ?? '')
 @section('og_title', $seo['og']['title'] ?? ($seo['title'] ?? ''))
 @section('og_description', $seo['og']['description'] ?? '')
@@ -41,8 +41,8 @@
 <article data-daily-permalink data-daily-type="{{ $type }}" data-date="{{ $date }}"
          style="background:#F8F4EC;padding:2.5rem 0 3.5rem">
   <div class="container mx-auto px-4" style="max-width:42rem">
-    <p style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;margin:0">{{ $type }} · {{ $date }}</p>
-    <h1 style="font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;color:#3D1219;margin:.4rem 0 1.25rem">{{ $seo['title'] ?? 'Daily content' }}</h1>
+    <p style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;margin:0">{{ in_array($type, ['ayah', 'hadith', 'saying', 'reminder'], true) ? __('public.daily_type_'.$type) : $type }} · {{ $date ? \Carbon\Carbon::parse($date)->translatedFormat('j F Y') : '' }}</p>
+    <h1 style="font-size:clamp(1.5rem,3vw,2.1rem);font-weight:800;color:#3D1219;margin:.4rem 0 1.25rem">{{ $seo['title'] ?? __('public.Daily content') }}</h1>
 
     @if($arabic !== '')
     <p class="daily-ar" dir="rtl" lang="ar" style="font-size:1.45rem;line-height:2;color:#3D1219;margin:0 0 1rem;text-align:right">{{ $arabic }}</p>
@@ -63,9 +63,9 @@
       <a data-share="twitter" href="{{ $twitter }}" target="_blank" rel="noopener"
          style="background:#0EA5E9;color:#fff;font-weight:700;padding:.6rem 1rem;border-radius:.6rem;text-decoration:none">Twitter</a>
       <a href="{{ route('public.daily.subscribe') }}"
-         style="color:#7C2D37;font-weight:600;padding:.6rem 0;text-decoration:none">Subscribe</a>
+         style="color:#7C2D37;font-weight:600;padding:.6rem 0;text-decoration:none">{{ __('public.Subscribe') }}</a>
       <a href="{{ route('public.daily.index', ['type' => $type]) }}"
-         style="color:#7C2D37;font-weight:600;padding:.6rem 0;text-decoration:none">Back to archive</a>
+         style="color:#7C2D37;font-weight:600;padding:.6rem 0;text-decoration:none">{{ __('public.Back to archive') }}</a>
     </div>
   </div>
 </article>

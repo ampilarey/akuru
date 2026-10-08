@@ -29,7 +29,7 @@ class DailySubscriptionController extends Controller
 
         return redirect()
             ->route('public.daily.subscribe')
-            ->with('success', 'Subscription saved. You will only receive messages you opted into.');
+            ->with('success', __('public.Subscription saved. You will only receive messages you opted into.'));
     }
 
     public function pause(Request $request, DailyContentSubscription $subscription): RedirectResponse
@@ -41,7 +41,7 @@ class DailySubscriptionController extends Controller
 
         return redirect()
             ->route('public.daily.subscribe')
-            ->with('success', 'Subscription paused.');
+            ->with('success', __('public.Subscription paused.'));
     }
 
     public function resume(Request $request, DailyContentSubscription $subscription): RedirectResponse
@@ -53,6 +53,6 @@ class DailySubscriptionController extends Controller
 
         return redirect()
             ->route('public.daily.subscribe')
-            ->with('success', 'Subscription resumed.');
+            ->with('success', __('public.Subscription resumed.'));
     }
 }

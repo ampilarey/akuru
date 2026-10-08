@@ -131,6 +131,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->readerCycle();
         $this->cmsCourseWalk();
         $this->publicEventWalk();
+        $this->dailyAndCertificateWalk($year, $studentId);
         $this->familyCycle();
         $this->signupCycle();
         $this->schoolDayCycle();
@@ -2678,6 +2679,35 @@ class SmokeMarkerSeeder extends Seeder
         $eventId = (int) DB::table('events')->where('slug', 'smoke-lang-event')->value('id');
         DB::table('event_registrations')->where('event_id', $eventId)->where('email', 'like', 'smoke-lang-%')->delete();
         DB::table('events')->where('id', $eventId)->update(['current_attendees' => 0]);
+    }
+
+    /**
+     * A published reminder and a certificate a stranger can verify, for
+     * `daily-certificate-language.mjs` (BACKLOG C20, LT5c). Both are the
+     * walk's own and are written again on every run.
+     */
+    private function dailyAndCertificateWalk(AcademicYear $year, int $studentId): void
+    {
+        $authorId = (int) (DB::table('users')->where('email', 'admin@akuru.edu.mv')->value('id')
+            ?: DB::table('users')->orderBy('id')->value('id'));
+        DB::table('daily_contents')->updateOrInsert(['publish_date' => '2026-01-15', 'content_type' => 'reminder'], [
+            'status' => 'published', 'text_en' => 'SMOKE-Lang reminder.', 'text_dv' => 'SMOKE-Lang ހަނދާންކޮށްދިނުން.',
+            'attribution' => 'SMOKE', 'created_by' => $authorId, 'approved_by' => $authorId,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        if ($studentId <= 0) {
+            return;
+        }
+        DB::table('certificate_templates')->updateOrInsert(['name' => 'SMOKE-Verify-Cert'], [
+            'kind' => 'manual', 'active' => true, 'deleted_at' => null, 'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $templateId = (int) DB::table('certificate_templates')->where('name', 'SMOKE-Verify-Cert')->value('id');
+        DB::table('issued_certificates')->updateOrInsert(['public_id' => 'SMKVERFYCERT00000000000000000001'], [
+            'certificate_template_id' => $templateId, 'student_id' => $studentId, 'academic_year_id' => $year->id,
+            'certificate_number' => 'AK-SMOKE-VERIFY', 'completion_date' => '2026-10-01', 'grade' => 'A',
+            'issued_at' => now(), 'revoked_at' => null, 'created_at' => now(), 'updated_at' => now(),
+        ]);
     }
 
     private function readerCycle(): void

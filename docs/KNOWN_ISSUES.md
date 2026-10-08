@@ -217,8 +217,9 @@ STATUS §5pc, and the offerings' and the Qur'an component's since STATUS §5pd
 site's front door (header, footer, home, error pages, admissions, contact)
 reads in the page's language since STATUS §5pg, and the course catalogue and
 a course page since STATUS §5ph, and its events (registering included),
-news, about and other pages since STATUS §5pi; its other pages are BACKLOG
-C20's LT5c and LT6. The console commands stay English.
+news, about and other pages since STATUS §5pi, and the daily reminders and
+the certificate check since STATUS §5pj; the Library's public pages are
+BACKLOG C20's LT6. The console commands stay English.
 
 ## Found by the middle-name walk (2026-10-08)
 

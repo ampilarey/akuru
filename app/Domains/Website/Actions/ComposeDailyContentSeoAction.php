@@ -64,25 +64,23 @@ class ComposeDailyContentSeoAction
             $surahNumber = (int) ($item['ayah']['surah_number'] ?? 0);
             $ayahNumber = (int) ($item['ayah']['ayah_number'] ?? 0);
             if ($surahNumber > 0 && $ayahNumber > 0) {
-                return 'Daily ayah · '.$name.' '.$surahNumber.':'.$ayahNumber;
+                return __('public.Daily ayah · :reference', ['reference' => $name.' '.$surahNumber.':'.$ayahNumber]);
             }
 
-            return 'Daily ayah · '.$date;
+            return __('public.Daily ayah · :reference', ['reference' => $date]);
         }
 
         if ($type === 'hadith') {
             $collection = trim((string) ($item['hadith_collection'] ?? ''));
             $number = trim((string) ($item['hadith_number'] ?? ''));
             if ($collection !== '' && $number !== '') {
-                return 'Daily hadith · '.$collection.' '.$number;
+                return __('public.Daily hadith · :reference', ['reference' => $collection.' '.$number]);
             }
 
-            return 'Daily hadith · '.$date;
+            return __('public.Daily hadith · :reference', ['reference' => $date]);
         }
 
-        $label = $type === 'saying' ? 'Daily saying' : 'Daily reminder';
-
-        return $label.' · '.$date;
+        return __($type === 'saying' ? 'public.Daily saying · :date' : 'public.Daily reminder · :date', ['date' => $date]);
     }
 
     /**
@@ -91,19 +89,30 @@ class ComposeDailyContentSeoAction
     private function description(array $item, string $type): string
     {
         if ($type === 'ayah') {
-            $en = trim((string) ($item['ayah']['meanings']['en'] ?? ''));
+            $meaning = $this->inPageLanguage($item['ayah']['meanings']['dv'] ?? '', $item['ayah']['meanings']['en'] ?? '');
 
-            return $en !== '' ? $en : 'Today\'s ayah from Akuru Institute.';
+            return $meaning !== '' ? $meaning : __('public.Today\'s ayah from Akuru Institute.');
         }
         if ($type === 'hadith') {
-            $en = trim((string) ($item['hadith_text_en'] ?? ''));
+            $text = $this->inPageLanguage($item['hadith_text_dv'] ?? '', $item['hadith_text_en'] ?? '');
 
-            return $en !== '' ? $en : 'Today\'s hadith from Akuru Institute.';
+            return $text !== '' ? $text : __('public.Today\'s hadith from Akuru Institute.');
         }
 
-        $en = trim((string) ($item['text_en'] ?? ''));
+        $text = $this->inPageLanguage($item['text_dv'] ?? '', $item['text_en'] ?? '');
 
-        return $en !== '' ? $en : 'A daily note from Akuru Institute.';
+        return $text !== '' ? $text : __('public.A daily note from Akuru Institute.');
+    }
+
+    /**
+     * The Dhivehi on a Dhivehi page when there is one, else the English: the
+     * daily content is written in those two (BACKLOG C20, LT5c).
+     */
+    private function inPageLanguage(mixed $dhivehi, mixed $english): string
+    {
+        $dhivehi = trim((string) $dhivehi);
+
+        return app()->getLocale() === 'dv' && $dhivehi !== '' ? $dhivehi : trim((string) $english);
     }
 
     /**
