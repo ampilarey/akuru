@@ -148,6 +148,51 @@ it('updates a student through the directory and changes status via the action', 
         ->and(StudentStatusHistory::query()->where('student_id', $student->id)->first()->to_status)->toBe(StudentStatus::Withdrawn);
 });
 
+it('keeps what the profile form does not carry when the office saves it', function () {
+    // STATUS §5oo. The profile form on a student's page sends these fields
+    // and no others (People/Students/Show.jsx). Saving it nulled every
+    // optional key it did not send — the student's sign-in, email, passport
+    // and notes — so a learner lost their account to an edit of a phone number.
+    $admin = actingPeopleAdmin();
+    $student = makeStudent([
+        'first_name' => 'Hana',
+        'last_name' => 'Moosa',
+        'email' => 'hana@example.test',
+        'passport' => 'P1234567',
+        'notes' => 'Sits near the front.',
+    ]);
+    $account = (int) $student->user_id;
+    $profileForm = [
+        'first_name' => 'Hana', 'last_name' => 'Moosa',
+        'first_name_dhivehi' => '', 'last_name_dhivehi' => '', 'first_name_arabic' => '', 'last_name_arabic' => '',
+        'date_of_birth' => '2012-03-01', 'gender' => 'female', 'national_id' => '', 'student_id' => '',
+        'school_id' => '', 'class_id' => '', 'admission_date' => '', 'status' => StudentStatus::Active->value,
+        'place_of_birth' => '', 'phone' => '7771234', 'address' => '',
+    ];
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->put(route('people.students.update', $student), $profileForm)
+        ->assertRedirect()
+        ->assertSessionHasNoErrors();
+
+    $student->refresh();
+    expect($account)->toBeGreaterThan(0)
+        ->and($student->user_id)->toBe($account)
+        ->and($student->email)->toBe('hana@example.test')
+        ->and($student->passport)->toBe('P1234567')
+        ->and($student->notes)->toBe('Sits near the front.')
+        ->and($student->phone)->toBe('7771234');
+
+    // A field the form does send is still emptied when it is cleared.
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->put(route('people.students.update', $student), ['phone' => '', 'email' => ''] + $profileForm)
+        ->assertRedirect();
+
+    expect($student->fresh()->phone)->toBeNull()
+        ->and($student->fresh()->email)->toBeNull()
+        ->and($student->fresh()->user_id)->toBe($account);
+});
+
 it('does not mass-assign student status', function () {
     $student = makeStudent();
 
