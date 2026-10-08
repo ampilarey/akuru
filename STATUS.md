@@ -5043,6 +5043,20 @@ event.*
 The English walks still pass: `events.mjs` 6/6, `news.mjs` 6/6,
 `website.mjs` 54/54, `public-rtl.mjs` 90/90.
 
+**CI ran out of memory, and why.** This slice's first CI run died inside
+`StatusValuesAreWritableTest`: *Allowed memory size of 1073741824 bytes
+exhausted*.
+- The cause had been there for a while. CI checks out no `.env`, so every
+  test's boot reads the missing file with phpdotenv's suppressed
+  `@file_get_contents`. Pest kept one warning per test: `main`'s last run
+  ended *2874 warnings, 1 passed*. The warnings piled up until a run of this
+  size no longer fit in 1G.
+- Reproduced locally by moving `.env` aside: the same warning appears on
+  every test.
+- **Fix:** `ci.yml` creates an empty `.env` before Pest. Nothing else
+  changes, because `phpunit.xml` still supplies every value. The memory
+  limit stays at 1G.
+
 **Next (C20):** LT5c — the daily reminders and the certificate check;
 LT6 — the Library's public shelf, reader, My Library, wallet and gift cards.
 

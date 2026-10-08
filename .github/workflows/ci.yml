@@ -49,6 +49,13 @@ jobs:
       - name: Pint
         run: ./vendor/bin/pint --test
 
+      # Without a .env, every test's boot reads the missing file with a
+      # suppressed warning, Pest keeps one per test, and ~2,900 of them were
+      # enough to exhaust the 1G memory limit (STATUS §5pi). An empty file
+      # changes nothing else: phpunit.xml still supplies every value.
+      - name: Empty environment file
+        run: touch .env
+
       - name: Pest
         timeout-minutes: 20
         run: ./vendor/bin/pest
