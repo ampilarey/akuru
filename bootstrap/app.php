@@ -20,11 +20,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // the canonical site before anything else runs.
         $middleware->prepend(\App\Domains\Bookshop\Http\Middleware\RedirectShopHosts::class);
         $middleware->web(append: [
+            // A form sent to an address without a language answers in the
+            // language of the page it came from (STATUS §5os). First, so
+            // everything after it — the shell's props included — reads it.
+            \App\Http\Middleware\SetLocale::class,
             // Opening a workspace's home makes it the active one (STATUS §5id).
             // Before the Inertia shell shares its props, which read the choice.
             \App\Http\Middleware\RememberWorkspace::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
-            \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\ConvertEnroll403ToRedirect::class,
             // BOOKSHOP_PLAN B11: the office can close the public shop; the notice needs the session (a signed-in customer's links).

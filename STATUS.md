@@ -4983,6 +4983,71 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5os. A save on a Dhivehi or Arabic page answers in that language (2026-10-08)
+
+**Found by the CT5b walk.** A mushaf uploaded from the Dhivehi form said
+*Mushaf created.* in English. The cause was not that screen:
+- The Inertia screens send their forms to addresses without a language
+  (`form.post('/quran/mushafs')`, `router.delete('/catalog/glossary/7')`).
+- LaravelLocalization takes the language from the address's first segment.
+  For a GET without one it redirects to the remembered language. POST, PUT,
+  PATCH and DELETE it leaves alone (`httpMethodsIgnored`), so those ran in
+  `app.locale`, English.
+- The save's redirect is a GET, which the package sends on to the
+  remembered language. So the person came back to their own page, carrying
+  an English message.
+
+Every translated "saved" phrase the course screens gained in CT1–CT5a was
+therefore English in a browser. The feature tests could not see it: they
+set the locale themselves and turn the localization middleware off.
+
+Blade forms were never affected. They post to `route()` addresses, which
+carry the language of the page they were drawn in.
+
+**The fix** is in the app's own `SetLocale` middleware, which was a
+pass-through. A change sent to an address with no language now takes the
+language of the page it came from:
+- this site's own Referer (`/dv/…`, `/ar/…`, `/en/…`) first;
+- the session's remembered language when there is no Referer;
+- another site's Referer is ignored.
+
+The session is told too, so the save's redirect returns to the page the form
+was on, even with two tabs open in different languages. A GET is left to the
+package, as before, and an address that names its language keeps it.
+`SetLocale` now runs first in the web group, so the shell's props read the
+same language.
+
+**A consequence, stated so it is not a surprise.** A notification or SMS
+composed during such a save now follows the sender's page language, because
+users carry no preferred language. That is how Blade forms already
+behaved; only the Inertia screens were the exception.
+
+**Not fixed here:** Laravel's own validation messages are English in every
+language, because `resources/lang` has no `validation.php`. That is BACKLOG
+C19 slice CT6.
+
+Tests:
+- `FormsAnswerInThePageLanguageTest`, six tests, with the localization
+  middleware on, since it is the subject:
+  - a glossary save answers in Dhivehi from a Dhivehi page;
+  - a change and a delete answer in Arabic from an Arabic page;
+  - with no Referer, the remembered language is used;
+  - the page posted from wins over the remembered language;
+  - another site's page is ignored;
+  - a GET is still redirected by the package.
+- Without the fix, four of the six fail.
+
+Walks:
+- `saved-in-language.mjs` (new, in `all.mjs`): the dean adds a glossary
+  term on the Dhivehi, Arabic and English pages and deletes each again.
+  Every answer must be the page's own phrase, and must come back to the
+  page's language.
+  - **8/12 without the fix**: the four Dhivehi and Arabic answers were
+    English.
+  - **12/12 with it.**
+  - Nothing is left behind (a glossary delete is a real delete).
+- `once-props.mjs` 9/9, `logout.mjs` 8/8, `rtl.mjs` 8/8.
+
 ## 5or. The Teach Qur'an screens in Dhivehi and Arabic, and a Qur'an phrase book (C19 slice CT5a, 2026-10-08)
 
 The four screens a Qur'an teacher works on were English only:
