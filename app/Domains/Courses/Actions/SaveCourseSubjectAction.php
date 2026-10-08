@@ -15,10 +15,10 @@ class SaveCourseSubjectAction
     {
         $parentId = isset($data['parent_id']) && $data['parent_id'] !== '' ? (int) $data['parent_id'] : null;
         if ($subject !== null && $parentId === $subject->id) {
-            throw ValidationException::withMessages(['parent_id' => 'A subject cannot be its own parent.']);
+            throw ValidationException::withMessages(['parent_id' => __('teach.error_subject_own_parent')]);
         }
         if ($subject !== null && $parentId !== null && $this->isDescendant($subject->id, $parentId)) {
-            throw ValidationException::withMessages(['parent_id' => 'A subject cannot be nested under its own descendant.']);
+            throw ValidationException::withMessages(['parent_id' => __('teach.error_subject_descendant')]);
         }
 
         $payload = [

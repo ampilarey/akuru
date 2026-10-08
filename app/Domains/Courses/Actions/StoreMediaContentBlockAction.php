@@ -18,7 +18,7 @@ class StoreMediaContentBlockAction
         $blockType = ContentBlockType::tryFrom((string) ($data['type'] ?? ''));
         if ($blockType === null || ! $blockType->isMedia()) {
             throw ValidationException::withMessages([
-                'type' => 'Unsupported media block type.',
+                'type' => __('teach.error_media_block_type'),
             ]);
         }
 
@@ -42,7 +42,7 @@ class StoreMediaContentBlockAction
         $file = $data['file'] ?? null;
         if (! $file instanceof UploadedFile) {
             throw ValidationException::withMessages([
-                'file' => 'A file is required for this block type.',
+                'file' => __('teach.error_block_file'),
             ]);
         }
 

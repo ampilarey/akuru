@@ -52,14 +52,14 @@ class RecordCourseReviewDecisionAction
         // step that never happened.
         if ($from !== CourseWorkflowStatus::InReview) {
             throw ValidationException::withMessages([
-                'decision' => ['Only a course submitted for review can be decided on.'],
+                'decision' => [__('teach.error_review_not_in_review')],
             ]);
         }
 
         $comment = trim((string) ($data['comment'] ?? ''));
         if ($decision->requiresComment() && $comment === '') {
             throw ValidationException::withMessages([
-                'comment' => ['Say why. A refusal with no reason is the thing this replaces.'],
+                'comment' => [__('teach.error_review_say_why')],
             ]);
         }
 

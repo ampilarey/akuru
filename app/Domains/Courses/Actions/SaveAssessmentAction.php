@@ -29,12 +29,12 @@ class SaveAssessmentAction
 
         if ($courseId !== null && $classroomId !== null) {
             throw ValidationException::withMessages([
-                'course_id' => 'Attach an assessment to a course or a class, not both.',
+                'course_id' => __('teach.error_assessment_both'),
             ]);
         }
         if ($courseId === null && $classroomId === null) {
             throw ValidationException::withMessages([
-                'course_id' => 'Assessment must attach to a course or a class.',
+                'course_id' => __('teach.error_assessment_owner'),
             ]);
         }
 
@@ -44,7 +44,7 @@ class SaveAssessmentAction
 
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'Assessment title is required.']);
+            throw ValidationException::withMessages(['title' => __('teach.error_assessment_title')]);
         }
 
         $status = AssessmentStatus::tryFrom((string) ($data['status'] ?? AssessmentStatus::Draft->value))
@@ -107,7 +107,7 @@ class SaveAssessmentAction
         $type = AssessmentType::tryFrom((string) $given);
         if ($type === null) {
             throw ValidationException::withMessages([
-                'assessment_type' => 'That is not one of the assessment types SPEC §19 defines.',
+                'assessment_type' => __('teach.error_assessment_type'),
             ]);
         }
 
@@ -131,7 +131,7 @@ class SaveAssessmentAction
         $belongs = CourseModule::query()->where('id', $id)->where('course_id', $courseId)->exists();
         if (! $belongs) {
             throw ValidationException::withMessages([
-                'course_module_id' => 'That module belongs to a different course.',
+                'course_module_id' => __('teach.error_module_other_course'),
             ]);
         }
 
@@ -148,7 +148,7 @@ class SaveAssessmentAction
         $belongs = Lesson::query()->where('id', $id)->where('course_id', $courseId)->exists();
         if (! $belongs) {
             throw ValidationException::withMessages([
-                'lesson_id' => 'That lesson belongs to a different course.',
+                'lesson_id' => __('teach.error_lesson_other_course'),
             ]);
         }
 

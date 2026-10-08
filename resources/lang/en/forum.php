@@ -35,4 +35,7 @@ return [
     'by' => 'by :name',
     'open' => 'Discussion',
     'moderator_note' => 'You moderate this forum: pin, lock or hide what needs it.',
+
+    // A moderation step the forum does not know (slice CT6b-2b)
+    'error_unknown_action' => 'Unknown action.',
 ];

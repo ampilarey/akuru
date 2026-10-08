@@ -18,14 +18,14 @@ class ValidateContentBlockDataAction
         $blockType = ContentBlockType::tryFrom($type);
         if ($blockType === null) {
             throw ValidationException::withMessages([
-                'type' => 'Unsupported block type for this slice: '.$type,
+                'type' => __('teach.error_block_type', ['type' => $type]),
             ]);
         }
 
         $direction = (string) ($settings['direction'] ?? 'auto');
         if (! in_array($direction, NormalizeBlockTextSettingsAction::DIRECTIONS, true)) {
             throw ValidationException::withMessages([
-                'settings' => 'Text direction must be ltr, rtl, or auto.',
+                'settings' => __('teach.error_block_direction'),
             ]);
         }
 
@@ -65,18 +65,18 @@ class ValidateContentBlockDataAction
         if (in_array($blockType, [ContentBlockType::Text, ContentBlockType::RichText], true)
             && ($clean['body'] ?? $clean['html'] ?? '') === '') {
             throw ValidationException::withMessages([
-                'data' => 'Block content is required.',
+                'data' => __('teach.error_block_content'),
             ]);
         }
 
         if ($blockType === ContentBlockType::Instruction) {
             if (($clean['body'] ?? '') === '') {
                 throw ValidationException::withMessages([
-                    'data' => 'Block content is required.',
+                    'data' => __('teach.error_block_content'),
                 ]);
             }
             if (! in_array($clean['tone'], ['note', 'tip', 'warning'], true)) {
-                throw ValidationException::withMessages(['data' => 'Instruction tone must be note, tip, or warning.']);
+                throw ValidationException::withMessages(['data' => __('teach.error_block_tone')]);
             }
         }
 
@@ -115,7 +115,7 @@ class ValidateContentBlockDataAction
 
         if ($entries === []) {
             throw ValidationException::withMessages([
-                'data' => 'Glossary and term blocks need at least one term and definition.',
+                'data' => __('teach.error_block_glossary'),
             ]);
         }
 
@@ -141,7 +141,7 @@ class ValidateContentBlockDataAction
         }
         if ($lines === []) {
             throw ValidationException::withMessages([
-                'data' => 'Dialogue blocks need at least one speaker line.',
+                'data' => __('teach.error_block_dialogue'),
             ]);
         }
 
@@ -167,7 +167,7 @@ class ValidateContentBlockDataAction
         }
         if ($cards === []) {
             throw ValidationException::withMessages([
-                'data' => 'Flashcard blocks need at least one front and back.',
+                'data' => __('teach.error_block_flashcard'),
             ]);
         }
 
@@ -185,14 +185,14 @@ class ValidateContentBlockDataAction
         $title = trim((string) ($data['title'] ?? ''));
         if ($id < 1 && $url === '') {
             throw ValidationException::withMessages([
-                'data' => 'Embed blocks need an id or a URL. Quiz and assignment engines are not built in this slice.',
+                'data' => __('teach.error_block_embed'),
             ]);
         }
         if ($url !== '') {
             $parts = parse_url($url);
             if (($parts['scheme'] ?? '') !== 'https') {
                 throw ValidationException::withMessages([
-                    'data' => 'Embed URLs must use https.',
+                    'data' => __('teach.error_embed_https'),
                 ]);
             }
         }
@@ -223,13 +223,13 @@ class ValidateContentBlockDataAction
 
         if ($mediaId < 1 || $mime === '' || $originalName === '') {
             throw ValidationException::withMessages([
-                'data' => 'Media blocks require media_id, mime, and original_name.',
+                'data' => __('teach.error_media_block_data'),
             ]);
         }
 
         if (! in_array($mime, $blockType->allowedMimes(), true)) {
             throw ValidationException::withMessages([
-                'data' => 'MIME type '.$mime.' is not valid for '.$blockType->value.' blocks.',
+                'data' => __('teach.error_media_mime', ['mime' => $mime, 'type' => __('teach.block_'.$blockType->value)]),
             ]);
         }
 

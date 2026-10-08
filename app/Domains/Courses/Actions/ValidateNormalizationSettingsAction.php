@@ -31,7 +31,7 @@ class ValidateNormalizationSettingsAction
 
         if (! is_array($settings)) {
             throw ValidationException::withMessages([
-                'normalization_settings' => 'Normalization settings must be an object.',
+                'normalization_settings' => __('teach.error_normalization_object'),
             ]);
         }
 
@@ -43,7 +43,7 @@ class ValidateNormalizationSettingsAction
             if ($key === 'mode') {
                 if (! in_array($value, $modes, true)) {
                     throw ValidationException::withMessages([
-                        'normalization_settings' => 'Comparison mode must be one of: '.implode(', ', $modes).'.',
+                        'normalization_settings' => __('teach.error_normalization_mode', ['modes' => implode(', ', $modes)]),
                     ]);
                 }
                 $clean['mode'] = $value;
@@ -53,13 +53,13 @@ class ValidateNormalizationSettingsAction
 
             if (! in_array($key, $flags, true)) {
                 throw ValidationException::withMessages([
-                    'normalization_settings' => "Unknown normalization setting: {$key}.",
+                    'normalization_settings' => __('teach.error_normalization_unknown', ['key' => $key]),
                 ]);
             }
 
             if (! is_bool($value) && ! in_array($value, [0, 1, '0', '1', 'true', 'false'], true)) {
                 throw ValidationException::withMessages([
-                    'normalization_settings' => "Normalization setting {$key} must be true or false.",
+                    'normalization_settings' => __('teach.error_normalization_bool', ['key' => $key]),
                 ]);
             }
 

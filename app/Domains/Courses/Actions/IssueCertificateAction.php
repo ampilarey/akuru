@@ -27,14 +27,14 @@ class IssueCertificateAction
 
         $studentId = (int) ($data['student_id'] ?? 0);
         if ($studentId < 1) {
-            throw ValidationException::withMessages(['student_id' => 'Student is required.']);
+            throw ValidationException::withMessages(['student_id' => __('teach.error_cert_student_required')]);
         }
 
         $courseId = $this->nullableId($data['course_id'] ?? $template->course_id);
         $offeringId = $this->nullableId($data['course_offering_id'] ?? $data['offering_id'] ?? null);
         $yearId = (int) ($data['academic_year_id'] ?? 0);
         if ($yearId < 1) {
-            throw ValidationException::withMessages(['academic_year_id' => 'Academic year is required.']);
+            throw ValidationException::withMessages(['academic_year_id' => __('teach.error_cert_year_required')]);
         }
 
         $eligibility = app(CheckCertificateEligibilityAction::class)->execute(
@@ -49,7 +49,7 @@ class IssueCertificateAction
         );
         if (! $eligibility['eligible']) {
             throw ValidationException::withMessages([
-                'student_id' => implode(' ', $eligibility['reasons']) ?: 'Not eligible.',
+                'student_id' => implode(' ', $eligibility['reasons']) ?: __('teach.error_cert_not_eligible'),
             ]);
         }
 
@@ -61,7 +61,7 @@ class IssueCertificateAction
             ->whereNull('revoked_at')
             ->exists();
         if ($duplicate) {
-            throw ValidationException::withMessages(['student_id' => 'This certificate is already issued.']);
+            throw ValidationException::withMessages(['student_id' => __('teach.error_cert_already_issued')]);
         }
 
         $enrollment = CourseEnrollment::query()
@@ -74,7 +74,7 @@ class IssueCertificateAction
 
         $student = DB::table('students')->where('id', $studentId)->first();
         if ($student === null) {
-            throw ValidationException::withMessages(['student_id' => 'Student not found.']);
+            throw ValidationException::withMessages(['student_id' => __('teach.error_cert_student_not_found')]);
         }
 
         $courseTitle = $courseId

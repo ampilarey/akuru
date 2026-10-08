@@ -76,9 +76,12 @@ it('refuses a module that still holds lessons, and says how many', function () {
         expect(false)->toBeTrue('the delete should have been refused');
     } catch (ValidationException $e) {
         // Without this the RESTRICT foreign key throws, and the admin gets a
-        // 500 with an SQL string rather than a sentence.
-        expect($e->errors()['module'][0])->toContain('1 lessons')
-            ->and($e->errors()['module'][0])->toContain('§12');
+        // 500 with an SQL string rather than a sentence. The sentence names
+        // what is in the way, counted in the reader's grammar ("1 lesson", not
+        // "1 lessons"), and says what to do — without the "(SPEC §12)" it used
+        // to end with, which meant nothing to the author reading it (slice
+        // CT6b-2b).
+        expect($e->errors()['module'][0])->toBe('This module still has 1 lesson. Move or delete those first.');
     }
 
     expect(CourseModule::query()->whereKey($module->id)->exists())->toBeTrue();

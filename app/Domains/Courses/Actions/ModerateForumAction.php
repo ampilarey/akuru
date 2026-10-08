@@ -26,7 +26,7 @@ class ModerateForumAction
             'unlock' => ['is_locked' => false],
             'hide' => ['hidden_at' => now(), 'hidden_by' => $moderatorId],
             'show' => ['hidden_at' => null, 'hidden_by' => null],
-            default => throw ValidationException::withMessages(['action' => 'Unknown action.']),
+            default => throw ValidationException::withMessages(['action' => __('forum.error_unknown_action')]),
         };
         $topic->forceFill($changes)->save();
 
@@ -38,7 +38,7 @@ class ModerateForumAction
         $changes = match ($action) {
             'hide' => ['hidden_at' => now(), 'hidden_by' => $moderatorId],
             'show' => ['hidden_at' => null, 'hidden_by' => null],
-            default => throw ValidationException::withMessages(['action' => 'Unknown action.']),
+            default => throw ValidationException::withMessages(['action' => __('forum.error_unknown_action')]),
         };
         $post->forceFill($changes)->save();
 

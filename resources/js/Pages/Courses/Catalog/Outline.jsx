@@ -1,5 +1,6 @@
-import { router, useForm, usePage } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import { useEffect, useRef, useState } from 'react';
+import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 import AppShell from '../../../Layouts/AppShell';
 
 const MEDIA_TYPES = ['image', 'audio', 'video', 'pdf', 'download'];
@@ -55,7 +56,7 @@ function blockLabel(block) {
  * `preserveScroll`. If the server refuses it, the reload brings back the real
  * order and the effect below re-seeds from it.
  */
-function LessonBlockList({ courseId, lesson, t }) {
+function LessonBlockList({ courseId, lesson, t, actOn }) {
     const blocks = lesson.blocks || [];
     const [order, setOrder] = useState(() => blocks.map((block) => block.id));
     // The dragged index lives in a ref, not state. `onDrop` has to read the
@@ -76,11 +77,11 @@ function LessonBlockList({ courseId, lesson, t }) {
 
     const persist = (ids) => {
         setOrder(ids);
-        router.post(
+        actOn(`lesson:${lesson.id}`, () => router.post(
             `/catalog/courses/${courseId}/blocks/reorder`,
             { lesson_id: lesson.id, block_ids: ids },
             { preserveScroll: true },
-        );
+        ));
     };
 
     const moveTo = (fromIndex, toIndex) => {
@@ -163,18 +164,18 @@ function LessonBlockList({ courseId, lesson, t }) {
                             <button
                                 type="button"
                                 className="text-xs text-[#7C2D37]"
-                                onClick={() => router.post(
+                                onClick={() => actOn(`lesson:${lesson.id}`, () => router.post(
                                     `/catalog/courses/${courseId}/blocks/${block.id}/duplicate`,
                                     {},
                                     { preserveScroll: true },
-                                )}
+                                ))}
                             >
                                 {t.outline_duplicate || 'Duplicate'}
                             </button>
                             <button
                                 type="button"
                                 className="text-xs text-red-700"
-                                onClick={() => router.delete(`/catalog/courses/${courseId}/blocks/${block.id}`, { preserveScroll: true })}
+                                onClick={() => actOn(`lesson:${lesson.id}`, () => router.delete(`/catalog/courses/${courseId}/blocks/${block.id}`, { preserveScroll: true }))}
                             >
                                 {t.outline_delete_draft || 'Delete draft'}
                             </button>
@@ -186,7 +187,7 @@ function LessonBlockList({ courseId, lesson, t }) {
     );
 }
 
-function LessonGlossaryForm({ courseId, lesson, glossaryItems, t }) {
+function LessonGlossaryForm({ courseId, lesson, glossaryItems, t, actOn }) {
     const form = useForm({
         glossary_item_id: glossaryItems[0]?.id || '',
         is_required: false,
@@ -209,7 +210,7 @@ function LessonGlossaryForm({ courseId, lesson, glossaryItems, t }) {
                         <button
                             type="button"
                             className="text-xs text-red-700"
-                            onClick={() => router.delete(`/catalog/courses/${courseId}/lessons/${lesson.id}/glossary/${item.id}`)}
+                            onClick={() => actOn(`lesson:${lesson.id}`, () => router.delete(`/catalog/courses/${courseId}/lessons/${lesson.id}/glossary/${item.id}`, { preserveScroll: true }))}
                         >
                             {t.outline_remove || 'Remove'}
                         </button>
@@ -220,7 +221,9 @@ function LessonGlossaryForm({ courseId, lesson, glossaryItems, t }) {
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
-                        form.post(`/catalog/courses/${courseId}/lessons/${lesson.id}/glossary`, { preserveScroll: true });
+                        // Marks this form as the last thing acted on, so the
+                        // lesson rows above do not also list its refusal.
+                        actOn(`glossary:${lesson.id}`, () => form.post(`/catalog/courses/${courseId}/lessons/${lesson.id}/glossary`, { preserveScroll: true }));
                     }}
                     className="flex flex-wrap items-end gap-2"
                 >
@@ -244,20 +247,14 @@ function LessonGlossaryForm({ courseId, lesson, glossaryItems, t }) {
                     </label>
                     <button type="submit" className="btn-secondary" disabled={form.processing}>{t.outline_attach_term || 'Attach term'}</button>
                     {form.errors.glossary_item_id && <span className="text-xs text-red-600">{form.errors.glossary_item_id}</span>}
+                    <FormErrors errors={form.errors} except={['glossary_item_id']} className="w-full" />
                 </form>
             )}
         </div>
     );
 }
 
-export default function Outline({ course, modules, glossaryItems = [], assessments = [], t = {} }) {
-    // §12's "delete draft modules if safe" refusal names exactly what is in
-    // the way ("still has 1 lessons, 2 content blocks"). It was never rendered,
-    // so clicking Delete module on a module the server refuses did nothing
-    // visible — a refused button indistinguishable from a broken one, the same
-    // gap the §13 walk found on the lesson player.
-    const moduleError = usePage().props.errors?.module;
-
+export default function Outline({ course, modules, glossaryItems = [], assessments = [], canPublish = false, t = {} }) {
     // §12 "Reorder modules". `position` was set once at creation and never
     // changed, so the order modules were typed in was the order students saw.
     // The server refuses a list that does not name every module exactly once,
@@ -270,7 +267,7 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
             return;
         }
         ids.splice(to, 0, ids.splice(from, 1)[0]);
-        router.post(`/catalog/courses/${course.id}/modules/reorder`, { order: ids }, { preserveScroll: true });
+        refusals.actOn(`module:${module.id}`, () => router.post(`/catalog/courses/${course.id}/modules/reorder`, { order: ids }, { preserveScroll: true }));
     };
     const moduleForm = useForm({ title: '' });
     const lessonForm = useForm({
@@ -302,6 +299,13 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
         title: '',
         file: null,
     });
+    // §12's "delete draft modules if safe" refusal names exactly what is in
+    // the way ("still has 1 lesson, 2 content blocks"), and it was the only
+    // refusal of this page's buttons that was ever rendered — once, above the
+    // list. A refused reorder, unlock rule, completion rule, lesson publish or
+    // block order said nothing (slice CT6b-2b). Each now says what came back
+    // beside the module or lesson whose button was pressed.
+    const refusals = useRowRefusals(moduleForm, lessonForm, blockForm);
     const isMedia = MEDIA_TYPES.includes(blockForm.data.type);
     const isPair = PAIR_TYPES.includes(blockForm.data.type);
     const isEmbed = EMBED_TYPES.includes(blockForm.data.type);
@@ -328,6 +332,7 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                     <p className="mb-2 text-sm font-medium">{t.outline_add_module || 'Add module'}</p>
                     <input className="form-input mb-2" placeholder={t.outline_module_title || 'Module title'} aria-label={t.outline_module_title || 'Module title'} value={moduleForm.data.title} onChange={(e) => moduleForm.setData('title', e.target.value)} />
                     <button type="submit" className="btn-primary" disabled={moduleForm.processing}>{t.outline_save_module || 'Save module'}</button>
+                    <FormErrors errors={moduleForm.errors} className="mt-1" />
                 </form>
                 <form
                     onSubmit={(e) => {
@@ -358,6 +363,7 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                     <button type="submit" className="btn-primary" disabled={lessonForm.processing || modules.length === 0}>{t.outline_save_lesson || 'Save lesson'}</button>
                     {lessonForm.errors.title && <p className="mt-1 text-xs text-red-600">{lessonForm.errors.title}</p>}
                     {lessonForm.errors.course_module_id && <p className="mt-1 text-xs text-red-600">{lessonForm.errors.course_module_id}</p>}
+                    <FormErrors errors={lessonForm.errors} except={['title', 'course_module_id']} className="mt-1" />
                 </form>
                 <form
                     onSubmit={(e) => {
@@ -470,17 +476,12 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                     {blockForm.errors.data && <p className="mt-1 text-xs text-red-600">{blockForm.errors.data}</p>}
                     {blockForm.errors.type && <p className="mt-1 text-xs text-red-600">{blockForm.errors.type}</p>}
                     {blockForm.errors.file && <p className="mt-1 text-xs text-red-600">{blockForm.errors.file}</p>}
+                    <FormErrors errors={blockForm.errors} except={['data', 'type', 'file']} className="mt-1" />
                 </form>
             </div>
-            {/* §12's module refusals — "delete draft modules if safe", and
-                "add a lesson before publishing" — name exactly what is in the
-                way, and were never rendered at all: the button did nothing
-                visible, which is indistinguishable from a broken one. Shown
-                once above the list because the server does not say which
-                module it refused, and attaching it to one would be a guess. */}
-            {moduleError && (
-                <p className="mb-3 rounded border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">{moduleError}</p>
-            )}
+            {/* Whatever came back before any button here was pressed — the
+                page opened straight onto a refusal. */}
+            <FormErrors errors={refusals.unplaced} except={['glossary_item_id']} className="mb-3 rounded border border-red-200 bg-red-50 py-2 pe-3" />
             <div className="space-y-4">
                 {modules.map((module) => (
                     <section key={module.id} className="rounded-lg border bg-white p-4">
@@ -502,11 +503,11 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                         if (title === null || title.trim() === '') {
                                             return;
                                         }
-                                        router.put(
+                                        refusals.actOn(`module:${module.id}`, () => router.put(
                                             `/catalog/courses/${course.id}/modules/${module.id}`,
                                             { title: title.trim(), description: module.description || '' },
                                             { preserveScroll: true },
-                                        );
+                                        ));
                                     }}
                                 >
                                     {t.outline_rename || 'Rename'}
@@ -527,18 +528,23 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                 >
                                     {t.outline_move_down || '↓ Move down'}
                                 </button>
-                                <button
-                                    type="button"
-                                    aria-label={(module.status === 'published' ? (t.outline_unpublish_aria || 'Unpublish module :title') : (t.outline_publish_aria || 'Publish module :title')).replace(':title', module.title)}
-                                    className="text-xs text-[#7C2D37] hover:underline"
-                                    onClick={() => router.post(
-                                        `/catalog/courses/${course.id}/modules/${module.id}/status`,
-                                        { status: module.status === 'published' ? 'draft' : 'published' },
-                                        { preserveScroll: true },
-                                    )}
-                                >
-                                    {module.status === 'published' ? (t.outline_unpublish || 'Unpublish') : (t.outline_publish || 'Publish')}
-                                </button>
+                                {/* Publishing a module needs `courses.publish`; offered
+                                    to an author without it, the button was a bare
+                                    "Forbidden" (slice CT6b-2b). */}
+                                {canPublish && (
+                                    <button
+                                        type="button"
+                                        aria-label={(module.status === 'published' ? (t.outline_unpublish_aria || 'Unpublish module :title') : (t.outline_publish_aria || 'Publish module :title')).replace(':title', module.title)}
+                                        className="text-xs text-[#7C2D37] hover:underline"
+                                        onClick={() => refusals.actOn(`module:${module.id}`, () => router.post(
+                                            `/catalog/courses/${course.id}/modules/${module.id}/status`,
+                                            { status: module.status === 'published' ? 'draft' : 'published' },
+                                            { preserveScroll: true },
+                                        ))}
+                                    >
+                                        {module.status === 'published' ? (t.outline_unpublish || 'Unpublish') : (t.outline_publish || 'Publish')}
+                                    </button>
+                                )}
                             </div>
                             {/* §12 "Delete draft modules if safe". Offered only
                                 when the module is empty: the server refuses
@@ -550,7 +556,7 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                     className="text-xs text-red-700"
                                     onClick={() => {
                                         if (window.confirm((t.outline_delete_module_confirm || 'Delete the empty module ":title"?').replace(':title', module.title))) {
-                                            router.delete(`/catalog/courses/${course.id}/modules/${module.id}`, { preserveScroll: true });
+                                            refusals.actOn(`module:${module.id}`, () => router.delete(`/catalog/courses/${course.id}/modules/${module.id}`, { preserveScroll: true }));
                                         }
                                     }}
                                 >
@@ -558,13 +564,14 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                 </button>
                             )}
                         </div>
+                        <FormErrors errors={refusals.errorsFor(`module:${module.id}`)} className="mb-2 rounded border border-red-200 bg-red-50 py-2 pe-3" />
                         {module.lessons.length === 0 && <p className="text-sm text-gray-500">{t.outline_no_lessons || 'No lessons yet.'}</p>}
                         {module.lessons.map((lesson) => (
                             <div key={lesson.id} className="mb-3 border-t pt-3">
                                 <div className="mb-2 flex flex-wrap items-center gap-3">
                                     <p className="font-medium">{lesson.title}</p>
                                     <span className="text-xs uppercase text-gray-500">{t[`status_${lesson.status}`] || lesson.status}{lesson.revision_number ? ` r${lesson.revision_number}` : ''}{lesson.is_preview ? ` ${t.outline_preview_badge || 'preview'}` : ''}</span>
-                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${course.id}/lessons/${lesson.id}/preview`)}>{lesson.is_preview ? (t.outline_unmark_preview || 'Unmark preview') : (t.outline_mark_preview || 'Mark preview')}</button>
+                                    <button type="button" className="btn-secondary" onClick={() => refusals.actOn(`lesson:${lesson.id}`, () => router.post(`/catalog/courses/${course.id}/lessons/${lesson.id}/preview`, {}, { preserveScroll: true }))}>{lesson.is_preview ? (t.outline_unmark_preview || 'Unmark preview') : (t.outline_mark_preview || 'Mark preview')}</button>
                                     {/* SPEC §13 Lesson Management: "Set completion rules".
                                         Only the two rules the engine enforces are
                                         offered — §26's lesson, that a rule an admin
@@ -577,13 +584,16 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                         className="form-input ms-2 inline-block w-auto text-xs"
                                         aria-label={(t.outline_unlock_aria || 'Unlock rule for :title').replace(':title', lesson.title)}
                                         value={lesson.unlock_rule?.assessment_id ? String(lesson.unlock_rule.assessment_id) : ''}
-                                        onChange={(e) => router.post(
-                                            `/catalog/courses/${course.id}/lessons/${lesson.id}/unlock-rule`,
-                                            e.target.value
-                                                ? { mode: 'pass_assessment', assessment_id: e.target.value }
-                                                : { mode: '' },
-                                            { preserveScroll: true },
-                                        )}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            refusals.actOn(`lesson:${lesson.id}`, () => router.post(
+                                                `/catalog/courses/${course.id}/lessons/${lesson.id}/unlock-rule`,
+                                                value
+                                                    ? { mode: 'pass_assessment', assessment_id: value }
+                                                    : { mode: '' },
+                                                { preserveScroll: true },
+                                            ));
+                                        }}
                                     >
                                         <option value="">{t.outline_unlock_course_rule || 'Unlocks with the course rule'}</option>
                                         {assessments.map((a) => (
@@ -594,22 +604,26 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                         className="form-input ms-2 inline-block w-auto text-xs"
                                         aria-label={t.outline_completion_rule || 'Completion rule'}
                                         value={lesson.completion_rule || 'click'}
-                                        onChange={(e) => router.post(
-                                            `/catalog/courses/${course.id}/lessons/${lesson.id}/completion-rule`,
-                                            { completion_rule: e.target.value },
-                                            { preserveScroll: true },
-                                        )}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            refusals.actOn(`lesson:${lesson.id}`, () => router.post(
+                                                `/catalog/courses/${course.id}/lessons/${lesson.id}/completion-rule`,
+                                                { completion_rule: value },
+                                                { preserveScroll: true },
+                                            ));
+                                        }}
                                     >
                                         <option value="click">{t.outline_completes_click || 'Completes on click'}</option>
                                         <option value="required_activities">{t.outline_completes_required || 'Requires all required activities'}</option>
                                     </select>
-                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${course.id}/lessons/${lesson.id}/publish`)}>{t.outline_publish || 'Publish'}</button>
+                                    <button type="button" className="btn-secondary" onClick={() => refusals.actOn(`lesson:${lesson.id}`, () => router.post(`/catalog/courses/${course.id}/lessons/${lesson.id}/publish`, {}, { preserveScroll: true }))}>{t.outline_publish || 'Publish'}</button>
                                     {lesson.current_revision_id && (
                                         <a className="text-sm text-[#7C2D37] hover:underline" href={`/catalog/player/${lesson.id}`}>{t.outline_open_player || 'Open player'}</a>
                                     )}
                                 </div>
-                                <LessonBlockList courseId={course.id} lesson={lesson} t={t} />
-                                <LessonGlossaryForm courseId={course.id} lesson={lesson} glossaryItems={glossaryItems} t={t} />
+                                <FormErrors errors={refusals.errorsFor(`lesson:${lesson.id}`)} className="mb-2 rounded border border-red-200 bg-red-50 py-2 pe-3" />
+                                <LessonBlockList courseId={course.id} lesson={lesson} t={t} actOn={refusals.actOn} />
+                                <LessonGlossaryForm courseId={course.id} lesson={lesson} glossaryItems={glossaryItems} t={t} actOn={refusals.actOn} />
                             </div>
                         ))}
                     </section>

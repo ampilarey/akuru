@@ -1154,4 +1154,9 @@ return [
     // A learner's access dates refused on the enrolment page (slice CT6b-2a)
     'error_access_end_before_start' => 'Access cannot end before it starts.',
     'error_date_unreadable' => 'That is not a date this can read.',
+
+    // What the office is told when an enrolment or a deleted course refuses a step (slice CT6b-2b)
+    'error_suspend_not_live' => 'Only a live enrolment can be suspended; this one is :status.',
+    'error_reinstate_not_suspended' => 'Only a suspended enrolment can be reinstated.',
+    'error_restore_not_deleted' => 'That course has not been deleted.',
 ];

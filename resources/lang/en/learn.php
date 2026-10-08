@@ -316,4 +316,14 @@ return [
     'error_access_ended' => 'Your access to this course ended on :date.',
     'error_access_closed' => 'This course is not open to you at the moment.',
     'error_enrol_forbidden' => 'Your session may have expired or this contact is already registered. Please go back to the course and start enrollment again, or use a different mobile/email.',
+
+    // Why a certificate is not yet earned: the course page lists these, and the issue form says them (slice CT6b-2b)
+    'cert_reason_no_enrolment' => 'No matching enrollment.',
+    'cert_reason_progress' => 'Progress is below the minimum.',
+    'cert_reason_payment' => 'Payment is not complete.',
+    'cert_reason_teacher_approval' => 'Teacher approval is required.',
+    'cert_reason_attendance' => 'Attendance is below the minimum.',
+    'cert_reason_awaiting_marking' => 'Required assessment is awaiting teacher marking.',
+    'cert_reason_no_score' => 'Required assessment has no score.',
+    'cert_reason_score' => 'Assessment score is below the minimum.',
 ];

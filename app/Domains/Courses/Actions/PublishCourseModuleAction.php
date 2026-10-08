@@ -41,7 +41,7 @@ class PublishCourseModuleAction
 
         if ($to === ModuleStatus::Published && ! $this->hasLessons($module)) {
             throw ValidationException::withMessages([
-                'module' => 'Add a lesson before publishing this module — an empty published module is a heading students can open to find nothing.',
+                'module' => __('teach.error_module_empty_publish'),
             ]);
         }
 

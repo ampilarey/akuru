@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
+import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 import AppShell from '../../../Layouts/AppShell';
 
 const EMPTY_TEMPLATE = {
@@ -50,6 +51,10 @@ export default function Certificates({
         completion_date: new Date().toISOString().slice(0, 10),
         teacher_approved: false,
     });
+    // Each form showed one field's refusal and dropped the rest — a template
+    // with a bad rule or kind, an issue refused for the academic year, said
+    // nothing — and a refused Revoke was shown nowhere (slice CT6b-2b).
+    const refusals = useRowRefusals(templateForm, issueForm);
 
     const startEdit = (row) => {
         setEditingId(row.id);
@@ -162,6 +167,7 @@ export default function Certificates({
                     {editingId && <button type="button" className="btn-secondary" onClick={cancelEdit}>{t.rubric_cancel || 'Cancel'}</button>}
                 </div>
                 {templateForm.errors.name && <p className="md:col-span-3 text-sm text-red-600">{templateForm.errors.name}</p>}
+                <FormErrors errors={templateForm.errors} except={['name']} className="md:col-span-3" />
             </form>
 
             <form
@@ -198,8 +204,10 @@ export default function Certificates({
                 <div className="md:col-span-3">
                     <button type="submit" className="btn-primary" disabled={issueForm.processing}>{t.cert_issue || 'Issue'}</button>
                 </div>
-                {issueForm.errors.student_id && <p className="md:col-span-3 text-sm text-red-600">{issueForm.errors.student_id}</p>}
+                {issueForm.errors.student_id && <p className="md:col-span-3 text-sm text-red-600" data-testid="cert-issue-refusal">{issueForm.errors.student_id}</p>}
+                <FormErrors errors={issueForm.errors} except={['student_id']} className="md:col-span-3" />
             </form>
+            <FormErrors errors={refusals.unplaced} className="mb-4 rounded border border-red-200 bg-red-50 py-2 pe-3" />
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
@@ -232,12 +240,13 @@ export default function Certificates({
                                             <button
                                                 type="button"
                                                 className="text-sm text-red-700"
-                                                onClick={() => router.post(`/catalog/certificates/${row.id}/revoke`)}
+                                                onClick={() => refusals.actOn(`issued:${row.id}`, () => router.post(`/catalog/certificates/${row.id}/revoke`, {}, { preserveScroll: true }))}
                                             >
                                                 {t.cert_revoke || 'Revoke'}
                                             </button>
                                         </>
                                     )}
+                                    <FormErrors errors={refusals.errorsFor(`issued:${row.id}`)} className="mt-1 text-start" />
                                 </td>
                             </tr>
                         ))}

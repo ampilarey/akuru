@@ -17,7 +17,7 @@ class SaveArabicHarakahAction
         $name = trim((string) ($data['display_name'] ?? ''));
         if ($key === '' || $symbol === '' || $name === '') {
             throw ValidationException::withMessages([
-                'key_name' => 'Key, symbol, and display name are required.',
+                'key_name' => __('teach.error_arabic_harakah_fields'),
             ]);
         }
 

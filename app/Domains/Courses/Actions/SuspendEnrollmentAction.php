@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Actions;
 use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Offerings\Actions\ReserveOfferingSeatAction;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Lang;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -52,7 +53,11 @@ class SuspendEnrollmentAction
     {
         if (! in_array((string) $enrollment->status, self::SUSPENDABLE, true)) {
             throw ValidationException::withMessages([
-                'status' => 'Only a live enrolment can be suspended; this one is '.$enrollment->status.'.',
+                'status' => __('admin.error_suspend_not_live', [
+                    'status' => Lang::has('admin.enrolments_status_'.$enrollment->status)
+                        ? __('admin.enrolments_status_'.$enrollment->status)
+                        : (string) $enrollment->status,
+                ]),
             ]);
         }
 
@@ -76,7 +81,7 @@ class SuspendEnrollmentAction
     {
         if ((string) $enrollment->status !== 'suspended') {
             throw ValidationException::withMessages([
-                'status' => 'Only a suspended enrolment can be reinstated.',
+                'status' => __('admin.error_reinstate_not_suspended'),
             ]);
         }
 

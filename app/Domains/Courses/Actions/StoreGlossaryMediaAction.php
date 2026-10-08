@@ -85,7 +85,7 @@ class StoreGlossaryMediaAction
 
             if (! in_array($mime, $blockType->allowedMimes(), true)) {
                 throw ValidationException::withMessages([
-                    self::fileField($slot) => 'That slot takes '.$kind.'. '.$mime.' is not '.$kind.'.',
+                    self::fileField($slot) => __('teach.error_glossary_slot_'.$kind, ['mime' => $mime]),
                 ]);
             }
 

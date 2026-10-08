@@ -1,4 +1,5 @@
 import { Link, router } from '@inertiajs/react';
+import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
 import AppShell from '../../Layouts/AppShell';
 
 // What keeps a deleted course: the table each count comes from, named in the
@@ -6,11 +7,14 @@ import AppShell from '../../Layouts/AppShell';
 const holdName = (t, table) => t[`courses_deleted_hold_${table}`] || table;
 
 export default function DeletedCourses({ courses = [], t = {} }) {
+    // A refused restore — a course restored already, from another tab — was
+    // shown nowhere (slice CT6b-2b); it is said on its row.
+    const refusals = useRowRefusals();
     const restore = (course) => {
         if (!window.confirm((t.courses_deleted_restore_confirm || 'Restore ":title"? It comes back as a draft, not on the public site.').replace(':title', course.title))) {
             return;
         }
-        router.post(`/admin/public-site/courses/${course.id}/restore`, {}, { preserveScroll: true });
+        refusals.actOn(`course:${course.id}`, () => router.post(`/admin/public-site/courses/${course.id}/restore`, {}, { preserveScroll: true }));
     };
 
     return (
@@ -72,6 +76,7 @@ export default function DeletedCourses({ courses = [], t = {} }) {
                                     <button type="button" className="btn-secondary text-xs" onClick={() => restore(course)}>
                                         {t.courses_deleted_restore || 'Restore'}
                                     </button>
+                                    <FormErrors errors={refusals.errorsFor(`course:${course.id}`)} className="mt-1 whitespace-normal" />
                                 </td>
                             </tr>
                         ))}

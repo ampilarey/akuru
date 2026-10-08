@@ -28,7 +28,7 @@ class RestoreCourseAction
     {
         if (! $course->trashed()) {
             throw ValidationException::withMessages([
-                'course' => 'That course has not been deleted.',
+                'course' => __('admin.error_restore_not_deleted'),
             ]);
         }
 

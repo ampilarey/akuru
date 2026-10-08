@@ -16,18 +16,21 @@ class TransitionCourseWorkflowAction
             : CourseWorkflowStatus::tryFrom((string) $course->workflow_status);
 
         if ($from === null) {
-            throw ValidationException::withMessages(['workflow_status' => 'Unknown current status.']);
+            throw ValidationException::withMessages(['workflow_status' => __('teach.error_workflow_unknown')]);
         }
 
         if (! in_array($to, $from->allowedTransitions(), true)) {
             throw ValidationException::withMessages([
-                'workflow_status' => 'Cannot move from '.$from->value.' to '.$to->value.'.',
+                'workflow_status' => __('teach.error_workflow_move', [
+                    'from' => __('teach.workflow_'.$from->value),
+                    'to' => __('teach.workflow_'.$to->value),
+                ]),
             ]);
         }
 
         if ($to === CourseWorkflowStatus::Published && ! $canPublish) {
             throw ValidationException::withMessages([
-                'workflow_status' => 'Publishing requires courses.publish.',
+                'workflow_status' => __('teach.error_publish_permission'),
             ]);
         }
 

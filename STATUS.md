@@ -4983,6 +4983,105 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pc. What an author, a marker and the certificate office are told when a step is refused, in the page's language, and shown (C19 slice CT6b-2b, 2026-10-08)
+
+The course domain's refusals were English inside the actions: *Cannot move
+from draft to archived.*, *This module still has 1 lessons. Move or delete
+those first (SPEC §12).*, and the learner's *Still needed for this
+certificate:* list — *Progress is below the minimum.* Most of the buttons
+that met them post with `router` rather than a form, and nothing showed what
+came back:
+- the catalog's Submit review, Archive, review decision, unlock rule and
+  Copy;
+- the outline's module and block order, unlock rule, completion rule,
+  lesson Publish and Preview. Its one shown refusal (a module's) sat once
+  above the list — off screen, since `preserveScroll` keeps the author
+  where they were;
+- a certificate's Revoke, an assessment's question order, a deleted
+  course's Restore, a forum's moderation.
+
+The forms dropped all but a field or two: the certificate template and
+issue forms, the question bank (a matching question's pairs), the lesson,
+module and block forms.
+
+**Through the phrase books:**
+- `learn` gains the eight certificate reasons. The course page lists them;
+  the issue form says them.
+- `teach` gains 82 rows, every refusal of the course, outline, block,
+  question, assessment, activity, subject, glossary, Arabic reference, club,
+  certificate and marking actions.
+- `admin` gains the office's three (suspend, reinstate, restore). `forum`
+  gains its one.
+- A refusal built from parts is built in the page's language:
+  - a workflow move names both statuses in it (*Cannot move from Draft to
+    Archived.*);
+  - a module's contents are counted in it (*1 lesson*, `trans_choice`);
+  - an enrolment's status is named from the office's own labels.
+- The English is unchanged except where it spoke to a developer:
+  - *(SPEC §12)* and *SPEC §19 defines* are gone;
+  - *Publishing requires courses.publish.* now reads *You do not have
+    permission to publish courses.*;
+  - *Quiz and assignment engines are not built in this slice*,
+    *media_id, mime, and original_name* and *the thing this replaces* are
+    gone.
+- A certificate that needs the final assessment *and* a minimum score
+  listed *awaiting teacher marking* twice; the list now says each reason
+  once.
+
+**On the pages:**
+- `FormErrors` gains `useRowRefusals`: a page remembers which row's button
+  it last pressed, and that row says what came back. Errors a form on the
+  page already shows are left to it.
+- The catalog, the outline, the certificates, the assessments, the deleted
+  courses and the forum topic use it.
+- The certificate forms, the question bank and the lesson, module and block
+  forms now list every refused field.
+- A module's Publish is `courses.publish`, which the dean does not hold. The
+  outline offered it to every author, and the walk pressed it into a bare
+  *Forbidden*. It is now offered to those who may press it, as the
+  catalog's buttons are.
+
+**Tests:** `AuthoringRefusalsSpeakThreeLanguagesTest`, 11 tests.
+- No English left in the 32 files. The check is the tokenizer's, two ways:
+  any literal that reads as a sentence, and any literal with words inside
+  a `withMessages(...)` call, where a refusal built of pieces hides from a
+  sentence pattern.
+- Every key those files use — the ones built from a code included — is in
+  Dhivehi and Arabic.
+- Served:
+  - a learner's Dhivehi course page lists the certificate reasons in
+    Dhivehi;
+  - the Arabic issue form refuses an unearned certificate in Arabic;
+  - a workflow move is refused in Dhivehi, both statuses named in Dhivehi;
+  - a course sent back without a reason is refused in Dhivehi;
+  - a module's deletion is refused in Arabic, naming its lesson;
+  - a suspension is refused in Dhivehi, its status named in Dhivehi.
+- A reason is said once. A module's Publish is offered only with
+  `courses.publish`. Every `router` visit on the six pages says where it
+  came from.
+- Four deliberate breaks each fail it: an English literal put back, a
+  Dhivehi row taken out, the reasons left undeduplicated, a Revoke posting
+  without its row.
+- `DeleteCourseModuleTest` now asserts the whole sentence (*This module
+  still has 1 lesson. Move or delete those first.*) where it asserted *1
+  lessons* and *§12*.
+
+**Walk:** `course-screens-language.mjs`, **381/381**.
+- The system admin publishes an empty module from the Dhivehi outline and
+  reads *މި މޮޑިއުލް ޝާއިޢުކުރުމުގެ ކުރިން ފިލާވަޅެއް އިތުރުކުރައްވާ …* beside
+  the module, then deletes it.
+- The dean's Dhivehi outline offers no module Publish.
+- The dean is refused `SMOKE-Lang-Cert` (teacher approval, no course) for
+  the pupil on the Arabic page: *تلزم موافقة المعلم.*
+- Against `main`'s build the same three steps fail (378/381): the module's
+  refusal is not beside it, the dean is offered the button, and the issue
+  form says no Arabic.
+- `SmokeMarkerSeeder` removes the module and the template.
+
+**Still open (CT6b-2c):** the Offerings domain's refusals (16) and the
+Qur'an component's (16). `DeleteCourseAction::executeStrict` stays
+English: only a script calls it, as with the console commands.
+
 ## 5pb. What a learner is told when a step is refused, in the page's language, and shown (C19 slice CT6b-2a, 2026-10-08)
 
 The learner's refusals were written in English inside the actions —

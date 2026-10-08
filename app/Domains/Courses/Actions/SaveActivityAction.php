@@ -20,12 +20,12 @@ class SaveActivityAction
         $course = Course::query()->findOrFail((int) $data['course_id']);
         $pattern = ActivityPattern::tryFrom((string) ($data['pattern'] ?? ''));
         if ($pattern === null) {
-            throw ValidationException::withMessages(['pattern' => 'Activity must use one of the four base patterns.']);
+            throw ValidationException::withMessages(['pattern' => __('teach.error_activity_pattern_base')]);
         }
 
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'Activity title is required.']);
+            throw ValidationException::withMessages(['title' => __('teach.error_activity_title')]);
         }
 
         $payload = [
@@ -96,7 +96,7 @@ class SaveActivityAction
         }
         $correct = array_values(array_filter(array_map('strval', $data['correct_ids'] ?? [])));
         if ($options === [] || $correct === []) {
-            throw ValidationException::withMessages(['data' => 'Selection activities need options and at least one correct id.']);
+            throw ValidationException::withMessages(['data' => __('teach.error_activity_selection')]);
         }
 
         return [
@@ -118,7 +118,7 @@ class SaveActivityAction
             is_array($data['acceptable'] ?? null) ? $data['acceptable'] : [],
         )));
         if ($acceptable === []) {
-            throw ValidationException::withMessages(['data' => 'Text-input activities need at least one acceptable answer.']);
+            throw ValidationException::withMessages(['data' => __('teach.error_activity_text_input')]);
         }
 
         return [
@@ -146,7 +146,7 @@ class SaveActivityAction
         }
         $order = array_values(array_filter(array_map('strval', $data['correct_order'] ?? [])));
         if (count($items) < 2 || $order === []) {
-            throw ValidationException::withMessages(['data' => 'Arrange activities need at least two items and a correct order.']);
+            throw ValidationException::withMessages(['data' => __('teach.error_activity_arrange')]);
         }
 
         return [
@@ -210,7 +210,7 @@ class SaveActivityAction
 
         if (! $exists) {
             throw ValidationException::withMessages([
-                'settings' => ['Unknown Arabic '.$kind.' reference.'],
+                'settings' => [$kind === 'letter' ? __('teach.error_arabic_letter') : __('teach.error_arabic_haraka')],
             ]);
         }
 
@@ -238,7 +238,7 @@ class SaveActivityAction
 
         if ($surahId === null) {
             throw ValidationException::withMessages([
-                'settings' => ['A surah is required for a recitation range.'],
+                'settings' => [__('teach.error_recitation_surah')],
             ]);
         }
 
@@ -249,7 +249,7 @@ class SaveActivityAction
 
         if ($ayahCount < 1 || $start < 1 || $end < $start || $end > $ayahCount) {
             throw ValidationException::withMessages([
-                'settings' => ['Ayah range is outside the surah.'],
+                'settings' => [__('teach.error_ayah_range')],
             ]);
         }
 
@@ -269,7 +269,7 @@ class SaveActivityAction
         $id = (int) $value;
         if (app(QuranReferenceReader::class)->findSurah($id) === null) {
             throw ValidationException::withMessages([
-                'settings' => ['Unknown Quran surah reference.'],
+                'settings' => [__('teach.error_surah_reference')],
             ]);
         }
 

@@ -1,5 +1,6 @@
 import { useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import FormErrors from '../../../Components/FormErrors';
 import AppShell from '../../../Layouts/AppShell';
 
 const SAMPLE_OPTIONS = {
@@ -387,6 +388,11 @@ export default function Questions({
                 </button>
                 {form.errors.question_text && <span className="text-xs text-red-600">{form.errors.question_text}</span>}
                 {form.errors.question_type && <span className="text-xs text-red-600">{form.errors.question_type}</span>}
+                {/* The rest of what the server can refuse — a matching
+                    question's pairs (`correct_answer`), the options, the
+                    points — had no line at all, so a refused save looked like
+                    one that worked (slice CT6b-2b). */}
+                <FormErrors errors={form.errors} except={['question_text', 'question_type', 'normalization_settings', 'file', 'video_url']} className="md:col-span-2" />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

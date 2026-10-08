@@ -35,4 +35,7 @@ return [
     'by' => 'بقلم :name',
     'open' => 'النقاش',
     'moderator_note' => 'أنت مشرف هذا المنتدى: ثبّت أو أغلق أو أخفِ ما يلزم.',
+
+    // A moderation step the forum does not know (slice CT6b-2b)
+    'error_unknown_action' => 'إجراء غير معروف.',
 ];
