@@ -100,12 +100,12 @@ class SaveActivityAttemptAction
 
         if (! $state['allowed'] && $state['used'] >= 1) {
             throw ValidationException::withMessages([
-                'attempt' => ['Retakes are not allowed for this activity.'],
+                'attempt' => [__('learn.error_retakes_not_allowed')],
             ]);
         }
         if ($state['remaining'] !== null && $state['remaining'] <= 0) {
             throw ValidationException::withMessages([
-                'attempt' => ['Retake limit reached.'],
+                'attempt' => [__('learn.error_retake_limit')],
             ]);
         }
     }

@@ -36,7 +36,7 @@ class ServeStudentCertificateAction
         abort_unless($userId !== null, 403);
 
         $student = app(ResolveStudentForUserAction::class)->execute($userId);
-        abort_unless($student !== null, 403, 'A student profile is required.');
+        abort_unless($student !== null, 403, __('learn.error_needs_student'));
 
         $certificate = IssuedCertificate::query()
             ->where('id', $certificateId)

@@ -38,7 +38,7 @@ class StartOrCompleteLessonProgressAction
             $completion = app(EvaluateLessonCompletionAction::class)->execute($lesson, (int) $enrollment->id);
             if (! $completion['allowed']) {
                 throw ValidationException::withMessages([
-                    'lesson' => 'Finish the required activities first: '.implode(', ', $completion['outstanding']).'.',
+                    'lesson' => __('learn.error_lesson_unfinished', ['activities' => implode(', ', $completion['outstanding'])]),
                 ]);
             }
         }

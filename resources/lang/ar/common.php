@@ -218,4 +218,14 @@ return [
     'review_my_reports' => 'تقاريرك السابقة عن هذه الورقة',
     'library_revision_note' => 'ما الذي تغيّر (للمحكِّمين)',
     'library_reviewers_link' => 'المحكِّمون',
+
+    // A discount code refused at any checkout — a course, the Library, the Bookstore (slice CT6b-2a)
+    'error_discount_not_found' => 'رمز الخصم غير موجود أو غير مفعّل.',
+    'error_discount_not_here' => 'هذا الرمز غير صالح لهذا الشراء.',
+    'error_discount_not_yet' => 'رمز الخصم لم يبدأ بعد.',
+    'error_discount_ended' => 'انتهت صلاحية رمز الخصم.',
+    'error_discount_no_wallet' => 'لا يمكن استخدام هذا الرمز مع الدفع من المحفظة.',
+    'error_discount_below_minimum' => 'قيمة الطلب أقل من الحد الأدنى لهذا الرمز.',
+    'error_discount_used_up' => 'استُنفدت مرات استخدام رمز الخصم.',
+    'error_discount_used_by_you' => 'لقد استخدمت هذا الرمز من قبل.',
 ];

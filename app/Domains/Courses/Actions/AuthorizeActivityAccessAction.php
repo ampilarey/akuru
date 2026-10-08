@@ -23,14 +23,14 @@ class AuthorizeActivityAccessAction
     {
         $activity = Activity::query()->findOrFail($activityId);
         $student = app(ResolveStudentForUserAction::class)->execute($userId);
-        abort_unless($student !== null, 403, 'A student profile is required.');
+        abort_unless($student !== null, 403, __('learn.error_needs_student'));
 
         $enrollment = CourseEnrollment::query()
             ->where('course_id', $activity->course_id)
             ->where('unified_student_id', $student['id'])
             ->whereIn('status', ['active', 'approved', 'completed'])
             ->first();
-        abort_unless($enrollment !== null, 403, 'Enrollment is required.');
+        abort_unless($enrollment !== null, 403, __('learn.error_needs_enrolment'));
 
         return [
             'activity_id' => $activity->id,

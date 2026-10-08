@@ -1147,4 +1147,8 @@ return [
 
     // A published course keeps its offering when it is deleted (slice CT4, STATUS §5oq).
     'courses_deleted_hold_course_offerings' => 'ކްލާސްތައް',
+
+    // A learner's access dates refused on the enrolment page (slice CT6b-2a)
+    'error_access_end_before_start' => 'ވަދެވޭ މުއްދަތު ނިމޭ ތާރީޚަކީ ފެށޭ ތާރީޚުގެ ކުރީގެ ތާރީޚަކަށް ނުވާނެ.',
+    'error_date_unreadable' => 'އެއީ ކިޔެވޭ ތާރީޚެއް ނޫން.',
 ];

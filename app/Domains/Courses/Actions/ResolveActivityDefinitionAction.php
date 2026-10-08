@@ -15,7 +15,7 @@ class ResolveActivityDefinitionAction
         $activity = Activity::query()->find($activityId);
         if ($activity === null) {
             throw ValidationException::withMessages([
-                'activity' => ['Activity not found.'],
+                'activity' => [__('learn.error_activity_not_found')],
             ]);
         }
 

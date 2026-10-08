@@ -29,14 +29,14 @@ class EnrollSelfLearningAction
 
         if ($status !== CourseWorkflowStatus::Published) {
             throw ValidationException::withMessages([
-                'course_id' => 'Only published courses can be enrolled.',
+                'course_id' => __('learn.error_enrol_unpublished'),
             ]);
         }
 
         $student = app(ResolveStudentForUserAction::class)->execute($userId);
         if ($student === null) {
             throw ValidationException::withMessages([
-                'student' => 'A student profile is required to enroll.',
+                'student' => __('learn.error_enrol_no_student'),
             ]);
         }
 
@@ -58,7 +58,7 @@ class EnrollSelfLearningAction
             }
             if ($offering !== null && (int) $offering['course_id'] !== $courseId) {
                 throw ValidationException::withMessages([
-                    'course_offering_id' => 'Offering does not belong to this course.',
+                    'course_offering_id' => __('learn.error_enrol_wrong_offering'),
                 ]);
             }
 

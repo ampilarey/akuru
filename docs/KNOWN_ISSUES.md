@@ -209,8 +209,9 @@ language.
 
 Laravel's own validation messages were English in every language, because
 there was no `validation.php` in `resources/lang` — **fixed (2026-10-08,
-STATUS §5oz)**. The course, offering and progress actions' own refusals
-are still English (BACKLOG C19, slice CT6b-2).
+STATUS §5oz)**. The learner's own refusals are in the page's language since
+STATUS §5pb; the teacher's and the office's are still English (BACKLOG C19,
+slice CT6b-2b).
 
 ## Found by the middle-name walk (2026-10-08)
 
@@ -2063,6 +2064,23 @@ two more questions of every book: is a sentence translated by a word, and does
 one translation stand for sentences that say different things. The language
 walk refuses a Dhivehi label that is nothing but one of the pasted words.
 STATUS §5pa.
+
+### 37. A refused enrol or attempt was shown by no page
+
+**Fixed (2026-10-08, slice CT6b-2a) — found while scoping C19's CT6b-2.**
+
+The learner catalog and the course page read no errors at all. A wrong
+discount code, a full intake, an unpublished course or a learner without a
+student profile was refused by the server, and the page sent back looked as
+it had before: the Enroll button simply did nothing. The activity and the
+assessment pages read only their own field's error, so an attempt refused
+under `attempt` — no retakes left, time up, not started — was silent too.
+Every one of those reasons was English besides.
+
+The pages now show what came back (`FormErrors` on the catalog and the course
+page; the attempt's reason beside the submit button), in the page's language.
+A one-step walk against a build of the old catalog reads nothing where the new
+one reads the Dhivehi reason. STATUS §5pb.
 
 ---
 

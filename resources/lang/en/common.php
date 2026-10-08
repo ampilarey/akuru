@@ -225,4 +225,14 @@ return [
     'review_my_reports' => 'Your earlier reports on this paper',
     'library_revision_note' => 'What changed (for the reviewers)',
     'library_reviewers_link' => 'Reviewers',
+
+    // A discount code refused at any checkout — a course, the Library, the Bookstore (slice CT6b-2a)
+    'error_discount_not_found' => 'Discount code not found or inactive.',
+    'error_discount_not_here' => 'This code is not valid for this purchase.',
+    'error_discount_not_yet' => 'Discount code is not active yet.',
+    'error_discount_ended' => 'Discount code has ended.',
+    'error_discount_no_wallet' => 'This code cannot be combined with wallet payment.',
+    'error_discount_below_minimum' => 'Order is below this code\'s minimum amount.',
+    'error_discount_used_up' => 'Discount code has been fully used.',
+    'error_discount_used_by_you' => 'You have already used this code.',
 ];

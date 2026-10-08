@@ -82,4 +82,10 @@ return [
     'frequency_daily' => 'daily',
     'frequency_weekly' => 'weekly',
     'frequency_monthly' => 'monthly',
+
+    // A recitation refused (slice CT6b-2a)
+    'error_no_enrolment' => 'This student has no course enrolment to record against. The office must enrol them first.',
+    'error_recitation_mode' => 'Invalid recitation mode.',
+    'error_unknown_surah' => 'Unknown surah.',
+    'error_assignment_not_found' => 'Assignment not found for this student.',
 ];

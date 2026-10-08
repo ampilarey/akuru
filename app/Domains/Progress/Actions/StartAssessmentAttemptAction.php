@@ -156,7 +156,7 @@ class StartAssessmentAttemptAction
 
         if ($state['remaining'] !== null && $state['remaining'] <= 0) {
             throw ValidationException::withMessages([
-                'attempt' => ['Retake limit reached.'],
+                'attempt' => [__('learn.error_retake_limit')],
             ]);
         }
     }

@@ -50,7 +50,7 @@ class ListUnansweredRequiredQuestionsAction
                 $label = trim((string) ($snapshot['question_text'] ?? ''));
             }
 
-            $missing[] = $label !== '' ? $label : 'Question '.$questionId;
+            $missing[] = $label !== '' ? $label : __('learn.question_numbered', ['id' => $questionId]);
         }
 
         return $missing;

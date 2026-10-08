@@ -21,7 +21,7 @@ class SaveAssessmentAttemptAction
 
         if ($attempt === null) {
             throw ValidationException::withMessages([
-                'attempt' => ['Start the assessment before saving answers.'],
+                'attempt' => [__('learn.error_start_before_saving')],
             ]);
         }
 
@@ -35,7 +35,7 @@ class SaveAssessmentAttemptAction
 
         if ($deadline['expired']) {
             throw ValidationException::withMessages([
-                'attempt' => ['Time is up for this assessment. Your saved answers have been kept.'],
+                'attempt' => [__('learn.error_time_up')],
             ]);
         }
 

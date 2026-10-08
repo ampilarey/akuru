@@ -20,7 +20,7 @@ class ReserveOfferingSeatAction
             // always was, and `suspended` could not be until the status existed.
             occupyingStatuses: ['active', 'approved', 'pending', 'completed'],
             waitlistEnabledColumn: null,
-            fullMessage: 'This offering has no remaining seats.',
+            fullMessage: __('learn.error_offering_full'),
             // `course_enrollments` soft-deletes (§29), and this counts through
             // the query builder for the row locks — which knows nothing about
             // the trait. A soft-deleted enrolment was holding its seat forever.

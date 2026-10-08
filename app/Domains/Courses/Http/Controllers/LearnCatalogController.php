@@ -51,7 +51,7 @@ class LearnCatalogController extends Controller
 
         return redirect()->route('learn.courses.show', $course)->with(
             'success',
-            $result['paid_with_wallet'] ? 'Paid with wallet — you are enrolled.' : 'Enrolled.'
+            $result['paid_with_wallet'] ? __('learn.flash_enrolled_wallet') : __('learn.flash_enrolled')
         );
     }
 }
