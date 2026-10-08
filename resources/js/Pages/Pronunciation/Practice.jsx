@@ -73,17 +73,17 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
         router.post('/learn/pronounce', form, { preserveScroll: true, onSuccess: () => setBlob(null) });
     };
 
-    const letter = letters.find((row) => String(row.id) === String(letterId));
-    const haraka = harakas.find((row) => String(row.id) === String(harakaId));
+    const letter = letters.find((row) => (String(row.id) === String(letterId)));
+    const haraka = harakas.find((row) => (String(row.id) === String(harakaId)));
 
     return (
         <AppShell title={t.pronounce_title || 'Pronunciation practice'}>
             <div className="mb-6 rounded-lg border bg-white p-6 text-center">
                 <div className="mb-4 flex justify-center gap-3">
-                    <select className="form-input" value={letterId} onChange={(e) => setLetterId(e.target.value)}>
+                    <select className="form-input" aria-label={t.pronounce_letter || 'Letter'} value={letterId} onChange={(e) => setLetterId(e.target.value)}>
                         {letters.map((row) => <option key={row.id} value={row.id}>{row.char} · {row.key_name}</option>)}
                     </select>
-                    <select className="form-input" value={harakaId} onChange={(e) => setHarakaId(e.target.value)}>
+                    <select className="form-input" aria-label={t.pronounce_haraka || 'Haraka'} value={harakaId} onChange={(e) => setHarakaId(e.target.value)}>
                         {harakas.map((row) => <option key={row.id} value={row.id}>{row.symbol} · {row.key_name}</option>)}
                     </select>
                 </div>
@@ -140,7 +140,7 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
                         {attempts.map((attempt) => (
                             <tr key={attempt.id} className="border-t">
                                 <td className="px-3 py-2">{attempt.at}</td>
-                                <td className="px-3 py-2">{attempt.status?.replaceAll('_', ' ')}</td>
+                                <td className="px-3 py-2">{t[`pronounce_status_${attempt.status}`] || attempt.status?.replaceAll('_', ' ')}</td>
                                 <td className="px-3 py-2">{attempt.teacher_review_required ? t.pronounce_waiting || 'waiting' : t.pronounce_done || 'done'}</td>
                             </tr>
                         ))}

@@ -5,7 +5,7 @@ export default function Schedule({ student, sessions = [] }) {
     const t = usePage().props.i18n?.learn || {};
 
     return (
-        <AppShell title={t.schedule || 'My schedule'}>
+        <AppShell title={t.schedule_title || 'My schedule'}>
             {!student && <p className="text-sm text-gray-600">{t.no_profile || 'No student profile is linked to this account.'}</p>}
             {student && sessions.length === 0 && <p className="text-sm text-gray-600">{t.no_sessions || 'No scheduled sessions yet.'}</p>}
             <ul className="space-y-3">

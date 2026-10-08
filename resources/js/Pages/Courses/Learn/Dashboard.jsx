@@ -10,12 +10,8 @@ import WorkspaceTiles from '../../../Components/WorkspaceTiles';
  * student most wants ("how much is left?") was both unlabelled and, since
  * nothing sent a total, unanswerable.
  */
-const STATUS_LABELS = {
-    not_started: 'Not started',
-    in_progress: 'In progress',
-    submitted: 'Awaiting marking',
-    scored: 'Marked',
-};
+// An assessment's state, named from the `learn` book (slice CT7a).
+const statusLabel = (t, status) => t[`assessment_status_${status}`] || status;
 
 function Stat({ label, value }) {
     return (
@@ -27,7 +23,7 @@ function Stat({ label, value }) {
 }
 
 function AssessmentRow({ row, t }) {
-    const status = STATUS_LABELS[row.status] || row.status;
+    const status = statusLabel(t, row.status);
     const mark = row.score !== null && row.score !== undefined
         ? `${row.score}${row.max_score !== null && row.max_score !== undefined ? ` / ${row.max_score}` : ''}`
         : null;
@@ -129,10 +125,10 @@ export default function Dashboard({ student, enrollments, waiting = [], upcoming
                                 {row.offering && (
                                     <p className="text-sm text-gray-600">
                                         {row.offering.title}
-                                        {row.offering.delivery_mode_label ? ` · ${row.offering.delivery_mode_label}` : ''}
+                                        {row.offering.delivery_mode ? ` · ${t[`delivery_mode_${row.offering.delivery_mode}`] || row.offering.delivery_mode_label}` : ''}
                                     </p>
                                 )}
-                                <p className="text-sm text-gray-600">{row.status}</p>
+                                <p className="text-sm text-gray-600">{t[`enrol_status_${row.status}`] || row.status}</p>
                             </div>
                             <div className="flex flex-wrap gap-2 text-sm">
                                 <a className="chip-link" href={`/learn/courses/${row.course_id}`}>{t.course || 'Course'}</a>

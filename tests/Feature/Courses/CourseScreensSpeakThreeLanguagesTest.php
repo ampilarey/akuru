@@ -30,7 +30,9 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\CourseSubject;
 use App\Domains\Identity\Models\User;
+use App\Domains\Offerings\Enums\DeliveryMode;
 use App\Domains\Offerings\Models\CourseOffering;
+use App\Domains\Progress\Enums\LessonProgressStatus;
 use App\Enums\Hifz\HifzMilestoneStatus;
 use App\Enums\Hifz\HifzMilestoneType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -92,6 +94,12 @@ function translatedCourseScreens(): array
         'Courses/Clubs/Index' => 'teach',
         'Courses/Clubs/Roster' => 'teach',
         'Courses/Clubs/AttendanceSheet' => 'teach',
+        'Courses/Learn/Dashboard' => 'learn',
+        'Courses/Learn/Catalog' => 'learn',
+        'Courses/Learn/Show' => 'learn',
+        'Courses/Learn/Schedule' => 'learn',
+        'Courses/Learn/ArabicReport' => 'learn',
+        'Pronunciation/Practice' => 'learn',
     ];
 }
 
@@ -507,4 +515,46 @@ it('serves the Arabic reference and report, the language preview and the clubs i
     app()->setLocale('en');
     expect(__('teach.flash_club_member_gone'))->toBe('That member had already been removed.')
         ->and(__('teach.i18n_instruction', ['text' => 'x']))->toBe('Instruction sample: x');
+});
+
+it('names every code the learner’s pages show, in all three languages', function () {
+    // The `learn` book (slice CT7a): an enrolment, a lesson, an offering's
+    // delivery, an activity's pattern, an assessment's type, an assessment
+    // attempt, a pronunciation attempt and a skill.
+    $needed = [
+        ...array_map(fn ($status) => 'enrol_status_'.$status, ['pending', 'approved', 'rejected', 'active', 'completed', 'cancelled', 'suspended']),
+        ...array_map(fn ($case) => 'lesson_status_'.$case->value, LessonProgressStatus::cases()),
+        ...array_map(fn ($case) => 'delivery_mode_'.$case->value, DeliveryMode::cases()),
+        ...array_map(fn ($case) => 'pattern_'.$case->value, ActivityPattern::cases()),
+        ...array_map(fn ($case) => 'assessment_type_'.$case->value, AssessmentType::cases()),
+        ...array_map(fn ($status) => 'assessment_status_'.$status, ['not_started', 'in_progress', 'submitted', 'scored']),
+        ...array_map(fn ($status) => 'pronounce_status_'.$status, ['submitted', 'ai_checked', 'pending_review', 'teacher_reviewed', 'used_for_training']),
+        ...array_map(fn ($skill) => 'skill_'.$skill, ['listening', 'speaking', 'reading', 'writing']),
+    ];
+    [$en, $dv, $ar] = [teachBook('en', 'learn'), teachBook('dv', 'learn'), teachBook('ar', 'learn')];
+
+    foreach ($needed as $key) {
+        expect(array_key_exists($key, $en))->toBeTrue("learn.{$key} is missing in English")
+            ->and($dv[$key] ?? $en[$key] ?? null)->not->toBe($en[$key] ?? null, "learn.{$key} is missing or English in Dhivehi")
+            ->and($ar[$key] ?? $en[$key] ?? null)->not->toBe($en[$key] ?? null, "learn.{$key} is missing or English in Arabic");
+    }
+});
+
+it('serves the learner’s own pages in Dhivehi', function () {
+    $pupil = User::factory()->create();
+    makeStudent(['user_id' => $pupil->id]);
+    $learn = teachBook('dv', 'learn');
+
+    app()->setLocale('dv');
+    foreach ([
+        'learn.dashboard' => ['Courses/Learn/Dashboard', 'pending_lessons'],
+        'learn.catalog' => ['Courses/Learn/Catalog', 'pay_with_wallet'],
+        'learn.schedule' => ['Courses/Learn/Schedule', 'schedule_title'],
+        'learn.arabic-report' => ['Courses/Learn/ArabicReport', 'arabic_report_title'],
+        'learn.pronounce' => ['Pronunciation/Practice', 'pronounce_letter'],
+    ] as $route => [$component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($pupil)
+            ->get(route($route))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("i18n.learn.{$key}", $learn[$key]));
+    }
 });
