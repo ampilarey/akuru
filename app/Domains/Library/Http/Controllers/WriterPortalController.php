@@ -39,7 +39,7 @@ class WriterPortalController extends Controller
             'options' => [
                 'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),
                 'categories' => app(ListLibraryCategoriesAction::class)->execute(),
-                'languages' => ['en' => 'English', 'dv' => 'Dhivehi', 'ar' => 'Arabic'],
+                'languages' => ['en' => __('common.library_lang_en'), 'dv' => __('common.library_lang_dv'), 'ar' => __('common.library_lang_ar')],
                 // R1: the teachers a writer may name as co-authors.
                 'teachers' => $this->teachers(),
             ],
@@ -60,7 +60,7 @@ class WriterPortalController extends Controller
 
         app(SaveWriterBankDetailsAction::class)->execute((int) $request->user()->id, $data);
 
-        return back()->with('success', 'Bank details saved.');
+        return back()->with('success', __('common.library_flash_bank_saved'));
     }
 
     /** L6: request the available balance (gated by library.payouts_enabled). */
@@ -68,7 +68,7 @@ class WriterPortalController extends Controller
     {
         app(RequestWriterPayoutAction::class)->execute((int) $request->user()->id);
 
-        return back()->with('success', 'Payout requested — the admin will process it.');
+        return back()->with('success', __('common.library_flash_payout'));
     }
 
     /** L8: the author page's name, bio and portrait. */
@@ -90,7 +90,7 @@ class WriterPortalController extends Controller
 
         app(SaveWriterPublicProfileAction::class)->execute((int) $request->user()->id, $data, $request->file('photo'));
 
-        return back()->with('success', 'Author page updated.');
+        return back()->with('success', __('common.library_flash_author'));
     }
 
     /** COMMERCE_PARITY_PLAN P2: an approved writer sends both sides of the ID card. */
@@ -120,7 +120,7 @@ class WriterPortalController extends Controller
 
         app(ApplyAsWriterAction::class)->execute((int) $request->user()->id, $data, $request->file('photo'), $request->file('id_front'), $request->file('id_back'));
 
-        return back()->with('success', 'Application submitted — we will review it soon.');
+        return back()->with('success', __('common.library_flash_applied'));
     }
 
     public function storeItem(Request $request): RedirectResponse
@@ -133,7 +133,7 @@ class WriterPortalController extends Controller
             $request->file('cover'),
         );
 
-        return back()->with('success', 'Draft saved. '.$this->pagesNote($saved, $request->hasFile('pdf')));
+        return back()->with('success', __('common.library_flash_draft_saved').' '.$this->pagesNote($saved, $request->hasFile('pdf')));
     }
 
     public function updateItem(Request $request, int $item): RedirectResponse
@@ -146,7 +146,7 @@ class WriterPortalController extends Controller
             $request->file('cover'),
         );
 
-        return back()->with('success', 'Draft updated. '.$this->pagesNote($saved, $request->hasFile('pdf')));
+        return back()->with('success', __('common.library_flash_draft_updated').' '.$this->pagesNote($saved, $request->hasFile('pdf')));
     }
 
     /** What readers will get, said to the writer at save time. */
@@ -154,12 +154,12 @@ class WriterPortalController extends Controller
     {
         $count = (int) $item->page_count;
         if ($count > 0) {
-            return sprintf('%d reader page%s ready.', $count, $count === 1 ? '' : 's');
+            return trans_choice('common.library_pages_ready', $count, ['count' => $count]);
         }
 
         return $pdfUploaded || $item->pdf_media_file_id !== null
-            ? 'Your PDF has no readable text (a scan or pictures), so readers would see no pages — paste the text into the body.'
-            : 'No reader pages yet — add a body or upload a PDF.';
+            ? __('common.library_pages_scan')
+            : __('common.library_pages_none');
     }
 
     public function submit(Request $request, int $item): RedirectResponse
@@ -168,7 +168,7 @@ class WriterPortalController extends Controller
         $data = $request->validate(['note' => 'nullable|string|max:2000']);
         app(SubmitLibraryItemForReviewAction::class)->execute((int) $request->user()->id, $item, $data['note'] ?? null);
 
-        return back()->with('success', 'Submitted for review.');
+        return back()->with('success', __('common.library_flash_submitted'));
     }
 
     /**

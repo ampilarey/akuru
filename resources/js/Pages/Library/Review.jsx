@@ -1,26 +1,35 @@
 import { router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
-import FormErrors from '../../Components/FormErrors';
+import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
 
 const fill = (text, values) => Object.entries(values).reduce((out, [key, value]) => out.replace(`:${key}`, value), String(text));
 
-function AssignmentCard({ assignment, t }) {
+// accept / revise / reject, as the reviewer's buttons name them (slice LT2).
+const recommendationLabel = (t, recommendation) => t[`review_rec_${recommendation}`] || recommendation;
+
+function AssignmentCard({ assignment, t, refusals }) {
     const [comment, setComment] = useState('');
     const item = assignment.item;
+    // The buttons post without a form; a refusal — a round that closed, a
+    // paper back with its writer — is said on the card it came from.
+    const row = `assignment:${assignment.id}`;
 
-    const submit = (recommendation) =>
-        router.post(`/review/${assignment.id}`, { recommendation, comment: comment || undefined }, { preserveScroll: true });
-    const declare = () => router.post(`/review/${assignment.id}/declare`, {}, { preserveScroll: true });
+    const submit = (recommendation) => refusals.actOn(row, () => router.post(`/review/${assignment.id}`, { recommendation, comment: comment || undefined }, { preserveScroll: true }));
+    const declare = () => refusals.actOn(row, () => router.post(`/review/${assignment.id}/declare`, {}, { preserveScroll: true }));
 
     return (
         <div className="mb-4 rounded-lg border bg-white p-4" data-testid="review-assignment">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
                 <div>
                     <h2 className="text-lg font-semibold">{item?.title}</h2>
-                    <p className="text-xs text-gray-500">
-                        Assigned {assignment.assigned_at} · {fill(t.review_round || 'Round :round', { round: assignment.round })} · item {item?.status?.replaceAll('_', ' ')}
-                        {assignment.recommendation ? ` · your recommendation: ${assignment.recommendation}` : ''}
+                    <p className="text-xs text-gray-500" data-testid="review-meta">
+                        {fill(t.review_assigned || 'Assigned :date', { date: assignment.assigned_at })}
+                        {' · '}
+                        {fill(t.review_round || 'Round :round', { round: assignment.round })}
+                        {' · '}
+                        {fill(t.review_item_status || 'item :status', { status: t[`library_status_${item?.status}`] || item?.status?.replaceAll('_', ' ') })}
+                        {assignment.recommendation ? ` · ${fill(t.review_your_recommendation || 'your recommendation: :recommendation', { recommendation: recommendationLabel(t, assignment.recommendation) })}` : ''}
                     </p>
                     {/* R3b: when the report is due, and whether it is late. */}
                     {assignment.due_on && assignment.status === 'assigned' && (
@@ -49,7 +58,7 @@ function AssignmentCard({ assignment, t }) {
                         <div className="mb-2 text-xs text-gray-600" data-testid="review-my-reports">
                             <p className="font-semibold">{t.review_my_reports || 'Your earlier reports on this paper'}</p>
                             {assignment.my_reports.map((report, index) => (
-                                <p key={index}>{report.at} · {report.recommendation}{report.comment ? ` — ${report.comment}` : ''}</p>
+                                <p key={index}>{report.at} · {recommendationLabel(t, report.recommendation)}{report.comment ? ` — ${report.comment}` : ''}</p>
                             ))}
                         </div>
                     )}
@@ -77,6 +86,7 @@ function AssignmentCard({ assignment, t }) {
                     </div>
                 </>
             )}
+            <FormErrors errors={refusals.errorsFor(row)} className="mt-2" />
         </div>
     );
 }
@@ -84,15 +94,14 @@ function AssignmentCard({ assignment, t }) {
 export default function Review({ assignments }) {
     const { i18n } = usePage().props;
     const t = i18n?.common || {};
+    const refusals = useRowRefusals();
 
     return (
         <AppShell title={t.review_title || 'Peer review'}>
-            {/* The recommendation buttons post without a form, so a refusal —
-                reviewing somebody else's assignment, or one already done — had
-                nowhere to appear. */}
-            <FormErrors errors={usePage().props.errors} className="mb-4" />
+            {/* What came back before any card was acted on. */}
+            <FormErrors errors={refusals.unplaced} className="mb-4" />
             {assignments.length === 0 && <p className="text-gray-500">{t.review_empty || 'No review assignments.'}</p>}
-            {assignments.map((assignment) => <AssignmentCard key={assignment.id} assignment={assignment} t={t} />)}
+            {assignments.map((assignment) => <AssignmentCard key={assignment.id} assignment={assignment} t={t} refusals={refusals} />)}
         </AppShell>
     );
 }

@@ -41,12 +41,12 @@ class SaveWriterPublicProfileAction
             ->where('status', 'active')
             ->first();
         if ($profile === null) {
-            throw ValidationException::withMessages(['writer' => 'An approved writer profile is required.']);
+            throw ValidationException::withMessages(['writer' => __('common.library_error_not_writer')]);
         }
 
         $name = trim((string) ($data['display_name'] ?? $profile->display_name));
         if ($name === '') {
-            throw ValidationException::withMessages(['display_name' => 'A display name is required.']);
+            throw ValidationException::withMessages(['display_name' => __('common.library_error_display_name')]);
         }
 
         $photoId = $profile->photo_media_file_id;
@@ -92,7 +92,7 @@ class SaveWriterPublicProfileAction
     {
         $ids = array_values(array_unique(array_map('intval', array_filter($ids, fn ($id) => is_numeric($id)))));
         if (count($ids) > self::FEATURED_LIMIT) {
-            throw ValidationException::withMessages(['featured_item_ids' => 'Pick up to '.self::FEATURED_LIMIT.' works to feature.']);
+            throw ValidationException::withMessages(['featured_item_ids' => __('common.library_error_featured_limit', ['count' => self::FEATURED_LIMIT])]);
         }
         if ($ids === []) {
             return [];
@@ -106,7 +106,7 @@ class SaveWriterPublicProfileAction
             ->map(fn ($id) => (int) $id)
             ->all();
         if (count($own) !== count($ids)) {
-            throw ValidationException::withMessages(['featured_item_ids' => 'Only your own published works can be featured.']);
+            throw ValidationException::withMessages(['featured_item_ids' => __('common.library_error_featured_own')]);
         }
 
         return $ids;
@@ -127,7 +127,7 @@ class SaveWriterPublicProfileAction
                 continue;
             }
             if (! preg_match('~^https?://~i', $url) || filter_var($url, FILTER_VALIDATE_URL) === false || mb_strlen($url) > 255) {
-                throw ValidationException::withMessages(['social_links.'.$key => 'Give a full address starting with http:// or https://.']);
+                throw ValidationException::withMessages(['social_links.'.$key => __('common.library_error_link_address')]);
             }
             $kept[$key] = $url;
         }

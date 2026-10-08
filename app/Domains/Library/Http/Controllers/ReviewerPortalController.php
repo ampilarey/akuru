@@ -29,7 +29,7 @@ class ReviewerPortalController extends Controller
     {
         app(DeclareReviewerNoConflictAction::class)->execute((int) $request->user()->id, $assignment);
 
-        return back()->with('success', 'Thank you. The paper is open to review.');
+        return back()->with('success', __('common.review_flash_declared'));
     }
 
     public function store(Request $request, int $assignment): RedirectResponse
@@ -46,6 +46,6 @@ class ReviewerPortalController extends Controller
             $data['comment'] ?? null,
         );
 
-        return back()->with('success', 'Review submitted.');
+        return back()->with('success', __('common.review_flash_submitted'));
     }
 }

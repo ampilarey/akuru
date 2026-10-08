@@ -36,13 +36,13 @@ class ApplyAsWriterAction
     public function execute(int $userId, array $data, ?UploadedFile $photo = null, ?UploadedFile $idFront = null, ?UploadedFile $idBack = null): WriterApplication
     {
         if (WriterProfile::query()->where('user_id', $userId)->exists()) {
-            throw ValidationException::withMessages(['application' => 'You are already an approved writer.']);
+            throw ValidationException::withMessages(['application' => __('common.library_error_already_writer')]);
         }
         if (WriterApplication::query()->where('user_id', $userId)->where('status', 'pending')->exists()) {
-            throw ValidationException::withMessages(['application' => 'Your application is already pending review.']);
+            throw ValidationException::withMessages(['application' => __('common.library_error_application_pending')]);
         }
         if (empty($data['agreement_accepted'])) {
-            throw ValidationException::withMessages(['agreement_accepted' => 'You must accept the writer agreement.']);
+            throw ValidationException::withMessages(['agreement_accepted' => __('common.library_error_agreement')]);
         }
 
         $name = trim((string) $data['display_name']);

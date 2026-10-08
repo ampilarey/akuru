@@ -30,19 +30,19 @@ class SaveLibraryItemAction
     {
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'Title is required.']);
+            throw ValidationException::withMessages(['title' => __('common.library_error_title')]);
         }
 
         $contentType = LibraryContentType::tryFrom((string) ($data['content_type'] ?? ''));
         if ($contentType === null) {
-            throw ValidationException::withMessages(['content_type' => 'Invalid content type.']);
+            throw ValidationException::withMessages(['content_type' => __('common.library_error_content_type')]);
         }
 
         $accessType = LibraryAccessType::tryFrom(
             (string) ($data['access_type'] ?? LibraryAccessType::FreePublic->value)
         );
         if ($accessType === null) {
-            throw ValidationException::withMessages(['access_type' => 'Invalid access type.']);
+            throw ValidationException::withMessages(['access_type' => __('common.library_error_access_type')]);
         }
 
         // Checked before anything is written, so an unknown teacher leaves no
@@ -210,7 +210,7 @@ class SaveLibraryItemAction
         if (array_key_exists('delivery', $data) && $data['delivery'] !== null && $data['delivery'] !== '') {
             $chosen = LibraryDelivery::tryFrom((string) $data['delivery']);
             if ($chosen === null) {
-                throw ValidationException::withMessages(['delivery' => 'Choose how readers get it: read online, download, or both.']);
+                throw ValidationException::withMessages(['delivery' => __('common.library_error_delivery')]);
             }
 
             return $chosen;
@@ -247,7 +247,7 @@ class SaveLibraryItemAction
                 }
                 $profile = app(ReadPublicInstructorProfileAction::class)->execute($instructorId, null, false);
                 if ($profile === null) {
-                    throw ValidationException::withMessages(['authors' => 'That teacher is not on the website\'s teacher list.']);
+                    throw ValidationException::withMessages(['authors' => __('common.library_error_teacher')]);
                 }
                 $teachers[$instructorId] = true;
                 $rows[] = ['name' => $profile['name'], 'user_id' => null, 'instructor_profile_id' => $instructorId];

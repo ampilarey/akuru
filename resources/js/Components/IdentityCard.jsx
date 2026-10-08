@@ -41,10 +41,16 @@ export function IdentityStatus({ status, l }) {
     return <span className={`rounded px-2 py-0.5 text-xs font-semibold ${tone}`} data-id-status={status}>{l[`id_status_${status}`] ?? status}</span>;
 }
 
-export function IdentityCardUpload({ identity, href, l, blurb }) {
+/**
+ * `actOn` is a page's `useRowRefusals().actOn`, when it has one: the card's
+ * own refusals are said beside its two fields, so the page's list of
+ * refusals leaves them out (slice LT2).
+ */
+export function IdentityCardUpload({ identity, href, l, blurb, actOn = null }) {
     const form = useForm({ id_front: null, id_back: null });
     if (!identity || identity.status === 'verified') return null;
     const canUpload = identity.status !== 'pending';
+    const send = () => form.post(href, { forceFormData: true, preserveScroll: true });
 
     return (
         <section className="mb-4 rounded-lg border border-amber-300 bg-amber-50 p-4" data-testid="identity-card">
@@ -55,7 +61,7 @@ export function IdentityCardUpload({ identity, href, l, blurb }) {
             <p className="mb-2 text-sm text-gray-700">{identity.status === 'pending' ? l.id_pending_body : blurb}</p>
             {identity.status === 'rejected' && identity.note && <p className="mb-2 text-sm text-red-800" data-testid="identity-note">{l.id_rejected_note}: {identity.note}</p>}
             {canUpload && (
-                <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); form.post(href, { forceFormData: true, preserveScroll: true }); }} data-testid="identity-form">
+                <form className="grid gap-3" onSubmit={(e) => { e.preventDefault(); if (actOn) actOn('identity', send); else send(); }} data-testid="identity-form">
                     <IdentityCardFields form={form} l={l} />
                     <div><button type="submit" className="btn-primary" disabled={form.processing} data-testid="identity-submit">{l.id_submit}</button></div>
                 </form>

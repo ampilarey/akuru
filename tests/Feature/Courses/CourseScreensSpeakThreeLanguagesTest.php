@@ -147,26 +147,6 @@ function teachBook(string $locale, string $book = 'teach'): array
     return require base_path("resources/lang/{$locale}/{$book}.php");
 }
 
-/**
- * Fields a screen reader has no name for: no aria-label, no id for a label to
- * point at, and not inside a label.
- */
-function unnamedFields(string $source): array
-{
-    preg_match_all('/<(select|input|textarea)\b(.*?)(\/>|<option|\.map\(|<\/select>)/s', $source, $fields, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
-    $unnamed = [];
-    foreach ($fields as $field) {
-        [$attributes, $at] = $field[2];
-        $before = substr($source, max(0, $at - 300), min(300, $at));
-        $inLabel = strrpos($before, '<label') !== false && strrpos($before, '<label') > (int) strrpos($before, '</label>');
-        if (! str_contains($attributes, 'aria-label=') && ! preg_match('/\sid=/', $attributes) && ! $inLabel && ! str_contains($attributes, 'type="hidden"')) {
-            $unnamed[] = substr(preg_replace('/\s+/', ' ', trim($attributes)), 0, 80);
-        }
-    }
-
-    return $unnamed;
-}
-
 it('keys every string on the translated course screens in three languages', function () {
     foreach (translatedCourseScreens() as $screen => $book) {
         [$en, $dv, $ar] = [teachBook('en', $book), teachBook('dv', $book), teachBook('ar', $book)];
