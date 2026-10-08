@@ -8,6 +8,7 @@ use App\Domains\Courses\Components\Clubs\Actions\ListClubRosterAction;
 use App\Domains\Courses\Components\Clubs\Actions\ListClubsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,6 +25,7 @@ class ClubController extends Controller
     {
         return Inertia::render('Courses/Clubs/Index', [
             'clubs' => app(ListClubsAction::class)->execute(),
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -37,6 +39,7 @@ class ClubController extends Controller
         return Inertia::render('Courses/Clubs/Roster', [
             'club' => $current,
             'members' => app(ListClubRosterAction::class)->execute($club),
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -48,14 +51,14 @@ class ClubController extends Controller
 
         $add->execute($club, (int) $data['student_id'], (int) $request->user()->id);
 
-        return back()->with('success', 'Member added.');
+        return back()->with('success', __('teach.flash_club_member_added'));
     }
 
     public function removeMember(int $club, int $enrollment, CancelEnrollmentAction $cancel): RedirectResponse
     {
         return $cancel->execute($enrollment)
-            ? back()->with('success', 'Member removed.')
-            : back()->with('error', 'That member had already been removed.');
+            ? back()->with('success', __('teach.flash_club_member_removed'))
+            : back()->with('error', __('teach.flash_club_member_gone'));
     }
 
     /**
@@ -73,6 +76,7 @@ class ClubController extends Controller
         return Inertia::render('Courses/Clubs/AttendanceSheet', [
             'club' => $current,
             'members' => app(ListClubRosterAction::class)->execute($club),
+            't' => Phrases::once('teach'),
         ]);
     }
 

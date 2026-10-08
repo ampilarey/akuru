@@ -1,6 +1,6 @@
 /**
  * Do the course-building screens read in Dhivehi and Arabic? (BACKLOG C19,
- * slices CT1–CT5b, STATUS §5ok on.)
+ * slices CT1–CT6a, STATUS §5ok on.)
  *
  * The dean opens every translated course screen under /dv and /ar — the
  * system admin the one the website's course list owns, Deleted courses, and
@@ -153,6 +153,12 @@ const mushafId = uploaded.mushaf?.name === mushafName ? uploaded.mushaf.id : nul
 check('the uploaded mushaf opens', Boolean(mushafId), page.url().replace(BASE, ''));
 check('with the two pages it was given', uploaded.mushaf?.pages_count === 2, `pages_count=${uploaded.mushaf?.pages_count}`);
 
+// The clubs (slice CT6a): `SmokeMarkerSeeder` plants SMOKE-Club with the
+// seeded pupil on its roster.
+await page.goto(`${BASE}/en/academics/clubs`, { waitUntil: 'networkidle' });
+const club = ((await props(page)).clubs || []).find((row) => row.title === 'SMOKE-Club');
+check('the dean finds SMOKE-Club among the clubs', Boolean(club));
+
 const screens = [
     '/catalog/courses',
     `/catalog/courses/${course?.id}/outline`,
@@ -184,6 +190,13 @@ const screens = [
     [`/quran/mushafs/${mushafId}/pages/1`, page, { open: (viewer) => viewer.locator('main button.mb-4').click() }],
     `/quran/mushafs/${mushafId}/pages/2`,
     ['/learn/quran', pupil],
+    // Slice CT6a.
+    '/catalog/arabic',
+    '/catalog/arabic/reports',
+    '/catalog/i18n-preview',
+    '/academics/clubs',
+    `/academics/clubs/${club?.id}`,
+    `/academics/clubs/${club?.id}/attendance-sheet`,
 ];
 
 // A step's name, with no record's id in it.

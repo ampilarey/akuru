@@ -3,6 +3,7 @@
 namespace App\Domains\Courses\Http\Controllers;
 
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -37,6 +38,7 @@ class I18nPreviewController extends Controller
                     'body' => trans('learn.catalog_intro', [], 'ar'),
                 ],
             ],
+            't' => Phrases::once('teach'),
         ]);
     }
 }

@@ -8,6 +8,7 @@ use App\Domains\Commerce\Actions\CreditWalletAction;
 use App\Domains\Courses\Actions\PublishLessonAction;
 use App\Domains\Courses\Actions\SaveActivityAction;
 use App\Domains\Courses\Actions\SaveContentBlockAction;
+use App\Domains\Courses\Components\Clubs\Actions\AddClubMemberAction;
 use App\Domains\Courses\Models\Lesson;
 use App\Domains\People\Models\StaffProfile;
 use Illuminate\Database\Seeder;
@@ -119,6 +120,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->arabicCycle();
         $this->quranCycle();
         $this->mushafCycle();
+        $this->clubCycle();
         $this->hifzCycle();
         $this->readerCycle();
         $this->cmsCourseWalk();
@@ -1886,6 +1888,51 @@ class SmokeMarkerSeeder extends Seeder
     private function mushafCycle(): void
     {
         DB::table('quran_mushafs')->where('name', 'like', 'SMOKE-Mushaf%')->delete();
+    }
+
+    /**
+     * `course-screens-language.mjs` opens the clubs list, a club's roster and
+     * its printable sheet in Dhivehi and Arabic (C19 slice CT6a), and the
+     * local database held no club. `SMOKE-Club` is a club course with its own
+     * self-learning offering and the seeded pupil as a member, so the roster
+     * and the sheet each have a row. Kept and updated like `SMOKE-Course`, so
+     * its id is stable; the enroller already answers a second add with the
+     * first enrolment.
+     */
+    private function clubCycle(): void
+    {
+        $club = [
+            'course_category_id' => (int) DB::table('course_categories')->orderBy('id')->value('id'),
+            'title' => 'SMOKE-Club',
+            'short_desc' => 'Planted by SmokeMarkerSeeder.',
+            'body' => 'Planted by SmokeMarkerSeeder.',
+            'cover_image' => '',
+            'status' => 'open',
+            'course_type' => 'club',
+            'workflow_status' => 'published',
+            'updated_at' => now(),
+        ];
+        $clubId = (int) DB::table('courses')->where('slug', 'smoke-club')->value('id');
+        if ($clubId > 0) {
+            DB::table('courses')->where('id', $clubId)->update($club);
+        } else {
+            $clubId = DB::table('courses')->insertGetId($club + ['slug' => 'smoke-club', 'created_at' => now()]);
+        }
+
+        if (! DB::table('course_offerings')->where('course_id', $clubId)->where('delivery_mode', 'self_learning')->exists()) {
+            DB::table('course_offerings')->insert([
+                'course_id' => $clubId, 'title' => 'SMOKE-Club-Offering', 'slug' => 'smoke-club-offering',
+                'delivery_mode' => 'self_learning', 'status' => 'open',
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+
+        $pupilId = (int) DB::table('students')
+            ->where('user_id', (int) DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id'))
+            ->value('id');
+        if ($pupilId > 0) {
+            app(AddClubMemberAction::class)->execute($clubId, $pupilId);
+        }
     }
 
     /**
