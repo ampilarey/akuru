@@ -157,6 +157,18 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the middle-name walk (2026-10-08)
+
+### Saving a student's profile unlinked their sign-in and wiped their email, passport and notes — **fixed (2026-10-08, STATUS §5oo)**
+
+The office's *Save profile* on a student's page set `user_id`, `email`,
+`passport` and `notes` to NULL, because the controller merged every
+optional key into the request as empty whether the form sent it or not, and
+the profile form sends none of those four. A learner lost their portal to an
+edit of their name. Only the keys the request carries are normalised now.
+Rows saved before the fix are not restored — nothing recorded the old
+values; with no real students yet, only test rows can be affected.
+
 ## Found by the owner's live walkthrough (2026-10-03)
 
 The record is STATUS §5nw; the plan is BACKLOG C16.

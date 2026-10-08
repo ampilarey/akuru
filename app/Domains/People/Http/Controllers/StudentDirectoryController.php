@@ -330,25 +330,17 @@ class StudentDirectoryController extends Controller
      */
     private function validatedStudent(Request $request, ?int $studentId = null): array
     {
-        $request->merge([
-            'school_id' => $this->emptyToNull($request->input('school_id')),
-            'class_id' => $this->emptyToNull($request->input('class_id')),
-            'user_id' => $this->emptyToNull($request->input('user_id')),
-            'guardian_id' => $this->emptyToNull($request->input('guardian_id')),
-            'student_id' => $this->emptyToNull($request->input('student_id')),
-            'admission_date' => $this->emptyToNull($request->input('admission_date')),
-            'national_id' => $this->emptyToNull($request->input('national_id')),
-            'passport' => $this->emptyToNull($request->input('passport')),
-            'email' => $this->emptyToNull($request->input('email')),
-            'place_of_birth' => $this->emptyToNull($request->input('place_of_birth')),
-            'phone' => $this->emptyToNull($request->input('phone')),
-            'address' => $this->emptyToNull($request->input('address')),
-            'notes' => $this->emptyToNull($request->input('notes')),
-            'first_name_arabic' => $this->emptyToNull($request->input('first_name_arabic')),
-            'last_name_arabic' => $this->emptyToNull($request->input('last_name_arabic')),
-            'first_name_dhivehi' => $this->emptyToNull($request->input('first_name_dhivehi')),
-            'last_name_dhivehi' => $this->emptyToNull($request->input('last_name_dhivehi')),
-        ]);
+        // An optional field left empty arrives as '' and is kept as NULL — a
+        // field the form sent, only. Every key used to be merged, sent or
+        // not, and the profile form carries no account, email, passport or
+        // notes: each save unlinked the student's sign-in and wiped the
+        // other three (STATUS §5oo).
+        $request->merge(collect([
+            'school_id', 'class_id', 'user_id', 'guardian_id', 'student_id', 'admission_date',
+            'national_id', 'passport', 'email', 'place_of_birth', 'phone', 'address', 'notes',
+            'first_name_arabic', 'last_name_arabic', 'first_name_dhivehi', 'last_name_dhivehi',
+        ])->filter(fn (string $key): bool => $request->has($key))
+            ->mapWithKeys(fn (string $key): array => [$key => $this->emptyToNull($request->input($key))])->all());
 
         return $request->validate([
             'first_name' => ['required', 'string', 'max:255'],

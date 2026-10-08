@@ -4983,6 +4983,41 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5oo. Saving a student's profile no longer unlinks their account (2026-10-08)
+
+Found by the walk for C17 slice R4b, which types a middle name on the seeded
+pupil's profile and takes it out again: on the second run the pupil's own
+portal had no record to show. Every save of the profile form on a student's
+page (`/people/students/{id}`, *Save profile*) set the student's
+`user_id`, `email`, `passport` and `notes` to NULL — on `main`, before R4b.
+
+`StudentDirectoryController::validatedStudent()` turned an empty optional
+field into NULL by merging all seventeen optional keys into the request,
+whether the form had sent them or not. The add-student form sends none of
+those four and a new student has nothing to lose, but the profile form does
+not send them either, so a save validated them as present and empty, and
+`SaveStudentAction` wrote what it was given. A learner whose name, class or
+status the office corrected lost the link to their sign-in (their
+*My learning* and portal went empty), and the email, passport and notes on
+the record were wiped with it. Only keys the request carries are normalised
+now; a field the form sends empty is still stored as NULL.
+
+**Rows saved before this.** Nothing in the app records the old values (no
+audit trail on students; `identity_verifications.user_id` is whoever sent
+the card, which may be a parent), so they are not restored automatically.
+Per the rule 9 note (no real students yet), only test rows can have been
+affected. A learner who cannot see their own record after an office edit is
+the sign; the link is `students.user_id`.
+
+Test: `StudentDirectoryCrudTest` — *keeps what the profile form does not
+carry when the office saves it* posts exactly the profile form's fields: the
+account, email, passport and notes survive and the phone is saved; a second
+save with the phone and email sent empty clears those two and keeps the
+account. It fails on `main` (`user_id` null). Walk (a scratch Playwright
+script, not kept; R4b's walk carries the step for good): the pupil opens
+their own record, the office saves the profile twice, the pupil still opens
+it — 5/5 here, 3/5 on `main` (*no record — the account was unlinked*).
+
 ## 5on. The glossary, certificates and the marking queue in Dhivehi and Arabic (C19 slice CT3, 2026-10-08)
 
 The last of the three slices of BACKLOG C19 (§5ok has why): every screen a
