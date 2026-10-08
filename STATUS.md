@@ -4983,6 +4983,27 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5om. Walk health: the certificate walk's student has a checked ID card (2026-10-08)
+
+Found while walking the certificates screen for C19 slice CT3:
+`certify.mjs` failed at *the certificate is issued once the rule is met*,
+and failed the same way on `main`. The issue was refused with *Your
+certificate is ready once the office has checked the ID card.* — the rule
+COMMERCE_PARITY_PLAN P3 added (a course certificate waits for the learner's
+own card to be checked), working as decided. The smoke seeder planted
+checked cards for the two vendors and the writer, not for the seeded
+student as a learner, so every run since P3 stopped there and the six steps
+after it (the list, the student's dashboard, the document and its QR, the
+guest's check) never ran.
+
+`SmokeMarkerSeeder::verifiedIdentityCards()` now also submits and checks the
+seeded student's learner card, through `IdentityVerificationAction` the way
+the office's screen does, and leaves it alone once it is checked. No walk
+expects that student's card unchecked (`register.mjs` and `id-scan.mjs`
+register new learners; `lending.mjs` clears only lender cards).
+
+Walk: `certify.mjs` 16/16 after a reseed (8/15 before). `sweep.mjs` 25/25.
+
 ## 5ol. Activities, assessments and the question bank in Dhivehi and Arabic (C19 slice CT2, 2026-10-08)
 
 The second of the three slices of BACKLOG C19 (§5ok has why). The three
