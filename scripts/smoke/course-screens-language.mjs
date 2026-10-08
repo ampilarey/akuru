@@ -34,7 +34,9 @@
  * The dean adds a session to SMOKE-Offering from the Dhivehi page and is told
  * so in Dhivehi, then opens the offerings, the offering's sessions and the
  * halaqa session's attendance (slice CT8); the pupil opens their performance
- * page.
+ * page. Before the session is filled in, it is saved empty and refused in
+ * Dhivehi; a term saved empty from the Arabic glossary is refused in Arabic
+ * (slice CT6b-1).
  *
  *   node scripts/smoke/course-screens-language.mjs
  *
@@ -240,11 +242,27 @@ const offeringId = sessionsHref?.match(/offerings\/(\d+)/)?.[1];
 const attendancePath = `/catalog/offerings/${offeringId}/sessions/${halaqaSession?.id}/attendance`;
 await page.goto(`${BASE}/dv/catalog/offerings/${offeringId}/sessions`, { waitUntil: 'networkidle' });
 const teach = (await props(page)).t ?? {};
+// Saved empty first: the refusal is Laravel's own sentence, in Dhivehi, with
+// the fields named as the form labels them (slice CT6b-1).
+await page.getByRole('button', { name: teach.sessions_save, exact: true }).click();
+const refusal = (await page.locator('form ul[role="alert"]').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+check(
+    'a session refused on the Dhivehi page says why in Dhivehi',
+    Boolean(refusal) && refusal.includes('ނަން ބޭނުންވޭ.') && refusal.includes('ފަށާ ވަގުތު ބޭނުންވޭ.') && !/[A-Za-z]{2,}/.test(refusal),
+    `said: ${refusal ?? 'nothing'}`,
+);
 await page.getByLabel(teach.sessions_session_title, { exact: true }).fill('SMOKE-Lang-Session');
 await page.getByLabel(teach.sessions_starts, { exact: true }).fill('2030-01-01T09:00');
 await page.getByRole('button', { name: teach.sessions_save, exact: true }).click();
 const sessionTold = await flashReads(page, teach.flash_session_saved);
 check('the dean adds a session in Dhivehi and is told so in Dhivehi', Boolean(teach.flash_session_saved) && sessionTold === teach.flash_session_saved, `said: ${sessionTold ?? 'nothing'}`);
+
+// A term saved empty from the Arabic glossary is refused in Arabic (CT6b-1).
+await page.goto(`${BASE}/ar/catalog/glossary`, { waitUntil: 'networkidle' });
+const glossaryT = (await props(page)).t ?? {};
+await page.getByRole('button', { name: glossaryT.glossary_save, exact: true }).click();
+const termRefusal = (await page.locator('form p.text-red-600').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+check('a term refused on the Arabic page says why in Arabic', termRefusal === 'حقل المصطلح مطلوب.', `said: ${termRefusal ?? 'nothing'}`);
 
 const screens = [
     '/catalog/courses',
