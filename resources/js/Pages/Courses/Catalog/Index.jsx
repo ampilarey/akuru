@@ -1,4 +1,4 @@
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { Fragment, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 
@@ -14,7 +14,7 @@ import AppShell from '../../../Layouts/AppShell';
  * — the only part of the exchange with any content in it — was discarded the
  * instant the button was pressed.
  */
-function ReviewDecision({ row, decisions, canPublish }) {
+function ReviewDecision({ row, decisions, canPublish, t }) {
     const [decision, setDecision] = useState('changes_requested');
     const [comment, setComment] = useState('');
     const chosen = decisions.find((option) => option.value === decision);
@@ -25,17 +25,17 @@ function ReviewDecision({ row, decisions, canPublish }) {
 
     return (
         <div className="space-y-2">
-            <select className="form-input" value={decision} onChange={(e) => setDecision(e.target.value)} aria-label="Review decision">
+            <select className="form-input" value={decision} onChange={(e) => setDecision(e.target.value)} aria-label={t.catalog_review_decision || 'Review decision'}>
                 {decisions
                     .filter((option) => option.value !== 'approved' || canPublish)
-                    .map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+                    .map((option) => <option key={option.value} value={option.value}>{t[`decision_${option.value}`] || option.label}</option>)}
             </select>
             <input
                 className="form-input"
-                placeholder={chosen?.requires_comment ? 'Why? (required)' : 'Comment (optional)'}
+                placeholder={chosen?.requires_comment ? (t.catalog_review_why || 'Why? (required)') : (t.catalog_review_comment || 'Comment (optional)')}
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                aria-label="Review comment"
+                aria-label={t.catalog_review_comment_label || 'Review comment'}
             />
             <button
                 type="button"
@@ -47,7 +47,7 @@ function ReviewDecision({ row, decisions, canPublish }) {
                     { preserveScroll: true },
                 )}
             >
-                Record review
+                {t.catalog_record_review || 'Record review'}
             </button>
         </div>
     );
@@ -92,6 +92,16 @@ function CopyCourse({ row, t }) {
 }
 
 export default function Index({ rows, subjects, canPublish, unlockModes = [], decisions = [], t = {} }) {
+    // Every string below is a key in the `teach` book (STATUS §5ok), so the
+    // catalog reads in Dhivehi and Arabic; the English is the fallback.
+    const locale = usePage().props.locale || 'en';
+    const subjectName = (subject) => subject[`name_${locale}`] || subject.name_en;
+    const rowSubject = (row) => {
+        const subject = subjects.find((item) => item.id === row.subject_id);
+        return subject ? subjectName(subject) : (row.subject_name || '—');
+    };
+    const unlockLabel = (mode) => t[`unlock_${mode.value}`] || mode.label;
+    const workflowLabel = (status) => t[`workflow_${status}`] || status;
     const form = useForm({
         title: '',
         title_dv: '',
@@ -104,9 +114,9 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
     });
 
     return (
-        <AppShell title="Course catalog">
+        <AppShell title={t.catalog_title || 'Course catalog'}>
             <div className="mb-4 flex justify-end">
-                <a className="btn-secondary" href="/catalog/courses/export">Export CSV</a>
+                <a className="btn-secondary" href="/catalog/courses/export">{t.catalog_export || 'Export CSV'}</a>
             </div>
             <form
                 onSubmit={(e) => {
@@ -115,56 +125,57 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                 }}
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
             >
-                <input className="form-input" placeholder="Title" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-                <select className="form-input" value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
-                    {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name_en}</option>)}
+                <input className="form-input" placeholder={t.catalog_new_title || 'Title'} aria-label={t.catalog_new_title || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+                <select className="form-input" aria-label={t.catalog_col_subject || 'Subject'} value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
+                    {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subjectName(subject)}</option>)}
                 </select>
-                <select className="form-input" value={form.data.language} onChange={(e) => form.setData('language', e.target.value)}>
-                    <option value="en">EN</option>
-                    <option value="dv">DV</option>
-                    <option value="ar">AR</option>
-                    <option value="mixed">Mixed</option>
+                <select className="form-input" aria-label={t.catalog_language || 'Language'} value={form.data.language} onChange={(e) => form.setData('language', e.target.value)}>
+                    <option value="en">{t.outline_lang_en || 'English'}</option>
+                    <option value="dv">{t.outline_lang_dv || 'Dhivehi'}</option>
+                    <option value="ar">{t.outline_lang_ar || 'Arabic'}</option>
+                    <option value="mixed">{t.catalog_language_mixed || 'Mixed'}</option>
                 </select>
                 {/* SPEC §26 "Admin must be able to configure unlock rules."
                     Unlock was hardcoded sequential for every course, so "All
                     lessons open" — the first rule §26 lists — could not be
                     chosen at all. */}
-                <select className="form-input" value={form.data.unlock_mode} onChange={(e) => form.setData('unlock_mode', e.target.value)}>
-                    {unlockModes.map((mode) => <option key={mode.value} value={mode.value}>{mode.label}</option>)}
+                <select className="form-input" aria-label={t.catalog_unlock_rule || 'Unlock rule'} value={form.data.unlock_mode} onChange={(e) => form.setData('unlock_mode', e.target.value)}>
+                    {unlockModes.map((mode) => <option key={mode.value} value={mode.value}>{unlockLabel(mode)}</option>)}
                 </select>
-                <button type="submit" className="btn-primary" disabled={form.processing}>Save draft</button>
+                <button type="submit" className="btn-primary" disabled={form.processing}>{t.catalog_save_draft || 'Save draft'}</button>
                 {form.errors.title && <span className="text-xs text-red-600">{form.errors.title}</span>}
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">Title</th>
-                            <th className="px-3 py-2">Subject</th>
-                            <th className="px-3 py-2">Workflow</th>
-                            <th className="px-3 py-2">Unlock</th>
-                            <th className="px-3 py-2">Actions</th>
+                            <th className="px-3 py-2">{t.catalog_col_title || 'Title'}</th>
+                            <th className="px-3 py-2">{t.catalog_col_subject || 'Subject'}</th>
+                            <th className="px-3 py-2">{t.catalog_col_workflow || 'Workflow'}</th>
+                            <th className="px-3 py-2">{t.catalog_col_unlock || 'Unlock'}</th>
+                            <th className="px-3 py-2">{t.catalog_col_actions || 'Actions'}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {rows.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>No engine courses yet.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>{t.catalog_none || 'No engine courses yet.'}</td></tr>
                         )}
                         {rows.map((row) => (
                             <Fragment key={row.id}>
                             <tr className="border-t">
                                 <td className="px-3 py-2">
                                     <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/outline`}>{row.title}</a>
-                                    <a className="ms-3 text-xs text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/activities`}>Activities</a>
+                                    <a className="ms-3 text-xs text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/activities`}>{t.catalog_activities || 'Activities'}</a>
                                     <a className="ms-3 text-xs text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/rubrics`}>{t.rubrics || 'Rubrics'}</a>
                                     <a className="ms-3 text-xs text-[#7C2D37] hover:underline" href={`/learn/courses/${row.id}/forum`}>{t.forum || 'Forum'}</a>
                                 </td>
-                                <td className="px-3 py-2">{row.subject_name || '—'}</td>
-                                <td className="px-3 py-2">{row.workflow_status}</td>
+                                <td className="px-3 py-2">{rowSubject(row)}</td>
+                                <td className="px-3 py-2">{workflowLabel(row.workflow_status)}</td>
                                 <td className="px-3 py-2">
                                     {row.workflow_status === 'draft' ? (
                                         <select
                                             className="form-input"
+                                            aria-label={(t.outline_unlock_aria || 'Unlock rule for :title').replace(':title', row.title)}
                                             value={row.unlock_mode}
                                             onChange={(e) => router.post(`/catalog/courses/${row.id}`, {
                                                 _method: 'put',
@@ -176,19 +187,19 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                                                 unlock_mode: e.target.value,
                                             }, { preserveScroll: true })}
                                         >
-                                            {unlockModes.map((mode) => <option key={mode.value} value={mode.value}>{mode.label}</option>)}
+                                            {unlockModes.map((mode) => <option key={mode.value} value={mode.value}>{unlockLabel(mode)}</option>)}
                                         </select>
                                     ) : (
                                         // Only draft courses are editable
                                         // (SaveEngineCourseAction refuses the
                                         // rest), so show the mode rather than a
                                         // control that would always fail.
-                                        <span>{(unlockModes.find((m) => m.value === row.unlock_mode) || {}).label || row.unlock_mode}</span>
+                                        <span>{unlockModes.some((m) => m.value === row.unlock_mode) ? unlockLabel(unlockModes.find((m) => m.value === row.unlock_mode)) : row.unlock_mode}</span>
                                     )}
                                 </td>
                                 <td className="px-3 py-2">
                                     {row.workflow_status === 'draft' && (
-                                        <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'in_review' })}>Submit review</button>
+                                        <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'in_review' })}>{t.catalog_submit_review || 'Submit review'}</button>
                                     )}
                                     {/* §8.4 gives reviewing to Dean/Supervisor; §8.3's
                                         Course Creator does not review at all, and
@@ -196,13 +207,13 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                                         server checks the same thing — this only avoids
                                         offering a control that would 403. */}
                                     {row.workflow_status === 'in_review' && canPublish && (
-                                        <ReviewDecision row={row} decisions={decisions} canPublish={canPublish} />
+                                        <ReviewDecision row={row} decisions={decisions} canPublish={canPublish} t={t} />
                                     )}
                                     {row.workflow_status === 'in_review' && !canPublish && (
-                                        <span className="text-xs text-gray-500">Waiting for review</span>
+                                        <span className="text-xs text-gray-500">{t.catalog_waiting_review || 'Waiting for review'}</span>
                                     )}
                                     {row.workflow_status === 'published' && (
-                                        <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'archived' })}>Archive</button>
+                                        <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'archived' })}>{t.catalog_archive || 'Archive'}</button>
                                     )}
                                     <div className="mt-2"><CopyCourse row={row} t={t} /></div>
                                 </td>
@@ -216,7 +227,7 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                                         <ul className="space-y-1">
                                             {row.review_decisions.map((decision) => (
                                                 <li key={decision.id}>
-                                                    <span className="font-medium">{decision.decision_label}</span>
+                                                    <span className="font-medium">{t[`decision_${decision.decision}`] || decision.decision_label}</span>
                                                     {decision.created_at ? ` · ${decision.created_at.slice(0, 10)}` : ''}
                                                     {decision.comment ? ` — ${decision.comment}` : ''}
                                                 </li>

@@ -4983,6 +4983,77 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ok. The course catalog and the outline editor in Dhivehi and Arabic (C19 slice CT1, 2026-10-08)
+
+The owner, 2026-10-08: "Leave everything from my side. Continue from ur
+side." What is the owner's stays with the owner and nothing here waits on
+it: live SMS (OWNER_ACTIONS 24), the policy pages (17), Fitrah's agreement
+and ID (18, 25), the rewards and referral switches (20, 21), BML, branch
+protection, the staging walk and the production 404 on the catalog
+(KNOWN_ISSUES). This side's list, in order: the course-building screens in
+Dhivehi and Arabic (BACKLOG C19, three slices CT1–CT3), then the middle
+name in every list, report and CSV (C17 R4b).
+
+The screens teachers build courses on were English only — the catalog, the
+outline, activities, assessments, the question bank, the glossary,
+certificates and the marking queue — while the learner's screens and the
+admin panel speak three languages, as the conventions ask of every screen.
+CT1 is the first two, the ones a course starts on.
+
+- **Catalog** (`/catalog/courses`). The title, export, the new-course form,
+  the table, the review decision and its comment, and every button. The
+  unlock rules and review decisions are named from the book; the workflow
+  column, which printed the enum (`in_review`), now says *In review*; the
+  language choices, which were *EN / DV / AR*, are the languages' names.
+- **Subjects.** The seventeen subjects the taxonomy migration seeded had an
+  English name only, and the subjects screen adds a subject but cannot edit
+  one, so nobody could have given them another. A data migration
+  (`2026_10_08_000001`) fills their Dhivehi and Arabic names by slug where
+  they are empty — a typed name stays — and the catalog's form and table
+  name a subject in the page's language (the table had printed the
+  server's English name).
+- **Outline** (`/catalog/courses/{id}/outline`). Modules and lessons, their
+  forms and statuses, the lesson's blocks — every one of the fourteen block
+  types has a name, so a lesson lists *1. Text* rather than `1. text` — each
+  block's form (the direction choices were *LTR / RTL*), the unlock rules
+  and the glossary links.
+- **A name on every field.** Nine selects and two inputs on the two screens
+  had nothing a screen reader could say (C15 slice 6a's rule, missed here);
+  each now has a label in the page's language.
+- **What was saved.** The twenty messages the outline and catalog
+  controllers flash are `teach.flash_*`, so a module saved on a Dhivehi page
+  says so in Dhivehi.
+- **The phrases** are 150 new rows of the `teach` book (M1 started it), the
+  same in EN, DV and AR. *PDF* is PDF in all three, on purpose.
+- **Right-to-left selects.** On the Dhivehi and Arabic outline the forms
+  plugin's arrow sat over the first letters of the choice: it draws the
+  arrow on the right and keeps room on the right whatever the direction.
+  One rule in `app.css` moves both to the left on a right-to-left page. It
+  is app-wide — every single-choice select on a Dhivehi or Arabic page.
+- **Rubrics** (M2, `/catalog/courses/{id}/rubrics`) were built with phrases;
+  held to the same test they had one fallback shorter than its phrase (the
+  delete confirmation), now the same.
+
+Tests: `CourseScreensSpeakThreeLanguagesTest` (4, new). It reads each
+translated screen's source and holds every `t.key || 'English'` to a key
+in all three books, the book's English equal to the screen's fallback, and
+the Dhivehi and Arabic not English; no English left bare in a text node
+(a word or an abbreviation like *LTR*), a placeholder, a label or a title;
+and no field without a name. Every value the server sends for a review
+decision, unlock rule, workflow status, lesson or module status and block
+type has a name in all three. The catalog and the outline are served in
+Dhivehi with Dhivehi phrases, and saving a module on a Dhivehi page flashes
+Dhivehi. Every seeded subject has a Dhivehi and an Arabic name, the
+catalog carries them, and a name typed before the migration runs is kept.
+CT2 and CT3 add their screens to its list. The whole suite green locally
+(2,762). Walks: `author.mjs` 24/24 (reads the new labels: *1. Text*,
+*Draft*, *In review*, *Published*), `course-copy.mjs` 10/10, `rubric.mjs`
+14/14, and, for the select rule, `rtl.mjs` 8/8, `public-rtl.mjs` 90/90,
+`arabic.mjs` 10/10 and `mobile.mjs` 19/19. Both screens were read in
+Dhivehi and Arabic in the browser, every text node and field name listed:
+right to left, the arrows on the left, and nothing in Latin letters but the
+courses' own titles, *CSV* and *PDF*.
+
 ## 5oj. A discussion forum on every course (Moodle parity slice M3, 2026-10-03)
 
 The third of the three Moodle slices (BACKLOG C18). Forums had been parked

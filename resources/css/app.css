@@ -159,6 +159,18 @@
 }
 
 /* Arabic/RTL specific styles */
+/*
+ * The forms plugin draws a select's arrow at the right with room kept on the
+ * right, whatever the direction, so on a Dhivehi or Arabic page the arrow
+ * sat on top of the first letters of the choice (seen on the course outline
+ * in slice CT1, STATUS §5ok). Right to left, the arrow and its room go left.
+ */
+[dir="rtl"] select:where(:not([multiple]):not([size]), [size="1"]) {
+  background-position: left 0.5rem center;
+  padding-left: 2.5rem;
+  padding-right: 0.75rem;
+}
+
 [dir="rtl"] .text-left {
   text-align: right;
 }
