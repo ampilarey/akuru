@@ -11,6 +11,7 @@ use App\Domains\Courses\Models\CourseLevel;
 use App\Domains\Courses\Models\GlossaryItem;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -32,6 +33,7 @@ class GlossaryController extends Controller
                 ->orderBy('name_en')
                 ->get(['id', 'name_en', 'name_dv', 'name_ar'])
                 ->all(),
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -42,7 +44,7 @@ class GlossaryController extends Controller
             $this->validated($request) + $this->media($request) + ['created_by' => $request->user()?->id],
         );
 
-        return redirect()->route('catalog.glossary.index')->with('success', 'Term saved.');
+        return redirect()->route('catalog.glossary.index')->with('success', __('teach.flash_term_saved'));
     }
 
     public function update(Request $request, GlossaryItem $glossaryItem): RedirectResponse
@@ -53,7 +55,7 @@ class GlossaryController extends Controller
             $glossaryItem,
         );
 
-        return redirect()->route('catalog.glossary.index')->with('success', 'Term updated.');
+        return redirect()->route('catalog.glossary.index')->with('success', __('teach.flash_term_updated'));
     }
 
     public function destroy(Request $request, GlossaryItem $glossaryItem): RedirectResponse
@@ -61,7 +63,7 @@ class GlossaryController extends Controller
         abort_unless($request->user()?->can('courses.manage'), 403);
         $glossaryItem->delete();
 
-        return redirect()->route('catalog.glossary.index')->with('success', 'Term deleted.');
+        return redirect()->route('catalog.glossary.index')->with('success', __('teach.flash_term_deleted'));
     }
 
     public function export(Request $request): StreamedResponse

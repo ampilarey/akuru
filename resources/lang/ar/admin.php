@@ -650,8 +650,6 @@ return [
     'courses_instructors_none' => 'لا مدرّسين بعد — أضفهم من صفحة المدرّسين.',
     'courses_instructor_marks' => 'يصحّح',
     // Teacher review, scoped (C16 slice N6).
-    'reviews_scope_own' => 'تُعرض تسليمات دوراتك فقط (:count).',
-    'reviews_scope_none' => 'لم تُسند إليك دورات بعد. يربط المكتب تسجيل دخولك بملف المدرّس الخاص بك ويسند إليه الدورات في نموذج الدورة؛ عندها تظهر تسليماتها هنا.',
     'courses_language' => 'اللغة',
     'courses_level' => 'المستوى',
     'courses_level_kids' => 'أطفال',

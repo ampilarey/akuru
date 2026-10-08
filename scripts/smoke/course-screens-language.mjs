@@ -7,8 +7,9 @@
  * main, and every placeholder, aria-label and title in it. What a screen shows
  * of the data it was sent — a course's title, a question's text, a letter's
  * name, an author's typed label — is the author's, not the screen's, so a
- * string found among the page's props passes. So do CSV, PDF, JSON, YouTube,
- * Vimeo and addresses, and whatever sits in a code or JSON box. Codes the
+ * string found among the page's props passes. So do CSV, PDF, JSON, HTML,
+ * YouTube, Vimeo, addresses and a certificate's {{placeholders}}, and
+ * whatever sits in a code or JSON box. Codes the
  * server sends to be named (a pattern, a status, a type) do not count as the
  * author's: printed raw, they fail. Anything left is English the screen wrote
  * itself, and fails the step.
@@ -36,7 +37,7 @@ const CODE_KEYS = new Set([
     'normalizationFlags', 'textInputTypes', 'decision', 'type', 'language', 'direction', 'align', 'tone', 'font',
     'completion_rule', 'submission_kind', 'unlockModes', 'decisions', 'label', 'decision_label', 'english_name',
 ]);
-const ALWAYS_FINE = [/https?:\/\/\S*/g, /\bCSV\b/g, /\bPDF\b/g, /\bJSON\b/g, /\bYouTube\b/g, /\bVimeo\b/g];
+const ALWAYS_FINE = [/https?:\/\/\S*/g, /\{\{[a-z_]+\}\}/g, /\bCSV\b/g, /\bPDF\b/g, /\bJSON\b/g, /\bHTML\b/g, /\bYouTube\b/g, /\bVimeo\b/g];
 
 const browser = await chromium.launch({
     args: ['--no-first-run', '--disable-background-networking'],
@@ -47,8 +48,11 @@ const problems = [];
 const check = (step, ok, detail = '') => results.push([step, ok, detail]);
 const props = (page) => page.evaluate(() => JSON.parse(document.querySelector('script[data-page="app"]')?.textContent || '{}').props || {});
 
-function authorsWords(value, key = '', out = []) {
-    if (CODE_KEYS.has(key) || key.endsWith('_en')) {
+// An English name (`name_en`) is the author's only when the page's language
+// has none: a level somebody typed in English alone is shown in English, and
+// that is right; a subject with a Dhivehi name shown in English is not.
+function authorsWords(value, locale, key = '', out = [], owner = {}) {
+    if (CODE_KEYS.has(key) || (key.endsWith('_en') && owner[key.replace(/_en$/, `_${locale}`)])) {
         return out;
     }
     if (typeof value === 'string') {
@@ -56,9 +60,9 @@ function authorsWords(value, key = '', out = []) {
             out.push(value.trim());
         }
     } else if (Array.isArray(value)) {
-        value.forEach((item) => authorsWords(item, key, out));
+        value.forEach((item) => authorsWords(item, locale, key, out));
     } else if (value && typeof value === 'object') {
-        Object.entries(value).forEach(([k, v]) => authorsWords(v, k, out));
+        Object.entries(value).forEach(([k, v]) => authorsWords(v, locale, k, out, value));
     }
     return out;
 }
@@ -99,6 +103,9 @@ const screens = [
     `/catalog/courses/${course?.id}/activities`,
     `/catalog/courses/${course?.id}/assessments`,
     '/catalog/questions',
+    '/catalog/glossary',
+    '/catalog/certificates',
+    '/catalog/reviews',
 ];
 
 for (const locale of ['dv', 'ar']) {
@@ -131,7 +138,7 @@ for (const locale of ['dv', 'ar']) {
                 .map((el) => el.outerHTML.slice(0, 90));
             return { dir: document.documentElement.getAttribute('dir'), texts, unnamed };
         });
-        const left = english(found.texts, authorsWords(await props(page)));
+        const left = english(found.texts, authorsWords(await props(page), locale));
         check(`${locale}${path.replace(/\/\d+\//, '/{id}/')}: right to left`, found.dir === 'rtl', `dir=${found.dir}`);
         check(`${locale}${path.replace(/\/\d+\//, '/{id}/')}: nothing in English`, left.length === 0, [...new Set(left)].slice(0, 12).join(' | '));
         check(`${locale}${path.replace(/\/\d+\//, '/{id}/')}: every field has a name`, found.unnamed.length === 0, found.unnamed.slice(0, 4).join(' | '));

@@ -14,6 +14,7 @@ use App\Domains\Courses\Models\IssuedCertificate;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -43,6 +44,7 @@ class CourseCertificateController extends Controller
             'filters' => [
                 'academic_year_id' => $yearId,
             ],
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -54,7 +56,7 @@ class CourseCertificateController extends Controller
             $this->validated($request) + ['created_by' => $request->user()?->id],
         );
 
-        return redirect()->route('catalog.certificates.index')->with('success', 'Certificate template saved.');
+        return redirect()->route('catalog.certificates.index')->with('success', __('teach.flash_template_saved'));
     }
 
     public function update(Request $request, CertificateTemplate $template): RedirectResponse
@@ -63,7 +65,7 @@ class CourseCertificateController extends Controller
 
         app(SaveCertificateTemplateAction::class)->execute($this->validated($request), $template);
 
-        return redirect()->route('catalog.certificates.index')->with('success', 'Certificate template updated.');
+        return redirect()->route('catalog.certificates.index')->with('success', __('teach.flash_template_updated'));
     }
 
     public function issue(Request $request): RedirectResponse
@@ -87,7 +89,7 @@ class CourseCertificateController extends Controller
         );
 
         return redirect()->route('catalog.certificates.index')
-            ->with('success', 'Certificate issued: '.$certificate->certificate_number);
+            ->with('success', __('teach.flash_certificate_issued', ['number' => $certificate->certificate_number]));
     }
 
     public function revoke(Request $request, IssuedCertificate $certificate): RedirectResponse
@@ -96,7 +98,7 @@ class CourseCertificateController extends Controller
 
         app(RevokeIssuedCertificateAction::class)->execute($certificate->id);
 
-        return redirect()->route('catalog.certificates.index')->with('success', 'Certificate revoked.');
+        return redirect()->route('catalog.certificates.index')->with('success', __('teach.flash_certificate_revoked'));
     }
 
     public function download(Request $request, IssuedCertificate $certificate): HttpResponse

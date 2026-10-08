@@ -189,8 +189,12 @@ it('lets the office link a profile to a staff login once, and assign instructors
 
 it('says the phrases in three languages', function () {
     foreach (['en', 'dv', 'ar'] as $locale) {
-        foreach (['instructors_field_user', 'instructors_user_hint', 'courses_instructors', 'courses_instructors_hint', 'reviews_scope_own', 'reviews_scope_none'] as $key) {
+        foreach (['instructors_field_user', 'instructors_user_hint', 'courses_instructors', 'courses_instructors_hint'] as $key) {
             expect(trans('admin.'.$key, [], $locale))->not->toBe('admin.'.$key);
+        }
+        // The review screen reads the `teach` book since slice CT3 (STATUS §5on).
+        foreach (['reviews_scope_own', 'reviews_scope_none'] as $key) {
+            expect(trans('teach.'.$key, [], $locale))->not->toBe('teach.'.$key);
         }
     }
 });

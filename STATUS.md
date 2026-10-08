@@ -4983,6 +4983,60 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5on. The glossary, certificates and the marking queue in Dhivehi and Arabic (C19 slice CT3, 2026-10-08)
+
+The last of the three slices of BACKLOG C19 (§5ok has why): every screen a
+teacher builds and marks a course on now reads in Dhivehi and Arabic.
+
+- **Glossary** (`/catalog/glossary`). The form, the media slots, the table
+  and its buttons. The *(EN)/(DV)/(AR)* fields keep those English labels
+  (`certify.mjs` and authors know them) and are named by language on a
+  Dhivehi or Arabic page. A subject and a level are named in the page's
+  language: the six seeded levels had English names only, like the
+  subjects in §5ok, and a second data migration (`2026_10_08_000002`) fills
+  their Dhivehi and Arabic names by slug where empty. An empty glossary
+  says so.
+- **Certificates** (`/catalog/certificates`). The template form and its
+  rules, the issue form, the issued list and its links. The four kinds and
+  the two statuses (*issued*, *revoked*) are named; the template body's
+  `{{placeholders}}` stay as they are, being the template's format. An
+  empty list says so.
+- **The marking queue** (`/catalog/reviews`). The counts, the filters, each
+  submission and its marking form, the rubric grid, and the weakness and
+  revision tables. *activity* and *assessment* are named, and so is how long
+  work has waited (*waiting 3 days*, which read `3d`). The reason and the
+  recommendation the report writes are now `teach` phrases on the server
+  (*Below passing score*, *Retry …*), in the language of the request that
+  asks for them, screen or CSV; the English is what it was.
+- **One book.** The marking queue read two phrase books, the admin book for
+  the two lines about a teacher's own courses and `teach` for the rest. Those
+  two lines moved to `teach` and the screen reads that book alone as `t`.
+- **What was saved.** The eight flashes of the three controllers are
+  `teach.flash_*`; *Certificate issued: :number* carries the number.
+- A name on every field, as on the other screens. 115 new rows of the
+  `teach` book, two moved out of `admin`.
+
+`course-screens-language.mjs` now opens all nine course screens. It excuses
+a certificate's `{{placeholders}}` and the word HTML, and an English name
+only when the page's language has none (a level somebody typed in English
+alone is rightly shown in English).
+
+Tests: `CourseScreensSpeakThreeLanguagesTest` now holds nine screens (6
+tests, one new): the glossary, certificates and the queue served in
+Dhivehi, the seeded levels named in Dhivehi and Arabic, every certificate
+kind named, the queue with one book, a term and a template saved on a
+Dhivehi page flashing Dhivehi, and the issue flash and the report's retry
+line unchanged in English. `TeacherMarksOwnCoursesTest` reads the moved
+lines from `teach`; `RubricMarkingTest` reads the queue's rubric line from
+`t`. The whole suite green locally (2,764). Walks:
+`course-screens-language.mjs` 55/55 (nine screens, two languages),
+`certify.mjs` 16/16 (with §5om), `review.mjs` 17/17, `rubric.mjs` 14/14,
+`forum.mjs` 15/15, `quran.mjs` 22/22, `sweep.mjs` 25/25.
+
+**C19 is built.** Still English on the course side, and outside these
+slices: the completion reports, reports, taxonomy, deleted-courses and Teach
+Qur'an screens, and the course actions' validation messages.
+
 ## 5om. Walk health: the certificate walk's student has a checked ID card (2026-10-08)
 
 Found while walking the certificates screen for C19 slice CT3:

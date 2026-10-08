@@ -31,7 +31,13 @@ export default function Certificates({
     assessments = [],
     offerings = [],
     filters = {},
+    t = {},
 }) {
+    // Every string below is a key in the `teach` book (slice CT3, STATUS
+    // §5on); the English is the fallback. The {{placeholders}} are the
+    // template's format and stay as they are.
+    const kindName = (kind) => t[`certificate_kind_${kind.value}`] || kind.label;
+    const statusName = (status) => t[`cert_status_${status}`] || status;
     const [editingId, setEditingId] = useState(null);
     const templateForm = useForm({ ...EMPTY_TEMPLATE });
     const issueForm = useForm({
@@ -77,9 +83,9 @@ export default function Certificates({
         : '/catalog/certificates/export';
 
     return (
-        <AppShell title="Certificates">
+        <AppShell title={t.cert_title || 'Certificates'}>
             <div className="mb-4 flex justify-end">
-                <a className="btn-secondary" href={exportHref}>Export CSV</a>
+                <a className="btn-secondary" href={exportHref}>{t.catalog_export || 'Export CSV'}</a>
             </div>
 
             <form
@@ -93,32 +99,32 @@ export default function Certificates({
                 }}
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
             >
-                <p className="md:col-span-3 text-sm font-medium">{editingId ? 'Edit template' : 'New template'}</p>
-                <input className="form-input" placeholder="Name (EN)" dir="ltr" value={templateForm.data.name} onChange={(e) => templateForm.setData('name', e.target.value)} />
-                <input className="form-input" placeholder="Name (DV)" dir="rtl" value={templateForm.data.name_dv} onChange={(e) => templateForm.setData('name_dv', e.target.value)} />
-                <input className="form-input" placeholder="Name (AR)" dir="rtl" value={templateForm.data.name_ar} onChange={(e) => templateForm.setData('name_ar', e.target.value)} />
-                <select className="form-input" value={templateForm.data.kind} onChange={(e) => templateForm.setData('kind', e.target.value)}>
-                    {kinds.map((kind) => <option key={kind.value} value={kind.value}>{kind.label}</option>)}
+                <p className="md:col-span-3 text-sm font-medium">{editingId ? (t.cert_edit_template || 'Edit template') : (t.cert_new_template || 'New template')}</p>
+                <input className="form-input" placeholder={t.cert_name_en || 'Name (EN)'} aria-label={t.cert_name_en || 'Name (EN)'} dir="ltr" value={templateForm.data.name} onChange={(e) => templateForm.setData('name', e.target.value)} />
+                <input className="form-input" placeholder={t.cert_name_dv || 'Name (DV)'} aria-label={t.cert_name_dv || 'Name (DV)'} dir="rtl" value={templateForm.data.name_dv} onChange={(e) => templateForm.setData('name_dv', e.target.value)} />
+                <input className="form-input" placeholder={t.cert_name_ar || 'Name (AR)'} aria-label={t.cert_name_ar || 'Name (AR)'} dir="rtl" value={templateForm.data.name_ar} onChange={(e) => templateForm.setData('name_ar', e.target.value)} />
+                <select className="form-input" aria-label={t.cert_kind || 'Kind of certificate'} value={templateForm.data.kind} onChange={(e) => templateForm.setData('kind', e.target.value)}>
+                    {kinds.map((kind) => <option key={kind.value} value={kind.value}>{kindName(kind)}</option>)}
                 </select>
-                <select className="form-input" value={templateForm.data.course_id} onChange={(e) => templateForm.setData('course_id', e.target.value)}>
-                    <option value="">Any course</option>
+                <select className="form-input" aria-label={t.questions_course || 'Course'} value={templateForm.data.course_id} onChange={(e) => templateForm.setData('course_id', e.target.value)}>
+                    <option value="">{t.questions_any_course || 'Any course'}</option>
                     {courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
                 </select>
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={templateForm.data.active} onChange={(e) => templateForm.setData('active', e.target.checked)} />
-                    Active
+                    {t.cert_active || 'Active'}
                 </label>
-                <input className="form-input" type="number" min="0" max="100" placeholder="Min progress %" value={templateForm.data.rules.min_progress_percent} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, min_progress_percent: e.target.value })} />
-                <input className="form-input" type="number" min="0" max="100" placeholder="Min attendance %" value={templateForm.data.rules.min_attendance_percent} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, min_attendance_percent: e.target.value })} />
+                <input className="form-input" type="number" min="0" max="100" placeholder={t.cert_min_progress || 'Min progress %'} aria-label={t.cert_min_progress || 'Min progress %'} value={templateForm.data.rules.min_progress_percent} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, min_progress_percent: e.target.value })} />
+                <input className="form-input" type="number" min="0" max="100" placeholder={t.cert_min_attendance || 'Min attendance %'} aria-label={t.cert_min_attendance || 'Min attendance %'} value={templateForm.data.rules.min_attendance_percent} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, min_attendance_percent: e.target.value })} />
                 {/* Labelled a percentage, because it is one: the request
                     validates it max:100 and it sits beside two _percent
                     rules. It was compared against the raw mark, so 10/10 on a
                     ten-mark quiz failed a threshold of 50 while 60/200 passed
                     it. */}
-                <input className="form-input" type="number" min="0" max="100" placeholder="Min score %" value={templateForm.data.rules.min_score} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, min_score: e.target.value })} />
+                <input className="form-input" type="number" min="0" max="100" placeholder={t.cert_min_score || 'Min score %'} aria-label={t.cert_min_score || 'Min score %'} value={templateForm.data.rules.min_score} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, min_score: e.target.value })} />
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={templateForm.data.rules.require_final_assessment} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, require_final_assessment: e.target.checked })} />
-                    Require final assessment
+                    {t.cert_require_final || 'Require final assessment'}
                 </label>
                 {/* SPEC §27 "Pass final assessment" — which assessment that is
                     was storable but unsettable, so the rule always fell back to
@@ -126,32 +132,34 @@ export default function Certificates({
                     course, practice quizzes included. */}
                 <select
                     className="form-input"
+                    aria-label={t.cert_final || 'Final assessment'}
                     value={templateForm.data.rules.assessment_id}
                     onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, assessment_id: e.target.value })}
                 >
-                    <option value="">Final assessment: any published one</option>
+                    <option value="">{t.cert_final_any || 'Final assessment: any published one'}</option>
                     {assessments
                         .filter((a) => !templateForm.data.course_id || String(a.course_id) === String(templateForm.data.course_id))
                         .map((a) => <option key={a.id} value={a.id}>{a.title}</option>)}
                 </select>
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={templateForm.data.rules.require_teacher_approval} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, require_teacher_approval: e.target.checked })} />
-                    Require teacher approval
+                    {t.cert_require_approval || 'Require teacher approval'}
                 </label>
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={templateForm.data.rules.require_payment} onChange={(e) => templateForm.setData('rules', { ...templateForm.data.rules, require_payment: e.target.checked })} />
-                    Require payment
+                    {t.cert_require_payment || 'Require payment'}
                 </label>
                 <textarea
                     className="form-input md:col-span-3 min-h-24"
                     dir="auto"
-                    placeholder="Body HTML. Placeholders: {{student_name}} {{course_name}} {{offering_name}} {{completion_date}} {{grade}} {{certificate_number}} {{institute}}"
+                    placeholder={`${t.cert_body || 'Body HTML. Placeholders:'} {{student_name}} {{course_name}} {{offering_name}} {{completion_date}} {{grade}} {{certificate_number}} {{institute}}`}
+                    aria-label={t.cert_body || 'Body HTML. Placeholders:'}
                     value={templateForm.data.body_html}
                     onChange={(e) => templateForm.setData('body_html', e.target.value)}
                 />
                 <div className="md:col-span-3 flex flex-wrap gap-2">
-                    <button type="submit" className="btn-primary" disabled={templateForm.processing}>{editingId ? 'Update template' : 'Save template'}</button>
-                    {editingId && <button type="button" className="btn-secondary" onClick={cancelEdit}>Cancel</button>}
+                    <button type="submit" className="btn-primary" disabled={templateForm.processing}>{editingId ? (t.cert_update_template || 'Update template') : (t.cert_save_template || 'Save template')}</button>
+                    {editingId && <button type="button" className="btn-secondary" onClick={cancelEdit}>{t.rubric_cancel || 'Cancel'}</button>}
                 </div>
                 {templateForm.errors.name && <p className="md:col-span-3 text-sm text-red-600">{templateForm.errors.name}</p>}
             </form>
@@ -163,32 +171,32 @@ export default function Certificates({
                 }}
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
             >
-                <p className="md:col-span-3 text-sm font-medium">Issue certificate</p>
-                <select className="form-input" value={issueForm.data.certificate_template_id} onChange={(e) => issueForm.setData('certificate_template_id', e.target.value)}>
+                <p className="md:col-span-3 text-sm font-medium">{t.cert_issue_title || 'Issue certificate'}</p>
+                <select className="form-input" aria-label={t.cert_template || 'Template'} value={issueForm.data.certificate_template_id} onChange={(e) => issueForm.setData('certificate_template_id', e.target.value)}>
                     {templates.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
                 </select>
-                <select className="form-input" value={issueForm.data.student_id} onChange={(e) => issueForm.setData('student_id', e.target.value)}>
+                <select className="form-input" aria-label={t.cert_student || 'Student'} value={issueForm.data.student_id} onChange={(e) => issueForm.setData('student_id', e.target.value)}>
                     {students.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
                 </select>
-                <select className="form-input" value={issueForm.data.academic_year_id} onChange={(e) => issueForm.setData('academic_year_id', e.target.value)}>
+                <select className="form-input" aria-label={t.cert_year || 'Academic year'} value={issueForm.data.academic_year_id} onChange={(e) => issueForm.setData('academic_year_id', e.target.value)}>
                     {years.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
                 </select>
-                <select className="form-input" value={issueForm.data.course_id} onChange={(e) => issueForm.setData('course_id', e.target.value)}>
-                    <option value="">Course (from template)</option>
+                <select className="form-input" aria-label={t.questions_course || 'Course'} value={issueForm.data.course_id} onChange={(e) => issueForm.setData('course_id', e.target.value)}>
+                    <option value="">{t.cert_course_from_template || 'Course (from template)'}</option>
                     {courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
                 </select>
-                <select className="form-input" value={issueForm.data.course_offering_id} onChange={(e) => issueForm.setData('course_offering_id', e.target.value)}>
-                    <option value="">Offering (optional)</option>
+                <select className="form-input" aria-label={t.cert_offering || 'Offering (optional)'} value={issueForm.data.course_offering_id} onChange={(e) => issueForm.setData('course_offering_id', e.target.value)}>
+                    <option value="">{t.cert_offering || 'Offering (optional)'}</option>
                     {offerings.map((row) => <option key={row.id} value={row.id}>{row.title}</option>)}
                 </select>
-                <input className="form-input" placeholder="Grade (optional)" value={issueForm.data.grade} onChange={(e) => issueForm.setData('grade', e.target.value)} />
-                <input className="form-input" type="date" value={issueForm.data.completion_date} onChange={(e) => issueForm.setData('completion_date', e.target.value)} />
+                <input className="form-input" placeholder={t.cert_grade || 'Grade (optional)'} aria-label={t.cert_grade || 'Grade (optional)'} value={issueForm.data.grade} onChange={(e) => issueForm.setData('grade', e.target.value)} />
+                <input className="form-input" type="date" aria-label={t.cert_completion_date || 'Completion date'} value={issueForm.data.completion_date} onChange={(e) => issueForm.setData('completion_date', e.target.value)} />
                 <label className="flex items-center gap-2 text-sm">
                     <input type="checkbox" checked={issueForm.data.teacher_approved} onChange={(e) => issueForm.setData('teacher_approved', e.target.checked)} />
-                    Teacher approved
+                    {t.cert_teacher_approved || 'Teacher approved'}
                 </label>
                 <div className="md:col-span-3">
-                    <button type="submit" className="btn-primary" disabled={issueForm.processing}>Issue</button>
+                    <button type="submit" className="btn-primary" disabled={issueForm.processing}>{t.cert_issue || 'Issue'}</button>
                 </div>
                 {issueForm.errors.student_id && <p className="md:col-span-3 text-sm text-red-600">{issueForm.errors.student_id}</p>}
             </form>
@@ -197,24 +205,27 @@ export default function Certificates({
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">Number</th>
-                            <th className="px-3 py-2">Student</th>
-                            <th className="px-3 py-2">Course</th>
-                            <th className="px-3 py-2">Status</th>
+                            <th className="px-3 py-2">{t.cert_col_number || 'Number'}</th>
+                            <th className="px-3 py-2">{t.cert_student || 'Student'}</th>
+                            <th className="px-3 py-2">{t.questions_course || 'Course'}</th>
+                            <th className="px-3 py-2">{t.assess_status || 'Status'}</th>
                             <th className="px-3 py-2"></th>
                         </tr>
                     </thead>
                     <tbody>
+                        {issued.length === 0 && (
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>{t.cert_none || 'No certificates issued yet.'}</td></tr>
+                        )}
                         {issued.map((row) => (
                             <tr key={row.id} className="border-t">
                                 <td className="px-3 py-2">{row.certificate_number}</td>
                                 <td className="px-3 py-2">{row.student_name}</td>
                                 <td className="px-3 py-2">{row.course_name || '—'}</td>
-                                <td className="px-3 py-2">{row.status}</td>
+                                <td className="px-3 py-2">{statusName(row.status)}</td>
                                 <td className="px-3 py-2 text-end">
-                                    <a className="text-sm text-[#7C2D37] hover:underline" href={`/catalog/certificates/${row.id}/download`}>Open HTML</a>
+                                    <a className="text-sm text-[#7C2D37] hover:underline" href={`/catalog/certificates/${row.id}/download`}>{t.cert_open_html || 'Open HTML'}</a>
                                     {' · '}
-                                    <a className="text-sm text-[#7C2D37] hover:underline" href={row.verify_url}>Verify</a>
+                                    <a className="text-sm text-[#7C2D37] hover:underline" href={row.verify_url}>{t.cert_verify || 'Verify'}</a>
                                     {!row.revoked && (
                                         <>
                                             {' · '}
@@ -223,7 +234,7 @@ export default function Certificates({
                                                 className="text-sm text-red-700"
                                                 onClick={() => router.post(`/catalog/certificates/${row.id}/revoke`)}
                                             >
-                                                Revoke
+                                                {t.cert_revoke || 'Revoke'}
                                             </button>
                                         </>
                                     )}

@@ -34,7 +34,7 @@ class CatalogReviewController extends Controller
 
         return Inertia::render(
             'Courses/Catalog/Reviews',
-            app(ListTeacherReviewReportsAction::class)->execute($this->filters($request)) + ['t' => Phrases::once('admin'), 'teach' => Phrases::once('teach')],
+            app(ListTeacherReviewReportsAction::class)->execute($this->filters($request)) + ['t' => Phrases::once('teach')],
         );
     }
 
@@ -130,7 +130,7 @@ class CatalogReviewController extends Controller
             $this->ownCourseIds($request),
         );
 
-        return redirect()->route('catalog.reviews.index')->with('success', 'Review saved.');
+        return redirect()->route('catalog.reviews.index')->with('success', __('teach.flash_review_saved'));
     }
 
     private function authorizeReviewer(Request $request): void

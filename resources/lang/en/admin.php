@@ -651,8 +651,6 @@ return [
     'courses_instructors_none' => 'No instructors yet — add them under Instructors.',
     'courses_instructor_marks' => 'marks',
     // Teacher review, scoped (C16 slice N6).
-    'reviews_scope_own' => 'Showing the submissions from your own courses only (:count).',
-    'reviews_scope_none' => 'No courses are assigned to you yet. The office links your sign-in to your instructor profile and assigns courses to it on the course form; then their submissions appear here.',
     'courses_language' => 'Language',
     'courses_level' => 'Level',
     'courses_level_kids' => 'Kids',
