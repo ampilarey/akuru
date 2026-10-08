@@ -4983,6 +4983,63 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5oz. Laravel's own validation messages in Dhivehi and Arabic (C19 slice CT6b-1, 2026-10-08)
+
+A form refused on a Dhivehi or Arabic page said why in English: *The title
+field is required.* under a Thaana label. Laravel ships its messages in
+English alone, and `resources/lang` had no `validation.php`, so every
+language fell back to the framework's file. Since §5os a save answers in the
+page's language, so the fix reaches the browser.
+
+**The files:** `resources/lang/dv/validation.php` and
+`resources/lang/ar/validation.php`.
+- All 107 rules of Laravel 12.62's English file, 135 sentences in all, with
+  the same `:placeholders`.
+- `attributes` names 156 fields as the screens that ask for them label them:
+  - the course, offering, Qur'an and learner forms (a session's *Starts*
+    is ފަށާ ވަގުތު / البداية, as on the form);
+  - registration and sign-in, because the public registration form sets no
+    messages of its own and reads these too.
+- `values` names the *today* and *now* that five date rules compare with
+  (a birth date `before:today`). Without it the Dhivehi sentence carried the
+  English word.
+- English is untouched: there is still no `en/validation.php`, and an
+  English page reads Laravel's own sentences.
+
+**Not named:** a box ticked, an id the page sends itself, and the other
+domains' forms (the shop, the library, the school). Their fields are spelt
+from their keys, as in English, inside a sentence in the page's language.
+
+**Tests:** `ValidationMessagesSpeakThreeLanguagesTest`, 7 tests.
+- Every Laravel sentence is in both files, with the same placeholders and in
+  the page's script, and neither file has a key Laravel does not. A Laravel
+  upgrade that adds a rule fails here and names the key.
+- Both files name the same fields, each in its own script, and a translated
+  *today* belongs to a named field.
+- From a Dhivehi page, a session with no title and an end before its start
+  is refused in Dhivehi. The `after:starts_at` sentence names the start
+  field too: *ނިމޭ ވަގުތު އަކީ ފަށާ ވަގުތު ގެ ފަހުގެ ތާރީޚަކަށް ވާންޖެހޭ.*
+- From an Arabic page, an empty glossary term is refused in Arabic. From an
+  English page, the session is refused in Laravel's English. A birth date
+  is compared with *today* in each language.
+- Five deliberate breaks each fail it: a key dropped, a placeholder
+  renamed, an English sentence left in, a field unnamed, a *today* for an
+  unnamed field.
+
+**Walk:** `course-screens-language.mjs`, **324/324**.
+- The dean saves the Dhivehi session form empty and reads both refusals in
+  Dhivehi, with no English word, before filling it in.
+- A term saved empty from the Arabic glossary reads *حقل المصطلح مطلوب.*
+- Run once with the two files moved aside, the walk fails exactly these two
+  steps, reading *The title field is required.The starts at field is
+  required.* and *The term field is required.*
+
+**Still open in CT6b (CT6b-2):** the course, offering and progress actions'
+own refusals. There are 135 of them, 122 different sentences, written in
+English across 61 action files
+(`ValidationException::withMessages([... => 'Invalid delivery mode.'])`).
+Laravel's files cannot reach them.
+
 ## 5oy. Offerings, their sessions and attendance, and the performance page, in Dhivehi and Arabic (C19 slice CT8, 2026-10-08)
 
 The last course screens in English:

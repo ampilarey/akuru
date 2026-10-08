@@ -207,8 +207,10 @@ the page it came from (this site's Referer), or else the session's. Blade
 forms were never affected: they post to `route()` addresses, which carry the
 language.
 
-Laravel's own validation messages are still English in every language —
-there is no `validation.php` in `resources/lang` (BACKLOG C19, slice CT6).
+Laravel's own validation messages were English in every language, because
+there was no `validation.php` in `resources/lang` — **fixed (2026-10-08,
+STATUS §5oz)**. The course, offering and progress actions' own refusals
+are still English (BACKLOG C19, slice CT6b-2).
 
 ## Found by the middle-name walk (2026-10-08)
 
