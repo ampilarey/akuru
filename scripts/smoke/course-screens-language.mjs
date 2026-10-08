@@ -31,6 +31,11 @@
  * in progress against its clock, one marked with its answers shown — and the
  * lesson, with its glossary term opened.
  *
+ * The dean adds a session to SMOKE-Offering from the Dhivehi page and is told
+ * so in Dhivehi, then opens the offerings, the offering's sessions and the
+ * halaqa session's attendance (slice CT8); the pupil opens their performance
+ * page.
+ *
  *   node scripts/smoke/course-screens-language.mjs
  *
  * Environment: SMOKE_BASE_URL, SMOKE_MARKER, SMOKE_SUPER_ADMIN, SMOKE_STUDENT,
@@ -55,6 +60,9 @@ const CODE_KEYS = new Set([
     'completion_rule', 'submission_kind', 'unlockModes', 'decisions', 'label', 'decision_label', 'english_name',
     'q', 'statuses', 'assignment_type', 'overall_statuses', 'lane_results', 'revision_results', 'new_result',
     'recent_revision_result', 'old_revision_result', 'overall_status', 'surah',
+    // Slice CT8: an offering's, a session's and an attendance mark's codes, and
+    // whose record the performance page shows.
+    'modes', 'delivery_mode', 'session_type', 'pin_mode', 'old_pin_mode', 'new_pin_mode', 'attendance_mode', 'relationship',
 ]);
 const ALWAYS_FINE = [/https?:\/\/\S*/g, /\{\{[a-z_]+\}\}/g, /\bCSV\b/g, /\bPDF\b/g, /\bJSON\b/g, /\bHTML\b/g, /\bYouTube\b/g, /\bVimeo\b/g];
 
@@ -225,6 +233,19 @@ await pupil.getByRole('button', { name: learn.submit, exact: true }).click();
 const assessmentTold = await flashReads(pupil, learn.flash_assessment_submitted);
 check('the pupil hands in an assessment in Dhivehi and is told so in Dhivehi', Boolean(learn.flash_assessment_submitted) && assessmentTold === learn.flash_assessment_submitted, `said: ${assessmentTold ?? 'nothing'}`);
 
+// A session added to SMOKE-Offering from the Dhivehi page (slice CT8).
+// Nobody is enrolled on SMOKE-Offering, so its attendance sheet has no one to
+// mark; `SmokeMarkerSeeder` clears the offering's sessions on every run.
+const offeringId = sessionsHref?.match(/offerings\/(\d+)/)?.[1];
+const attendancePath = `/catalog/offerings/${offeringId}/sessions/${halaqaSession?.id}/attendance`;
+await page.goto(`${BASE}/dv/catalog/offerings/${offeringId}/sessions`, { waitUntil: 'networkidle' });
+const teach = (await props(page)).t ?? {};
+await page.getByLabel(teach.sessions_session_title, { exact: true }).fill('SMOKE-Lang-Session');
+await page.getByLabel(teach.sessions_starts, { exact: true }).fill('2030-01-01T09:00');
+await page.getByRole('button', { name: teach.sessions_save, exact: true }).click();
+const sessionTold = await flashReads(page, teach.flash_session_saved);
+check('the dean adds a session in Dhivehi and is told so in Dhivehi', Boolean(teach.flash_session_saved) && sessionTold === teach.flash_session_saved, `said: ${sessionTold ?? 'nothing'}`);
+
 const screens = [
     '/catalog/courses',
     `/catalog/courses/${course?.id}/outline`,
@@ -277,6 +298,11 @@ const screens = [
     [`/learn/assessments/${assessmentId('SMOKE-Lang-Timed')}`, pupil],
     [`/learn/assessments/${assessmentId('SMOKE-Lang-Marked')}`, pupil],
     [`/learn/lessons/${lessonId}`, pupil, { open: (viewer) => viewer.locator('main button.glossary-term').first().click() }],
+    // Slice CT8.
+    '/catalog/offerings',
+    `/catalog/offerings/${offeringId}/sessions`,
+    attendancePath,
+    ['/portal/performance', pupil],
 ];
 
 // A step's name, with no record's id in it.

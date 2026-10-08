@@ -8,6 +8,7 @@ use App\Domains\Offerings\Actions\SaveCourseOfferingAction;
 use App\Domains\Offerings\Models\CourseOffering;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,7 +21,8 @@ class CourseOfferingController extends Controller
     {
         abort_unless($request->user()?->can('courses.manage'), 403);
 
-        return Inertia::render('Offerings/Catalog/Index', app(ListCourseOfferingsAction::class)->execute());
+        // The `teach` book, like every catalog screen (slice CT8).
+        return Inertia::render('Offerings/Catalog/Index', app(ListCourseOfferingsAction::class)->execute() + ['t' => Phrases::once('teach')]);
     }
 
     public function store(Request $request): RedirectResponse
@@ -30,7 +32,7 @@ class CourseOfferingController extends Controller
             'created_by' => $request->user()?->id,
         ]);
 
-        return redirect()->route('catalog.offerings.index')->with('success', 'Offering saved.');
+        return redirect()->route('catalog.offerings.index')->with('success', __('teach.flash_offering_saved'));
     }
 
     public function update(Request $request, int $offering): RedirectResponse
@@ -41,7 +43,7 @@ class CourseOfferingController extends Controller
             CourseOffering::query()->findOrFail($offering),
         );
 
-        return redirect()->route('catalog.offerings.index')->with('success', 'Offering updated.');
+        return redirect()->route('catalog.offerings.index')->with('success', __('teach.flash_offering_updated'));
     }
 
     public function pin(Request $request, int $offering): RedirectResponse
@@ -60,7 +62,7 @@ class CourseOfferingController extends Controller
             $data['reason'] ?? null,
         );
 
-        return redirect()->route('catalog.offerings.index')->with('success', 'Offering pinned to current revisions.');
+        return redirect()->route('catalog.offerings.index')->with('success', __('teach.flash_offering_pinned'));
     }
 
     public function export(Request $request): StreamedResponse

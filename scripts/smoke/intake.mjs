@@ -189,12 +189,14 @@ const until = async (probe, ms = 6000) => {
     return false;
 };
 await until(async () => (await intakeRow().count()) > 0);
-check('a face-to-face intake with one seat is created', /face_to_face/.test(await intakeRowText()) && /\bopen\b/.test(await intakeRowText()), (await intakeRowText()) || (await text(admin)).slice(0, 160));
+// The row names the mode and the status, where it printed their codes
+// (slice CT8).
+check('a face-to-face intake with one seat is created', /Face to face/.test(await intakeRowText()) && /\bOpen\b/.test(await intakeRowText()), (await intakeRowText()) || (await text(admin)).slice(0, 160));
 
 // 2. pin it to the current published revisions (the prompt asks why)
 admin.once('dialog', (dialog) => dialog.accept('SMOKE-Pin'));
 await intakeRow().locator('button:has-text("Pin now")').click();
-check('and pinned, with a reason', await settles(admin, 'Offering pinned to current revisions.') && /pinned/.test(await intakeRowText()), await intakeRowText());
+check('and pinned, with a reason', await settles(admin, 'Offering pinned to current revisions.') && /Pinned/.test(await intakeRowText()), await intakeRowText());
 
 // 3. a session tomorrow
 const sessionsHref = await intakeRow().locator('a:has-text("Sessions")').getAttribute('href');

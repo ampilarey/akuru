@@ -41,8 +41,14 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\CourseSubject;
 use App\Domains\Identity\Models\User;
+use App\Domains\Offerings\Enums\AttendanceMode;
+use App\Domains\Offerings\Enums\AttendanceStatus;
 use App\Domains\Offerings\Enums\DeliveryMode;
+use App\Domains\Offerings\Enums\OfferingStatus;
+use App\Domains\Offerings\Enums\SessionType;
 use App\Domains\Offerings\Models\CourseOffering;
+use App\Domains\Offerings\Models\CourseOfferingSession;
+use App\Domains\People\Enums\GuardianRelationship;
 use App\Domains\Progress\Enums\LessonProgressStatus;
 use App\Domains\Progress\Models\ActivityAttempt;
 use App\Enums\Hifz\HifzMilestoneStatus;
@@ -121,6 +127,12 @@ function translatedCourseScreens(): array
         'Courses/Learn/Assessment' => 'learn',
         'Courses/Player/Show' => 'learn',
         '../Components/HandwritingCanvas' => 'learn',
+        // Slice CT8: offerings, their sessions and a session's attendance,
+        // and the performance page a learner or a parent reads.
+        'Offerings/Catalog/Index' => 'teach',
+        'Offerings/Catalog/Sessions' => 'teach',
+        'Offerings/Catalog/Attendance' => 'teach',
+        'Portal/Performance' => 'learn',
     ];
 }
 
@@ -203,6 +215,13 @@ it('names every status, decision, unlock rule, block type, pattern, assessment a
         ...array_map(fn ($kind) => 'review_kind_'.$kind, ['activity', 'assessment']),
         // Every value `course_enrollments.status` may hold (slice CT4).
         ...array_map(fn ($status) => 'enrol_status_'.$status, ['pending', 'approved', 'rejected', 'active', 'completed', 'cancelled', 'suspended']),
+        // An offering, its sessions and their attendance (slice CT8).
+        ...array_map(fn ($case) => 'delivery_mode_'.$case->value, DeliveryMode::cases()),
+        ...array_map(fn ($case) => 'offering_status_'.$case->value, OfferingStatus::cases()),
+        ...array_map(fn ($mode) => 'pin_mode_'.$mode, ['latest', 'pinned']),
+        ...array_map(fn ($case) => 'session_type_'.$case->value, SessionType::cases()),
+        ...array_map(fn ($case) => 'attendance_status_'.$case->value, AttendanceStatus::cases()),
+        ...array_map(fn ($case) => 'attendance_mode_'.$case->value, AttendanceMode::cases()),
     ];
 
     foreach (['en', 'dv', 'ar'] as $locale) {
@@ -558,6 +577,9 @@ it('names every code the learner’s pages show, in all three languages', functi
         // an assessment attempt's, named above.
         ...array_map(fn ($case) => 'submission_kind_'.$case->value, ActivitySubmissionKind::cases()),
         ...array_map(fn ($tone) => 'tone_'.$tone, ['note', 'tip', 'warning']),
+        // Slice CT8: whose record the performance page shows — the learner's
+        // own, or a child's, by how the family is linked.
+        ...array_map(fn ($relationship) => 'relationship_'.$relationship, ['self', 'child', ...array_map(fn ($case) => $case->value, GuardianRelationship::cases())]),
     ];
     [$en, $dv, $ar] = [teachBook('en', 'learn'), teachBook('dv', 'learn'), teachBook('ar', 'learn')];
 
@@ -657,4 +679,49 @@ it('serves an activity, an assessment and a lesson to a pupil in Dhivehi, and sa
     app()->setLocale('en');
     expect(__('learn.flash_lesson_complete'))->toBe('Lesson marked complete.')
         ->and(__('learn.flash_assessment_submitted'))->toBe('Assessment submitted.');
+});
+
+it('serves the offerings, their sessions and attendance in Dhivehi, and says what was saved in Dhivehi', function () {
+    // Slice CT8. The three office screens read the `teach` book and each save
+    // answers in it; the performance page reads the shell's `learn` book.
+    $admin = actingPeopleAdmin(['courses.manage', 'courses.publish']);
+    $course = app(SaveEngineCourseAction::class)->execute([
+        'title' => 'Dhivehi offerings '.uniqueFixtureSuffix(),
+        'subject_id' => CourseSubject::query()->value('id'),
+        'created_by' => $admin->id,
+    ]);
+    app(TransitionCourseWorkflowAction::class)->execute($course, CourseWorkflowStatus::InReview, true);
+    app(TransitionCourseWorkflowAction::class)->execute($course->fresh(), CourseWorkflowStatus::Published, true);
+    $offering = CourseOffering::query()->where('course_id', $course->id)->firstOrFail();
+    $pupil = User::factory()->create();
+    makeStudent(['user_id' => $pupil->id]);
+    $enrolment = app(EnrollSelfLearningAction::class)->execute($pupil->id, $course->id, $offering->id);
+    [$dv, $learn] = [teachBook('dv'), teachBook('dv', 'learn')];
+    $as = fn () => $this->withoutLocalizationMiddleware()->actingAs($admin);
+
+    app()->setLocale('dv');
+    $as()->get(route('catalog.offerings.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Offerings/Catalog/Index')->where('t.offerings_title', $dv['offerings_title']));
+    $as()->post('/catalog/offerings/'.$offering->id.'/sessions', ['title' => 'Week one', 'session_type' => 'face_to_face', 'starts_at' => now()->addDay()->format('Y-m-d H:i')])
+        ->assertSessionHas('success', $dv['flash_session_saved']);
+    $session = CourseOfferingSession::query()->where('course_offering_id', $offering->id)->firstOrFail();
+    $as()->get('/catalog/offerings/'.$offering->id.'/sessions')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Offerings/Catalog/Sessions')->where('t.sessions_save', $dv['sessions_save']));
+    $as()->get('/catalog/offerings/'.$offering->id.'/sessions/'.$session->id.'/attendance')->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Offerings/Catalog/Attendance')->where('t.attendance_mark', $dv['attendance_mark']));
+    $as()->post('/catalog/offerings/'.$offering->id.'/sessions/'.$session->id.'/attendance', ['enrollment_id' => $enrolment->id, 'status' => 'present', 'attendance_mode' => 'physical'])
+        ->assertSessionHas('success', $dv['flash_attendance_saved']);
+    $as()->post('/catalog/offerings/'.$offering->id.'/sessions/'.$session->id.'/attendance/bulk', ['status' => 'late', 'attendance_mode' => 'physical'])
+        ->assertSessionHas('success', $dv['flash_roster_marked']);
+    $as()->post(route('catalog.offerings.pin', $offering->id), ['reason' => ''])
+        ->assertSessionHas('success', $dv['flash_offering_pinned']);
+    $as()->post(route('catalog.offerings.store'), ['course_id' => $course->id, 'title' => 'Evening batch', 'delivery_mode' => 'face_to_face'])
+        ->assertSessionHas('success', $dv['flash_offering_saved']);
+
+    $this->withoutLocalizationMiddleware()->actingAs($pupil)
+        ->get(route('portal.performance'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Portal/Performance')->where('i18n.learn.performance_title', $learn['performance_title']));
+
+    app()->setLocale('en');
+    expect(__('teach.flash_dual_write_synced', ['sessions' => 2, 'enrollments' => 3]))->toBe('Dual-write synced 2 sessions and 3 enrollments.');
 });

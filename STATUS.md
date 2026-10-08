@@ -4983,6 +4983,73 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5oy. Offerings, their sessions and attendance, and the performance page, in Dhivehi and Arabic (C19 slice CT8, 2026-10-08)
+
+The last course screens in English:
+- the offerings list (`/catalog/offerings`);
+- an offering's sessions;
+- a session's attendance sheet;
+- the performance page a learner or a parent reads (`/portal/performance`).
+
+The three office screens took their three translated words from the shell's
+`learn` book, a learner's book. Like every other catalog screen, they now read
+the `teach` book, which their controllers pass as `t`.
+
+**Phrases:**
+- The `teach` book gains 121 rows:
+  - the screens' labels and the certificate-rule names;
+  - the re-pin prompt and its history, with one and many;
+  - six code families: `delivery_mode_`, `offering_status_`, `pin_mode_`,
+    `session_type_`, `attendance_status_` and `attendance_mode_`;
+  - ten saved messages: an offering saved, updated or pinned; a session
+    saved or updated; a halaqa program or session linked; a dual-write
+    sync with its counts; attendance saved; a roster marked.
+- The `learn` book gains 20 rows: the performance page, and
+  `relationship_` — the learner's own record, a child's, and each way a
+  family is linked.
+
+**Codes named, not printed:**
+- a delivery mode;
+- an offering's status (the server sent an English label);
+- a pin mode, and a re-pin's old and new modes;
+- a session's type;
+- an attendance mark's status and how the learner attended;
+- a relationship;
+- an enrolment's status on the performance page.
+
+**On the screens:**
+- Every field has a name: the offering form's selects and boxes, the
+  session form's two date boxes, the halaqa link, a session's halaqa map,
+  and the attendance sheet's three selects.
+- The phone layout's column captions (`data-label`) on the performance
+  page were English. They come from the same phrases as the columns now.
+- Developer words are gone:
+  - the rules heading's "(SPEC §39 override)";
+  - the dual-write note naming its environment variable, which now says
+    what is switched off.
+- The performance page's empty message read the CT7a key `no_children`,
+  which has a shorter English. It reads `performance_none` now.
+
+**Tests:** `CourseScreensSpeakThreeLanguagesTest` holds 46 screens in 15
+tests.
+- The codes tests hold the seven new families.
+- A new test runs the office screens in Dhivehi: it adds a session, marks
+  attendance, marks the roster, pins, and saves an offering. Each saved
+  message is Dhivehi, and the performance page serves its Dhivehi title.
+
+**Walk:** `course-screens-language.mjs`, **322/322**.
+- The dean adds a session to SMOKE-Offering from the Dhivehi page and is
+  told so in Dhivehi.
+- It then opens the offerings, the sessions and the halaqa session's
+  attendance sheet, and the pupil's performance page, in both languages.
+- The walk counts the new code keys as codes.
+- Nobody is enrolled on SMOKE-Offering, so the sheet has no one to mark. The
+  attendance saves are held by the test instead.
+- `intake.mjs` reads the offering row's named mode, status and pin
+  (*Face to face*, *Open*, *Pinned*). `quran.mjs` reads the dual-write
+  note's new words. Both pass: intake 13/13, quran 22/22, and learn and
+  identity with them.
+
 ## 5ox. An activity, an assessment and the lesson player in Dhivehi and Arabic (C19 slice CT7b, 2026-10-08)
 
 The three screens a learner works on: an activity (`Learn/Activity`), an
