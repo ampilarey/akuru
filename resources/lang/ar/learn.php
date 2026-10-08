@@ -172,4 +172,21 @@ return [
     'pronounce_status_pending_review' => 'بانتظار المعلم',
     'pronounce_status_teacher_reviewed' => 'راجعه المعلم',
     'pronounce_status_used_for_training' => 'استُخدم للتدريب',
+
+    // What an activity is and what an assessment is, named on the course page (slice CT7a, STATUS §5ov).
+    'pattern_selection' => 'اختيار',
+    'pattern_text_input' => 'إدخال نص',
+    'pattern_arrange' => 'ترتيب',
+    'pattern_teacher_marked' => 'يصححه المعلم',
+    'assessment_type_lesson_quiz' => 'اختبار قصير للدرس',
+    'assessment_type_module_test' => 'اختبار الوحدة',
+    'assessment_type_placement_test' => 'اختبار تحديد المستوى',
+    'assessment_type_final_exam' => 'الاختبار النهائي',
+    'assessment_type_listening' => 'تقييم الاستماع',
+    'assessment_type_speaking' => 'تقييم التحدث',
+    'assessment_type_reading' => 'تقييم القراءة',
+    'assessment_type_writing' => 'تقييم الكتابة',
+    'assessment_type_practical' => 'تقييم عملي',
+    'assessment_type_mixed' => 'تقييم مختلط',
+    'assessment_type_assignment' => 'تقييم قائم على الواجبات',
 ];

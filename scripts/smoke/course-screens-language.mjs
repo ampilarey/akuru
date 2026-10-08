@@ -67,8 +67,15 @@ const props = (page) => page.evaluate(() => JSON.parse(document.querySelector('s
 //
 // `own` names the code keys a screen shows on purpose: the Qur'an reference
 // has a column of English surah names (slice CT5b).
+//
+// An activity's type label is the author's when they typed one; left blank,
+// `SaveActivityAction` stores the pattern's code there, and that is a code.
+// Taken for the author's, it excused a raw "selection" and "teacher_marked"
+// on the learner's course page and on the activities screen, and both passed
+// (slice CT7a).
 function authorsWords(value, locale, own = [], key = '', out = [], owner = {}) {
-    if ((CODE_KEYS.has(key) && !own.includes(key)) || (key.endsWith('_en') && owner[key.replace(/_en$/, `_${locale}`)])) {
+    if ((CODE_KEYS.has(key) && !own.includes(key)) || (key.endsWith('_en') && owner[key.replace(/_en$/, `_${locale}`)])
+        || (key === 'activity_type' && value === owner.pattern)) {
         return out;
     }
     if (typeof value === 'string') {

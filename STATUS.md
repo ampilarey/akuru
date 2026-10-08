@@ -5031,6 +5031,28 @@ and `arabic_report_title`.
   pupil is enrolled in SMOKE-Course, so the dashboard card, the course page
   and its lessons all show their statuses. **246/246.**
 
+**The walk had a hole, found while scoping CT7b.**
+- The course page printed each activity's pattern (`selection`,
+  `teacher_marked`) and each assessment's type as raw codes, and the walk
+  passed it.
+- The cause: an activity also carries `activity_type`, a label for the
+  author to type. Left blank, `SaveActivityAction` stores the pattern's code
+  there. The walk read `activity_type` as the author's words, so the code
+  excused itself.
+- The walk now treats `activity_type` as a code when it equals the row's
+  pattern. A label somebody typed is still theirs.
+- With the hole closed, the walk also failed the teachers' activities screen
+  (slice CT2): its *Type* column printed the same defaulted code.
+
+**Fixes:**
+- The course page names the pattern and the assessment type. The `learn`
+  book gains 15 rows, `pattern_` and `assessment_type_`, copied from the
+  `teach` book.
+- The activities screen names a type label that is a pattern's code, and
+  shows a typed label as typed.
+- The codes test holds both families in all three languages.
+- The walk: **246/246** again.
+
 ## 5ou. The Arabic reference and report, the language preview and the clubs in Dhivehi and Arabic (C19 slice CT6a, 2026-10-08)
 
 CT6 was "the Arabic reference and report, the i18n preview, the clubs and

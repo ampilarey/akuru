@@ -172,4 +172,21 @@ return [
     'pronounce_status_pending_review' => 'waiting for the teacher',
     'pronounce_status_teacher_reviewed' => 'reviewed by the teacher',
     'pronounce_status_used_for_training' => 'used for training',
+
+    // What an activity is and what an assessment is, named on the course page (slice CT7a, STATUS §5ov).
+    'pattern_selection' => 'Selection',
+    'pattern_text_input' => 'Text input',
+    'pattern_arrange' => 'Arrange',
+    'pattern_teacher_marked' => 'Teacher-marked',
+    'assessment_type_lesson_quiz' => 'Lesson quiz',
+    'assessment_type_module_test' => 'Module test',
+    'assessment_type_placement_test' => 'Placement test',
+    'assessment_type_final_exam' => 'Final exam',
+    'assessment_type_listening' => 'Listening assessment',
+    'assessment_type_speaking' => 'Speaking assessment',
+    'assessment_type_reading' => 'Reading assessment',
+    'assessment_type_writing' => 'Writing assessment',
+    'assessment_type_practical' => 'Practical assessment',
+    'assessment_type_mixed' => 'Mixed assessment',
+    'assessment_type_assignment' => 'Assignment-based assessment',
 ];

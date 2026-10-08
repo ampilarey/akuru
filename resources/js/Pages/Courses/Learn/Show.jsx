@@ -90,7 +90,7 @@ export default function Show({
                     <ul className="space-y-2 text-sm">
                         {assessments.map((row) => (
                             <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 border-t pt-2 first:border-t-0 first:pt-0">
-                                <span>{row.title} <span className="text-xs uppercase text-gray-500">{row.assessment_type}</span></span>
+                                <span>{row.title} <span className="text-xs uppercase text-gray-500">{t[`assessment_type_${row.assessment_type}`] || row.assessment_type}</span></span>
                                 {enrollment ? (
                                     <a className="chip-link" href={`/learn/assessments/${row.id}`}>{t.open || 'Open'}</a>
                                 ) : (
@@ -107,7 +107,7 @@ export default function Show({
                     <ul className="space-y-2 text-sm">
                         {activities.map((row) => (
                             <li key={row.id} className="flex flex-wrap items-center justify-between gap-2 border-t pt-2 first:border-t-0 first:pt-0">
-                                <span>{row.title} <span className="text-xs uppercase text-gray-500">{row.pattern}</span></span>
+                                <span>{row.title} <span className="text-xs uppercase text-gray-500">{t[`pattern_${row.pattern}`] || row.pattern}</span></span>
                                 {enrollment ? (
                                     <a className="chip-link" href={`/learn/activities/${row.id}`}>{t.open || 'Open'}</a>
                                 ) : (

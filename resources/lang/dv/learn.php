@@ -172,4 +172,21 @@ return [
     'pronounce_status_pending_review' => 'މުދައްރިސަށް މަޑުކުރަނީ',
     'pronounce_status_teacher_reviewed' => 'މުދައްރިސް ރިވިއުކޮށްފި',
     'pronounce_status_used_for_training' => 'ތަމްރީނަށް ބޭނުންކުރެވިއްޖެ',
+
+    // What an activity is and what an assessment is, named on the course page (slice CT7a, STATUS §5ov).
+    'pattern_selection' => 'ހޮވުން',
+    'pattern_text_input' => 'ލިޔެގެން ޖަވާބު',
+    'pattern_arrange' => 'ތަރުތީބުކުރުން',
+    'pattern_teacher_marked' => 'ޓީޗަރު މާކްސް ދޭ',
+    'assessment_type_lesson_quiz' => 'ފިލާވަޅުގެ ކުއިޒް',
+    'assessment_type_module_test' => 'މޮޑިއުލްގެ ޓެސްޓް',
+    'assessment_type_placement_test' => 'ލެވެލް ކަނޑައަޅާ ޓެސްޓް',
+    'assessment_type_final_exam' => 'ފައިނަލް އިމްތިޙާން',
+    'assessment_type_listening' => 'އަޑުއެހުމުގެ ޓެސްޓް',
+    'assessment_type_speaking' => 'ވާހަކަދެއްކުމުގެ ޓެސްޓް',
+    'assessment_type_reading' => 'ކިޔުމުގެ ޓެސްޓް',
+    'assessment_type_writing' => 'ލިޔުމުގެ ޓެސްޓް',
+    'assessment_type_practical' => 'ޢަމަލީ ޓެސްޓް',
+    'assessment_type_mixed' => 'ގުޅިފައިވާ ޓެސްޓް',
+    'assessment_type_assignment' => 'އެސައިންމެންޓުން ކުރާ ޓެސްޓް',
 ];

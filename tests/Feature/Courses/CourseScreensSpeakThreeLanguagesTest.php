@@ -519,11 +519,14 @@ it('serves the Arabic reference and report, the language preview and the clubs i
 
 it('names every code the learner’s pages show, in all three languages', function () {
     // The `learn` book (slice CT7a): an enrolment, a lesson, an offering's
-    // delivery, an assessment attempt, a pronunciation attempt and a skill.
+    // delivery, an activity's pattern, an assessment's type, an assessment
+    // attempt, a pronunciation attempt and a skill.
     $needed = [
         ...array_map(fn ($status) => 'enrol_status_'.$status, ['pending', 'approved', 'rejected', 'active', 'completed', 'cancelled', 'suspended']),
         ...array_map(fn ($case) => 'lesson_status_'.$case->value, LessonProgressStatus::cases()),
         ...array_map(fn ($case) => 'delivery_mode_'.$case->value, DeliveryMode::cases()),
+        ...array_map(fn ($case) => 'pattern_'.$case->value, ActivityPattern::cases()),
+        ...array_map(fn ($case) => 'assessment_type_'.$case->value, AssessmentType::cases()),
         ...array_map(fn ($status) => 'assessment_status_'.$status, ['not_started', 'in_progress', 'submitted', 'scored']),
         ...array_map(fn ($status) => 'pronounce_status_'.$status, ['submitted', 'ai_checked', 'pending_review', 'teacher_reviewed', 'used_for_training']),
         ...array_map(fn ($skill) => 'skill_'.$skill, ['listening', 'speaking', 'reading', 'writing']),
