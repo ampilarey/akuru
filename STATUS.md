@@ -4983,6 +4983,83 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pj. The daily reminders and the certificate check in Dhivehi and Arabic (C20 slice LT5c, 2026-10-08)
+
+On `/dv` and `/ar`, a visitor read:
+- the daily archive, a day's page, the subscription page and the paused page
+  in English throughout, with a kind of content printed as a code (`ayah`,
+  *Ayah archive*);
+- the subscription's *saved*, *paused* and *resumed* messages in English;
+- a day's headline and description in English (*Daily ayah · 2:255*) — the
+  same words its share links and Open Graph carry.
+
+The certificate check (`/verify/{id}`, the address printed on every
+certificate's QR code) has no language prefix, and it answered every
+scanner in English.
+
+**Through the phrase books:**
+- `public`: 54 Dhivehi and Arabic rows, all of them new to English too. The
+  untranslated baseline stays at 84 (none of these keys were in it).
+- A kind of content is named through `daily_type_*`, and its title, archive,
+  description and empty line through their own keys.
+- `ComposeDailyContentSeoAction`'s headlines and fallback descriptions are
+  said in the page's language. On a Dhivehi page, an item's Dhivehi
+  description is chosen before its English one.
+- `DailySubscriptionController`'s three messages go through `__()`.
+- The English reads as it did, with one exception: the push option now says
+  *Push (not sent yet)* in place of *Push (schema ready — not sent yet)*.
+
+**The certificate check:**
+- It takes the scanning browser's language (`Accept-Language`): Dhivehi or
+  Arabic, otherwise English. Its address stays the one printed on the
+  certificate.
+- The page sets `lang` and `dir` to match, and every label is said in that
+  language.
+- The certificate's own fields (name, course, number, grade) are as issued.
+
+**Stays as it was:** a reminder's own text is the office's. The SMS and email
+a subscriber receives are unchanged.
+
+**Seed:** `SmokeMarkerSeeder::dailyAndCertificateWalk()` adds:
+- a published reminder for 2026-01-15;
+- the template SMOKE-Verify-Cert;
+- an issued certificate (AK-SMOKE-VERIFY) at a fixed public id, for the
+  walk.
+
+Dev and staging only.
+
+**Tests:** `PublicDailyAndCertificateSpeakThreeLanguagesTest`, 10 tests.
+- No English typed into the six views or written from their PHP.
+- Every key the views and the three server files name is in Dhivehi and
+  Arabic, each kind of content's keys included.
+- The archive, a day and the subscription are served in Dhivehi and in
+  Arabic.
+- A subscription saved from a Dhivehi page is confirmed in Dhivehi.
+- The certificate check answers in English with no language, in Dhivehi, in
+  Arabic, and in English for a French browser. It is written right to left in
+  Dhivehi.
+
+Whole suite locally: **2896 passed (38824 assertions)**.
+
+**Walk:** `scripts/smoke/daily-certificate-language.mjs` (new, in
+`all.mjs`): **30/30**.
+- The reminder archive and the reminder's day page under `/dv` and `/ar`:
+  each answers, reads right to left, and carries none of the site's English
+  phrases.
+- On `/dv`: subscribing by email is confirmed in Dhivehi, and pausing it from
+  the subscription page is said in Dhivehi.
+- The certificate scanned from a Dhivehi, an Arabic and a French browser:
+  each answers in its own language and direction.
+
+Against `main`'s code: **17/30** — the pages are English and the
+certificate check is English, `dir=auto`, for every scanner.
+
+The English walks still pass: `certify.mjs` 16/16, and `page-errors.mjs` has
+no runtime or server error for any of its seven roles.
+
+**Next (C20):** LT6 — the Library's public shelf, reader, My Library, wallet
+and gift cards.
+
 ## 5pi. The public site's events, news, about and other pages in Dhivehi and Arabic (C20 slice LT5b, 2026-10-08)
 
 On `/dv` and `/ar`, a visitor read:

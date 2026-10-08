@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en" dir="auto">
+<html lang="{{ app()->getLocale() }}" dir="{{ in_array(app()->getLocale(), ['dv', 'ar'], true) ? 'rtl' : 'ltr' }}">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Certificate verification</title>
+    <title>{{ __('public.Certificate verification') }}</title>
     <style>
         body { font-family: "Noto Sans", "Noto Sans Thaana", sans-serif; margin: 0; background: #F9F4EE; color: #1f1f1f; }
         main { max-width: 40rem; margin: 3rem auto; background: #fff; border: 1px solid #E6D9C8; padding: 2rem; }
@@ -16,32 +16,32 @@
 </head>
 <body>
     <main>
-        <p>Akuru Institute</p>
-        <h1>Certificate verification</h1>
+        <p>{{ __('public.Akuru Institute') }}</p>
+        <h1>{{ __('public.Certificate verification') }}</h1>
         @if ($certificate['revoked'])
-            <p class="revoked">This certificate has been revoked.</p>
+            <p class="revoked">{{ __('public.This certificate has been revoked.') }}</p>
         @else
-            <p class="ok">This certificate is authentic.</p>
+            <p class="ok">{{ __('public.This certificate is authentic.') }}</p>
         @endif
         <dl>
-            <dt>Certificate number</dt>
+            <dt>{{ __('public.Certificate number') }}</dt>
             <dd>{{ $certificate['certificate_number'] }}</dd>
-            <dt>Student</dt>
+            <dt>{{ __('public.Student') }}</dt>
             <dd>{{ $certificate['student_name'] }}</dd>
-            <dt>Course</dt>
+            <dt>{{ __('public.Course') }}</dt>
             <dd>{{ $certificate['course_name'] ?: '—' }}</dd>
             @if ($certificate['offering_name'] !== '')
-                <dt>Offering</dt>
+                <dt>{{ __('public.Offering') }}</dt>
                 <dd>{{ $certificate['offering_name'] }}</dd>
             @endif
-            <dt>Date</dt>
+            <dt>{{ __('public.Date') }}</dt>
             <dd>{{ $certificate['completion_date'] ?: '—' }}</dd>
             @if ($certificate['grade'])
-                <dt>Grade</dt>
+                <dt>{{ __('public.Grade') }}</dt>
                 <dd>{{ $certificate['grade'] }}</dd>
             @endif
-            <dt>Institute</dt>
-            <dd>{{ $certificate['institute'] }}</dd>
+            <dt>{{ __('public.Institute') }}</dt>
+            <dd>{{ $certificate['institute'] === 'Akuru Institute' ? __('public.Akuru Institute') : $certificate['institute'] }}</dd>
         </dl>
     </main>
 </body>
