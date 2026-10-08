@@ -2045,6 +2045,25 @@ This is the screen a parent opens most. Fixed with one `flex-wrap`; a sweep of
 `scripts/smoke/mobile.mjs` now measures twenty family-facing screens every run,
 in both directions. STATUS §5em.
 
+### 36. The learner pages' first Dhivehi phrases were pasted placeholders
+
+**Fixed (2026-10-08, slice LT1) — found while scoping C19's CT6b-2.**
+
+The `learn` book's first 26 Dhivehi rows were a few words pasted across rows:
+*Open* read "then", *Locked* "exiting", *Course* "electronic education",
+*Preview only — enroll to track progress.* "profile", *No published lessons
+yet.* a non-word. My learning, the catalog, a course and the lesson player
+showed 22 of them. The `common` book's first batch was the same (*Delete* read
+"Submit", *Back* "men"), though no screen reads those keys.
+
+**Why it survived.** Every language test asked whether a key existed and
+whether it was English; a pasted Thaana word passes both, and so does the
+walk's "nothing in English". `PhraseBooksTranslateEachPhraseTest` now asks
+two more questions of every book: is a sentence translated by a word, and does
+one translation stand for sentences that say different things. The language
+walk refuses a Dhivehi label that is nothing but one of the pasted words.
+STATUS §5pa.
+
 ---
 
 ## Gates that behave well (recorded 2026-09-15)

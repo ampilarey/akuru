@@ -326,6 +326,13 @@ const screens = [
 // A step's name, with no record's id in it.
 const label = (locale, path) => `${locale}${path.replace(/\/\d+(?=\/|$|\?)/g, '/{id}')}`;
 
+// The learn book's first Dhivehi batch was a few words pasted across rows:
+// "to do" for *You are not enrolled yet…*, "profile" for *preview*, "electronic
+// education" for *Course* (slice LT1). A label that is nothing but one of them
+// is a placeholder, not a translation; inside a sentence they are ordinary
+// words, so only a whole text counts.
+const PASTED = new Set(['ކުރަން', 'އެންގުޅުން', 'ތައްލިމް', 'އެލެކްޓްރޮނިކް ތައްލީމް', 'ކުރާން ފަސޭހަ', 'ބޭރުވުން', 'ލަނޑު', 'ފިރިހެނުން', 'ޕްރޮފައިލް']);
+
 for (const locale of ['dv', 'ar']) {
     for (const entry of screens) {
         const [path, viewer, options = {}] = Array.isArray(entry) ? entry : [entry, page];
@@ -368,6 +375,10 @@ for (const locale of ['dv', 'ar']) {
         check(`${label(locale, path)}: right to left`, found.dir === 'rtl', `dir=${found.dir}`);
         check(`${label(locale, path)}: nothing in English`, left.length === 0, [...new Set(left)].slice(0, 12).join(' | '));
         check(`${label(locale, path)}: every field has a name`, found.unnamed.length === 0, found.unnamed.slice(0, 4).join(' | '));
+        if (locale === 'dv') {
+            const pasted = found.texts.filter((text) => PASTED.has(text.replace(/[.:]$/, '')));
+            check(`${label(locale, path)}: no pasted placeholder for a phrase`, pasted.length === 0, [...new Set(pasted)].join(' | '));
+        }
     }
 }
 

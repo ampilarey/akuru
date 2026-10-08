@@ -4983,6 +4983,50 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pa. The learner pages' first Dhivehi phrases were pasted placeholders (slice LT1, 2026-10-08)
+
+Found while scoping CT6b-2. The `learn` book's first Dhivehi batch was a few
+words pasted across rows: *Open*, *Continue* and *Next* read "then"; *Learn
+catalog*, *Course* and the catalog's introduction read "electronic
+education"; *Preview only — enroll to track progress.* read "profile"; *You
+are not enrolled yet.* read "to do"; *No published lessons yet.* was not a
+word. The pages that read the `learn` book show 22 of these 26 rows: My
+learning, the catalog, a course, the family view and the lesson player. Every key existed and none was English, so the CT7a
+language test passed, and the walk's "nothing in English" passed too.
+
+**Fixed:**
+- `learn`: the 26 rows rewritten. Their words follow the `nav` book, which
+  names the same screens (*My learning*, *Browse courses*). The Arabic was
+  sound, except the catalog's shortened introduction and *Dhivehi* misspelt.
+- `common`: the first batch had the same disease: *Delete* read "Submit",
+  *Back* read "men", *My Children* read "my men", *Cancel* read "to do". No
+  screen reads those 84 keys. The office's Translations screen lists them,
+  though, and a reused key would say it. Rewritten, with the 18 keys Dhivehi
+  and Arabic never had. Those 18 leave the untranslated-strings baseline
+  (`TranslationParityTest`), which shrinks to 178. Its count comment had said
+  198 against 196 entries.
+- Three copies found by the new test: *Your identity card* (account) said
+  only "ID card"; in the shop's Arabic, *Add category* read the same as
+  *Add a section*, and *No applications yet.* the same as *No orders yet.*
+
+**Tests:** `PhraseBooksTranslateEachPhraseTest`, across every book.
+- No sentence translated in under a third of its length.
+- No translation standing for two different English sentences, except 25
+  groups read and kept as true synonyms (*On loan* and *Out on loan*). A
+  new group fails until someone fixes the copy or reviews it in.
+- Run against the old files, it fails on four short rows and five pasted
+  groups, naming each.
+
+**Walk:** `course-screens-language.mjs` adds a step on every Dhivehi screen.
+No label may be nothing but one of the pasted placeholders. Inside a
+sentence they are ordinary words, so only a whole text counts.
+
+**Found, not fixed here (BACKLOG C20):**
+- The Library's writer portal: 35 phrases in `common` are English in
+  Dhivehi and Arabic.
+- The public site's `public` book is missing 178 keys in both languages, and
+  31 of its Dhivehi rows are English.
+
 ## 5oz. Laravel's own validation messages in Dhivehi and Arabic (C19 slice CT6b-1, 2026-10-08)
 
 A form refused on a Dhivehi or Arabic page said why in English: *The title

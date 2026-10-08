@@ -3,27 +3,9 @@
 // CLAUDE.md Conventions: "All screens trilingual-ready (EN/DV/AR)".
 // English UI-string keys with no Dhivehi AND no Arabic entry in resources/lang.
 // Baseline may only shrink when strings are translated — never grow.
-// Baseline count: 198
+// Baseline count: 178
 
 return [
-    'common.assignment_completion',
-    'common.avg_accuracy',
-    'common.completed_surahs',
-    'common.current_prayer',
-    'common.from_last_month',
-    'common.growth_rate',
-    'common.last_month',
-    'common.new_assignments',
-    'common.new_students',
-    'common.next_prayer',
-    'common.quran_progress_stats',
-    'common.quran_progress_updates',
-    'common.recent_activities',
-    'common.special_islamic_days',
-    'common.student_growth',
-    'common.upcoming_assignments',
-    'common.upcoming_classes',
-    'common.upcoming_events',
     'public.Access opens as soon as the bank confirms your payment.',
     'public.Address',
     'public.Admission Process',
