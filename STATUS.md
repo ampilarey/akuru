@@ -4983,6 +4983,54 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ow. A matching question keeps its pairs, and a marked one shows them (slice MQ1, 2026-10-08)
+
+Found while scoping CT7b, the assessment player's translation.
+
+**The bank lost the pairs.** SPEC §17 Pattern 3 has a mapping mode ("match
+pairs", "sort into categories"). Its key pairs each left item's id with its
+match, and the bank's form suggests exactly that: `{"1": "Alif", "2": "Baa"}`.
+- `SaveQuestionAction` ran every key through `jsonList`, which keeps the
+  values and drops the keys.
+- So the question came back as `["Alif", "Baa"]`, and the snapshot found no
+  right-hand column.
+- The learner was shown an ordering, with Up and Down buttons, and nothing
+  told the author.
+- `MatchingQuestionScoringTest` could not see this: it writes its questions
+  with `Question::create`, past the action.
+
+**Fixing the save exposed a second fault.** With answers shown, the
+learner's page printed the key with `.join(', ')`. That throws on an object,
+so a marked "match pairs" attempt left a blank page.
+
+**Fixes:**
+- A matching question keeps a pairing the bank sends as a JSON object.
+- A pairing keyed 0, 1, 2… is refused with a reason, because PHP reads those
+  keys back as a list.
+- A plain list still passes. The legacy quiz import hands its matching keys
+  over that way, and refusing them would stop the import.
+- The assessment player writes each right answer as the pupil reads it:
+  - options by their labels, not their ids (it printed "a");
+  - a pairing as `A = Alif, B = Baa`.
+
+**Tests:** `MatchingQuestionBankTest`, 5 tests, through the bank's own route
+and the learner's own player:
+- the pairs are kept;
+- a pairing numbered from 0 is refused;
+- lists still pass;
+- a learner pairs the question and is marked 2/2, with the pairing shown
+  back;
+- the player no longer joins the key.
+
+Without the save fix, three of the five fail.
+
+**Walk:** `assess.mjs` writes a third bank question, a matching one, from the
+form's own sample. It opens it again to read the key back,
+`{"1":"Alif","2":"Baa"}`. The student pairs it with two selects, is scored
+3/3, and reads `A = Alif, B = Baa` back. **17/17**, with no console or server
+errors. With the old `.join` line put back, the walk fails five steps and
+records the page error `(s.correct_answer || []).join is not a function`.
+
 ## 5ov. The learner's own pages in Dhivehi and Arabic (C19 slice CT7a, 2026-10-08)
 
 The learner's pages read the shell's `learn` book. CT5b found that book

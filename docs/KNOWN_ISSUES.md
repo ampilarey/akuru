@@ -157,6 +157,20 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found while scoping the assessment player's translation (2026-10-08)
+
+### A matching question saved from the bank lost its pairs, and a marked one blanked the page — **fixed (2026-10-08, STATUS §5ow)**
+
+The bank's form suggests a "match pairs" key as `{"1": "Alif", "2": "Baa"}`,
+and `SaveQuestionAction` stored only its values, `["Alif", "Baa"]`. So every
+matching question written in the bank reached a learner as an ordering, with
+Up and Down buttons, and the pairing was gone. Once the pairs were kept, the
+next fault was in reach: with answers shown, the learner's page joined the
+key as a list and threw, leaving a blank page. The bank keeps a pairing now
+and refuses one keyed 0, 1, 2…; the player writes a pairing as
+`A = Alif, B = Baa` and an option by its label. Questions saved before the fix
+keep their lost pairing until an author enters the key again.
+
 ## Found by the course-screens language walk (2026-10-08)
 
 ### A save on a Dhivehi or Arabic page answered in English — **fixed (2026-10-08, STATUS §5os)**

@@ -95,7 +95,9 @@ class SaveQuestionAction
             'secondary_text' => $data['secondary_text'] ?? null,
             'explanation' => $data['explanation'] ?? null,
             'options' => $this->jsonList($data['options'] ?? null),
-            'correct_answer' => $this->jsonList($data['correct_answer'] ?? null),
+            'correct_answer' => $type === QuestionType::Matching
+                ? $this->answerPairs($data['correct_answer'] ?? null)
+                : $this->jsonList($data['correct_answer'] ?? null),
             'acceptable_answers' => $this->stringList($data['acceptable_answers'] ?? null),
             // SPEC §18: an unknown or misspelled switch used to be stored and
             // then silently ignored at scoring time, so the question marked
@@ -148,6 +150,57 @@ class SaveQuestionAction
         }
 
         return is_array($value) ? array_values($value) : null;
+    }
+
+    /**
+     * A matching question's answer key: each left item's id paired with its
+     * match (SPEC §17 Pattern 3, mapping mode) — `{"1": "Alif", "2": "Baa"}`,
+     * the very key the bank's form suggests.
+     *
+     * It went through `jsonList`, which keeps only the values — right for
+     * every other key, and fatal to this one. A pairing saved from the bank
+     * came back as `["Alif", "Baa"]`, the snapshot found no right-hand column,
+     * and the learner was shown an ordering with Up and Down buttons. The
+     * pairs were gone, and nothing told the author.
+     *
+     * A list still passes as a list: the legacy quiz import hands its
+     * matching keys over that way, and refusing them would stop the import.
+     * A pairing numbered 0, 1, 2… is refused instead, because PHP reads those
+     * keys back as a list and the column would store the same lost pairing.
+     *
+     * @return array<int|string, mixed>|null
+     */
+    private function answerPairs(mixed $value): ?array
+    {
+        if (is_string($value)) {
+            $decoded = json_decode($value);
+            if (! $decoded instanceof \stdClass) {
+                return $this->jsonList($value);
+            }
+            $value = (array) $decoded;
+            if ($value !== [] && array_is_list($value)) {
+                throw ValidationException::withMessages([
+                    'correct_answer' => 'Number the items from 1, or name them: a pairing keyed 0, 1, 2… is read back as a list and loses its pairs.',
+                ]);
+            }
+        }
+
+        if (! is_array($value)) {
+            return null;
+        }
+        if ($value === [] || array_is_list($value)) {
+            return array_values($value);
+        }
+
+        foreach ($value as $match) {
+            if (! is_scalar($match)) {
+                throw ValidationException::withMessages([
+                    'correct_answer' => 'Each item is paired with one match, written as text.',
+                ]);
+            }
+        }
+
+        return $value;
     }
 
     /**

@@ -9,11 +9,13 @@
  * attach, the player, the auto-mark, the snapshot — and the §2 row said so
  * (Phase 2 audit D1, STATUS §5fi). This walks it, two logins:
  *
- *   1. the author writes two bank questions — a multiple-choice one and a
- *      short-answer one — builds `SMOKE-Assessment` on the seeded
- *      `SMOKE-Course`, published, marks shown, and attaches both;
- *   2. the student opens it from the course page, answers both, submits,
- *      and is scored 2/2 by the engine, no teacher involved;
+ *   1. the author writes three bank questions — a multiple-choice one, a
+ *      short-answer one and a "match pairs" one — builds `SMOKE-Assessment`
+ *      on the seeded `SMOKE-Course`, published, marks shown, and attaches
+ *      all three;
+ *   2. the student opens it from the course page, answers all three, pairing
+ *      the third with its selects, submits, and is scored 3/3 by the engine,
+ *      no teacher involved — and, answers shown, reads the pairs back;
  *   3. the author then edits the first question's text — and the student's
  *      attempt still shows the text they answered, at the same mark (§21:
  *      the attempt snapshots the question);
@@ -21,7 +23,11 @@
  *      attempt starts unscored.
  *
  * `SmokeMarkerSeeder::assessCycle()` clears the assessment, its attempts and
- * the two bank questions before each run.
+ * the bank questions before each run.
+ *
+ * The matching question (slice MQ1, STATUS §5ow): the bank saved its pairs as a
+ * plain list, so the student was shown an ordering; and once the pairs were
+ * kept, a marked attempt with answers shown threw on them.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/assess.mjs
@@ -44,6 +50,9 @@ const ASSESSMENT = 'SMOKE-Assessment';
 const Q1 = 'SMOKE-Q1: Is the sky blue on a clear day?';
 const Q1_EDITED = 'SMOKE-Q1 (edited): Is the sky blue on a clear day?';
 const Q2 = 'SMOKE-Q2: Which city is the capital of the Maldives?';
+// The bank form's own sample for a matching question: A pairs with Alif, B
+// with Baa.
+const Q3 = 'SMOKE-Q3: Which name goes with each letter?';
 
 const HERMETIC_ARGS = [
     '--disable-background-networking',
@@ -175,6 +184,17 @@ await bankForm().locator('textarea.font-mono').nth(1).fill('["Male"]');
 await bankForm().locator('button:has-text("Save question")').click();
 check('a short-answer question is saved, marked by text comparison', await settles(author, 'SMOKE-Q2') && /Text input/.test(await rowText(author, 'SMOKE-Q2')), await rowText(author, 'SMOKE-Q2') || (await text(author)).slice(0, 160));
 
+await typeSelect().selectOption('matching');
+await bankForm().locator('textarea[placeholder="Question text"]').fill(Q3);
+await bankForm().locator('button:has-text("Save question")').click();
+await settles(author, 'SMOKE-Q3');
+// Opened again for editing, the key reads back as the pairing it was given —
+// not as `["Alif", "Baa"]`, which is what the bank used to keep.
+await author.locator('tr', { hasText: 'SMOKE-Q3' }).locator('button:has-text("Edit")').click();
+const pairsKept = (await bankForm().locator('textarea.font-mono').nth(1).inputValue()).replace(/\s+/g, '');
+check('a matching question is saved with its pairs', /Matching/.test(await rowText(author, 'SMOKE-Q3')) && pairsKept === '{"1":"Alif","2":"Baa"}', `${(await rowText(author, 'SMOKE-Q3')).slice(0, 60)} · key ${pairsKept}`);
+await author.goto(`${BASE}/en/catalog/questions`, { waitUntil: 'networkidle' });
+
 // 2. the assessment on the course, published with marks shown
 await author.goto(`${BASE}/en/catalog/courses`, { waitUntil: 'networkidle' });
 const courseId = Number(((await author.locator('tr', { hasText: COURSE }).locator('a', { hasText: COURSE }).first().getAttribute('href')) ?? '').match(/courses\/(\d+)/)?.[1] ?? 0);
@@ -194,9 +214,9 @@ await buildForm.locator('button:has-text("Save assessment")').click();
 const card = () => author.locator('section, div.rounded-lg', { hasText: ASSESSMENT }).filter({ has: author.locator('h2', { hasText: ASSESSMENT }) }).first();
 check('an assessment is built on the course, published', await settles(author, ASSESSMENT) && /published/i.test(await card().innerText()), (await card().count()) ? (await card().innerText()).replace(/\s+/g, ' ').slice(0, 120) : (await text(author)).slice(0, 160));
 
-// 3. attach both questions
+// 3. attach the three questions
 const attachForm = author.locator('form', { hasText: 'Attach question' });
-for (const needle of ['SMOKE-Q1', 'SMOKE-Q2']) {
+for (const needle of ['SMOKE-Q1', 'SMOKE-Q2', 'SMOKE-Q3']) {
     await attachForm.locator('select').nth(0).selectOption({ label: ASSESSMENT });
     const value = await attachForm.locator('select').nth(1).locator('option', { hasText: needle }).first().getAttribute('value');
     await attachForm.locator('select').nth(1).selectOption(value);
@@ -211,7 +231,7 @@ for (const needle of ['SMOKE-Q1', 'SMOKE-Q2']) {
     }
 }
 const built = (await card().innerText()).replace(/\s+/g, ' ');
-check('both questions are attached, in order', built.indexOf('SMOKE-Q1') > -1 && built.indexOf('SMOKE-Q2') > built.indexOf('SMOKE-Q1'), built.slice(0, 200));
+check('the three questions are attached, in order', built.indexOf('SMOKE-Q1') > -1 && built.indexOf('SMOKE-Q2') > built.indexOf('SMOKE-Q1') && built.indexOf('SMOKE-Q3') > built.indexOf('SMOKE-Q2'), built.slice(0, 200));
 
 // ------------------------------------------------------------- the student
 
@@ -222,16 +242,23 @@ await student.goto(`${BASE}/en/learn/courses/${courseId}`, { waitUntil: 'network
 const openHref = await student.locator('li', { hasText: ASSESSMENT }).locator('a:has-text("Open")').first().getAttribute('href').catch(() => null);
 check('the assessment is on the course page', Boolean(openHref), openHref ?? (await text(student)).slice(0, 160));
 await student.goto(new URL(openHref ?? `/learn/courses/${courseId}`, BASE).href, { waitUntil: 'networkidle' });
-check('the player shows both questions, unanswered', (await text(student)).includes(Q1) && (await text(student)).includes(Q2), (await text(student)).slice(0, 200));
+check('the player shows the three questions, unanswered', (await text(student)).includes(Q1) && (await text(student)).includes(Q2) && (await text(student)).includes(Q3), (await text(student)).slice(0, 200));
 
 // 4. answer and submit — scored by the engine
 await student.locator('label', { hasText: /^Yes$/ }).locator('input[type=checkbox]').check();
 await student.locator('input.form-input:not([type=checkbox])').last().fill('male');
+// A pairing, not an ordering: one select per letter, the names to choose from.
+const pairing = student.locator('section', { hasText: 'SMOKE-Q3' }).locator('select');
+check('the matching question asks for pairs, not an order', (await pairing.count()) === 2, `${await pairing.count()} selects`);
+await pairing.nth(0).selectOption('Alif');
+await pairing.nth(1).selectOption('Baa');
 await student.locator('button:has-text("Submit")').click();
 check('submitting is acknowledged', await settles(student, 'Assessment submitted.'), (await text(student)).slice(0, 160));
 const scored = await text(student);
 const mark = scored.match(/scored · (\d+\/\d+)/)?.[1] ?? null;
-check('and the engine scores it 2/2 with no teacher', /scored/.test(scored) && mark === '2/2', mark ?? scored.slice(0, 160));
+check('and the engine scores it 3/3 with no teacher', /scored/.test(scored) && mark === '3/3', mark ?? scored.slice(0, 160));
+// Answers shown: the pairs read back by name. This page threw on a pairing.
+check('and, answers shown, reads the pairs back', scored.includes('A = Alif, B = Baa'), scored.match(/Correct:[^.]*SMOKE-Q3|A = [^,]*/)?.[0] ?? scored.slice(0, 200));
 
 // 5. the author edits the first question; the attempt keeps its snapshot
 await author.goto(`${BASE}/en/catalog/questions`, { waitUntil: 'networkidle' });
