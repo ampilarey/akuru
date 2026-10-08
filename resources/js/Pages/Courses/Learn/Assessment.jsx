@@ -103,6 +103,28 @@ function QuestionMedia({ media, mediaShowUrl }) {
     );
 }
 
+/**
+ * The right answer, as a pupil reads it.
+ *
+ * `correct_answer` names options by id, and a matching question's key is an
+ * object — each left item's id to its match. The page joined it as a list,
+ * which printed "a" for a multiple-choice question and threw for a matching
+ * one, so a marked "match pairs" attempt with its answers shown was a blank
+ * page.
+ */
+function correctAnswer(snapshot) {
+    const key = snapshot.correct_answer;
+    const label = (id) => (snapshot.options || []).find((row) => String(row.id) === String(id))?.label ?? String(id);
+    if (Array.isArray(key)) {
+        return key.map(label).join(', ');
+    }
+    if (key && typeof key === 'object') {
+        return Object.entries(key).map(([left, right]) => `${label(left)} = ${right}`).join(', ');
+    }
+
+    return String(key);
+}
+
 function formatRemaining(seconds) {
     const m = Math.floor(seconds / 60);
     const s = seconds % 60;
@@ -350,7 +372,7 @@ export default function Assessment({ assessment, enrollment, attempt, retake = n
                                 />
                             )}
                             {snapshot.correct_answer && (
-                                <p className="mt-2 text-sm text-green-700">Correct: {(snapshot.correct_answer || []).join(', ')}</p>
+                                <p className="mt-2 text-sm text-green-700">Correct: {correctAnswer(snapshot)}</p>
                             )}
                             {/* §20 gives a question an `explanation`, and §21
                                 requires the snapshot to carry it "if needed".
