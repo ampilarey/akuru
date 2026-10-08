@@ -17,11 +17,12 @@ function PaidEnroll({ row, t, offeringId = null, fee = row.fee }) {
             <input
                 className="form-input w-32"
                 placeholder={t.discount_code || 'Discount code'}
+                aria-label={t.discount_code || 'Discount code'}
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
             />
             <button type="button" className="btn-primary" onClick={() => enroll(false)}>
-                {t.enroll_for || 'Enroll'} — MVR {fee}
+                {(t.enroll_for || 'Enroll — MVR :fee').replace(':fee', fee)}
             </button>
             <button type="button" className="btn-secondary" onClick={() => enroll(true)}>
                 {t.pay_with_wallet || 'Pay with wallet'}
@@ -48,7 +49,7 @@ function Intakes({ row, t }) {
                 <li key={intake.id} className="rounded border bg-[#FAF7F2] p-2">
                     <p className="font-medium">
                         {intake.title}
-                        <span className="ms-2 text-xs text-gray-600">{intake.delivery_mode_label}</span>
+                        <span className="ms-2 text-xs text-gray-600">{t[`delivery_mode_${intake.delivery_mode}`] || intake.delivery_mode_label}</span>
                     </p>
                     <p className="text-xs text-gray-600">
                         {intake.seats_left === null

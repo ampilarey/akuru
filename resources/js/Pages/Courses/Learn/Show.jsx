@@ -23,7 +23,7 @@ export default function Show({
                 {offering && (
                     <span className="ms-2">
                         · {offering.title}
-                        <span className="ms-1 text-gray-500">({offering.delivery_mode_label || offering.delivery_mode})</span>
+                        <span className="ms-1 text-gray-500">({t[`delivery_mode_${offering.delivery_mode}`] || offering.delivery_mode_label || offering.delivery_mode})</span>
                     </span>
                 )}
             </p>
@@ -129,7 +129,7 @@ export default function Show({
                                     <span>
                                         {lesson.title}
                                         {lesson.is_preview && <span className="ms-2 text-xs uppercase text-gray-500">{t.preview || 'preview'}</span>}
-                                        <span className="ms-2 text-xs uppercase text-gray-500">{lesson.status}</span>
+                                        <span className="ms-2 text-xs uppercase text-gray-500">{t[`lesson_status_${lesson.status}`] || lesson.status}</span>
                                         {/* §25's `score_summary`, frozen when the
                                             lesson was completed. Showing it is
                                             what stops the column being written

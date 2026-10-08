@@ -4983,6 +4983,54 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ov. The learner's own pages in Dhivehi and Arabic (C19 slice CT7a, 2026-10-08)
+
+The learner's pages read the shell's `learn` book. CT5b found that book
+missing the phrases of the Qur'an page (§5ot). It was missing others too,
+so on a Dhivehi page these showed English labels:
+- *My learning* (`/learn`);
+- the learn catalog;
+- a course;
+- *My schedule*;
+- *My Arabic skills*;
+- pronunciation practice.
+
+Every one of those pages also printed codes raw: an enrolment's status, a
+lesson's, an assessment attempt's, a pronunciation attempt's, an offering's
+delivery (sent as an English label), and a skill.
+
+**Phrases.** The `learn` book gains 57 rows:
+- the pages' labels;
+- six code families: `enrol_status_`, `lesson_status_`, `delivery_mode_`,
+  `assessment_status_`, `pronounce_status_` and `skill_`.
+
+**Two keys had two meanings.**
+- `schedule` was *Schedule* on the dashboard's link and *My schedule* as
+  the schedule's own title.
+- `arabic_report` was *Arabic skills* on the dashboard's link and *My Arabic
+  skills* as that page's title.
+
+A book can hold one English per key, so the titles became `schedule_title`
+and `arabic_report_title`.
+
+**On the pages:**
+- The fee button reads *Enroll — MVR :fee*, so Dhivehi and Arabic can place
+  the amount and say rufiyaa (ރުފިޔާ, روفية).
+- The catalog's discount field and the practice page's two selects have
+  names.
+
+**Tests:**
+- `CourseScreensSpeakThreeLanguagesTest` holds 38 screens in 13 tests.
+  - The six pages are held against the `learn` book.
+  - A new test puts every value of the six code families in the book in all
+    three languages.
+  - Another serves five of the pages to a pupil in Dhivehi.
+
+**Walks:**
+- `course-screens-language.mjs` opens the six pages as the seeded pupil. The
+  pupil is enrolled in SMOKE-Course, so the dashboard card, the course page
+  and its lessons all show their statuses. **246/246.**
+
 ## 5ou. The Arabic reference and report, the language preview and the clubs in Dhivehi and Arabic (C19 slice CT6a, 2026-10-08)
 
 CT6 was "the Arabic reference and report, the i18n preview, the clubs and

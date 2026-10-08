@@ -1,6 +1,6 @@
 /**
  * Do the course-building screens read in Dhivehi and Arabic? (BACKLOG C19,
- * slices CT1–CT6a, STATUS §5ok on.)
+ * slices CT1–CT7a, STATUS §5ok on.)
  *
  * The dean opens every translated course screen under /dv and /ar — the
  * system admin the one the website's course list owns, Deleted courses, and
@@ -197,6 +197,13 @@ const screens = [
     '/academics/clubs',
     `/academics/clubs/${club?.id}`,
     `/academics/clubs/${club?.id}/attendance-sheet`,
+    // Slice CT7a: the pupil's own pages.
+    ['/learn', pupil],
+    ['/learn/catalog', pupil],
+    [`/learn/courses/${course?.id}`, pupil],
+    ['/learn/schedule', pupil],
+    ['/learn/arabic-report', pupil],
+    ['/learn/pronounce', pupil],
 ];
 
 // A step's name, with no record's id in it.
