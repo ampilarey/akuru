@@ -121,6 +121,24 @@ return [
 
     // Date formats
     'gregorian_date' => 'التاريخ الميلادي',
+    'from_last_month' => 'عن الشهر الماضي',
+    'avg_accuracy' => 'متوسط الدقة',
+    'assignment_completion' => 'إكمال الواجبات',
+    'student_growth' => 'نمو عدد الطلاب',
+    'quran_progress_stats' => 'إحصاءات تقدّم القرآن',
+    'recent_activities' => 'آخر الأنشطة',
+    'upcoming_events' => 'الفعاليات القادمة',
+    'new_students' => 'طلاب جدد',
+    'new_assignments' => 'واجبات جديدة',
+    'quran_progress_updates' => 'تحديثات تقدّم القرآن',
+    'upcoming_assignments' => 'الواجبات القادمة',
+    'upcoming_classes' => 'الحصص القادمة',
+    'special_islamic_days' => 'المناسبات الإسلامية',
+    'current_prayer' => 'الصلاة الحالية',
+    'next_prayer' => 'الصلاة القادمة',
+    'last_month' => 'الشهر الماضي',
+    'growth_rate' => 'معدل النمو',
+    'completed_surahs' => 'السور المكتملة',
 
     // JSX i18n tranche — EN placeholders; correct dv via /admin/translations
     'library_write_title' => 'Writer portal',
