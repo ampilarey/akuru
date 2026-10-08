@@ -22,7 +22,7 @@ class RequestWriterPayoutAction
     {
         if (! app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('payouts_enabled')) {
             throw ValidationException::withMessages([
-                'payout' => 'Payouts are not open yet — your earnings keep accruing and stay yours.',
+                'payout' => __('common.library_error_payouts_closed'),
             ]);
         }
 
@@ -31,10 +31,10 @@ class RequestWriterPayoutAction
         }
         $profile = WriterProfile::query()->where('user_id', $userId)->where('status', 'active')->first();
         if ($profile === null) {
-            throw ValidationException::withMessages(['writer' => 'An approved writer profile is required.']);
+            throw ValidationException::withMessages(['writer' => __('common.library_error_not_writer')]);
         }
         if (! WriterBankDetail::query()->where('writer_id', $profile->id)->exists()) {
-            throw ValidationException::withMessages(['payout' => 'Add your bank details before requesting a payout.']);
+            throw ValidationException::withMessages(['payout' => __('common.library_error_no_bank')]);
         }
 
         return DB::transaction(function () use ($profile) {
@@ -50,7 +50,7 @@ class RequestWriterPayoutAction
             $minimum = (float) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('min_payout');
             if ($amount < $minimum) {
                 throw ValidationException::withMessages([
-                    'payout' => "Available balance ({$amount}) is below the minimum payout ({$minimum}).",
+                    'payout' => __('common.library_error_below_minimum', ['amount' => $amount, 'minimum' => $minimum]),
                 ]);
             }
 

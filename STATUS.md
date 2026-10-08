@@ -4983,6 +4983,99 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pe. The Library's writer portal and peer review in Dhivehi and Arabic (C20 slice LT2, 2026-10-08)
+
+The writer portal (`/write`) and the reviewer's page (`/review`) read their
+phrases from the `common` book, and 35 of those were the English in all
+three languages: the portal's title, its buttons, its table. Around them the
+pages wrote English out:
+- the application's fields and its agreement;
+- every field of the draft editor, and the five declarations;
+- the earnings card and the bank details;
+- the writer's standing, and an item's type, access and status as codes;
+- on the reviewer's card, when it was assigned and the recommendation, as
+  codes.
+
+What the server said was English too: what was saved, the reader pages a
+save made, and every refusal of the writer's and the reviewer's actions. And
+the controller's own validation named the fields in English inside a
+Dhivehi sentence (*id front ބޭނުންވޭ.*).
+
+**Through the phrase books:**
+- `common`: the 35 rows translated, and 131 added, among them every field
+  label, the declarations, the earnings card, the status lines, the types,
+  accesses, statuses and recommendations. Also what was saved, the reader
+  pages a save made, and 30 refusals of the writer's and the reviewer's
+  actions, `SaveLibraryItemAction`'s too, since the writer's editor reaches
+  it. The new rows keep the `library_`/`review_` prefixes the shell already
+  shares, so they stay editable on the Translations screen.
+- `validation`: the writer's and the reviewer's 42 fields named in Dhivehi
+  and Arabic.
+- A submission missing its declarations names each one in the page's
+  language. The languages a draft may be in are named in it too.
+- The English reads as it did. Statuses, types, accesses and
+  recommendations stay the lowercase words the pages printed. Two
+  differences: *1 sale* where it said *1 sales*, and an item's access reads
+  *free public* where the row printed the code *free_public*.
+- The Library's notices (to the writer, the reviewer and the office) stay
+  English: they are written for someone other than the page's reader,
+  whose language the account does not keep (BACKLOG C20).
+
+**On the pages:**
+- Submit for review, Request payout and the reviewer's buttons post without
+  a form. Their refusals are now said on the row or card they came from
+  (`useRowRefusals`, §5pc), where the page had one list at the top.
+- Each form says its own refusals:
+  - the bank form showed none of its own;
+  - the application dropped every field's refusal but four, and now lists
+    the rest;
+  - the identity card says its own two fields' refusals, and the page leaves
+    them out (an optional `actOn` on `IdentityCardUpload`).
+- Every select has a name. The type and access selects had none.
+
+**Tests:** `WriterPortalSpeaksThreeLanguagesTest`, 9 tests.
+- Every `t.key || 'English'` on the two pages, `LibraryAuthoring` and
+  `ReviewStateChip` is in all three languages, its English the page's
+  fallback.
+- No bare English, and no unnamed field, on the two pages.
+- Every type, access, status, difficulty, language, recommendation and
+  declaration is in Dhivehi and Arabic.
+- No English refusal is left in the 11 files, and each key they name is
+  translated.
+- Served:
+  - the portal in Dhivehi;
+  - a bank-details save in Dhivehi, a draft save in Arabic with its reader
+    pages, and English word for word as before;
+  - a submission without its declarations refused in Dhivehi, naming both,
+    and English as before;
+  - an application refused in Dhivehi, Laravel's sentence naming the ID
+    card's front in Dhivehi;
+  - a reviewer told in Arabic that the paper is open, then refused in Arabic
+    once it went back to its writer.
+- Every `router` visit says its row.
+- `unnamedFields()` moves to `tests/Support/SourceReadingHelpers.php`; the
+  course screens' test uses it from there.
+
+**Walk:** `writer-language.mjs` (new), **18/18**.
+- The writer saves SMOKE-Lang-Research on the Dhivehi page and is told so in
+  Dhivehi.
+- The writer presses Submit for review on its row. The refusal comes back on
+  that row, in Dhivehi, naming both declarations; the draft stays a draft.
+- `/dv/write` (editor open), `/ar/write`, `/dv/review` and `/ar/review`: right
+  to left, nothing in English, every field named.
+- Against `main`'s code and build: 10/18. The refusal is said nowhere, and
+  both pages read English: *Writer portal*, *Approved writer since*, *Peer
+  review*, *your recommendation: accept*.
+- The English walks still pass: `library.mjs` 31/31, `peer-review.mjs` 18/18,
+  `earnings.mjs` 13/13.
+
+**Still open:**
+- The Library office's screens: `Admin.jsx` (48 text nodes, 30 attributes),
+  `ReadingAlerts.jsx` (11) and `Insights.jsx` (5 table titles), the office
+  controller's saved messages, and 26 refusals in nine office actions
+  (BACKLOG C20).
+- The public book, and the event registration's refusals.
+
 ## 5pd. What the office and a Qur'an teacher are told when an offering, a session or a recitation refuses a step, in the page's language, and shown (C19 slice CT6b-2c, 2026-10-08)
 
 The Offerings domain's refusals and the Qur'an component's were English

@@ -212,7 +212,9 @@ there was no `validation.php` in `resources/lang` — **fixed (2026-10-08,
 STATUS §5oz)**. The learner's own refusals are in the page's language since
 STATUS §5pb, the course authors', markers' and certificate office's since
 STATUS §5pc, and the offerings' and the Qur'an component's since STATUS §5pd
-(BACKLOG C19). The console commands stay English.
+(BACKLOG C19). The Library's writers' and reviewers' since STATUS §5pe
+(BACKLOG C20); the Library office's are still English. The console commands
+stay English.
 
 ## Found by the middle-name walk (2026-10-08)
 
@@ -2124,6 +2126,24 @@ milestone's Review, Approve and Reject, and an assignment's Cancel post with
 They now say what came back, in the page's language: on the row the button
 was on (`useRowRefusals`), or in the form's list. A walk against `main`'s
 build reads nothing where the new one reads the Dhivehi refusal. STATUS §5pd.
+
+### 40. A writer's refused submission and bank details were said at the top of the page, in English
+
+**Fixed (2026-10-08, slice LT2) — found while building it.**
+
+The writer portal had one list of refusals, at the top of the page. A
+research draft submitted from its row without its declarations was refused
+there, in English, while `preserveScroll` kept the writer at the row. The
+bank form showed none of its own refusals. The application dropped every
+field's refusal but four. Every refusal and saved message of the writer's
+and the reviewer's actions was English, and Laravel's own sentences named
+the writer's fields in English (*id front ބޭނުންވޭ.*).
+
+They now say what came back, in the page's language: on the draft's row or
+the reviewer's card (`useRowRefusals`), or in the form that was refused. A
+walk against `main`'s code says the declarations refusal nowhere, where
+`writer-language.mjs` reads it on the row, in Dhivehi, naming both
+declarations. STATUS §5pe.
 
 ---
 

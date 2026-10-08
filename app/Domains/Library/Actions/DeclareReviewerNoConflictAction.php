@@ -18,7 +18,7 @@ class DeclareReviewerNoConflictAction
     {
         $assignment = LibraryReviewAssignment::query()->findOrFail($assignmentId);
         if ((int) $assignment->reviewer_user_id !== $userId) {
-            throw ValidationException::withMessages(['assignment' => 'This review is not assigned to you.']);
+            throw ValidationException::withMessages(['assignment' => __('common.review_error_not_yours')]);
         }
         if ($assignment->coi_declared_at === null) {
             $assignment->forceFill(['coi_declared_at' => now()])->save();

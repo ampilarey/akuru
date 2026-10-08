@@ -16,7 +16,7 @@ class SaveWriterBankDetailsAction
     {
         $profile = WriterProfile::query()->where('user_id', $userId)->where('status', 'active')->first();
         if ($profile === null) {
-            throw ValidationException::withMessages(['writer' => 'An approved writer profile is required.']);
+            throw ValidationException::withMessages(['writer' => __('common.library_error_not_writer')]);
         }
 
         return WriterBankDetail::query()->updateOrCreate(

@@ -29,26 +29,26 @@ class SubmitResearchReviewAction
     public function execute(int $userId, int $assignmentId, string $recommendation, ?string $comment = null): LibraryReviewAssignment
     {
         if (! in_array($recommendation, ['accept', 'revise', 'reject'], true)) {
-            throw ValidationException::withMessages(['recommendation' => 'Recommendation must be accept, revise, or reject.']);
+            throw ValidationException::withMessages(['recommendation' => __('common.review_error_recommendation')]);
         }
 
         $assignment = LibraryReviewAssignment::query()->findOrFail($assignmentId);
         if ((int) $assignment->reviewer_user_id !== $userId) {
-            throw ValidationException::withMessages(['assignment' => 'This review is not assigned to you.']);
+            throw ValidationException::withMessages(['assignment' => __('common.review_error_not_yours')]);
         }
 
         // R3b: no report without the conflict-of-interest declaration.
         if ($assignment->coi_declared_at === null) {
-            throw ValidationException::withMessages(['assignment' => 'Confirm you have no conflict of interest before reviewing.']);
+            throw ValidationException::withMessages(['assignment' => __('common.review_error_coi')]);
         }
 
         $item = LibraryItem::query()->findOrFail($assignment->library_item_id);
         $status = $item->status instanceof LibraryItemStatus ? $item->status : LibraryItemStatus::tryFrom((string) $item->status);
         if ($status !== LibraryItemStatus::Submitted) {
-            throw ValidationException::withMessages(['assignment' => 'This item is not with the reviewers right now — it is back with the writer, or already decided.']);
+            throw ValidationException::withMessages(['assignment' => __('common.review_error_not_with_reviewers')]);
         }
         if ((int) $assignment->round !== max(1, (int) $item->review_round)) {
-            throw ValidationException::withMessages(['assignment' => 'That review round has closed; the writer has revised the text since.']);
+            throw ValidationException::withMessages(['assignment' => __('common.review_error_round_closed')]);
         }
 
         $assignment->fill(['status' => 'done', 'recommendation' => $recommendation])->save();

@@ -28,18 +28,18 @@ class SaveWriterItemAction
             ->where('status', 'active')
             ->first();
         if ($profile === null) {
-            throw ValidationException::withMessages(['writer' => 'An approved writer profile is required.']);
+            throw ValidationException::withMessages(['writer' => __('common.library_error_not_writer')]);
         }
 
         $item = null;
         if ($itemId !== null) {
             $item = LibraryItem::query()->findOrFail($itemId);
             if ((int) $item->writer_id !== (int) $profile->id) {
-                throw ValidationException::withMessages(['item' => 'You can only edit your own items.']);
+                throw ValidationException::withMessages(['item' => __('common.library_error_edit_own')]);
             }
             $status = $item->status instanceof LibraryItemStatus ? $item->status : LibraryItemStatus::tryFrom((string) $item->status);
             if (! in_array($status, [LibraryItemStatus::Draft, LibraryItemStatus::ChangesRequested], true)) {
-                throw ValidationException::withMessages(['item' => 'Only drafts and change-requested items can be edited.']);
+                throw ValidationException::withMessages(['item' => __('common.library_error_not_editable')]);
             }
         }
 
