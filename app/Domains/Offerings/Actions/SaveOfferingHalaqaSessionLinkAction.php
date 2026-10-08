@@ -20,7 +20,7 @@ class SaveOfferingHalaqaSessionLinkAction
         $hifzSession = app(HalaqaReferenceReader::class)->findSession($hifzSessionId);
         if ($hifzSession === null) {
             throw ValidationException::withMessages([
-                'hifz_session_id' => ['Unknown Hifz session.'],
+                'hifz_session_id' => [__('teach.error_hifz_session')],
             ]);
         }
 
@@ -29,7 +29,7 @@ class SaveOfferingHalaqaSessionLinkAction
             ->first();
         if ($programLink === null || (int) $programLink->hifz_program_id !== (int) $hifzSession['hifz_program_id']) {
             throw ValidationException::withMessages([
-                'hifz_session_id' => ['Hifz session must belong to the linked program.'],
+                'hifz_session_id' => [__('teach.error_hifz_session_program')],
             ]);
         }
 

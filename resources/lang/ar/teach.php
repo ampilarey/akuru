@@ -986,4 +986,21 @@ return [
     'error_question_media' => 'يجب أن يكون مرفق السؤال صوتًا أو صورة أو ملف PDF أو فيديو. و:mime ليس أيًّا منها.',
     'error_arabic_letter_fields' => 'يلزم المفتاح والحرف والاسم المعروض.',
     'error_arabic_harakah_fields' => 'يلزم المفتاح والرمز والاسم المعروض.',
+
+    // What the office is told when an offering, a session, attendance or a halaqa link refuses a step (slice CT6b-2c)
+    'error_offering_delivery_mode' => 'طريقة التقديم غير صحيحة.',
+    'error_offering_slug' => 'يجب ألا يتكرر الرابط المختصر للدورة المطروحة داخل الدورة.',
+    'error_offering_audience' => 'هذه الفئة المستهدفة غير متاحة.',
+    'error_offering_level' => 'هذا المستوى غير متاح.',
+    'error_offering_move' => 'لا يمكن نقل الدورة المطروحة من :from إلى :to.',
+    'error_session_type' => 'نوع الجلسة غير صحيح.',
+    'error_session_start' => 'يلزم وقت بدء الجلسة.',
+    'error_attendance_status' => 'حالة الحضور غير صحيحة.',
+    'error_attendance_mode' => 'طريقة الحضور غير صحيحة.',
+    'error_attendance_not_on_offering' => 'هذا التسجيل ليس في هذه الدورة المطروحة.',
+    'error_hifz_program' => 'برنامج حفظ غير معروف.',
+    'error_hifz_session' => 'جلسة حفظ غير معروفة.',
+    'error_hifz_session_program' => 'يجب أن تكون جلسة الحفظ من البرنامج المرتبط.',
+    'error_dual_write_off' => 'الكتابة المزدوجة للحلقة معطّلة.',
+    'error_dual_write_link' => 'اربط برنامج حفظ قبل مزامنة الكتابة المزدوجة.',
 ];

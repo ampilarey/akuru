@@ -1,6 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
-import FormErrors from '../../../Components/FormErrors';
+import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 
 export default function Sessions({ offering, types, sessions, programs = [], halaqa = null, halaqa_sessions = [], dual_write_enabled = false, t = {} }) {
     // Codes the server sends, named in the page's language (slice CT8).
@@ -18,6 +18,10 @@ export default function Sessions({ offering, types, sessions, programs = [], hal
         teacher_user_id: '',
         is_required: true,
     });
+    // Sync dual-write and a session's halaqa link post with `router`; a
+    // refusal of either (dual-write off, no program linked, a session of
+    // another program) was shown nowhere (slice CT6b-2c).
+    const refusals = useRowRefusals(form, halaqaForm);
 
     return (
         <AppShell title={(t.sessions_title || 'Sessions — :offering').replace(':offering', () => offering.title)}>
@@ -65,7 +69,7 @@ export default function Sessions({ offering, types, sessions, programs = [], hal
                     <button
                         type="button"
                         className="btn-primary"
-                        onClick={() => router.post(`/catalog/offerings/${offering.id}/halaqa/sync`, {}, { preserveScroll: true })}
+                        onClick={() => refusals.actOn('halaqa', () => router.post(`/catalog/offerings/${offering.id}/halaqa/sync`, {}, { preserveScroll: true }))}
                     >
                         {t.sessions_sync || 'Sync dual-write'}
                     </button>
@@ -79,6 +83,7 @@ export default function Sessions({ offering, types, sessions, programs = [], hal
                     <p className="text-sm text-gray-600">{(t.sessions_last_sync || 'Last sync: :when').replace(':when', halaqa.last_synced_at)}</p>
                 )}
                 <FormErrors errors={halaqaForm.errors} />
+                <FormErrors errors={{ ...refusals.unplaced, ...refusals.errorsFor('halaqa') }} className="md:col-span-3" />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
@@ -110,9 +115,10 @@ export default function Sessions({ offering, types, sessions, programs = [], hal
                                                 if (!e.target.value) {
                                                     return;
                                                 }
-                                                router.post(`/catalog/offerings/${offering.id}/sessions/${row.id}/halaqa`, {
-                                                    hifz_session_id: e.target.value,
-                                                }, { preserveScroll: true });
+                                                const value = e.target.value;
+                                                refusals.actOn(`session:${row.id}`, () => router.post(`/catalog/offerings/${offering.id}/sessions/${row.id}/halaqa`, {
+                                                    hifz_session_id: value,
+                                                }, { preserveScroll: true }));
                                             }}
                                         >
                                             <option value="">{t.sessions_map || 'Map session'}</option>
@@ -121,6 +127,7 @@ export default function Sessions({ offering, types, sessions, programs = [], hal
                                             ))}
                                         </select>
                                     ) : (row.hifz_session_id || '—')}
+                                    <FormErrors errors={refusals.errorsFor(`session:${row.id}`)} className="mt-1" />
                                 </td>
                                 <td className="px-3 py-2">
                                     <button type="button" className="text-[#7C2D37] hover:underline" onClick={() => router.get(`/catalog/offerings/${offering.id}/sessions/${row.id}/attendance`)}>{t.sessions_attendance || 'Attendance'}</button>

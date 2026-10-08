@@ -19,7 +19,7 @@ class SaveMemorizationProgressAction
     {
         $status = MemorizationStatus::tryFrom((string) ($data['status'] ?? ''));
         if ($status === null) {
-            throw ValidationException::withMessages(['status' => 'Invalid memorization status.']);
+            throw ValidationException::withMessages(['status' => __('quran.error_memorization_status')]);
         }
 
         $row = QuranMemorizationProgress::query()->firstOrNew([

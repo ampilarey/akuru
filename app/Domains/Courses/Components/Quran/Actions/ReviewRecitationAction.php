@@ -39,7 +39,7 @@ class ReviewRecitationAction
         $status = RecitationSubmissionStatus::tryFrom((string) ($review['status'] ?? ''));
         if ($status === null || ! in_array($status, self::TEACHER_OUTCOMES, true)) {
             throw ValidationException::withMessages([
-                'status' => 'Review status must be teacher_reviewed, needs_repeat, passed or failed.',
+                'status' => __('quran.error_review_outcome'),
             ]);
         }
 
@@ -57,7 +57,7 @@ class ReviewRecitationAction
                     );
                 if ($type === null) {
                     throw ValidationException::withMessages([
-                        "mistakes.{$index}.mistake_type" => 'Mistake type is required when it cannot be derived from letter/haraka ids.',
+                        "mistakes.{$index}.mistake_type" => __('quran.error_mistake_type'),
                     ]);
                 }
 
@@ -66,7 +66,7 @@ class ReviewRecitationAction
                 );
                 if ($severity === null) {
                     throw ValidationException::withMessages([
-                        "mistakes.{$index}.severity" => 'Invalid mistake severity.',
+                        "mistakes.{$index}.severity" => __('quran.error_mistake_severity'),
                     ]);
                 }
 

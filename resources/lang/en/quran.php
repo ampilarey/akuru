@@ -88,4 +88,18 @@ return [
     'error_recitation_mode' => 'Invalid recitation mode.',
     'error_unknown_surah' => 'Unknown surah.',
     'error_assignment_not_found' => 'Assignment not found for this student.',
+
+    // What a teacher is told when a recitation review, an assignment, a milestone or a session sheet refuses a step (slice CT6b-2c)
+    'error_review_outcome' => 'Choose one of the review outcomes.',
+    'error_mistake_type' => 'Choose the mistake’s type, or the letter or haraka it was on.',
+    'error_mistake_severity' => 'Invalid mistake severity.',
+    'error_memorization_status' => 'Invalid memorization status.',
+    'error_assignment_type' => 'Invalid assignment type.',
+    'error_assignment_status' => 'Invalid assignment status.',
+    'error_milestone_type' => 'Invalid milestone type.',
+    'error_unknown_program' => 'Unknown program.',
+    'error_not_on_session' => 'Enrollment is not on this session’s offering.',
+    'error_invalid_value' => 'Invalid value.',
+    'error_schedule_date' => 'Scheduled date is required.',
+    'error_schedule_status' => 'Invalid revision schedule status.',
 ];

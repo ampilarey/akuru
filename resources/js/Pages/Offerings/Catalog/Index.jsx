@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 import AppShell from '../../../Layouts/AppShell';
 
 /**
@@ -107,6 +108,10 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
         certificate_rules: { ...BLANK_RULES },
     };
     const form = useForm(blank);
+    // The form showed its status and certificate-rule refusals and dropped the
+    // rest (a delivery mode, a slug taken, an audience or level gone), and a
+    // refused Pin now was shown nowhere (slice CT6b-2c).
+    const refusals = useRowRefusals(form);
 
     // On a new offering every state is a legal starting point; on an existing
     // one §11.4's transition rules decide, and the server rejects the rest.
@@ -204,6 +209,7 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
                     </button>
                 </div>
                 {form.errors.status && <p className="mt-2 text-sm text-red-600">{form.errors.status}</p>}
+                <FormErrors errors={form.errors} except={['status', ...RULE_NUMBERS.map(([key]) => `certificate_rules.${key}`)]} className="mt-2" />
 
                 <details className="mt-3 rounded border bg-[#FAF7F2] p-3" open={Boolean(ruleSummary(editing?.certificate_rules, t))}>
                     <summary className="cursor-pointer text-sm font-medium">
@@ -260,6 +266,7 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
                     </div>
                 </details>
             </form>
+            <FormErrors errors={refusals.unplaced} className="mb-4 rounded border border-red-200 bg-red-50 py-2 pe-3" />
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
@@ -313,11 +320,12 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
                                             if (reason === null) {
                                                 return;
                                             }
-                                            router.post(`/catalog/offerings/${row.id}/pin`, { reason }, { preserveScroll: true });
+                                            refusals.actOn(`offering:${row.id}`, () => router.post(`/catalog/offerings/${row.id}/pin`, { reason }, { preserveScroll: true }));
                                         }}
                                     >
                                         {t.offerings_pin_now || 'Pin now'}
                                     </button>
+                                    <FormErrors errors={refusals.errorsFor(`offering:${row.id}`)} className="mt-1" />
                                     {(row.repin_events || []).length > 0 && (
                                         <details className="mt-1 text-xs text-gray-600">
                                             <summary className="cursor-pointer">

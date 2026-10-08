@@ -66,3 +66,92 @@ if (! function_exists('stripPhpComments')) {
         return $out;
     }
 }
+
+if (! function_exists('refusalEnglishIn')) {
+    /**
+     * A PHP file's English left where a page will read it (BACKLOG C19,
+     * slices CT6b-2b and CT6b-2c): any string literal that reads as a
+     * sentence, and any literal with words in it inside a `withMessages(...)`
+     * call — where a refusal built of pieces ("This module still has " …
+     * ". Move or delete those first.") hides from a sentence pattern.
+     * Comments are other tokens, so an explanation does not count.
+     *
+     * @return list<string> "file:line text"
+     */
+    function refusalEnglishIn(string $file): array
+    {
+        $found = [];
+        $depth = 0;
+        $inside = false;
+
+        foreach (token_get_all((string) file_get_contents(base_path($file))) as $token) {
+            if (is_array($token) && $token[0] === T_STRING && $token[1] === 'withMessages') {
+                $inside = true;
+                $depth = 0;
+
+                continue;
+            }
+            if ($inside && ($token === '(' || $token === '[')) {
+                $depth++;
+            } elseif ($inside && ($token === ')' || $token === ']')) {
+                $depth--;
+                if ($depth === 0) {
+                    $inside = false;
+                }
+            }
+            if (! is_array($token) || ! in_array($token[0], [T_CONSTANT_ENCAPSED_STRING, T_ENCAPSED_AND_WHITESPACE], true)) {
+                continue;
+            }
+
+            $text = $token[0] === T_CONSTANT_ENCAPSED_STRING ? substr($token[1], 1, -1) : $token[1];
+            $sentence = preg_match('/^[A-Z][\w\'’-]*( \S+)+[.!?]$/u', $text) === 1;
+            $words = $inside && preg_match('/[A-Za-z]{2,} [A-Za-z]{2,}/', $text) === 1;
+            if ($sentence || $words) {
+                $found[] = "{$file}:{$token[2]} {$text}";
+            }
+        }
+
+        return $found;
+    }
+}
+
+if (! function_exists('refusalKeysIn')) {
+    /**
+     * Every whole phrase-book key a file names through `__()` or
+     * `trans_choice()` — not the front of one it finishes with a code.
+     *
+     * @param  list<string>  $files
+     * @return list<string>
+     */
+    function refusalKeysIn(array $files): array
+    {
+        $keys = [];
+        foreach ($files as $file) {
+            preg_match_all("/(?:__|trans_choice)\\('([a-z]+\\.[a-z_]+)'\\s*[,)]/", (string) file_get_contents(base_path($file)), $found);
+            $keys = array_merge($keys, $found[1]);
+        }
+
+        return array_values(array_unique($keys));
+    }
+}
+
+if (! function_exists('routerVisitsWithoutRow')) {
+    /**
+     * The lines of a page that visit with `router` (post, put, patch, delete)
+     * and do not say which row they came from — a button whose refusal no
+     * row would show (`useRowRefusals`, slice CT6b-2b).
+     *
+     * @return list<string> "path:line"
+     */
+    function routerVisitsWithoutRow(string $path): array
+    {
+        $found = [];
+        foreach (explode("\n", (string) file_get_contents(base_path($path))) as $number => $line) {
+            if (preg_match('/router\.(post|put|patch|delete)\(/', $line) && ! str_contains($line, 'actOn(')) {
+                $found[] = "{$path}:".($number + 1);
+            }
+        }
+
+        return $found;
+    }
+}

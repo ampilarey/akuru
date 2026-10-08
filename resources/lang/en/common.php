@@ -235,4 +235,8 @@ return [
     'error_discount_below_minimum' => 'Order is below this code\'s minimum amount.',
     'error_discount_used_up' => 'Discount code has been fully used.',
     'error_discount_used_by_you' => 'You have already used this code.',
+
+    // A seat limit's refusals, for whichever screen holds the seats (slice CT6b-2c)
+    'error_no_seats' => 'No remaining seats.',
+    'error_resource_missing' => 'Resource not found.',
 ];

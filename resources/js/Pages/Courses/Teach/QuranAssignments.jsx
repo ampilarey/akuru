@@ -1,11 +1,11 @@
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
-import FormErrors from '../../../Components/FormErrors';
+import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 
 // A code the server sends, named from the `quran` book (slice CT5a).
 const named = (q, family, code) => (code ? q[`${family}${code}`] || code.replaceAll('_', ' ') : '—');
 
-function CreateForm({ t, q, targets, options, reference, surahs, surahName }) {
+function CreateForm({ t, q, targets, options, reference, surahs, surahName, actOn }) {
     const form = useForm({
         student_id: '',
         course_id: '',
@@ -34,7 +34,9 @@ function CreateForm({ t, q, targets, options, reference, surahs, surahName }) {
         <form
             onSubmit={(e) => {
                 e.preventDefault();
-                form.post('/teach/assignments', { preserveScroll: true, onSuccess: () => form.reset() });
+                // Marks the form as the last thing acted on, so a row's refusal list
+                // does not repeat the form's.
+                actOn('create', () => form.post('/teach/assignments', { preserveScroll: true, onSuccess: () => form.reset() }));
             }}
             className="mb-6 grid gap-2 rounded-lg border bg-white p-4 md:grid-cols-4"
         >
@@ -81,6 +83,9 @@ export default function QuranAssignments({ rows, targets, options, status, refer
     const locale = usePage().props.locale || 'en';
     // A surah by its Arabic name on a Dhivehi or Arabic page.
     const surahName = (surah) => (locale === 'en' ? surah.english_name : surah.arabic_name || surah.english_name);
+    // Cancel posts with `router`, and its refusal was shown nowhere (slice
+    // CT6b-2c); it is said on its row.
+    const refusals = useRowRefusals();
 
     return (
         <AppShell title={t.qassign_title || 'Qur’an assignments'}>
@@ -100,7 +105,7 @@ export default function QuranAssignments({ rows, targets, options, status, refer
                 <a className="btn-secondary" href={`/teach/assignments?status=${status}&format=csv`}>{t.catalog_export || 'Export CSV'}</a>
             </div>
 
-            <CreateForm t={t} q={q} targets={targets} options={options} reference={reference} surahs={surahs} surahName={surahName} />
+            <CreateForm t={t} q={q} targets={targets} options={options} reference={reference} surahs={surahs} surahName={surahName} actOn={refusals.actOn} />
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
@@ -132,11 +137,12 @@ export default function QuranAssignments({ rows, targets, options, status, refer
                                         <button
                                             type="button"
                                             className="text-sm text-red-600"
-                                            onClick={() => router.put(`/teach/assignments/${row.id}`, { status: 'cancelled' }, { preserveScroll: true })}
+                                            onClick={() => refusals.actOn(`assignment:${row.id}`, () => router.put(`/teach/assignments/${row.id}`, { status: 'cancelled' }, { preserveScroll: true }))}
                                         >
                                             {t.qassign_cancel || 'Cancel'}
                                         </button>
                                     )}
+                                    <FormErrors errors={refusals.errorsFor(`assignment:${row.id}`)} className="mt-1 text-start" />
                                 </td>
                             </tr>
                         ))}

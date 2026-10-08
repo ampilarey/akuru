@@ -19,7 +19,7 @@ class SaveOfferingHalaqaLinkAction
         $program = app(HalaqaReferenceReader::class)->findProgram($programId);
         if ($program === null) {
             throw ValidationException::withMessages([
-                'hifz_program_id' => ['Unknown Hifz program.'],
+                'hifz_program_id' => [__('teach.error_hifz_program')],
             ]);
         }
 

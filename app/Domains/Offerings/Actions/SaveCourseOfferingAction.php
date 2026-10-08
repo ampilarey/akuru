@@ -21,7 +21,7 @@ class SaveCourseOfferingAction
         $course = app(ResolveEngineCourseAction::class)->execute((int) $data['course_id']);
         $mode = DeliveryMode::tryFrom((string) ($data['delivery_mode'] ?? ''));
         if ($mode === null) {
-            throw ValidationException::withMessages(['delivery_mode' => 'Invalid delivery mode.']);
+            throw ValidationException::withMessages(['delivery_mode' => __('teach.error_offering_delivery_mode')]);
         }
 
         $title = (string) $data['title'];
@@ -36,7 +36,7 @@ class SaveCourseOfferingAction
             ->when($offering, fn ($query) => $query->where('id', '!=', $offering->id))
             ->exists();
         if ($exists) {
-            throw ValidationException::withMessages(['slug' => 'Offering slug must be unique within the course.']);
+            throw ValidationException::withMessages(['slug' => __('teach.error_offering_slug')]);
         }
 
         $payload = [
@@ -136,7 +136,7 @@ class SaveCourseOfferingAction
         $ok = $kind === 'audience' ? $taxonomy->audienceExists($id) : $taxonomy->levelExists($id);
         if (! $ok) {
             throw ValidationException::withMessages([
-                $kind.'_id' => 'That '.$kind.' is not available.',
+                $kind.'_id' => $kind === 'audience' ? __('teach.error_offering_audience') : __('teach.error_offering_level'),
             ]);
         }
 

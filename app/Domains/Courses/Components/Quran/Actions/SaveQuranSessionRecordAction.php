@@ -30,7 +30,7 @@ class SaveQuranSessionRecordAction
         $rosterRow = collect($sheet['roster'])->firstWhere('enrollment_id', $enrollmentId);
         if ($rosterRow === null) {
             throw ValidationException::withMessages([
-                'course_enrollment_id' => 'Enrollment is not on this session\'s offering.',
+                'course_enrollment_id' => __('quran.error_not_on_session'),
             ]);
         }
 
@@ -42,7 +42,7 @@ class SaveQuranSessionRecordAction
         $reader = app(QuranReferenceReader::class);
         foreach (['new_from_surah_id', 'new_to_surah_id'] as $key) {
             if (! empty($data[$key]) && $reader->findSurah((int) $data[$key]) === null) {
-                throw ValidationException::withMessages([$key => 'Unknown surah.']);
+                throw ValidationException::withMessages([$key => __('quran.error_unknown_surah')]);
             }
         }
 
@@ -108,7 +108,7 @@ class SaveQuranSessionRecordAction
     private function assertEnum(array $data, string $key, string $enum): void
     {
         if (! empty($data[$key]) && $enum::tryFrom((string) $data[$key]) === null) {
-            throw ValidationException::withMessages([$key => 'Invalid value.']);
+            throw ValidationException::withMessages([$key => __('quran.error_invalid_value')]);
         }
     }
 }

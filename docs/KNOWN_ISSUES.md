@@ -210,9 +210,9 @@ language.
 Laravel's own validation messages were English in every language, because
 there was no `validation.php` in `resources/lang` — **fixed (2026-10-08,
 STATUS §5oz)**. The learner's own refusals are in the page's language since
-STATUS §5pb, and the course authors', markers' and certificate office's since
-STATUS §5pc; the offerings' and the Qur'an component's are still English
-(BACKLOG C19, slice CT6b-2c).
+STATUS §5pb, the course authors', markers' and certificate office's since
+STATUS §5pc, and the offerings' and the Qur'an component's since STATUS §5pd
+(BACKLOG C19). The console commands stay English.
 
 ## Found by the middle-name walk (2026-10-08)
 
@@ -2108,6 +2108,22 @@ it last pressed and say what came back under that row, in the page's
 language; the forms list every refused field; a module's Publish is offered
 to those who may press it. A walk against `main`'s build fails the three new
 steps. STATUS §5pc.
+
+### 39. The offerings' and the Qur'an teacher's refusals were shown by no page
+
+**Fixed (2026-10-08, slice CT6b-2c) — found while building it.**
+
+The same gap as #38 on the screens around the courses. The offerings form
+showed its status and certificate-rule refusals and dropped the rest — a
+second intake of the same name collides on the slug its title makes, and
+the form said nothing. The recitation review showed its correction audio's
+refusal only. Pin now, Sync dual-write, a session's halaqa link, a
+milestone's Review, Approve and Reject, and an assignment's Cancel post with
+`router`, and none of their refusals was shown. All were English besides.
+
+They now say what came back, in the page's language: on the row the button
+was on (`useRowRefusals`), or in the form's list. A walk against `main`'s
+build reads nothing where the new one reads the Dhivehi refusal. STATUS §5pd.
 
 ---
 

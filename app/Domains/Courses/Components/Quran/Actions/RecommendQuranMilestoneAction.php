@@ -22,12 +22,12 @@ class RecommendQuranMilestoneAction
     public function execute(array $data): array
     {
         if (! in_array((string) ($data['type'] ?? ''), self::TYPES, true)) {
-            throw ValidationException::withMessages(['type' => 'Invalid milestone type.']);
+            throw ValidationException::withMessages(['type' => __('quran.error_milestone_type')]);
         }
 
         $programId = (int) ($data['hifz_program_id'] ?? 0);
         if (app(HalaqaReferenceReader::class)->findProgram($programId) === null) {
-            throw ValidationException::withMessages(['hifz_program_id' => 'Unknown program.']);
+            throw ValidationException::withMessages(['hifz_program_id' => __('quran.error_unknown_program')]);
         }
 
         return app(HalaqaMilestoneWriter::class)->recommend($data);

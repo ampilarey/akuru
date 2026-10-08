@@ -1,6 +1,7 @@
 import { router, useForm, usePage } from '@inertiajs/react';
 import { Fragment, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
 // A code the server sends, named from the `quran` book (slice CT5a).
 const named = (q, family, code) => (code ? q[`${family}${code}`] || code.replaceAll('_', ' ') : '—');
@@ -76,6 +77,9 @@ function ReviewForm({ t, q, submission, onDone }) {
                 <button type="button" className="btn-secondary" onClick={addMistake}>{t.qrec_add_mistake || '+ Mistake'}</button>
                 <button type="submit" className="btn-primary" disabled={form.processing}>{t.qrec_save || 'Save review'}</button>
             </div>
+            {/* The outcome's and the mistakes' refusals had no line: only the
+                correction audio's was shown (slice CT6b-2c). */}
+            <FormErrors errors={form.errors} except={['correction_audio']} />
 
             {/* §36 "Upload correction audio". A written note describes the
                 correction; the teacher reciting it *is* the correction. */}
