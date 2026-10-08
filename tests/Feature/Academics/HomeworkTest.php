@@ -137,6 +137,10 @@ it('refuses a tick from a student not on the class', function () {
 
 it('counts only outstanding homework for the tile badge', function () {
     $seed = seedHomeworkClass();
+    // The badge reads the default 30-day lookback, so the clock sits in the
+    // fixtures' week; unpinned, 2026-09-07 fell out of the window on
+    // 2026-10-08 and the count read 1.
+    $this->travelTo('2026-09-15 09:00');
     $first = makeHomeworkLog($seed);
     makeHomeworkLog($seed, ['date' => '2026-09-14', 'homework' => 'Read page 20']);
 
