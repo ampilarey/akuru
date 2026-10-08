@@ -67,7 +67,7 @@ class EngineCourseController extends Controller
             'created_by' => $request->user()?->id,
         ]);
 
-        return redirect()->route('catalog.courses.index')->with('success', 'Course saved as draft.');
+        return redirect()->route('catalog.courses.index')->with('success', __('teach.flash_course_saved'));
     }
 
     public function update(Request $request, int $course): RedirectResponse
@@ -78,7 +78,7 @@ class EngineCourseController extends Controller
             Course::query()->findOrFail($course),
         );
 
-        return redirect()->route('catalog.courses.index')->with('success', 'Course updated.');
+        return redirect()->route('catalog.courses.index')->with('success', __('teach.flash_course_updated'));
     }
 
     /**
@@ -123,7 +123,7 @@ class EngineCourseController extends Controller
             (bool) $request->user()?->can('courses.publish'),
         );
 
-        return redirect()->route('catalog.courses.index')->with('success', 'Review recorded.');
+        return redirect()->route('catalog.courses.index')->with('success', __('teach.flash_review_recorded'));
     }
 
     /**
@@ -155,7 +155,7 @@ class EngineCourseController extends Controller
             (bool) $request->user()?->can('courses.publish'),
         );
 
-        return redirect()->route('catalog.courses.index')->with('success', 'Course status updated.');
+        return redirect()->route('catalog.courses.index')->with('success', __('teach.flash_course_status'));
     }
 
     public function export(Request $request): StreamedResponse

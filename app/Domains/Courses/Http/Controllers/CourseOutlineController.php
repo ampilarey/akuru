@@ -25,6 +25,7 @@ use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\GlossaryItem;
 use App\Domains\Courses\Models\Lesson;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -37,7 +38,7 @@ class CourseOutlineController extends Controller
     {
         abort_unless($request->user()?->can('courses.manage'), 403);
 
-        return Inertia::render('Courses/Catalog/Outline', app(ListCourseOutlineAction::class)->execute($course));
+        return Inertia::render('Courses/Catalog/Outline', app(ListCourseOutlineAction::class)->execute($course) + ['t' => Phrases::once('teach')]);
     }
 
     public function storeModule(Request $request, int $course): RedirectResponse
@@ -49,7 +50,7 @@ class CourseOutlineController extends Controller
             'description' => ['nullable', 'string'],
         ]) + ['course_id' => $course, 'created_by' => $request->user()?->id]);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Module saved.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_module_saved'));
     }
 
     /**
@@ -80,7 +81,7 @@ class CourseOutlineController extends Controller
                 : ['mode' => $data['mode'], 'assessment_id' => $data['assessment_id'] ?? 0],
         ], $lesson);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Unlock rule updated.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_unlock_rule'));
     }
 
     /**
@@ -98,7 +99,7 @@ class CourseOutlineController extends Controller
             'description' => ['nullable', 'string'],
         ]) + ['course_id' => $module->course_id], $module);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Module updated.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_module_updated'));
     }
 
     /**
@@ -117,7 +118,7 @@ class CourseOutlineController extends Controller
 
         app(ReorderCourseModulesAction::class)->execute($course, $data['order']);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Modules reordered.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_modules_reordered'));
     }
 
     /**
@@ -143,7 +144,7 @@ class CourseOutlineController extends Controller
             $request->user()?->id,
         );
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Module status updated.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_module_status'));
     }
 
     /**
@@ -157,7 +158,7 @@ class CourseOutlineController extends Controller
 
         app(DeleteCourseModuleAction::class)->execute($module);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Module deleted.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_module_deleted'));
     }
 
     public function storeLesson(Request $request, int $course): RedirectResponse
@@ -171,7 +172,7 @@ class CourseOutlineController extends Controller
             'completion_rule' => ['nullable', 'string', 'max:40'],
         ]) + ['created_by' => $request->user()?->id]);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Lesson saved.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_lesson_saved'));
     }
 
     public function storeBlock(Request $request, int $course): RedirectResponse
@@ -237,7 +238,7 @@ class CourseOutlineController extends Controller
             ]);
         }
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Block saved.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_block_saved'));
     }
 
     public function destroyBlock(Request $request, int $course, ContentBlock $block): RedirectResponse
@@ -246,7 +247,7 @@ class CourseOutlineController extends Controller
         abort_unless((int) $block->course_id === $course, 404);
         app(DeleteContentBlockAction::class)->execute($block);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Block deleted.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_block_deleted'));
     }
 
     /**
@@ -260,7 +261,7 @@ class CourseOutlineController extends Controller
 
         app(DuplicateContentBlockAction::class)->execute($block);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Block duplicated.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_block_duplicated'));
     }
 
     public function reorderBlocks(Request $request, int $course): RedirectResponse
@@ -279,7 +280,7 @@ class CourseOutlineController extends Controller
 
         app(ReorderContentBlocksAction::class)->execute($lesson->id, $data['block_ids']);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Blocks reordered.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_blocks_reordered'));
     }
 
     public function publishLesson(Request $request, int $course, Lesson $lesson): RedirectResponse
@@ -287,7 +288,7 @@ class CourseOutlineController extends Controller
         abort_unless($request->user()?->can('courses.manage'), 403);
         app(PublishLessonAction::class)->execute($lesson, $request->user()?->id);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Lesson published.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_lesson_published'));
     }
 
     public function attachGlossary(Request $request, int $course, Lesson $lesson): RedirectResponse
@@ -304,7 +305,7 @@ class CourseOutlineController extends Controller
             (bool) ($data['is_required'] ?? false),
         );
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Glossary term attached.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_term_attached'));
     }
 
     public function detachGlossary(Request $request, int $course, Lesson $lesson, GlossaryItem $glossaryItem): RedirectResponse
@@ -313,7 +314,7 @@ class CourseOutlineController extends Controller
         abort_unless((int) $lesson->course_id === $course, 404);
         app(DetachLessonGlossaryItemAction::class)->execute($lesson, $glossaryItem->id);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Glossary term removed.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_term_removed'));
     }
 
     public function togglePreview(Request $request, int $course, Lesson $lesson): RedirectResponse
@@ -328,7 +329,7 @@ class CourseOutlineController extends Controller
             'is_preview' => ! $lesson->is_preview,
         ], $lesson);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Preview flag updated.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_preview'));
     }
 
     /**
@@ -356,7 +357,7 @@ class CourseOutlineController extends Controller
             'completion_rule' => $data['completion_rule'] ?? null,
         ], $lesson);
 
-        return redirect()->route('catalog.courses.outline', $course)->with('success', 'Completion rule updated.');
+        return redirect()->route('catalog.courses.outline', $course)->with('success', __('teach.flash_completion_rule'));
     }
 
     /**

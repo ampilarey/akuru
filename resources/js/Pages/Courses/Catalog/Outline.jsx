@@ -5,6 +5,27 @@ import AppShell from '../../../Layouts/AppShell';
 const MEDIA_TYPES = ['image', 'audio', 'video', 'pdf', 'download'];
 const PAIR_TYPES = ['glossary', 'term', 'dialogue', 'flashcard'];
 const EMBED_TYPES = ['quiz_embed', 'assignment_embed'];
+// The block types the form offers, in its order. Their names are keys in
+// the `teach` book (`block_<type>`, STATUS §5ok), so they read in Dhivehi and
+// Arabic; the English is the fallback.
+const BLOCK_TYPES = ['text', 'rich_text', 'instruction', 'image', 'audio', 'video', 'pdf', 'glossary', 'term', 'dialogue', 'flashcard', 'download', 'quiz_embed', 'assignment_embed'];
+const BLOCK_NAMES = {
+    text: 'Text',
+    rich_text: 'Rich text',
+    instruction: 'Instruction',
+    image: 'Image',
+    audio: 'Audio',
+    video: 'Video',
+    pdf: 'PDF',
+    glossary: 'Glossary',
+    term: 'Term',
+    dialogue: 'Dialogue',
+    flashcard: 'Flashcard',
+    download: 'Download',
+    quiz_embed: 'Quiz embed',
+    assignment_embed: 'Assignment embed',
+};
+const blockType = (t, type) => t[`block_${type}`] || BLOCK_NAMES[type] || type;
 
 function blockLabel(block) {
     return block.data?.body
@@ -34,7 +55,7 @@ function blockLabel(block) {
  * `preserveScroll`. If the server refuses it, the reload brings back the real
  * order and the effect below re-seeds from it.
  */
-function LessonBlockList({ courseId, lesson }) {
+function LessonBlockList({ courseId, lesson, t }) {
     const blocks = lesson.blocks || [];
     const [order, setOrder] = useState(() => blocks.map((block) => block.id));
     // The dragged index lives in a ref, not state. `onDrop` has to read the
@@ -73,7 +94,7 @@ function LessonBlockList({ courseId, lesson }) {
     };
 
     if (blocks.length === 0) {
-        return <p className="text-sm text-gray-500">No blocks yet.</p>;
+        return <p className="text-sm text-gray-500">{t.outline_no_blocks || 'No blocks yet.'}</p>;
     }
 
     const byId = new Map(blocks.map((block) => [block.id, block]));
@@ -90,7 +111,7 @@ function LessonBlockList({ courseId, lesson }) {
                     <li
                         key={id}
                         draggable
-                        aria-label={`Block ${index + 1} of ${order.length}: ${block.type}`}
+                        aria-label={(t.outline_block_aria || 'Block :n of :total: :type').replace(':n', index + 1).replace(':total', order.length).replace(':type', blockType(t, block.type))}
                         onDragStart={() => {
                             draggingRef.current = index;
                             setDragging(index);
@@ -116,9 +137,9 @@ function LessonBlockList({ courseId, lesson }) {
                         <span className="flex items-center gap-2">
                             <span aria-hidden="true" className="cursor-grab text-gray-400">⠿</span>
                             <span>
-                                {index + 1}. {block.type}: {blockLabel(block)}
+                                {index + 1}. {blockType(t, block.type)}: {blockLabel(block)}
                                 {block.is_required && (
-                                    <span className="ms-2 text-xs uppercase text-amber-800">required</span>
+                                    <span className="ms-2 text-xs uppercase text-amber-800">{t.outline_required_badge || 'required'}</span>
                                 )}
                             </span>
                         </span>
@@ -129,7 +150,7 @@ function LessonBlockList({ courseId, lesson }) {
                                 disabled={index === 0}
                                 onClick={() => moveTo(index, index - 1)}
                             >
-                                Up
+                                {t.outline_up || 'Up'}
                             </button>
                             <button
                                 type="button"
@@ -137,7 +158,7 @@ function LessonBlockList({ courseId, lesson }) {
                                 disabled={index === order.length - 1}
                                 onClick={() => moveTo(index, index + 1)}
                             >
-                                Down
+                                {t.outline_down || 'Down'}
                             </button>
                             <button
                                 type="button"
@@ -148,14 +169,14 @@ function LessonBlockList({ courseId, lesson }) {
                                     { preserveScroll: true },
                                 )}
                             >
-                                Duplicate
+                                {t.outline_duplicate || 'Duplicate'}
                             </button>
                             <button
                                 type="button"
                                 className="text-xs text-red-700"
                                 onClick={() => router.delete(`/catalog/courses/${courseId}/blocks/${block.id}`, { preserveScroll: true })}
                             >
-                                Delete draft
+                                {t.outline_delete_draft || 'Delete draft'}
                             </button>
                         </span>
                     </li>
@@ -165,7 +186,7 @@ function LessonBlockList({ courseId, lesson }) {
     );
 }
 
-function LessonGlossaryForm({ courseId, lesson, glossaryItems }) {
+function LessonGlossaryForm({ courseId, lesson, glossaryItems, t }) {
     const form = useForm({
         glossary_item_id: glossaryItems[0]?.id || '',
         is_required: false,
@@ -175,22 +196,22 @@ function LessonGlossaryForm({ courseId, lesson, glossaryItems }) {
 
     return (
         <div className="mt-3 rounded border bg-[#F9F4EE] p-3">
-            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-600">Lesson glossary</p>
-            {(lesson.glossary || []).length === 0 && <p className="mb-2 text-xs text-gray-500">No terms attached. Add a term in Glossary first.</p>}
+            <p className="mb-2 text-xs font-medium uppercase tracking-wide text-gray-600">{t.outline_lesson_glossary || 'Lesson glossary'}</p>
+            {(lesson.glossary || []).length === 0 && <p className="mb-2 text-xs text-gray-500">{t.outline_no_terms || 'No terms attached. Add a term in Glossary first.'}</p>}
             <ul className="mb-2 space-y-1 text-sm">
                 {(lesson.glossary || []).map((item) => (
                     <li key={item.id} className="flex flex-wrap items-center justify-between gap-2">
                         <span>
                             <span dir="auto">{item.term}</span>
                             {item.term_ar && <span className="ms-2" dir="rtl">{item.term_ar}</span>}
-                            {item.is_required && <span className="ms-2 text-xs uppercase text-amber-800">required</span>}
+                            {item.is_required && <span className="ms-2 text-xs uppercase text-amber-800">{t.outline_required_badge || 'required'}</span>}
                         </span>
                         <button
                             type="button"
                             className="text-xs text-red-700"
                             onClick={() => router.delete(`/catalog/courses/${courseId}/lessons/${lesson.id}/glossary/${item.id}`)}
                         >
-                            Remove
+                            {t.outline_remove || 'Remove'}
                         </button>
                     </li>
                 ))}
@@ -205,6 +226,7 @@ function LessonGlossaryForm({ courseId, lesson, glossaryItems }) {
                 >
                     <select
                         className="form-input"
+                        aria-label={t.outline_term || 'Term'}
                         value={form.data.glossary_item_id}
                         onChange={(e) => form.setData('glossary_item_id', e.target.value)}
                     >
@@ -218,9 +240,9 @@ function LessonGlossaryForm({ courseId, lesson, glossaryItems }) {
                             checked={!!form.data.is_required}
                             onChange={(e) => form.setData('is_required', e.target.checked)}
                         />
-                        Required
+                        {t.outline_required || 'Required'}
                     </label>
-                    <button type="submit" className="btn-secondary" disabled={form.processing}>Attach term</button>
+                    <button type="submit" className="btn-secondary" disabled={form.processing}>{t.outline_attach_term || 'Attach term'}</button>
                     {form.errors.glossary_item_id && <span className="text-xs text-red-600">{form.errors.glossary_item_id}</span>}
                 </form>
             )}
@@ -228,7 +250,7 @@ function LessonGlossaryForm({ courseId, lesson, glossaryItems }) {
     );
 }
 
-export default function Outline({ course, modules, glossaryItems = [], assessments = [] }) {
+export default function Outline({ course, modules, glossaryItems = [], assessments = [], t = {} }) {
     // §12's "delete draft modules if safe" refusal names exactly what is in
     // the way ("still has 1 lessons, 2 content blocks"). It was never rendered,
     // so clicking Delete module on a module the server refuses did nothing
@@ -285,15 +307,15 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
     const isEmbed = EMBED_TYPES.includes(blockForm.data.type);
 
     return (
-        <AppShell title={`Outline — ${course.title}`}>
+        <AppShell title={(t.outline_title || 'Outline — :course').replace(':course', course.title)}>
             <p className="mb-4 text-sm text-gray-600">
-                Workflow: {course.workflow_status}
+                {t.outline_workflow || 'Workflow:'} {t[`workflow_${course.workflow_status}`] || course.workflow_status}
                 {' · '}
-                <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${course.id}/activities`}>Activities</a>
+                <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${course.id}/activities`}>{t.catalog_activities || 'Activities'}</a>
                 {' · '}
-                <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${course.id}/assessments`}>Assessments</a>
+                <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${course.id}/assessments`}>{t.outline_assessments || 'Assessments'}</a>
                 {' · '}
-                <a className="text-[#7C2D37] hover:underline" href="/catalog/glossary">Glossary</a>
+                <a className="text-[#7C2D37] hover:underline" href="/catalog/glossary">{t.outline_glossary || 'Glossary'}</a>
             </p>
             <div className="mb-4 grid gap-3 md:grid-cols-3">
                 <form
@@ -303,9 +325,9 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                     }}
                     className="rounded-lg border bg-white p-4"
                 >
-                    <p className="mb-2 text-sm font-medium">Add module</p>
-                    <input className="form-input mb-2" placeholder="Module title" value={moduleForm.data.title} onChange={(e) => moduleForm.setData('title', e.target.value)} />
-                    <button type="submit" className="btn-primary" disabled={moduleForm.processing}>Save module</button>
+                    <p className="mb-2 text-sm font-medium">{t.outline_add_module || 'Add module'}</p>
+                    <input className="form-input mb-2" placeholder={t.outline_module_title || 'Module title'} aria-label={t.outline_module_title || 'Module title'} value={moduleForm.data.title} onChange={(e) => moduleForm.setData('title', e.target.value)} />
+                    <button type="submit" className="btn-primary" disabled={moduleForm.processing}>{t.outline_save_module || 'Save module'}</button>
                 </form>
                 <form
                     onSubmit={(e) => {
@@ -328,12 +350,12 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                     }}
                     className="rounded-lg border bg-white p-4"
                 >
-                    <p className="mb-2 text-sm font-medium">Add lesson</p>
-                    <select className="form-input mb-2" value={lessonForm.data.course_module_id || modules[0]?.id || ''} onChange={(e) => lessonForm.setData('course_module_id', e.target.value)}>
+                    <p className="mb-2 text-sm font-medium">{t.outline_add_lesson || 'Add lesson'}</p>
+                    <select className="form-input mb-2" aria-label={t.outline_in_module || 'Module'} value={lessonForm.data.course_module_id || modules[0]?.id || ''} onChange={(e) => lessonForm.setData('course_module_id', e.target.value)}>
                         {modules.map((module) => <option key={module.id} value={module.id}>{module.title}</option>)}
                     </select>
-                    <input className="form-input mb-2" placeholder="Lesson title" value={lessonForm.data.title} onChange={(e) => lessonForm.setData('title', e.target.value)} />
-                    <button type="submit" className="btn-primary" disabled={lessonForm.processing || modules.length === 0}>Save lesson</button>
+                    <input className="form-input mb-2" placeholder={t.outline_lesson_title || 'Lesson title'} aria-label={t.outline_lesson_title || 'Lesson title'} value={lessonForm.data.title} onChange={(e) => lessonForm.setData('title', e.target.value)} />
+                    <button type="submit" className="btn-primary" disabled={lessonForm.processing || modules.length === 0}>{t.outline_save_lesson || 'Save lesson'}</button>
                     {lessonForm.errors.title && <p className="mt-1 text-xs text-red-600">{lessonForm.errors.title}</p>}
                     {lessonForm.errors.course_module_id && <p className="mt-1 text-xs text-red-600">{lessonForm.errors.course_module_id}</p>}
                 </form>
@@ -348,25 +370,12 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                     }}
                     className="rounded-lg border bg-white p-4"
                 >
-                    <p className="mb-2 text-sm font-medium">Add draft block</p>
-                    <select className="form-input mb-2" value={blockForm.data.lesson_id || modules.flatMap((module) => module.lessons)[0]?.id || ''} onChange={(e) => blockForm.setData('lesson_id', e.target.value)}>
+                    <p className="mb-2 text-sm font-medium">{t.outline_add_block || 'Add draft block'}</p>
+                    <select className="form-input mb-2" aria-label={t.outline_in_lesson || 'Lesson'} value={blockForm.data.lesson_id || modules.flatMap((module) => module.lessons)[0]?.id || ''} onChange={(e) => blockForm.setData('lesson_id', e.target.value)}>
                         {modules.flatMap((module) => module.lessons).map((lesson) => <option key={lesson.id} value={lesson.id}>{lesson.title}</option>)}
                     </select>
-                    <select className="form-input mb-2" value={blockForm.data.type} onChange={(e) => blockForm.setData('type', e.target.value)}>
-                        <option value="text">Text</option>
-                        <option value="rich_text">Rich text</option>
-                        <option value="instruction">Instruction</option>
-                        <option value="image">Image</option>
-                        <option value="audio">Audio</option>
-                        <option value="video">Video</option>
-                        <option value="pdf">PDF</option>
-                        <option value="glossary">Glossary</option>
-                        <option value="term">Term</option>
-                        <option value="dialogue">Dialogue</option>
-                        <option value="flashcard">Flashcard</option>
-                        <option value="download">Download</option>
-                        <option value="quiz_embed">Quiz embed</option>
-                        <option value="assignment_embed">Assignment embed</option>
+                    <select className="form-input mb-2" aria-label={t.outline_block_type || 'Block type'} value={blockForm.data.type} onChange={(e) => blockForm.setData('type', e.target.value)}>
+                        {BLOCK_TYPES.map((type) => <option key={type} value={type}>{blockType(t, type)}</option>)}
                     </select>
                     {/* SPEC §15.3: direction, content language, alignment and
                         font are settings on every text-capable block, never
@@ -374,67 +383,69 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                         left/right — physical values are silently wrong the
                         moment the same block is read the other way. */}
                     <div className="mb-2 grid gap-2 sm:grid-cols-2">
-                        <select className="form-input" aria-label="Text direction" value={blockForm.data.direction} onChange={(e) => blockForm.setData('direction', e.target.value)}>
-                            <option value="auto">Direction auto</option>
-                            <option value="ltr">LTR</option>
-                            <option value="rtl">RTL</option>
+                        <select className="form-input" aria-label={t.outline_direction || 'Text direction'} value={blockForm.data.direction} onChange={(e) => blockForm.setData('direction', e.target.value)}>
+                            <option value="auto">{t.outline_direction_auto || 'Direction auto'}</option>
+                            <option value="ltr">{t.outline_direction_ltr || 'Left to right'}</option>
+                            <option value="rtl">{t.outline_direction_rtl || 'Right to left'}</option>
                         </select>
-                        <select className="form-input" aria-label="Text alignment" value={blockForm.data.align} onChange={(e) => blockForm.setData('align', e.target.value)}>
-                            <option value="start">Align to start</option>
-                            <option value="end">Align to end</option>
-                            <option value="center">Align centre</option>
+                        <select className="form-input" aria-label={t.outline_alignment || 'Text alignment'} value={blockForm.data.align} onChange={(e) => blockForm.setData('align', e.target.value)}>
+                            <option value="start">{t.outline_align_start || 'Align to start'}</option>
+                            <option value="end">{t.outline_align_end || 'Align to end'}</option>
+                            <option value="center">{t.outline_align_center || 'Align centre'}</option>
                         </select>
-                        <select className="form-input" aria-label="Content language" value={blockForm.data.language} onChange={(e) => blockForm.setData('language', e.target.value)}>
-                            <option value="auto">Language of the lesson</option>
-                            <option value="en">English</option>
-                            <option value="dv">Dhivehi</option>
-                            <option value="ar">Arabic</option>
+                        <select className="form-input" aria-label={t.outline_language || 'Content language'} value={blockForm.data.language} onChange={(e) => blockForm.setData('language', e.target.value)}>
+                            <option value="auto">{t.outline_language_auto || 'Language of the lesson'}</option>
+                            <option value="en">{t.outline_lang_en || 'English'}</option>
+                            <option value="dv">{t.outline_lang_dv || 'Dhivehi'}</option>
+                            <option value="ar">{t.outline_lang_ar || 'Arabic'}</option>
                         </select>
-                        <select className="form-input" aria-label="Font preference" value={blockForm.data.font} onChange={(e) => blockForm.setData('font', e.target.value)}>
-                            <option value="default">Default font</option>
-                            <option value="thaana">Thaana face</option>
-                            <option value="arabic">Arabic face</option>
+                        <select className="form-input" aria-label={t.outline_font || 'Font preference'} value={blockForm.data.font} onChange={(e) => blockForm.setData('font', e.target.value)}>
+                            <option value="default">{t.outline_font_default || 'Default font'}</option>
+                            <option value="thaana">{t.outline_font_thaana || 'Thaana face'}</option>
+                            <option value="arabic">{t.outline_font_arabic || 'Arabic face'}</option>
                         </select>
                     </div>
                     {blockForm.data.type === 'instruction' && (
-                        <select className="form-input mb-2" value={blockForm.data.tone} onChange={(e) => blockForm.setData('tone', e.target.value)}>
-                            <option value="note">Note</option>
-                            <option value="tip">Tip</option>
-                            <option value="warning">Warning</option>
+                        <select className="form-input mb-2" aria-label={t.outline_tone || 'Instruction type'} value={blockForm.data.tone} onChange={(e) => blockForm.setData('tone', e.target.value)}>
+                            <option value="note">{t.outline_tone_note || 'Note'}</option>
+                            <option value="tip">{t.outline_tone_tip || 'Tip'}</option>
+                            <option value="warning">{t.outline_tone_warning || 'Warning'}</option>
                         </select>
                     )}
                     {blockForm.data.type === 'video' && (
-                        <input className="form-input mb-2" placeholder="YouTube or Vimeo URL (optional)" value={blockForm.data.embed_url} onChange={(e) => blockForm.setData('embed_url', e.target.value)} />
+                        <input className="form-input mb-2" placeholder={t.outline_video_url || 'YouTube or Vimeo URL (optional)'} aria-label={t.outline_video_url || 'YouTube or Vimeo URL (optional)'} value={blockForm.data.embed_url} onChange={(e) => blockForm.setData('embed_url', e.target.value)} />
                     )}
                     {(blockForm.data.type === 'glossary' || blockForm.data.type === 'term') && (
                         <>
-                            <input className="form-input mb-2" placeholder="Term" value={blockForm.data.term} onChange={(e) => blockForm.setData('term', e.target.value)} />
-                            <textarea className="form-input mb-2" placeholder="Definition" value={blockForm.data.definition} onChange={(e) => blockForm.setData('definition', e.target.value)} />
-                            <textarea className="form-input mb-2" placeholder="More entries: term | definition" value={blockForm.data.entries_text} onChange={(e) => blockForm.setData('entries_text', e.target.value)} />
+                            <input className="form-input mb-2" placeholder={t.outline_term || 'Term'} aria-label={t.outline_term || 'Term'} value={blockForm.data.term} onChange={(e) => blockForm.setData('term', e.target.value)} />
+                            <textarea className="form-input mb-2" placeholder={t.outline_definition || 'Definition'} aria-label={t.outline_definition || 'Definition'} value={blockForm.data.definition} onChange={(e) => blockForm.setData('definition', e.target.value)} />
+                            <textarea className="form-input mb-2" placeholder={t.outline_more_entries || 'More entries: term | definition'} aria-label={t.outline_more_entries || 'More entries: term | definition'} value={blockForm.data.entries_text} onChange={(e) => blockForm.setData('entries_text', e.target.value)} />
                         </>
                     )}
                     {blockForm.data.type === 'dialogue' && (
-                        <textarea className="form-input mb-2" placeholder="speaker | line" value={blockForm.data.lines_text} onChange={(e) => blockForm.setData('lines_text', e.target.value)} />
+                        <textarea className="form-input mb-2" placeholder={t.outline_dialogue_lines || 'speaker | line'} aria-label={t.outline_dialogue_lines || 'speaker | line'} value={blockForm.data.lines_text} onChange={(e) => blockForm.setData('lines_text', e.target.value)} />
                     )}
                     {blockForm.data.type === 'flashcard' && (
-                        <textarea className="form-input mb-2" placeholder="front | back" value={blockForm.data.cards_text} onChange={(e) => blockForm.setData('cards_text', e.target.value)} />
+                        <textarea className="form-input mb-2" placeholder={t.outline_flashcards || 'front | back'} aria-label={t.outline_flashcards || 'front | back'} value={blockForm.data.cards_text} onChange={(e) => blockForm.setData('cards_text', e.target.value)} />
                     )}
                     {isEmbed && (
                         <>
-                            <input className="form-input mb-2" placeholder="Title (optional)" value={blockForm.data.title} onChange={(e) => blockForm.setData('title', e.target.value)} />
+                            <input className="form-input mb-2" placeholder={t.outline_embed_title || 'Title (optional)'} aria-label={t.outline_embed_title || 'Title (optional)'} value={blockForm.data.title} onChange={(e) => blockForm.setData('title', e.target.value)} />
                             <input
                                 className="form-input mb-2"
-                                placeholder={blockForm.data.type === 'quiz_embed' ? 'Quiz id (optional)' : 'Assignment id (optional)'}
+                                placeholder={blockForm.data.type === 'quiz_embed' ? (t.outline_quiz_id || 'Quiz id (optional)') : (t.outline_assignment_id || 'Assignment id (optional)')}
+                                aria-label={blockForm.data.type === 'quiz_embed' ? (t.outline_quiz_id || 'Quiz id (optional)') : (t.outline_assignment_id || 'Assignment id (optional)')}
                                 value={blockForm.data.type === 'quiz_embed' ? blockForm.data.quiz_id : blockForm.data.assignment_id}
                                 onChange={(e) => blockForm.setData(blockForm.data.type === 'quiz_embed' ? 'quiz_id' : 'assignment_id', e.target.value)}
                             />
-                            <input className="form-input mb-2" placeholder="https://… (optional)" value={blockForm.data.embed_url} onChange={(e) => blockForm.setData('embed_url', e.target.value)} />
+                            <input className="form-input mb-2" placeholder={t.outline_embed_url || 'https://… (optional)'} aria-label={t.outline_embed_url || 'https://… (optional)'} value={blockForm.data.embed_url} onChange={(e) => blockForm.setData('embed_url', e.target.value)} />
                         </>
                     )}
                     {isMedia ? (
                         <input
                             className="form-input mb-2"
                             type="file"
+                            aria-label={t.outline_media_file || 'File'}
                             accept={
                                 blockForm.data.type === 'image' ? 'image/*'
                                     : blockForm.data.type === 'audio' ? 'audio/*'
@@ -445,7 +456,7 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                             onChange={(e) => blockForm.setData('file', e.target.files?.[0] || null)}
                         />
                     ) : !isPair && !isEmbed ? (
-                        <textarea className="form-input mb-2" placeholder="Block content" value={blockForm.data.body} onChange={(e) => blockForm.setData('body', e.target.value)} />
+                        <textarea className="form-input mb-2" placeholder={t.outline_block_content || 'Block content'} aria-label={t.outline_block_content || 'Block content'} value={blockForm.data.body} onChange={(e) => blockForm.setData('body', e.target.value)} />
                     ) : null}
                     <label className="mb-2 flex items-center gap-2 text-sm">
                         <input
@@ -453,9 +464,9 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                             checked={!!blockForm.data.is_required}
                             onChange={(e) => blockForm.setData('is_required', e.target.checked)}
                         />
-                        Required to complete the lesson
+                        {t.outline_required_to_complete || 'Required to complete the lesson'}
                     </label>
-                    <button type="submit" className="btn-primary" disabled={blockForm.processing}>Save block</button>
+                    <button type="submit" className="btn-primary" disabled={blockForm.processing}>{t.outline_save_block || 'Save block'}</button>
                     {blockForm.errors.data && <p className="mt-1 text-xs text-red-600">{blockForm.errors.data}</p>}
                     {blockForm.errors.type && <p className="mt-1 text-xs text-red-600">{blockForm.errors.type}</p>}
                     {blockForm.errors.file && <p className="mt-1 text-xs text-red-600">{blockForm.errors.file}</p>}
@@ -476,7 +487,7 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                         <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
                             <h2 className="font-medium">
                                 {module.title}
-                                <span className="ms-2 text-xs uppercase tracking-wide text-gray-500">{module.status || 'draft'}</span>
+                                <span className="ms-2 text-xs uppercase tracking-wide text-gray-500">{t[`status_${module.status || 'draft'}`] || module.status || 'draft'}</span>
                             </h2>
                             {/* SPEC §12 Module Management. Only create and
                                 delete existed: no edit, no reorder, and no way
@@ -484,10 +495,10 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                             <div className="flex flex-wrap items-center gap-2">
                                 <button
                                     type="button"
-                                    aria-label={`Rename module ${module.title}`}
+                                    aria-label={(t.outline_rename_aria || 'Rename module :title').replace(':title', module.title)}
                                     className="text-xs text-[#7C2D37] hover:underline"
                                     onClick={() => {
-                                        const title = window.prompt('Module title', module.title);
+                                        const title = window.prompt(t.outline_module_title || 'Module title', module.title);
                                         if (title === null || title.trim() === '') {
                                             return;
                                         }
@@ -498,7 +509,7 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                         );
                                     }}
                                 >
-                                    Rename
+                                    {t.outline_rename || 'Rename'}
                                 </button>
                                 <button
                                     type="button"
@@ -506,7 +517,7 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                     disabled={modules.indexOf(module) === 0}
                                     onClick={() => moveModule(module, -1)}
                                 >
-                                    ↑ Move up
+                                    {t.outline_move_up || '↑ Move up'}
                                 </button>
                                 <button
                                     type="button"
@@ -514,11 +525,11 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                     disabled={modules.indexOf(module) === modules.length - 1}
                                     onClick={() => moveModule(module, 1)}
                                 >
-                                    ↓ Move down
+                                    {t.outline_move_down || '↓ Move down'}
                                 </button>
                                 <button
                                     type="button"
-                                    aria-label={`${module.status === 'published' ? 'Unpublish' : 'Publish'} module ${module.title}`}
+                                    aria-label={(module.status === 'published' ? (t.outline_unpublish_aria || 'Unpublish module :title') : (t.outline_publish_aria || 'Publish module :title')).replace(':title', module.title)}
                                     className="text-xs text-[#7C2D37] hover:underline"
                                     onClick={() => router.post(
                                         `/catalog/courses/${course.id}/modules/${module.id}/status`,
@@ -526,7 +537,7 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                         { preserveScroll: true },
                                     )}
                                 >
-                                    {module.status === 'published' ? 'Unpublish' : 'Publish'}
+                                    {module.status === 'published' ? (t.outline_unpublish || 'Unpublish') : (t.outline_publish || 'Publish')}
                                 </button>
                             </div>
                             {/* §12 "Delete draft modules if safe". Offered only
@@ -538,22 +549,22 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                     type="button"
                                     className="text-xs text-red-700"
                                     onClick={() => {
-                                        if (window.confirm(`Delete the empty module "${module.title}"?`)) {
+                                        if (window.confirm((t.outline_delete_module_confirm || 'Delete the empty module ":title"?').replace(':title', module.title))) {
                                             router.delete(`/catalog/courses/${course.id}/modules/${module.id}`, { preserveScroll: true });
                                         }
                                     }}
                                 >
-                                    Delete module
+                                    {t.outline_delete_module || 'Delete module'}
                                 </button>
                             )}
                         </div>
-                        {module.lessons.length === 0 && <p className="text-sm text-gray-500">No lessons yet.</p>}
+                        {module.lessons.length === 0 && <p className="text-sm text-gray-500">{t.outline_no_lessons || 'No lessons yet.'}</p>}
                         {module.lessons.map((lesson) => (
                             <div key={lesson.id} className="mb-3 border-t pt-3">
                                 <div className="mb-2 flex flex-wrap items-center gap-3">
                                     <p className="font-medium">{lesson.title}</p>
-                                    <span className="text-xs uppercase text-gray-500">{lesson.status}{lesson.revision_number ? ` r${lesson.revision_number}` : ''}{lesson.is_preview ? ' preview' : ''}</span>
-                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${course.id}/lessons/${lesson.id}/preview`)}>{lesson.is_preview ? 'Unmark preview' : 'Mark preview'}</button>
+                                    <span className="text-xs uppercase text-gray-500">{t[`status_${lesson.status}`] || lesson.status}{lesson.revision_number ? ` r${lesson.revision_number}` : ''}{lesson.is_preview ? ` ${t.outline_preview_badge || 'preview'}` : ''}</span>
+                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${course.id}/lessons/${lesson.id}/preview`)}>{lesson.is_preview ? (t.outline_unmark_preview || 'Unmark preview') : (t.outline_mark_preview || 'Mark preview')}</button>
                                     {/* SPEC §13 Lesson Management: "Set completion rules".
                                         Only the two rules the engine enforces are
                                         offered — §26's lesson, that a rule an admin
@@ -564,7 +575,7 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                         evaluator enforces are offered. */}
                                     <select
                                         className="form-input ms-2 inline-block w-auto text-xs"
-                                        aria-label={`Unlock rule for ${lesson.title}`}
+                                        aria-label={(t.outline_unlock_aria || 'Unlock rule for :title').replace(':title', lesson.title)}
                                         value={lesson.unlock_rule?.assessment_id ? String(lesson.unlock_rule.assessment_id) : ''}
                                         onChange={(e) => router.post(
                                             `/catalog/courses/${course.id}/lessons/${lesson.id}/unlock-rule`,
@@ -574,14 +585,14 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                             { preserveScroll: true },
                                         )}
                                     >
-                                        <option value="">Unlocks with the course rule</option>
+                                        <option value="">{t.outline_unlock_course_rule || 'Unlocks with the course rule'}</option>
                                         {assessments.map((a) => (
-                                            <option key={a.id} value={a.id}>Needs a pass in: {a.title}</option>
+                                            <option key={a.id} value={a.id}>{(t.outline_unlock_needs || 'Needs a pass in: :title').replace(':title', a.title)}</option>
                                         ))}
                                     </select>
                                     <select
                                         className="form-input ms-2 inline-block w-auto text-xs"
-                                        aria-label="Completion rule"
+                                        aria-label={t.outline_completion_rule || 'Completion rule'}
                                         value={lesson.completion_rule || 'click'}
                                         onChange={(e) => router.post(
                                             `/catalog/courses/${course.id}/lessons/${lesson.id}/completion-rule`,
@@ -589,16 +600,16 @@ export default function Outline({ course, modules, glossaryItems = [], assessmen
                                             { preserveScroll: true },
                                         )}
                                     >
-                                        <option value="click">Completes on click</option>
-                                        <option value="required_activities">Requires all required activities</option>
+                                        <option value="click">{t.outline_completes_click || 'Completes on click'}</option>
+                                        <option value="required_activities">{t.outline_completes_required || 'Requires all required activities'}</option>
                                     </select>
-                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${course.id}/lessons/${lesson.id}/publish`)}>Publish</button>
+                                    <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${course.id}/lessons/${lesson.id}/publish`)}>{t.outline_publish || 'Publish'}</button>
                                     {lesson.current_revision_id && (
-                                        <a className="text-sm text-[#7C2D37] hover:underline" href={`/catalog/player/${lesson.id}`}>Open player</a>
+                                        <a className="text-sm text-[#7C2D37] hover:underline" href={`/catalog/player/${lesson.id}`}>{t.outline_open_player || 'Open player'}</a>
                                     )}
                                 </div>
-                                <LessonBlockList courseId={course.id} lesson={lesson} />
-                                <LessonGlossaryForm courseId={course.id} lesson={lesson} glossaryItems={glossaryItems} />
+                                <LessonBlockList courseId={course.id} lesson={lesson} t={t} />
+                                <LessonGlossaryForm courseId={course.id} lesson={lesson} glossaryItems={glossaryItems} t={t} />
                             </div>
                         ))}
                     </section>

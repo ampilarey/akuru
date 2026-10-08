@@ -185,7 +185,7 @@ export default function Rubrics({ course, rubrics = [], activities = [], assessm
                                     type="button"
                                     className="btn-secondary"
                                     onClick={() => {
-                                        if (window.confirm(t.rubric_delete_confirm || 'Delete this rubric?')) {
+                                        if (window.confirm(t.rubric_delete_confirm || 'Delete this rubric? The items it marks go back to a typed score. Marks already given keep their rubric.')) {
                                             router.delete(`/catalog/courses/${course.id}/rubrics/${rubric.id}`, { preserveScroll: true });
                                         }
                                     }}

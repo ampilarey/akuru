@@ -183,7 +183,7 @@ await courseForm.locator('input[placeholder="Title"]').fill(COURSE);
 await courseForm.locator('button:has-text("Save draft")').click();
 check('a course is created as a draft', await settles(author, 'Course saved as draft.'), (await text(author)).slice(0, 160));
 const courseRow = await rowText(author, COURSE);
-check('and listed as draft with its subject', courseRow.includes('draft'), courseRow);
+check('and listed as draft with its subject', /draft/i.test(courseRow), courseRow);
 
 const outlineHref = await author.locator('tr', { hasText: COURSE }).locator('a', { hasText: COURSE }).first().getAttribute('href');
 check('the outline is reachable from the catalog', Boolean(outlineHref), outlineHref ?? 'no outline link');
@@ -211,17 +211,17 @@ const typeSelect = () => blockForm().locator('select').nth(1);
 await typeSelect().selectOption('text');
 await blockForm().locator('textarea[placeholder="Block content"]').fill(BODY);
 await blockForm().locator('button:has-text("Save block")').click();
-check('a text block is saved', await settles(author, '1. text'), (await text(author)).slice(0, 160));
+check('a text block is saved', await settles(author, '1. Text'), (await text(author)).slice(0, 160));
 
 await typeSelect().selectOption('instruction');
 await blockForm().locator('textarea[placeholder="Block content"]').fill(NOTE);
 await blockForm().locator('button:has-text("Save block")').click();
-check('an instruction block is saved', await settles(author, '2. instruction'), (await text(author)).slice(0, 160));
+check('an instruction block is saved', await settles(author, '2. Instruction'), (await text(author)).slice(0, 160));
 
 await typeSelect().selectOption('image');
 await blockForm().locator('input[type=file]').setInputFiles(PNG);
 await blockForm().locator('button:has-text("Save block")').click();
-check('an image block is uploaded through the media pipeline', await settles(author, '3. image'), (await text(author)).slice(0, 160));
+check('an image block is uploaded through the media pipeline', await settles(author, '3. Image'), (await text(author)).slice(0, 160));
 
 // 4. publish: the lesson (an immutable revision) and the module
 const lessonRow = author.locator('.border-t', { hasText: LESSON }).first();
@@ -242,16 +242,16 @@ check('the supervisor publishes the module', await settles(reviewer, 'Module sta
 // 5. submit for review
 await author.goto(`${BASE}/en/catalog/courses`, { waitUntil: 'networkidle' });
 await author.locator('tr', { hasText: COURSE }).locator('button:has-text("Submit review")').click();
-check('the course is submitted for review', await settles(author, 'Course status updated.') && (await rowText(author, COURSE)).includes('in_review'), await rowText(author, COURSE));
+check('the course is submitted for review', await settles(author, 'Course status updated.') && /in review/i.test(await rowText(author, COURSE)), await rowText(author, COURSE));
 
 // ---------------------------------------------------------- the supervisor
 
 await reviewer.goto(`${BASE}/en/catalog/courses`, { waitUntil: 'networkidle' });
 const review = reviewer.locator('tr', { hasText: COURSE });
-check('the supervisor sees it waiting for review', (await review.count()) > 0 && (await review.innerText()).includes('in_review'), (await review.count()) ? (await review.innerText()).replace(/\s+/g, ' ') : 'no row');
+check('the supervisor sees it waiting for review', (await review.count()) > 0 && /in review/i.test(await review.innerText()), (await review.count()) ? (await review.innerText()).replace(/\s+/g, ' ') : 'no row');
 await review.locator('select[aria-label="Review decision"]').selectOption('approved');
 await review.locator('button:has-text("Record review")').click();
-check('and approves it — the course is published', await settles(reviewer, 'Review recorded.') && (await rowText(reviewer, COURSE)).includes('published'), await rowText(reviewer, COURSE));
+check('and approves it — the course is published', await settles(reviewer, 'Review recorded.') && /published/i.test(await rowText(reviewer, COURSE)), await rowText(reviewer, COURSE));
 
 // ------------------------------------------------------------- the student
 
