@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\DB;
 class ResolveStudentForUserAction
 {
     /**
-     * @return array{id: int, first_name: string, last_name: string}|null
+     * @return array{id: int, first_name: string, middle_name: ?string, last_name: string}|null
      */
     public function execute(int $userId): ?array
     {
@@ -19,6 +19,7 @@ class ResolveStudentForUserAction
         return [
             'id' => (int) $row->id,
             'first_name' => (string) $row->first_name,
+            'middle_name' => $row->middle_name,
             'last_name' => (string) $row->last_name,
         ];
     }

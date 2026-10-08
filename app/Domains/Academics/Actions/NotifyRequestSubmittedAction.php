@@ -5,6 +5,7 @@ namespace App\Domains\Academics\Actions;
 use App\Domains\Academics\Models\SchoolRequest;
 use App\Domains\Identity\Actions\ListUserIdsWithPermissionAction;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
+use App\Support\PersonName;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -31,8 +32,8 @@ class NotifyRequestSubmittedAction
 
         $regarding = null;
         if ($request->regarding_type === 'student' && $request->regarding_id) {
-            $student = DB::table('students')->where('id', (int) $request->regarding_id)->first(['first_name', 'last_name']);
-            $regarding = $student ? trim($student->first_name.' '.$student->last_name) : null;
+            $student = DB::table('students')->where('id', (int) $request->regarding_id)->first(['first_name', 'middle_name', 'last_name']);
+            $regarding = $student ? PersonName::ofStudent($student) : null;
 
             // Every class the pupil is active in — a pupil can be in more than
             // one (a subject class beside the form class), and a class with no

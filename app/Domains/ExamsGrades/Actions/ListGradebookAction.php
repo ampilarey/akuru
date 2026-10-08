@@ -10,6 +10,7 @@ use App\Domains\ExamsGrades\Models\CompetencyAssessment;
 use App\Domains\ExamsGrades\Models\Exam;
 use App\Domains\ExamsGrades\Models\ExamMark;
 use App\Domains\ExamsGrades\Models\TermGrade;
+use App\Support\PersonName;
 use Illuminate\Support\Facades\DB;
 
 class ListGradebookAction
@@ -47,7 +48,7 @@ class ListGradebookAction
         $students = DB::table('students')
             ->whereIn('id', $studentIds)
             ->orderBy('last_name')
-            ->get(['id', 'first_name', 'last_name']);
+            ->get(['id', 'first_name', 'middle_name', 'last_name']);
 
         $rosterIds = $students->map(fn ($student): int => (int) $student->id)->all();
         $gradeItems = app(GradeItemRegistry::class)->items($classId, $subjectId, $termId, $rosterIds);
@@ -77,7 +78,7 @@ class ListGradebookAction
 
             return [
                 'student_id' => $studentId,
-                'name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'name' => PersonName::ofStudent($student),
                 'marks' => $exams->mapWithKeys(function (Exam $exam) use ($studentMarks) {
                     $mark = $studentMarks[$exam->id] ?? null;
 

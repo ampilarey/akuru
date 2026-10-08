@@ -4,6 +4,7 @@ namespace App\Domains\Academics\Actions;
 
 use App\Domains\Academics\Enums\MeetingBookingStatus;
 use App\Domains\Academics\Models\MeetingSlot;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -44,7 +45,7 @@ class ListMeetingSlotsAction
             ->keyBy('id');
         $students = DB::table('students')
             ->whereIn('id', $slots->flatMap->bookings->pluck('student_id')->unique()->filter())
-            ->get(['id', 'first_name', 'last_name'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name'])
             ->keyBy('id');
 
         return $slots->map(function (MeetingSlot $slot) use ($teachers, $classes, $rooms, $students): array {
@@ -82,7 +83,7 @@ class ListMeetingSlotsAction
                     return [
                         'id' => $booking->id,
                         'student_id' => $booking->student_id,
-                        'student_name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                        'student_name' => PersonName::ofStudent($student),
                         'status' => $booking->status?->value ?? (string) $booking->status,
                     ];
                 })->values()->all(),

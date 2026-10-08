@@ -5,6 +5,7 @@ namespace App\Domains\ExamsGrades\Actions;
 use App\Domains\ExamsGrades\Enums\ReportCardStatus;
 use App\Domains\ExamsGrades\Models\ReportCard;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -34,7 +35,7 @@ class ListPublishedReportCardsForGuardianAction
             ->get();
 
         $terms = DB::table('terms')->whereIn('id', $cards->pluck('term_id'))->pluck('name', 'id');
-        $students = DB::table('students')->whereIn('id', $ids)->get(['id', 'first_name', 'last_name'])->keyBy('id');
+        $students = DB::table('students')->whereIn('id', $ids)->get(['id', 'first_name', 'middle_name', 'last_name'])->keyBy('id');
 
         return $cards->map(function (ReportCard $card) use ($terms, $students) {
             $student = $students[$card->student_id] ?? null;
@@ -42,7 +43,7 @@ class ListPublishedReportCardsForGuardianAction
             return [
                 'id' => $card->id,
                 'student_id' => $card->student_id,
-                'student_name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'student_name' => PersonName::ofStudent($student),
                 'term_name' => $terms[$card->term_id] ?? null,
                 'published_at' => $card->published_at?->toDateTimeString(),
                 'document_id' => $card->document_id,

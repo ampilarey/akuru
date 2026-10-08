@@ -4,6 +4,7 @@ namespace App\Domains\ExamsGrades\Actions;
 
 use App\Domains\Media\Actions\StoreGeneratedDocumentAction;
 use App\Support\Contracts\DocumentRendererInterface;
+use App\Support\PersonName;
 use Illuminate\Support\Facades\DB;
 
 class GenerateTransferCertificateAction
@@ -31,7 +32,7 @@ class GenerateTransferCertificateAction
             'dir' => 'ltr',
             'student' => [
                 'id' => $studentId,
-                'name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'name' => PersonName::ofStudent($student),
                 'number' => $student->student_id ?? null,
                 'status' => $student->status ?? null,
             ],
@@ -42,7 +43,7 @@ class GenerateTransferCertificateAction
             'student',
             $studentId,
             'transfer_certificate',
-            sprintf('Transfer certificate — %s', trim(($student->first_name ?? '').' '.($student->last_name ?? ''))),
+            sprintf('Transfer certificate — %s', PersonName::ofStudent($student)),
             $html,
             'html',
             $actorId,

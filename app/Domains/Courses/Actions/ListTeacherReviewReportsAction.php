@@ -6,6 +6,7 @@ use App\Domains\Courses\Models\Activity;
 use App\Domains\Courses\Models\Assessment;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Progress\Actions\ListScoredAttemptsAction;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -117,7 +118,7 @@ class ListTeacherReviewReportsAction
             'activity_id' => isset($row['activity_id']) ? (int) $row['activity_id'] : null,
             'assessment_id' => isset($row['assessment_id']) ? (int) $row['assessment_id'] : null,
             'student_id' => isset($row['student_id']) ? (int) $row['student_id'] : null,
-            'student_name' => $student ? trim(($student->first_name ?? '').' '.($student->last_name ?? '')) : '',
+            'student_name' => $student ? PersonName::ofStudent($student) : '',
             'course_id' => isset($row['course_id']) ? (int) $row['course_id'] : null,
             'course_title' => $course ? (string) $course->title : '',
             'title' => (string) ($activity?->title ?? $assessment?->title ?? ($kind === 'assessment' ? 'Assessment' : 'Activity')),

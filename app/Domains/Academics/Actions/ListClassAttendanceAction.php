@@ -4,6 +4,7 @@ namespace App\Domains\Academics\Actions;
 
 use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Models\ClassAttendance;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -37,7 +38,7 @@ class ListClassAttendanceAction
     {
         $students = DB::table('students')
             ->whereIn('id', $rows->pluck('student_id')->unique())
-            ->get(['id', 'first_name', 'last_name', 'student_id'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'student_id'])
             ->keyBy('id');
         $classes = DB::table('classes')
             ->whereIn('id', $rows->pluck('class_id')->unique())
@@ -51,7 +52,7 @@ class ListClassAttendanceAction
             return [
                 'id' => $row->id,
                 'student_id' => $row->student_id,
-                'student_name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'student_name' => PersonName::ofStudent($student),
                 'student_number' => $student->student_id ?? null,
                 'class_id' => $row->class_id,
                 'class_name' => trim(($class->name ?? '').' '.($class->section ?? '')),
@@ -142,7 +143,7 @@ class ListClassAttendanceAction
 
         $students = DB::table('students')
             ->whereIn('id', $rows->pluck('student_id'))
-            ->get(['id', 'first_name', 'last_name', 'student_id'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'student_id'])
             ->keyBy('id');
 
         return $rows->map(function ($row) use ($students) {
@@ -150,7 +151,7 @@ class ListClassAttendanceAction
 
             return [
                 'student_id' => (int) $row->student_id,
-                'student_name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'student_name' => PersonName::ofStudent($student),
                 'student_number' => $student->student_id ?? null,
                 'absent_days' => (int) $row->absent_days,
             ];

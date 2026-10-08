@@ -4,6 +4,7 @@ namespace App\Domains\ExamsGrades\Actions;
 
 use App\Domains\ExamsGrades\Models\Award;
 use App\Domains\ExamsGrades\Models\StudentAward;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -31,10 +32,10 @@ class ListAwardsAction
         return DB::table('students')
             ->orderBy('last_name')
             ->orderBy('first_name')
-            ->get(['id', 'first_name', 'last_name', 'student_id'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'student_id'])
             ->map(fn ($row) => [
                 'id' => (int) $row->id,
-                'name' => trim(($row->first_name ?? '').' '.($row->last_name ?? '')),
+                'name' => PersonName::ofStudent($row),
                 'number' => $row->student_id,
             ]);
     }
@@ -54,7 +55,7 @@ class ListAwardsAction
 
         $students = DB::table('students')
             ->whereIn('id', $rows->pluck('student_id')->unique())
-            ->get(['id', 'first_name', 'last_name', 'student_id'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'student_id'])
             ->keyBy('id');
 
         return $rows->map(function (StudentAward $row) use ($students) {
@@ -63,7 +64,7 @@ class ListAwardsAction
             return [
                 'id' => $row->id,
                 'student_id' => $row->student_id,
-                'student_name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'student_name' => PersonName::ofStudent($student),
                 'student_number' => $student->student_id ?? null,
                 'award' => $row->award?->title,
                 'level' => $row->award?->level?->value,

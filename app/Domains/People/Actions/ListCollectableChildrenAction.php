@@ -2,6 +2,7 @@
 
 namespace App\Domains\People\Actions;
 
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -41,10 +42,10 @@ class ListCollectableChildrenAction
             // Item 13: an unverified link collects nobody.
             ->where('guardian_student.verification_status', 'verified')
             ->orderBy('students.first_name')
-            ->get(['students.id', 'students.first_name', 'students.last_name', 'students.student_id'])
+            ->get(['students.id', 'students.first_name', 'students.middle_name', 'students.last_name', 'students.student_id'])
             ->map(fn ($row): array => [
                 'id' => (int) $row->id,
-                'name' => trim($row->first_name.' '.$row->last_name),
+                'name' => PersonName::ofStudent($row),
                 'student_number' => $row->student_id,
             ])
             ->values();

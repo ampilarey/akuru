@@ -4,6 +4,7 @@ namespace App\Domains\Portal\Actions;
 
 use App\Domains\Courses\Actions\ListEnrolmentsMadeByAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
+use App\Support\PersonName;
 
 /**
  * *My account* (docs/SIGN_IN_PLAN.md ID2b): the home of a signed-in person
@@ -34,7 +35,7 @@ class ComposeAccountHomeAction
             'children_waiting' => app(ListGuardianChildrenAction::class)->executePendingForGuardianUserId($userId)
                 ->map(fn (object $child): array => [
                     'id' => (int) $child->id,
-                    'name' => trim(($child->first_name ?? '').' '.($child->last_name ?? '')),
+                    'name' => PersonName::ofStudent($child),
                     'refused' => $child->verification_status === 'rejected',
                 ])
                 ->values()

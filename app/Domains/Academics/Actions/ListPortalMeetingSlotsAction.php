@@ -7,6 +7,7 @@ use App\Domains\Academics\Enums\MeetingBookingStatus;
 use App\Domains\Academics\Enums\MeetingSlotStatus;
 use App\Domains\Academics\Models\MeetingBooking;
 use App\Domains\Academics\Models\MeetingSlot;
+use App\Support\PersonName;
 use Illuminate\Support\Facades\DB;
 
 class ListPortalMeetingSlotsAction
@@ -80,7 +81,7 @@ class ListPortalMeetingSlotsAction
 
         $students = DB::table('students')
             ->whereIn('id', $ids)
-            ->get(['id', 'first_name', 'last_name'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name'])
             ->keyBy('id');
 
         $serializedBookings = $bookings->map(function (MeetingBooking $booking) use ($slotRows, $students): array {
@@ -91,7 +92,7 @@ class ListPortalMeetingSlotsAction
                 'id' => $booking->id,
                 'meeting_slot_id' => $booking->meeting_slot_id,
                 'student_id' => $booking->student_id,
-                'student_name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'student_name' => PersonName::ofStudent($student),
                 'title' => $slot['title'] ?? '',
                 'date' => $slot['date'] ?? null,
                 'start_time' => $slot['start_time'] ?? null,

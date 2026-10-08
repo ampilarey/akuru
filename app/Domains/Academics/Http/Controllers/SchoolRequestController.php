@@ -15,6 +15,7 @@ use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -53,7 +54,7 @@ class SchoolRequestController extends Controller
             'teacherId' => $teacherId,
             'leaveTypes' => app(ListLeaveTypesAction::class)->execute(true)->values(),
             'children' => app(ListGuardianChildrenAction::class)->executeForGuardianUserId($userId)
-                ->map(fn (object $child) => ['id' => (int) $child->id, 'name' => trim($child->first_name.' '.$child->last_name)])
+                ->map(fn (object $child) => ['id' => (int) $child->id, 'name' => PersonName::ofStudent($child)])
                 ->values(),
         ]);
     }

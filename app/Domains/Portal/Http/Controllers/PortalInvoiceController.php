@@ -6,6 +6,7 @@ use App\Domains\Finance\Actions\ListPortalInvoicesAction;
 use App\Domains\Finance\Actions\PayPortalInvoiceAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,7 +29,7 @@ class PortalInvoiceController extends Controller
         return Inertia::render('Portal/Invoices', [
             'children' => $children->map(fn ($child) => [
                 'id' => $child->id,
-                'name' => trim(($child->first_name ?? '').' '.($child->last_name ?? '')),
+                'name' => PersonName::ofStudent($child),
             ])->values(),
             'studentId' => $studentId,
             'invoices' => $studentId

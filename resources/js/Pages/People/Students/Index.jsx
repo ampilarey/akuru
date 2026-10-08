@@ -20,6 +20,7 @@ export default function Index({
 
     const createForm = useForm({
         first_name: '',
+        middle_name: '',
         last_name: '',
         date_of_birth: '',
         gender: '',
@@ -92,6 +93,14 @@ export default function Index({
                         className="form-input mt-1 w-full"
                         value={createForm.data.first_name}
                         onChange={(e) => createForm.setData('first_name', e.target.value)}
+                    />
+                </label>
+                <label className="text-xs text-gray-500">
+                    Middle name
+                    <input
+                        className="form-input mt-1 w-full"
+                        value={createForm.data.middle_name}
+                        onChange={(e) => createForm.setData('middle_name', e.target.value)}
                     />
                 </label>
                 <label className="text-xs text-gray-500">
@@ -233,7 +242,7 @@ export default function Index({
                             <tr key={student.id} className="border-t">
                                 <td className="px-3 py-2">
                                     <Link href={`/people/students/${student.id}`} className="text-[#7C2D37] hover:underline">
-                                        {student.first_name} {student.last_name}
+                                        {[student.first_name, student.middle_name, student.last_name].filter(Boolean).join(' ')}
                                     </Link>
                                 </td>
                                 <td className="px-3 py-2">{student.student_id}</td>

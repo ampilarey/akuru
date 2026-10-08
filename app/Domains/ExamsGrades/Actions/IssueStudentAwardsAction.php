@@ -6,6 +6,7 @@ use App\Domains\ExamsGrades\Models\Award;
 use App\Domains\ExamsGrades\Models\StudentAward;
 use App\Domains\Media\Actions\StoreGeneratedDocumentAction;
 use App\Support\Contracts\DocumentRendererInterface;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -56,7 +57,7 @@ class IssueStudentAwardsAction
                     'level' => $award->level->value,
                 ],
                 'student' => [
-                    'name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                    'name' => PersonName::ofStudent($student),
                     'number' => $student->student_id ?? null,
                 ],
                 'awarded_date' => $date,

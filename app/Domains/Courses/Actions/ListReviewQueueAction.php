@@ -7,6 +7,7 @@ use App\Domains\Courses\Models\Assessment;
 use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\Rubric;
 use App\Domains\Progress\Actions\ListPendingReviewsAction;
+use App\Support\PersonName;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -57,7 +58,7 @@ class ListReviewQueueAction
 
             $student = $students->get($row['student_id'] ?? 0);
             $course = $courses->get($row['course_id'] ?? 0);
-            $row['student_name'] = $student ? trim(($student->first_name ?? '').' '.($student->last_name ?? '')) : '';
+            $row['student_name'] = $student ? PersonName::ofStudent($student) : '';
             $row['course_title'] = $course ? (string) $course->title : '';
             $row['waiting_hours'] = $this->waitingHours($row['submitted_at'] ?? null);
 
@@ -73,7 +74,7 @@ class ListReviewQueueAction
     {
         return DB::table('students')
             ->whereIn('id', array_values(array_filter(array_map('intval', $ids))) ?: [0])
-            ->get(['id', 'first_name', 'last_name'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name'])
             ->keyBy('id');
     }
 

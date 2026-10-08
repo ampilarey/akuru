@@ -2,6 +2,7 @@
 
 namespace App\Domains\People\Actions;
 
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -19,6 +20,7 @@ class ListStudentsAction
                 'students.id',
                 'students.student_id',
                 'students.first_name',
+                'students.middle_name',
                 'students.last_name',
                 'students.first_name_dhivehi',
                 'students.last_name_dhivehi',
@@ -44,6 +46,9 @@ class ListStudentsAction
                     // matched on its own, so "Fatima Yoosuf" found nobody
                     // while "Fatima" found her (sign-up walk, STATUS §5fq).
                     ->orWhereRaw("CONCAT(students.first_name, ' ', students.last_name) like ?", [$like])
+                    // R4b: and the middle name, alone or in the whole name.
+                    ->orWhere('students.middle_name', 'like', $like)
+                    ->orWhereRaw(PersonName::studentSql().' like ?', [$like])
                     ->orWhere('students.first_name_dhivehi', 'like', $like)
                     ->orWhere('students.last_name_dhivehi', 'like', $like)
                     ->orWhere('students.first_name_arabic', 'like', $like)

@@ -13,6 +13,7 @@ use App\Domains\Website\Actions\SaveEventAction;
 use App\Domains\Website\Models\Event;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -61,7 +62,7 @@ class EventAdminController extends Controller
             'registrations' => app(ListEventRegistrationsAction::class)->execute($event->id)->values(),
             'students' => app(ListStudentsAction::class)->execute()->map(fn ($student) => [
                 'id' => $student->id,
-                'name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'name' => PersonName::ofStudent($student),
             ])->values(),
             'types' => ['conference', 'workshop', 'seminar', 'competition', 'celebration', 'meeting', 'other'],
             'statuses' => ['draft', 'published', 'cancelled', 'completed'],

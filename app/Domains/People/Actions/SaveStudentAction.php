@@ -79,6 +79,8 @@ class SaveStudentAction
             'class_id',
             'student_id',
             'admission_date',
+            // R4b: the office's form carries the middle name too.
+            'middle_name',
             'first_name_dhivehi',
             'last_name_dhivehi',
             'first_name_arabic',

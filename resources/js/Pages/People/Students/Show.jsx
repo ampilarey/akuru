@@ -120,6 +120,7 @@ export default function Show({
     const fieldForm = useForm({ values });
     const editForm = useForm({
         first_name: student.first_name || '',
+        middle_name: student.middle_name || '',
         last_name: student.last_name || '',
         first_name_dhivehi: student.first_name_dhivehi || '',
         last_name_dhivehi: student.last_name_dhivehi || '',
@@ -159,7 +160,7 @@ export default function Show({
     };
 
     return (
-        <AppShell title={`${student.first_name} ${student.last_name}`}>
+        <AppShell title={[student.first_name, student.middle_name, student.last_name].filter(Boolean).join(' ')}>
             <p className="mb-4 text-sm text-gray-600">
                 {student.student_id || 'No student number'} · {student.status}
             </p>
@@ -200,6 +201,10 @@ export default function Show({
                         <label className="text-xs text-gray-500">
                             First name
                             <input className="form-input mt-1 w-full" value={editForm.data.first_name} onChange={(e) => editForm.setData('first_name', e.target.value)} />
+                        </label>
+                        <label className="text-xs text-gray-500">
+                            Middle name
+                            <input className="form-input mt-1 w-full" value={editForm.data.middle_name} onChange={(e) => editForm.setData('middle_name', e.target.value)} />
                         </label>
                         <label className="text-xs text-gray-500">
                             Last name

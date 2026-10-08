@@ -5,6 +5,7 @@ namespace App\Domains\ExamsGrades\Actions;
 use App\Domains\ExamsGrades\Enums\AwardLevel;
 use App\Domains\ExamsGrades\Models\StudentAward;
 use App\Domains\People\Actions\HasActiveConsentAction;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -23,7 +24,7 @@ class ListPublicAchievementsAction
 
         $students = DB::table('students')
             ->whereIn('id', $rows->pluck('student_id')->unique())
-            ->get(['id', 'first_name', 'last_name'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name'])
             ->keyBy('id');
 
         $consent = app(HasActiveConsentAction::class);
@@ -43,7 +44,7 @@ class ListPublicAchievementsAction
             return [
                 'id' => $row->id,
                 'title' => $row->award?->title,
-                'student_name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                'student_name' => PersonName::ofStudent($student),
                 'awarded_date' => $row->awarded_date?->toDateString(),
                 'photo' => $photo,
                 'photo_allowed' => $showPhoto,

@@ -6,6 +6,7 @@ use App\Domains\Library\Actions\ListReaderLibraryForFamilyAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\PersonName;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,7 +29,7 @@ class GuardianChildLibraryController extends Controller
         return Inertia::render('Portal/ChildLibrary', [
             'child' => [
                 'id' => (int) $child->id,
-                'name' => trim($child->first_name.' '.$child->last_name),
+                'name' => PersonName::ofStudent($child),
                 'has_account' => $child->user_id !== null,
             ],
             'continue' => $library['continue'],

@@ -4,6 +4,7 @@ namespace App\Domains\Forms\Actions;
 
 use App\Domains\Forms\Models\Form;
 use App\Domains\Forms\Models\FormResponse;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -43,8 +44,8 @@ class ListFormResponsesAction
             ? collect()
             : DB::table('students')
                 ->whereIn('id', $responses->pluck('student_id')->filter())
-                ->get(['id', 'first_name', 'last_name'])
-                ->mapWithKeys(fn ($row): array => [(int) $row->id => trim($row->first_name.' '.$row->last_name)]);
+                ->get(['id', 'first_name', 'middle_name', 'last_name'])
+                ->mapWithKeys(fn ($row): array => [(int) $row->id => PersonName::ofStudent($row)]);
 
         return [
             'form' => [

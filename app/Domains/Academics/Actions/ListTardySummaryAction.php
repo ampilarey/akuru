@@ -4,6 +4,7 @@ namespace App\Domains\Academics\Actions;
 
 use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Models\ClassAttendance;
+use App\Support\PersonName;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -47,7 +48,7 @@ class ListTardySummaryAction
 
         $students = DB::table('students')
             ->whereIn('id', $rows->pluck('student_id')->unique())
-            ->get(['id', 'first_name', 'last_name', 'student_id'])
+            ->get(['id', 'first_name', 'middle_name', 'last_name', 'student_id'])
             ->keyBy('id');
 
         $absences = $this->absenceDaysFor(
@@ -72,7 +73,7 @@ class ListTardySummaryAction
 
                 return [
                     'student_id' => (int) $studentId,
-                    'student_name' => trim(($student->first_name ?? '').' '.($student->last_name ?? '')),
+                    'student_name' => PersonName::ofStudent($student),
                     'student_number' => $student->student_id ?? null,
                     'tardies' => $tardies,
                     'minutes_late' => (int) ($late->minutes ?? 0),
