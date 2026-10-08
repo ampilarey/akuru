@@ -133,6 +133,7 @@
         'isha' => __('public.Isha'),
     ];
 @endphp
+@php($ptMonthNames = array_map(fn ($month) => \Carbon\Carbon::create(2000, $month, 1)->translatedFormat('F'), range(1, 12)))
 <script>
 (function () {
     'use strict';
@@ -148,7 +149,8 @@
     };
     var API = '/api/v1/prayer-times';
     var MALE_FALLBACK = { id: 102, atollLatin: 'Kaafu', nameLatin: 'Malé' };
-    var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    // The month's name in the page's language (BACKLOG C20, LT5b).
+    var MONTHS = {{ \Illuminate\Support\Js::from($ptMonthNames) }};
 
     var timeSkew = {{ now()->timestamp * 1000 }} - Date.now();
     function getMVT() { return new Date(Date.now() + timeSkew + 5 * 3600 * 1000); }

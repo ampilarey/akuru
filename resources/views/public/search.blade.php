@@ -76,11 +76,11 @@
                             </div>
                         @endif
                         <div class="min-w-0">
-                            <p class="font-semibold text-gray-900 group-hover:text-brandMaroon-600 transition-colors">{{ $course->title }}</p>
+                            <p class="font-semibold text-gray-900 group-hover:text-brandMaroon-600 transition-colors" data-office-words>{{ $course->title }}</p>
                             <p class="text-sm text-gray-500 line-clamp-2 mt-0.5">{{ $course->short_desc }}</p>
                             <div class="flex gap-3 mt-1 text-xs text-gray-400">
-                                @if($course->category)<span>{{ $course->category->name }}</span>@endif
-                                <span class="capitalize">{{ $course->status }}</span>
+                                @if($course->category)<span data-office-words>{{ $course->category->name }}</span>@endif
+                                <span>{{ ['open' => __('public.Open'), 'upcoming' => __('public.Upcoming'), 'closed' => __('public.Closed')][$course->status] ?? $course->status }}</span>
                                 @if($course->fee)<span>MVR {{ number_format($course->fee, 2) }}</span>@else<span class="text-green-600">{{ __('site.free') }}</span>@endif
                             </div>
                         </div>
@@ -140,7 +140,7 @@
                     <a href="{{ $postRoute }}" class="flex items-start gap-4 p-4 card hover:shadow-md transition-shadow group">
                         <div class="min-w-0 flex-1">
                             <div class="flex items-center gap-2 mb-0.5">
-                                <time class="text-xs text-gray-400">{{ $post->published_at->format('d M Y') }}</time>
+                                <time class="text-xs text-gray-400">{{ $post->published_at->translatedFormat('d M Y') }}</time>
                             </div>
                             <p class="font-semibold text-gray-900 group-hover:text-brandMaroon-600 transition-colors">{{ $post->title }}</p>
                             <p class="text-sm text-gray-500 line-clamp-2 mt-0.5">{{ $post->excerpt }}</p>
@@ -165,7 +165,7 @@
                     <a href="{{ route('public.events.show', $event->slug ?? $event->id) }}"
                        class="flex items-start gap-4 p-4 card hover:shadow-md transition-shadow group">
                         <div class="shrink-0 text-center bg-brandMaroon-50 rounded-lg px-3 py-2 min-w-14">
-                            <p class="text-xs text-brandMaroon-600 font-medium uppercase">{{ $event->start_date->format('M') }}</p>
+                            <p class="text-xs text-brandMaroon-600 font-medium uppercase">{{ $event->start_date->translatedFormat('M') }}</p>
                             <p class="text-2xl font-bold text-brandMaroon-900 leading-none">{{ $event->start_date->format('d') }}</p>
                         </div>
                         <div class="min-w-0">

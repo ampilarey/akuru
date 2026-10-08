@@ -45,7 +45,7 @@
                 <!-- Event Meta -->
                 @php 
 $eventDate = $event->start_date ?? null; 
-$eventTime = ($event->start_time && is_object($event->start_time)) ? $event->start_time->format('g:i A') : (($event->start_time && is_string($event->start_time)) ? $event->start_time : null); 
+$eventTime = ($event->start_time && is_object($event->start_time)) ? $event->start_time->translatedFormat('g:i A') : (($event->start_time && is_string($event->start_time)) ? $event->start_time : null); 
 @endphp
                 <div class="flex flex-wrap items-center gap-6 text-brandGray-600 mb-6">
                     @if($eventDate)
@@ -53,7 +53,7 @@ $eventTime = ($event->start_time && is_object($event->start_time)) ? $event->sta
                         <svg class="w-5 h-5 me-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
                         </svg>
-                        <span>{{ \Carbon\Carbon::parse($eventDate)->format('F j, Y') }}</span>
+                        <span>{{ \Carbon\Carbon::parse($eventDate)->translatedFormat('j F Y') }}</span>
                     </div>
                     @endif
                     
@@ -128,7 +128,7 @@ $eventTime = ($event->start_time && is_object($event->start_time)) ? $event->sta
                             @if($eventDate)
                             <div>
                                 <span class="text-sm font-medium text-brandGray-700">{{ __('public.Date') }}</span>
-                                <p class="text-brandGray-900">{{ \Carbon\Carbon::parse($eventDate)->format('F j, Y') }}</p>
+                                <p class="text-brandGray-900">{{ \Carbon\Carbon::parse($eventDate)->translatedFormat('j F Y') }}</p>
                             </div>
                             @endif
                             
@@ -179,12 +179,12 @@ $eventTime = ($event->start_time && is_object($event->start_time)) ? $event->sta
                         @endif
                         <form method="POST" action="{{ route('public.events.register', $event->slug ?: $event->id) }}" class="space-y-3">
                             @csrf
-                            <input class="form-input w-full" name="name" value="{{ old('name') }}" placeholder="{{ __('public.Name') }}" required>
+                            <input class="form-input w-full" name="name" value="{{ old('name') }}" placeholder="{{ __('public.Name') }}" aria-label="{{ __('public.Name') }}" required>
                             @error('name')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
-                            <input class="form-input w-full" type="email" name="email" value="{{ old('email') }}" placeholder="{{ __('public.Email') }}" required>
+                            <input class="form-input w-full" type="email" name="email" value="{{ old('email') }}" placeholder="{{ __('public.Email') }}" aria-label="{{ __('public.Email') }}" required>
                             @error('email')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
                             @error('event_id')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
-                            <input class="form-input w-full" name="phone" value="{{ old('phone') }}" placeholder="{{ __('public.Phone') }}">
+                            <input class="form-input w-full" name="phone" value="{{ old('phone') }}" placeholder="{{ __('public.Phone') }}" aria-label="{{ __('public.Phone') }}">
                             <button type="submit" class="btn-primary w-full text-center">{{ __('public.Register Now') }}</button>
                         </form>
                     </div>
@@ -192,13 +192,13 @@ $eventTime = ($event->start_time && is_object($event->start_time)) ? $event->sta
 
                     <!-- Add to Calendar -->
                     <div class="bg-brandBeige-50 border border-brandBeige-200 rounded-lg p-4">
-                        <h3 class="text-sm font-semibold text-gray-700 mb-2">Add to Calendar</h3>
+                        <h3 class="text-sm font-semibold text-gray-700 mb-2">{{ __('public.Add to Calendar') }}</h3>
                         <a href="{{ route('public.events.calendar', $event->slug ?? $event->id) }}"
                            class="inline-flex items-center gap-2 text-sm text-brandMaroon-600 hover:text-brandMaroon-800 font-medium">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                             </svg>
-                            Download .ics (Apple / Google / Outlook)
+                            {{ __('public.Download the calendar file (Apple, Google, Outlook)') }}
                         </a>
                     </div>
 

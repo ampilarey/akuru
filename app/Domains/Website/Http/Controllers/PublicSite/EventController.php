@@ -147,7 +147,7 @@ class EventController extends Controller
     {
         // Validate event can accept registrations
         if ($event->status !== 'published' || ! $event->is_public) {
-            return back()->with('error', 'Registration is not available for this event.');
+            return back()->with('error', __('public.Registration is not available for this event.'));
         }
 
         // Validate registration data
@@ -183,7 +183,7 @@ class EventController extends Controller
         }
 
         return redirect()->route('public.events.show', $event)
-            ->with('success', 'Registration submitted successfully!');
+            ->with('success', __('public.Registration submitted successfully!'));
     }
 
     public function registrationSuccess(EventRegistration $registration)

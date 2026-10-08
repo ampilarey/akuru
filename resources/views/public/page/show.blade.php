@@ -5,7 +5,7 @@
     <article class="max-w-4xl mx-auto">
         <!-- Header -->
         <header class="mb-8">
-            <h1 class="text-4xl font-bold text-brandMaroon-600 mb-4">{{ $page->title }}</h1>
+            <h1 class="text-4xl font-bold text-brandMaroon-600 mb-4" data-office-words>{{ $page->title }}</h1>
             
             @if($page->excerpt)
                 <p class="text-lg text-brandGray-600">{{ $page->excerpt }}</p>
@@ -31,7 +31,7 @@
         <!-- Footer -->
         <footer class="mt-12 pt-8 border-t border-brandGray-200">
             <div class="text-sm text-brandGray-500">
-                {{ __('public.Last updated') }} {{ $page->updated_at->format('F j, Y') }}
+                {{ __('public.Last updated') }} {{ $page->updated_at->translatedFormat('j F Y') }}
             </div>
         </footer>
     </article>

@@ -130,6 +130,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->hifzCycle();
         $this->readerCycle();
         $this->cmsCourseWalk();
+        $this->publicEventWalk();
         $this->familyCycle();
         $this->signupCycle();
         $this->schoolDayCycle();
@@ -2656,6 +2657,27 @@ class SmokeMarkerSeeder extends Seeder
             DB::table('courses')->whereIn('id', $courseIds)->delete();
         }
         DB::table('course_categories')->where('name', 'like', 'SMOKE Walk %')->delete();
+    }
+
+    /**
+     * An upcoming public event that takes registrations, for
+     * `site-pages-language.mjs` (BACKLOG C20, LT5b): the walk opens it under
+     * /dv and registers twice with the same email, so the walk's own
+     * registrations are cleared on every run.
+     */
+    private function publicEventWalk(): void
+    {
+        $start = now()->addMonths(2)->startOfDay()->setTime(9, 0);
+        DB::table('events')->updateOrInsert(['slug' => 'smoke-lang-event'], [
+            'title' => 'SMOKE-Lang-Event', 'description' => 'SMOKE-Lang-Event', 'location' => 'Malé',
+            'start_date' => $start, 'end_date' => $start->copy()->setTime(12, 0),
+            'type' => 'other', 'status' => 'published', 'registration_type' => 'required', 'is_public' => true,
+            'registration_deadline' => null, 'registration_start' => null, 'max_attendees' => null,
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+        $eventId = (int) DB::table('events')->where('slug', 'smoke-lang-event')->value('id');
+        DB::table('event_registrations')->where('event_id', $eventId)->where('email', 'like', 'smoke-lang-%')->delete();
+        DB::table('events')->where('id', $eventId)->update(['current_attendees' => 0]);
     }
 
     private function readerCycle(): void

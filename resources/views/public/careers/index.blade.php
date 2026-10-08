@@ -17,7 +17,7 @@
                         <p class="mt-2 text-brandGray-700">{{ $posting['description'] }}</p>
                     @endif
                     @if(!empty($posting['closes_at']))
-                        <p class="mt-2 text-sm text-brandGray-500">Closes {{ $posting['closes_at'] }}</p>
+                        <p class="mt-2 text-sm text-brandGray-500">{{ __('public.Closes :date', ['date' => \Carbon\Carbon::parse($posting['closes_at'])->translatedFormat('d M Y')]) }}</p>
                     @endif
                 </article>
             @endforeach
