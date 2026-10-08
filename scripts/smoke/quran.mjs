@@ -201,7 +201,7 @@ check('a range past the end of the surah is refused, and the author is told', re
 
 await build.locator('input[placeholder="Ayah end"]').fill('2');
 await build.locator('button:has-text("Save activity")').click();
-check('a recitation activity on ayahs 1–2 is built', await settles(admin, TITLE) && /teacher_marked/.test(await rowText(admin, TITLE)), await rowText(admin, TITLE) || (await text(admin)).slice(0, 160));
+check('a recitation activity on ayahs 1–2 is built', await settles(admin, TITLE) && /Teacher-marked/.test(await rowText(admin, TITLE)), await rowText(admin, TITLE) || (await text(admin)).slice(0, 160));
 
 // ------------------------------------------------------------- the student
 

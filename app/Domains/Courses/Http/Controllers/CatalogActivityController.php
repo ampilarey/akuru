@@ -10,6 +10,7 @@ use App\Domains\Courses\Models\Activity;
 use App\Domains\Courses\Models\Course;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,6 +34,7 @@ class CatalogActivityController extends Controller
             'skills' => ['listening', 'speaking', 'reading', 'writing'],
             ...app(ListArabicReferenceAction::class)->execute(activeOnly: true),
             'surahs' => app(ListQuranReferenceAction::class)->execute()['surahs'],
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -45,7 +47,7 @@ class CatalogActivityController extends Controller
         ]);
 
         return redirect()->route('catalog.courses.activities.index', $course)
-            ->with('success', 'Activity saved.');
+            ->with('success', __('teach.flash_activity_saved'));
     }
 
     public function update(Request $request, int $course, int $activity): RedirectResponse
@@ -56,7 +58,7 @@ class CatalogActivityController extends Controller
         app(SaveActivityAction::class)->execute($this->payload($request, $course), $model);
 
         return redirect()->route('catalog.courses.activities.index', $course)
-            ->with('success', 'Activity updated.');
+            ->with('success', __('teach.flash_activity_updated'));
     }
 
     public function destroy(Request $request, int $course, int $activity): RedirectResponse
@@ -66,7 +68,7 @@ class CatalogActivityController extends Controller
         Activity::query()->where('course_id', $course)->findOrFail($activity)->delete();
 
         return redirect()->route('catalog.courses.activities.index', $course)
-            ->with('success', 'Activity deleted.');
+            ->with('success', __('teach.flash_activity_deleted'));
     }
 
     public function export(Request $request, int $course): StreamedResponse

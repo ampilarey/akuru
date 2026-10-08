@@ -27,8 +27,8 @@
  * nobody should discover it by pointing the runner at a live school.
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
- *   node scripts/smoke/all.mjs --read     the six that only look
- *   node scripts/smoke/all.mjs --write    the thirty-one that change data
+ *   node scripts/smoke/all.mjs --read     the eleven that only look
+ *   node scripts/smoke/all.mjs --write    the thirty-nine that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -147,6 +147,7 @@ const WALKS = [
     { name: 'two-factor', writes: true, asks: 'Can a person turn on two-step sign-in, and does a password alone then stop at the code?' },
     { name: 'public-rtl', writes: false, asks: 'Does the website read right to left in Dhivehi and Arabic, on a desk and on a phone?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
+    { name: 'course-screens-language', writes: false, asks: 'Do the screens teachers build courses on read in Dhivehi and Arabic, with a name on every field?' },
 ];
 
 const args = process.argv.slice(2);

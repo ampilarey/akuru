@@ -13,6 +13,7 @@ use App\Domains\Courses\Models\Question;
 use App\Domains\ExamsGrades\Actions\ListStandardsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -61,6 +62,7 @@ class CatalogQuestionController extends Controller
             )),
             'normalizationFlags' => NormalizeTextAnswerAction::flags(),
             'normalizationModes' => NormalizeTextAnswerAction::modes(),
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -72,7 +74,7 @@ class CatalogQuestionController extends Controller
             'file' => $request->file('file'),
         ]);
 
-        return redirect()->route('catalog.questions.index')->with('success', 'Question saved.');
+        return redirect()->route('catalog.questions.index')->with('success', __('teach.flash_question_saved'));
     }
 
     public function update(Request $request, int $question): RedirectResponse
@@ -83,7 +85,7 @@ class CatalogQuestionController extends Controller
             'file' => $request->file('file'),
         ], $model);
 
-        return redirect()->route('catalog.questions.index')->with('success', 'Question updated.');
+        return redirect()->route('catalog.questions.index')->with('success', __('teach.flash_question_updated'));
     }
 
     public function export(Request $request): StreamedResponse
