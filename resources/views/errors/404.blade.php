@@ -24,7 +24,7 @@
             
             <div class="text-sm text-gray-500">
                 <p>{{ __('public.Need help?') }}</p>
-                <a href="{{ route('public.contact.create', app()->getLocale()) }}" class="font-medium text-brandMaroon-600 hover:text-brandGold-600">
+                <a href="{{ route('public.contact.create') }}" class="font-medium text-brandMaroon-600 hover:text-brandGold-600">
                     {{ __('public.Contact Us') }}
                 </a>
             </div>
@@ -37,13 +37,13 @@
                 <a href="{{ route('public.courses.index') }}" class="text-sm text-brandMaroon-600 hover:text-brandGold-600 font-medium">
                     {{ __('public.Courses') }}
                 </a>
-                <a href="{{ route('public.news.index', app()->getLocale()) }}" class="text-sm text-brandMaroon-600 hover:text-brandGold-600 font-medium">
+                <a href="{{ route('public.news.index') }}" class="text-sm text-brandMaroon-600 hover:text-brandGold-600 font-medium">
                     {{ __('public.News') }}
                 </a>
-                <a href="{{ route('public.events.index', app()->getLocale()) }}" class="text-sm text-brandGold-600 hover:text-brandMaroon-600 font-medium">
+                <a href="{{ route('public.events.index') }}" class="text-sm text-brandGold-600 hover:text-brandMaroon-600 font-medium">
                     {{ __('public.Events') }}
                 </a>
-                <a href="{{ route('public.admissions.create', app()->getLocale()) }}" class="text-sm text-brandMaroon-600 hover:text-brandGold-600 font-medium">
+                <a href="{{ route('public.admissions.create') }}" class="text-sm text-brandMaroon-600 hover:text-brandGold-600 font-medium">
                     {{ __('public.Admissions') }}
                 </a>
             </div>

@@ -213,8 +213,10 @@ STATUS §5oz)**. The learner's own refusals are in the page's language since
 STATUS §5pb, the course authors', markers' and certificate office's since
 STATUS §5pc, and the offerings' and the Qur'an component's since STATUS §5pd
 (BACKLOG C19). The Library's writers' and reviewers' since STATUS §5pe
-(BACKLOG C20), and the Library office's since STATUS §5pf. The console
-commands stay English.
+(BACKLOG C20), and the Library office's since STATUS §5pf. The public
+site's front door (header, footer, home, error pages, admissions, contact)
+reads in the page's language since STATUS §5pg; its other pages are BACKLOG
+C20's LT5 and LT6. The console commands stay English.
 
 ## Found by the middle-name walk (2026-10-08)
 
@@ -2160,6 +2162,18 @@ They now say what came back on the row the button was on, in the page's
 language. A walk against `main`'s code says an unknown reviewer's refusal
 nowhere on the row, where `library-office-language.mjs` reads it there, in
 Dhivehi. STATUS §5pf.
+
+### 42. An applicant was thanked at `/dv/admissions/thanks?dv`
+
+**Fixed (2026-10-08, slice LT4) — found while building it.**
+
+`AdmissionController::store` redirected with `route('public.admissions.thanks',
+app()->getLocale())`, and the 404 and 500 pages built their links the same
+way. Those routes take no parameter, so Laravel put the language on the
+address as a query string: `/dv/admissions/thanks?dv`, `/ar/contact?ar`. The
+pages worked; the addresses were wrong to share. The language is already in
+the address `route()` writes. A walk against `main`'s code lands on `?dv`,
+where `front-door-language.mjs` lands without it. STATUS §5pg.
 
 ---
 

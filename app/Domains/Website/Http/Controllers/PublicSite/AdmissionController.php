@@ -75,11 +75,11 @@ class AdmissionController extends Controller
             if ($course && $course->status === 'open' && ! $course->isFull()) {
                 return redirect()
                     ->route('courses.checkout.show', $course)
-                    ->with('info', 'Your enquiry has been saved. Complete your enrollment below.');
+                    ->with('info', __('public.Your enquiry has been saved. Complete your enrollment below.'));
             }
         }
 
-        return redirect()->route('public.admissions.thanks', app()->getLocale())
+        return redirect()->route('public.admissions.thanks')
             ->with('success', __('public.admission_submitted'));
     }
 

@@ -32,7 +32,7 @@
          data-date="{{ $date }}"
          style="background:#fff;border:1.5px solid #E5E7EB;border-radius:1rem;padding:1.25rem 1.35rem;display:flex;flex-direction:column;gap:.75rem">
   <div style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
-    <span style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7C2D37">{{ $type }}</span>
+    <span style="font-size:.7rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#7C2D37">{{ in_array($type, ['ayah', 'hadith', 'saying', 'reminder'], true) ? __('public.daily_type_'.$type) : $type }}</span>
     <time style="font-size:.75rem;color:#6b7280">{{ $date }}</time>
   </div>
   @if($arabic !== '')
@@ -47,5 +47,5 @@
   @if($meta !== '')
   <p style="font-size:.8rem;color:#7C2D37;margin:0;font-weight:600">{{ $meta }}</p>
   @endif
-  <a href="{{ $href }}" style="font-size:.8rem;font-weight:600;color:#7C2D37;text-decoration:none;margin-top:auto">Open permalink</a>
+  <a href="{{ $href }}" style="font-size:.8rem;font-weight:600;color:#7C2D37;text-decoration:none;margin-top:auto">{{ __('public.Open permalink') }}</a>
 </article>

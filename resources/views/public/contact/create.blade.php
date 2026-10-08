@@ -103,7 +103,7 @@
                         <!-- Message -->
                         <div>
                             <label for="message" class="block text-sm font-medium text-brandGray-700 mb-2">
-                                {{ __('public.Message') }} <span class="text-red-500">*</span>
+                                {{ __('public.Your message') }} <span class="text-red-500">*</span>
                             </label>
                             <textarea name="message" id="message" rows="6" required
                                       class="w-full px-3 py-2 border border-brandGray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brandMaroon-500"
@@ -192,11 +192,11 @@
                         <div class="space-y-2 text-brandGray-600">
                             <div class="flex justify-between">
                                 <span>{{ __('public.Sunday - Thursday') }}</span>
-                                <span>8:00 AM - 4:00 PM</span>
+                                <span>{{ __('public.8:00 AM - 4:00 PM') }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>{{ __('public.Friday') }}</span>
-                                <span>8:00 AM - 12:00 PM</span>
+                                <span>{{ __('public.8:00 AM - 12:00 PM') }}</span>
                             </div>
                             <div class="flex justify-between">
                                 <span>{{ __('public.Saturday') }}</span>
@@ -210,7 +210,7 @@
                         <h3 class="text-xl font-semibold text-brandGray-900 mb-4">{{ __('public.Our Location') }}</h3>
                         <div class="aspect-video bg-brandGray-100 rounded-lg">
                             {{-- Set GOOGLE_MAPS_EMBED_URL in .env for exact location embed from Google Maps > Share > Embed --}}
-                            <iframe src="{{ config('services.google.maps_embed_url') }}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Akuru Institute - M. Guldhastha Aage, Muniya Magu, Malé"></iframe>
+                            <iframe src="{{ config('services.google.maps_embed_url') }}" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="{{ __('public.Akuru Institute') }} — {{ __('public.address') }}"></iframe>
                         </div>
                         <p class="text-sm text-brandGray-500 mt-2">{{ __('public.View larger map') }}</p>
                     </div>

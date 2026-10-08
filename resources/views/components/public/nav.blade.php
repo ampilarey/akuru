@@ -200,13 +200,13 @@
 
       {{-- ── Translate dropdown ── --}}
       <div class="relative" id="gt-wrapper">
-        <button onclick="toggleGT(event)" aria-label="Translate"
+        <button onclick="toggleGT(event)" aria-label="{{ __('public.Translate') }}"
                 class="nav-translate flex items-center gap-1 rounded-lg text-sm text-brandGray-600 hover:text-brandMaroon-600 hover:bg-brandBeige-100 border border-gray-200 transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                   d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"/>
           </svg>
-          <span class="hidden sm:inline text-xs font-medium">Translate</span>
+          <span class="hidden sm:inline text-xs font-medium">{{ __('public.Translate') }}</span>
         </button>
 
         <div id="gt-dropdown"
@@ -227,7 +227,7 @@
 
           {{-- Search --}}
           <div class="px-2 pb-2">
-            <input id="gt-search" type="text" placeholder="Search other language…"
+            <input id="gt-search" type="text" placeholder="{{ __('public.Search other language…') }}"
                    oninput="filterGTLangs(this.value)"
                    class="w-full px-3 py-1.5 text-xs border border-gray-200 rounded-lg focus:outline-none focus:border-brandMaroon-400 placeholder-gray-400">
           </div>
@@ -302,7 +302,7 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                   </svg>
-                  Log out
+                  {{ __('public.Log out') }}
                 </button>
               </form>
             </div>
@@ -310,7 +310,7 @@
         @else
           <a href="{{ route('login') }}"
              class="inline-flex items-center gap-1 text-sm font-medium text-brandGray-600 hover:text-brandMaroon-600 border border-gray-200 px-3 py-1.5 rounded-lg hover:bg-brandBeige-50 transition-colors">
-            Login
+            {{ __('site.login') }}
           </a>
         @endauth
       </div>
@@ -371,7 +371,7 @@
 
       <div class="pt-3 mt-4 border-t border-gray-200">
         @auth
-          <p class="px-1 py-1 text-xs text-gray-500">Signed in as {{ auth()->user()->navLabel() }}</p>
+          <p class="px-1 py-1 text-xs text-gray-500">{{ __('public.Signed in as :name', ['name' => auth()->user()->navLabel()]) }}</p>
           {{-- One door into the app for everyone (ID3). --}}
           <a href="{{ route('dashboard') }}" data-testid="nav-my-portal-mobile"
              class="block py-3 px-4 font-semibold text-white rounded-lg mb-1"
@@ -385,7 +385,7 @@
             @csrf
             <button type="submit" class="w-full text-start py-2.5 px-0 text-sm text-red-600 hover:text-red-700 flex items-center gap-2">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
-              Log out
+              {{ __('public.Log out') }}
             </button>
           </form>
         @endauth
@@ -456,7 +456,7 @@ function filterGTLangs(q) {
   });
   list.classList.remove('hidden');
   if (!filtered.length) {
-    list.innerHTML = '<p class="px-4 py-3 text-xs text-gray-400">No results</p>';
+    list.innerHTML = '<p class="px-4 py-3 text-xs text-gray-400">' + @json(__('public.No results')) + '</p>';
     return;
   }
   list.innerHTML = filtered.map(function(l) {

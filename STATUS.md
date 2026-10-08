@@ -4983,6 +4983,81 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pg. The public site's front door in Dhivehi and Arabic (C20 slice LT4, 2026-10-08)
+
+A visitor on `/dv` or `/ar` read English on every page of the front door:
+- the header: *Translate*, its search, *Login*, *Log out*, *Signed in as*,
+  *My Library*, *My Wallet*, and the prayer strip's island picker;
+- the home page: its badge, the Viber button and the message it opens with,
+  the slides the office has not replaced, *Upcoming*, *N days left*, the
+  gallery, testimonials, news and events headings, *No news yet.*, the daily
+  strip (its kind printed as a code: `ayah`), and English month names;
+- both error pages, the admissions and thank-you pages, contact's opening
+  hours, and the quick apply page (`/apply`), every word of it.
+
+52 of the `public` book's keys had no Dhivehi or Arabic and two were copies of
+the English; about 60 more strings were typed into the views.
+
+**Through the phrase books:**
+- `public`: 111 rows in Dhivehi and Arabic (57 new to English too). The
+  untranslated-strings baseline shrinks from 178 to 126.
+- The home page's title and line come from the book. The controller's own
+  Dhivehi for them was hand-typed and garbled (*އެކުރު …ރައްކާ*).
+- Dates on the home page are written in the page's language
+  (`translatedFormat`): *03 ޑިސެންބަރު 2026*.
+- "Business days" was drafted as *ބުރަސްފަތި ދުވަސް* (Thursdays); it is
+  *މަސައްކަތު ދުވަސް*.
+- The contact form's required message was labelled *Message (Optional)* in
+  all three languages, the admissions form's key; it has its own,
+  *Your message*. The rest of the English reads as it did.
+- The island names in the prayer strip come from the prayer-times data, in
+  English, and the Translate menu's list of other languages is Google's, in
+  English; both stay (BACKLOG C20).
+
+**On the pages:**
+- `/apply`'s fields are named (`for`/`id`); a screen reader heard none.
+- The thank-you address after applying ended in `?dv`, and the error pages'
+  links in `?dv` or `?ar`: the locale was passed to `route()` as a parameter
+  the routes do not have (KNOWN_ISSUES 42).
+- Applying with an open course says *Your enquiry has been saved* in the
+  page's language.
+
+**Tests:** `PublicFrontDoorSpeaksThreeLanguagesTest`, 17 tests.
+- No English typed into the 16 views (`bladeBareEnglish`, a new shared
+  helper: text nodes and placeholder, title, aria-label and alt, with
+  `{{ }}`, directives, scripts, styles, svgs and handlers left out). Allowed
+  as written: Viber, MVR, the Translate menu's *🇬🇧 English*, the prayer
+  strip's first island, sample input, email addresses.
+- Every `public`, `site` and `nav` key the views and their three controllers
+  name is in Dhivehi and Arabic and is not the English; the daily strip's
+  four kinds too.
+- Served under `/dv` and `/ar`: home, apply, admissions, thanks, contact;
+  both error pages; a Dhivehi month on the home page; an applicant thanked
+  in Dhivehi at an address with no `?` on it.
+
+Whole suite locally: **2864 passed (38629 assertions)**.
+
+**Walk:** `scripts/smoke/front-door-language.mjs` (new, in `all.mjs`):
+**53/53**.
+- Home, apply, admissions, thanks, contact and a missing page under `/dv`
+  and `/ar`: each answers, reads right to left, carries none of the site's
+  English phrases, and names every field.
+- Signed in, the header's account menu is in the page's language.
+- An applicant on `/dv/apply` is thanked in Dhivehi at `/dv/admissions/thanks`.
+- Against `main`'s code: **35/53**. Every page reads *Translate*, *Login*,
+  *Change island*; `/apply` names no field; the thank-you address is
+  `/dv/admissions/thanks?dv`.
+- The English walks still pass: `website.mjs` 54/54, `public-rtl.mjs` 90/90,
+  `nav.mjs` 14/14.
+
+**Next (C20):** LT5, the rest of the public pages (courses and a course,
+events and registering for one, news, gallery, about, careers, achievements,
+daily, certificate check, search), with the course cards' seat labels —
+*3 seats left*, *Limited seats*, *Full — join waiting list* are written in
+English by `ComposeCourseConversionSignalsAction` and show on the home
+page's course cards too; LT6, the Library's public shelf, reader,
+My Library, wallet and gift cards.
+
 ## 5pf. The Library office in Dhivehi and Arabic (C20 slice LT3, 2026-10-08)
 
 The office's Library screen (`/admin/library`) was English throughout:

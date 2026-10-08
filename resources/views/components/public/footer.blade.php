@@ -6,7 +6,7 @@
 <footer class="shop-footer" data-testid="footer-compact" style="background:#3D1219">
   <div style="height:3px;background:linear-gradient(90deg,#A8861F,#C9A227,#E8BC3C,#C9A227,#A8861F)"></div>
   <div class="container mx-auto px-4 py-4">
-    <p style="color:rgba(255,255,255,0.75);font-size:.8rem;margin:0;text-align:center">© {{ date('Y') }} Akuru Institute. {{ __('site.rights_reserved') }}</p>
+    <p style="color:rgba(255,255,255,0.75);font-size:.8rem;margin:0;text-align:center">© {{ date('Y') }} {{ __('public.Akuru Institute') }}. {{ __('site.rights_reserved') }}</p>
   </div>
 </footer>
 @else
@@ -111,7 +111,7 @@
 
     {{-- Bottom bar --}}
     <div style="margin-top:2rem;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,0.12);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:1rem">
-      <p style="color:rgba(255,255,255,0.5);font-size:.8rem;margin:0">© {{ date('Y') }} Akuru Institute. {{ __('site.rights_reserved') }}</p>
+      <p style="color:rgba(255,255,255,0.5);font-size:.8rem;margin:0">© {{ date('Y') }} {{ __('public.Akuru Institute') }}. {{ __('site.rights_reserved') }}</p>
       <div style="display:flex;align-items:center;gap:1.25rem">
         <a href="{{ route('public.page.show', 'privacy-policy') }}" style="color:rgba(255,255,255,0.5);font-size:.75rem;text-decoration:none" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">{{ __('site.privacy') }}</a>
         <a href="{{ route('public.page.show', 'terms') }}" style="color:rgba(255,255,255,0.5);font-size:.75rem;text-decoration:none" onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.5)'">{{ __('site.terms') }}</a>

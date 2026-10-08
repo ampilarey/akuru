@@ -2,9 +2,9 @@
      Ported from Bake&Grill's PrayerBar, recolored to the Akuru palette.
      Include ONCE per page (the banner partial itself may appear twice:
      desktop header slot + mobile header slot). --}}
-<div id="hptPanel" class="hpt-panel" role="listbox" aria-label="Select island">
+<div id="hptPanel" class="hpt-panel" role="listbox" aria-label="{{ __('public.Select island') }}">
     <div class="hpt-search-row">
-        <input type="text" id="hptSearch" class="hpt-search-input" placeholder="Search island or atoll…" autocomplete="off" spellcheck="false">
+        <input type="text" id="hptSearch" class="hpt-search-input" placeholder="{{ __('public.Search island or atoll…') }}" autocomplete="off" spellcheck="false">
     </div>
     <div class="hpt-list" id="hptList"></div>
 </div>

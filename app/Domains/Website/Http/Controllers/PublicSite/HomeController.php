@@ -51,13 +51,12 @@ class HomeController extends Controller
 
     private function buildHomepageData(string $locale): array
     {
-        // Titles/descriptions per locale
-        $titles = [
-            'en' => ['title' => 'Welcome to Akuru Institute', 'desc' => 'Learn Quran, Arabic, and Islamic Studies in the Maldives'],
-            'ar' => ['title' => 'مرحباً بكم في معهد أكورو', 'desc' => 'تعلم القرآن الكريم واللغة العربية والدراسات الإسلامية في المالديف'],
-            'dv' => ['title' => 'އެކުރު އިންސްޓިއުޓުގައި ރައްކާ', 'desc' => 'ދިވެހިރާއްޖެ ގައި ޤުރުން، ޢަރަބި ބަހުން އަދި އިސްލާމީ ދަސްކަމުގެ ދެނެވިފައި'],
+        // The page's title and line, in the page's language (the Dhivehi here was
+        // hand-typed and garbled; the phrase book's is the one the site uses).
+        $text = [
+            'title' => __('public.Welcome to Akuru Institute'),
+            'desc' => __('public.Learn Quran, Arabic, and Islamic Studies in the Maldives'),
         ];
-        $text = $titles[$locale] ?? $titles['en'];
 
         // Hero banners from DB or fallback
         $heroBanners = HeroBanner::where('is_active', true)
