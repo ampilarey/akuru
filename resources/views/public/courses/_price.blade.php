@@ -9,7 +9,7 @@
     <div class="{{ $class ?? '' }}">
         <div class="text-sm text-gray-500 line-through">{{ number_format($early['normal_amount'], 2) }} {{ $early['currency'] }}</div>
         <div class="{{ $feeClass }} font-bold text-brandMaroon-600">{{ number_format($early['amount'], 2) }} {{ $early['currency'] }}</div>
-        <p class="text-sm text-gray-500 mt-1">Early bird until {{ $early['ends_at'] }}</p>
+        <p class="text-sm text-gray-500 mt-1">{{ __('public.Early bird until :date', ['date' => \Carbon\Carbon::parse($early['ends_at'])->translatedFormat('d M Y')]) }}</p>
     </div>
 @elseif($fee)
     <div class="{{ $class ?? '' }}">

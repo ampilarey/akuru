@@ -93,13 +93,13 @@ class ComposeCourseConversionSignalsAction
         $tone = null;
         if ($remaining !== null) {
             if ($remaining === 0) {
-                $label = 'Full — join waiting list';
+                $label = __('public.Full — join waiting list');
                 $tone = 'full';
             } elseif ($remaining <= $exactAtOrBelow) {
-                $label = $remaining.' '.($remaining === 1 ? 'seat left' : 'seats left');
+                $label = trans_choice('public.:count seat left|:count seats left', $remaining);
                 $tone = 'exact';
             } elseif ($remaining <= $hideAbove) {
-                $label = 'Limited seats';
+                $label = __('public.Limited seats');
                 $tone = 'limited';
             }
         }

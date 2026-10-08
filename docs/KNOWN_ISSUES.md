@@ -215,8 +215,9 @@ STATUS §5pc, and the offerings' and the Qur'an component's since STATUS §5pd
 (BACKLOG C19). The Library's writers' and reviewers' since STATUS §5pe
 (BACKLOG C20), and the Library office's since STATUS §5pf. The public
 site's front door (header, footer, home, error pages, admissions, contact)
-reads in the page's language since STATUS §5pg; its other pages are BACKLOG
-C20's LT5 and LT6. The console commands stay English.
+reads in the page's language since STATUS §5pg, and the course catalogue and
+a course page since STATUS §5ph; its other pages are BACKLOG C20's LT5b,
+LT5c and LT6. The console commands stay English.
 
 ## Found by the middle-name walk (2026-10-08)
 

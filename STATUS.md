@@ -4983,6 +4983,69 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ph. The public course catalogue and a course page in Dhivehi and Arabic (C20 slice LT5a, 2026-10-08)
+
+On `/dv/courses` and a course's page, a visitor read:
+- the catalogue's filters and cards in English (*Our Courses*, *Category*,
+  *Sort By*, *Fully booked*, *Details*), and each course's status, level and
+  duration as a code or in English (`open`, `kids`, *8 weeks*);
+- every heading of a course page, its sidebar, its calls to enrol, the Viber
+  message it opens, the sticky bar on a phone, the syllabus and waiting-list
+  forms and what they answered;
+- the six questions the page asks and answers, and its FAQ JSON-LD;
+- the seat labels — *3 seats left*, *Limited seats*, *Full — join waiting
+  list* — written in English by `ComposeCourseConversionSignalsAction`, which
+  the home page's course cards show too;
+- the deadline and early-bird dates with English month names.
+
+**Through the phrase books:**
+- `public`: 92 Dhivehi and Arabic rows (57 new to English too); the
+  untranslated-strings baseline shrinks from 126 to 91.
+- A status, a level and a language are named on the page (`open` → *Open*,
+  `kids` → *Kids*, `ar` → العربية); a duration, the seat labels and *N days
+  left* are counted (`trans_choice`, one line in Dhivehi and Arabic). Dates
+  are written in the page's language.
+- The course page's questions are keys (`faq_*_q`, `faq_*_a`), so the page
+  and its FAQPage JSON-LD say the same thing in the same language.
+- The waiting list's note to the office (*Waiting list for …*) stays English:
+  it is the office's record of the lead.
+- The English reads as it did; `CourseOutcomesTest` now reads the heading's
+  apostrophe as the page escapes it.
+
+**On the pages:** the catalogue's search and six filters are named; the
+syllabus and waiting-list fields have names a screen reader can say. A
+category's name is the office's (one language, like a course's title); it
+is marked `data-office-words` so a walk can tell it from the site's words.
+
+**Tests:** `PublicCoursePagesSpeakThreeLanguagesTest`, 10 tests.
+- No English typed into the seven views, and no English sentence written
+  from their PHP: `bladeEnglishLiterals`, a new shared helper beside
+  `bladeBareEnglish`, reads the literals in `{{ }}`, `@php` and directives
+  that are not a phrase-book key (*Enrollment closed*, a `@php` list of
+  steps). The front door's test holds its 16 views to it too.
+- Every key the views and four server files name is in Dhivehi and Arabic;
+  the six questions too; no English sentence left in the server files.
+- The seat labels in Dhivehi and English; a duration in Arabic and in
+  English as before (*1 week*, *3 weeks*, *2 months*, *Ongoing*).
+- Served under `/dv` and `/ar`: the catalogue and a course page, with no
+  English and its questions in Dhivehi in the page and its JSON-LD; the
+  waiting list answered in Dhivehi; a missing syllabus refused in Arabic.
+
+Whole suite locally: **2875 passed (38736 assertions)**.
+
+**Walk:** `scripts/smoke/course-pages-language.mjs` (new, in `all.mjs`):
+**19/19**. `/courses` and the first course it lists under `/dv` and `/ar`:
+right to left, none of the site's English phrases, no status, level or
+duration as a code, every field named; then the Dhivehi catalogue filtered
+by level comes back in Dhivehi with the level chosen. Against `main`'s
+code: **12/19**. The English walks still pass: `website.mjs` 54/54,
+`cms-courses.mjs` 16/16, `register.mjs` 15/15.
+
+**Next (C20):** LT5b — events and registering for one, news, gallery,
+about, careers, achievements, search, a CMS page; LT5c — the daily
+reminders and the certificate check; LT6 — the Library's public shelf,
+reader, My Library, wallet and gift cards.
+
 ## 5pg. The public site's front door in Dhivehi and Arabic (C20 slice LT4, 2026-10-08)
 
 A visitor on `/dv` or `/ar` read English on every page of the front door:

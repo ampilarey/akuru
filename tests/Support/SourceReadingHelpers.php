@@ -249,3 +249,39 @@ if (! function_exists('bladeBareEnglish')) {
         return $found;
     }
 }
+
+if (! function_exists('bladeEnglishLiterals')) {
+    /**
+     * English sentences a Blade view writes from its PHP — `{{ $open ? 'Enrollment
+     * closed' : … }}`, a `@php` array of steps, a directive's argument — which
+     * `bladeBareEnglish` cannot see, because it leaves code out. A literal is
+     * counted when it reads as words (a capital, then at least one more word) and
+     * is not the key handed to `__()`, `trans_choice()`, `trans()` or `@lang`.
+     * The public site's check (slice LT5a).
+     */
+    function bladeEnglishLiterals(string $path, array $allowed = []): array
+    {
+        $source = (string) preg_replace('/\{\{--.*?--\}\}/s', ' ', (string) file_get_contents($path));
+        $source = (string) preg_replace('/<script\b.*?<\/script>|<style\b.*?<\/style>|<svg\b.*?<\/svg>/s', ' ', $source);
+        $code = '';
+        preg_match_all('/\{\{(.*?)\}\}|\{!!(.*?)!!\}|@php\b(?!\s*\()(.*?)@endphp|@\w+\s*\((.*?)\)\s*$/ms', $source, $blocks, PREG_SET_ORDER);
+        foreach ($blocks as $block) {
+            $code .= ' '.implode(' ', array_slice($block, 1));
+        }
+        $code = stripPhpComments('<?php '.$code);
+
+        $found = [];
+        preg_match_all("/(__|trans_choice|trans|@lang)?\\(?\\s*'((?:[^'\\\\]|\\\\.)*)'/", $code, $literals, PREG_SET_ORDER);
+        foreach ($literals as $literal) {
+            $text = stripslashes($literal[2]);
+            if (($literal[1] ?? '') !== '' || in_array($text, $allowed, true)) {
+                continue;
+            }
+            if (preg_match('/^[A-Z][a-z]+(?:[\s,.’\'!?—–-]+[A-Za-z]+)+[.!?…]?$/u', $text)) {
+                $found[] = $text;
+            }
+        }
+
+        return array_values(array_unique($found));
+    }
+}

@@ -4,6 +4,11 @@
 @section('description', __('public.Explore our Quranic and Islamic studies courses'))
 
 @section('content')
+@php
+    // A course's status and level, named in the page's language (BACKLOG C20, LT5a).
+    $courseStatusName = fn ($status) => ['open' => __('public.Open'), 'upcoming' => __('public.Upcoming'), 'closed' => __('public.Closed')][$status] ?? $status;
+    $courseLevelName = fn ($level) => ['kids' => __('public.Kids'), 'youth' => __('public.Youth'), 'adult' => __('public.Adult'), 'all' => __('public.All Ages')][$level] ?? $level;
+@endphp
 <!-- Page Header -->
 <section class="bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 py-12">
     <div class="container mx-auto px-4">
@@ -21,6 +26,7 @@
                 <div class="relative">
                     <input type="text" 
                            name="search" 
+                           aria-label="{{ __('public.Search courses...') }}"
                            value="{{ request('search') }}"
                            placeholder="{{ __('public.Search courses...') }}"
                            class="form-input w-full ps-10 pe-4 py-3 text-lg">
@@ -41,11 +47,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Category Filter -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Category') }}</label>
-                    <select name="category" class="form-input w-full">
+                    <label for="courses-category" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Category') }}</label>
+                    <select id="courses-category" name="category" class="form-input w-full">
                         <option value="">{{ __('public.All Categories') }}</option>
                         @foreach($categories as $category)
-                            <option value="{{ $category->slug }}" {{ request('category') == $category->slug ? 'selected' : '' }}>
+                            <option value="{{ $category->slug }}" {{ request('category') == $category->slug ? 'selected' : '' }} data-office-words>
                                 {{ $category->name }}
                             </option>
                         @endforeach
@@ -54,8 +60,8 @@
 
                 <!-- Status Filter -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Status') }}</label>
-                    <select name="status" class="form-input w-full">
+                    <label for="courses-status" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Status') }}</label>
+                    <select id="courses-status" name="status" class="form-input w-full">
                         <option value="">{{ __('public.All Statuses') }}</option>
                         <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>{{ __('public.Open') }}</option>
                         <option value="upcoming" {{ request('status') == 'upcoming' ? 'selected' : '' }}>{{ __('public.Upcoming') }}</option>
@@ -64,8 +70,8 @@
 
                 <!-- Language Filter -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Language') }}</label>
-                    <select name="language" class="form-input w-full">
+                    <label for="courses-language" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Language') }}</label>
+                    <select id="courses-language" name="language" class="form-input w-full">
                         <option value="">{{ __('public.All Languages') }}</option>
                         <option value="en" {{ request('language') == 'en' ? 'selected' : '' }}>English</option>
                         <option value="ar" {{ request('language') == 'ar' ? 'selected' : '' }}>العربية</option>
@@ -76,8 +82,8 @@
 
                 <!-- Level Filter -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Level') }}</label>
-                    <select name="level" class="form-input w-full">
+                    <label for="courses-level" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Level') }}</label>
+                    <select id="courses-level" name="level" class="form-input w-full">
                         <option value="">{{ __('public.All Levels') }}</option>
                         <option value="kids" {{ request('level') == 'kids' ? 'selected' : '' }}>{{ __('public.Kids') }}</option>
                         <option value="youth" {{ request('level') == 'youth' ? 'selected' : '' }}>{{ __('public.Youth') }}</option>
@@ -91,8 +97,8 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <!-- Enrollment Status -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Enrollment') }}</label>
-                    <select name="enrollment" class="form-input w-full">
+                    <label for="courses-enrollment" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Enrollment') }}</label>
+                    <select id="courses-enrollment" name="enrollment" class="form-input w-full">
                         <option value="">{{ __('public.All Enrollment') }}</option>
                         <option value="open" {{ request('enrollment') == 'open' ? 'selected' : '' }}>{{ __('public.Enrollment Open') }}</option>
                         <option value="upcoming" {{ request('enrollment') == 'upcoming' ? 'selected' : '' }}>{{ __('public.Starting Soon') }}</option>
@@ -101,8 +107,8 @@
 
                 <!-- Sort By -->
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Sort By') }}</label>
-                    <select name="sort" class="form-input w-full">
+                    <label for="courses-sort" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Sort By') }}</label>
+                    <select id="courses-sort" name="sort" class="form-input w-full">
                         <option value="default" {{ request('sort') == 'default' ? 'selected' : '' }}>{{ __('public.Default') }}</option>
                         <option value="title" {{ request('sort') == 'title' ? 'selected' : '' }}>{{ __('public.Title A-Z') }}</option>
                         <option value="fee_low" {{ request('sort') == 'fee_low' ? 'selected' : '' }}>{{ __('public.Price: Low to High') }}</option>
@@ -181,7 +187,7 @@
                             <div class="absolute top-4 start-4">
                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium {{ $course->status === 'open' ? 'bg-green-100 text-green-800' : ($course->status === 'upcoming' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
                                     <span class="w-2 h-2 rounded-full me-1 {{ $course->status === 'open' ? 'bg-green-500' : ($course->status === 'upcoming' ? 'bg-yellow-500' : 'bg-red-500') }}"></span>
-                                    {{ ucfirst($course->status) }}
+                                    {{ $courseStatusName($course->status) }}
                                 </span>
                             </div>
                         </div>
@@ -189,7 +195,7 @@
                         <div class="p-6">
                             <!-- Category Badge -->
                             @if($course->category)
-                                <span class="inline-block px-3 py-1 text-xs font-medium bg-brandMaroon-100 text-brandMaroon-800 rounded-full mb-3">
+                                <span class="inline-block px-3 py-1 text-xs font-medium bg-brandMaroon-100 text-brandMaroon-800 rounded-full mb-3" data-office-words>
                                     {{ $course->category->name }}
                                 </span>
                             @endif
@@ -232,7 +238,7 @@
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
                                         </svg>
-                                        <span class="capitalize">{{ $course->level }}</span>
+                                        <span>{{ $courseLevelName($course->level) }}</span>
                                     </div>
                                 </div>
 
@@ -255,11 +261,11 @@
                             @if($course->isFull())
                                 <div class="flex gap-2">
                                     <span class="flex-1 text-center py-2 px-3 text-sm bg-red-50 text-red-700 border border-red-200 rounded-lg font-medium">
-                                        Fully booked
+                                        {{ __('public.Fully booked') }}
                                     </span>
                                     <a href="{{ LaravelLocalization::localizeURL(route('public.courses.show', $course->slug)) }}"
                                        class="py-2 px-3 text-sm border border-gray-300 text-gray-600 rounded-lg hover:bg-gray-50">
-                                        Details
+                                        {{ __('public.Details') }}
                                     </a>
                                 </div>
                             @else
@@ -301,7 +307,7 @@
                                         </h4>
                                         <p class="text-sm text-gray-600 mb-2">{{ Str::limit($featuredCourse->short_desc, 80) }}</p>
                                         <div class="flex items-center justify-between text-xs text-gray-500">
-                                            <span class="capitalize">{{ $featuredCourse->level }}</span>
+                                            <span>{{ $courseLevelName($featuredCourse->level) }}</span>
                                             @if($featuredCourse->fee)
                                                 <span class="font-semibold text-brandMaroon-600">{{ $featuredCourse->formatted_fee }}</span>
                                             @else
@@ -340,7 +346,7 @@
                             @foreach($categories as $category)
                                 <a href="{{ route('public.courses.index') }}?category={{ urlencode($category->slug) }}" 
                                    class="block px-3 py-2 text-sm text-gray-700 hover:bg-brandBeige-100 hover:text-brandMaroon-600 rounded transition-colors">
-                                    {{ $category->name }}
+                                    <span data-office-words>{{ $category->name }}</span>
                                     <span class="float-right text-xs text-gray-500">
                                         ({{ $courses->where('course_category_id', $category->id)->count() }})
                                     </span>

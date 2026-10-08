@@ -177,13 +177,13 @@ class CourseController extends Controller
     public function syllabus(Request $request, Course $course): RedirectResponse
     {
         if ($request->filled('website')) {
-            return back()->with('success', 'Syllabus is on its way.');
+            return back()->with('success', __('public.Syllabus is on its way.'));
         }
 
         $cta = app(ComposeCoursePageCtaAction::class)->execute((int) $course->id);
         if (($cta['syllabus']['url'] ?? null) === null) {
             throw ValidationException::withMessages([
-                'course' => 'A syllabus is not available for this course.',
+                'course' => __('public.A syllabus is not available for this course.'),
             ]);
         }
 
@@ -196,14 +196,14 @@ class CourseController extends Controller
         app(CaptureCourseLeadAction::class)->execute((int) $course->id, LeadSource::Syllabus, $data);
 
         return back()
-            ->with('success', 'Syllabus is ready — download the PDF below.')
+            ->with('success', __('public.Syllabus is ready — download the PDF below.'))
             ->with('syllabus_url', $cta['syllabus']['url']);
     }
 
     public function waitlist(Request $request, Course $course): RedirectResponse
     {
         if ($request->filled('website')) {
-            return back()->with('success', 'Thanks — we will contact you if a seat opens.');
+            return back()->with('success', __('public.Thanks — we will contact you if a seat opens.'));
         }
 
         $data = $request->validate([
@@ -219,7 +219,7 @@ class CourseController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
-        return back()->with('success', 'You are on the waiting list. We will contact you if a seat opens.');
+        return back()->with('success', __('public.You are on the waiting list. We will contact you if a seat opens.'));
     }
 
     /**

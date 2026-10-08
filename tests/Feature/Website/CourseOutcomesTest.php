@@ -46,7 +46,7 @@ it('renders localized learning outcomes above the description', function () {
     $html = $this->withoutLocalizationMiddleware()
         ->get(route('public.courses.show', $course))
         ->assertOk()
-        ->assertSee('What you\'ll be able to do', false)
+        ->assertSee('What you\'ll be able to do')
         ->assertSee('Read short surahs with tajweed', false)
         ->assertSee('Write the Arabic alphabet', false)
         ->getContent();
