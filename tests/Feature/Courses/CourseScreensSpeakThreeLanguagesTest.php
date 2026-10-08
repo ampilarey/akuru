@@ -26,9 +26,11 @@ use App\Domains\Courses\Enums\LessonStatus;
 use App\Domains\Courses\Enums\ModuleStatus;
 use App\Domains\Courses\Enums\QuestionType;
 use App\Domains\Courses\Enums\UnlockMode;
+use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\CourseSubject;
 use App\Domains\Identity\Models\User;
+use App\Domains\Offerings\Models\CourseOffering;
 use App\Enums\Hifz\HifzMilestoneStatus;
 use App\Enums\Hifz\HifzMilestoneType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -84,6 +86,12 @@ function translatedCourseScreens(): array
         'Courses/Quran/Mushafs/Show' => 'teach',
         'Courses/Quran/Pages/Show' => 'teach',
         'Courses/Learn/Quran' => 'learn',
+        'Courses/Catalog/ArabicReference' => 'teach',
+        'Courses/Catalog/ArabicReport' => 'teach',
+        'Courses/Catalog/I18nPreview' => 'teach',
+        'Courses/Clubs/Index' => 'teach',
+        'Courses/Clubs/Roster' => 'teach',
+        'Courses/Clubs/AttendanceSheet' => 'teach',
     ];
 }
 
@@ -461,4 +469,42 @@ it('serves Qur’an oversight, the reference, the mushafs, page mapping and the 
     expect(__('teach.flash_mushaf_created'))->toBe('Mushaf created.')
         ->and(__('teach.flash_qpage_position_saved'))->toBe('Word position saved.')
         ->and(__('learn.flash_recitation_submitted'))->toBe('Recitation submitted — your teacher will listen to it.');
+});
+
+it('serves the Arabic reference and report, the language preview and the clubs in Dhivehi, and says what was saved in Dhivehi', function () {
+    $admin = actingPeopleAdmin(['courses.manage']);
+    // The clubs live under /academics, which a school staff role opens.
+    $admin->assignRole(Role::findOrCreate('headmaster', 'web'));
+    $dv = teachBook('dv');
+    $club = Course::factory()->create(['title' => 'Chess club', 'course_type' => 'club', 'workflow_status' => 'published']);
+    CourseOffering::query()->create([
+        'course_id' => $club->id, 'title' => 'Chess club offering', 'slug' => 'chess-club-offering-'.$club->id,
+        'delivery_mode' => 'self_learning', 'status' => 'open', 'pin_mode' => 'latest',
+        'academic_year_id' => makeYear(['name' => 'Club year CT6a'])->id,
+    ]);
+
+    app()->setLocale('dv');
+    foreach ([
+        route('catalog.arabic.index') => ['Courses/Catalog/ArabicReference', 'arref_title'],
+        route('catalog.arabic.reports') => ['Courses/Catalog/ArabicReport', 'arrep_title'],
+        route('catalog.i18n.preview') => ['Courses/Catalog/I18nPreview', 'i18n_title'],
+        route('academics.clubs.index') => ['Courses/Clubs/Index', 'clubs_title'],
+        route('academics.clubs.show', $club->id) => ['Courses/Clubs/Roster', 'clubs_add_label'],
+        route('academics.clubs.attendance-sheet', $club->id) => ['Courses/Clubs/AttendanceSheet', 'clubs_print'],
+    ] as $url => [$component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($admin)
+            ->get($url)->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("t.{$key}", $dv[$key]));
+    }
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('catalog.arabic.letters.store'), ['key_name' => 'ct6a_baa', 'arabic_character' => 'ب', 'display_name' => 'Baa'])
+        ->assertSessionHas('success', $dv['flash_letter_saved']);
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('academics.clubs.members.add', $club->id), ['student_id' => makeStudent(['first_name' => 'Club', 'last_name' => 'Member CT6a'])->id])
+        ->assertSessionHas('success', $dv['flash_club_member_added']);
+
+    app()->setLocale('en');
+    expect(__('teach.flash_club_member_gone'))->toBe('That member had already been removed.')
+        ->and(__('teach.i18n_instruction', ['text' => 'x']))->toBe('Instruction sample: x');
 });

@@ -9,6 +9,7 @@ use App\Domains\Courses\Components\Arabic\Models\ArabicHarakah;
 use App\Domains\Courses\Components\Arabic\Models\ArabicLetter;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -21,7 +22,7 @@ class CatalogArabicReferenceController extends Controller
     {
         abort_unless($request->user()?->can('courses.manage'), 403);
 
-        return Inertia::render('Courses/Catalog/ArabicReference', app(ListArabicReferenceAction::class)->execute());
+        return Inertia::render('Courses/Catalog/ArabicReference', app(ListArabicReferenceAction::class)->execute() + ['t' => Phrases::once('teach')]);
     }
 
     public function storeLetter(Request $request): RedirectResponse
@@ -29,7 +30,7 @@ class CatalogArabicReferenceController extends Controller
         abort_unless($request->user()?->can('courses.manage'), 403);
         app(SaveArabicLetterAction::class)->execute($request->all());
 
-        return redirect()->route('catalog.arabic.index')->with('success', 'Letter saved.');
+        return redirect()->route('catalog.arabic.index')->with('success', __('teach.flash_letter_saved'));
     }
 
     public function updateLetter(Request $request, int $letter): RedirectResponse
@@ -40,7 +41,7 @@ class CatalogArabicReferenceController extends Controller
             ArabicLetter::query()->findOrFail($letter),
         );
 
-        return redirect()->route('catalog.arabic.index')->with('success', 'Letter updated.');
+        return redirect()->route('catalog.arabic.index')->with('success', __('teach.flash_letter_updated'));
     }
 
     public function storeHarakah(Request $request): RedirectResponse
@@ -48,7 +49,7 @@ class CatalogArabicReferenceController extends Controller
         abort_unless($request->user()?->can('courses.manage'), 403);
         app(SaveArabicHarakahAction::class)->execute($request->all());
 
-        return redirect()->route('catalog.arabic.index')->with('success', 'Harakah saved.');
+        return redirect()->route('catalog.arabic.index')->with('success', __('teach.flash_harakah_saved'));
     }
 
     public function updateHarakah(Request $request, int $harakah): RedirectResponse
@@ -59,7 +60,7 @@ class CatalogArabicReferenceController extends Controller
             ArabicHarakah::query()->findOrFail($harakah),
         );
 
-        return redirect()->route('catalog.arabic.index')->with('success', 'Harakah updated.');
+        return redirect()->route('catalog.arabic.index')->with('success', __('teach.flash_harakah_updated'));
     }
 
     public function export(Request $request): StreamedResponse

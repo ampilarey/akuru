@@ -2,7 +2,7 @@ import { useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
-export default function ArabicReference({ letters, harakas }) {
+export default function ArabicReference({ letters, harakas, t = {} }) {
     const letterForm = useForm({
         key_name: '',
         arabic_character: '',
@@ -19,9 +19,9 @@ export default function ArabicReference({ letters, harakas }) {
     });
 
     return (
-        <AppShell title="Arabic letters and harakas">
+        <AppShell title={t.arref_title || 'Arabic letters and harakas'}>
             <div className="mb-4 flex justify-end">
-                <a className="btn-secondary" href="/catalog/arabic/export">Export CSV</a>
+                <a className="btn-secondary" href="/catalog/arabic/export">{t.catalog_export || 'Export CSV'}</a>
             </div>
             <form
                 onSubmit={(e) => {
@@ -30,20 +30,20 @@ export default function ArabicReference({ letters, harakas }) {
                 }}
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
             >
-                <input className="form-input" placeholder="Key" value={letterForm.data.key_name} onChange={(e) => letterForm.setData('key_name', e.target.value)} />
-                <input className="form-input" placeholder="ا" value={letterForm.data.arabic_character} onChange={(e) => letterForm.setData('arabic_character', e.target.value)} />
-                <input className="form-input" placeholder="Display name" value={letterForm.data.display_name} onChange={(e) => letterForm.setData('display_name', e.target.value)} />
-                <input className="form-input" type="number" value={letterForm.data.sort_order} onChange={(e) => letterForm.setData('sort_order', e.target.value)} />
-                <button type="submit" className="btn-primary" disabled={letterForm.processing}>Save letter</button>
+                <input className="form-input" dir="ltr" placeholder={t.arref_key || 'Key'} aria-label={t.arref_key || 'Key'} value={letterForm.data.key_name} onChange={(e) => letterForm.setData('key_name', e.target.value)} />
+                <input className="form-input" dir="rtl" placeholder="ا" aria-label={t.arref_letter_glyph || 'Letter'} value={letterForm.data.arabic_character} onChange={(e) => letterForm.setData('arabic_character', e.target.value)} />
+                <input className="form-input" placeholder={t.arref_display_name || 'Display name'} aria-label={t.arref_display_name || 'Display name'} value={letterForm.data.display_name} onChange={(e) => letterForm.setData('display_name', e.target.value)} />
+                <input className="form-input" type="number" aria-label={t.arref_order || 'Order'} value={letterForm.data.sort_order} onChange={(e) => letterForm.setData('sort_order', e.target.value)} />
+                <button type="submit" className="btn-primary" disabled={letterForm.processing}>{t.arref_save_letter || 'Save letter'}</button>
                 <FormErrors errors={letterForm.errors} />
             </form>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">Glyph</th>
-                            <th className="px-3 py-2">Key</th>
-                            <th className="px-3 py-2">Name</th>
+                            <th className="px-3 py-2">{t.arref_col_glyph || 'Glyph'}</th>
+                            <th className="px-3 py-2">{t.arref_key || 'Key'}</th>
+                            <th className="px-3 py-2">{t.arref_col_name || 'Name'}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -64,20 +64,20 @@ export default function ArabicReference({ letters, harakas }) {
                 }}
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
             >
-                <input className="form-input" placeholder="Key" value={harakahForm.data.key_name} onChange={(e) => harakahForm.setData('key_name', e.target.value)} />
-                <input className="form-input" placeholder="َ" value={harakahForm.data.symbol} onChange={(e) => harakahForm.setData('symbol', e.target.value)} />
-                <input className="form-input" placeholder="Display name" value={harakahForm.data.display_name} onChange={(e) => harakahForm.setData('display_name', e.target.value)} />
-                <input className="form-input" type="number" value={harakahForm.data.sort_order} onChange={(e) => harakahForm.setData('sort_order', e.target.value)} />
-                <button type="submit" className="btn-primary" disabled={harakahForm.processing}>Save harakah</button>
+                <input className="form-input" dir="ltr" placeholder={t.arref_key || 'Key'} aria-label={t.arref_key || 'Key'} value={harakahForm.data.key_name} onChange={(e) => harakahForm.setData('key_name', e.target.value)} />
+                <input className="form-input" dir="rtl" placeholder="َ" aria-label={t.arref_harakah_glyph || 'Harakah'} value={harakahForm.data.symbol} onChange={(e) => harakahForm.setData('symbol', e.target.value)} />
+                <input className="form-input" placeholder={t.arref_display_name || 'Display name'} aria-label={t.arref_display_name || 'Display name'} value={harakahForm.data.display_name} onChange={(e) => harakahForm.setData('display_name', e.target.value)} />
+                <input className="form-input" type="number" aria-label={t.arref_order || 'Order'} value={harakahForm.data.sort_order} onChange={(e) => harakahForm.setData('sort_order', e.target.value)} />
+                <button type="submit" className="btn-primary" disabled={harakahForm.processing}>{t.arref_save_harakah || 'Save harakah'}</button>
                 <FormErrors errors={harakahForm.errors} />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">Symbol</th>
-                            <th className="px-3 py-2">Key</th>
-                            <th className="px-3 py-2">Name</th>
+                            <th className="px-3 py-2">{t.arref_col_symbol || 'Symbol'}</th>
+                            <th className="px-3 py-2">{t.arref_key || 'Key'}</th>
+                            <th className="px-3 py-2">{t.arref_col_name || 'Name'}</th>
                         </tr>
                     </thead>
                     <tbody>

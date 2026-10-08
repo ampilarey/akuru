@@ -1,23 +1,23 @@
 import { Link, router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Roster({ club, members = [] }) {
+export default function Roster({ club, members = [], t = {} }) {
     const form = useForm({ student_id: '' });
     const offRoll = members.filter((m) => !m.on_roll).length;
 
     return (
-        <AppShell title={`${club.title} — roster`}>
+        <AppShell title={(t.clubs_roster_title || ':club — roster').replace(':club', club.title)}>
             <p className="mb-4 text-sm text-gray-600">
-                <Link href="/academics/clubs" className="text-[#7C2D37] underline">Clubs</Link>
+                <Link href="/academics/clubs" className="text-[#7C2D37] underline">{t.clubs_title || 'Clubs'}</Link>
                 {' · '}
-                {members.length} member{members.length === 1 ? '' : 's'}
-                {offRoll > 0 && ` · ${offRoll} from outside the roll`}
+                {(t.clubs_members_count || 'Members: :n').replace(':n', members.length)}
+                {offRoll > 0 && ` · ${(t.clubs_off_roll || 'from outside the roll: :n').replace(':n', offRoll)}`}
                 {' · '}
                 <Link href={`/academics/clubs/${club.id}/attendance-sheet`} className="text-[#7C2D37] underline">
-                    Attendance sheet
+                    {t.clubs_sheet || 'Attendance sheet'}
                 </Link>
                 {' · '}
-                <a href={`/academics/clubs/${club.id}/export`} className="text-[#7C2D37] underline">CSV</a>
+                <a href={`/academics/clubs/${club.id}/export`} className="text-[#7C2D37] underline">{t.catalog_export || 'Export CSV'}</a>
             </p>
 
             <form
@@ -31,17 +31,16 @@ export default function Roster({ club, members = [] }) {
                 }}
             >
                 <label className="block text-sm">
-                    <span className="mb-1 block text-gray-600">Add a member by student id</span>
+                    <span className="mb-1 block text-gray-600">{t.clubs_add_label || 'Add a member by student id'}</span>
                     <input className="form-input w-48" value={form.data.student_id}
                         onChange={(e) => form.setData('student_id', e.target.value)} />
                     {form.errors.student_id && (
                         <span className="mt-1 block text-xs text-red-600">{form.errors.student_id}</span>
                     )}
                 </label>
-                <button type="submit" className="btn-primary" disabled={form.processing}>Add</button>
+                <button type="submit" className="btn-primary" disabled={form.processing}>{t.clubs_add || 'Add'}</button>
                 <p className="w-full text-xs text-gray-500">
-                    A club member does not have to be on a class roster — siblings and children of
-                    staff are welcome, and the register marks them as visitors.
+                    {t.clubs_add_hint || 'A club member does not have to be on a class roster — siblings and children of staff are welcome, and the register marks them as visitors.'}
                 </p>
             </form>
 
@@ -49,9 +48,9 @@ export default function Roster({ club, members = [] }) {
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
-                            <th className="px-3 py-2 text-start">Member</th>
-                            <th className="px-3 py-2 text-start">Number</th>
-                            <th className="px-3 py-2 text-start">On the roll</th>
+                            <th className="px-3 py-2 text-start">{t.clubs_col_member || 'Member'}</th>
+                            <th className="px-3 py-2 text-start">{t.clubs_col_number || 'Number'}</th>
+                            <th className="px-3 py-2 text-start">{t.clubs_col_on_roll || 'On the roll'}</th>
                             <th className="px-3 py-2 text-start" />
                         </tr>
                     </thead>
@@ -62,15 +61,15 @@ export default function Roster({ club, members = [] }) {
                                 <td className="px-3 py-2">{member.student_number || '—'}</td>
                                 <td className="px-3 py-2">
                                     {member.on_roll
-                                        ? <span className="text-xs text-gray-600">Pupil</span>
-                                        : <span className="rounded bg-amber-50 px-1 text-xs text-amber-800">Visitor</span>}
+                                        ? <span className="text-xs text-gray-600">{t.clubs_pupil || 'Pupil'}</span>
+                                        : <span className="rounded bg-amber-50 px-1 text-xs text-amber-800">{t.clubs_visitor || 'Visitor'}</span>}
                                 </td>
                                 <td className="px-3 py-2">
                                     <button
                                         className="text-xs text-[#7C2D37] underline"
                                         onClick={() => router.delete(`/academics/clubs/${club.id}/members/${member.enrollment_id}`, { preserveScroll: true })}
                                     >
-                                        Remove
+                                        {t.clubs_remove || 'Remove'}
                                     </button>
                                 </td>
                             </tr>
@@ -78,7 +77,7 @@ export default function Roster({ club, members = [] }) {
                     </tbody>
                 </table>
                 {members.length === 0 && (
-                    <p className="px-4 py-6 text-center text-sm text-gray-500">Nobody has joined yet.</p>
+                    <p className="px-4 py-6 text-center text-sm text-gray-500">{t.clubs_nobody || 'Nobody has joined yet.'}</p>
                 )}
             </div>
         </AppShell>

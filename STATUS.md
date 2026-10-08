@@ -4983,6 +4983,51 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ou. The Arabic reference and report, the language preview and the clubs in Dhivehi and Arabic (C19 slice CT6a, 2026-10-08)
+
+CT6 was "the Arabic reference and report, the i18n preview, the clubs and
+the validation messages". The messages turned out to be a slice of their
+own: 138 sentences hard-coded in English in the course, offering and
+progress actions, and Laravel's own, which no language has. So CT6a is the
+six screens, and CT6b the messages.
+
+**The screens:**
+- *Arabic letters and harakas* (`/catalog/arabic`);
+- the *Arabic skill report* (`/catalog/arabic/reports`);
+- the language preview (`/catalog/i18n-preview`);
+- the clubs, a club's roster and its printable attendance sheet
+  (`/academics/clubs…`).
+
+All six read the `teach` book: 62 rows, seven of them saved messages (a
+letter or harakah saved or updated; a club member added, removed, or
+already gone).
+
+**Smaller changes on these screens:**
+- The skill report names its skill with the `skill_` phrases CT2 wrote.
+  It printed the code before.
+- Every field has a name. The letter and harakah glyph inputs and the
+  order fields had only a placeholder or nothing.
+- The preview names each sample's language and direction in the page's
+  language, where it printed `en · ltr`. Its own title is *Language
+  preview*.
+- The clubs list no longer explains itself with a code word in a
+  monospace box.
+- The roster counts members as *Members: :n*, so the phrase works in all
+  three languages.
+
+**Tests:**
+- `CourseScreensSpeakThreeLanguagesTest` holds 32 screens in 11 tests. A new
+  test serves the six in Dhivehi, and checks a letter's and a club member's
+  saved messages in Dhivehi.
+- `ClubCycleSmokeResetTest`: `SmokeMarkerSeeder` plants `SMOKE-Club`, a
+  club course with its own self-learning offering and the seeded pupil on
+  its roster, so the roster and the sheet have a row. It plants it once,
+  however often it runs.
+
+**Walks:**
+- `course-screens-language.mjs` opens the six screens, finding the club
+  through the clubs list. **210/210.**
+
 ## 5ot. Qur'an oversight, the reference, the mushafs and the learner's Qur'an page in Dhivehi and Arabic (C19 slice CT5b, 2026-10-08)
 
 CT5a (§5or) translated the four screens a Qur'an teacher works on. This
