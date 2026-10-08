@@ -37,7 +37,7 @@
             
             <div class="flex items-center text-brandGray-500 text-sm">
                 <time datetime="{{ $post->published_at->toISOString() }}">
-                    {{ $post->published_at->format('F j, Y') }}
+                    {{ $post->published_at->translatedFormat('j F Y') }}
                 </time>
                 @if($post->author)
                     <span class="mx-2">•</span>
@@ -74,9 +74,9 @@
         <div class="mt-8 pt-6 border-t border-brandGray-200">
             <span class="text-sm font-medium text-brandGray-700 me-3">{{ __('public.Share this article') }}:</span>
             <div class="flex gap-2 mt-2">
-                <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->url()) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm" aria-label="Share on Facebook">Facebook</a>
-                <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->url()) }}&text={{ urlencode($post->title) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-sky-500 text-white rounded hover:bg-sky-600 text-sm" aria-label="Share on Twitter">Twitter</a>
-                <a href="viber://forward?text={{ urlencode($post->title . ' ' . request()->url()) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm" aria-label="Share on Viber">Viber</a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u={{ urlencode(request()->url()) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm" aria-label="{{ __('public.Share on Facebook') }}">Facebook</a>
+                <a href="https://twitter.com/intent/tweet?url={{ urlencode(request()->url()) }}&text={{ urlencode($post->title) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-sky-500 text-white rounded hover:bg-sky-600 text-sm" aria-label="{{ __('public.Share on Twitter') }}">Twitter</a>
+                <a href="viber://forward?text={{ urlencode($post->title . ' ' . request()->url()) }}" target="_blank" rel="noopener" class="inline-flex items-center px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 text-sm" aria-label="{{ __('public.Share on Viber') }}">Viber</a>
             </div>
         </div>
 

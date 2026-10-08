@@ -3,14 +3,13 @@
 // CLAUDE.md Conventions: "All screens trilingual-ready (EN/DV/AR)".
 // English UI-string keys with no Dhivehi AND no Arabic entry in resources/lang.
 // Baseline may only shrink when strings are translated — never grow.
-// Baseline count: 91
+// Baseline count: 84
 
 return [
     'public.Access opens as soon as the bank confirms your payment.',
     'public.All categories',
     'public.All types',
     'public.Amount',
-    'public.Audience',
     'public.Auditorium',
     'public.Balance',
     'public.Bank confirmation can take a moment. Refresh this page shortly — access is granted as soon as the bank confirms.',
@@ -30,14 +29,12 @@ return [
     'public.Discount code',
     'public.Enroll',
     'public.Enroll with OTP verification and payment',
-    'public.Event Details',
     'public.Islamic Studies Program',
     'public.Join thousands of students who have chosen Akuru Institute for their Islamic education',
     'public.Learn Arabic from basics to fluency',
     'public.Login to read',
     'public.Main Campus',
     'public.Monday',
-    'public.Need More Information?',
     'public.New Academic Year Starts',
     'public.Next',
     'public.No bookmarks yet.',
@@ -60,11 +57,8 @@ return [
     'public.Ready to Start Your Journey?',
     'public.Redeem gift card',
     'public.Refresh',
-    'public.Register Now',
-    'public.Registration',
     'public.Registration is now open for the new academic year...',
     'public.Remove bookmark',
-    'public.Requirements',
     'public.Search the library',
     'public.Sign in',
     'public.Sign in to read this item for free.',
@@ -89,7 +83,6 @@ return [
     'public.article',
     'public.book',
     'public.complete enrollment',
-    'public.contact_for_more_info',
     'public.course_material',
     'public.pages',
     'public.pay to complete',

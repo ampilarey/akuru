@@ -35,7 +35,7 @@ class RegisterForEventAction
             if ($studentId !== null) {
                 $student = DB::table('students')->where('id', $studentId)->first();
                 if ($student === null) {
-                    throw ValidationException::withMessages(['student_id' => 'Student not found.']);
+                    throw ValidationException::withMessages(['student_id' => __('public.Student not found.')]);
                 }
                 if ($name === '') {
                     $name = PersonName::ofStudent($student);
@@ -46,10 +46,10 @@ class RegisterForEventAction
             }
 
             if ($name === '') {
-                throw ValidationException::withMessages(['name' => 'Name is required.']);
+                throw ValidationException::withMessages(['name' => __('public.Name is required.')]);
             }
             if ($email === '') {
-                throw ValidationException::withMessages(['email' => 'Email is required.']);
+                throw ValidationException::withMessages(['email' => __('public.Email is required.')]);
             }
 
             $this->assertNotAlreadyRegistered($eventId, $studentId, $email);
@@ -62,7 +62,7 @@ class RegisterForEventAction
                 foreignKey: 'event_id',
                 occupyingStatuses: self::OCCUPYING_STATUSES,
                 waitlistEnabledColumn: 'waitlist_enabled',
-                fullMessage: 'This event has no remaining seats.',
+                fullMessage: __('public.This event has no remaining seats.'),
             );
 
             $waitlisted = $seat['outcome'] === EnforceSeatLimitAction::OUTCOME_WAITLISTED;
@@ -105,25 +105,25 @@ class RegisterForEventAction
     private function assertRegistrationOpen(Event $event, string $source): void
     {
         if ($event->status !== 'published') {
-            throw ValidationException::withMessages(['event_id' => 'This event is not open for registration.']);
+            throw ValidationException::withMessages(['event_id' => __('public.This event is not open for registration.')]);
         }
 
         if (! in_array($event->registration_type, ['required', 'optional'], true)) {
-            throw ValidationException::withMessages(['event_id' => 'Registration is not available for this event.']);
+            throw ValidationException::withMessages(['event_id' => __('public.Registration is not available for this event.')]);
         }
 
         if ($source === 'website' && ! $event->is_public) {
-            throw ValidationException::withMessages(['event_id' => 'This event is not open for public registration.']);
+            throw ValidationException::withMessages(['event_id' => __('public.This event is not open for public registration.')]);
         }
 
         $now = now();
         if ($event->registration_start && $event->registration_start->gt($now)) {
-            throw ValidationException::withMessages(['event_id' => 'Registration has not opened yet.']);
+            throw ValidationException::withMessages(['event_id' => __('public.Registration has not opened yet.')]);
         }
 
         $secondRoundOpen = $event->second_round_opens_at !== null && $event->second_round_opens_at->lte($now);
         if (! $secondRoundOpen && $event->registration_deadline && $event->registration_deadline->lt($now)) {
-            throw ValidationException::withMessages(['event_id' => 'Registration has closed.']);
+            throw ValidationException::withMessages(['event_id' => __('public.Registration has closed.')]);
         }
     }
 
@@ -136,13 +136,13 @@ class RegisterForEventAction
         if ($studentId !== null) {
             $exists = (clone $active)->where('student_id', $studentId)->exists();
             if ($exists) {
-                throw ValidationException::withMessages(['student_id' => 'This student is already registered for this event.']);
+                throw ValidationException::withMessages(['student_id' => __('public.This student is already registered for this event.')]);
             }
         }
 
         $exists = (clone $active)->where('email', $email)->whereNull('student_id')->exists();
         if ($studentId === null && $exists) {
-            throw ValidationException::withMessages(['email' => 'You are already registered for this event.']);
+            throw ValidationException::withMessages(['email' => __('public.You are already registered for this event.')]);
         }
     }
 

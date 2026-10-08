@@ -13,7 +13,7 @@
             <ul class="space-y-2">
                 @foreach($holidays as $holiday)
                     <li class="flex flex-wrap items-baseline gap-3 text-sm">
-                        <span class="font-medium text-brandMaroon-600">{{ \Carbon\Carbon::parse($holiday['date'])->format('d M Y') }}</span>
+                        <span class="font-medium text-brandMaroon-600">{{ \Carbon\Carbon::parse($holiday['date'])->translatedFormat('d M Y') }}</span>
                         <span class="uppercase text-xs text-brandGray-500">{{ $holiday['type'] }}</span>
                         <span class="text-brandGray-700">{{ $holiday['title'] }}</span>
                     </li>
@@ -29,7 +29,7 @@
                     <div class="p-6">
                         <div class="flex items-center justify-between mb-4">
                             <div class="bg-brandBeige-100 text-brandMaroon-600 px-3 py-1 rounded-full text-sm font-medium">
-                                {{ \Carbon\Carbon::parse($event->start_date ?? $event->date ?? now())->format('M d') }}
+                                {{ \Carbon\Carbon::parse($event->start_date ?? $event->date ?? now())->translatedFormat('d M') }}
                             </div>
                             <div class="text-sm text-brandGray-500">
                                 {{ \Carbon\Carbon::parse($event->start_date ?? $event->date ?? now())->format('Y') }}
@@ -50,7 +50,7 @@
                         <div class="flex items-center justify-between">
                             <div class="text-sm text-brandGray-500">
                                 @if($event->start_time && is_object($event->start_time))
-                                    <span>{{ $event->start_time->format('g:i A') }}</span>
+                                    <span>{{ $event->start_time->translatedFormat('g:i A') }}</span>
                                 @elseif(isset($event->time))
                                     <span>{{ $event->time }}</span>
                                 @endif

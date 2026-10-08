@@ -24,7 +24,7 @@
                     
                     <div class="p-6">
                         <div class="text-sm text-brandGray-500 mb-2">
-                            {{ $post->published_at->format('M d, Y') }}
+                            {{ $post->published_at->translatedFormat('d M Y') }}
                             @if($post->author)
                                 • {{ __('public.By') }} {{ $post->author->name }}
                             @endif

@@ -4983,6 +4983,83 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pi. The public site's events, news, about and other pages in Dhivehi and Arabic (C20 slice LT5b, 2026-10-08)
+
+On `/dv` and `/ar`, a visitor read:
+- the about page in English from top to bottom: its title, its four
+  counters, the mission, vision, values and commitment, the team and
+  testimonial headings, its closing call;
+- achievements (title, empty line, *Photo on file*) and a job's *Closes …*;
+- an event's *Add to Calendar* and *Download .ics (Apple / Google /
+  Outlook)*, a news article's share buttons' names for a screen reader;
+- every date on events, news, a CMS page and search with an English month,
+  and a course's status in search as a code (`open`);
+- the prayer strip's date panel, on every page, with an English month — the
+  script carried its own list of English month names;
+- every refusal of registering for an event, in English: the eleven of
+  `RegisterForEventAction`, which the parent portal's event page shares, and
+  the website controller's two messages.
+
+**Through the phrase books:**
+- `public`: 54 Dhivehi and Arabic rows (46 new to English too); the
+  untranslated-strings baseline shrinks from 91 to 84.
+- Dates use `translatedFormat`; the prayer strip's months are Carbon's in
+  the page's language. The Hijri date beside them comes from
+  `IslamicCalendarService` in English (*Rabi' al-Awwal*, *AH*) and stays
+  (BACKLOG C20).
+- Brands (Facebook, Twitter, Viber) keep their names; their buttons' names
+  for a screen reader are said.
+- The English reads as it did.
+
+**On the pages:** an event's registration fields have names a screen reader
+can say. A CMS page's title, and a course's title and category in search,
+are the office's words, marked `data-office-words`.
+
+**Seed:** `SmokeMarkerSeeder::publicEventWalk()` — an upcoming public event
+that takes registrations (SMOKE-Lang-Event), and the walk's own
+registrations cleared each run. Dev and staging only.
+
+**Tests:** `PublicSitePagesSpeakThreeLanguagesTest`, 11 tests.
+- No English typed into the 11 views or written from their PHP.
+- Every key the views and the two server files name is in Dhivehi and
+  Arabic, and no English refusal is left in them.
+- Served under `/dv` and `/ar`: about, achievements, careers; an event with
+  its date and calendar button in Dhivehi.
+- A closed registration refused in Dhivehi; a registration confirmed in
+  Arabic and the same email refused in Arabic; the refusal in English as
+  before.
+
+Whole suite locally: **2886 passed (38784 assertions)**.
+
+**Walk:** `scripts/smoke/site-pages-language.mjs` (new, in `all.mjs`):
+**75/75**. About, events, SMOKE-Lang-Event, news, gallery, careers,
+achievements, search and the privacy page under `/dv` and `/ar`: each
+answers, reads right to left, carries none of the site's English phrases,
+and names every field. On `/dv`, registering for the event is confirmed in
+Dhivehi and the same email is refused in Dhivehi beside the form. Against
+`main`'s code: **52/75** — the about page is English, every date has an
+English month, and the refusal reads *You are already registered for this
+event.*
+The English walks still pass: `events.mjs` 6/6, `news.mjs` 6/6,
+`website.mjs` 54/54, `public-rtl.mjs` 90/90.
+
+**CI ran out of memory, and why.** This slice's first CI run died inside
+`StatusValuesAreWritableTest`: *Allowed memory size of 1073741824 bytes
+exhausted*.
+- The cause had been there for a while. CI checks out no `.env`, so every
+  test's boot reads the missing file with phpdotenv's suppressed
+  `@file_get_contents`. Pest kept one warning per test: `main`'s last run
+  ended *2874 warnings, 1 passed*. The warnings piled up until a run of this
+  size no longer fit in 1G.
+- Reproduced locally by moving `.env` aside: the same warning appears on
+  every test.
+- **Fix:** `ci.yml` creates an empty `.env` before Pest. Nothing else
+  changes, because `phpunit.xml` still supplies every value. The memory
+  limit stays at 1G.
+
+**Next (C20):** LT5c — the daily reminders and the certificate check;
+LT6 — the Library's public shelf, reader, My Library, wallet and gift cards.
+
 ## 5ph. The public course catalogue and a course page in Dhivehi and Arabic (C20 slice LT5a, 2026-10-08)
 
 On `/dv/courses` and a course's page, a visitor read:
