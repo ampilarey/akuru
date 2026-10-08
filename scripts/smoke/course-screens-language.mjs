@@ -1,6 +1,6 @@
 /**
  * Do the course-building screens read in Dhivehi and Arabic? (BACKLOG C19,
- * slices CT1–CT4, STATUS §5ok on.)
+ * slices CT1–CT5a, STATUS §5ok on.)
  *
  * The dean opens every translated course screen under /dv and /ar — the
  * system admin the one the website's course list owns, Deleted courses — and the
@@ -39,6 +39,8 @@ const CODE_KEYS = new Set([
     'question_type', 'difficulty', 'assessment_type', 'unlock_mode', 'value', 'kind', 'mode', 'normalizationModes',
     'normalizationFlags', 'textInputTypes', 'decision', 'type', 'language', 'direction', 'align', 'tone', 'font',
     'completion_rule', 'submission_kind', 'unlockModes', 'decisions', 'label', 'decision_label', 'english_name',
+    'q', 'statuses', 'assignment_type', 'overall_statuses', 'lane_results', 'revision_results', 'new_result',
+    'recent_revision_result', 'old_revision_result', 'overall_status', 'surah',
 ]);
 const ALWAYS_FINE = [/https?:\/\/\S*/g, /\{\{[a-z_]+\}\}/g, /\bCSV\b/g, /\bPDF\b/g, /\bJSON\b/g, /\bHTML\b/g, /\bYouTube\b/g, /\bVimeo\b/g];
 
@@ -107,6 +109,18 @@ await page.goto(`${BASE}/en/catalog/courses`, { waitUntil: 'networkidle' });
 const course = ((await props(page)).rows || []).find((row) => row.title === COURSE);
 check('the dean finds SMOKE-Course in the catalog', Boolean(course));
 
+// The halaqa sheet reads an engine session; SmokeMarkerSeeder plants one on
+// SMOKE-Offering for it (slice CT5a). Found as a teacher's office would: the
+// offering's sessions screen.
+await page.goto(`${BASE}/en/catalog/offerings`, { waitUntil: 'networkidle' });
+const sessionsHref = await page.locator('tr', { hasText: 'SMOKE-Offering' }).first().locator('a[href*="/sessions"]').first().getAttribute('href').catch(() => null);
+let halaqaSession = null;
+if (sessionsHref) {
+    await page.goto(new URL(sessionsHref, BASE).href, { waitUntil: 'networkidle' });
+    halaqaSession = ((await props(page)).sessions || []).find((row) => row.title === 'SMOKE-Halaqa-Sheet');
+}
+check('the dean finds the planted halaqa session', Boolean(halaqaSession), sessionsHref ?? 'no sessions link for SMOKE-Offering');
+
 const screens = [
     '/catalog/courses',
     `/catalog/courses/${course?.id}/outline`,
@@ -123,6 +137,10 @@ const screens = [
     '/catalog/levels',
     '/catalog/audiences',
     ['/admin/public-site/courses/deleted', office],
+    '/teach/assignments',
+    '/teach/milestones',
+    '/teach/recitations',
+    `/teach/quran-sessions/${halaqaSession?.id}`,
 ];
 
 for (const locale of ['dv', 'ar']) {

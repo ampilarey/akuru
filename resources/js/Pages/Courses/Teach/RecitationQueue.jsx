@@ -1,6 +1,9 @@
-import { router, useForm } from '@inertiajs/react';
+import { router, useForm, usePage } from '@inertiajs/react';
 import { Fragment, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
+
+// A code the server sends, named from the `quran` book (slice CT5a).
+const named = (q, family, code) => (code ? q[`${family}${code}`] || code.replaceAll('_', ' ') : '—');
 
 const MISTAKE_TYPES = [
     'wrong_letter', 'wrong_haraka', 'missed_word', 'added_word', 'repeated_word',
@@ -13,7 +16,7 @@ const OUTCOMES = ['passed', 'needs_repeat', 'failed', 'teacher_reviewed'];
 const range = (row) =>
     row.start_ayah_number ? `${row.start_ayah_number}–${row.end_ayah_number ?? row.start_ayah_number}` : '—';
 
-function ReviewForm({ submission, onDone }) {
+function ReviewForm({ t, q, submission, onDone }) {
     // `correction_audio` is a File, so this form posts multipart. Inertia
     // handles that automatically once a File is present in the data.
     const form = useForm({ status: 'passed', note: '', mistakes: [], correction_audio: null });
@@ -39,45 +42,46 @@ function ReviewForm({ submission, onDone }) {
                 the audio. */}
             {submission.has_audio ? (
                 <label className="grid gap-1 text-sm">
-                    <span className="font-medium">Listen to the recitation</span>
+                    <span className="font-medium">{t.qrec_listen || 'Listen to the recitation'}</span>
                     <audio controls preload="none" className="w-full max-w-lg" src={`/recitations/${submission.id}/audio/submission`}>
-                        Your browser cannot play audio.
+                        {t.qrec_no_audio_support || 'Your browser cannot play audio.'}
                     </audio>
                 </label>
             ) : (
                 <p className="text-sm text-amber-700">
-                    No recording was submitted — mark this one on what you heard in person.
+                    {t.qrec_no_recording || 'No recording was submitted — mark this one on what you heard in person.'}
                 </p>
             )}
 
             {submission.has_correction_audio && (
                 <label className="grid gap-1 text-sm">
-                    <span className="font-medium">Correction already attached</span>
+                    <span className="font-medium">{t.qrec_correction_attached || 'Correction already attached'}</span>
                     <audio controls preload="none" className="w-full max-w-lg" src={`/recitations/${submission.id}/audio/correction`}>
-                        Your browser cannot play audio.
+                        {t.qrec_no_audio_support || 'Your browser cannot play audio.'}
                     </audio>
                 </label>
             )}
 
             <div className="flex flex-wrap items-center gap-2">
-                <select className="form-input" value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
-                    {OUTCOMES.map((status) => <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>)}
+                <select className="form-input" aria-label={t.qrec_outcome || 'Outcome'} value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
+                    {OUTCOMES.map((status) => <option key={status} value={status}>{named(q, 'status_', status)}</option>)}
                 </select>
                 <input
                     className="form-input flex-1"
-                    placeholder="Teacher note"
+                    placeholder={t.qrec_teacher_note || 'Teacher note'}
+                    aria-label={t.qrec_teacher_note || 'Teacher note'}
                     value={form.data.note}
                     onChange={(e) => form.setData('note', e.target.value)}
                 />
-                <button type="button" className="btn-secondary" onClick={addMistake}>+ Mistake</button>
-                <button type="submit" className="btn-primary" disabled={form.processing}>Save review</button>
+                <button type="button" className="btn-secondary" onClick={addMistake}>{t.qrec_add_mistake || '+ Mistake'}</button>
+                <button type="submit" className="btn-primary" disabled={form.processing}>{t.qrec_save || 'Save review'}</button>
             </div>
 
             {/* §36 "Upload correction audio". A written note describes the
                 correction; the teacher reciting it *is* the correction. */}
             <label className="grid gap-1 text-sm">
                 <span className="font-medium">
-                    Record or attach a correction <span className="font-normal text-gray-500">(optional)</span>
+                    {t.qrec_attach_correction || 'Record or attach a correction'} <span className="font-normal text-gray-500">{t.qrec_optional || '(optional)'}</span>
                 </span>
                 <input
                     type="file"
@@ -89,33 +93,34 @@ function ReviewForm({ submission, onDone }) {
                     <span className="text-xs text-red-600">{form.errors.correction_audio}</span>
                 )}
                 <span className="text-xs text-gray-500">
-                    Up to 20 MB. The student can play it from their Qur&apos;an page.
+                    {t.qrec_correction_hint || 'Up to 20 MB. The student can play it from their Qur’an page.'}
                 </span>
             </label>
             {form.data.mistakes.map((mistake, index) => (
                 <div key={index} className="flex flex-wrap items-center gap-2">
-                    <select className="form-input" value={mistake.mistake_type} onChange={(e) => setMistake(index, 'mistake_type', e.target.value)}>
-                        {MISTAKE_TYPES.map((type) => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}
+                    <select className="form-input" aria-label={t.qrec_mistake_type || 'Mistake'} value={mistake.mistake_type} onChange={(e) => setMistake(index, 'mistake_type', e.target.value)}>
+                        {MISTAKE_TYPES.map((type) => <option key={type} value={type}>{named(q, 'mistake_', type)}</option>)}
                     </select>
-                    <select className="form-input" value={mistake.severity} onChange={(e) => setMistake(index, 'severity', e.target.value)}>
-                        {SEVERITIES.map((severity) => <option key={severity} value={severity}>{severity}</option>)}
+                    <select className="form-input" aria-label={t.qrec_severity || 'Severity'} value={mistake.severity} onChange={(e) => setMistake(index, 'severity', e.target.value)}>
+                        {SEVERITIES.map((severity) => <option key={severity} value={severity}>{named(q, 'severity_', severity)}</option>)}
                     </select>
-                    <input className="form-input w-24" type="number" min="1" placeholder="Ayah" value={mistake.ayah_number} onChange={(e) => setMistake(index, 'ayah_number', e.target.value)} />
-                    <input className="form-input flex-1" placeholder="Comment" value={mistake.comment} onChange={(e) => setMistake(index, 'comment', e.target.value)} />
-                    <button type="button" className="text-sm text-red-600" onClick={() => removeMistake(index)}>Remove</button>
+                    <input className="form-input w-24" type="number" min="1" placeholder={t.qt_ayah || 'Ayah'} aria-label={t.qt_ayah || 'Ayah'} value={mistake.ayah_number} onChange={(e) => setMistake(index, 'ayah_number', e.target.value)} />
+                    <input className="form-input flex-1" placeholder={t.qrec_comment || 'Comment'} aria-label={t.qrec_comment || 'Comment'} value={mistake.comment} onChange={(e) => setMistake(index, 'comment', e.target.value)} />
+                    <button type="button" className="text-sm text-red-600" onClick={() => removeMistake(index)}>{t.qrec_remove || 'Remove'}</button>
                 </div>
             ))}
         </form>
     );
 }
 
-export default function RecitationQueue({ rows, statuses, status }) {
+export default function RecitationQueue({ rows, statuses, status, t = {}, q = {} }) {
     const [openId, setOpenId] = useState(null);
+    const locale = usePage().props.locale || 'en';
 
     return (
-        <AppShell title="Recitation review queue">
+        <AppShell title={t.qrec_title || 'Recitation review queue'}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex flex-wrap gap-1">
+                <div className="flex flex-wrap gap-1" role="group" aria-label={t.qt_filter || 'Show'}>
                     {statuses.map((option) => (
                         <button
                             key={option}
@@ -123,48 +128,48 @@ export default function RecitationQueue({ rows, statuses, status }) {
                             onClick={() => router.get('/teach/recitations', option === 'all' ? {} : { status: option }, { preserveState: false })}
                             className={`rounded px-3 py-1 text-sm ${option === status ? 'bg-[#0F6D5F] text-white' : 'bg-gray-100'}`}
                         >
-                            {option.replaceAll('_', ' ')}
+                            {option === 'all' ? (q.all || 'all') : named(q, 'status_', option)}
                         </button>
                     ))}
                 </div>
-                <a className="btn-secondary" href={`/teach/recitations?status=${status}&format=csv`}>Export CSV</a>
+                <a className="btn-secondary" href={`/teach/recitations?status=${status}&format=csv`}>{t.catalog_export || 'Export CSV'}</a>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">Student</th>
-                            <th className="px-3 py-2">Surah</th>
-                            <th className="px-3 py-2">Ayahs</th>
-                            <th className="px-3 py-2">Submitted</th>
-                            <th className="px-3 py-2">Status</th>
-                            <th className="px-3 py-2">Mistakes</th>
+                            <th className="px-3 py-2">{t.qt_col_student || 'Student'}</th>
+                            <th className="px-3 py-2">{t.qt_col_surah || 'Surah'}</th>
+                            <th className="px-3 py-2">{t.qt_col_ayahs || 'Ayahs'}</th>
+                            <th className="px-3 py-2">{t.qrec_col_submitted || 'Submitted'}</th>
+                            <th className="px-3 py-2">{t.qt_col_status || 'Status'}</th>
+                            <th className="px-3 py-2">{t.qt_col_mistakes || 'Mistakes'}</th>
                             <th className="px-3 py-2" />
                         </tr>
                     </thead>
                     <tbody>
                         {rows.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={7}>Queue is empty.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={7}>{t.qrec_none || 'Queue is empty.'}</td></tr>
                         )}
                         {rows.map((row) => (
                             <Fragment key={row.id}>
                                 <tr className="border-t">
                                     <td className="px-3 py-2">{row.student?.name ?? '—'}</td>
-                                    <td className="px-3 py-2">{row.surah ?? '—'}</td>
+                                    <td className="px-3 py-2">{(locale === 'en' ? row.surah : row.surah_arabic || row.surah) ?? '—'}</td>
                                     <td className="px-3 py-2">{range(row)}</td>
                                     <td className="px-3 py-2">{row.submitted_at}</td>
-                                    <td className="px-3 py-2">{row.status?.replaceAll('_', ' ')}</td>
+                                    <td className="px-3 py-2">{named(q, 'status_', row.status)}</td>
                                     <td className="px-3 py-2">{row.mistake_count}</td>
                                     <td className="px-3 py-2 text-end">
                                         <button type="button" className="btn-secondary" onClick={() => setOpenId(openId === row.id ? null : row.id)}>
-                                            {openId === row.id ? 'Close' : 'Review'}
+                                            {openId === row.id ? (t.qt_close || 'Close') : (t.qt_review || 'Review')}
                                         </button>
                                     </td>
                                 </tr>
                                 {openId === row.id && (
                                     <tr>
                                         <td colSpan={7} className="p-0">
-                                            <ReviewForm submission={row} onDone={() => setOpenId(null)} />
+                                            <ReviewForm t={t} q={q} submission={row} onDone={() => setOpenId(null)} />
                                         </td>
                                     </tr>
                                 )}

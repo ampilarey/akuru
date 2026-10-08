@@ -8,6 +8,7 @@ use App\Domains\Courses\Components\Quran\Actions\SaveQuranSessionRecordAction;
 use App\Domains\People\Actions\ResolveTeacherForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -49,7 +50,7 @@ class TeachQuranSessionController extends Controller
             }, 'quran-session-sheet.csv', ['Content-Type' => 'text/csv']);
         }
 
-        return Inertia::render('Courses/Teach/QuranSessionSheet', $payload);
+        return Inertia::render('Courses/Teach/QuranSessionSheet', $payload + ['t' => Phrases::once('teach'), 'q' => Phrases::once('quran')]);
     }
 
     public function storeRecord(Request $request, int $session): RedirectResponse
@@ -86,7 +87,7 @@ class TeachQuranSessionController extends Controller
             'created_by' => (int) $request->user()->id,
         ]);
 
-        return back()->with('success', 'Session record saved.');
+        return back()->with('success', __('teach.flash_qsheet_saved'));
     }
 
     public function review(Request $request, int $record): RedirectResponse
@@ -100,7 +101,7 @@ class TeachQuranSessionController extends Controller
             $data['supervisor_note'] ?? null,
         );
 
-        return back()->with('success', 'Record reviewed.');
+        return back()->with('success', __('teach.flash_qsheet_reviewed'));
     }
 
     private function authorizeTeacher(Request $request): void

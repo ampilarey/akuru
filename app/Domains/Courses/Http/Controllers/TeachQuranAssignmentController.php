@@ -9,6 +9,7 @@ use App\Domains\Courses\Components\Quran\Models\QuranHifzAssignment;
 use App\Domains\People\Actions\ResolveTeacherForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -57,6 +58,7 @@ class TeachQuranAssignmentController extends Controller
         }
 
         return Inertia::render('Courses/Teach/QuranAssignments', $payload + [
+            't' => Phrases::once('teach'), 'q' => Phrases::once('quran'),
             'status' => $status,
             'teacher' => $teacher,
             'reference' => app(ListArabicReferenceAction::class)->execute(activeOnly: true),
@@ -70,7 +72,7 @@ class TeachQuranAssignmentController extends Controller
 
         $teacherId = $teacher['id'] ?? ($isStaff ? (int) ($data['teacher_id'] ?? 0) : 0);
         if ($teacherId === 0) {
-            throw ValidationException::withMessages(['teacher_id' => 'No teacher profile to assign as.']);
+            throw ValidationException::withMessages(['teacher_id' => __('teach.qassign_no_teacher')]);
         }
 
         app(SaveQuranAssignmentAction::class)->execute($data + [
@@ -78,7 +80,7 @@ class TeachQuranAssignmentController extends Controller
             'created_by' => (int) $request->user()->id,
         ]);
 
-        return back()->with('success', 'Assignment created.');
+        return back()->with('success', __('teach.flash_qassign_created'));
     }
 
     public function update(Request $request, int $assignment): RedirectResponse
@@ -110,7 +112,7 @@ class TeachQuranAssignmentController extends Controller
             $data,
         ), $row);
 
-        return back()->with('success', 'Assignment updated.');
+        return back()->with('success', __('teach.flash_qassign_updated'));
     }
 
     /**

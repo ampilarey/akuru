@@ -1,0 +1,69 @@
+<?php
+
+/**
+ * The Qur'an component's codes, named (C19 slice CT5a, STATUS §5or): an
+ * assignment's type, the status of an assignment, a recitation or a
+ * milestone, a mistake and its severity, a halaqa sheet's results and
+ * attendance, a milestone's type. One book, so the teacher's screens and the
+ * learner's name a code the same way. Each key is a family prefix and the
+ * enum's value.
+ */
+return [
+
+    // Assignments, recitations and milestones (slice CT5a, STATUS §5or).
+    'all' => 'الكل',
+    'assignment_type_letter_haraka_practice' => 'تدريب على الحروف والحركات',
+    'assignment_type_new_memorization' => 'حفظ جديد',
+    'assignment_type_revision' => 'مراجعة',
+    'assignment_type_correction_repeat' => 'إعادة للتصحيح',
+    'assignment_type_assessment' => 'تقييم',
+    'status_assigned' => 'مُسنَد',
+    'status_in_progress' => 'قيد التنفيذ',
+    'status_submitted' => 'مُسلَّم',
+    'status_needs_repeat' => 'يحتاج إلى إعادة',
+    'status_passed' => 'ناجح',
+    'status_failed' => 'راسب',
+    'status_cancelled' => 'ملغى',
+    'status_ai_checked' => 'فحصه الذكاء الاصطناعي',
+    'status_teacher_reviewed' => 'راجعه المعلم',
+    'status_supervisor_reviewed' => 'راجعه المشرف',
+    'status_dean_reviewed' => 'راجعه العميد',
+    'status_ai_processed_later' => 'فحص الذكاء الاصطناعي لاحقاً',
+    'status_pending' => 'قيد الانتظار',
+    'status_approved' => 'معتمد',
+    'status_rejected' => 'مرفوض',
+    'milestone_type_surah_completed' => 'إتمام سورة',
+    'milestone_type_juz_completed' => 'إتمام جزء',
+    'milestone_type_page_completed' => 'إتمام صفحة',
+    'milestone_type_quran_completed' => 'ختم القرآن',
+    'milestone_type_custom' => 'مخصّص',
+    'mistake_wrong_letter' => 'حرف خاطئ',
+    'mistake_wrong_haraka' => 'حركة خاطئة',
+    'mistake_missed_word' => 'كلمة ناقصة',
+    'mistake_added_word' => 'كلمة زائدة',
+    'mistake_repeated_word' => 'كلمة مكررة',
+    'mistake_wrong_word' => 'كلمة خاطئة',
+    'mistake_pronunciation_issue' => 'مشكلة في النطق',
+    'mistake_waqf_issue' => 'مشكلة في الوقف',
+    'mistake_madd_issue' => 'مشكلة في المد',
+    'mistake_ghunnah_issue' => 'مشكلة في الغنة',
+    'mistake_tajweed_issue' => 'مشكلة في التجويد',
+    'mistake_other' => 'أخرى',
+    'severity_minor' => 'بسيط',
+    'severity_medium' => 'متوسط',
+    'severity_major' => 'كبير',
+    'result_pass' => 'ناجح',
+    'result_pass_with_notes' => 'ناجح مع ملاحظات',
+    'result_repeat' => 'إعادة',
+    'result_not_prepared' => 'غير مستعد',
+    'result_not_done' => 'لم يُنجَز',
+    'overall_excellent' => 'ممتاز',
+    'overall_good' => 'جيد',
+    'overall_needs_revision' => 'يحتاج إلى مراجعة',
+    'overall_weak' => 'ضعيف',
+    'overall_absent' => 'غائب',
+    'attendance_present' => 'حاضر',
+    'attendance_late' => 'متأخر',
+    'attendance_absent' => 'غائب',
+    'attendance_excused' => 'معذور',
+];

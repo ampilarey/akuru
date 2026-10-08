@@ -57,6 +57,10 @@ class ListQuranAssignmentsAction
                     'surah' => $row->surah_id
                         ? ($surahs->get((int) $row->surah_id)['english_name'] ?? null)
                         : null,
+                    // A Dhivehi or Arabic page names the surah in Arabic (slice CT5a).
+                    'surah_arabic' => $row->surah_id
+                        ? ($surahs->get((int) $row->surah_id)['arabic_name'] ?? null)
+                        : null,
                     'start_ayah_number' => $row->start_ayah_number,
                     'end_ayah_number' => $row->end_ayah_number,
                     'expected_letter_id' => $row->expected_letter_id,
@@ -75,6 +79,7 @@ class ListQuranAssignmentsAction
                     'id' => $surah['id'],
                     'index' => $surah['index'],
                     'english_name' => $surah['english_name'],
+                    'arabic_name' => $surah['arabic_name'] ?? null,
                 ])
                 ->values()
                 ->all(),

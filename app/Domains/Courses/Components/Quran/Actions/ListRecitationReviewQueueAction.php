@@ -43,6 +43,10 @@ class ListRecitationReviewQueueAction
                     'surah' => $row->surah_id
                         ? ($surahs->get((int) $row->surah_id)['english_name'] ?? null)
                         : null,
+                    // A Dhivehi or Arabic page names the surah in Arabic (slice CT5a).
+                    'surah_arabic' => $row->surah_id
+                        ? ($surahs->get((int) $row->surah_id)['arabic_name'] ?? null)
+                        : null,
                     'start_ayah_number' => $row->start_ayah_number,
                     'end_ayah_number' => $row->end_ayah_number,
                     'mode' => $row->mode?->value,

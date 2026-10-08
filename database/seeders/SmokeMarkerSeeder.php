@@ -397,7 +397,7 @@ class SmokeMarkerSeeder extends Seeder
             ]);
         }
 
-        DB::table('course_offerings')->insert([
+        $offeringId = DB::table('course_offerings')->insertGetId([
             'course_id' => $courseId,
             'title' => 'SMOKE-Offering',
             'slug' => 'smoke-offering',
@@ -411,6 +411,17 @@ class SmokeMarkerSeeder extends Seeder
             'status' => 'draft',
             'level_id' => DB::table('course_levels')->orderBy('id')->value('id'),
             'audience_id' => DB::table('audiences')->orderBy('id')->value('id'),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
+
+        // The halaqa sheet (`/teach/quran-sessions/{id}`) reads an engine
+        // session, and nothing else plants one before `quran.mjs` runs;
+        // `course-screens-language.mjs` opens the sheet by this title (C19
+        // slice CT5a). The offering's sessions are cleared above, so this is
+        // the one.
+        DB::table('course_offering_sessions')->insert([
+            'course_offering_id' => $offeringId, 'title' => 'SMOKE-Halaqa-Sheet', 'session_type' => 'face_to_face',
+            'starts_at' => now()->setTime(9, 0), 'ends_at' => now()->setTime(10, 0),
             'created_at' => now(), 'updated_at' => now(),
         ]);
 
