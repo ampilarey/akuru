@@ -16,9 +16,9 @@
         @endif
         @if($deadlineBadge)
             <span class="inline-flex items-center px-3 py-1 text-sm font-semibold rounded-full bg-brandMaroon-50 text-brandMaroon-800">
-                Closes {{ $deadline }}
+                {{ __('public.Closes :date', ['date' => $deadline ? \Carbon\Carbon::parse($deadline)->translatedFormat('d M Y') : '']) }}
                 @if($deadlineDays !== null)
-                    · {{ $deadlineDays }} {{ $deadlineDays === 1 ? 'day' : 'days' }} left
+                    · {{ trans_choice('public.:count day left|:count days left', (int) $deadlineDays) }}
                 @endif
             </span>
         @endif

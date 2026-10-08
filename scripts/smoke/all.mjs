@@ -153,6 +153,7 @@ const WALKS = [
     { name: 'writer-language', writes: true, asks: 'Do the Library\'s writer portal and peer review read in Dhivehi and Arabic, and is a refused submission said on its own row?' },
     { name: 'library-office-language', writes: true, asks: 'Does the Library office read in Dhivehi and Arabic, and is a refused assignment said on its own row?' },
     { name: 'front-door-language', writes: true, asks: 'Do the header, footer, home page, error pages, admissions and contact read in Dhivehi and Arabic, and is an applicant on the Dhivehi page thanked in Dhivehi?' },
+    { name: 'course-pages-language', writes: false, asks: 'Do the course catalogue and a course page read in Dhivehi and Arabic — statuses, levels, durations, seat labels and questions included — and does a filter come back in the page\'s language?' },
 ];
 
 const args = process.argv.slice(2);

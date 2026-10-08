@@ -249,20 +249,16 @@ class Course extends Model
 
     public function getDurationTextAttribute()
     {
+        // Said in the page's language (BACKLOG C20, LT5a); the English reads as it did.
         if (! $this->duration_weeks) {
-            return 'Ongoing';
+            return __('public.Ongoing');
         }
 
-        if ($this->duration_weeks == 1) {
-            return '1 week';
-        }
         if ($this->duration_weeks < 4) {
-            return $this->duration_weeks.' weeks';
+            return trans_choice('public.:count week|:count weeks', (int) $this->duration_weeks);
         }
 
-        $months = round($this->duration_weeks / 4);
-
-        return $months.' month'.($months > 1 ? 's' : '');
+        return trans_choice('public.:count month|:count months', (int) round($this->duration_weeks / 4));
     }
 
     protected function slug(): Attribute

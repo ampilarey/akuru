@@ -90,6 +90,19 @@ it('prints no English of its own on the front door', function () {
     expect($found)->toBe([]);
 });
 
+it('writes no English sentence from the front door\'s PHP', function () {
+    // The layout's fallbacks are the app's name and the search engines' keywords.
+    $allowed = ['Akuru Institute', 'Quran, Arabic, Islamic Studies, Education, Maldives, Akuru Institute'];
+    $found = [];
+    foreach (frontDoorViews() as $view) {
+        foreach (bladeEnglishLiterals(resource_path('views/'.$view), $allowed) as $text) {
+            $found[] = "{$view}: {$text}";
+        }
+    }
+
+    expect($found)->toBe([]);
+});
+
 it('says every phrase of the front door in Dhivehi and Arabic', function () {
     $files = array_merge(array_map(fn ($view) => 'resources/views/'.$view, frontDoorViews()), frontDoorServerFiles());
     $gaps = [];
