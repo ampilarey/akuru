@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 
@@ -36,8 +36,11 @@ const FLAG_LABELS = {
     normalize_alef: 'Normalize alef variants',
     normalize_hamza: 'Normalize hamza variants',
     taa_marbuta: 'Tolerate taa marbuta',
+    strip_tatweel: 'Remove tatweel (ـ)',
 };
-const ARABIC_FLAGS = ['strip_tashkeel', 'normalize_alef', 'normalize_hamza', 'taa_marbuta'];
+// `strip_tatweel` (SPEC §51.8) is an Arabic switch like the four before it; it
+// had no label here and sat under General as its own key (slice CT2).
+const ARABIC_FLAGS = ['strip_tashkeel', 'normalize_alef', 'normalize_hamza', 'taa_marbuta', 'strip_tatweel'];
 
 export default function Questions({
     rows,
@@ -49,7 +52,17 @@ export default function Questions({
     textInputTypes = [],
     normalizationFlags = [],
     normalizationModes = [],
+    t = {},
 }) {
+    // Every string below is a key in the `teach` book (slice CT2, STATUS
+    // §5ol); the English is the fallback. The JSON samples above keep their
+    // English values: the keys are the format, the values are what the author
+    // types over.
+    const locale = usePage().props.locale || 'en';
+    const subjectName = (subject) => subject[`name_${locale}`] || subject.name_en;
+    const typeName = (type) => t[`question_type_${type}`] || type;
+    const difficultyName = (difficulty) => t[`difficulty_${difficulty}`] || difficulty;
+    const kindName = (attachment) => t[`block_${attachment.kind}`] || attachment.kind || attachment.mime || t.questions_attachment || 'attachment';
     const blank = {
         title: '',
         question_text: '',
@@ -146,42 +159,42 @@ export default function Questions({
                 checked={settings[flag] === true}
                 onChange={(e) => setSetting(flag, e.target.checked ? true : '')}
             />
-            {FLAG_LABELS[flag] || flag}
+            {t[`flag_${flag}`] || FLAG_LABELS[flag] || flag}
         </label>
     );
 
     return (
-        <AppShell title="Question bank">
+        <AppShell title={t.nav_question_bank || 'Question bank'}>
             {/* `index` has accepted subject/course/type filters since the bank
                 was built, and no control on the page could set one — the
                 mirror image of a column nothing writes. A bank you cannot
                 narrow stops being usable at a few hundred questions. */}
             <form method="get" className="mb-4 flex flex-wrap items-end gap-3">
                 <label className="text-sm">
-                    <span className="block text-xs text-gray-600">Subject</span>
+                    <span className="block text-xs text-gray-600">{t.catalog_col_subject || 'Subject'}</span>
                     <select className="form-input" name="subject_id" defaultValue={filters.subject_id || ''}>
-                        <option value="">Any subject</option>
-                        {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name_en}</option>)}
+                        <option value="">{t.questions_any_subject || 'Any subject'}</option>
+                        {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subjectName(subject)}</option>)}
                     </select>
                 </label>
                 <label className="text-sm">
-                    <span className="block text-xs text-gray-600">Course</span>
+                    <span className="block text-xs text-gray-600">{t.questions_course || 'Course'}</span>
                     <select className="form-input" name="course_id" defaultValue={filters.course_id || ''}>
-                        <option value="">Any course</option>
+                        <option value="">{t.questions_any_course || 'Any course'}</option>
                         {courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
                     </select>
                 </label>
                 <label className="text-sm">
-                    <span className="block text-xs text-gray-600">Type</span>
+                    <span className="block text-xs text-gray-600">{t.activities_col_type || 'Type'}</span>
                     <select className="form-input" name="question_type" defaultValue={filters.question_type || ''}>
-                        <option value="">Any type</option>
-                        {types.map((type) => <option key={type} value={type}>{type}</option>)}
+                        <option value="">{t.questions_any_type || 'Any type'}</option>
+                        {types.map((type) => <option key={type} value={type}>{typeName(type)}</option>)}
                     </select>
                 </label>
-                <button type="submit" className="btn-secondary">Filter</button>
-                <a className="btn-secondary" href="/catalog/questions">Clear</a>
+                <button type="submit" className="btn-secondary">{t.questions_filter || 'Filter'}</button>
+                <a className="btn-secondary" href="/catalog/questions">{t.questions_clear || 'Clear'}</a>
                 <span className="ms-auto" />
-                <a className="btn-secondary" href="/catalog/questions/export">Export CSV</a>
+                <a className="btn-secondary" href="/catalog/questions/export">{t.catalog_export || 'Export CSV'}</a>
             </form>
             <form
                 onSubmit={(e) => {
@@ -191,20 +204,21 @@ export default function Questions({
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-2"
             >
                 <p className="md:col-span-2 text-sm font-medium">
-                    {editing ? `Editing question #${editing}` : 'New question'}
+                    {editing ? (t.questions_editing || 'Editing question #:id').replace(':id', editing) : (t.questions_new || 'New question')}
                     {editing && (
                         <button
                             type="button"
                             className="ms-3 text-xs text-[#7C2D37] hover:underline"
                             onClick={() => { setEditing(null); form.reset(); }}
                         >
-                            Cancel and start a new one
+                            {t.questions_cancel_edit || 'Cancel and start a new one'}
                         </button>
                     )}
                 </p>
-                <input className="form-input" placeholder="Title (optional)" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+                <input className="form-input" placeholder={t.outline_embed_title || 'Title (optional)'} aria-label={t.outline_embed_title || 'Title (optional)'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
                 <select
                     className="form-input"
+                    aria-label={t.questions_type || 'Question type'}
                     value={form.data.question_type}
                     onChange={(e) => {
                         const question_type = e.target.value;
@@ -216,37 +230,38 @@ export default function Questions({
                         });
                     }}
                 >
-                    {types.map((type) => <option key={type} value={type}>{type}</option>)}
+                    {types.map((type) => <option key={type} value={type}>{typeName(type)}</option>)}
                 </select>
-                <select className="form-input" value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
-                    <option value="">Any subject</option>
-                    {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name_en}</option>)}
+                <select className="form-input" aria-label={t.catalog_col_subject || 'Subject'} value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
+                    <option value="">{t.questions_any_subject || 'Any subject'}</option>
+                    {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subjectName(subject)}</option>)}
                 </select>
                 {/* §20: "Course ID nullable". A question may belong to a course
                     or to none — a bank is reusable, so "none" is the norm and
                     not an omission. */}
-                <select className="form-input" value={form.data.course_id} onChange={(e) => form.setData('course_id', e.target.value)}>
-                    <option value="">No course (reusable)</option>
+                <select className="form-input" aria-label={t.questions_course || 'Course'} value={form.data.course_id} onChange={(e) => form.setData('course_id', e.target.value)}>
+                    <option value="">{t.questions_no_course || 'No course (reusable)'}</option>
                     {courses.map((course) => <option key={course.id} value={course.id}>{course.title}</option>)}
                 </select>
-                <select className="form-input" value={form.data.difficulty} onChange={(e) => form.setData('difficulty', e.target.value)}>
-                    <option value="easy">easy</option>
-                    <option value="medium">medium</option>
-                    <option value="hard">hard</option>
+                <select className="form-input" aria-label={t.questions_difficulty || 'Difficulty'} value={form.data.difficulty} onChange={(e) => form.setData('difficulty', e.target.value)}>
+                    <option value="easy">{difficultyName('easy')}</option>
+                    <option value="medium">{difficultyName('medium')}</option>
+                    <option value="hard">{difficultyName('hard')}</option>
                 </select>
-                <textarea className="form-input md:col-span-2 min-h-20" placeholder="Question text" value={form.data.question_text} onChange={(e) => form.setData('question_text', e.target.value)} />
+                <textarea className="form-input md:col-span-2 min-h-20" placeholder={t.questions_text || 'Question text'} aria-label={t.questions_text || 'Question text'} value={form.data.question_text} onChange={(e) => form.setData('question_text', e.target.value)} />
                 {/* §20 names "Secondary text" as a field of its own — the
                     passage, transliteration or stem a question hangs off. The
                     column, the model, the payload and §21's snapshot all
                     carried it; there was no control to type it into. */}
                 <textarea
                     className="form-input md:col-span-2 min-h-16"
-                    placeholder="Secondary text — passage, transliteration or context shown with the question (optional)"
+                    placeholder={t.questions_secondary || 'Secondary text — passage, transliteration or context shown with the question (optional)'}
+                    aria-label={t.questions_secondary || 'Secondary text — passage, transliteration or context shown with the question (optional)'}
                     value={form.data.secondary_text}
                     onChange={(e) => form.setData('secondary_text', e.target.value)}
                 />
-                <textarea className="form-input min-h-24 font-mono text-xs" value={form.data.options} onChange={(e) => form.setData('options', e.target.value)} />
-                <textarea className="form-input min-h-24 font-mono text-xs" value={form.data.correct_answer} onChange={(e) => form.setData('correct_answer', e.target.value)} />
+                <textarea className="form-input min-h-24 font-mono text-xs" dir="ltr" aria-label={t.questions_options || 'Options (JSON)'} value={form.data.options} onChange={(e) => form.setData('options', e.target.value)} />
+                <textarea className="form-input min-h-24 font-mono text-xs" dir="ltr" aria-label={t.questions_correct || 'Correct answer (JSON)'} value={form.data.correct_answer} onChange={(e) => form.setData('correct_answer', e.target.value)} />
                 {/* §18: "For auto-marked text input, comparison must be
                     configurable per activity." The column and the scorer both
                     existed; there was no control anywhere to set them, so
@@ -254,37 +269,37 @@ export default function Questions({
                 {isTextInput && (
                     <fieldset className="md:col-span-2 rounded-lg border bg-[#F9F4EE] p-3">
                         <legend className="px-1 text-xs font-medium uppercase tracking-wide text-gray-600">
-                            Answer comparison
+                            {t.questions_comparison || 'Answer comparison'}
                         </legend>
                         <label className="mb-2 flex flex-wrap items-center gap-2 text-sm">
-                            <span>Mode</span>
+                            <span>{t.questions_mode || 'Mode'}</span>
                             <select
                                 className="form-input"
                                 value={settings.mode || ''}
                                 onChange={(e) => setSetting('mode', e.target.value)}
                             >
-                                <option value="">Default</option>
-                                {normalizationModes.map((mode) => <option key={mode} value={mode}>{mode}</option>)}
+                                <option value="">{t.questions_mode_default || 'Default'}</option>
+                                {normalizationModes.map((mode) => <option key={mode} value={mode}>{t[`mode_${mode}`] || mode}</option>)}
                             </select>
                             <span className="text-xs text-gray-600">
-                                A mode sets the switches below; ticking one overrides the mode for that switch.
+                                {t.questions_mode_hint || 'A mode sets the switches below; ticking one overrides the mode for that switch.'}
                             </span>
                         </label>
                         <div className="grid gap-1 md:grid-cols-2">
                             <div>
-                                <p className="mb-1 text-xs font-medium text-gray-600">General</p>
+                                <p className="mb-1 text-xs font-medium text-gray-600">{t.questions_general || 'General'}</p>
                                 {generalFlags.map(flagCheckbox)}
                             </div>
                             <div>
                                 <p className="mb-1 text-xs font-medium text-gray-600">
-                                    Arabic — applied only when ticked
+                                    {t.questions_arabic_flags || 'Arabic — applied only when ticked'}
                                 </p>
                                 {arabicFlags.map(flagCheckbox)}
                             </div>
                         </div>
                         <label className="mt-2 block text-sm">
                             <span className="text-xs text-gray-600">
-                                Other accepted answers, one per line
+                                {t.questions_other_answers || 'Other accepted answers, one per line'}
                             </span>
                             <textarea
                                 className="form-input min-h-16"
@@ -303,25 +318,26 @@ export default function Questions({
                     every question in the bank explained nothing. */}
                 <textarea
                     className="form-input md:col-span-2 min-h-16"
-                    placeholder="Explanation — shown after marking, when the assessment reveals correct answers (optional)"
+                    placeholder={t.questions_explanation || 'Explanation — shown after marking, when the assessment reveals correct answers (optional)'}
+                    aria-label={t.questions_explanation || 'Explanation — shown after marking, when the assessment reveals correct answers (optional)'}
                     value={form.data.explanation}
                     onChange={(e) => form.setData('explanation', e.target.value)}
                 />
-                <input className="form-input" placeholder="Skill tag" value={form.data.skill_tag} onChange={(e) => form.setData('skill_tag', e.target.value)} />
+                <input className="form-input" placeholder={t.questions_skill_tag || 'Skill tag'} aria-label={t.questions_skill_tag || 'Skill tag'} value={form.data.skill_tag} onChange={(e) => form.setData('skill_tag', e.target.value)} />
                 {/* §20 "Question Attachments": audio, image, PDF, video
                     reference. The upload existed; what was attached was never
                     shown back, so an author could not tell whether a file had
                     landed, which one it was, or take a wrong one off again. */}
                 <fieldset className="md:col-span-2 rounded-lg border bg-[#F9F4EE] p-3">
                     <legend className="px-1 text-xs font-medium uppercase tracking-wide text-gray-600">
-                        Attachments
+                        {t.questions_attachments || 'Attachments'}
                     </legend>
                     {editingRow && (editingRow.attachments || []).length > 0 && (
                         <ul className="mb-2 space-y-1 text-sm">
                             {(editingRow.attachments || []).map((attachment, index) => (
                                 <li key={index} className="flex flex-wrap items-center gap-2">
                                     <span>
-                                        {attachment.kind || attachment.mime || 'attachment'}
+                                        {kindName(attachment)}
                                         {attachment.original_name ? ` · ${attachment.original_name}` : ''}
                                         {attachment.embed_url ? ` · ${attachment.embed_url}` : ''}
                                     </span>
@@ -330,7 +346,7 @@ export default function Questions({
                                         className="btn-secondary"
                                         onClick={() => submit({ remove_attachment: index })}
                                     >
-                                        Remove
+                                        {t.outline_remove || 'Remove'}
                                     </button>
                                 </li>
                             ))}
@@ -338,15 +354,15 @@ export default function Questions({
                     )}
                     <div className="grid gap-2 md:grid-cols-3">
                         <label className="text-sm">
-                            <span className="text-xs text-gray-600">Upload audio, image, PDF or video</span>
+                            <span className="text-xs text-gray-600">{t.questions_upload || 'Upload audio, image, PDF or video'}</span>
                             <input className="form-input" type="file" onChange={(e) => form.setData('file', e.target.files?.[0] || null)} />
                         </label>
                         <label className="text-sm">
-                            <span className="text-xs text-gray-600">Or reference a video (YouTube / Vimeo)</span>
-                            <input className="form-input" placeholder="https://…" value={form.data.video_url} onChange={(e) => form.setData('video_url', e.target.value)} />
+                            <span className="text-xs text-gray-600">{t.questions_video_ref || 'Or reference a video (YouTube / Vimeo)'}</span>
+                            <input className="form-input" dir="ltr" placeholder={t.outline_embed_url || 'https://… (optional)'} value={form.data.video_url} onChange={(e) => form.setData('video_url', e.target.value)} />
                         </label>
                         <label className="text-sm">
-                            <span className="text-xs text-gray-600">Video label (optional)</span>
+                            <span className="text-xs text-gray-600">{t.questions_video_label || 'Video label (optional)'}</span>
                             <input className="form-input" value={form.data.video_title} onChange={(e) => form.setData('video_title', e.target.value)} />
                         </label>
                     </div>
@@ -356,6 +372,7 @@ export default function Questions({
                 {standards.length > 0 && (
                     <select
                         className="form-input md:col-span-2"
+                        aria-label={t.questions_standards || 'Standards'}
                         multiple
                         value={form.data.standard_ids}
                         onChange={(e) => form.setData('standard_ids', Array.from(e.target.selectedOptions).map((option) => option.value))}
@@ -366,7 +383,7 @@ export default function Questions({
                     </select>
                 )}
                 <button type="submit" className="btn-primary" disabled={form.processing}>
-                    {editing ? 'Save changes' : 'Save question'}
+                    {editing ? (t.questions_save_changes || 'Save changes') : (t.questions_save || 'Save question')}
                 </button>
                 {form.errors.question_text && <span className="text-xs text-red-600">{form.errors.question_text}</span>}
                 {form.errors.question_type && <span className="text-xs text-red-600">{form.errors.question_type}</span>}
@@ -375,29 +392,29 @@ export default function Questions({
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">Text</th>
-                            <th className="px-3 py-2">Type</th>
-                            <th className="px-3 py-2">Pattern</th>
-                            <th className="px-3 py-2">Difficulty</th>
-                            <th className="px-3 py-2">Attachments</th>
+                            <th className="px-3 py-2">{t.questions_col_text || 'Text'}</th>
+                            <th className="px-3 py-2">{t.activities_col_type || 'Type'}</th>
+                            <th className="px-3 py-2">{t.activities_pattern || 'Pattern'}</th>
+                            <th className="px-3 py-2">{t.questions_difficulty || 'Difficulty'}</th>
+                            <th className="px-3 py-2">{t.questions_attachments || 'Attachments'}</th>
                             <th className="px-3 py-2" />
                         </tr>
                     </thead>
                     <tbody>
                         {rows.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>No questions yet.</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>{t.questions_none || 'No questions yet.'}</td></tr>
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
                                 <td className="px-3 py-2">{row.title || row.question_text}</td>
-                                <td className="px-3 py-2">{row.question_type}</td>
-                                <td className="px-3 py-2">{row.pattern}</td>
-                                <td className="px-3 py-2">{row.difficulty}</td>
+                                <td className="px-3 py-2">{typeName(row.question_type)}</td>
+                                <td className="px-3 py-2">{t[`pattern_${row.pattern}`] || row.pattern}</td>
+                                <td className="px-3 py-2">{difficultyName(row.difficulty)}</td>
                                 <td className="px-3 py-2">
-                                    {(row.attachments || []).map((a) => a.kind || a.mime).filter(Boolean).join(', ') || '—'}
+                                    {(row.attachments || []).map(kindName).join(', ') || '—'}
                                 </td>
                                 <td className="px-3 py-2">
-                                    <button type="button" className="btn-secondary" onClick={() => editRow(row)}>Edit</button>
+                                    <button type="button" className="btn-secondary" aria-label={(t.questions_edit_aria || 'Edit :question').replace(':question', row.title || row.question_text)} onClick={() => editRow(row)}>{t.rubric_edit || 'Edit'}</button>
                                 </td>
                             </tr>
                         ))}

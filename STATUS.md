@@ -4983,6 +4983,61 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ol. Activities, assessments and the question bank in Dhivehi and Arabic (C19 slice CT2, 2026-10-08)
+
+The second of the three slices of BACKLOG C19 (§5ok has why). The three
+screens a teacher builds what a learner answers on.
+
+- **Activities** (`/catalog/courses/{id}/activities`). The form, the table
+  and the delete button. The four patterns and the four skills are named
+  (the table printed `teacher_marked`, now *Teacher-marked*); a surah is
+  listed by its Arabic name on a Dhivehi or Arabic page; what a
+  `submission_kind` hands in is said in the page's language, the codes
+  themselves left as they are typed.
+- **Assessments** (`/catalog/courses/{id}/assessments`). The form, the
+  attach form, the cards and their buttons. The eleven assessment types are
+  named from the book, so they read the same in the select and on a card
+  (the card printed `lesson_quiz`); a card's *max* and each question's
+  points and *required*/*optional* are phrases.
+- **The question bank** (`/catalog/questions`). The filters, the form, the
+  answer comparison, attachments and the table. The twelve question types,
+  three difficulties, two comparison modes and nine switches are named, and
+  a subject is named in the page's language. The ninth switch,
+  `strip_tatweel` (SPEC §51.8), had no label and sat under *General*
+  printed as its key; it is named, and grouped with the other Arabic
+  switches.
+- **JSON boxes** read left to right on every page, and keep their English
+  samples: the keys are the format and the values are what the author types
+  over.
+- **What was saved.** The ten flashes of the three controllers are
+  `teach.flash_*`.
+- **A name on every field**, as on the CT1 screens: the selects, the JSON
+  boxes and the inputs that had only a placeholder.
+- 135 new rows of the `teach` book in EN, DV and AR.
+
+On English pages the codes that were printed raw now read as names, so two
+walks that matched them were moved: `assess.mjs` (*Multiple choice (one
+answer)*, *Selection*, *Text input*) and `quran.mjs` (*Teacher-marked*).
+
+**A walk for every translated screen.** `course-screens-language.mjs` (new,
+in `all.mjs`) signs in as the dean and opens each translated course screen
+under `/dv` and `/ar`. It lists every text node, placeholder, aria-label
+and title still in Latin letters, excuses what the page was sent as data (a
+course title, a question, a typed label) and a few fixed words (CSV, PDF,
+JSON, YouTube, Vimeo, addresses), and fails on the rest; codes the server
+sends to be named are not excused. It also checks each page is right to
+left and every field has a name. Pointed at the English pages it fails on
+every screen, as it should.
+
+Tests: `CourseScreensSpeakThreeLanguagesTest` now holds six screens (5 tests,
+one new): the three screens served in Dhivehi with every pattern, skill,
+assessment type, question type, comparison switch and mode the server sends
+named in the book, and an activity, an assessment and a question saved on
+a Dhivehi page each flashing Dhivehi; the enum check takes the new
+families. The whole suite green locally (2,763). Walks:
+`course-screens-language.mjs` 37/37, `assess.mjs` 14/14, `arabic.mjs` 10/10,
+`quran.mjs` 22/22.
+
 ## 5ok. The course catalog and the outline editor in Dhivehi and Arabic (C19 slice CT1, 2026-10-08)
 
 The owner, 2026-10-08: "Leave everything from my side. Continue from ur

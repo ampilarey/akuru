@@ -13,6 +13,7 @@ use App\Domains\Courses\Models\Assessment;
 use App\Domains\Courses\Models\Course;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -36,6 +37,7 @@ class CatalogAssessmentController extends Controller
             // against it — so the list was advisory and any string was
             // storable.
             'types' => AssessmentType::options(),
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -48,7 +50,7 @@ class CatalogAssessmentController extends Controller
         ]);
 
         return redirect()->route('catalog.courses.assessments.index', $course)
-            ->with('success', 'Assessment saved.');
+            ->with('success', __('teach.flash_assessment_saved'));
     }
 
     public function update(Request $request, int $course, int $assessment): RedirectResponse
@@ -59,7 +61,7 @@ class CatalogAssessmentController extends Controller
         app(SaveAssessmentAction::class)->execute($this->payload($request, $course), $model);
 
         return redirect()->route('catalog.courses.assessments.index', $course)
-            ->with('success', 'Assessment updated.');
+            ->with('success', __('teach.flash_assessment_updated'));
     }
 
     public function attach(Request $request, int $course, int $assessment): RedirectResponse
@@ -74,7 +76,7 @@ class CatalogAssessmentController extends Controller
             'is_required' => $request->boolean('is_required', true),
         ]);
 
-        return back()->with('success', 'Question attached.');
+        return back()->with('success', __('teach.flash_question_attached'));
     }
 
     /**
@@ -95,7 +97,7 @@ class CatalogAssessmentController extends Controller
 
         app(ReorderAssessmentQuestionsAction::class)->execute($assessment, $data['question_ids']);
 
-        return back()->with('success', 'Question order saved.');
+        return back()->with('success', __('teach.flash_question_order'));
     }
 
     public function detach(Request $request, int $course, int $assessment, int $question): RedirectResponse
@@ -105,7 +107,7 @@ class CatalogAssessmentController extends Controller
         Assessment::query()->where('course_id', $course)->findOrFail($assessment);
         app(AttachAssessmentQuestionAction::class)->detach($assessment, $question);
 
-        return back()->with('success', 'Question removed.');
+        return back()->with('success', __('teach.flash_question_removed'));
     }
 
     public function export(Request $request, int $course): StreamedResponse

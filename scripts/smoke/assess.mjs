@@ -165,7 +165,7 @@ const typeSelect = () => bankForm().locator('select').nth(0);
 
 await bankForm().locator('textarea[placeholder="Question text"]').fill(Q1);
 await bankForm().locator('button:has-text("Save question")').click();
-check('a multiple-choice question is saved to the bank', await settles(author, 'SMOKE-Q1') && /mcq_single/.test(await rowText(author, 'SMOKE-Q1')) && /selection/.test(await rowText(author, 'SMOKE-Q1')), await rowText(author, 'SMOKE-Q1') || (await text(author)).slice(0, 160));
+check('a multiple-choice question is saved to the bank', await settles(author, 'SMOKE-Q1') && /Multiple choice \(one answer\)/.test(await rowText(author, 'SMOKE-Q1')) && /Selection/.test(await rowText(author, 'SMOKE-Q1')), await rowText(author, 'SMOKE-Q1') || (await text(author)).slice(0, 160));
 
 await typeSelect().selectOption('short_answer');
 await bankForm().locator('textarea[placeholder="Question text"]').fill(Q2);
@@ -173,7 +173,7 @@ await bankForm().locator('textarea[placeholder="Question text"]').fill(Q2);
 await bankForm().locator('textarea.font-mono').nth(0).fill('[]');
 await bankForm().locator('textarea.font-mono').nth(1).fill('["Male"]');
 await bankForm().locator('button:has-text("Save question")').click();
-check('a short-answer question is saved, marked by text comparison', await settles(author, 'SMOKE-Q2') && /text_input/.test(await rowText(author, 'SMOKE-Q2')), await rowText(author, 'SMOKE-Q2') || (await text(author)).slice(0, 160));
+check('a short-answer question is saved, marked by text comparison', await settles(author, 'SMOKE-Q2') && /Text input/.test(await rowText(author, 'SMOKE-Q2')), await rowText(author, 'SMOKE-Q2') || (await text(author)).slice(0, 160));
 
 // 2. the assessment on the course, published with marks shown
 await author.goto(`${BASE}/en/catalog/courses`, { waitUntil: 'networkidle' });

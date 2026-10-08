@@ -1,11 +1,16 @@
 <?php
 
+use App\Domains\Courses\Actions\NormalizeTextAnswerAction;
 use App\Domains\Courses\Actions\SaveEngineCourseAction;
+use App\Domains\Courses\Enums\ActivityPattern;
+use App\Domains\Courses\Enums\AssessmentStatus;
+use App\Domains\Courses\Enums\AssessmentType;
 use App\Domains\Courses\Enums\ContentBlockType;
 use App\Domains\Courses\Enums\CourseReviewDecision;
 use App\Domains\Courses\Enums\CourseWorkflowStatus;
 use App\Domains\Courses\Enums\LessonStatus;
 use App\Domains\Courses\Enums\ModuleStatus;
+use App\Domains\Courses\Enums\QuestionType;
 use App\Domains\Courses\Enums\UnlockMode;
 use App\Domains\Courses\Models\CourseModule;
 use App\Domains\Courses\Models\CourseSubject;
@@ -33,6 +38,9 @@ function translatedCourseScreens(): array
         'Courses/Catalog/Index',
         'Courses/Catalog/Outline',
         'Courses/Catalog/Rubrics',
+        'Courses/Catalog/Activities',
+        'Courses/Catalog/Assessments',
+        'Courses/Catalog/Questions',
     ];
 }
 
@@ -94,7 +102,7 @@ it('keys every string on the translated course screens in three languages', func
     }
 });
 
-it('names every status, decision, unlock rule and block type the server sends', function () {
+it('names every status, decision, unlock rule, block type, pattern, assessment and question type the server sends', function () {
     $book = fn (string $locale) => teachBook($locale);
     $needed = [
         ...array_map(fn ($case) => 'decision_'.$case->value, CourseReviewDecision::cases()),
@@ -102,6 +110,13 @@ it('names every status, decision, unlock rule and block type the server sends', 
         ...array_map(fn ($case) => 'workflow_'.$case->value, CourseWorkflowStatus::cases()),
         ...array_map(fn ($case) => 'status_'.$case->value, [...LessonStatus::cases(), ...ModuleStatus::cases()]),
         ...array_map(fn ($case) => 'block_'.$case->value, ContentBlockType::cases()),
+        ...array_map(fn ($case) => 'pattern_'.$case->value, ActivityPattern::cases()),
+        ...array_map(fn ($case) => 'assessment_type_'.$case->value, AssessmentType::cases()),
+        ...array_map(fn ($case) => 'status_'.$case->value, AssessmentStatus::cases()),
+        ...array_map(fn ($case) => 'question_type_'.$case->value, QuestionType::cases()),
+        ...array_map(fn ($flag) => 'flag_'.$flag, NormalizeTextAnswerAction::flags()),
+        ...array_map(fn ($mode) => 'mode_'.$mode, NormalizeTextAnswerAction::modes()),
+        ...array_map(fn ($difficulty) => 'difficulty_'.$difficulty, ['easy', 'medium', 'hard']),
     ];
 
     foreach (['en', 'dv', 'ar'] as $locale) {
@@ -157,4 +172,59 @@ it('names the seeded subjects in Dhivehi and Arabic for the catalog, and keeps a
     expect(CourseSubject::query()->where('slug', 'hadith')->first())
         ->name_dv->toBe('ޙަދީޘް ދިރާސާ')
         ->name_ar->toBe('الحديث');
+});
+
+it('serves activities, assessments and the question bank in Dhivehi, names what they are sent, and says what was saved in Dhivehi', function () {
+    $admin = actingPeopleAdmin(['courses.manage']);
+    $course = app(SaveEngineCourseAction::class)->execute([
+        'title' => 'Tajweed one',
+        'subject_id' => CourseSubject::query()->value('id'),
+        'created_by' => $admin->id,
+    ]);
+    $dv = teachBook('dv');
+    $named = fn (string $prefix) => fn ($values) => collect($values)->every(fn ($value) => isset($dv[$prefix.(is_array($value) ? $value['value'] : $value)]));
+
+    app()->setLocale('dv');
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->get(route('catalog.courses.activities.index', $course->id))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Courses/Catalog/Activities')
+            ->where('t.activities_save', $dv['activities_save'])
+            ->where('patterns', $named('pattern_'))
+            ->where('skills', $named('skill_')));
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->get(route('catalog.courses.assessments.index', $course->id))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Courses/Catalog/Assessments')
+            ->where('t.assess_save', $dv['assess_save'])
+            ->where('types', $named('assessment_type_')));
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->get(route('catalog.questions.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Courses/Catalog/Questions')
+            ->where('t.questions_save', $dv['questions_save'])
+            ->where('types', $named('question_type_'))
+            ->where('normalizationFlags', $named('flag_'))
+            ->where('normalizationModes', $named('mode_')));
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('catalog.courses.activities.store', $course->id), [
+            'title' => 'Pick the letter',
+            'pattern' => 'selection',
+            'activity_type' => 'multiple_choice',
+            'max_score' => 1,
+            'data' => json_encode(['prompt' => 'Which?', 'options' => [['id' => 'a', 'label' => 'A'], ['id' => 'b', 'label' => 'B']], 'correct_ids' => ['a']]),
+        ])
+        ->assertSessionHas('success', $dv['flash_activity_saved']);
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('catalog.courses.assessments.store', $course->id), ['title' => 'Quiz one', 'status' => 'draft'])
+        ->assertSessionHas('success', $dv['flash_assessment_saved']);
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('catalog.questions.store'), [
+            'question_type' => 'mcq_single',
+            'question_text' => 'Is it a letter?',
+            'options' => json_encode([['id' => 'a', 'label' => 'Yes'], ['id' => 'b', 'label' => 'No']]),
+            'correct_answer' => json_encode(['a']),
+        ])
+        ->assertSessionHas('success', $dv['flash_question_saved']);
+
+    app()->setLocale('en');
+    expect(__('teach.flash_question_saved'))->toBe('Question saved.');
 });
