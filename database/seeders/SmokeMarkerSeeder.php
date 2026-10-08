@@ -1942,13 +1942,15 @@ class SmokeMarkerSeeder extends Seeder
 
     /**
      * `scripts/smoke/certify.mjs` builds the `SMOKE-Cert` template, issues a
-     * certificate on it to the seeded student and revokes it. This plants
-     * nothing and clears what a run left: the issued rows, their rendered
-     * documents, and the template.
+     * certificate on it to the seeded student and revokes it, and
+     * `course-screens-language.mjs` builds `SMOKE-Lang-Cert` — teacher
+     * approval required, on no course — to be refused it from the Arabic page
+     * (C19 slice CT6b-2b). This plants nothing and clears what a run left: the
+     * issued rows, their rendered documents, and the templates.
      */
     private function certifyCycle(): void
     {
-        $templateIds = DB::table('certificate_templates')->where('name', 'SMOKE-Cert')->pluck('id');
+        $templateIds = DB::table('certificate_templates')->whereIn('name', ['SMOKE-Cert', 'SMOKE-Lang-Cert'])->pluck('id');
         $issuedIds = DB::table('issued_certificates')->whereIn('certificate_template_id', $templateIds)->pluck('id');
 
         foreach (DB::table('documents')->where('documentable_type', 'issued_certificate')->whereIn('documentable_id', $issuedIds)->get(['id', 'media_path']) as $document) {
@@ -2023,6 +2025,12 @@ class SmokeMarkerSeeder extends Seeder
     private function mushafCycle(): void
     {
         DB::table('quran_mushafs')->where('name', 'like', 'SMOKE-Mushaf%')->delete();
+
+        // The empty module the same walk adds to SMOKE-Course's outline, to
+        // be refused publishing it from the Dhivehi page (slice CT6b-2b). The
+        // walk deletes it again — softly, so the row stays — and a run that
+        // stopped half-way leaves it whole. Either way it goes here.
+        DB::table('course_modules')->where('title', 'SMOKE-Lang-Module')->delete();
     }
 
     /**

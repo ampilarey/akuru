@@ -27,7 +27,7 @@ class ReviewAttemptAction
         if ($kind === 'activity') {
             $attempt = ActivityAttempt::query()->find($attemptId);
             if ($attempt === null) {
-                throw ValidationException::withMessages(['attempt' => ['Activity attempt not found.']]);
+                throw ValidationException::withMessages(['attempt' => [__('teach.error_attempt_activity')]]);
             }
             $this->assertOwnCourse((int) $attempt->course_id, $onlyCourseIds);
             $max = max(1, (int) ($attempt->max_score ?: ($data['max_score'] ?? 1)));
@@ -47,7 +47,7 @@ class ReviewAttemptAction
         if ($kind === 'assessment') {
             $attempt = AssessmentAttempt::query()->find($attemptId);
             if ($attempt === null) {
-                throw ValidationException::withMessages(['attempt' => ['Assessment attempt not found.']]);
+                throw ValidationException::withMessages(['attempt' => [__('teach.error_attempt_assessment')]]);
             }
             $this->assertOwnCourse((int) $attempt->course_id, $onlyCourseIds);
             $max = max(1, (int) ($attempt->max_score ?: ($data['max_score'] ?? 1)));
@@ -65,7 +65,7 @@ class ReviewAttemptAction
             return app(StartAssessmentAttemptAction::class)->serialize($attempt->fresh(), includeKeys: true) + ['kind' => 'assessment'];
         }
 
-        throw ValidationException::withMessages(['kind' => ['Review kind must be activity or assessment.']]);
+        throw ValidationException::withMessages(['kind' => [__('teach.error_review_kind')]]);
     }
 
     /**
@@ -81,7 +81,7 @@ class ReviewAttemptAction
             return;
         }
         if (! in_array($courseId, array_map('intval', $onlyCourseIds), true)) {
-            throw ValidationException::withMessages(['attempt' => ['This submission is not from one of your courses.']]);
+            throw ValidationException::withMessages(['attempt' => [__('teach.error_not_your_course')]]);
         }
     }
 }

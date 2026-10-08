@@ -43,7 +43,7 @@ class ReorderCourseModulesAction
 
         if ($ids !== $expected) {
             throw ValidationException::withMessages([
-                'order' => 'The new order must list every module of this course exactly once.',
+                'order' => __('teach.error_modules_order'),
             ]);
         }
 

@@ -210,8 +210,9 @@ language.
 Laravel's own validation messages were English in every language, because
 there was no `validation.php` in `resources/lang` — **fixed (2026-10-08,
 STATUS §5oz)**. The learner's own refusals are in the page's language since
-STATUS §5pb; the teacher's and the office's are still English (BACKLOG C19,
-slice CT6b-2b).
+STATUS §5pb, and the course authors', markers' and certificate office's since
+STATUS §5pc; the offerings' and the Qur'an component's are still English
+(BACKLOG C19, slice CT6b-2c).
 
 ## Found by the middle-name walk (2026-10-08)
 
@@ -2081,6 +2082,32 @@ The pages now show what came back (`FormErrors` on the catalog and the course
 page; the attempt's reason beside the submit button), in the page's language.
 A one-step walk against a build of the old catalog reads nothing where the new
 one reads the Dhivehi reason. STATUS §5pb.
+
+### 38. A refused button on the course-building screens was shown by no page
+
+**Fixed (2026-10-08, slice CT6b-2b) — found while building it.**
+
+Most of the course-building buttons post with `router` rather than a form:
+the catalog's Submit review, Archive, review decision, unlock rule and Copy;
+the outline's module and block order, unlock rule, completion rule, lesson
+Publish and Preview; a certificate's Revoke; an assessment's question order;
+a deleted course's Restore; a forum's moderation. A refusal of any of them
+came back as the page's errors, which no page read — the button did nothing
+visible. The outline's one shown refusal (a module's) sat above the list,
+off screen under `preserveScroll`. The forms beside them showed a field or
+two and dropped the rest: the certificate template and issue forms, the
+question bank (a matching question's pairs, `correct_answer`), the lesson,
+module and block forms.
+
+The outline also offered a module's Publish to every author, though it
+answers to `courses.publish`, which the dean does not hold: pressed, it
+opened a bare *Forbidden*. The walk for this slice pressed it.
+
+`useRowRefusals` (in `FormErrors`) has a page remember which row's button
+it last pressed and say what came back under that row, in the page's
+language; the forms list every refused field; a module's Publish is offered
+to those who may press it. A walk against `main`'s build fails the three new
+steps. STATUS §5pc.
 
 ---
 

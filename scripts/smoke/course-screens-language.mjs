@@ -38,6 +38,10 @@
  * Dhivehi; a term saved empty from the Arabic glossary is refused in Arabic
  * (slice CT6b-1). The pupil types a code that does not exist against a priced
  * course on the Dhivehi catalog and is told why in Dhivehi (slice CT6b-2a).
+ * The dean publishes an empty module from the Dhivehi outline and is told why
+ * beside the module, in Dhivehi, then deletes it; and is refused a certificate
+ * the pupil has not earned on the Arabic page, the reason in Arabic (slice
+ * CT6b-2b). `SmokeMarkerSeeder` removes the module and the template.
  *
  *   node scripts/smoke/course-screens-language.mjs
  *
@@ -279,6 +283,67 @@ const glossaryT = (await props(page)).t ?? {};
 await page.getByRole('button', { name: glossaryT.glossary_save, exact: true }).click();
 const termRefusal = (await page.locator('form p.text-red-600').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
 check('a term refused on the Arabic page says why in Arabic', termRefusal === 'حقل المصطلح مطلوب.', `said: ${termRefusal ?? 'nothing'}`);
+
+// An empty module published from the Dhivehi outline (slice CT6b-2b). It was
+// the one outline refusal ever shown — once, above the list, in English; a
+// refused reorder, unlock rule or block order said nothing. It is said now
+// beside the module whose button was pressed, in Dhivehi. Publishing a module
+// is `courses.publish`, which the dean does not hold — the outline no longer
+// offers the dean the button, which used to answer a bare "Forbidden" — so the
+// system admin presses it. The module is deleted again; `SmokeMarkerSeeder`
+// removes what a broken run left.
+const EMPTY_MODULE = 'SMOKE-Lang-Module';
+await office.goto(`${BASE}/dv/catalog/courses/${course?.id}/outline`, { waitUntil: 'networkidle' });
+const outlineT = (await props(office)).t ?? {};
+await office.getByLabel(outlineT.outline_module_title, { exact: true }).fill(EMPTY_MODULE);
+await office.getByRole('button', { name: outlineT.outline_save_module, exact: true }).click();
+await flashReads(office, outlineT.flash_module_saved);
+const emptyModule = office.locator('section', { hasText: EMPTY_MODULE }).first();
+await emptyModule.getByRole('button', { name: (outlineT.outline_publish_aria ?? '').replace(':title', EMPTY_MODULE), exact: true }).click();
+const moduleRefusal = (await emptyModule.locator('ul[role="alert"]').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+check(
+    'an empty module published from the Dhivehi outline is refused beside it, in Dhivehi',
+    Boolean(outlineT.error_module_empty_publish) && moduleRefusal === outlineT.error_module_empty_publish,
+    `said: ${moduleRefusal ?? 'nothing'}`,
+);
+office.once('dialog', (dialog) => dialog.accept());
+await emptyModule.getByRole('button', { name: outlineT.outline_delete_module, exact: true }).click();
+await flashReads(office, outlineT.flash_module_deleted);
+check('and the empty module is deleted again', (await office.locator('section', { hasText: EMPTY_MODULE }).count()) === 0);
+await page.goto(`${BASE}/dv/catalog/courses/${course?.id}/outline`, { waitUntil: 'networkidle' });
+const deanModule = ((await props(page)).modules || [])[0];
+const publishOffered = deanModule
+    ? await page.getByRole('button', { name: (outlineT.outline_publish_aria ?? '').replace(':title', deanModule.title), exact: true }).count()
+        + await page.getByRole('button', { name: (outlineT.outline_unpublish_aria ?? '').replace(':title', deanModule.title), exact: true }).count()
+    : -1;
+check('the dean, who may not publish, is offered no module Publish to be refused', publishOffered === 0, `${deanModule?.title ?? 'no module'}: ${publishOffered}`);
+
+// A certificate the pupil has not earned, issued from the Arabic page (slice
+// CT6b-2b). `SMOKE-Lang-Cert` asks for the teacher's approval and belongs to
+// no course, so no course page shows it; the box is left unticked. The reason
+// was English.
+await pupil.goto(`${BASE}/en/portal/performance`, { waitUntil: 'networkidle' });
+const pupilName = ((await pupil.locator('main h2').first().textContent().catch(() => '')) ?? '').trim();
+await page.goto(`${BASE}/ar/catalog/certificates`, { waitUntil: 'networkidle' });
+const certT = (await props(page)).t ?? {};
+const templateForm = page.locator('form', { hasText: certT.cert_new_template }).first();
+await templateForm.getByLabel(certT.cert_name_en, { exact: true }).fill('SMOKE-Lang-Cert');
+await templateForm.getByLabel(certT.cert_require_approval, { exact: true }).check();
+await templateForm.getByRole('button', { name: certT.cert_save_template, exact: true }).click();
+await flashReads(page, certT.flash_template_saved);
+const issueForm = page.locator('form', { hasText: certT.cert_issue_title }).first();
+await issueForm.getByLabel(certT.cert_template, { exact: true }).selectOption({ label: 'SMOKE-Lang-Cert' });
+const pupilOption = await issueForm.getByLabel(certT.cert_student, { exact: true }).locator('option', { hasText: pupilName }).first().getAttribute('value').catch(() => null);
+if (pupilOption) {
+    await issueForm.getByLabel(certT.cert_student, { exact: true }).selectOption(pupilOption);
+}
+await issueForm.getByRole('button', { name: certT.cert_issue, exact: true }).click();
+const certRefusal = (await page.getByTestId('cert-issue-refusal').textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+check(
+    'a certificate the pupil has not earned is refused on the Arabic page, the reason in Arabic',
+    Boolean(pupilOption) && Boolean(certRefusal) && certRefusal.includes('تلزم موافقة المعلم.') && !/[A-Za-z]{2,}/.test(certRefusal),
+    `${pupilName || 'no pupil name'} — said: ${certRefusal ?? 'nothing'}`,
+);
 
 const screens = [
     '/catalog/courses',

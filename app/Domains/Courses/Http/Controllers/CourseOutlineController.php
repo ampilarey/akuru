@@ -38,7 +38,15 @@ class CourseOutlineController extends Controller
     {
         abort_unless($request->user()?->can('courses.manage'), 403);
 
-        return Inertia::render('Courses/Catalog/Outline', app(ListCourseOutlineAction::class)->execute($course) + ['t' => Phrases::once('teach')]);
+        return Inertia::render('Courses/Catalog/Outline', app(ListCourseOutlineAction::class)->execute($course) + [
+            't' => Phrases::once('teach'),
+            // A module's Publish answers to `courses.publish` (publishModule
+            // below). The outline offered it to every author, and an author
+            // without it pressed it into a bare "Forbidden" (slice CT6b-2b's
+            // walk) — so it is offered to those who may press it, as the
+            // catalog's own buttons are.
+            'canPublish' => (bool) $request->user()?->can('courses.publish'),
+        ]);
     }
 
     public function storeModule(Request $request, int $course): RedirectResponse

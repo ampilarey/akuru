@@ -46,7 +46,7 @@ class ReorderContentBlocksAction
 
         if ($given !== $sortedExisting) {
             throw ValidationException::withMessages([
-                'block_ids' => 'The new order must list this lesson\'s blocks exactly once each.',
+                'block_ids' => __('teach.error_blocks_order'),
             ]);
         }
 

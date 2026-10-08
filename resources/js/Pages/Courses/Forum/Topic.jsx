@@ -1,6 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
-import FormErrors from '../../../Components/FormErrors';
+import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 
 /**
  * Moodle parity slice M3 (STATUS §5oj): one discussion topic, its replies in
@@ -25,8 +25,11 @@ export default function Topic({ course, role, topic, posts = [], can_reply: canR
     const form = useForm({ body: '' });
     const moderator = role === 'moderator';
     const base = `/learn/courses/${course.id}/forum`;
-    const moderate = (action) => router.post(`${base}/${topic.id}/moderate`, { action }, { preserveScroll: true });
-    const moderatePost = (post, action) => router.post(`${base}/posts/${post.id}/moderate`, { action }, { preserveScroll: true });
+    // A refused moderation step was shown nowhere (slice CT6b-2b); it is said
+    // beside the topic or the post it was pressed on.
+    const refusals = useRowRefusals(form);
+    const moderate = (action) => refusals.actOn('topic', () => router.post(`${base}/${topic.id}/moderate`, { action }, { preserveScroll: true }));
+    const moderatePost = (post, action) => refusals.actOn(`post:${post.id}`, () => router.post(`${base}/posts/${post.id}/moderate`, { action }, { preserveScroll: true }));
 
     return (
         <AppShell title={`${topic.title} · ${course.title}`}>
@@ -47,6 +50,7 @@ export default function Topic({ course, role, topic, posts = [], can_reply: canR
                         <button type="button" className="btn-secondary" onClick={() => moderate(topic.hidden ? 'show' : 'hide')}>{topic.hidden ? (t.show || 'Show') : (t.hide || 'Hide')}</button>
                     </div>
                 )}
+                <FormErrors errors={refusals.errorsFor('topic')} className="mt-2" />
             </article>
 
             <ul className="mb-6 space-y-3" data-testid="forum-posts">
@@ -59,6 +63,7 @@ export default function Topic({ course, role, topic, posts = [], can_reply: canR
                                 {post.hidden ? (t.show || 'Show') : (t.hide || 'Hide')}
                             </button>
                         )}
+                        <FormErrors errors={refusals.errorsFor(`post:${post.id}`)} className="mt-1" />
                     </li>
                 ))}
             </ul>

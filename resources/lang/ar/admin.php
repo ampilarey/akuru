@@ -1151,4 +1151,9 @@ return [
     // A learner's access dates refused on the enrolment page (slice CT6b-2a)
     'error_access_end_before_start' => 'لا يمكن أن ينتهي الوصول قبل أن يبدأ.',
     'error_date_unreadable' => 'هذا ليس تاريخًا يمكن قراءته.',
+
+    // What the office is told when an enrolment or a deleted course refuses a step (slice CT6b-2b)
+    'error_suspend_not_live' => 'لا يُوقف إلا تسجيل قائم؛ وحالة هذا التسجيل: :status.',
+    'error_reinstate_not_suspended' => 'لا يُعاد إلا تسجيل موقوف.',
+    'error_restore_not_deleted' => 'هذه الدورة غير محذوفة.',
 ];

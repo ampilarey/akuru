@@ -18,7 +18,7 @@ class SaveEngineCourseAction
     {
         if ($course !== null && $course->workflow_status !== CourseWorkflowStatus::Draft) {
             throw ValidationException::withMessages([
-                'workflow_status' => 'Only draft courses can be edited.',
+                'workflow_status' => __('teach.error_course_not_draft'),
             ]);
         }
 
@@ -45,7 +45,7 @@ class SaveEngineCourseAction
             $mode = UnlockMode::tryFrom((string) $data['unlock_mode']);
             if ($mode === null) {
                 throw ValidationException::withMessages([
-                    'unlock_mode' => 'Unknown unlock mode.',
+                    'unlock_mode' => __('teach.error_unlock_mode'),
                 ]);
             }
             $payload['unlock_rules'] = ['mode' => $mode->value];

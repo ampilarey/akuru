@@ -1,1 +1,0 @@
-import{j as e}from"./vendor-DZ1rq1AS.js";function o({errors:s,className:t=""}){const r=Object.entries(s??{});return r.length===0?null:e.jsx("ul",{className:`list-disc ps-5 text-xs text-red-600 ${t}`.trim(),role:"alert",children:r.map(([i,l])=>e.jsx("li",{children:l},i))})}export{o as F};

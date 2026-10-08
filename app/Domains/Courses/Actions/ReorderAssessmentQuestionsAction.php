@@ -50,7 +50,7 @@ class ReorderAssessmentQuestionsAction
 
         if ($sorted !== $expected) {
             throw ValidationException::withMessages([
-                'order' => 'The new order must list every question on this assessment exactly once.',
+                'order' => __('teach.error_questions_order'),
             ]);
         }
 

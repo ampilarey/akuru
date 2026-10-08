@@ -30,7 +30,7 @@ class AddClubMemberAction
             // return: "nothing happened" on a roster screen is the failure
             // mode this session has spent all day fixing.
             throw ValidationException::withMessages([
-                'student_id' => 'This club has no offering yet. Create one for the club course before adding members.',
+                'student_id' => __('teach.error_club_no_offering'),
             ]);
         }
 

@@ -1151,4 +1151,9 @@ return [
     // A learner's access dates refused on the enrolment page (slice CT6b-2a)
     'error_access_end_before_start' => 'ވަދެވޭ މުއްދަތު ނިމޭ ތާރީޚަކީ ފެށޭ ތާރީޚުގެ ކުރީގެ ތާރީޚަކަށް ނުވާނެ.',
     'error_date_unreadable' => 'އެއީ ކިޔެވޭ ތާރީޚެއް ނޫން.',
+
+    // What the office is told when an enrolment or a deleted course refuses a step (slice CT6b-2b)
+    'error_suspend_not_live' => 'މަޑުޖެއްސޭނީ ހިނގަމުންދާ އެންރޯލްމަންޓެއް އެކަނި؛ މި އެންރޯލްމަންޓުގެ ހާލަތަކީ :status.',
+    'error_reinstate_not_suspended' => 'އަލުން ފެށޭނީ މަޑުޖައްސާފައިވާ އެންރޯލްމަންޓެއް އެކަނި.',
+    'error_restore_not_deleted' => 'އެ ކޯސް ފުހެލާފައެއް ނުވޭ.',
 ];

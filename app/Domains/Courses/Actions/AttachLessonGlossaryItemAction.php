@@ -19,7 +19,7 @@ class AttachLessonGlossaryItemAction
             ->first();
         if ($existing !== null) {
             throw ValidationException::withMessages([
-                'glossary_item_id' => 'That term is already attached to this lesson.',
+                'glossary_item_id' => __('teach.error_term_attached'),
             ]);
         }
 

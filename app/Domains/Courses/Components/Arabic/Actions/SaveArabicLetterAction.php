@@ -17,7 +17,7 @@ class SaveArabicLetterAction
         $name = trim((string) ($data['display_name'] ?? ''));
         if ($key === '' || $character === '' || $name === '') {
             throw ValidationException::withMessages([
-                'key_name' => 'Key, character, and display name are required.',
+                'key_name' => __('teach.error_arabic_letter_fields'),
             ]);
         }
 

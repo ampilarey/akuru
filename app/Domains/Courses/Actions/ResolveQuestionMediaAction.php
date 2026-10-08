@@ -68,7 +68,7 @@ class ResolveQuestionMediaAction
         $kind = $this->kindForMime($mime);
         if ($kind === null) {
             throw ValidationException::withMessages([
-                $errorKey => 'A question attachment must be audio, an image, a PDF, or a video. '.$mime.' is none of those.',
+                $errorKey => __('teach.error_question_media', ['mime' => $mime]),
             ]);
         }
 

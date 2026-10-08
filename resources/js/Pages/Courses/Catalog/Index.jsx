@@ -1,5 +1,6 @@
 import { router, useForm, usePage } from '@inertiajs/react';
 import { Fragment, useState } from 'react';
+import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 import AppShell from '../../../Layouts/AppShell';
 
 /**
@@ -14,7 +15,7 @@ import AppShell from '../../../Layouts/AppShell';
  * — the only part of the exchange with any content in it — was discarded the
  * instant the button was pressed.
  */
-function ReviewDecision({ row, decisions, canPublish, t }) {
+function ReviewDecision({ row, decisions, canPublish, t, actOn }) {
     const [decision, setDecision] = useState('changes_requested');
     const [comment, setComment] = useState('');
     const chosen = decisions.find((option) => option.value === decision);
@@ -41,11 +42,11 @@ function ReviewDecision({ row, decisions, canPublish, t }) {
                 type="button"
                 className="btn-primary"
                 disabled={blocked}
-                onClick={() => router.post(
+                onClick={() => actOn(`course:${row.id}`, () => router.post(
                     `/catalog/courses/${row.id}/review-decision`,
                     { decision, comment },
                     { preserveScroll: true },
-                )}
+                ))}
             >
                 {t.catalog_record_review || 'Record review'}
             </button>
@@ -57,7 +58,7 @@ function ReviewDecision({ row, decisions, canPublish, t }) {
  * Moodle parity slice M1: copy the whole course as a new draft. The copy's
  * outline opens next, so the teacher carries on in the copy.
  */
-function CopyCourse({ row, t }) {
+function CopyCourse({ row, t, actOn }) {
     const [open, setOpen] = useState(false);
     const [title, setTitle] = useState(`${row.title} (copy)`);
     const [busy, setBusy] = useState(false);
@@ -77,7 +78,7 @@ function CopyCourse({ row, t }) {
             onSubmit={(e) => {
                 e.preventDefault();
                 setBusy(true);
-                router.post(`/catalog/courses/${row.id}/copy`, { title }, { onFinish: () => setBusy(false) });
+                actOn(`course:${row.id}`, () => router.post(`/catalog/courses/${row.id}/copy`, { title }, { preserveScroll: 'errors', onFinish: () => setBusy(false) }));
             }}
         >
             <label className="block text-xs text-gray-600" htmlFor={`copy-title-${row.id}`}>{t.copy_title || 'Title of the copy'}</label>
@@ -112,6 +113,11 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
         // form opens on the behaviour a course would have had anyway.
         unlock_mode: 'sequential',
     });
+    // A row's buttons post with `router`: Submit review, Archive, the review
+    // decision, the unlock rule, Copy. Their refusals — a move the workflow
+    // does not allow, a decision with no reason, a course no longer a draft —
+    // were shown nowhere (slice CT6b-2b). Each now says it under its row.
+    const refusals = useRowRefusals(form);
 
     return (
         <AppShell title={t.catalog_title || 'Course catalog'}>
@@ -144,7 +150,9 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                 </select>
                 <button type="submit" className="btn-primary" disabled={form.processing}>{t.catalog_save_draft || 'Save draft'}</button>
                 {form.errors.title && <span className="text-xs text-red-600">{form.errors.title}</span>}
+                <FormErrors errors={form.errors} except={['title']} className="md:col-span-5" />
             </form>
+            <FormErrors errors={refusals.unplaced} className="mb-4 rounded border border-red-200 bg-red-50 py-2 pe-3" />
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
@@ -177,15 +185,18 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                                             className="form-input"
                                             aria-label={(t.outline_unlock_aria || 'Unlock rule for :title').replace(':title', row.title)}
                                             value={row.unlock_mode}
-                                            onChange={(e) => router.post(`/catalog/courses/${row.id}`, {
-                                                _method: 'put',
-                                                title: row.title,
-                                                title_dv: row.title_dv || '',
-                                                title_ar: row.title_ar || '',
-                                                subject_id: row.subject_id || '',
-                                                language: row.language || 'en',
-                                                unlock_mode: e.target.value,
-                                            }, { preserveScroll: true })}
+                                            onChange={(e) => {
+                                                const value = e.target.value;
+                                                refusals.actOn(`course:${row.id}`, () => router.post(`/catalog/courses/${row.id}`, {
+                                                    _method: 'put',
+                                                    title: row.title,
+                                                    title_dv: row.title_dv || '',
+                                                    title_ar: row.title_ar || '',
+                                                    subject_id: row.subject_id || '',
+                                                    language: row.language || 'en',
+                                                    unlock_mode: value,
+                                                }, { preserveScroll: true }));
+                                            }}
                                         >
                                             {unlockModes.map((mode) => <option key={mode.value} value={mode.value}>{unlockLabel(mode)}</option>)}
                                         </select>
@@ -199,7 +210,7 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                                 </td>
                                 <td className="px-3 py-2">
                                     {row.workflow_status === 'draft' && (
-                                        <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'in_review' })}>{t.catalog_submit_review || 'Submit review'}</button>
+                                        <button type="button" className="btn-secondary" onClick={() => refusals.actOn(`course:${row.id}`, () => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'in_review' }, { preserveScroll: true }))}>{t.catalog_submit_review || 'Submit review'}</button>
                                     )}
                                     {/* §8.4 gives reviewing to Dean/Supervisor; §8.3's
                                         Course Creator does not review at all, and
@@ -207,15 +218,16 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                                         server checks the same thing — this only avoids
                                         offering a control that would 403. */}
                                     {row.workflow_status === 'in_review' && canPublish && (
-                                        <ReviewDecision row={row} decisions={decisions} canPublish={canPublish} t={t} />
+                                        <ReviewDecision row={row} decisions={decisions} canPublish={canPublish} t={t} actOn={refusals.actOn} />
                                     )}
                                     {row.workflow_status === 'in_review' && !canPublish && (
                                         <span className="text-xs text-gray-500">{t.catalog_waiting_review || 'Waiting for review'}</span>
                                     )}
                                     {row.workflow_status === 'published' && (
-                                        <button type="button" className="btn-secondary" onClick={() => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'archived' })}>{t.catalog_archive || 'Archive'}</button>
+                                        <button type="button" className="btn-secondary" onClick={() => refusals.actOn(`course:${row.id}`, () => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'archived' }, { preserveScroll: true }))}>{t.catalog_archive || 'Archive'}</button>
                                     )}
-                                    <div className="mt-2"><CopyCourse row={row} t={t} /></div>
+                                    <div className="mt-2"><CopyCourse row={row} t={t} actOn={refusals.actOn} /></div>
+                                    <FormErrors errors={refusals.errorsFor(`course:${row.id}`)} className="mt-2" />
                                 </td>
                             </tr>
                             {(row.review_decisions || []).length > 0 && (

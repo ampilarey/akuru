@@ -19,14 +19,14 @@ class SaveQuestionAction
         $type = QuestionType::tryFrom((string) ($data['question_type'] ?? ''));
         if ($type === null) {
             throw ValidationException::withMessages([
-                'question_type' => 'Unknown question type.',
+                'question_type' => __('teach.error_question_type'),
             ]);
         }
 
         $text = trim((string) ($data['question_text'] ?? ''));
         if ($text === '') {
             throw ValidationException::withMessages([
-                'question_text' => 'Question text is required.',
+                'question_text' => __('teach.error_question_text'),
             ]);
         }
 
@@ -180,7 +180,7 @@ class SaveQuestionAction
             $value = (array) $decoded;
             if ($value !== [] && array_is_list($value)) {
                 throw ValidationException::withMessages([
-                    'correct_answer' => 'Number the items from 1, or name them: a pairing keyed 0, 1, 2… is read back as a list and loses its pairs.',
+                    'correct_answer' => __('teach.error_pairs_numbered'),
                 ]);
             }
         }
@@ -195,7 +195,7 @@ class SaveQuestionAction
         foreach ($value as $match) {
             if (! is_scalar($match)) {
                 throw ValidationException::withMessages([
-                    'correct_answer' => 'Each item is paired with one match, written as text.',
+                    'correct_answer' => __('teach.error_pairs_text'),
                 ]);
             }
         }

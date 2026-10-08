@@ -316,4 +316,14 @@ return [
     'error_access_ended' => 'انتهى وصولك إلى هذه الدورة في :date.',
     'error_access_closed' => 'هذه الدورة غير متاحة لك حاليًا.',
     'error_enrol_forbidden' => 'ربما انتهت جلستك أو أن وسيلة التواصل هذه مسجلة من قبل. ارجع إلى الدورة وابدأ التسجيل من جديد، أو استخدم رقم جوال أو بريدًا إلكترونيًا آخر.',
+
+    // Why a certificate is not yet earned: the course page lists these, and the issue form says them (slice CT6b-2b)
+    'cert_reason_no_enrolment' => 'لا يوجد تسجيل مطابق لهذه الشهادة.',
+    'cert_reason_progress' => 'التقدّم أقل من الحد الأدنى.',
+    'cert_reason_payment' => 'لم يكتمل الدفع.',
+    'cert_reason_teacher_approval' => 'تلزم موافقة المعلم.',
+    'cert_reason_attendance' => 'الحضور أقل من الحد الأدنى.',
+    'cert_reason_awaiting_marking' => 'التقييم المطلوب بانتظار تصحيح المعلم.',
+    'cert_reason_no_score' => 'لا توجد درجة للتقييم المطلوب.',
+    'cert_reason_score' => 'درجة التقييم أقل من الحد الأدنى.',
 ];

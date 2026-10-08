@@ -11,7 +11,7 @@ class RevokeIssuedCertificateAction
     {
         $row = IssuedCertificate::query()->findOrFail($issuedId);
         if ($row->revoked_at !== null) {
-            throw ValidationException::withMessages(['id' => 'Certificate is already revoked.']);
+            throw ValidationException::withMessages(['id' => __('teach.error_cert_already_revoked')]);
         }
         $row->update(['revoked_at' => now()]);
 

@@ -16,12 +16,12 @@ class SaveCertificateTemplateAction
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Template name is required.']);
+            throw ValidationException::withMessages(['name' => __('teach.error_template_name')]);
         }
 
         $kind = CertificateKind::tryFrom((string) ($data['kind'] ?? ''));
         if ($kind === null) {
-            throw ValidationException::withMessages(['kind' => 'Invalid certificate kind.']);
+            throw ValidationException::withMessages(['kind' => __('teach.error_template_kind')]);
         }
 
         $payload = [

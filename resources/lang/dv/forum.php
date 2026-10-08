@@ -35,4 +35,7 @@ return [
     'by' => ':name',
     'open' => 'ވާހަކަ ދެއްކުން',
     'moderator_note' => 'މި ފޯރަމް ބެލެހެއްޓެނީ ތިބާ: ބޭނުންވާ އެއްޗެއް މަތީގައި ބަހައްޓާ، ބަންދުކުރޭ ނުވަތަ ފޮރުވާ.',
+
+    // A moderation step the forum does not know (slice CT6b-2b)
+    'error_unknown_action' => 'އެއީ ކުރެވޭނެ ކަމެއް ނޫން.',
 ];

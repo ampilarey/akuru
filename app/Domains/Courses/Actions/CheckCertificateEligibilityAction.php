@@ -53,28 +53,28 @@ class CheckCertificateEligibilityAction
             ->first();
 
         if ($enrollment === null) {
-            return ['eligible' => false, 'reasons' => ['No matching enrollment.']];
+            return ['eligible' => false, 'reasons' => [__('learn.cert_reason_no_enrolment')]];
         }
 
         $reasons = [];
         $minProgress = $this->nullableInt($rules['min_progress_percent'] ?? null);
         if ($minProgress !== null && (int) $enrollment->progress_percentage < $minProgress) {
-            $reasons[] = 'Progress is below the minimum.';
+            $reasons[] = __('learn.cert_reason_progress');
         }
 
         if (($rules['require_payment'] ?? false) && ! in_array((string) $enrollment->payment_status, ['paid', 'confirmed', 'not_required'], true)) {
-            $reasons[] = 'Payment is not complete.';
+            $reasons[] = __('learn.cert_reason_payment');
         }
 
         if (($rules['require_teacher_approval'] ?? false) && empty($context['teacher_approved'])) {
-            $reasons[] = 'Teacher approval is required.';
+            $reasons[] = __('learn.cert_reason_teacher_approval');
         }
 
         $minAttendance = $this->nullableInt($rules['min_attendance_percent'] ?? null);
         if ($offeringId && $minAttendance !== null) {
             $percent = app(GetOfferingAttendancePercentAction::class)->execute($offeringId, $studentId);
             if ($percent === null || $percent < $minAttendance) {
-                $reasons[] = 'Attendance is below the minimum.';
+                $reasons[] = __('learn.cert_reason_attendance');
             }
         }
 
@@ -123,14 +123,14 @@ class CheckCertificateEligibilityAction
 
             if (($rules['require_final_assessment'] ?? false) && $best === null) {
                 $reasons[] = $awaitingMarking
-                    ? 'Required assessment is awaiting teacher marking.'
-                    : 'Required assessment has no score.';
+                    ? __('learn.cert_reason_awaiting_marking')
+                    : __('learn.cert_reason_no_score');
             }
             $minScore = $this->nullableInt($rules['min_score'] ?? null);
             if ($minScore !== null && ($best === null || $best < $minScore)) {
                 $reasons[] = $best === null && $awaitingMarking
-                    ? 'Required assessment is awaiting teacher marking.'
-                    : 'Assessment score is below the minimum.';
+                    ? __('learn.cert_reason_awaiting_marking')
+                    : __('learn.cert_reason_score');
             }
         }
 
@@ -138,7 +138,10 @@ class CheckCertificateEligibilityAction
             $reasons[] = $idReason;
         }
 
-        return ['eligible' => $reasons === [], 'reasons' => $reasons];
+        // A template that requires the final assessment *and* sets a minimum
+        // score reached "awaiting marking" twice, and the course page listed
+        // the same line twice (slice CT6b-2b).
+        return ['eligible' => $reasons === [], 'reasons' => array_values(array_unique($reasons))];
     }
 
     /**

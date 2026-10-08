@@ -17,7 +17,7 @@ class AttachAssessmentQuestionAction
         $assessment = Assessment::query()->findOrFail((int) $data['assessment_id']);
         $question = Question::query()->find($data['question_id'] ?? 0);
         if ($question === null) {
-            throw ValidationException::withMessages(['question_id' => 'Question not found.']);
+            throw ValidationException::withMessages(['question_id' => __('teach.error_question_not_found')]);
         }
 
         $existing = AssessmentQuestion::query()

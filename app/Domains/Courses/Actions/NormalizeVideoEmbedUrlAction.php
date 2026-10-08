@@ -42,14 +42,14 @@ class NormalizeVideoEmbedUrlAction
         $parts = parse_url($url);
         if (($parts['scheme'] ?? '') !== 'https') {
             throw ValidationException::withMessages([
-                $errorKey => 'Video embeds must use https.',
+                $errorKey => __('teach.error_video_https'),
             ]);
         }
 
         $host = strtolower((string) ($parts['host'] ?? ''));
         if (! in_array($host, self::ALLOWED_HOSTS, true)) {
             throw ValidationException::withMessages([
-                $errorKey => 'Only YouTube or Vimeo embeds are allowed.',
+                $errorKey => __('teach.error_video_host'),
             ]);
         }
 

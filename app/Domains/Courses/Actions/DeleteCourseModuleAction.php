@@ -31,14 +31,16 @@ use Illuminate\Validation\ValidationException;
 class DeleteCourseModuleAction
 {
     /**
-     * Tables that make a module part of somebody's course.
+     * Tables that make a module part of somebody's course. Each is named in
+     * the refusal by `teach.module_holds_<table>`, in the page's language
+     * (slice CT6b-2b).
      *
-     * @var array<string, array{0: string, 1: string}> table => [column, label]
+     * @var array<string, string> table => column
      */
     private const DEPENDENTS = [
-        'lessons' => ['course_module_id', 'lessons'],
-        'content_blocks' => ['course_module_id', 'content blocks'],
-        'student_lesson_progress' => ['course_module_id', 'progress records'],
+        'lessons' => 'course_module_id',
+        'content_blocks' => 'course_module_id',
+        'student_lesson_progress' => 'course_module_id',
     ];
 
     /**
@@ -50,7 +52,7 @@ class DeleteCourseModuleAction
 
         if ($status !== 'draft') {
             throw ValidationException::withMessages([
-                'module' => 'Only a draft module can be deleted. Unpublish it first (SPEC §12).',
+                'module' => __('teach.error_module_not_draft'),
             ]);
         }
 
@@ -59,12 +61,11 @@ class DeleteCourseModuleAction
         if ($counts !== []) {
             $parts = [];
             foreach ($counts as $table => $count) {
-                $parts[] = $count.' '.(self::DEPENDENTS[$table][1] ?? $table);
+                $parts[] = trans_choice('teach.module_holds_'.$table, $count, ['count' => $count]);
             }
 
             throw ValidationException::withMessages([
-                'module' => 'This module still has '.implode(', ', $parts)
-                    .'. Move or delete those first (SPEC §12).',
+                'module' => __('teach.error_module_holds', ['things' => implode(__('teach.list_joiner'), $parts)]),
             ]);
         }
 
@@ -81,7 +82,7 @@ class DeleteCourseModuleAction
     {
         $counts = [];
 
-        foreach (self::DEPENDENTS as $table => [$column, $label]) {
+        foreach (self::DEPENDENTS as $table => $column) {
             // Checked for existence because this list spans phases and a
             // database part-way through migrations should not fatal here.
             if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $column)) {

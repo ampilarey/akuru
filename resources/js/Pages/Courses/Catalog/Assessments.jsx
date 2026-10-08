@@ -1,6 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
-import FormErrors from '../../../Components/FormErrors';
+import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 
 export default function Assessments({ course, assessments, questions, types, t = {} }) {
     // Every string below is a key in the `teach` book (slice CT2, STATUS
@@ -25,6 +25,10 @@ export default function Assessments({ course, assessments, questions, types, t =
         // question was silently required and nothing enforced it either.
         is_required: true,
     });
+    // Reordering or removing a question posts with `router`, and its refusal
+    // — a list that does not name every question once — was shown nowhere
+    // (slice CT6b-2b). It is said under the assessment it came from.
+    const refusals = useRowRefusals(form, attachForm);
 
     // §21's "Position". Attaching assigned max+1 and nothing could ever change
     // it, so the order questions happened to be attached in was the order every
@@ -38,7 +42,7 @@ export default function Assessments({ course, assessments, questions, types, t =
             return;
         }
         [ids[index], ids[target]] = [ids[target], ids[index]];
-        router.post(`/catalog/courses/${course.id}/assessments/${assessmentId}/questions/reorder`, { question_ids: ids }, { preserveScroll: true });
+        refusals.actOn(`assessment:${assessmentId}`, () => router.post(`/catalog/courses/${course.id}/assessments/${assessmentId}/questions/reorder`, { question_ids: ids }, { preserveScroll: true }));
     };
 
     return (
@@ -121,6 +125,7 @@ export default function Assessments({ course, assessments, questions, types, t =
                 <button type="submit" className="btn-primary" disabled={attachForm.processing || assessments.length === 0 || questions.length === 0}>{t.assess_attach || 'Attach question'}</button>
                 <FormErrors errors={attachForm.errors} />
             </form>
+            <FormErrors errors={refusals.unplaced} className="mb-4 rounded border border-red-200 bg-red-50 py-2 pe-3" />
             <div className="space-y-3">
                 {assessments.length === 0 && <p className="text-sm text-gray-500">{t.assess_none || 'No assessments yet.'}</p>}
                 {assessments.map((row) => (
@@ -158,7 +163,7 @@ export default function Assessments({ course, assessments, questions, types, t =
                                         <button
                                             type="button"
                                             className="btn-secondary"
-                                            onClick={() => router.delete(`/catalog/courses/${course.id}/assessments/${row.id}/questions/${item.question_id}`)}
+                                            onClick={() => refusals.actOn(`assessment:${row.id}`, () => router.delete(`/catalog/courses/${course.id}/assessments/${row.id}/questions/${item.question_id}`, { preserveScroll: true }))}
                                         >
                                             {t.outline_remove || 'Remove'}
                                         </button>
@@ -166,6 +171,7 @@ export default function Assessments({ course, assessments, questions, types, t =
                                 </li>
                             ))}
                         </ul>
+                        <FormErrors errors={refusals.errorsFor(`assessment:${row.id}`)} className="mt-2" />
                     </section>
                 ))}
             </div>

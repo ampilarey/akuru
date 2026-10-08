@@ -30,7 +30,7 @@ class SaveLessonAction
             ->when($lesson, fn ($query) => $query->where('id', '!=', $lesson->id))
             ->exists();
         if ($exists) {
-            throw ValidationException::withMessages(['slug' => 'Lesson slug must be unique within the course.']);
+            throw ValidationException::withMessages(['slug' => __('teach.error_lesson_slug')]);
         }
 
         $payload = [
@@ -89,14 +89,14 @@ class SaveLessonAction
 
         if ((string) $mode !== UnlockMode::PassAssessment->value) {
             throw ValidationException::withMessages([
-                'unlock_rule' => 'That unlock rule is not available at lesson level.',
+                'unlock_rule' => __('teach.error_unlock_rule_lesson'),
             ]);
         }
 
         $assessmentId = (int) (is_array($given) ? ($given['assessment_id'] ?? 0) : 0);
         if ($assessmentId < 1) {
             throw ValidationException::withMessages([
-                'unlock_rule' => 'Choose which assessment must be passed first.',
+                'unlock_rule' => __('teach.error_unlock_pick_assessment'),
             ]);
         }
 
@@ -123,7 +123,7 @@ class SaveLessonAction
         $resolved = LessonCompletionMode::tryFrom((string) $mode);
         if ($resolved === null) {
             throw ValidationException::withMessages([
-                'completion_rule' => 'That completion rule is not available.',
+                'completion_rule' => __('teach.error_completion_rule'),
             ]);
         }
 
