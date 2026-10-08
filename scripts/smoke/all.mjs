@@ -152,6 +152,7 @@ const WALKS = [
     { name: 'saved-in-language', writes: true, asks: 'Does a save on a Dhivehi or Arabic page say what it saved in that language, and come back to it?' },
     { name: 'writer-language', writes: true, asks: 'Do the Library\'s writer portal and peer review read in Dhivehi and Arabic, and is a refused submission said on its own row?' },
     { name: 'library-office-language', writes: true, asks: 'Does the Library office read in Dhivehi and Arabic, and is a refused assignment said on its own row?' },
+    { name: 'front-door-language', writes: true, asks: 'Do the header, footer, home page, error pages, admissions and contact read in Dhivehi and Arabic, and is an applicant on the Dhivehi page thanked in Dhivehi?' },
 ];
 
 const args = process.argv.slice(2);

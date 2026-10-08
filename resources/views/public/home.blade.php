@@ -1,6 +1,6 @@
 @extends('public.layouts.public')
-@section('title', $text['title'] ?? 'Welcome to Akuru Institute')
-@section('description', $text['desc'] ?? 'Learn Quran, Arabic, and Islamic Studies in the Maldives')
+@section('title', $text['title'] ?? __('public.Welcome to Akuru Institute'))
+@section('description', $text['desc'] ?? __('public.Learn Quran, Arabic, and Islamic Studies in the Maldives'))
 
 @section('content')
 
@@ -10,8 +10,8 @@
 ═══════════════════════════════════════════════════════════ --}}
 @php
 $bannerList = $heroBanners->map(fn($b) => [
-    'title'    => $b->title    ?? $text['title'] ?? 'Welcome to Akuru Institute',
-    'subtitle' => $b->subtitle ?? $text['desc']  ?? 'Learn Quran, Arabic, and Islamic Studies in the Maldives',
+    'title'    => $b->title    ?? $text['title'] ?? __('public.Welcome to Akuru Institute'),
+    'subtitle' => $b->subtitle ?? $text['desc']  ?? __('public.Learn Quran, Arabic, and Islamic Studies in the Maldives'),
     'cta_text' => $b->cta_text ?? null,
     'cta_url'  => $b->cta_url  ?? null,
 ])->values()->toArray();
@@ -35,7 +35,7 @@ $bannerCount = count($bannerList);
         <div class="container mx-auto px-4 text-center text-white"
              style="width:100%;padding-top:4.5rem;padding-bottom:{{ $bannerCount > 1 ? '3rem' : '4.5rem' }}">
           <span style="display:inline-block;background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.4);color:#E8BC3C;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.375rem 1rem;border-radius:9999px;margin-bottom:1.25rem">
-            🕌 Islamic Education in the Maldives
+            🕌 {{ __('public.Islamic Education in the Maldives') }}
           </span>
           <h1 style="font-size:clamp(1.75rem,4.5vw,3.25rem);font-weight:800;line-height:1.15;margin-bottom:1.25rem;text-shadow:0 2px 16px rgba(0,0,0,.4)">
             {{ $bn['title'] }}
@@ -47,13 +47,13 @@ $bannerCount = count($bannerList);
             <a href="{{ $bn['cta_url'] ?? route('public.courses.index') }}"
                style="display:inline-flex;align-items:center;gap:.5rem;background:#C9A227;color:#3D1219;font-weight:700;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:opacity .2s,transform .2s"
                onmouseover="this.style.opacity='.88';this.style.transform='scale(1.04)'" onmouseout="this.style.opacity='1';this.style.transform='scale(1)'">
-              {{ $bn['cta_text'] ?? 'Enroll Now' }}
+              {{ $bn['cta_text'] ?? __('public.Enroll Now') }}
             </a>
-            <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}&text={{ urlencode('Assalaamu alaikum, I want to know about Akuru Institute.') }}"
+            <a href="viber://chat?number=%2B{{ $siteSettings['viber'] ?? '9607972434' }}&text={{ urlencode(__('public.Assalaamu alaikum, I want to know about Akuru Institute.')) }}"
                style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(255,255,255,.12);color:white;border:2px solid rgba(255,255,255,.35);font-weight:600;padding:.875rem 2rem;border-radius:.75rem;font-size:1.05rem;text-decoration:none;transition:background .2s"
                onmouseover="this.style.background='rgba(255,255,255,.2)'" onmouseout="this.style.background='rgba(255,255,255,.12)'">
               <svg width="18" height="18" fill="currentColor" viewBox="0 0 24 24"><path d="M11.993 0C5.5 0 .527 4.972.527 11.473c0 3.107 1.2 5.943 3.17 8.053V23l2.953-1.628A11.03 11.03 0 0011.993 22.736c6.457 0 11.43-4.972 11.43-11.472C23.459 4.813 18.487 0 11.993 0z"/></svg>
-              Chat on Viber
+              {{ __('public.Chat on Viber') }}
             </a>
           </div>
         </div>
@@ -64,12 +64,12 @@ $bannerCount = count($bannerList);
 
   @if($bannerCount > 1)
   {{-- Prev / Next arrows — hidden on mobile --}}
-  <button id="akuru-prev" class="hero-arrow" aria-label="Previous slide"
+  <button id="akuru-prev" class="hero-arrow" aria-label="{{ __('public.Previous slide') }}"
       style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10;padding:0"
       onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
   </button>
-  <button id="akuru-next" class="hero-arrow" aria-label="Next slide"
+  <button id="akuru-next" class="hero-arrow" aria-label="{{ __('public.Next slide') }}"
       style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10;padding:0"
       onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
@@ -78,7 +78,7 @@ $bannerCount = count($bannerList);
   {{-- Dot indicators --}}
   <div style="position:absolute;bottom:1rem;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:6px;z-index:10">
     @foreach($bannerList as $i => $bn)
-    <span class="akuru-dot" data-idx="{{ $i }}" aria-label="Slide {{ $i + 1 }}"
+    <span class="akuru-dot" data-idx="{{ $i }}" aria-label="{{ __('public.Slide :number', ['number' => $i + 1]) }}"
           style="display:inline-block;border-radius:9999px;cursor:pointer;flex-shrink:0;transition:all .35s;{{ $i === 0 ? 'width:20px;height:6px;background:#C9A227' : 'width:6px;height:6px;background:rgba(255,255,255,.5)' }}"></span>
     @endforeach
   </div>
@@ -263,7 +263,7 @@ $bannerCount = count($bannerList);
         $cStatusStyle = $cStatus === 'open' ? 'background:#DCFCE7;color:#15803D' : 'background:#FEF9C3;color:#92400E';
         $cFeeColor = ($cFee && $cFee > 0) ? '#7C2D37' : '#15803D';
         $cFeeText  = ($cFee && $cFee > 0) ? 'MVR '.number_format($cFee,0) : __('site.free');
-        $cDateText = $cDate ? $cDate->format('d M Y') : __('site.date_tbc');
+        $cDateText = $cDate ? $cDate->translatedFormat('d M Y') : __('site.date_tbc');
       @endphp
       <a href="{{ $cHref }}"
          style="display:flex;flex-direction:column;background:#fff;border:1.5px solid #E5E7EB;border-radius:1rem;overflow:hidden;text-decoration:none;transition:box-shadow .25s,transform .25s"
@@ -281,13 +281,13 @@ $bannerCount = count($bannerList);
           {{-- Status + seats badges --}}
           <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem">
             <span style="font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:9999px;{{ $cStatusStyle }}">
-              {{ $cStatus === 'open' ? '● '.__('site.open_badge') : '◷ Upcoming' }}
+              {{ $cStatus === 'open' ? '● '.__('site.open_badge') : '◷ '.__('public.Upcoming') }}
             </span>
             @if($cSeats)
             <span style="font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:9999px;{{ $cSeatsTone === 'full' ? 'background:#F3F4F6;color:#6B7280' : ($cSeatsTone === 'exact' ? 'background:#FEE2E2;color:#B91C1C' : 'background:#FEF3C7;color:#92400E') }}">{{ $cSeats }}</span>
             @endif
             @if($cDeadlineBadge)
-            <span style="font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:9999px;background:#F3EBE0;color:#7C2D37">{{ $cDeadlineDays === 1 ? '1 day left' : $cDeadlineDays.' days left' }}</span>
+            <span style="font-size:.68rem;font-weight:700;padding:.15rem .55rem;border-radius:9999px;background:#F3EBE0;color:#7C2D37">{{ trans_choice('public.:count day left|:count days left', (int) $cDeadlineDays) }}</span>
             @endif
           </div>
           <h3 style="font-weight:700;color:#111827;font-size:1rem;line-height:1.35;margin-bottom:.375rem">{{ $cTitle }}</h3>
@@ -480,10 +480,10 @@ document.addEventListener('keydown',e=>{if(!document.getElementById('glb')||docu
   <div class="container mx-auto px-4">
     <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:2rem">
       <div>
-        <span style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">Life at Akuru</span>
-        <h2 style="font-size:clamp(1.75rem,3vw,2.25rem);font-weight:800;color:#111827;margin:.25rem 0 0">Our Gallery</h2>
+        <span style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">{{ __('public.Life at Akuru') }}</span>
+        <h2 style="font-size:clamp(1.75rem,3vw,2.25rem);font-weight:800;color:#111827;margin:.25rem 0 0">{{ __('public.Our Gallery') }}</h2>
       </div>
-      <a href="{{ route('public.gallery.index') }}" style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none">View all <span class="rtl-flip" aria-hidden="true">→</span></a>
+      <a href="{{ route('public.gallery.index') }}" style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none">{{ __('public.View all') }} <span class="rtl-flip" aria-hidden="true">→</span></a>
     </div>
     <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:.5rem">
       @foreach($galleryPhotos as $idx => $photo)
@@ -518,8 +518,8 @@ document.addEventListener('keydown',e=>{if(!document.getElementById('glb')||docu
 <section style="background:#FDF3D8;padding:4rem 0;border-top:1px solid #F0D987">
   <div class="container mx-auto px-4">
     <div style="text-align:center;margin-bottom:2.5rem">
-      <span style="color:#92400E;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">Student voices</span>
-      <h2 style="font-size:clamp(1.75rem,3vw,2.5rem);font-weight:800;color:#111827;margin:.25rem 0 0">What Our Students Say</h2>
+      <span style="color:#92400E;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">{{ __('public.Student voices') }}</span>
+      <h2 style="font-size:clamp(1.75rem,3vw,2.5rem);font-weight:800;color:#111827;margin:.25rem 0 0">{{ __('public.What Our Students Say') }}</h2>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,300px),1fr));gap:1.25rem;max-width:70rem;margin:0 auto">
       @foreach($testimonials as $t)
@@ -550,8 +550,8 @@ document.addEventListener('keydown',e=>{if(!document.getElementById('glb')||docu
         {{-- News --}}
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-            <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0">Latest News</h2>
-            <a href="{{ route('public.news.index') }}" style="font-size:.825rem;color:#7C2D37;font-weight:600;text-decoration:none">All news <span class="rtl-flip" aria-hidden="true">→</span></a>
+            <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0">{{ __('public.Latest News') }}</h2>
+            <a href="{{ route('public.news.index') }}" style="font-size:.825rem;color:#7C2D37;font-weight:600;text-decoration:none">{{ __('public.All news') }} <span class="rtl-flip" aria-hidden="true">→</span></a>
           </div>
           <div style="display:flex;flex-direction:column;gap:.75rem">
             @forelse($posts as $post)
@@ -564,19 +564,19 @@ document.addEventListener('keydown',e=>{if(!document.getElementById('glb')||docu
               </div>
               <div style="min-width:0">
                 <p style="font-weight:600;color:#111827;font-size:.875rem;line-height:1.4;margin:0 0 .25rem;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical">{{ $post->title }}</p>
-                <p style="font-size:.75rem;color:#9CA3AF;margin:0">{{ \Carbon\Carbon::parse($post->published_at ?? now())->format('d M Y') }}</p>
+                <p style="font-size:.75rem;color:#9CA3AF;margin:0">{{ \Carbon\Carbon::parse($post->published_at ?? now())->translatedFormat('d M Y') }}</p>
               </div>
             </a>
             @empty
-            <p style="color:#9CA3AF;font-size:.875rem;padding:1rem 0">No news yet.</p>
+            <p style="color:#9CA3AF;font-size:.875rem;padding:1rem 0">{{ __('public.No news yet.') }}</p>
             @endforelse
           </div>
         </div>
         {{-- Events --}}
         <div>
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem">
-            <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0">Upcoming Events</h2>
-            <a href="{{ route('public.events.index') }}" style="font-size:.825rem;color:#A8861F;font-weight:600;text-decoration:none">All events <span class="rtl-flip" aria-hidden="true">→</span></a>
+            <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0">{{ __('public.Upcoming Events') }}</h2>
+            <a href="{{ route('public.events.index') }}" style="font-size:.825rem;color:#A8861F;font-weight:600;text-decoration:none">{{ __('public.All events') }} <span class="rtl-flip" aria-hidden="true">→</span></a>
           </div>
           <div style="display:flex;flex-direction:column;gap:.75rem">
             @forelse($events as $event)
@@ -585,18 +585,18 @@ document.addEventListener('keydown',e=>{if(!document.getElementById('glb')||docu
                style="display:flex;gap:1rem;padding:.875rem;border-radius:.75rem;text-decoration:none;border:1px solid #F3F4F6;transition:border-color .2s,background .2s"
                onmouseover="this.style.borderColor='#FDE68A';this.style.background='#FFFBEB'" onmouseout="this.style.borderColor='#F3F4F6';this.style.background='transparent'">
               <div style="flex-shrink:0;text-align:center;width:3rem">
-                <div style="background:#7C2D37;color:white;border-radius:.375rem .375rem 0 0;padding:.125rem .25rem;font-size:.65rem;font-weight:700;text-transform:uppercase">{{ $ed->format('M') }}</div>
+                <div style="background:#7C2D37;color:white;border-radius:.375rem .375rem 0 0;padding:.125rem .25rem;font-size:.65rem;font-weight:700;text-transform:uppercase">{{ $ed->translatedFormat('M') }}</div>
                 <div style="border:1px solid #E5E7EB;border-top:none;border-radius:0 0 .375rem .375rem;padding:.25rem;font-size:1.25rem;font-weight:800;color:#111827;line-height:1.2">{{ $ed->format('d') }}</div>
               </div>
               <div>
                 <p style="font-weight:600;color:#111827;font-size:.875rem;margin:0 0 .25rem">{{ $event->title }}</p>
-                <p style="font-size:.75rem;color:#9CA3AF;margin:0">{{ $event->location ?? 'Akuru Institute' }}</p>
+                <p style="font-size:.75rem;color:#9CA3AF;margin:0">{{ $event->location ?? __('public.Akuru Institute') }}</p>
               </div>
             </a>
             @empty
             <div style="text-align:center;padding:2rem;color:#9CA3AF">
               <svg width="36" height="36" style="margin:0 auto .5rem;display:block;opacity:.3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-              <p style="font-size:.875rem;margin:0">No upcoming events scheduled.</p>
+              <p style="font-size:.875rem;margin:0">{{ __('public.No upcoming events scheduled.') }}</p>
             </div>
             @endforelse
           </div>

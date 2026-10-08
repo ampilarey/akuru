@@ -7,14 +7,14 @@
   <div class="container mx-auto px-4">
     <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:1rem;margin-bottom:1.5rem">
       <div>
-        <span style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">Today</span>
-        <h2 style="font-size:clamp(1.4rem,3vw,2rem);font-weight:800;color:#3D1219;margin:.25rem 0 0">Daily content</h2>
+        <span style="color:#7C2D37;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.08em">{{ __('public.Today') }}</span>
+        <h2 style="font-size:clamp(1.4rem,3vw,2rem);font-weight:800;color:#3D1219;margin:.25rem 0 0">{{ __('public.Daily content') }}</h2>
       </div>
       <div style="display:flex;gap:1rem;align-items:center">
         <a href="{{ route('public.daily.subscribe') }}"
-           style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none">Subscribe</a>
+           style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none">{{ __('public.Subscribe') }}</a>
         <a href="{{ route('public.daily.index', ['type' => $daily['items'][0]['content_type'] ?? 'ayah']) }}"
-           style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none">Archive</a>
+           style="color:#7C2D37;font-weight:600;font-size:.875rem;text-decoration:none">{{ __('public.Archive') }}</a>
       </div>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,280px),1fr));gap:1.25rem">

@@ -178,3 +178,74 @@ if (! function_exists('unnamedFields')) {
         return $unnamed;
     }
 }
+
+if (! function_exists('bladeBareEnglish')) {
+    /**
+     * English a Blade view prints without the phrase book: text between tags,
+     * and the placeholder, title, aria-label and alt attributes. What is inside
+     * `{{ }}`, a directive's parentheses, a script, a style, an svg or an `on…`
+     * handler is code, not text, and is left out. `$allowed` names what may stay
+     * as written — a brand, a currency code, an address that is the same in
+     * every language. The public site's check (slice LT4).
+     */
+    function bladeBareEnglish(string $path, array $allowed = []): array
+    {
+        $source = (string) file_get_contents($path);
+        foreach (['/\{\{--.*?--\}\}/s', '/<script\b.*?<\/script>/s', '/<style\b.*?<\/style>/s', '/<svg\b.*?<\/svg>/s', '/@php\b(?!\s*\().*?@endphp/s'] as $pattern) {
+            $source = (string) preg_replace($pattern, ' ', $source);
+        }
+        $source = (string) preg_replace('/\{\{.*?\}\}|\{!!.*?!!\}/s', ' ', $source);
+        $source = (string) preg_replace('/\son\w+="[^"]*"/', ' ', $source);
+
+        // A directive's argument, by balanced parentheses: `@if($a > 0)` holds a `>`.
+        $out = '';
+        $length = strlen($source);
+        for ($i = 0; $i < $length; $i++) {
+            if ($source[$i] === '@' && preg_match('/\G@\w+\s*\(/', $source, $m, 0, $i) && ($i === 0 || ! ctype_alnum($source[$i - 1]))) {
+                $depth = 0;
+                $quote = null;
+                for ($j = $i + strlen($m[0]) - 1; $j < $length; $j++) {
+                    $c = $source[$j];
+                    if ($quote !== null) {
+                        if ($c === '\\') {
+                            $j++;
+                        } elseif ($c === $quote) {
+                            $quote = null;
+                        }
+                    } elseif ($c === "'" || $c === '"') {
+                        $quote = $c;
+                    } elseif ($c === '(') {
+                        $depth++;
+                    } elseif ($c === ')' && --$depth === 0) {
+                        break;
+                    }
+                }
+                $out .= ' ';
+                $i = $j;
+
+                continue;
+            }
+            $out .= $source[$i];
+        }
+        $out = (string) preg_replace('/(?<![\w.])@\w+/', ' ', $out);
+
+        $found = [];
+        $texts = [];
+        preg_match_all('/>([^<>]+)</', $out, $nodes);
+        foreach ($nodes[1] as $text) {
+            $texts[] = trim($text);
+        }
+        preg_match_all('/\s(?:placeholder|title|aria-label|alt)="([^"]*)"/', $out, $attributes);
+        foreach ($attributes[1] as $text) {
+            $texts[] = trim($text);
+        }
+        foreach ($texts as $text) {
+            $rest = (string) preg_replace('/[\w.+-]+@[\w-]+(\.[\w-]+)+/', ' ', str_replace($allowed, ' ', $text));
+            if (preg_match('/[A-Za-z]{2,}/', $rest)) {
+                $found[] = preg_replace('/\s+/', ' ', $text);
+            }
+        }
+
+        return $found;
+    }
+}
