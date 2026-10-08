@@ -1951,6 +1951,16 @@ class SmokeMarkerSeeder extends Seeder
             $row = $identity->submit($userId, $purpose, $file(), $file());
             $identity->decide($row->id, $officeId ?: $userId, true, null, false);
         }
+
+        // COMMERCE_PARITY_PLAN P3: a course certificate waits until the office
+        // has checked the learner's own card, so the seeded student's is
+        // checked too — without it certify.mjs is refused at the issue step.
+        $studentUserId = (int) DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id');
+        $studentId = (int) DB::table('students')->where('user_id', $studentUserId)->value('id');
+        if ($studentId !== 0 && is_file($card) && $identity->learnerStatus($studentId)['status'] !== 'verified') {
+            $row = $identity->submit($studentUserId, 'learner', new \Illuminate\Http\UploadedFile($card, 'smoke-id.jpg', 'image/jpeg', null, true), null, $studentId);
+            $identity->decide($row->id, $officeId ?: $studentUserId, true, null, false);
+        }
     }
 
     /**
