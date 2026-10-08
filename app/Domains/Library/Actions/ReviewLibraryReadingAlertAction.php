@@ -18,12 +18,12 @@ class ReviewLibraryReadingAlertAction
     {
         if (! in_array($outcome, self::OUTCOMES, true)) {
             throw ValidationException::withMessages([
-                'outcome' => 'Choose one of: '.implode(', ', self::OUTCOMES).'.',
+                'outcome' => __('admin.library_alerts_error_outcome'),
             ]);
         }
 
         if (! $alert->isOpen()) {
-            throw ValidationException::withMessages(['alert' => 'This alert was already reviewed.']);
+            throw ValidationException::withMessages(['alert' => __('admin.library_alerts_error_reviewed')]);
         }
 
         $alert->update([

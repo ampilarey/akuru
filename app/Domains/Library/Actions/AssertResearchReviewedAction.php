@@ -40,8 +40,8 @@ class AssertResearchReviewedAction
         if ($accepts < $required) {
             throw ValidationException::withMessages([
                 'item' => $required === 1
-                    ? 'Research is published only after a peer reviewer accepts it. It has no accept in this review round yet.'
-                    : sprintf('Research is published only after %d peer reviewers accept it. It has %d in this review round.', $required, $accepts),
+                    ? __('admin.library_office_error_research_gate_one')
+                    : __('admin.library_office_error_research_gate_many', ['required' => $required, 'accepts' => $accepts]),
             ]);
         }
     }

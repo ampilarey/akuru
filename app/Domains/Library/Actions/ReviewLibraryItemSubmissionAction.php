@@ -19,13 +19,13 @@ class ReviewLibraryItemSubmissionAction
     public function execute(int $itemId, int $reviewerUserId, string $decision, ?string $comment = null): LibraryItem
     {
         if (! in_array($decision, ['approved', 'changes_requested', 'rejected'], true)) {
-            throw ValidationException::withMessages(['decision' => 'Decision must be approved, changes_requested, or rejected.']);
+            throw ValidationException::withMessages(['decision' => __('admin.library_office_error_decision')]);
         }
 
         $item = LibraryItem::query()->findOrFail($itemId);
         $status = $item->status instanceof LibraryItemStatus ? $item->status : LibraryItemStatus::tryFrom((string) $item->status);
         if ($status !== LibraryItemStatus::Submitted) {
-            throw ValidationException::withMessages(['item' => 'Only submitted items can be reviewed.']);
+            throw ValidationException::withMessages(['item' => __('admin.library_office_error_not_submitted_review')]);
         }
 
         // R3 (D2): research needs its peer-review accepts before approval;

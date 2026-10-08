@@ -36,33 +36,33 @@ class SaveLibrarySettingsAction
 
         $errors = [];
         if ($next['refund_window_days'] < 0 || $next['refund_window_days'] > 365) {
-            $errors['refund_window_days'] = 'The refund window is a number of days from 0 to 365.';
+            $errors['refund_window_days'] = __('admin.library_settings_error_refund_window');
         }
         if ($next['default_writer_commission'] < 0 || $next['default_writer_commission'] > 100) {
-            $errors['default_writer_commission'] = 'The writer\'s share is a percentage from 0 to 100.';
+            $errors['default_writer_commission'] = __('admin.library_settings_error_commission');
         }
         if ($next['min_payout'] < 0) {
-            $errors['min_payout'] = 'The minimum payout cannot be negative.';
+            $errors['min_payout'] = __('admin.library_settings_error_min_payout');
         }
         if ($next['gift_card_min'] < 1) {
-            $errors['gift_card_min'] = 'The smallest gift card is at least MVR 1.';
+            $errors['gift_card_min'] = __('admin.library_settings_error_gift_min');
         }
         if ($next['gift_card_max'] < $next['gift_card_min']) {
-            $errors['gift_card_max'] = 'The largest gift card cannot be smaller than the smallest.';
+            $errors['gift_card_max'] = __('admin.library_settings_error_gift_max');
         }
         if ($next['gift_card_expiry_months'] < 0 || $next['gift_card_expiry_months'] > 120) {
-            $errors['gift_card_expiry_months'] = 'Gift cards expire after 0 (never) to 120 months.';
+            $errors['gift_card_expiry_months'] = __('admin.library_settings_error_gift_expiry');
         }
         // R3 (D2): peer review cannot be switched off by asking for none.
         if ($next['research_reviews_required'] < 1 || $next['research_reviews_required'] > 10) {
-            $errors['research_reviews_required'] = 'Research needs from 1 to 10 reviewer accepts before it is published.';
+            $errors['research_reviews_required'] = __('admin.library_settings_error_reviews');
         }
         // P5: the office's own copy of a sale notice.
         if ($next['office_email'] !== '' && ! filter_var($next['office_email'], FILTER_VALIDATE_EMAIL)) {
-            $errors['office_email'] = 'The office email is not an email address.';
+            $errors['office_email'] = __('admin.library_settings_error_office_email');
         }
         if ($next['office_phone'] !== '' && ! preg_match('/^\+?[0-9 ]{7,20}$/', $next['office_phone'])) {
-            $errors['office_phone'] = 'The office phone is a number of 7 to 20 digits.';
+            $errors['office_phone'] = __('admin.library_settings_error_office_phone');
         }
         if ($errors !== []) {
             throw ValidationException::withMessages($errors);

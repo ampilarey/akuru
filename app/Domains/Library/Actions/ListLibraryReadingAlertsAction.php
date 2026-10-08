@@ -44,6 +44,10 @@ class ListLibraryReadingAlertsAction
                 'observed' => $alert->observed,
                 'threshold' => $alert->threshold,
                 'detail' => $alert->detail,
+                // LT3: the detector writes its detail in English (it is a
+                // record, and the CSV keeps it). The page says it in its own
+                // language when the detail has one of the detector's shapes.
+                'detail_said' => $this->detailSaid($alert),
                 'raised_at' => $alert->created_at?->toDateTimeString(),
                 'reviewed_at' => $alert->reviewed_at?->toDateTimeString(),
                 'outcome' => $alert->outcome,
@@ -55,5 +59,26 @@ class ListLibraryReadingAlertsAction
             'enforcing' => (bool) config('library.abuse.enforce', false),
             'events_logged' => LibraryReadingEvent::query()->count(),
         ];
+    }
+
+    /**
+     * `DetectLibraryReadingAbuseAction` writes "%d pages in %d seconds." and
+     * its two siblings; read back, they are said in the page's language.
+     * Anything else is returned as it was written.
+     */
+    private function detailSaid(LibraryReadingAlert $alert): ?string
+    {
+        $detail = (string) $alert->detail;
+        $shapes = [
+            'rapid_pages' => '/^(\d+) pages in (\d+) seconds\.$/',
+            'many_devices' => '/^(\d+) distinct devices in (\d+) hours\.$/',
+            'concurrent_sessions' => '/^(\d+) sessions active in (\d+) minutes\.$/',
+        ];
+        $signal = $alert->signal?->value;
+        if ($detail === '' || $signal === null || ! isset($shapes[$signal]) || preg_match($shapes[$signal], $detail, $found) !== 1) {
+            return $detail === '' ? null : $detail;
+        }
+
+        return __('admin.library_alerts_detail_'.$signal, ['observed' => $found[1], 'window' => $found[2]]);
     }
 }

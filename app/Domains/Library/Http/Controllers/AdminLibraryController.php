@@ -27,10 +27,12 @@ use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryReadingAlert;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
+use Inertia\OnceProp;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -74,13 +76,24 @@ class AdminLibraryController extends Controller
             'payouts' => app(ListWriterPayoutReportAction::class)->execute(),
             // COMMERCE_PARITY_PLAN P2: writers' identity cards, waiting first.
             'identity_checks' => app(IdentityVerificationAction::class)->list('writer'),
-            'id_l' => trans('account'),
             'filters' => $filters,
             'options' => [
                 'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),
                 'access_types' => array_map(fn ($case) => $case->value, LibraryAccessType::cases()),
             ] + $this->authoringOptions(),
-        ]);
+        ] + $this->phraseBooks());
+    }
+
+    /**
+     * LT3: the books the office's page reads — its own words (`t`), and the
+     * account book's for the identity cards. What it shares with the
+     * writer's portal comes in the shell's `common`.
+     *
+     * @return array{t: OnceProp, id_l: mixed}
+     */
+    private function phraseBooks(): array
+    {
+        return ['t' => Phrases::once('admin'), 'id_l' => trans('account')];
     }
 
     /**
@@ -115,7 +128,7 @@ class AdminLibraryController extends Controller
             $request->file('cover'),
         );
 
-        return back()->with('success', 'Library item saved. '.$this->pagesNote($item, $request->hasFile('pdf')));
+        return back()->with('success', __('admin.library_office_flash_saved').' '.$this->pagesNote($item, $request->hasFile('pdf')));
     }
 
     /**
@@ -127,12 +140,12 @@ class AdminLibraryController extends Controller
     {
         $count = (int) $item->page_count;
         if ($count > 0) {
-            return sprintf('%d reader page%s ready.', $count, $count === 1 ? '' : 's');
+            return trans_choice('common.library_pages_ready', $count, ['count' => $count]);
         }
 
         return $pdfUploaded || $item->pdf_media_file_id !== null
-            ? 'The PDF has no readable text (a scan or pictures), so the reader has no pages — add the text as the body to make it readable.'
-            : 'No reader pages yet — add a body or upload a PDF.';
+            ? __('admin.library_office_pages_scan')
+            : __('common.library_pages_none');
     }
 
     public function updateItem(Request $request, int $item): RedirectResponse
@@ -143,7 +156,7 @@ class AdminLibraryController extends Controller
 
         $model = app(SaveLibraryItemAction::class)->execute($data, $model, $request->file('pdf'), $request->file('cover'));
 
-        return back()->with('success', 'Library item updated. '.$this->pagesNote($model, $request->hasFile('pdf')));
+        return back()->with('success', __('admin.library_office_flash_updated').' '.$this->pagesNote($model, $request->hasFile('pdf')));
     }
 
     public function publish(Request $request, int $item): RedirectResponse
@@ -157,7 +170,7 @@ class AdminLibraryController extends Controller
             (bool) $data['publish'],
         );
 
-        return back()->with('success', 'Library item status updated.');
+        return back()->with('success', __('admin.library_office_flash_status'));
     }
 
     /** §7.8: feature an item on the shelf, or stop. */
@@ -168,7 +181,7 @@ class AdminLibraryController extends Controller
 
         app(FeatureLibraryItemAction::class)->execute($item, (bool) $data['featured']);
 
-        return back()->with('success', $data['featured'] ? 'Featured on the shelf.' : 'No longer featured.');
+        return back()->with('success', $data['featured'] ? __('admin.library_office_flash_featured') : __('admin.library_office_flash_unfeatured'));
     }
 
     /** L6 (§7.7): decide a requested payout — paid or rejected. */
@@ -187,7 +200,7 @@ class AdminLibraryController extends Controller
             $data['note'] ?? null,
         );
 
-        return back()->with('success', 'Payout decided.');
+        return back()->with('success', __('admin.library_office_flash_payout'));
     }
 
     /** L6 (§13.4): per-writer earnings CSV. */
@@ -223,7 +236,7 @@ class AdminLibraryController extends Controller
             $data['due_on'] ?? null,
         );
 
-        return back()->with('success', 'Reviewer assigned.');
+        return back()->with('success', __('admin.library_office_flash_assigned'));
     }
 
     /** L5 (§43.2): decide a pending writer application. */
@@ -242,7 +255,7 @@ class AdminLibraryController extends Controller
             $data['note'] ?? null,
         );
 
-        return back()->with('success', 'Application decided.');
+        return back()->with('success', __('admin.library_office_flash_application'));
     }
 
     /**
@@ -282,7 +295,7 @@ class AdminLibraryController extends Controller
             $data['comment'] ?? null,
         );
 
-        return back()->with('success', 'Submission reviewed.');
+        return back()->with('success', __('admin.library_office_flash_reviewed'));
     }
 
     public function storeCategory(Request $request): RedirectResponse
@@ -298,7 +311,7 @@ class AdminLibraryController extends Controller
 
         app(SaveLibraryCategoryAction::class)->execute($data);
 
-        return back()->with('success', 'Category saved.');
+        return back()->with('success', __('admin.library_office_flash_category'));
     }
 
     /**
@@ -354,7 +367,7 @@ class AdminLibraryController extends Controller
 
         return Inertia::render(
             'Library/ReadingAlerts',
-            app(ListLibraryReadingAlertsAction::class)->execute(! $request->boolean('all')),
+            app(ListLibraryReadingAlertsAction::class)->execute(! $request->boolean('all')) + ['t' => Phrases::once('admin')],
         );
     }
 
@@ -372,7 +385,7 @@ class AdminLibraryController extends Controller
             $data['outcome'],
         );
 
-        return back()->with('success', 'Alert reviewed.');
+        return back()->with('success', __('admin.library_alerts_flash_reviewed'));
     }
 
     public function exportReadingAlerts(Request $request): StreamedResponse

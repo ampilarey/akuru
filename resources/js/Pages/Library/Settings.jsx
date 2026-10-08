@@ -51,7 +51,7 @@ export default function Settings({ settings, t = {} }) {
                         <input type="checkbox" name={key} checked={Boolean(form.data[key])} onChange={(e) => form.setData(key, e.target.checked)} data-testid={`library-setting-${key}`} />
                         <span>
                             {label}
-                            <span className="ms-2 text-xs text-gray-500">({t.library_settings_default || 'Default'}: {settings[key].default ? 'on' : 'off'})</span>
+                            <span className="ms-2 text-xs text-gray-500">({t.library_settings_default || 'Default'}: {settings[key].default ? t.library_settings_on || 'on' : t.library_settings_off || 'off'})</span>
                         </span>
                     </label>
                 ))}
@@ -65,7 +65,7 @@ export default function Settings({ settings, t = {} }) {
                 ))}
                 <p className="text-xs text-gray-600 md:col-span-2">{t.library_settings_office_note || 'Every sale reaches this address and number, as the two switches above allow. Leave empty to keep sales in the app.'}</p>
                 <p className="text-xs text-gray-600 md:col-span-2" data-testid="library-notices-note">{t.library_settings_notices_note || 'Important notices: a decision on an application or submission, a publication, a sale, a payout, a review asked for, a purchase ready. Reader reminders and office alerts stay in the app.'}</p>
-                <p className="text-xs text-amber-800 md:col-span-2">{t.library_settings_payouts_note || 'Payouts stay off until the tax and accounting treatment of writer payouts is confirmed (ROADMAP §9.4); earnings accrue meanwhile.'}</p>
+                <p className="text-xs text-amber-800 md:col-span-2">{t.library_settings_payouts_note || 'Payouts stay off until the tax and accounting treatment of writer payouts is confirmed; earnings accrue meanwhile.'}</p>
                 <FormErrors errors={form.errors} />
                 <div className="flex items-center gap-3 md:col-span-2">
                     <button type="submit" className="btn-primary" disabled={form.processing}>{t.library_settings_save || 'Save settings'}</button>

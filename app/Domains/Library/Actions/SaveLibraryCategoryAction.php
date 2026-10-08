@@ -15,7 +15,7 @@ class SaveLibraryCategoryAction
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Category name is required.']);
+            throw ValidationException::withMessages(['name' => __('admin.library_office_error_category_name')]);
         }
 
         $slug = (string) ($data['slug'] ?? Str::slug($name));
@@ -24,7 +24,7 @@ class SaveLibraryCategoryAction
             ->when($category, fn ($query) => $query->whereKeyNot($category->id))
             ->exists();
         if ($exists) {
-            throw ValidationException::withMessages(['slug' => 'Category slug already in use.']);
+            throw ValidationException::withMessages(['slug' => __('admin.library_office_error_category_slug')]);
         }
 
         $payload = [

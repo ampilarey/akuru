@@ -4983,6 +4983,91 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pf. The Library office in Dhivehi and Arabic (C20 slice LT3, 2026-10-08)
+
+The office's Library screen (`/admin/library`) was English throughout:
+- the queues of writer applications, submissions and payouts;
+- the item form and the categories form;
+- the shelf's sales and its list, with an item's type, access and status
+  printed as codes, and a submission's history and its peer reviews as codes.
+
+So were the reading alerts page (its signals and its details too), Insights'
+table names, the Library settings' *on* and *off*, every saved message of the
+office's controller, and every refusal of the office's actions. That includes
+the peer-review gate's *Research is published only after a peer reviewer
+accepts it.* The settings, promotions, reviewers and insights pages already
+read the `admin` book.
+
+**Through the phrase books:**
+- `admin`: 138 rows. The office's own words, the 26 refusals of nine office
+  actions, the controller's saved messages, the three reading signals and
+  their details, the history entries and the assignment states. The page
+  reads them as `t`, sent once per locale (`Phrases::once`). What it shares
+  with the writer's portal (a type, an access, a status, the item form's
+  fields, the editor's toolbar) it reads from the shell's `common`.
+- A reading alert's detail is written by the detector in English and kept
+  so; the CSV keeps it. The page says it in its own language when it has
+  one of the detector's three shapes (`detail_said`).
+- The settings' payouts note drops "(ROADMAP §9.4)", a document the office
+  cannot open, in all three languages.
+- The English reads as it did. Two differences: the office's list says
+  *changes requested* where it printed `changes_requested`, and Insights'
+  tables carry the names their headings already had (*Writers, by sales*).
+- The writer's notices from a decision, and the note kept with the ID card
+  of a refused application, stay English: they are written for the writer
+  (BACKLOG C20).
+
+**On the pages:**
+- The queues' and the list's buttons post without a form: decide an
+  application or a payout, review or assign a submission, feature or
+  publish an item, review an alert. Their refusals are said on the row they
+  came from (`useRowRefusals`), where the page had one English list at the
+  top.
+- The item form and the categories form say their own refusals.
+- The office's editor gets its toolbar's labels; it had none.
+
+**Tests:** `LibraryOfficeSpeaksThreeLanguagesTest`, 10 tests.
+- Every `t.key || 'English'` and `common.key || 'English'` on Admin,
+  ReadingAlerts, Insights and Settings is in all three languages, its
+  English the page's fallback.
+- No bare English, English attribute or unnamed field on them.
+- Every history entry, assignment state, signal, outcome and detail is in
+  Dhivehi and Arabic.
+- No English refusal is left in the 10 files, and each key they name is
+  translated. The writer's notices are named as exceptions.
+- Served:
+  - the office and the reading alerts in Dhivehi;
+  - an item saved in Dhivehi, with its reader pages;
+  - research refused publication without its accepts in Arabic, and in
+    English as before;
+  - an unknown reviewer and a second category of the same name refused in
+    Dhivehi;
+  - an alert's detail said in Dhivehi, and a second review of it refused in
+    Dhivehi;
+  - a refund window past a year refused in Arabic on the settings page.
+- Every `router` visit says its row.
+
+**Walk:** `library-office-language.mjs` (new, in `all.mjs`), **41/41**.
+- The office adds SMOKE-Lang-Category twice on the Dhivehi page. The second
+  is refused beside the form, in Dhivehi.
+- The writer submits SMOKE-Lang-Queue, and the office assigns it a reviewer
+  by an email nobody has. The refusal comes back on the submission's row, in
+  Dhivehi, and the item stays submitted.
+- `/admin/library`, its reading alerts, insights, settings, reviewers and
+  promotions under `/dv` and `/ar`: right to left, nothing in English, every
+  field named.
+- Against `main`'s code and build: **30/41**. Neither refusal is said, and
+  the pages read *Digital Library admin*, *Submitted item*, *Patterns the
+  protected reader noticed*, *Most read*, *on*, *off*.
+- The English walks still pass: `library.mjs` 31/31 (its wait for the
+  changes-requested status reads the status's name now), `peer-review.mjs`
+  18/18, `earnings.mjs` 13/13, `writer-language.mjs` 18/18.
+
+**Still open (BACKLOG C20):**
+- The Library's notices to the writer, the reviewer and the office.
+- The public book's missing keys.
+- The event registration's English refusals.
+
 ## 5pe. The Library's writer portal and peer review in Dhivehi and Arabic (C20 slice LT2, 2026-10-08)
 
 The writer portal (`/write`) and the reviewer's page (`/review`) read their
