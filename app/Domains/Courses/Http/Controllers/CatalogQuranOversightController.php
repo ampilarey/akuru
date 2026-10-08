@@ -6,6 +6,7 @@ use App\Domains\Courses\Components\Arabic\Actions\ListArabicReferenceAction;
 use App\Domains\Courses\Components\Quran\Actions\SummarizeQuranMistakesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -57,6 +58,6 @@ class CatalogQuranOversightController extends Controller
             }, 'quran-oversight.csv', ['Content-Type' => 'text/csv']);
         }
 
-        return Inertia::render('Courses/Catalog/QuranOversight', $summary);
+        return Inertia::render('Courses/Catalog/QuranOversight', $summary + ['t' => Phrases::once('teach'), 'q' => Phrases::once('quran')]);
     }
 }

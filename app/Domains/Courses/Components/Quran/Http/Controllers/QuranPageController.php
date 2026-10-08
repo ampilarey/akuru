@@ -7,6 +7,7 @@ use App\Domains\Courses\Components\Quran\Models\QuranPage;
 use App\Domains\Courses\Components\Quran\Models\QuranWord;
 use App\Domains\Courses\Components\Quran\Models\QuranWordPosition;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -42,12 +43,9 @@ class QuranPageController extends Controller
                 'image_url' => $page->image_path ? asset('storage/'.$page->image_path) : null,
             ],
             'page_number' => $pageNumber,
-            'ayahs' => $ayahs->map(fn (mixed $a) => [
-                'id' => $a->id,
-                'surah_number' => $a->surah_number,
-                'ayah_number' => $a->ayah_number,
-                'text_uthmani' => $a->text_uthmani,
-            ])->all(),
+            // The last page has no next one; the link led to a 404 (slice CT5b).
+            'last_page' => (int) $mushaf->pages()->max('page_number'),
+            'ayahs' => $ayahs->map->only(['id', 'surah_number', 'ayah_number', 'text_uthmani'])->all(),
             'positions' => $positions->map(fn (QuranWordPosition $p) => [
                 'id' => $p->id,
                 'x' => (float) $p->x,
@@ -69,6 +67,7 @@ class QuranPageController extends Controller
                 ])
                 ->all(),
             'can_manage' => request()->user()?->can('manage', QuranMushaf::class) ?? false,
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -100,6 +99,6 @@ class QuranPageController extends Controller
             ]
         );
 
-        return back()->with('success', 'Word position saved.');
+        return back()->with('success', __('teach.flash_qpage_position_saved'));
     }
 }

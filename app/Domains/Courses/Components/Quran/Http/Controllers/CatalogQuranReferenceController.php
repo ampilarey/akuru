@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Components\Quran\Http\Controllers;
 use App\Domains\Courses\Components\Quran\Actions\ListQuranReferenceAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,7 +21,7 @@ class CatalogQuranReferenceController extends Controller
             'Courses/Catalog/QuranReference',
             app(ListQuranReferenceAction::class)->execute(
                 $request->filled('surah') ? (int) $request->input('surah') : null,
-            ),
+            ) + ['t' => Phrases::once('teach')],
         );
     }
 

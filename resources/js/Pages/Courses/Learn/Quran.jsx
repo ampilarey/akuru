@@ -7,7 +7,11 @@ import { createRecorder, describeRecordingFailure, recordingSupport } from '../.
 const range = (row) =>
     row.start_ayah_number ? `${row.start_ayah_number}–${row.end_ayah_number ?? row.start_ayah_number}` : '—';
 
-const statusBadge = (status) => {
+// A code the server sends, named from the `quran` book (slice CT5a).
+const named = (q, family, code) => (code ? q[`${family}${code}`] || code.replaceAll('_', ' ') : '—');
+
+// A status, coloured by its code and named in the page's language.
+const statusBadge = (q, family, status) => {
     const tone = {
         passed: 'bg-green-100 text-green-800',
         strong: 'bg-green-100 text-green-800',
@@ -16,7 +20,7 @@ const statusBadge = (status) => {
         failed: 'bg-red-100 text-red-800',
         weak: 'bg-red-100 text-red-800',
     }[status] || 'bg-gray-100 text-gray-700';
-    return <span className={`rounded px-2 py-0.5 text-xs ${tone}`}>{status?.replaceAll('_', ' ') ?? '—'}</span>;
+    return <span className={`rounded px-2 py-0.5 text-xs ${tone}`}>{named(q, family, status)}</span>;
 };
 
 /**
@@ -27,7 +31,7 @@ const statusBadge = (status) => {
  * the same honesty about failing: the button is disabled with a reason on it
  * when the environment cannot record, rather than doing nothing when pressed.
  */
-function RecitationRecorder({ surahs, assignments, t }) {
+function RecitationRecorder({ surahs, assignments, t, surahOf }) {
     const [surahId, setSurahId] = useState(String(surahs[0]?.id ?? ''));
     const [from, setFrom] = useState('1');
     const [to, setTo] = useState('1');
@@ -124,27 +128,27 @@ function RecitationRecorder({ surahs, assignments, t }) {
 
             <div className="mb-3 grid gap-3 md:grid-cols-4">
                 <label className="text-xs text-gray-700">
-                    {t.surah || 'Surah'}
+                    {t.quran_col_surah || 'Surah'}
                     <select className="form-input mt-1 w-full" value={surahId} onChange={(e) => setSurahId(e.target.value)}>
-                        {surahs.map((row) => <option key={row.id} value={row.id}>{row.name}</option>)}
+                        {surahs.map((row) => <option key={row.id} value={row.id}>{surahOf(row)}</option>)}
                     </select>
                 </label>
                 <label className="text-xs text-gray-700">
-                    {t.from_ayah || 'From ayah'}
+                    {t.quran_from_ayah || 'From ayah'}
                     <input className="form-input mt-1 w-full" type="number" min="1" max={surah?.ayah_count ?? undefined} value={from} onChange={(e) => setFrom(e.target.value)} />
                 </label>
                 <label className="text-xs text-gray-700">
-                    {t.to_ayah || 'To ayah'}
+                    {t.quran_to_ayah || 'To ayah'}
                     <input className="form-input mt-1 w-full" type="number" min="1" max={surah?.ayah_count ?? undefined} value={to} onChange={(e) => setTo(e.target.value)} />
                 </label>
                 {openAssignments.length > 0 && (
                     <label className="text-xs text-gray-700">
-                        {t.for_assignment || 'For assignment'}
+                        {t.quran_for_assignment || 'For assignment'}
                         <select className="form-input mt-1 w-full" value={assignmentId} onChange={(e) => setAssignmentId(e.target.value)}>
-                            <option value="">{t.no_assignment || 'Not for an assignment'}</option>
+                            <option value="">{t.quran_no_assignment || 'Not for an assignment'}</option>
                             {openAssignments.map((row) => (
                                 <option key={row.id} value={row.id}>
-                                    {row.surah ?? '—'} {range(row)}{row.due_date ? ` · due ${row.due_date}` : ''}
+                                    {surahOf(row)} {range(row)}{row.due_date ? ` · ${(t.quran_due_on || 'due :date').replace(':date', row.due_date)}` : ''}
                                 </option>
                             ))}
                         </select>
@@ -183,16 +187,19 @@ function RecitationRecorder({ surahs, assignments, t }) {
     );
 }
 
-export default function Quran({ student, submissions, progress, schedules, assignments = [], surahs = [] }) {
-    const t = usePage().props.i18n?.learn || {};
+export default function Quran({ student, submissions, progress, schedules, assignments = [], surahs = [], q = {} }) {
+    const { i18n, locale = 'en' } = usePage().props;
+    const t = i18n?.learn || {};
+    // A surah by its Arabic name on a Dhivehi or Arabic page (slice CT5b).
+    const surahOf = (row) => (locale === 'en' ? (row.surah ?? row.name) : (row.surah_arabic ?? row.arabic_name ?? row.surah ?? row.name)) ?? '—';
 
     return (
-        <AppShell title={t.quran_dashboard || "My Qur'an"}>
+        <AppShell title={t.quran_dashboard || 'My Qur’an'}>
             {!student && (
                 <p className="mb-4 text-sm text-gray-600">{t.no_profile || 'No student profile is linked to this account.'}</p>
             )}
             {student && surahs.length > 0 && (
-                <RecitationRecorder surahs={surahs} assignments={assignments} t={t} />
+                <RecitationRecorder surahs={surahs} assignments={assignments} t={t} surahOf={surahOf} />
             )}
             {student && surahs.length === 0 && (
                 // Say so, rather than leave the recorder out in silence: on a
@@ -208,25 +215,25 @@ export default function Quran({ student, submissions, progress, schedules, assig
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">{t.type || 'Type'}</th>
-                            <th className="px-3 py-2">{t.surah || 'Surah'}</th>
-                            <th className="px-3 py-2">{t.ayahs || 'Ayahs'}</th>
-                            <th className="px-3 py-2">{t.due || 'Due'}</th>
-                            <th className="px-3 py-2">{t.status || 'Status'}</th>
-                            <th className="px-3 py-2">{t.teacher || 'Teacher'}</th>
+                            <th className="px-3 py-2">{t.quran_col_type || 'Type'}</th>
+                            <th className="px-3 py-2">{t.quran_col_surah || 'Surah'}</th>
+                            <th className="px-3 py-2">{t.quran_col_ayahs || 'Ayahs'}</th>
+                            <th className="px-3 py-2">{t.quran_col_due || 'Due'}</th>
+                            <th className="px-3 py-2">{t.quran_col_status || 'Status'}</th>
+                            <th className="px-3 py-2">{t.quran_col_teacher || 'Teacher'}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {assignments.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>{t.no_assignments || 'No assignments yet.'}</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>{t.quran_no_assignments || 'No assignments yet.'}</td></tr>
                         )}
                         {assignments.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.assignment_type?.replaceAll('_', ' ')}</td>
-                                <td className="px-3 py-2">{row.surah ?? '—'}</td>
+                                <td className="px-3 py-2">{named(q, 'assignment_type_', row.assignment_type)}</td>
+                                <td className="px-3 py-2">{surahOf(row)}</td>
                                 <td className="px-3 py-2">{range(row)}</td>
                                 <td className="px-3 py-2">{row.due_date ?? '—'}</td>
-                                <td className="px-3 py-2">{statusBadge(row.status)}</td>
+                                <td className="px-3 py-2">{statusBadge(q, 'status_', row.status)}</td>
                                 <td className="px-3 py-2">{row.teacher ?? '—'}</td>
                             </tr>
                         ))}
@@ -239,23 +246,23 @@ export default function Quran({ student, submissions, progress, schedules, assig
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">{t.surah || 'Surah'}</th>
-                            <th className="px-3 py-2">{t.ayahs || 'Ayahs'}</th>
-                            <th className="px-3 py-2">{t.status || 'Status'}</th>
-                            <th className="px-3 py-2">{t.strength || 'Strength'}</th>
-                            <th className="px-3 py-2">{t.mistakes || 'Mistakes'}</th>
-                            <th className="px-3 py-2">{t.last_reviewed || 'Last reviewed'}</th>
+                            <th className="px-3 py-2">{t.quran_col_surah || 'Surah'}</th>
+                            <th className="px-3 py-2">{t.quran_col_ayahs || 'Ayahs'}</th>
+                            <th className="px-3 py-2">{t.quran_col_status || 'Status'}</th>
+                            <th className="px-3 py-2">{t.quran_col_strength || 'Strength'}</th>
+                            <th className="px-3 py-2">{t.quran_col_mistakes || 'Mistakes'}</th>
+                            <th className="px-3 py-2">{t.quran_col_last_reviewed || 'Last reviewed'}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {progress.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>{t.no_progress || 'No memorization progress yet.'}</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>{t.quran_no_progress || 'No memorization progress yet.'}</td></tr>
                         )}
                         {progress.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.surah ?? '—'}</td>
+                                <td className="px-3 py-2">{surahOf(row)}</td>
                                 <td className="px-3 py-2">{range(row)}</td>
-                                <td className="px-3 py-2">{statusBadge(row.status)}</td>
+                                <td className="px-3 py-2">{statusBadge(q, 'progress_', row.status)}</td>
                                 <td className="px-3 py-2">{row.strength_score ?? '—'}</td>
                                 <td className="px-3 py-2">{row.mistake_count ?? '—'}</td>
                                 <td className="px-3 py-2">{row.last_reviewed_at ?? '—'}</td>
@@ -270,42 +277,42 @@ export default function Quran({ student, submissions, progress, schedules, assig
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">{t.surah || 'Surah'}</th>
-                            <th className="px-3 py-2">{t.ayahs || 'Ayahs'}</th>
-                            <th className="px-3 py-2">{t.submitted || 'Submitted'}</th>
-                            <th className="px-3 py-2">{t.status || 'Status'}</th>
-                            <th className="px-3 py-2">{t.mistakes || 'Mistakes'}</th>
-                            <th className="px-3 py-2">{t.teacher_note || 'Teacher note'}</th>
+                            <th className="px-3 py-2">{t.quran_col_surah || 'Surah'}</th>
+                            <th className="px-3 py-2">{t.quran_col_ayahs || 'Ayahs'}</th>
+                            <th className="px-3 py-2">{t.quran_col_submitted || 'Submitted'}</th>
+                            <th className="px-3 py-2">{t.quran_col_status || 'Status'}</th>
+                            <th className="px-3 py-2">{t.quran_col_mistakes || 'Mistakes'}</th>
+                            <th className="px-3 py-2">{t.quran_col_teacher_note || 'Teacher note'}</th>
                             {/* §36: a correction the student cannot play is not feedback. */}
-                            <th className="px-3 py-2">{t.listen || 'Listen'}</th>
+                            <th className="px-3 py-2">{t.quran_col_listen || 'Listen'}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {submissions.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={7}>{t.no_submissions || 'No submissions yet.'}</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={7}>{t.quran_no_submissions || 'No submissions yet.'}</td></tr>
                         )}
                         {submissions.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.surah ?? '—'}</td>
+                                <td className="px-3 py-2">{surahOf(row)}</td>
                                 <td className="px-3 py-2">{range(row)}</td>
                                 <td className="px-3 py-2">{row.submitted_at}</td>
-                                <td className="px-3 py-2">{statusBadge(row.status)}</td>
+                                <td className="px-3 py-2">{statusBadge(q, 'status_', row.status)}</td>
                                 <td className="px-3 py-2">{row.mistake_count}</td>
                                 <td className="px-3 py-2">{row.review_note ?? '—'}</td>
                                 <td className="px-3 py-2">
                                     <div className="grid gap-1">
                                         {row.has_audio && (
                                             <audio controls preload="none" className="h-8 w-52" src={`/recitations/${row.id}/audio/submission`}>
-                                                {t.audio_unsupported || 'Your browser cannot play audio.'}
+                                                {t.quran_audio_unsupported || 'Your browser cannot play audio.'}
                                             </audio>
                                         )}
                                         {row.has_correction_audio && (
                                             <div>
                                                 <span className="text-xs font-medium text-brandMaroon-700">
-                                                    {t.teacher_correction || "Teacher's correction"}
+                                                    {t.quran_teacher_correction || 'Teacher’s correction'}
                                                 </span>
                                                 <audio controls preload="none" className="h-8 w-52" src={`/recitations/${row.id}/audio/correction`}>
-                                                    {t.audio_unsupported || 'Your browser cannot play audio.'}
+                                                    {t.quran_audio_unsupported || 'Your browser cannot play audio.'}
                                                 </audio>
                                             </div>
                                         )}
@@ -323,25 +330,25 @@ export default function Quran({ student, submissions, progress, schedules, assig
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">{t.date || 'Date'}</th>
-                            <th className="px-3 py-2">{t.surah || 'Surah'}</th>
-                            <th className="px-3 py-2">{t.ayahs || 'Ayahs'}</th>
-                            <th className="px-3 py-2">{t.frequency || 'Frequency'}</th>
-                            <th className="px-3 py-2">{t.status || 'Status'}</th>
-                            <th className="px-3 py-2">{t.notes || 'Notes'}</th>
+                            <th className="px-3 py-2">{t.quran_col_date || 'Date'}</th>
+                            <th className="px-3 py-2">{t.quran_col_surah || 'Surah'}</th>
+                            <th className="px-3 py-2">{t.quran_col_ayahs || 'Ayahs'}</th>
+                            <th className="px-3 py-2">{t.quran_col_frequency || 'Frequency'}</th>
+                            <th className="px-3 py-2">{t.quran_col_status || 'Status'}</th>
+                            <th className="px-3 py-2">{t.quran_col_notes || 'Notes'}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {schedules.length === 0 && (
-                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>{t.no_revision || 'No revision scheduled.'}</td></tr>
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>{t.quran_no_revision || 'No revision scheduled.'}</td></tr>
                         )}
                         {schedules.map((row) => (
                             <tr key={row.id} className="border-t">
                                 <td className="px-3 py-2">{row.scheduled_date}</td>
-                                <td className="px-3 py-2">{row.surah ?? '—'}</td>
+                                <td className="px-3 py-2">{surahOf(row)}</td>
                                 <td className="px-3 py-2">{range(row)}</td>
-                                <td className="px-3 py-2">{row.frequency ?? '—'}</td>
-                                <td className="px-3 py-2">{statusBadge(row.status)}</td>
+                                <td className="px-3 py-2">{named(q, 'frequency_', row.frequency)}</td>
+                                <td className="px-3 py-2">{statusBadge(q, 'revision_', row.status)}</td>
                                 <td className="px-3 py-2">{row.notes ?? '—'}</td>
                             </tr>
                         ))}

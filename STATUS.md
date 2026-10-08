@@ -4983,6 +4983,111 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ot. Qur'an oversight, the reference, the mushafs and the learner's Qur'an page in Dhivehi and Arabic (C19 slice CT5b, 2026-10-08)
+
+CT5a (§5or) translated the four screens a Qur'an teacher works on. This
+slice takes the rest of the Qur'an component's screens:
+- *Qur'an oversight* (`/catalog/quran/oversight`) and the *Qur'an
+  reference* (`/catalog/quran`);
+- the mushafs — the list, the upload form, one mushaf (`/quran/mushafs…`)
+  and page mapping (`/quran/mushafs/{id}/pages/{n}`);
+- the learner's own *My Qur'an* (`/learn/quran`).
+
+**The learner's page was English in all three languages.** It reads the
+shell's `learn` book, and 33 of its 39 phrases had never been written in any
+language, so every one showed its English fallback. It also printed its
+codes raw, and named every surah in English.
+
+**Phrase books:**
+- `teach`, 77 rows: the oversight, the reference, the mushafs, page mapping,
+  and five saved messages.
+- `quran`, 14 rows in three new families: `progress_` (a memorized range),
+  `revision_` (a revision's status) and `frequency_`.
+- `learn`, 42 rows:
+  - the page's labels;
+  - why the recorder cannot start (six reasons, read by
+    `describeRecordingFailure`, which `Pronunciation/Practice` shares);
+  - the recitation's saved message;
+  - `logout`. The shell's sign-out button reads it, and it was never
+    written, so *Log out* was English on every Dhivehi and Arabic page.
+- `learn`, 15 rows corrected:
+  - the fourteen `pronounce_*` phrases were English in Dhivehi and Arabic;
+  - `no_profile` in Dhivehi said only "profile".
+
+**On the screens:**
+- Codes are named from the `quran` book, a status by its own family.
+- A surah is named in Arabic on a Dhivehi or Arabic page: the learner's
+  dashboard action now also sends `surah_arabic`, and the surah list sends
+  `arabic_name`.
+- Every field has a name.
+- The controllers pass the books and say what was saved in the page's
+  language: mushaf created, approved or locked; ayah imported; word
+  position saved; recitation submitted.
+
+**Fixed on the way, on these screens:**
+- The mushaf page and the page-mapping screen printed their heading twice:
+  the shell's `h1` and their own.
+- *Map page 1* led to a 404 for a mushaf uploaded without a page count. It
+  now says why there is nothing to map.
+- *Next* on the last page led to a 404. It is hidden there; the page sends
+  `last_page`.
+- The mapping box's fields were labelled `x`, `y`, `width`, `height`. They
+  are now *Left %*, *Top %*, *Width %* and *Height %*, and the word select
+  has a name.
+- The no-image box told the dean to "upload page images", which no screen
+  can do. It now says the boxes are kept for when there is an image.
+- The reference's introduction named database tables. It now says what the
+  list is.
+- `QuranPageController::show` was baselined at 47 lines. The ayahs'
+  identity map became `->map->only(…)`, so it is 44 with the book and the
+  last page added, and the baseline is lowered to 44.
+
+**Found, and recorded rather than built here** (BACKLOG C19):
+- **Page images have no door.** Nothing a person can press sets
+  `quran_pages.image_path`.
+- **A mushaf uploaded without a page count can never get pages.**
+- **With no mushaf active, every mushaf's ayahs are read as the Qur'an**
+  (`ListAyahsAction`). An unapproved upload's text would stand in for the
+  dataset. That is why the walk never imports an ayah. It wants a decision.
+- **The other learner screens** — `Learn/*`, `Player/Show` and the
+  Offerings catalog screens — have 33 phrases never written, and
+  English text in the page. That is slice CT7.
+
+**Tests:**
+- `CourseScreensSpeakThreeLanguagesTest` now holds 26 screens in 10 tests.
+  - The learner's page is held against the `learn` book.
+  - The Qur'an codes test adds the three new families.
+  - A new test serves the oversight, the reference, the mushaf list and
+    form, a mushaf and its last page in Dhivehi, after a Dhivehi upload's
+    saved message.
+  - It also serves the learner's page with both books and the surah's
+    Arabic name.
+- `StudentSubmitsRecitationTest` checks the learner's saved message.
+- `MushafCycleSmokeResetTest`: the seeder removes the mushafs a walk
+  uploaded, with their pages, and leaves the office's own. It runs twice
+  cleanly.
+- `TranslationCatalogPagingTest` had capped the `learn` group at fewer than
+  100 rows, a fixed bound for "the group filter narrows the list". The book
+  now has 101. The test checks what it meant instead: the page's total is
+  the group's own count in the same response, and less than the catalog's.
+
+**Walks:**
+- `course-screens-language.mjs`:
+  - The dean uploads a mushaf with two pages through the Dhivehi form, and
+    is told so in Dhivehi.
+  - It then opens the oversight, the reference (with a surah open), the
+    mushaf list and form, the mushaf, page 1 with the mapping form open,
+    and the last page.
+  - It opens the pupil's own Qur'an page.
+  - Its first run failed one step, *Mushaf created.* in English. That was
+    §5os.
+  - With §5os: **173/173** on a fresh seed.
+- Then in English: `quran.mjs` 22/22, `recite.mjs` 13/13, `hifz.mjs` 21/21
+  and `pronounce.mjs` 17/17.
+- Then 173/173 again, with the pupil's recitation and progress on their
+  page.
+- `saved-in-language.mjs` 12/12.
+
 ## 5os. A save on a Dhivehi or Arabic page answers in that language (2026-10-08)
 
 **Found by the CT5b walk.** A mushaf uploaded from the Dhivehi form said

@@ -118,6 +118,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->buyCycle($admin);
         $this->arabicCycle();
         $this->quranCycle();
+        $this->mushafCycle();
         $this->hifzCycle();
         $this->readerCycle();
         $this->cmsCourseWalk();
@@ -1872,6 +1873,19 @@ class SmokeMarkerSeeder extends Seeder
             'hifz_program_id' => $programId, 'teacher_id' => $teacherId, 'session_date' => now()->toDateString(),
             'title' => 'SMOKE-Halaqa-Session', 'status' => 'draft', 'created_at' => now(), 'updated_at' => now(),
         ]);
+    }
+
+    /**
+     * `course-screens-language.mjs` uploads a mushaf through the Dhivehi form
+     * (`SMOKE-Mushaf-` and the time) and opens it, its pages and the mapping
+     * form (slice CT5b). It never imports an ayah: with no mushaf active,
+     * `ListAyahsAction` reads every mushaf's ayahs, so walk-made text would
+     * stand in for the Qur'an. What a run left is removed here — the pages,
+     * words and boxes go with the mushaf (cascade).
+     */
+    private function mushafCycle(): void
+    {
+        DB::table('quran_mushafs')->where('name', 'like', 'SMOKE-Mushaf%')->delete();
     }
 
     /**

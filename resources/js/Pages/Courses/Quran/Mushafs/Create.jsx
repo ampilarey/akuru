@@ -1,7 +1,7 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../../../Layouts/AppShell';
 
-export default function MushafCreate() {
+export default function MushafCreate({ t = {} }) {
     const form = useForm({ name: '', description: '', source_file: null, page_count: '' });
 
     // `transform()` returns undefined in @inertiajs/react v3, so it can never be
@@ -12,10 +12,10 @@ export default function MushafCreate() {
     };
 
     return (
-        <AppShell title="Upload mushaf">
+        <AppShell title={t.mushaf_upload || 'Upload mushaf'}>
             <form onSubmit={submit} className="max-w-2xl space-y-4 rounded-lg border bg-white p-6">
                 <div>
-                    <label className="mb-1 block text-sm font-medium" htmlFor="name">Name</label>
+                    <label className="mb-1 block text-sm font-medium" htmlFor="name">{t.mushaf_col_name || 'Name'}</label>
                     <input
                         id="name"
                         className="form-input w-full"
@@ -26,7 +26,7 @@ export default function MushafCreate() {
                     {form.errors.name && <p className="mt-1 text-sm text-red-600">{form.errors.name}</p>}
                 </div>
                 <div>
-                    <label className="mb-1 block text-sm font-medium" htmlFor="description">Description</label>
+                    <label className="mb-1 block text-sm font-medium" htmlFor="description">{t.mushaf_description || 'Description'}</label>
                     <textarea
                         id="description"
                         rows={2}
@@ -36,7 +36,7 @@ export default function MushafCreate() {
                     />
                 </div>
                 <div>
-                    <label className="mb-1 block text-sm font-medium" htmlFor="source_file">PDF or Word file</label>
+                    <label className="mb-1 block text-sm font-medium" htmlFor="source_file">{t.mushaf_file || 'PDF or Word file'}</label>
                     <input
                         id="source_file"
                         type="file"
@@ -48,7 +48,7 @@ export default function MushafCreate() {
                 </div>
                 <div>
                     <label className="mb-1 block text-sm font-medium" htmlFor="page_count">
-                        Page count (creates that many page placeholders)
+                        {t.mushaf_page_count || 'Page count (creates that many page placeholders)'}
                     </label>
                     <input
                         id="page_count"
@@ -62,7 +62,7 @@ export default function MushafCreate() {
                     {form.errors.page_count && <p className="mt-1 text-sm text-red-600">{form.errors.page_count}</p>}
                 </div>
                 <button type="submit" className="btn-primary" disabled={form.processing}>
-                    Create mushaf
+                    {t.mushaf_create || 'Create mushaf'}
                 </button>
             </form>
         </AppShell>

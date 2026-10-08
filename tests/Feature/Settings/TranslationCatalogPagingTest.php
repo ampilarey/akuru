@@ -42,7 +42,12 @@ it('turns the page, switches group, searches and keeps only the suspect rows', f
 
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->get(route('admin.translations.index', ['group' => 'learn']))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->where('active_group', 'learn')->where('pagination.total', fn ($total) => $total > 0 && $total < 100));
+        // The group's own rows, not the catalog's: its count in the group
+        // summary (a fixed bound broke the day the book grew past it).
+        ->assertInertia(fn (Assert $page) => $page->where('active_group', 'learn')
+            ->where('pagination.total', fn ($total) => $total > 0
+                && $total === collect($page->toArray()['props']['groups'])->firstWhere('group', 'learn')['count']
+                && $total < $page->toArray()['props']['total']));
 
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->get(route('admin.translations.index', ['q' => 'dashboard']))->assertOk()

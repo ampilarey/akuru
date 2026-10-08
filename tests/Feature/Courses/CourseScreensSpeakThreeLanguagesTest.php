@@ -3,6 +3,7 @@
 use App\Domains\Courses\Actions\DeleteCourseAction;
 use App\Domains\Courses\Actions\NormalizeTextAnswerAction;
 use App\Domains\Courses\Actions\SaveEngineCourseAction;
+use App\Domains\Courses\Components\Quran\Enums\MemorizationStatus;
 use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentStatus;
 use App\Domains\Courses\Components\Quran\Enums\QuranAssignmentType;
 use App\Domains\Courses\Components\Quran\Enums\QuranLaneResult;
@@ -11,6 +12,9 @@ use App\Domains\Courses\Components\Quran\Enums\QuranMistakeType;
 use App\Domains\Courses\Components\Quran\Enums\QuranRevisionResult;
 use App\Domains\Courses\Components\Quran\Enums\QuranSessionOverallStatus;
 use App\Domains\Courses\Components\Quran\Enums\RecitationSubmissionStatus;
+use App\Domains\Courses\Components\Quran\Enums\RevisionScheduleStatus;
+use App\Domains\Courses\Components\Quran\Models\QuranMushaf;
+use App\Domains\Courses\Components\Quran\Models\Surah;
 use App\Domains\Courses\Enums\ActivityPattern;
 use App\Domains\Courses\Enums\AssessmentStatus;
 use App\Domains\Courses\Enums\AssessmentType;
@@ -29,6 +33,7 @@ use App\Enums\Hifz\HifzMilestoneStatus;
 use App\Enums\Hifz\HifzMilestoneType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Permission\Models\Role;
 
 /**
  * The course-building screens in Dhivehi and Arabic (slices CT1–CT3, STATUS
@@ -47,7 +52,8 @@ uses(RefreshDatabase::class);
 /**
  * The screens translated so far, and the phrase book each reads; each slice
  * adds its own. Deleted courses is a screen of the website's course list, so
- * it reads that list's book (slice CT4).
+ * it reads that list's book (slice CT4). The learner's Qur'an page reads the
+ * `learn` book the shell shares with every learner screen (slice CT5b).
  */
 function translatedCourseScreens(): array
 {
@@ -71,6 +77,13 @@ function translatedCourseScreens(): array
         'Courses/Teach/QuranMilestones' => 'teach',
         'Courses/Teach/QuranSessionSheet' => 'teach',
         'Courses/Teach/RecitationQueue' => 'teach',
+        'Courses/Catalog/QuranOversight' => 'teach',
+        'Courses/Catalog/QuranReference' => 'teach',
+        'Courses/Quran/Mushafs/Index' => 'teach',
+        'Courses/Quran/Mushafs/Create' => 'teach',
+        'Courses/Quran/Mushafs/Show' => 'teach',
+        'Courses/Quran/Pages/Show' => 'teach',
+        'Courses/Learn/Quran' => 'learn',
     ];
 }
 
@@ -344,9 +357,10 @@ it('serves the reports, the taxonomy and deleted courses in Dhivehi, and says wh
         ->and(__('admin.courses_deleted_title'))->toBe('Deleted courses');
 });
 
-it('names every Qur’an code the teacher’s screens show, in all three languages', function () {
+it('names every Qur’an code the teacher’s and the learner’s screens show, in all three languages', function () {
     // The `quran` book (slice CT5a): one name per code, for the teacher's
-    // screens and the learner's alike.
+    // screens and the learner's alike. A memorized range, a revision and how
+    // often it comes round are the learner's page's own (slice CT5b).
     $needed = [
         'all',
         ...array_map(fn ($case) => 'assignment_type_'.$case->value, QuranAssignmentType::cases()),
@@ -357,6 +371,9 @@ it('names every Qur’an code the teacher’s screens show, in all three languag
         ...array_map(fn ($case) => 'result_'.$case->value, [...QuranLaneResult::cases(), ...QuranRevisionResult::cases()]),
         ...array_map(fn ($case) => 'overall_'.$case->value, QuranSessionOverallStatus::cases()),
         ...array_map(fn ($status) => 'attendance_'.$status, ['present', 'late', 'absent', 'excused']),
+        ...array_map(fn ($case) => 'progress_'.$case->value, MemorizationStatus::cases()),
+        ...array_map(fn ($case) => 'revision_'.$case->value, RevisionScheduleStatus::cases()),
+        ...array_map(fn ($frequency) => 'frequency_'.$frequency, ['daily', 'weekly', 'monthly']),
     ];
     [$en, $dv, $ar] = [teachBook('en', 'quran'), teachBook('dv', 'quran'), teachBook('ar', 'quran')];
 
@@ -387,4 +404,61 @@ it('serves the Teach Qur’an screens in Dhivehi, with the screen’s book and t
     app()->setLocale('en');
     expect(__('teach.flash_qrec_reviewed'))->toBe('Recitation reviewed.')
         ->and(__('quran.mistake_wrong_haraka'))->toBe('wrong haraka');
+});
+
+it('serves Qur’an oversight, the reference, the mushafs, page mapping and the learner’s Qur’an page in Dhivehi, and says what was saved in Dhivehi', function () {
+    // The mushaf screens are the Hifz dean's (`QuranMushafPolicy`).
+    $dean = actingPeopleAdmin(['courses.manage', 'view_hifz_programs', 'manage_quran_mushaf']);
+    $dean->assignRole(Role::findOrCreate('headmaster', 'web'));
+    [$dv, $learn, $quran] = [teachBook('dv'), teachBook('dv', 'learn'), teachBook('dv', 'quran')];
+
+    app()->setLocale('dv');
+    foreach ([
+        'catalog.quran.oversight' => ['Courses/Catalog/QuranOversight', 'qover_title'],
+        'catalog.quran.index' => ['Courses/Catalog/QuranReference', 'qref_title'],
+        'quran.mushafs.index' => ['Courses/Quran/Mushafs/Index', 'mushaf_title'],
+        'quran.mushafs.create' => ['Courses/Quran/Mushafs/Create', 'mushaf_create'],
+    ] as $route => [$component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($dean)
+            ->get(route($route))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("t.{$key}", $dv[$key]));
+    }
+
+    $this->withoutLocalizationMiddleware()->actingAs($dean)
+        ->post(route('quran.mushafs.store'), ['name' => 'CT5b mushaf', 'page_count' => 2])
+        ->assertSessionHas('success', $dv['flash_mushaf_created']);
+    $mushaf = QuranMushaf::query()->where('name', 'CT5b mushaf')->firstOrFail();
+    $this->withoutLocalizationMiddleware()->actingAs($dean)
+        ->get(route('quran.mushafs.show', $mushaf))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Courses/Quran/Mushafs/Show')
+            ->where('t.mushaf_import_title', $dv['mushaf_import_title'])
+            ->where('mushaf.pages_count', 2));
+    // The last page says so, rather than offer a next page that is not there.
+    $this->withoutLocalizationMiddleware()->actingAs($dean)
+        ->get(route('quran.pages.show', ['mushaf' => $mushaf->id, 'pageNumber' => 2]))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Courses/Quran/Pages/Show')
+            ->where('t.qpage_back', $dv['qpage_back'])
+            ->where('last_page', 2));
+
+    // The learner's page: the shell's `learn` book, the Qur'an book for its
+    // codes, and each surah's Arabic name.
+    Surah::query()->create([
+        'index' => 1, 'arabic_name' => 'الفاتحة', 'english_name' => 'Al-Fatihah',
+        'transliteration' => 'Al-Fatihah', 'ayah_count' => 7, 'revelation_place' => 'Meccan',
+        'juz_start' => 1, 'juz_end' => 1, 'is_active' => true,
+    ]);
+    $pupil = User::factory()->create();
+    makeStudent(['user_id' => $pupil->id]);
+    $this->withoutLocalizationMiddleware()->actingAs($pupil)
+        ->get(route('learn.quran'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Courses/Learn/Quran')
+            ->where('i18n.learn.quran_dashboard', $learn['quran_dashboard'])
+            ->where('i18n.learn.pronounce_record', $learn['pronounce_record'])
+            ->where('q.progress_needs_revision', $quran['progress_needs_revision'])
+            ->where('surahs.0.arabic_name', 'الفاتحة'));
+
+    app()->setLocale('en');
+    expect(__('teach.flash_mushaf_created'))->toBe('Mushaf created.')
+        ->and(__('teach.flash_qpage_position_saved'))->toBe('Word position saved.')
+        ->and(__('learn.flash_recitation_submitted'))->toBe('Recitation submitted — your teacher will listen to it.');
 });

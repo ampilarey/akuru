@@ -74,7 +74,8 @@ it('lets a student record a recitation and hands it to the teacher', function ()
             'end_ayah_number' => 7,
             'audio' => $recording(),
         ])
-        ->assertRedirect();
+        ->assertRedirect()
+        ->assertSessionHas('success', __('learn.flash_recitation_submitted'));
 
     $submission = QuranRecitationSubmission::query()->firstOrFail();
 
