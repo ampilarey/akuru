@@ -13,6 +13,7 @@ use App\Domains\Offerings\Actions\SyncHalaqaDualWriteAction;
 use App\Domains\Offerings\Models\CourseOfferingSession;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,7 +26,8 @@ class OfferingSessionController extends Controller
     {
         abort_unless($request->user()?->can('courses.manage'), 403);
 
-        return Inertia::render('Offerings/Catalog/Sessions', app(ListOfferingSessionsAction::class)->execute($offering));
+        // The `teach` book, like every catalog screen (slice CT8).
+        return Inertia::render('Offerings/Catalog/Sessions', app(ListOfferingSessionsAction::class)->execute($offering) + ['t' => Phrases::once('teach')]);
     }
 
     public function store(Request $request, int $offering): RedirectResponse
@@ -46,7 +48,7 @@ class OfferingSessionController extends Controller
             'created_by' => $request->user()?->id,
         ]);
 
-        return redirect()->route('catalog.offerings.sessions.index', $offering)->with('success', 'Session saved.');
+        return redirect()->route('catalog.offerings.sessions.index', $offering)->with('success', __('teach.flash_session_saved'));
     }
 
     public function update(Request $request, int $offering, int $session): RedirectResponse
@@ -67,7 +69,7 @@ class OfferingSessionController extends Controller
             'course_offering_id' => $offering,
         ], $model);
 
-        return redirect()->route('catalog.offerings.sessions.index', $offering)->with('success', 'Session updated.');
+        return redirect()->route('catalog.offerings.sessions.index', $offering)->with('success', __('teach.flash_session_updated'));
     }
 
     public function storeHalaqa(Request $request, int $offering): RedirectResponse
@@ -81,7 +83,7 @@ class OfferingSessionController extends Controller
         ]);
 
         return redirect()->route('catalog.offerings.sessions.index', $offering)
-            ->with('success', 'Halaqa program linked.');
+            ->with('success', __('teach.flash_halaqa_linked'));
     }
 
     public function storeHalaqaSession(Request $request, int $offering, int $session): RedirectResponse
@@ -96,7 +98,7 @@ class OfferingSessionController extends Controller
         ]);
 
         return redirect()->route('catalog.offerings.sessions.index', $offering)
-            ->with('success', 'Halaqa session linked.');
+            ->with('success', __('teach.flash_halaqa_session_linked'));
     }
 
     public function syncHalaqa(Request $request, int $offering): RedirectResponse
@@ -105,14 +107,14 @@ class OfferingSessionController extends Controller
         $result = app(SyncHalaqaDualWriteAction::class)->execute($offering);
 
         return redirect()->route('catalog.offerings.sessions.index', $offering)
-            ->with('success', 'Dual-write synced '.$result['sessions_created'].' sessions and '.$result['enrollments_mirrored'].' enrollments.');
+            ->with('success', __('teach.flash_dual_write_synced', ['sessions' => $result['sessions_created'], 'enrollments' => $result['enrollments_mirrored']]));
     }
 
     public function attendance(Request $request, int $offering, int $session): Response
     {
         abort_unless($request->user()?->can('courses.manage'), 403);
 
-        return Inertia::render('Offerings/Catalog/Attendance', app(ListSessionAttendanceAction::class)->execute($session));
+        return Inertia::render('Offerings/Catalog/Attendance', app(ListSessionAttendanceAction::class)->execute($session) + ['t' => Phrases::once('teach')]);
     }
 
     public function mark(Request $request, int $offering, int $session): RedirectResponse
@@ -129,7 +131,7 @@ class OfferingSessionController extends Controller
             'marked_by' => $request->user()?->id,
         ]);
 
-        return redirect()->route('catalog.offerings.sessions.attendance', [$offering, $session])->with('success', 'Attendance saved.');
+        return redirect()->route('catalog.offerings.sessions.attendance', [$offering, $session])->with('success', __('teach.flash_attendance_saved'));
     }
 
     public function bulk(Request $request, int $offering, int $session): RedirectResponse
@@ -147,7 +149,7 @@ class OfferingSessionController extends Controller
             (int) $request->user()->id,
         );
 
-        return redirect()->route('catalog.offerings.sessions.attendance', [$offering, $session])->with('success', 'Roster marked.');
+        return redirect()->route('catalog.offerings.sessions.attendance', [$offering, $session])->with('success', __('teach.flash_roster_marked'));
     }
 
     public function export(Request $request, int $offering): StreamedResponse

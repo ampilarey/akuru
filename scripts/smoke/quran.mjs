@@ -264,7 +264,9 @@ if (programValue) {
 }
 const linked = await settles(admin, `Linked: ${PROGRAM}`);
 check('the offering is linked to the halaqa, labels read through the contract', linked, linked ? `Linked: ${PROGRAM}` : (await text(admin)).slice(0, 160));
-check('dual-write is reported off, no sync offered (rule 9, deploy 1 of 3)', (await text(admin)).includes('Dual-write is off') && (await admin.locator('button:has-text("Sync dual-write")').count()) === 0, (await text(admin)).match(/Dual-write is off[^.]*\./)?.[0] ?? (await text(admin)).slice(0, 160));
+// The note says what is switched off, where it named the server's variable
+// (slice CT8).
+check('dual-write is reported off, no sync offered (rule 9, deploy 1 of 3)', (await text(admin)).includes('dual-write is switched off') && (await admin.locator('button:has-text("Sync dual-write")').count()) === 0, (await text(admin)).match(/[^.]*dual-write is switched off[^.]*\./)?.[0] ?? (await text(admin)).slice(0, 160));
 
 const sessionRow = admin.locator('tr', { hasText: SESSION }).first();
 const halaqaSessionValue = await sessionRow.locator('option', { hasText: SESSION }).first().getAttribute('value').catch(() => null);
