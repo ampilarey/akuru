@@ -213,8 +213,8 @@ STATUS §5oz)**. The learner's own refusals are in the page's language since
 STATUS §5pb, the course authors', markers' and certificate office's since
 STATUS §5pc, and the offerings' and the Qur'an component's since STATUS §5pd
 (BACKLOG C19). The Library's writers' and reviewers' since STATUS §5pe
-(BACKLOG C20); the Library office's are still English. The console commands
-stay English.
+(BACKLOG C20), and the Library office's since STATUS §5pf. The console
+commands stay English.
 
 ## Found by the middle-name walk (2026-10-08)
 
@@ -2144,6 +2144,22 @@ the reviewer's card (`useRowRefusals`), or in the form that was refused. A
 walk against `main`'s code says the declarations refusal nowhere, where
 `writer-language.mjs` reads it on the row, in Dhivehi, naming both
 declarations. STATUS §5pe.
+
+### 41. The Library office's refusals were said at the top of the page, in English
+
+**Fixed (2026-10-08, slice LT3) — found while building it.**
+
+The same gap as #40 on the office's side. Deciding an application or a
+payout, reviewing or assigning a submission, featuring or publishing an
+item, and reviewing a reading alert all post without a form. Their
+refusals landed in one list at the top of `/admin/library`, while
+`preserveScroll` kept the office at the row; the reading alerts page showed
+none at all. All of them were English, the peer-review gate's included.
+
+They now say what came back on the row the button was on, in the page's
+language. A walk against `main`'s code says an unknown reviewer's refusal
+nowhere on the row, where `library-office-language.mjs` reads it there, in
+Dhivehi. STATUS §5pf.
 
 ---
 

@@ -53,7 +53,7 @@ class ManageReviewerPoolAction
         $userModel = config('auth.providers.users.model');
         $user = $userModel::query()->where('email', trim($email))->first();
         if ($user === null) {
-            throw ValidationException::withMessages(['email' => 'No account has that email. The reviewer needs an Akuru account first.']);
+            throw ValidationException::withMessages(['email' => __('admin.library_office_error_no_account')]);
         }
         $user->assignRole(self::ROLE);
     }
@@ -61,7 +61,7 @@ class ManageReviewerPoolAction
     public function remove(int $userId): void
     {
         if (LibraryReviewAssignment::query()->where('reviewer_user_id', $userId)->where('status', 'assigned')->exists()) {
-            throw ValidationException::withMessages(['reviewer' => 'This reviewer has a report open. Wait for it, or ask them to finish it, before removing them.']);
+            throw ValidationException::withMessages(['reviewer' => __('admin.library_office_error_reviewer_busy')]);
         }
         $userModel = config('auth.providers.users.model');
         $userModel::query()->findOrFail($userId)->removeRole(self::ROLE);

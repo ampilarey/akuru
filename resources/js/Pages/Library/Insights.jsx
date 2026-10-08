@@ -59,7 +59,7 @@ export default function Insights({ insights, periods = [], t = {} }) {
             </div>
 
             <h2 className="mb-2 text-base font-semibold">{t.library_insights_most_read || 'Most read'}</h2>
-            <Table testId="most-read" title="Most read" rows={insights.most_read} empty={t.library_insights_nothing || 'Nothing in this period.'} columns={[
+            <Table testId="most-read" title={t.library_insights_most_read || 'Most read'} rows={insights.most_read} empty={t.library_insights_nothing || 'Nothing in this period.'} columns={[
                 ['title', t.library_insights_col_title || 'Title'], ['category', t.library_insights_col_category || 'Category'], ['writer', t.library_insights_col_writer || 'Writer'],
                 ['pages', t.library_insights_pages_opened || 'Pages opened'], ['readers', t.library_insights_col_readers || 'Readers'], ['completions', t.library_insights_completions || 'Items completed'], ['purchases', t.library_insights_purchases || 'Purchases'],
             ]} />
@@ -67,25 +67,25 @@ export default function Insights({ insights, periods = [], t = {} }) {
             <div className="grid gap-6 md:grid-cols-2">
                 <div>
                     <h2 className="mb-2 text-base font-semibold">{t.library_insights_categories || 'Categories'}</h2>
-                    <Table testId="categories" title="Categories" rows={insights.categories} empty={t.library_insights_nothing || 'Nothing in this period.'} columns={[
+                    <Table testId="categories" title={t.library_insights_categories || 'Categories'} rows={insights.categories} empty={t.library_insights_nothing || 'Nothing in this period.'} columns={[
                         ['category', t.library_insights_col_category || 'Category'], ['pages', t.library_insights_pages_opened || 'Pages opened'], ['readers', t.library_insights_col_readers || 'Readers'],
                     ]} />
                 </div>
                 <div>
                     <h2 className="mb-2 text-base font-semibold">{t.library_insights_writers || 'Writers, by sales'}</h2>
-                    <Table testId="writers" title="Writers" rows={insights.writers} empty={t.library_insights_nothing || 'Nothing in this period.'} columns={[
+                    <Table testId="writers" title={t.library_insights_writers || 'Writers, by sales'} rows={insights.writers} empty={t.library_insights_nothing || 'Nothing in this period.'} columns={[
                         ['writer', t.library_insights_col_writer || 'Writer'], ['sales', t.library_insights_col_sales || 'Sales'], ['revenue', t.library_insights_revenue || 'Revenue (MVR)'],
                     ]} />
                 </div>
                 <div>
                     <h2 className="mb-2 text-base font-semibold">{t.library_insights_searches_top || 'What people search for'}</h2>
-                    <Table testId="searches-top" title="Searches" rows={insights.searches.top} empty={t.library_insights_nothing || 'Nothing in this period.'} columns={[
+                    <Table testId="searches-top" title={t.library_insights_searches_top || 'What people search for'} rows={insights.searches.top} empty={t.library_insights_nothing || 'Nothing in this period.'} columns={[
                         ['term', t.library_insights_col_term || 'Term'], ['count', t.library_insights_col_count || 'Times'], ['misses', t.library_insights_col_misses || 'Found nothing'],
                     ]} />
                 </div>
                 <div>
                     <h2 className="mb-2 text-base font-semibold">{t.library_insights_searches_empty || 'Searched for and not found'}</h2>
-                    <Table testId="searches-empty" title="Empty searches" rows={insights.searches.empty} empty={t.library_insights_nothing || 'Nothing in this period.'} columns={[
+                    <Table testId="searches-empty" title={t.library_insights_searches_empty || 'Searched for and not found'} rows={insights.searches.empty} empty={t.library_insights_nothing || 'Nothing in this period.'} columns={[
                         ['term', t.library_insights_col_term || 'Term'], ['count', t.library_insights_col_count || 'Times'],
                     ]} />
                 </div>

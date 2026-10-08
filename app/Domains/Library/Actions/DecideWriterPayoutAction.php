@@ -20,7 +20,7 @@ class DecideWriterPayoutAction
         return DB::transaction(function () use ($payoutId, $decidedBy, $paid, $note) {
             $payout = WriterPayout::query()->whereKey($payoutId)->lockForUpdate()->firstOrFail();
             if ($payout->status !== 'requested') {
-                throw ValidationException::withMessages(['payout' => 'This payout has already been decided.']);
+                throw ValidationException::withMessages(['payout' => __('admin.library_office_error_payout_decided')]);
             }
 
             $payout->fill([

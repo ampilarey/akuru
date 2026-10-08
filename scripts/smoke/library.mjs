@@ -318,7 +318,9 @@ if (submitted) {
     const ask = card.locator('button:has-text("Request changes")').first();
     if (await ask.count()) {
         await ask.click();
-        askedForChanges = await rowSettles(staff, TITLE, 'changes_requested');
+        // The office's list names a status rather than printing its code
+        // (slice LT3): "changes requested", not changes_requested.
+        askedForChanges = await rowSettles(staff, TITLE, 'changes requested');
         check('the office can ask for changes', askedForChanges, (await text(staff)).slice(0, 160));
     } else {
         check('the office can ask for changes', false, 'no "Request changes" button on the submission');

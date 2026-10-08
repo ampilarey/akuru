@@ -20,11 +20,11 @@ class AssignResearchReviewerAction
     {
         $item = LibraryItem::query()->findOrFail($itemId);
         if ($item->content_type !== LibraryContentType::Research) {
-            throw ValidationException::withMessages(['item' => 'Only research items take peer reviewers.']);
+            throw ValidationException::withMessages(['item' => __('admin.library_office_error_not_research')]);
         }
         $status = $item->status instanceof LibraryItemStatus ? $item->status : LibraryItemStatus::tryFrom((string) $item->status);
         if ($status !== LibraryItemStatus::Submitted) {
-            throw ValidationException::withMessages(['item' => 'Only submitted items can be assigned a reviewer.']);
+            throw ValidationException::withMessages(['item' => __('admin.library_office_error_not_submitted_assign')]);
         }
 
         // R3b: the report is due in 14 days unless the office picks a day.
@@ -33,17 +33,17 @@ class AssignResearchReviewerAction
             try {
                 $due = Carbon::parse($dueOn, 'Indian/Maldives')->endOfDay();
             } catch (\Throwable) {
-                throw ValidationException::withMessages(['due_on' => 'That is not a date.']);
+                throw ValidationException::withMessages(['due_on' => __('admin.library_office_error_due_date')]);
             }
             if ($due->isPast()) {
-                throw ValidationException::withMessages(['due_on' => 'The due date must be in the future.']);
+                throw ValidationException::withMessages(['due_on' => __('admin.library_office_error_due_past')]);
             }
         }
 
         $userModel = config('auth.providers.users.model');
         $reviewer = $userModel::query()->where('email', trim($reviewerEmail))->first();
         if ($reviewer === null) {
-            throw ValidationException::withMessages(['reviewer_email' => 'No user with that email.']);
+            throw ValidationException::withMessages(['reviewer_email' => __('admin.library_office_error_no_user')]);
         }
 
         // R3: one assignment per reviewer per item, in the item's current

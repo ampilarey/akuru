@@ -25,7 +25,7 @@ class DecideWriterApplicationAction
                 ->firstOrFail();
 
             if ($application->status !== 'pending') {
-                throw ValidationException::withMessages(['application' => 'This application has already been decided.']);
+                throw ValidationException::withMessages(['application' => __('admin.library_office_error_application_decided')]);
             }
 
             // COMMERCE_PARITY_PLAN P2: approving is verifying the ID card that came with it.

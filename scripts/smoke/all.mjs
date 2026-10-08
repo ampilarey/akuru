@@ -151,6 +151,7 @@ const WALKS = [
     { name: 'middle-name', writes: true, asks: 'Is a student called by the whole name — first, middle and last — in the directory, its search and CSV, the class roster and a parent\'s list?' },
     { name: 'saved-in-language', writes: true, asks: 'Does a save on a Dhivehi or Arabic page say what it saved in that language, and come back to it?' },
     { name: 'writer-language', writes: true, asks: 'Do the Library\'s writer portal and peer review read in Dhivehi and Arabic, and is a refused submission said on its own row?' },
+    { name: 'library-office-language', writes: true, asks: 'Does the Library office read in Dhivehi and Arabic, and is a refused assignment said on its own row?' },
 ];
 
 const args = process.argv.slice(2);
