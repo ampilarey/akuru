@@ -362,8 +362,13 @@ function ItemForm({ categories, options, t, common, actOn }) {
     );
 }
 
+/**
+ * §5po: a category in English, Dhivehi and Arabic. The shelf's filter and an
+ * item's page say the name for the page's language (LT6), and the English
+ * where none was given.
+ */
 function CategoryForm({ t, actOn }) {
-    const form = useForm({ name: '' });
+    const form = useForm({ name: '', name_dv: '', name_ar: '' });
 
     return (
         <form
@@ -372,11 +377,70 @@ function CategoryForm({ t, actOn }) {
                 actOn('category', () => form.post('/admin/library/categories', { preserveScroll: true, onSuccess: () => form.reset() }));
             }}
             className="flex flex-wrap gap-2"
+            data-testid="category-form"
         >
-            <input className="form-input" placeholder={t.library_office_new_category || 'New category'} aria-label={t.library_office_new_category || 'New category'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+            <input className="form-input" placeholder={t.library_office_new_category || 'New category'} aria-label={t.library_office_new_category || 'New category'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} data-testid="new-category-name" />
+            <input className="form-input" dir="rtl" lang="dv" placeholder={t.library_office_category_name_dv || 'Name in Dhivehi'} aria-label={t.library_office_category_name_dv || 'Name in Dhivehi'} value={form.data.name_dv} onChange={(e) => form.setData('name_dv', e.target.value)} data-testid="new-category-name-dv" />
+            <input className="form-input" dir="rtl" lang="ar" placeholder={t.library_office_category_name_ar || 'Name in Arabic'} aria-label={t.library_office_category_name_ar || 'Name in Arabic'} value={form.data.name_ar} onChange={(e) => form.setData('name_ar', e.target.value)} data-testid="new-category-name-ar" />
             <button type="submit" className="btn-secondary" disabled={form.processing}>{t.library_office_add || 'Add'}</button>
             <FormErrors errors={form.errors} />
         </form>
+    );
+}
+
+/** §5po: one category, renamed in place. Its address (the slug) stays. */
+function CategoryRow({ category, t }) {
+    const [editing, setEditing] = useState(false);
+    const form = useForm({ name: category.name, name_dv: category.name_dv || '', name_ar: category.name_ar || '' });
+    const stop = () => {
+        form.reset();
+        form.clearErrors();
+        setEditing(false);
+    };
+
+    return (
+        <li className="border-t p-3 text-sm" data-testid={`category-row-${category.slug}`}>
+            {editing ? (
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post(`/admin/library/categories/${category.id}`, { preserveScroll: true, onSuccess: () => setEditing(false) });
+                    }}
+                    className="flex flex-wrap items-center gap-2"
+                >
+                    <input className="form-input" aria-label={t.library_office_category_name_en || 'Name in English'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} data-testid="category-name" />
+                    <input className="form-input" dir="rtl" lang="dv" aria-label={t.library_office_category_name_dv || 'Name in Dhivehi'} value={form.data.name_dv} onChange={(e) => form.setData('name_dv', e.target.value)} data-testid="category-name-dv" />
+                    <input className="form-input" dir="rtl" lang="ar" aria-label={t.library_office_category_name_ar || 'Name in Arabic'} value={form.data.name_ar} onChange={(e) => form.setData('name_ar', e.target.value)} data-testid="category-name-ar" />
+                    <button type="submit" className="btn-primary" disabled={form.processing} data-testid="category-save">{t.library_office_category_save || 'Save names'}</button>
+                    <button type="button" className="btn-secondary" onClick={stop}>{t.library_office_category_cancel || 'Cancel'}</button>
+                    <FormErrors errors={form.errors} className="w-full" />
+                </form>
+            ) : (
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="min-w-0">
+                        <span className="font-medium" data-office-words data-testid="category-en">{category.name}</span>
+                        <span className="ms-3 text-gray-700" dir="rtl" lang="dv" data-office-words data-testid="category-dv">{category.name_dv || '—'}</span>
+                        <span className="ms-3 text-gray-700" dir="rtl" lang="ar" data-office-words data-testid="category-ar">{category.name_ar || '—'}</span>
+                        <span className="ms-3 text-xs text-gray-500">{fill(t.library_office_category_count || ':count published', { count: category.published_count ?? 0 })}</span>
+                    </span>
+                    <button type="button" className="btn-secondary" onClick={() => setEditing(true)} data-testid="category-rename">{t.library_office_category_rename || 'Rename'}</button>
+                </div>
+            )}
+        </li>
+    );
+}
+
+function CategoryList({ categories, t }) {
+    if (categories.length === 0) return null;
+
+    return (
+        <details className="mb-6 rounded-lg border bg-white" data-testid="library-categories">
+            <summary className="cursor-pointer p-3 font-semibold">{fill(t.library_office_categories || 'Categories (:count)', { count: categories.length })}</summary>
+            <ul>
+                {/* Keyed by the names too, so a saved rename redraws the row from the server's values. */}
+                {categories.map((category) => <CategoryRow key={`${category.id}:${category.name}:${category.name_dv}:${category.name_ar}`} category={category} t={t} />)}
+            </ul>
+        </details>
     );
 }
 
@@ -406,6 +470,7 @@ export default function Admin({ items, categories, options, sales = [], queues =
                     <a className="btn-secondary" href="/admin/library?format=csv">{t.library_office_export_csv || 'Export CSV'}</a>
                 </span>
             </div>
+            <CategoryList categories={categories} t={t} />
 
             <ApplicationsQueue applications={queues.applications} t={t} refusals={refusals} />
             <SubmissionsQueue submissions={queues.submissions} reviewers={options.reviewers || []} t={t} common={common} refusals={refusals} />

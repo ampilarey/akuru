@@ -4983,6 +4983,89 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5po. The Library office names a category in Dhivehi and Arabic, and renames it (C20 slice LT7, 2026-10-09)
+
+Since LT6 (§5pk), the shelf's category filter and an item's page say a
+category by the name the office gave for the page's language. The table
+(`name_dv`, `name_ar`) and the save action already held those names. But the
+office had no way to enter them:
+- the form on `/admin/library` had one English box;
+- a category could not be renamed at all.
+
+So every category read in English on the Dhivehi and Arabic shelves, and a
+misspelt one stayed misspelt.
+
+**The office page:**
+- The add form takes a Dhivehi and an Arabic name beside the English. The two
+  boxes run right to left.
+- A **category list** (*Categories (n)*, folded under the form) shows each
+  category's three names and how many published items it holds.
+  - *Rename* turns a row into its three boxes.
+  - A refusal (no English name) is said on that row.
+  - A saved rename redraws the row from the server's values.
+- `POST /admin/library/categories/{id}` (`library.manage`) saves the three
+  names.
+
+**What a rename keeps:** `SaveLibraryCategoryAction` used to rebuild a
+category from scratch, so an update would have made a new slug from the new
+name and reset the category's order, state and parent. On an update it now
+keeps:
+- the slug, which the shelf's filter and any link to the category use;
+- the order, state and parent, unless the form sends them.
+
+An emptied Dhivehi or Arabic name is stored as no name, so the page falls back
+to the English rather than to a blank.
+
+**Phrase books:** eight `admin` rows, in English, Dhivehi and Arabic, for the
+boxes' names, the list's heading and count, and *Rename*, *Save names* and
+*Cancel*. `LibraryOfficeSpeaksThreeLanguagesTest` holds the new screen code
+as it holds the rest of the page:
+- every phrase is a key, translated in all three books;
+- there is no English typed into the page;
+- every box has a name.
+
+**Tests:** `LibraryCategoriesInThreeLanguagesTest`, 6 tests. Four of them fail
+on `main`'s code, which has no way to rename.
+- A category is added with its Dhivehi and Arabic names.
+- A rename in three languages keeps the slug, the order and the state (a
+  hidden category stays hidden).
+- The Dhivehi shelf says the new name. Once the Dhivehi name is emptied, it
+  says the English.
+- The office page lists every category with its three names.
+- A rename with no English name is refused, and nothing changes.
+- Only the Library office may rename, and only a category that exists.
+
+Whole suite locally: **2932 passed (39088 assertions)**.
+
+**Walk:** `scripts/smoke/library-categories.mjs` (new, in `all.mjs`): **6/6**.
+The system admin:
+- adds SMOKE-Category-Seerah with ސީރަތް and السيرة, and finds it in the
+  list;
+- tries a rename with no English name, and is refused on the row;
+- renames the Dhivehi name in place to ނަބިއްޔާގެ ސީރަތް.
+
+The shelf's filter then names it ނަބިއްޔާގެ ސީރަތް on `/dv`, السيرة on `/ar`,
+and SMOKE-Category-Seerah on `/en`. Run again without a reseed, the walk first
+gives the category back its first names. `SmokeMarkerSeeder` removes the
+category while no item is filed in it.
+
+Against `main`'s code: **0/6**. The form has no Dhivehi box, so nothing is
+added and there is nothing to rename.
+
+The walks around it still pass:
+- `library-office-language.mjs` 41/41 (it finds the English box by its
+  unchanged placeholder);
+- `library.mjs` 31/31;
+- `library-public-language.mjs` 81/81.
+
+**The build:** `public/build` is rebuilt. Every page chunk imports the shell,
+and the shell imports the `app` chunk, which names each page's chunk. So a
+change to one page renames them all (249 files), as LT3's build did. The
+manifest names no file that is missing.
+
+**Next (C20):** the `public` book's last 37 untranslated keys, mostly old
+placeholders no page names, and the Library notices' language (a decision).
+
 ## 5pn. An abandoned Library card purchase gives its discount code back (2026-10-09)
 
 Found while fixing W1 (§5pl, KNOWN_ISSUES). A reader typed a discount code,

@@ -2800,6 +2800,12 @@ class SmokeMarkerSeeder extends Seeder
         ]);
         app(\App\Domains\Library\Actions\PublishLibraryItemAction::class)->execute($costly->id, (int) $approverId);
 
+        // §5po: `library-categories.mjs` adds SMOKE-Category-Seerah and renames
+        // it. It starts over with the category gone (no item is filed in it).
+        DB::table('library_categories')->where('slug', 'smoke-category-seerah')
+            ->whereNotIn('id', DB::table('library_items')->whereNotNull('library_category_id')->pluck('library_category_id'))
+            ->delete();
+
         // §5pn: a book and a code each reader may use once, for
         // `abandoned-code.mjs` to start a card payment with twice. The
         // redemptions are the walk's own, and so is the book: its unpaid

@@ -23,6 +23,7 @@ use App\Domains\Library\Actions\SaveLibraryItemAction;
 use App\Domains\Library\Enums\LibraryAccessType;
 use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Enums\LibraryDelivery;
+use App\Domains\Library\Models\LibraryCategory;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryReadingAlert;
 use App\Http\Controllers\Controller;
@@ -310,6 +311,21 @@ class AdminLibraryController extends Controller
         ]);
 
         app(SaveLibraryCategoryAction::class)->execute($data);
+
+        return back()->with('success', __('admin.library_office_flash_category'));
+    }
+
+    /** §5po: a category renamed — in English, Dhivehi and Arabic — keeping its address. */
+    public function updateCategory(Request $request, int $category): RedirectResponse
+    {
+        abort_unless($request->user()?->can('library.manage'), 403);
+        $data = $request->validate([
+            'name' => 'required|string|max:255',
+            'name_dv' => 'nullable|string|max:255',
+            'name_ar' => 'nullable|string|max:255',
+        ]);
+
+        app(SaveLibraryCategoryAction::class)->execute($data, LibraryCategory::query()->findOrFail($category));
 
         return back()->with('success', __('admin.library_office_flash_category'));
     }
