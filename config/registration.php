@@ -6,7 +6,7 @@ return [
     /*
      * C17 slice R2 (STATUS §5od): "Fill from a photo of the ID card" on the
      * registration forms. The photo is read in the person's own browser by
-     * the self-hosted reader under public/vendor/tesseract/{ocr_version}; it
+     * the self-hosted reader under public/ocr/tesseract/{ocr_version}; it
      * is not sent anywhere to be read. Off hides the button and the forms
      * work exactly as before.
      */

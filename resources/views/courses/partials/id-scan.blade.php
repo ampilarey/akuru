@@ -16,7 +16,7 @@
     @endphp
     <div data-id-scan
          data-testid="id-scan"
-         data-ocr-base="{{ asset('vendor/tesseract/'.config('registration.ocr_version')) }}"
+         data-ocr-base="{{ asset('ocr/tesseract/'.config('registration.ocr_version')) }}"
          data-messages="{{ json_encode([
              'reading' => __('account.id_scan_reading'),
              'filled' => __('account.id_scan_filled'),

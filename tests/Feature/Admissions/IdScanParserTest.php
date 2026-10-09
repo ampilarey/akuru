@@ -26,7 +26,7 @@ it('reads ID cards and passports the way its tests say', function () {
 });
 
 it('serves every file the in-browser reader asks for from this site', function () {
-    $base = public_path('vendor/tesseract/'.config('registration.ocr_version'));
+    $base = public_path('ocr/tesseract/'.config('registration.ocr_version'));
 
     foreach ([
         'worker.min.js',

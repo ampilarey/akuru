@@ -178,28 +178,43 @@ itself is harmless: the reader can try again, and My Library shows it as
 `pending`. But the redemption needs the same release the other two have,
 with a test that a purchase the webhook confirmed late keeps its slot.
 
-### Accepting the Vendor Agreement lands on a 404 — **open**
+### Accepting the Vendor Agreement lands on a 404 — **fixed (2026-10-09, STATUS §5pm)**
 
-`checkout.mjs` scores 32/34, on `main` as on W1's branch, from a fresh seed.
-Its two reds are a real defect:
+`checkout.mjs` scored 32/34, on `main` as on W1's branch, from a fresh seed.
+Its two reds were a real defect:
 - The portal posts the agreement to `/vendor/agreement`, with no language
   prefix. `acceptAgreement` then redirects to `route('vendor.index')`, which
   in that request is `/vendor`.
-- Since the ID-card scan (#670, 2026-10-03), `public/vendor/` is a folder
+- Since the ID-card scan (#670, 2026-10-03), `public/vendor/` was a folder
   holding the scanner's files (`public/vendor/tesseract`).
 - A real folder answers before the front controller. `php artisan serve`
   gives 404. `public/.htaccess` sends nothing that is a folder (`!-d`) to
   `index.php`, so Apache answers from the folder: a 403 under
   `Options -Indexes`, or a listing of the scanner's files where listing is
   on.
-- The acceptance is saved, but the seller is left looking at the agreement,
-  and the walk's next steps find nothing.
+- The acceptance was saved, but the seller was left looking at the
+  agreement.
 
-Any visit to a bare `/vendor` meets the same folder. Prefixed addresses
-(`/en/vendor`) are unaffected.
+Every bare `/vendor` met the same folder:
+- the portal's Home link on its other pages;
+- its product search and paging;
+- *Open your shop portal* on the application page;
+- the link in every seller's notice.
 
-The fix is to move the scanner's files out from under an address the app
-uses, with a guard that no folder in `public/` shares its name with a route.
+`vendor.mjs` was 30/32 on `main` for the same reason.
+
+The scanner's files now live in `public/ocr/tesseract`. A guard
+(`PublicFilesTakeNoAddressTest`) fails CI when a file or folder in `public/`
+shares its name with a route, unless it is listed with why.
+
+### `/robots.txt` was Laravel's default file, not the app's — **fixed (2026-10-09, STATUS §5pm)**
+
+The same guard found `public/robots.txt`, the framework's *allow everything*
+default. It answered `/robots.txt` before the app's route could, so crawlers
+never saw the route's `Sitemap:` line or its `Disallow` list.
+
+The file is gone, and the localization package now leaves `/robots.txt` alone
+rather than sending it on to `/en/robots.txt`. The route answers at the root.
 
 ## Found by the Library's language walk (2026-10-09)
 

@@ -1,7 +1,7 @@
 /**
  * "Fill in from your ID card" on the registration forms (C17 slice R2, STATUS
  * §5od). Loaded only on a page that has a `[data-id-scan]` block, and the
- * reader itself (tesseract.js, self-hosted under public/vendor/tesseract) only
+ * reader itself (tesseract.js, self-hosted under public/ocr/tesseract) only
  * when somebody picks a photo.
  *
  * The photo is read here, in the browser. It is not uploaded to be read: on

@@ -81,8 +81,8 @@ const value = (page, selector) => page.locator(selector).first().inputValue().ca
     const ocrFiles = [];
     page.on('pageerror', (e) => problems.push(`page error: ${String(e).slice(0, 140)}`));
     page.on('response', (r) => {
-        if (r.url().includes('/vendor/tesseract/')) {
-            ocrFiles.push(`${r.status()} ${r.url().split('/vendor/tesseract/')[1]}`);
+        if (r.url().includes('/ocr/tesseract/')) {
+            ocrFiles.push(`${r.status()} ${r.url().split('/ocr/tesseract/')[1]}`);
         }
         if (r.status() >= 500) {
             problems.push(`HTTP ${r.status()} ${r.url()}`);
