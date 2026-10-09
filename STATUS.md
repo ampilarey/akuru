@@ -4983,6 +4983,79 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qc. The staff's own pages in Dhivehi and Arabic (C21 PT4, 2026-10-09)
+
+The fifth slice of BACKLOG C21 covers the six portal pages a member of
+staff opens for themselves:
+- a teacher's day (`/portal/teacher`) and the staff overview
+  (`/portal/overview`);
+- my performance (appraisals, shared observations, professional
+  development), my leave, my payslips and staff check-in.
+
+They were English throughout:
+- every heading, column, empty line and button;
+- the teacher's tiles and the overview's section names, which the server
+  writes: *All filled*, *3 to fill*, *2 lessons today · 1 covering*,
+  *Nothing posted*, *Unfilled registers*;
+- seven codes printed as they are stored: a register's state, an exam's,
+  an appraisal's, a payslip's, a staff day's attendance and how it was
+  recorded, and a cover request's state (*Cover open*);
+- the next teaching day by its English weekday, and a closed day by its
+  English name although the office names it in Dhivehi and Arabic too;
+- the two saved messages and four refusals the server wrote for them.
+
+**The change:**
+- **The six pages read the `portal` book**, 95 phrases more.
+- **The two homes are said by the server in the page's language.** A tile
+  reads the menu's own label, as the family home's do (slice PT1a): the
+  timetable tile is now *Timetable*, the menu's word, where it said *My
+  timetable*. The prayer tile names the prayer as the family home does.
+- **Codes are named, not printed**, and the weekday is the book's.
+- **A closed day reads by the name the office gave it** for the page's
+  language: `ListDayTimetableForTeacherAction` now passes the calendar
+  day's Dhivehi and Arabic titles beside its English one.
+- **What the server says is in the page's language:** *Appraisal
+  acknowledged.*, *Checked in.*, the three check-in refusals and the
+  appraisal refusal.
+- The overview's year picker has a name.
+
+What the school writes stays as written: a subject's, class's and period's
+name, a leave type, a course's title, an observation's summary. The
+overview's CSV keeps its English column codes.
+
+**Tests:** `PortalSpeaksThreeLanguagesTest` now covers the six pages'
+sources, ten more server files and the seven codes. A ninth test checks:
+- a teacher's day serves in Dhivehi, its title and first tile the
+  server's, in Dhivehi;
+- the overview's title and first section are Dhivehi;
+- appraisals, leave, payslips and check-in serve in Dhivehi;
+- a check-in while self check-in is off is refused in Dhivehi.
+
+The tests for the areas it touches (Localization, Portal, HR, Academics,
+Admin, Nav, Architecture): 748 passed.
+
+Whole suite locally: **SUITE_RESULT**.
+
+**Walk:** `portal-language.mjs` 212/212.
+- The six pages read right to left under `/dv` and `/ar`, with nothing left
+  in English and every field named. The teacher walks their own pages, the
+  dean the overview.
+- The teacher's day names its title and every tile in Dhivehi:
+  *ހާޒިރީ ފޮތް: ހުރިހާ ފޮތެއް ފުރިއްޖެ*, *ޓައިމްޓޭބަލް: މިއަދު 1 ފިލާވަޅު*.
+
+The walk now fails a page that sends its viewer elsewhere, so a redirect
+can no longer pass as the page it was asked for, and it names the teacher
+and the dean rather than calling every non-parent *the pupil*.
+
+Other walks:
+- `hr.mjs` 27/27, nine skipped by design (payroll is off on this host, and
+  one day has no lesson to cover). It read how a day was recorded as the
+  code `self`; the page now names it *Self check-in*, and the walk matches
+  that.
+- `identity.mjs` 47/47, `nav.mjs` 14/14, `rtl.mjs` 8/8;
+- `admin-hub.mjs` 26/26, `admin-pages.mjs` 3/3, `admin-mobile.mjs` 13/13,
+  `meetings.mjs` 11/11.
+
 ## 5qb. Two tests left users behind for the rest of the run (TH1, 2026-10-09)
 
 Found while running PAY1's suite (§5px). `DashboardScreensTest` counted nine

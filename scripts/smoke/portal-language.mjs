@@ -228,10 +228,12 @@ const screens = [
 
 for (const locale of ['dv', 'ar']) {
     for (const [path, viewer] of screens) {
-        const who = viewer === parent ? 'the parent' : 'the pupil';
+        const who = new Map([[parent, 'the parent'], [pupil, 'the pupil'], [teacher, 'the teacher'], [dean, 'the dean']]).get(viewer);
         const label = `${locale}${path} (${who})`;
         const response = await viewer.goto(`${BASE}/${locale}${path}`, { waitUntil: 'networkidle' });
-        if (!response || response.status() >= 400) {
+        // A page that sends its viewer elsewhere was not the page checked
+        // (slice PT4): it must open where it was asked for.
+        if (!response || response.status() >= 400 || new URL(viewer.url()).pathname !== `/${locale}${path}`) {
             check(`${label}: the page opens`, false, `HTTP ${response?.status()} ${viewer.url().replace(BASE, '')}`);
             continue;
         }
@@ -285,6 +287,17 @@ await pinForm.locator('button[type="submit"]').click();
 await parent.waitForLoadState('networkidle');
 const pinRefused = (await pinForm.locator('input[type="password"] + span').textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
 check('an obvious pick-up PIN is refused beside its box, in Dhivehi', pinRefused === pickupWords.error_pickup_pin_obvious, `said: ${pinRefused ?? 'nothing'}`);
+
+// ------------------------------------- a teacher's day, in Dhivehi (slice PT4)
+
+// The tiles are the server's words, said in the page's language: each label
+// and line is Thaana, and the title is the book's.
+await teacher.goto(`${BASE}/dv/portal/teacher`, { waitUntil: 'networkidle' });
+const dayProps = await props(teacher);
+check('the teacher’s day names its title and tiles in Dhivehi',
+    dayProps.title === dayProps.t?.teacher_title && (dayProps.tiles || []).length > 0
+        && (dayProps.tiles || []).every((tile) => /\p{Script=Thaana}/u.test(tile.label) && /\p{Script=Thaana}/u.test(tile.status)),
+    (dayProps.tiles || []).map((tile) => `${tile.label}: ${tile.status}`).join(' | '));
 
 // ------------------------------------- a tile's door keeps the page's language
 

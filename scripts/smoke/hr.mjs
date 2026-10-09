@@ -203,7 +203,9 @@ if (await checkIn.count()) {
     await checkIn.click();
     check('the staff member checks in', await settles(staff, 'Checked in.'), (await text(staff)).slice(0, 160));
     const row = await rowText(staff, today);
-    check('today is present, from the portal, with a time', /PRESENT/i.test(row) && row.includes('self') && /\d\d:\d\d/.test(row), row);
+    // How the day was recorded is named on the page now, not printed as its
+    // code `self` (slice PT4).
+    check('today is present, from the portal, with a time', /PRESENT/i.test(row) && /self check-in/i.test(row) && /\d\d:\d\d/.test(row), row);
 }
 
 // -------------------------------------------------------- 2. ask for leave
