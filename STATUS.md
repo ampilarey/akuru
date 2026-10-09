@@ -5034,7 +5034,7 @@ sources, ten more server files and the seven codes. A ninth test checks:
 The tests for the areas it touches (Localization, Portal, HR, Academics,
 Admin, Nav, Architecture): 748 passed.
 
-Whole suite locally: **SUITE_RESULT**.
+Whole suite locally: **2968 passed (43634 assertions)**.
 
 **Walk:** `portal-language.mjs` 212/212.
 - The six pages read right to left under `/dv` and `/ar`, with nothing left
