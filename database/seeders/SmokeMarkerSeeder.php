@@ -2714,8 +2714,17 @@ class SmokeMarkerSeeder extends Seeder
     {
         // `smoke-primer-upload` is what the walk's own upload step makes.
         $itemIds = DB::table('library_items')
-            ->where(fn ($q) => $q->whereIn('slug', ['smoke-primer', 'smoke-primer-pdf', 'smoke-primer-paid', 'smoke-research-published'])->orWhere('slug', 'like', 'smoke-primer-upload%'))
+            ->where(fn ($q) => $q->whereIn('slug', ['smoke-primer', 'smoke-primer-pdf', 'smoke-primer-paid', 'smoke-primer-costly', 'smoke-research-published'])->orWhere('slug', 'like', 'smoke-primer-upload%'))
             ->pluck('id');
+        // `wallet-refusal.mjs` presses Pay with wallet on SMOKE-Primer-Costly,
+        // which no seeded wallet can pay. Before W1 that left a `pending`
+        // purchase behind, and a purchase keeps its item from being deleted
+        // (money tables refuse it). A pending purchase moved no money, so the
+        // reset clears those — and their pending redemptions. A paid one
+        // stays, and so does its item.
+        $pendingIds = DB::table('library_purchases')->whereIn('library_item_id', $itemIds)->where('status', 'pending')->pluck('id');
+        DB::table('discount_redemptions')->where('purchase_type', 'library_purchase')->whereIn('purchase_id', $pendingIds)->where('status', 'pending')->delete();
+        DB::table('library_purchases')->whereIn('id', $pendingIds)->delete();
         DB::table('library_bookmarks')->whereIn('library_item_id', $itemIds)->delete();
         DB::table('library_reading_progress')->whereIn('library_item_id', $itemIds)->delete();
         DB::table('library_reading_events')->whereIn('library_item_id', $itemIds)->delete();
@@ -2773,6 +2782,21 @@ class SmokeMarkerSeeder extends Seeder
             'body' => '<p>SMOKE-Primer-Paid-Page-One</p>',
         ]);
         app(\App\Domains\Library\Actions\PublishLibraryItemAction::class)->execute($paid->id, (int) $approverId);
+
+        // W1: a book no seeded wallet can pay for, so `wallet-refusal.mjs`
+        // can be refused and show that the refusal leaves nothing behind.
+        // 50,000 is far above any wallet the walks build, and below the
+        // 99,999 that `reader.mjs` filters by to find nothing.
+        $costly = app(\App\Domains\Library\Actions\SaveLibraryItemAction::class)->execute([
+            'title' => 'SMOKE-Primer-Costly',
+            'slug' => 'smoke-primer-costly',
+            'content_type' => 'book',
+            'access_type' => 'paid',
+            'price' => 50000,
+            'description' => 'Planted by SmokeMarkerSeeder: priced above every seeded wallet.',
+            'body' => '<p>SMOKE-Primer-Costly-Page-One</p>',
+        ]);
+        app(\App\Domains\Library\Actions\PublishLibraryItemAction::class)->execute($costly->id, (int) $approverId);
 
         // One research paper already out, planted as R2's import plants them
         // (reviewed and published elsewhere), so the research shelf has a year
