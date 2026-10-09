@@ -23,7 +23,7 @@
 // down.** A baselined method that grows fails too — otherwise a 40-line method
 // could quietly become 300 and stay "known".
 //
-// Count: 47.
+// Count: 39.
 
 return [
     'app/Domains/Academics/Http/Controllers/TeacherRegisterController.php::show' => 45,
@@ -51,7 +51,6 @@ return [
     'app/Domains/Notifications/Http/Controllers/SmsApiController.php::send' => 60,
     'app/Domains/People/Http/Controllers/StudentDirectoryController.php::show' => 72,
     'app/Domains/People/Http/Controllers/StudentDirectoryController.php::validatedStudent' => 40,
-    'app/Domains/Portal/Http/Controllers/PortalAttendanceController.php::index' => 38,
     'app/Domains/Portal/Http/Controllers/PortalHomeController.php::export' => 75,
     'app/Domains/Portal/Http/Controllers/PortalPerformanceController.php::export' => 37,
     'app/Domains/Website/Http/Controllers/Admin/PublicSite/DailySubscriptionController.php::export' => 37,

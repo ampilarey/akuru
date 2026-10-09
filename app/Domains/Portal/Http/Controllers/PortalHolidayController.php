@@ -4,6 +4,7 @@ namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Academics\Actions\ListPublicCalendarAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -22,6 +23,9 @@ class PortalHolidayController extends Controller
     {
         abort_unless($request->user() !== null, 403);
 
-        return Inertia::render('Portal/SchoolCalendar', app(ListPublicCalendarAction::class)->execute());
+        return Inertia::render('Portal/SchoolCalendar', [
+            ...app(ListPublicCalendarAction::class)->execute(),
+            't' => Phrases::once('portal'),
+        ]);
     }
 }

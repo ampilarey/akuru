@@ -7,6 +7,7 @@ use App\Domains\Academics\Actions\TickHomeworkAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -38,6 +39,7 @@ class PortalHomeworkController extends Controller
                     $people,
                 ),
             )),
+            't' => Phrases::once('portal'),
         ]);
     }
 
@@ -59,7 +61,7 @@ class PortalHomeworkController extends Controller
             (bool) ($data['done'] ?? true),
         );
 
-        return redirect()->route('portal.homework')->with('success', 'Updated.');
+        return redirect()->route('portal.homework')->with('success', __('portal.flash_homework_ticked'));
     }
 
     /**

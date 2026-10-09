@@ -4,6 +4,7 @@ namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,6 +20,7 @@ class GuardianChildrenController extends Controller
             'children' => $list->executeForGuardianUserId($userId),
             // Item 13: links the office has not verified yet, by name only.
             'pending' => $list->executePendingForGuardianUserId($userId),
+            't' => Phrases::once('portal'),
         ]);
     }
 }
