@@ -8,6 +8,8 @@ use App\Domains\Academics\Models\CalendarDay;
 use App\Domains\Finance\Enums\InvoiceStatus;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Actions\ResolveAttendanceNotificationStateAction;
+use App\Domains\Notifications\Actions\ResolveNotificationPreferencesAction;
+use App\Domains\Notifications\Actions\StartMessageThreadAction;
 use App\Domains\People\Actions\AttachGuardianAction;
 use App\Domains\People\Enums\GuardianRelationship;
 use App\Domains\People\Enums\StudentStatus;
@@ -27,13 +29,23 @@ use Spatie\Permission\Models\Role;
  * school calendar. Every word on them was English, and so was every word the
  * server wrote for them — the home's title, sections and tile lines, the
  * tick's saved message and its three refusals.
+ *
+ * Slice PT1b (STATUS §5pw) adds notifications and messages: the inbox, a
+ * thread with its poll, a new message. The notifications page read the 72 KB
+ * `admin` book for its eleven phone phrases, which now live in `portal`; the
+ * saved messages and the thirteen refusals of the message actions were
+ * English, and a thread's or a recipient's refusal had no place on the page.
  */
 uses(RefreshDatabase::class);
 
-/** The family's day pages; every phrase on them is `t.key || 'English'`, from the `portal` book. */
+/** The family's day pages and its talk; every phrase on them is `t.key || 'English'`, from the `portal` book. */
 function portalDayScreens(): array
 {
-    return ['Portal/Home', 'Portal/Children', 'Portal/Attendance', 'Portal/Homework', 'Portal/Announcements', 'Portal/SchoolCalendar'];
+    return [
+        'Portal/Home', 'Portal/Children', 'Portal/Attendance', 'Portal/Homework', 'Portal/Announcements', 'Portal/SchoolCalendar',
+        // Slice PT1b.
+        'Portal/Notifications', 'Portal/Messages/Index', 'Portal/Messages/Show', 'Portal/Messages/Create',
+    ];
 }
 
 /** Where the server writes what those pages say. */
@@ -48,6 +60,16 @@ function portalDayServerFiles(): array
         'app/Domains/Portal/Http/Controllers/PortalAnnouncementController.php',
         'app/Domains/Portal/Http/Controllers/PortalHolidayController.php',
         'app/Domains/Academics/Actions/TickHomeworkAction.php',
+        // Slice PT1b.
+        'app/Domains/Portal/Http/Controllers/PortalNotificationController.php',
+        'app/Domains/Portal/Http/Controllers/PortalMessageController.php',
+        'app/Domains/Notifications/Actions/AttachPollToThreadAction.php',
+        'app/Domains/Notifications/Actions/ReplyToMessageThreadAction.php',
+        'app/Domains/Notifications/Actions/RespondToMessagePollAction.php',
+        'app/Domains/Notifications/Actions/StartClassMessageThreadAction.php',
+        'app/Domains/Notifications/Actions/StartMessageThreadAction.php',
+        'app/Domains/Notifications/Actions/ShowMessageThreadAction.php',
+        'app/Domains/Notifications/Actions/ListMessageInboxAction.php',
     ];
 }
 
@@ -99,6 +121,15 @@ it('names every code the family’s day pages show, in all three languages', fun
         ]),
         ...array_map(fn ($day) => 'weekday_'.$day, ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']),
         ...array_map(fn ($prayer) => 'prayer_'.$prayer, ['fajr', 'sunrise', 'dhuhr', 'asr', 'maghrib', 'isha']),
+        // Slice PT1b: what reaches a person, the categories a notification is
+        // written with, the audiences of a class message, a phone's kind.
+        ...array_map(fn ($category) => 'notify_pref_'.$category, array_keys(ResolveNotificationPreferencesAction::CATEGORIES)),
+        ...array_map(fn ($category) => 'notify_category_'.$category, [
+            ...array_keys(ResolveNotificationPreferencesAction::CATEGORIES),
+            'system', 'payment', 'lending', 'event', 'course', 'courses', 'assignment', 'account',
+        ]),
+        ...array_map(fn ($audience) => 'messages_audience_'.$audience, ['guardians', 'students', 'both']),
+        ...array_map(fn ($platform) => 'devices_platform_'.$platform, ['android', 'ios', 'web']),
     ];
     // A relationship is the `learn` book's, which the shell shares.
     $learn = [
@@ -121,7 +152,7 @@ it('leaves no English in what the server says on the family’s day pages, and s
     expect($english)->toBe([]);
 
     $keys = refusalKeysIn(portalDayServerFiles());
-    expect($keys)->toContain('portal.home_title_parent', 'portal.tile_invoices_unpaid', 'nav.absence_notes', 'portal.error_homework_none');
+    expect($keys)->toContain('portal.home_title_parent', 'portal.tile_invoices_unpaid', 'nav.absence_notes', 'portal.error_homework_none', 'portal.flash_message_sent', 'portal.error_thread_not_yours', 'portal.unknown_person');
     foreach ($keys as $key) {
         expect(trans($key, [], 'en'))->not->toBe($key, "{$key} has no English")
             ->and(trans($key, [], 'dv'))->toMatch('/\p{Thaana}/u', "{$key} in Dhivehi")
@@ -208,4 +239,38 @@ it('tells a pupil in Dhivehi that a homework tick was saved, and why one was ref
     $this->withoutLocalizationMiddleware()->actingAs($pupil)
         ->post(route('portal.homework.tick', $none->id), ['student_id' => $student->id, 'done' => true])
         ->assertSessionHasErrors(['lesson_log_id' => $dv['error_homework_none']]);
+});
+
+it('serves notifications and messages in Dhivehi, and says what was sent and refused in Dhivehi', function () {
+    [$parent] = pt1aParent();
+    $teacher = User::factory()->create(['name' => 'Ustaz Ahmed']);
+    $dv = portalBook('dv');
+
+    $threadId = (int) app(StartMessageThreadAction::class)->execute((int) $teacher->id, [(int) $parent->id], 'Trip', 'Bring a hat.')->id;
+
+    app()->setLocale('dv');
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->get(route('portal.notifications'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Portal/Notifications')
+            ->where('t.notifications_title', $dv['notifications_title'])
+            ->where('t.devices_title', $dv['devices_title']));
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->get(route('portal.messages'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Portal/Messages/Index')->where('t.messages_title', $dv['messages_title']));
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->get(route('portal.messages.create'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Portal/Messages/Create')->where('t.messages_send', $dv['messages_send']));
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->get(route('portal.messages.show', $threadId))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Portal/Messages/Show')->where('t.messages_send_reply', $dv['messages_send_reply']));
+
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->post(route('portal.messages.reply', $threadId), ['body' => 'Thank you.'])
+        ->assertSessionHas('success', $dv['flash_reply_sent']);
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->post(route('portal.messages.poll', $threadId), ['choice' => 0])
+        ->assertSessionHasErrors(['choice' => $dv['error_poll_none']]);
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->post(route('portal.notifications.preferences'), ['preferences' => ['message' => true]])
+        ->assertSessionHas('success', $dv['flash_notification_prefs_saved']);
 });

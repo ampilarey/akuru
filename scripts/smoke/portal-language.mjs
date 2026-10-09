@@ -17,6 +17,11 @@
  * Then, in Dhivehi:
  *   - the parent follows the home's Homework tile, and the page it opens is
  *     still in Dhivehi;
+ *   - the parent writes SMOKE-Lang-Message to their child's teacher and is
+ *     told it was sent, in Dhivehi; an empty reply is refused beside its box,
+ *     in Dhivehi; a reply is sent and said so; and the thread, the inbox, a
+ *     new message and the notifications read in Dhivehi and Arabic (slice
+ *     PT1b);
  *   - the pupil ticks SMOKE-Lang-Homework done (`SmokeMarkerSeeder` plants it
  *     on a register two days back) and is told so in Dhivehi; the tick holds
  *     over a reload, and unticking it puts it back.
@@ -34,12 +39,14 @@ const PARENT = process.env.SMOKE_PARENT ?? 'parent@akuru.edu.mv';
 const PUPIL = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const HOMEWORK = 'SMOKE-Lang-Homework';
+const MESSAGE = 'SMOKE-Lang-Message';
 
 // Props that carry codes the page must name, and the phrase books it is sent:
 // their values are not the author's words, so they excuse nothing.
 const CODE_KEYS = new Set([
     'i18n', 't', 'nav', 'auth', 'locale', 'locales', 'locale_urls', 'errors', 'flash', 'status', 'relationship',
     'type', 'priority', 'notification_state', 'notification_label', 'verification_status', 'csvUrl', 'href',
+    'category', 'categories', 'platform', 'reach',
 ]);
 const ALWAYS_FINE = [/https?:\/\/\S*/g, /\bCSV\b/g, /\bMVR\b/g, /[\w.+-]+@[\w-]+(\.[\w-]+)+/g];
 
@@ -68,15 +75,18 @@ function authorsWords(value, key = '', out = []) {
     return out;
 }
 
+// The author's words come out first: a notice that says "113.86 MVR" is
+// the author's whole sentence, and taking MVR out of it first left a
+// sentence nobody wrote (slice PT1b).
 function english(strings, allowed) {
     const longestFirst = [...new Set(allowed)].sort((a, b) => b.length - a.length);
     return strings.filter((raw) => {
         let rest = raw;
-        for (const pattern of ALWAYS_FINE) {
-            rest = rest.replace(pattern, ' ');
-        }
         for (const word of longestFirst) {
             rest = rest.split(word).join(' ');
+        }
+        for (const pattern of ALWAYS_FINE) {
+            rest = rest.replace(pattern, ' ');
         }
         return /[A-Za-z]{2,}/.test(rest);
     });
@@ -118,6 +128,35 @@ const readMain = (page) => page.evaluate(() => {
 const parent = await signIn(PARENT);
 const pupil = await signIn(PUPIL);
 
+// ------------------------------------- a message, a refusal and a reply, in Dhivehi
+// (slice PT1b). Written first, so the thread is among the screens below.
+
+await parent.goto(`${BASE}/dv/portal/messages/new`, { waitUntil: 'networkidle' });
+const compose = await props(parent);
+const words = compose.t ?? {};
+let threadPath = null;
+if ((compose.recipients || []).length === 0) {
+    check('the parent has a teacher to write to', false, 'no recipients — is the child on a class roster with a timetable?');
+} else {
+    await parent.getByLabel(words.messages_subject, { exact: true }).fill(MESSAGE);
+    await parent.getByLabel(words.messages_body, { exact: true }).fill('SMOKE-Lang-Message: a question about the trip.');
+    await parent.getByRole('button', { name: words.messages_send, exact: true }).click();
+    await parent.waitForURL(/\/portal\/messages\/\d+$/, { timeout: 10000 }).catch(() => {});
+    const sent = (await parent.getByTestId('flash-success').textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+    check('the parent writes to the teacher and is told it was sent, in Dhivehi', sent === words.flash_message_sent, `said: ${sent ?? 'nothing'}`);
+    threadPath = new URL(parent.url()).pathname.replace(/^\/(en|dv|ar)/, '');
+
+    await parent.getByRole('button', { name: words.messages_send_reply, exact: true }).click();
+    const refused = (await parent.locator('textarea + span').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+    check('an empty reply is refused beside its box, in Dhivehi', Boolean(refused) && /\p{Script=Thaana}/u.test(refused) && !/[A-Za-z]{3,}/.test(refused), `said: ${refused ?? 'nothing'}`);
+
+    await parent.locator('textarea').first().fill('SMOKE-Lang-Message: thank you.');
+    await parent.getByRole('button', { name: words.messages_send_reply, exact: true }).click();
+    await parent.waitForLoadState('networkidle');
+    const replied = (await parent.getByTestId('flash-success').textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+    check('and a reply is sent and said so, in Dhivehi', replied === words.flash_reply_sent, `said: ${replied ?? 'nothing'}`);
+}
+
 const screens = [
     ['/portal/home', parent],
     ['/portal/children', parent],
@@ -127,6 +166,11 @@ const screens = [
     ['/portal/holidays', parent],
     ['/portal/home', pupil],
     ['/portal/homework', pupil],
+    // Slice PT1b.
+    ['/portal/notifications', parent],
+    ['/portal/messages', parent],
+    ['/portal/messages/new', parent],
+    ...(threadPath ? [[threadPath, parent]] : []),
 ];
 
 for (const locale of ['dv', 'ar']) {

@@ -32,7 +32,7 @@ class AttachPollToThreadAction
 
         if ($question === '') {
             throw ValidationException::withMessages([
-                'poll.question' => 'A poll needs a question.',
+                'poll.question' => __('portal.error_poll_question'),
             ]);
         }
 
@@ -40,13 +40,13 @@ class AttachPollToThreadAction
         // to thirty families is worse than no question.
         if (count($options) < 2) {
             throw ValidationException::withMessages([
-                'poll.options' => 'A poll needs at least two options.',
+                'poll.options' => __('portal.error_poll_two_options'),
             ]);
         }
 
         if (count($options) > 10) {
             throw ValidationException::withMessages([
-                'poll.options' => 'A poll can offer at most ten options.',
+                'poll.options' => __('portal.error_poll_ten_options'),
             ]);
         }
 

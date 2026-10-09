@@ -21,7 +21,7 @@ class RespondToMessagePollAction
 
         if ($poll === null) {
             throw ValidationException::withMessages([
-                'choice' => 'This message has no question to answer.',
+                'choice' => __('portal.error_poll_none'),
             ]);
         }
 
@@ -32,13 +32,13 @@ class RespondToMessagePollAction
 
         if (! $isParticipant) {
             throw ValidationException::withMessages([
-                'choice' => 'You are not part of this conversation.',
+                'choice' => __('portal.error_thread_not_yours'),
             ]);
         }
 
         if (! $poll->isOpen()) {
             throw ValidationException::withMessages([
-                'choice' => 'This question is closed.',
+                'choice' => __('portal.poll_closed'),
             ]);
         }
 
@@ -46,7 +46,7 @@ class RespondToMessagePollAction
         // it would count towards a tally with no label.
         if ($choice < 0 || $choice >= count($poll->options ?? [])) {
             throw ValidationException::withMessages([
-                'choice' => 'That is not one of the options.',
+                'choice' => __('portal.error_poll_not_an_option'),
             ]);
         }
 

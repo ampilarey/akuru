@@ -1,14 +1,9 @@
 import AppShell from '../../../Layouts/AppShell';
+import { dateStamp as when } from '../../../Components/dateStamp';
 
-function when(iso) {
-    if (!iso) return '';
-    const date = new Date(iso);
-    return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
-}
-
-export default function Index({ threads = [], canCompose = false, canBroadcast = false }) {
+export default function Index({ threads = [], canCompose = false, canBroadcast = false, t = {} }) {
     return (
-        <AppShell title="Messages">
+        <AppShell title={t.messages_title || 'Messages'}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 {/* This page told a teacher about "your child's teachers". It
                     was written for families and nobody had opened it as staff,
@@ -16,17 +11,17 @@ export default function Index({ threads = [], canCompose = false, canBroadcast =
                     permission was created in a migration. */}
                 <p className="text-sm text-gray-600">
                     {canBroadcast
-                        ? 'Message a class, or reply to a family.'
-                        : 'Conversations with your child’s teachers.'}
+                        ? (t.messages_intro_staff || 'Message a class, or reply to a family.')
+                        : (t.messages_intro_family || 'Conversations with your child’s teachers.')}
                 </p>
-                {canCompose && <a className="btn-primary" href="/portal/messages/new">New message</a>}
+                {canCompose && <a className="btn-primary" href="/portal/messages/new">{t.messages_new || 'New message'}</a>}
             </div>
 
             {threads.length === 0 && (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">
                     {canCompose
-                        ? 'No messages yet. Start one with “New message”.'
-                        : 'No messages yet. Once your child is on a class roster with a timetable, their teachers appear here.'}
+                        ? (t.messages_none_compose || 'No messages yet. Start one with “New message”.')
+                        : (t.messages_none_family || 'No messages yet. Once your child is on a class roster with a timetable, their teachers appear here.')}
                 </p>
             )}
 
@@ -49,7 +44,7 @@ export default function Index({ threads = [], canCompose = false, canBroadcast =
                                 <span className="text-xs text-gray-500">{when(thread.last_message_at)}</span>
                             </div>
                             {thread.with?.length > 0 && (
-                                <p className="mt-0.5 text-xs text-gray-500">With {thread.with.join(', ')}</p>
+                                <p className="mt-0.5 text-xs text-gray-500">{(t.messages_with || 'With :names').replace(':names', thread.with.join(', '))}</p>
                             )}
                             {thread.preview && <p className="mt-1 text-sm text-gray-600">{thread.preview}</p>}
                         </a>

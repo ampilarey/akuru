@@ -1,20 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
-
-const CATEGORY_LABELS = {
-    message: 'Message',
-    registers: 'Registers',
-    academics: 'Academics',
-    hr: 'Staff',
-    finance: 'Finance',
-    system: 'System',
-};
-
-function when(iso) {
-    if (!iso) return '';
-    const date = new Date(iso);
-    return Number.isNaN(date.getTime()) ? '' : date.toLocaleString();
-}
+import { dateStamp as when } from '../../Components/dateStamp';
 
 export default function Notifications({ notifications = [], categories = {}, preferences = {}, devices = [], t = {} }) {
     const unread = notifications.filter((n) => !n.is_read).length;
@@ -24,22 +10,26 @@ export default function Notifications({ notifications = [], categories = {}, pre
         preserveScroll: true,
     });
 
+    // A category is a code: the server sends its English label as the
+    // fallback, and the page names it in its own language (BACKLOG C21, slice
+    // PT1b). A notification's own title and text are written when it is sent,
+    // in English (C21 notes why).
     return (
-        <AppShell title="Notifications">
+        <AppShell title={t.notifications_title || 'Notifications'}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-gray-600">
-                    {unread === 0 ? 'Nothing unread.' : `${unread} unread.`}
+                    {unread === 0 ? (t.notifications_nothing_unread || 'Nothing unread.') : (t.notifications_unread || ':count unread.').replace(':count', unread)}
                 </p>
                 {unread > 0 && (
                     <button type="button" className="btn-secondary" onClick={() => markRead(null)}>
-                        Mark all read
+                        {t.notifications_mark_all || 'Mark all read'}
                     </button>
                 )}
             </div>
 
             {Object.keys(categories).length > 0 && (
                 <details className="mb-4 rounded-lg border bg-white p-4">
-                    <summary className="cursor-pointer text-sm font-medium">What reaches me</summary>
+                    <summary className="cursor-pointer text-sm font-medium">{t.notifications_reach_title || 'What reaches me'}</summary>
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
@@ -57,11 +47,11 @@ export default function Notifications({ notifications = [], categories = {}, pre
                                         [key]: e.target.checked,
                                     })}
                                 />
-                                {label}
+                                {t[`notify_pref_${key}`] || label}
                             </label>
                         ))}
                         <button type="submit" className="btn-secondary mt-2" disabled={prefs.processing}>
-                            Save
+                            {t.notifications_save || 'Save'}
                         </button>
                     </form>
                 </details>
@@ -91,7 +81,7 @@ export default function Notifications({ notifications = [], categories = {}, pre
 
             {notifications.length === 0 && (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">
-                    No notifications yet.
+                    {t.notifications_none || 'No notifications yet.'}
                 </p>
             )}
 
@@ -112,7 +102,7 @@ export default function Notifications({ notifications = [], categories = {}, pre
                             <span className="text-xs text-gray-500">{when(item.created_at)}</span>
                         </div>
                         <p className="mt-0.5 text-xs uppercase tracking-wide text-gray-500">
-                            {CATEGORY_LABELS[item.category] || item.category}
+                            {t[`notify_category_${item.category}`] || item.category}
                         </p>
                         <p className="mt-1 text-sm text-gray-800">{item.message}</p>
                         {!item.is_read && (
@@ -121,7 +111,7 @@ export default function Notifications({ notifications = [], categories = {}, pre
                                 className="mt-2 text-xs text-[#7C2D37] hover:underline"
                                 onClick={() => markRead(item.id)}
                             >
-                                Mark read
+                                {t.notifications_mark_read || 'Mark read'}
                             </button>
                         )}
                     </li>

@@ -25,13 +25,13 @@ class ReplyToMessageThreadAction
 
         if (! $participants->contains(fn (MessageParticipant $row): bool => (int) $row->user_id === $senderId)) {
             throw ValidationException::withMessages([
-                'thread' => 'You are not part of this conversation.',
+                'thread' => __('portal.error_thread_not_yours'),
             ]);
         }
 
         if (! $thread->allowsReplyFrom($senderId)) {
             throw ValidationException::withMessages([
-                'body' => 'Replies are turned off for this message.',
+                'body' => __('portal.replies_off'),
             ]);
         }
 
@@ -46,7 +46,7 @@ class ReplyToMessageThreadAction
 
         if ($audience === []) {
             throw ValidationException::withMessages([
-                'thread' => 'This conversation has nobody left to reply to.',
+                'thread' => __('portal.error_thread_nobody_left'),
             ]);
         }
 

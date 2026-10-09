@@ -37,7 +37,7 @@ class StartClassMessageThreadAction
         // classes you teach, and no others.
         if ($class === null) {
             throw ValidationException::withMessages([
-                'class_id' => 'You do not teach that class.',
+                'class_id' => __('portal.error_class_not_yours'),
             ]);
         }
 
@@ -46,7 +46,7 @@ class StartClassMessageThreadAction
 
         if ($recipients === []) {
             throw ValidationException::withMessages([
-                'class_id' => 'Nobody in that class has an account to receive this.',
+                'class_id' => __('portal.error_class_nobody'),
             ]);
         }
 

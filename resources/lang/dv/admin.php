@@ -863,17 +863,6 @@ return [
     'supervisor_hifz_title' => 'ޙިފްޒު ކުރިއެރުން',
     'supervisor_hifz_open' => 'ޙިފްޒު ސުޕަވައިޒަރ ޑޭޝްބޯޑް ހުޅުވާ',
     // A person's phones registered by the mobile app (SPEC §50, STATUS §5jr).
-    'devices_title' => 'ތިބާގެ ފޯނުތައް',
-    'devices_hint' => 'އަކުރު އެޕުން ތިބާ ސައިން އިން ވާ ކޮންމެ ފޯނެއް ރަޖިސްޓަރކުރޭ، އެހެންވެ ނޯޓިފިކޭޝަން އެއަށް ލިބޭނެ. ބޭނުން ނުކުރާ ފޯނެއް ނަގާލައްވާ.',
-    'devices_none' => 'އަދި ފޯނެއް ރަޖިސްޓަރވެފައި ނެތް. އަކުރު އެޕުން ސައިން އިން ވުމުން މިތަނުން ފެންނާނެ.',
-    'devices_remove' => 'ނަގާލާ',
-    'devices_last_seen' => 'ފަހުން ފެނުނީ :when',
-    'devices_never_seen' => 'ފެނިފައި ނުވޭ',
-    'devices_active' => 'ލިބެމުން',
-    'devices_inactive' => 'ސައިން އައުޓް',
-    'devices_platform_android' => 'އެންޑްރޮއިޑް',
-    'devices_platform_ios' => 'އައިފޯން',
-    'devices_platform_web' => 'ބްރައުޒަރ',
     'devices_flash_registered' => 'މި ފޯނަށް ނޯޓިފިކޭޝަން ލިބޭނެ.',
     'devices_flash_removed' => 'އެ ފޯނަށް ދެން ނޯޓިފިކޭޝަން ނުލިބޭނެ.',
 

@@ -2913,6 +2913,10 @@ class SmokeMarkerSeeder extends Seeder
      * two days back — submitted, because a draft is never shown to a family —
      * and clears its tick each run. Kept and moved along like `SMOKE-Club`,
      * so it stays inside the homework list's month.
+     *
+     * The walk also writes `SMOKE-Lang-Message` to a teacher and replies to
+     * it (slice PT1b); its threads, and the notifications they raised, are
+     * cleared here, in foreign-key order.
      */
     private function portalLanguageCycle(AcademicYear $year, ?ClassRoom $class): void
     {
@@ -2939,6 +2943,15 @@ class SmokeMarkerSeeder extends Seeder
             $logId = DB::table('lesson_logs')->insertGetId($register + ['created_at' => now()]);
         }
         DB::table('homework_ticks')->where('lesson_log_id', $logId)->delete();
+
+        $threadIds = DB::table('message_threads')->where('subject', 'SMOKE-Lang-Message')->pluck('id');
+        $pollIds = DB::table('message_polls')->whereIn('message_thread_id', $threadIds)->pluck('id');
+        DB::table('message_poll_responses')->whereIn('message_poll_id', $pollIds)->delete();
+        DB::table('message_polls')->whereIn('id', $pollIds)->delete();
+        DB::table('messages')->whereIn('thread_id', $threadIds)->delete();
+        DB::table('message_participants')->whereIn('message_thread_id', $threadIds)->delete();
+        DB::table('message_threads')->whereIn('id', $threadIds)->delete();
+        DB::table('user_notifications')->where(fn ($q) => $q->where('title', 'like', '%SMOKE-Lang-Message%')->orWhere('message', 'like', '%SMOKE-Lang-Message%'))->delete();
     }
 
     /**

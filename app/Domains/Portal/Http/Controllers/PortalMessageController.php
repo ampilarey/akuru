@@ -11,6 +11,7 @@ use App\Domains\Notifications\Actions\ShowMessageThreadAction;
 use App\Domains\Notifications\Actions\StartClassMessageThreadAction;
 use App\Domains\Notifications\Actions\StartMessageThreadAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -45,6 +46,7 @@ class PortalMessageController extends Controller
             // too. This one is "can address a class", and it is what decides
             // whether the page describes itself to staff or to a parent.
             'canBroadcast' => $classes->isNotEmpty(),
+            't' => Phrases::once('portal'),
         ]);
     }
 
@@ -59,6 +61,7 @@ class PortalMessageController extends Controller
             // because a person can be both and should not have to know which
             // form they need.
             'classes' => $this->canBroadcast($request) ? $directory->classes($userId) : collect(),
+            't' => Phrases::once('portal'),
         ]);
     }
 
@@ -98,7 +101,7 @@ class PortalMessageController extends Controller
 
         return redirect()
             ->route('portal.messages.show', $threadId)
-            ->with('success', 'Message sent.');
+            ->with('success', __('portal.flash_message_sent'));
     }
 
     /**
@@ -180,7 +183,7 @@ class PortalMessageController extends Controller
 
         app(MarkMessageThreadReadAction::class)->execute($thread, $userId);
 
-        return Inertia::render('Portal/Messages/Show', ['thread' => $payload]);
+        return Inertia::render('Portal/Messages/Show', ['thread' => $payload, 't' => Phrases::once('portal')]);
     }
 
     public function reply(Request $request, int $thread): RedirectResponse
@@ -200,7 +203,7 @@ class PortalMessageController extends Controller
 
         return redirect()
             ->route('portal.messages.show', $thread)
-            ->with('success', 'Reply sent.');
+            ->with('success', __('portal.flash_reply_sent'));
     }
 
     public function respondToPoll(Request $request, int $thread): RedirectResponse
@@ -217,7 +220,7 @@ class PortalMessageController extends Controller
 
         return redirect()
             ->route('portal.messages.show', $thread)
-            ->with('success', 'Answer saved.');
+            ->with('success', __('portal.flash_poll_answered'));
     }
 
     private function userId(Request $request): int
