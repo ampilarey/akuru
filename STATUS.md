@@ -5034,7 +5034,7 @@ what it should: more than a hundred names.
 
 `PronunciationModuleTest`'s rollback no longer tells the action it is one.
 
-Whole suite locally: **SUITE**.
+Whole suite locally: **2943 passed (39545 assertions)**.
 
 **Walk:** `pronounce.mjs` 22/22. It adds four steps:
 - the dean opens the review queue, and the dean's menu offers it;
