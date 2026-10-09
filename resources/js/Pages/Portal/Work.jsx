@@ -1,11 +1,11 @@
 import AppShell from '../../Layouts/AppShell';
 
-export default function Work({ work = [] }) {
+export default function Work({ work = [], t = {} }) {
     return (
-        <AppShell title="My child’s work">
+        <AppShell title={t.work_title || 'My child’s work'}>
             {work.length === 0 && (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">
-                    Nothing has been shared yet. Teachers photograph paper work as it is done.
+                    {t.work_none || 'Nothing has been shared yet. Teachers photograph paper work as it is done.'}
                 </p>
             )}
 
@@ -14,7 +14,7 @@ export default function Work({ work = [] }) {
                     <figure key={item.id} className="rounded-lg border bg-white p-3">
                         <img
                             src={`/portal/work/${item.id}/photo`}
-                            alt={item.title || `Work by ${item.student}`}
+                            alt={item.title || (t.work_by || 'Work by :name').replace(':name', item.student)}
                             className="mb-2 w-full rounded border object-cover"
                             style={{ aspectRatio: '4 / 3', maxWidth: '100%' }}
                         />

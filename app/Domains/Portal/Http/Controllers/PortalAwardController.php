@@ -5,6 +5,7 @@ namespace App\Domains\Portal\Http\Controllers;
 use App\Domains\ExamsGrades\Actions\ListPublishedAwardsForGuardianAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use App\Support\PersonName;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -36,6 +37,7 @@ class PortalAwardController extends Controller
                 (int) $request->user()->id,
                 $studentId,
             )->values(),
+            't' => Phrases::once('portal'),
         ]);
     }
 }

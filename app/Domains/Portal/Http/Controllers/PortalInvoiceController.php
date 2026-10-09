@@ -6,6 +6,7 @@ use App\Domains\Finance\Actions\ListPortalInvoicesAction;
 use App\Domains\Finance\Actions\PayPortalInvoiceAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -35,6 +36,7 @@ class PortalInvoiceController extends Controller
             'invoices' => $studentId
                 ? app(ListPortalInvoicesAction::class)->execute([$studentId])->values()
                 : collect(),
+            't' => Phrases::once('portal'),
         ]);
     }
 
@@ -56,6 +58,6 @@ class PortalInvoiceController extends Controller
         }
 
         return redirect()->route('portal.invoices')
-            ->with('error', $result['error'] ?? 'Payment initiation failed.');
+            ->with('error', $result['error'] ?? __('portal.error_payment_failed'));
     }
 }

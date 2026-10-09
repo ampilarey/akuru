@@ -5,6 +5,7 @@ namespace App\Domains\Portal\Http\Controllers;
 use App\Domains\Academics\Actions\ListFoundItemsAction;
 use App\Domains\Academics\Actions\ReadListedFoundItemPhotoAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
@@ -27,6 +28,7 @@ class PortalFoundItemController extends Controller
                 ['q' => (string) $request->query('q', '')],
                 stillHereOnly: true,
             ),
+            't' => Phrases::once('portal'),
         ]);
     }
 

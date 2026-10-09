@@ -4983,6 +4983,75 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5py. The family's records in Dhivehi and Arabic (C21 PT2, 2026-10-09)
+
+The third slice of BACKLOG C21 covers eight portal pages:
+- report cards, exam results, awards and behaviour;
+- fees;
+- a child's work, arrivals and departures, and lost property.
+
+They were English throughout:
+- every heading, column, phone caption, empty line and button;
+- a behaviour record's type, printed as its code (`compliment`);
+- a payment plan's state, printed as its code (`active`);
+- an arrival or departure and how it was recorded, printed as the server's
+  English labels;
+- the fee payment's three refusals and its fallback error;
+- a pupil the server could not name, *Unknown*.
+
+**Two things the pages got wrong besides the language:**
+- *Request transcript* always asked for the English transcript
+  (`locale=en`), whatever the page. It now asks in the page's language; the
+  controller has always taken `en`, `dv` and `ar`.
+- A refused *Pay* (*already paid*, *not available*) came back to nothing.
+  Pay posts with `router`, and no form owned the refusal. It is now said
+  under the row whose button was pressed (`useRowRefusals`, with
+  `preserveState: 'errors'` so the page keeps which row that was). The
+  bank's page is a full visit (§5px).
+
+**The change:**
+- **The eight pages read the `portal` book**, 68 phrases more. The column
+  names double as the phone captions.
+- **Codes are named, not printed:** a behaviour record's type, a payment
+  plan's state, arrived or left, and how it was recorded.
+  `ListMovementsForGuardianAction` sends that last one as a code (`source`)
+  beside its English label, which stays as the fallback.
+- **What the server says is in the page's language:** the three payment
+  refusals, the fallback error, and a nameless pupil.
+- The transcript link shows only when there is a child to ask for.
+
+The transcript and the report card themselves are documents, made in the
+language they are asked for. A Dhivehi report card printed placeholder
+headings — *Student (DV)*, *Grades (DV)*, fifteen of them — and Arabic fell
+back to English. Slice DOC1 takes that up next.
+
+**Tests:** `PortalSpeaksThreeLanguagesTest` now covers the eight pages'
+sources, the eleven server files and the four codes. A seventh test checks:
+- the eight pages serve in Dhivehi;
+- how an arrival was recorded travels as a code (`card`);
+- a paid invoice, and one that is not the family's, are refused in Dhivehi.
+
+Whole suite locally: **2961 passed (41718 assertions)**.
+
+**Walk:** `portal-language.mjs` 132/132.
+- The eight pages read right to left under `/dv` and `/ar`, with nothing
+  left in English and every field named.
+- The report cards page asks for the transcript in Dhivehi.
+- A refused Pay is said under its row, in Dhivehi. The walk opens the fees
+  page, settles the invoice behind it with `artisan tinker` (restored
+  afterwards) and presses Pay: *މި ބިލް ދައްކާފައި ވަނީ.*
+
+The walk's code keys are now per page: a behaviour record's category is what
+the teacher wrote, while a notification's is a code. PDF, HTML and QR count,
+like CSV and MVR, as the same in every language.
+
+Other walks:
+- `fees.mjs` 31/31. It read the plan's state as the server's `completed`;
+  the page now names it *Completed*, and the walk matches either.
+- `family.mjs` 40/40.
+- `mobile.mjs` 19/19.
+- `own-data.mjs`: every family saw their own records and nobody else's.
+
 ## 5px. A Pay button on an Inertia page reaches the bank (2026-10-09)
 
 Found while preparing the fees page for slice PT2. **Two buttons never

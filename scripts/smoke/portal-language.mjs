@@ -22,6 +22,9 @@
  *     in Dhivehi; a reply is sent and said so; and the thread, the inbox, a
  *     new message and the notifications read in Dhivehi and Arabic (slice
  *     PT1b);
+ *   - the report cards, exam results, awards, behaviour, fees, a child's
+ *     work, arrivals and departures and lost property read in Dhivehi and
+ *     Arabic, codes named (slice PT2);
  *   - the pupil ticks SMOKE-Lang-Homework done (`SmokeMarkerSeeder` plants it
  *     on a register two days back) and is told so in Dhivehi; the tick holds
  *     over a reload, and unticking it puts it back.
@@ -32,6 +35,7 @@
  * Environment: SMOKE_BASE_URL, SMOKE_PARENT, SMOKE_STUDENT, SMOKE_PASSWORD,
  * SMOKE_CHROMIUM.
  */
+import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
@@ -47,8 +51,12 @@ const CODE_KEYS = new Set([
     'i18n', 't', 'nav', 'auth', 'locale', 'locales', 'locale_urls', 'errors', 'flash', 'status', 'relationship',
     'type', 'priority', 'notification_state', 'notification_label', 'verification_status', 'csvUrl', 'href',
     'category', 'categories', 'platform', 'reach',
+    // Slice PT2: a payment plan's state, an arrival or departure and how it
+    // was recorded, and the server's English names for those.
+    'plan_status', 'direction', 'direction_label', 'source', 'source_label',
 ]);
-const ALWAYS_FINE = [/https?:\/\/\S*/g, /\bCSV\b/g, /\bMVR\b/g, /[\w.+-]+@[\w-]+(\.[\w-]+)+/g];
+// The names of formats and of a code a phone reads, the same in every language.
+const ALWAYS_FINE = [/https?:\/\/\S*/g, /\bCSV\b/g, /\bMVR\b/g, /\bPDF\b/g, /\bHTML\b/g, /\bQR\b/g, /[\w.+-]+@[\w-]+(\.[\w-]+)+/g];
 
 const browser = await chromium.launch({
     args: ['--no-first-run', '--disable-background-networking'],
@@ -59,8 +67,13 @@ const problems = [];
 const check = (step, ok, detail = '') => results.push([step, ok, detail]);
 const props = (page) => page.evaluate(() => JSON.parse(document.querySelector('script[data-page="app"]')?.textContent || '{}').props || {});
 
-function authorsWords(value, key = '', out = []) {
-    if (CODE_KEYS.has(key)) {
+// A behaviour record's category is what the teacher wrote, where a
+// notification's is a code (slice PT2): a page may say which of the code
+// keys are its author's words.
+const AUTHORS_KEYS_ON = { '/portal/behavior': ['category'] };
+
+function authorsWords(value, key = '', out = [], codeKeys = CODE_KEYS) {
+    if (codeKeys.has(key)) {
         return out;
     }
     if (typeof value === 'string') {
@@ -68,9 +81,9 @@ function authorsWords(value, key = '', out = []) {
             out.push(value.trim());
         }
     } else if (Array.isArray(value)) {
-        value.forEach((item) => authorsWords(item, key, out));
+        value.forEach((item) => authorsWords(item, key, out, codeKeys));
     } else if (value && typeof value === 'object') {
-        Object.entries(value).forEach(([k, v]) => authorsWords(v, k, out));
+        Object.entries(value).forEach(([k, v]) => authorsWords(v, k, out, codeKeys));
     }
     return out;
 }
@@ -171,6 +184,15 @@ const screens = [
     ['/portal/messages', parent],
     ['/portal/messages/new', parent],
     ...(threadPath ? [[threadPath, parent]] : []),
+    // Slice PT2.
+    ['/portal/report-cards', parent],
+    ['/portal/exams', parent],
+    ['/portal/awards', parent],
+    ['/portal/behavior', parent],
+    ['/portal/invoices', parent],
+    ['/portal/work', parent],
+    ['/portal/movements', parent],
+    ['/portal/found-items', parent],
 ];
 
 for (const locale of ['dv', 'ar']) {
@@ -183,10 +205,42 @@ for (const locale of ['dv', 'ar']) {
             continue;
         }
         const found = await readMain(viewer);
-        const left = english(found.texts, authorsWords(await props(viewer)));
+        const codeKeys = new Set([...CODE_KEYS].filter((key) => !(AUTHORS_KEYS_ON[path] || []).includes(key)));
+        const left = english(found.texts, authorsWords(await props(viewer), '', [], codeKeys));
         check(`${label}: right to left`, found.dir === 'rtl', `dir=${found.dir}`);
         check(`${label}: nothing left in English`, left.length === 0, left.slice(0, 6).join(' | '));
         check(`${label}: every field is named`, found.unnamed.length === 0, found.unnamed.slice(0, 3).join(' | '));
+    }
+}
+
+// ------------------------------------- the family's records, in Dhivehi (slice PT2)
+
+// The transcript is asked for in the page's language; the button always sent `en`.
+await parent.goto(`${BASE}/dv/portal/report-cards`, { waitUntil: 'networkidle' });
+const transcriptHref = await parent.getByTestId('transcript').getAttribute('href').catch(() => null);
+check('the report cards page asks for the transcript in Dhivehi', /[?&]locale=dv\b/.test(transcriptHref || ''), transcriptHref || 'no transcript link');
+
+// A Pay refused is said under its own row. The fees page is opened, then the
+// invoice is settled behind it, as the office or another tab might, and Pay
+// is pressed: the server says it is already paid, in Dhivehi, on that row.
+const tinker = (code) => execFileSync('php', ['artisan', 'tinker', `--execute=${code}`], { encoding: 'utf8' }).trim().split('\n').pop();
+const invoice = "\\Illuminate\\Support\\Facades\\DB::table('invoices')->where('invoice_number', 'SMOKE-INV-1')";
+await parent.goto(`${BASE}/dv/portal/invoices`, { waitUntil: 'networkidle' });
+const fees = (await props(parent)).t ?? {};
+const feeRow = parent.locator('tr', { hasText: 'SMOKE-INV-1' });
+const payInFull = feeRow.locator('span.inline-flex button').last();
+if ((await payInFull.count()) === 0) {
+    check('a Pay refused is said under its row, in Dhivehi', false, 'no Pay button on SMOKE-INV-1');
+} else {
+    const paidBefore = tinker(`echo ${invoice}->value('paid_amount');`);
+    tinker(`${invoice}->update(['paid_amount' => \\Illuminate\\Support\\Facades\\DB::raw('total_amount')]);`);
+    try {
+        await payInFull.click();
+        await parent.waitForLoadState('networkidle');
+        const said = (await feeRow.locator('[role="alert"]').textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+        check('a Pay refused is said under its row, in Dhivehi', said === fees.error_invoice_paid, `said: ${said ?? 'nothing'}`);
+    } finally {
+        tinker(`${invoice}->update(['paid_amount' => ${Number(paidBefore) || 0}]);`);
     }
 }
 

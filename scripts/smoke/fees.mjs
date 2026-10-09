@@ -314,7 +314,7 @@ check('the plan completes', /\bcompleted\b/.test(await rowText(admin, INVOICE)),
 
 await parent.goto(`${BASE}/en/portal/invoices`, { waitUntil: 'networkidle' });
 const settled = await rowText(parent, INVOICE);
-check('the parent owes nothing and has nothing left to pay', settled.includes('0.00') && /\bcompleted\b/.test(settled) && !/Pay \d/.test(settled), settled);
+check('the parent owes nothing and has nothing left to pay', settled.includes('0.00') && /\bcompleted\b/i.test(settled) && !/Pay \d/.test(settled), settled);
 check('with two receipts', (await parent.locator('tr', { hasText: INVOICE }).locator('a:has-text("Receipt")').count()) === 2);
 
 // ------------------------------------------------- 6. the office's reports
