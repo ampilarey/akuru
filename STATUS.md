@@ -4983,6 +4983,88 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pr. The office's and the teacher's pronunciation screens in Dhivehi and Arabic (C19, 2026-10-09)
+
+Left open by CT7b (BACKLOG C19): "the office's and teacher's pronunciation
+screens' saved messages are English (`AdminPronunciationController`,
+`TeachPronunciationController`)". Not only the messages were English. Both
+screens were written before the phrase books, so every word on them was
+English in every language:
+- `/admin/pronunciation`, the AI admin (the system admin's);
+- `/teach/pronunciation`, the review queue (the teaching staff's).
+
+Their refusals were English too, and the pages never showed the ones that
+came back from a button. A sample decided twice, or a verdict with no letter,
+looked like a button that did nothing.
+
+**The change:**
+- **Both pages read the `teach` book** (`t`, sent once per language, as
+  every course screen does). Each string is `t.key || 'English'`. That covers:
+  - the AI's state;
+  - the sample totals, each state named;
+  - the tables' headings and empty rows;
+  - the version form's fields;
+  - the buttons.
+- **Codes are named rather than printed raw:**
+  - a training sample's four states;
+  - the two states an attempt waits in;
+  - every verdict the AI can give;
+  - the one model type.
+- **The two selects** in the review row had no name a screen reader could say.
+  They are now named *Verified letter* and *Verified haraka*.
+- **The flag name** `AI_PRONUNCIATION_ENABLED` stays as it is, in a `code`
+  element. It is a setting's name, not a word.
+- **The controllers' five saved messages and the actions' four refusals** are
+  `teach` phrases. Those actions are `DecideTrainingSampleAction`,
+  `ReviewPronunciationAttemptAction` and `SaveAiModelVersionAction`.
+- **Laravel's own refusals** name the version form's and the verdict's fields
+  as the screens label them (`validation.php`, seven fields).
+- **The buttons that post with `router` say their refusals on their row**
+  (`useRowRefusals`, CT6b-2b). Those buttons are Approve, Reject, Activate,
+  Confirm and Reject audio.
+- **Small English changes** that the phrase book made worth having:
+  - *totals* reads *Samples so far*;
+  - *Letter acc* reads *Letter accuracy*;
+  - *Accuracy (L/H)* spells out *letter / haraka*;
+  - *Dataset cell* reads *Sound (letter + haraka)*;
+  - *conf* reads *confidence*.
+
+  `pronounce.mjs` reads the new totals label.
+
+**Tests:**
+- `CourseScreensSpeakThreeLanguagesTest` reads both pages' sources. Every
+  phrase must be in the book in three languages, with no bare English left.
+- The same test names every code the screens are sent.
+- A new test serves both screens in Dhivehi and checks what each says:
+  - a verdict with no letter, a second verdict and a second decision are each
+    refused in Dhivehi;
+  - a version with no name is refused in Dhivehi, with the field named;
+  - a verdict, a decision, a registration, an activation and the export are
+    each confirmed in Dhivehi, the export with its count and path.
+
+Whole suite locally: **SUITE**.
+
+**Walks:**
+- `course-screens-language.mjs`: 399/399. It adds both screens in Dhivehi and
+  Arabic, as the system admin, and checks each one:
+  - right to left;
+  - nothing in English;
+  - every field named.
+- In the same walk, a model version registered empty from the Dhivehi admin is
+  refused in Dhivehi, and nothing is registered.
+- `pronounce.mjs`: 17/17. The whole loop still runs in English: a recording,
+  the teacher's verdict, the approval, the export and both guards.
+
+**Found with this slice, open (next):**
+- **The dean is refused the review queue.** Its role list names `dean`, a role
+  that does not exist; the dean's role is `headmaster`.
+- **Every activation from the AI admin is audited as a rollback.** Its button
+  always sends `rollback: 1`.
+- **A version name used twice answers 500.** The table's unique index is the
+  only check.
+- **The version form has no haraka-accuracy field**, though the table shows the
+  column.
+
 ## 5pq. A discount slot given back for want of payment is told apart from a refund's (2026-10-09)
 
 Left open by §5pn (KNOWN_ISSUES). The prune cancels a course enrolment that

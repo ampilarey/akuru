@@ -15,7 +15,7 @@ class DecideTrainingSampleAction
     {
         $sample = TrainingSample::query()->findOrFail($sampleId);
         if ($sample->status !== 'pending_review') {
-            throw ValidationException::withMessages(['sample' => 'This sample has already been decided.']);
+            throw ValidationException::withMessages(['sample' => __('teach.error_pron_sample_decided')]);
         }
 
         $sample->fill([

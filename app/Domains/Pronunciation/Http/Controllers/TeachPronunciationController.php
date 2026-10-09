@@ -5,6 +5,7 @@ namespace App\Domains\Pronunciation\Http\Controllers;
 use App\Domains\Pronunciation\Actions\ListPronunciationQueuesAction;
 use App\Domains\Pronunciation\Actions\ReviewPronunciationAttemptAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -13,6 +14,9 @@ use Inertia\Response;
 /**
  * §51.16 steps 3–5: the teacher's ear. Staff only — students never see
  * other students' recordings.
+ *
+ * The queue reads the `teach` book and says what was saved in the page's
+ * language (STATUS §5pr).
  */
 class TeachPronunciationController extends Controller
 {
@@ -26,6 +30,7 @@ class TeachPronunciationController extends Controller
             'letters' => $queues['letters'],
             'harakas' => $queues['harakas'],
             'ai_enabled' => $queues['ai_enabled'],
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -42,6 +47,6 @@ class TeachPronunciationController extends Controller
 
         app(ReviewPronunciationAttemptAction::class)->execute($attempt, (int) $request->user()->id, $data);
 
-        return back()->with('success', 'Attempt reviewed.');
+        return back()->with('success', __('teach.flash_pron_attempt_reviewed'));
     }
 }

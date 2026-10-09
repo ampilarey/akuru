@@ -19,7 +19,7 @@ class SaveAiModelVersionAction
     {
         $versionName = trim((string) ($data['version_name'] ?? ''));
         if ($versionName === '') {
-            throw ValidationException::withMessages(['version_name' => 'Version name is required.']);
+            throw ValidationException::withMessages(['version_name' => __('teach.error_pron_version_name')]);
         }
 
         $version = AiModelVersion::query()->create([
