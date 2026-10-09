@@ -5026,7 +5026,7 @@ halaqa could not find where to record its three lanes.
 
 `CourseScreensSpeakThreeLanguagesTest` holds the new page's source.
 
-Whole suite locally: **SUITE**.
+Whole suite locally: **2950 passed (39786 assertions)**.
 
 **Walk:** `course-screens-language.mjs` 422/422. `SmokeMarkerSeeder` plants
 `SMOKE-Hifz-Session` on a closed draft hifz course, taught by the seeded teacher.
