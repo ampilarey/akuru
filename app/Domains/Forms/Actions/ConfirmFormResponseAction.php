@@ -29,13 +29,13 @@ class ConfirmFormResponseAction
 
         if ($form === null || ! $form->requires_parent_confirmation) {
             throw ValidationException::withMessages([
-                'response' => 'This form does not need a guardian to confirm it.',
+                'response' => __('portal.error_form_confirm_not_needed'),
             ]);
         }
 
         if ($response->user_id === null) {
             throw ValidationException::withMessages([
-                'response' => 'An anonymous answer has nobody to confirm for.',
+                'response' => __('portal.error_form_confirm_anonymous'),
             ]);
         }
 
@@ -43,20 +43,20 @@ class ConfirmFormResponseAction
         // they are signed in.
         if ((int) $response->user_id === $guardianUserId) {
             throw ValidationException::withMessages([
-                'response' => 'A pupil cannot confirm their own answer.',
+                'response' => __('portal.error_form_confirm_own'),
             ]);
         }
 
         $student = app(ResolveStudentForUserAction::class)->execute((int) $response->user_id);
         if ($student === null) {
             throw ValidationException::withMessages([
-                'response' => 'That answer was not given by a pupil.',
+                'response' => __('portal.error_form_confirm_not_pupil'),
             ]);
         }
 
         if (! app(GuardianCanAccessStudentAction::class)->execute($guardianUserId, (int) $student['id'])) {
             throw ValidationException::withMessages([
-                'response' => 'You are not a guardian of that pupil.',
+                'response' => __('portal.error_form_confirm_not_guardian'),
             ]);
         }
 

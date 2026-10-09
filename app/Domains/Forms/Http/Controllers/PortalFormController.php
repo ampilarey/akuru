@@ -8,6 +8,7 @@ use App\Domains\Forms\Actions\ListPendingConfirmationsAction;
 use App\Domains\Forms\Actions\SubmitFormResponseAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,6 +35,7 @@ class PortalFormController extends Controller
                     'id' => (int) $c->id,
                     'name' => PersonName::ofStudent($c),
                 ])->values(),
+            't' => Phrases::once('portal'),
         ]);
     }
 
@@ -46,7 +48,7 @@ class PortalFormController extends Controller
         // the anonymous case — is enforced inside the action.
         app(ConfirmFormResponseAction::class)->execute($response, (int) $user->id);
 
-        return redirect()->route('portal.forms')->with('success', 'Confirmed.');
+        return redirect()->route('portal.forms')->with('success', __('portal.flash_form_confirmed'));
     }
 
     public function submit(Request $request, int $form): RedirectResponse
@@ -71,6 +73,6 @@ class PortalFormController extends Controller
             isset($data['student_id']) ? (int) $data['student_id'] : null,
         );
 
-        return redirect()->route('portal.forms')->with('success', 'Answer submitted.');
+        return redirect()->route('portal.forms')->with('success', __('portal.flash_form_answered'));
     }
 }

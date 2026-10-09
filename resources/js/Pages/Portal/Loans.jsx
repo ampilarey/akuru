@@ -1,11 +1,17 @@
 import AppShell from '../../Layouts/AppShell';
 
-export default function Loans({ loans = [] }) {
+export default function Loans({ loans = [], t = {} }) {
+    // A count is said whole: one day overdue, or :count days (BACKLOG C21,
+    // slice PT3).
+    const overdue = (days) => (days === 1
+        ? (t.loans_overdue_one || '1 day overdue')
+        : (t.loans_overdue_many || ':count days overdue').replace(':count', days));
+
     return (
-        <AppShell title="Library books">
+        <AppShell title={t.loans_title || 'Library books'}>
             {loans.length === 0 && (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">
-                    Nothing is out at the moment.
+                    {t.loans_none || 'Nothing is out at the moment.'}
                 </p>
             )}
             <ul className="grid gap-2">
@@ -17,11 +23,9 @@ export default function Loans({ loans = [] }) {
                         </div>
                         <div className="text-end">
                             {loan.overdue ? (
-                                <p className="text-[#7C2D37]">
-                                    {loan.days_overdue} day{loan.days_overdue === 1 ? '' : 's'} overdue
-                                </p>
+                                <p className="text-[#7C2D37]">{overdue(loan.days_overdue)}</p>
                             ) : (
-                                <p className="text-gray-700">due {loan.due_on}</p>
+                                <p className="text-gray-700">{(t.loans_due || 'due :date').replace(':date', loan.due_on)}</p>
                             )}
                         </div>
                     </li>

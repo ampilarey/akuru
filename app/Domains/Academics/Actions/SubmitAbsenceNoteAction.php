@@ -16,7 +16,7 @@ class SubmitAbsenceNoteAction
     {
         $reason = trim((string) ($data['reason'] ?? ''));
         if ($reason === '') {
-            throw ValidationException::withMessages(['reason' => 'A reason is required.']);
+            throw ValidationException::withMessages(['reason' => __('portal.error_absence_reason')]);
         }
 
         // E10c: the reason is a row now, not one of five hardcoded strings.
@@ -28,7 +28,7 @@ class SubmitAbsenceNoteAction
         // a document and record who accepted it.
         if ($type?->requires_evidence && ($data['attachment_path'] ?? null) === null) {
             throw ValidationException::withMessages([
-                'attachment_path' => 'This reason needs a document attached before it can be sent.',
+                'attachment_path' => __('portal.error_absence_document'),
             ]);
         }
 

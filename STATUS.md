@@ -4983,6 +4983,69 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qa. The family's requests in Dhivehi and Arabic (C21 PT3, 2026-10-09)
+
+The fourth slice of BACKLOG C21 covers the seven portal pages where a
+family asks the school for something:
+- absence notes and sign-up forms;
+- collecting a child (the pick-up PIN, *I am on my way*, *I have my child*);
+- parent-teacher meetings and school events;
+- school library books, and a child's Digital Library.
+
+They were English throughout:
+- every heading, column, phone caption, empty line and button;
+- an absence note's state, an event registration's state and kind, and a
+  Library purchase's state, printed as codes;
+- the ten saved messages and thirty-one refusals the server wrote for them,
+  among them *“…” is required.* for a form question left blank.
+
+**Four buttons said nothing when refused.** *Cancel* a meeting, *I have my
+child*, and *Confirm* on an event registration and on a form answer post
+with `router`, so no form owned the refusal. Each is now said under the row
+whose button was pressed (`useRowRefusals`, with `preserveState: 'errors'`,
+as the fees page does since §5py).
+
+**The change:**
+- **The seven pages read the `portal` book**, 149 phrases more. The column
+  names double as the phone captions.
+- **Codes are named, not printed:** an absence note's state, an event
+  registration's state and whether it needs registering, a Library
+  purchase's state.
+- **What the server says is in the page's language:** forty-one strings in
+  five controllers and nine actions. A form question's name stays the
+  school's own (`:field`).
+- **Fields are named:** a form's question inputs carry the question as
+  their label, and the absence note's document input its own.
+
+What the school writes stays as written: an event's or a form's title, a
+meeting slot's teacher and class, a book's title.
+
+**Tests:** `PortalSpeaksThreeLanguagesTest` now covers the seven pages'
+sources, sixteen more server files and the four codes. An eighth test
+checks:
+- the seven pages serve in Dhivehi;
+- a pick-up PIN too short, then too obvious, is refused in Dhivehi, and one
+  that will do is saved with a Dhivehi message;
+- an absence note with no reason chosen is refused in Dhivehi.
+
+Whole suite locally: **2967 passed (42900 assertions)**.
+
+**Walk:** `portal-language.mjs` 175/175.
+- The seven pages read right to left under `/dv` and `/ar`, with nothing
+  left in English and every field named. The walk reaches a child's
+  Digital Library from the children page.
+- An obvious PIN, `1111`, is refused beside its box in Dhivehi: *ފަސޭހައިން
+  ނުބުނެވޭ ޕިނެއް ހޮވާ …*
+
+The walk's first run stopped at 174/175: ten of the Dhivehi pick-up
+phrases wrote *PIN* in Latin letters. They now write `ޕިން`, in Thaana like
+the book's other loanwords (`ޓީޗަރު`, `ކްލާސް`).
+
+Other walks:
+- `absence.mjs` 13/13, `events.mjs` 6/6, `meetings.mjs` 11/11,
+  `pickup.mjs` 16/16;
+- `family.mjs` 40/40, `mobile.mjs` 19/19.
+
 ## 5pz. The report card and the transcript in Dhivehi and Arabic (C21 DOC1, 2026-10-09)
 
 A family keeps two documents: a term's report card and the transcript.

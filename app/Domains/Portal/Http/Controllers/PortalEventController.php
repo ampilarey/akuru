@@ -8,6 +8,7 @@ use App\Domains\Website\Actions\GetEventRegistrationAction;
 use App\Domains\Website\Actions\ListPortalEventBoardAction;
 use App\Domains\Website\Actions\RegisterForEventAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,6 +31,7 @@ class PortalEventController extends Controller
             ])->values(),
             'events' => $board['events'],
             'registrations' => $board['registrations'],
+            't' => Phrases::once('portal'),
         ]);
     }
 
@@ -56,7 +58,7 @@ class PortalEventController extends Controller
             'fallback_email' => $request->user()->email,
         ]);
 
-        return redirect()->route('portal.events')->with('success', 'Registration submitted.');
+        return redirect()->route('portal.events')->with('success', __('portal.flash_event_registered'));
     }
 
     public function confirm(Request $request, int $registration): RedirectResponse
@@ -73,6 +75,6 @@ class PortalEventController extends Controller
 
         app(ConfirmEventRegistrationAction::class)->execute($registration);
 
-        return redirect()->route('portal.events')->with('success', 'Registration confirmed.');
+        return redirect()->route('portal.events')->with('success', __('portal.flash_event_confirmed'));
     }
 }

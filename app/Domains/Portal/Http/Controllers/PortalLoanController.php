@@ -5,6 +5,7 @@ namespace App\Domains\Portal\Http\Controllers;
 use App\Domains\Circulation\Actions\ListLoansAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -28,6 +29,7 @@ class PortalLoanController extends Controller
 
         return Inertia::render('Portal/Loans', [
             'loans' => app(ListLoansAction::class)->forStudents($ids),
+            't' => Phrases::once('portal'),
         ]);
     }
 }

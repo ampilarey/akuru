@@ -18,7 +18,7 @@ class BookMeetingSlotAction
     {
         if (! $this->userMayBookStudent($userId, $studentId)) {
             throw ValidationException::withMessages([
-                'student_id' => 'You can only book meetings for your linked children.',
+                'student_id' => __('portal.error_meeting_not_your_child'),
             ]);
         }
 
@@ -27,13 +27,13 @@ class BookMeetingSlotAction
 
             if ($slot->status !== MeetingSlotStatus::Published) {
                 throw ValidationException::withMessages([
-                    'slot' => 'That meeting slot is not open for booking.',
+                    'slot' => __('portal.error_meeting_slot_closed'),
                 ]);
             }
 
             if (! $this->studentEligible($slot, $studentId)) {
                 throw ValidationException::withMessages([
-                    'student_id' => 'That student is not in the class for this slot.',
+                    'student_id' => __('portal.error_meeting_not_in_class'),
                 ]);
             }
 
@@ -47,7 +47,7 @@ class BookMeetingSlotAction
 
             if ($existing !== null && $existing->status === MeetingBookingStatus::Booked) {
                 throw ValidationException::withMessages([
-                    'slot' => 'That student already has this slot.',
+                    'slot' => __('portal.error_meeting_already_booked'),
                 ]);
             }
 
@@ -59,7 +59,7 @@ class BookMeetingSlotAction
 
             if ($booked >= (int) $slot->capacity) {
                 throw ValidationException::withMessages([
-                    'slot' => 'That meeting slot is full.',
+                    'slot' => __('portal.error_meeting_slot_full'),
                 ]);
             }
 
@@ -139,7 +139,7 @@ class BookMeetingSlotAction
 
         if ($overlap !== null) {
             throw ValidationException::withMessages([
-                'slot' => 'That student already has a meeting at this time.',
+                'slot' => __('portal.error_meeting_clash'),
             ]);
         }
     }

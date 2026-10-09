@@ -25,7 +25,7 @@ class AdvancePickupNoticeAction
     /** Staff: the child has been sent to reception. */
     public function send(PickupNotice $notice, int $staffUserId): PickupNotice
     {
-        $this->require($notice, PickupStatus::Requested, 'This notice is not waiting to be sent.');
+        $this->require($notice, PickupStatus::Requested, __('portal.error_pickup_not_waiting'));
 
         $notice->update([
             'status' => PickupStatus::Sent->value,
@@ -50,7 +50,7 @@ class AdvancePickupNoticeAction
 
         if ($notice === null) {
             throw ValidationException::withMessages([
-                'pickup' => 'This pick-up was requested by somebody else.',
+                'pickup' => __('portal.error_pickup_someone_else'),
             ]);
         }
 
@@ -60,12 +60,12 @@ class AdvancePickupNoticeAction
     /** Guardian: "I have the child." */
     public function collect(PickupNotice $notice, int $guardianUserId): PickupNotice
     {
-        $this->require($notice, PickupStatus::Sent, 'The school has not sent this child out yet.');
+        $this->require($notice, PickupStatus::Sent, __('portal.error_pickup_not_sent'));
 
         // Only the guardian who asked may close their own loop.
         if ((int) $notice->guardian_user_id !== $guardianUserId) {
             throw ValidationException::withMessages([
-                'pickup' => 'This pick-up was requested by somebody else.',
+                'pickup' => __('portal.error_pickup_someone_else'),
             ]);
         }
 
@@ -80,7 +80,7 @@ class AdvancePickupNoticeAction
     /** Either side changed their mind, before the child moved. */
     public function cancel(PickupNotice $notice): PickupNotice
     {
-        $this->require($notice, PickupStatus::Requested, 'A child already sent out cannot be cancelled.');
+        $this->require($notice, PickupStatus::Requested, __('portal.error_pickup_already_sent'));
 
         $notice->update([
             'status' => PickupStatus::Cancelled->value,

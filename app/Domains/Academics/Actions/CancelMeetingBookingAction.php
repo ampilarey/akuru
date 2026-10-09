@@ -16,7 +16,7 @@ class CancelMeetingBookingAction
 
         if (! $staff && ! $this->userMayCancel($userId, $booking)) {
             throw ValidationException::withMessages([
-                'booking' => 'You can only cancel your own meeting bookings.',
+                'booking' => __('portal.error_meeting_not_your_booking'),
             ]);
         }
 

@@ -10,6 +10,7 @@ use App\Domains\People\Actions\GuardianHasPickupPinAction;
 use App\Domains\People\Actions\ListCollectableChildrenAction;
 use App\Domains\People\Actions\SetPickupPinAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,6 +34,7 @@ class PortalPickupController extends Controller
             'has_pin' => app(GuardianHasPickupPinAction::class)->execute($userId),
             'children' => app(ListCollectableChildrenAction::class)->execute($userId),
             'notices' => app(ListPickupNoticesForGuardianAction::class)->execute($userId),
+            't' => Phrases::once('portal'),
         ]);
     }
 
@@ -42,7 +44,7 @@ class PortalPickupController extends Controller
 
         $set->execute((int) $request->user()->id, $data['pin']);
 
-        return back()->with('success', 'Your pick-up PIN is saved.');
+        return back()->with('success', __('portal.flash_pickup_pin'));
     }
 
     public function request(Request $request, RequestPickupAction $requestPickup): RedirectResponse
@@ -60,13 +62,13 @@ class PortalPickupController extends Controller
             $data['note'] ?? null,
         );
 
-        return back()->with('success', 'The school has been told. Please come to reception.');
+        return back()->with('success', __('portal.flash_pickup_requested'));
     }
 
     public function confirm(Request $request, int $notice, AdvancePickupNoticeAction $advance): RedirectResponse
     {
         $advance->collectById($notice, (int) $request->user()->id);
 
-        return back()->with('success', 'Thank you — the loop is closed.');
+        return back()->with('success', __('portal.flash_pickup_confirmed'));
     }
 }
