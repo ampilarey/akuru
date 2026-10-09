@@ -5,10 +5,17 @@ namespace App\Domains\Commerce\Actions;
 use App\Domains\Commerce\Models\DiscountRedemption;
 
 /**
- * A redemption is recorded PENDING at checkout, CONFIRMED when the payment
- * confirms (webhook / wallet debit), RELEASED if the payment fails — so
- * usage limits never leak from abandoned checkouts forever, and confirmed
- * usage is never lost.
+ * A redemption is recorded PENDING at checkout and CONFIRMED when the payment
+ * confirms (webhook / wallet debit). Usage limits count those two only, so a
+ * slot can be given back in two ways, which are kept apart (STATUS §5pq):
+ *
+ * - ABANDONED: the payment never came — the checkout expired, was pruned, or
+ *   its payment could not start. A payment that lands after all takes the
+ *   slot back (`confirmLanded`).
+ * - RELEASED: the purchase was refunded. The customer kept nothing, and
+ *   nothing takes that slot back.
+ *
+ * Rows released before §5pq for either reason read `released`.
  */
 class RecordDiscountRedemptionAction
 {
@@ -75,7 +82,9 @@ class RecordDiscountRedemptionAction
      * 100 uses ran out after 100 attempts rather than 100 purchases.
      *
      * Called from `akuru:prune-expired`, which is where abandoned enrolments
-     * are already cleaned up.
+     * are already cleaned up, and by the checkouts whose payment expired or
+     * could not start. §5pq: these write `abandoned`, not a refund's
+     * `released`, so a payment that lands after all can take the slot back.
      *
      * @param  list<int>  $purchaseIds
      */
@@ -91,29 +100,45 @@ class RecordDiscountRedemptionAction
             // Only pending. A confirmed redemption means the payment landed,
             // and releasing that would hand back a slot the customer used.
             ->where('status', 'pending')
-            ->update(['status' => 'released']);
+            ->update(['status' => 'abandoned']);
     }
 
     /**
-     * The payment landed: the redemption counts, even one already released
-     * as abandoned (STATUS §5pn).
+     * The payment landed: its redemption counts, even one already given back
+     * as abandoned (STATUS §5pn, §5pq).
      *
-     * `akuru:prune-expired` releases the slot of a purchase whose payment has
-     * not landed in a day. A bank payment that confirms after that still
-     * bought at the reduced price, so it takes its slot back rather than
+     * `akuru:prune-expired` gives back the slot of a purchase whose payment
+     * has not landed in a day. A bank payment that confirms after that still
+     * bought at the reduced price, so it takes the slot back rather than
      * leaving the code free for one use more.
      *
-     * Only the webhook's listeners call this, and the payment service fires
-     * that event once, on the first confirmation. A refund comes after a
-     * confirmation, never before, so this never undoes a refund's release.
+     * A course enrolment is handed back to every retry, so one may carry an
+     * earlier attempt's abandoned row beside the retry's pending one. The
+     * pending one is confirmed when there is one. Only when there is none is
+     * the latest abandoned one taken back: one payment, one use. A refund's
+     * `released` row is never touched, and the payment service fires this
+     * event once per payment, on its first confirmation.
      */
     public function confirmLanded(string $purchaseType, int $purchaseId): int
     {
-        return DiscountRedemption::query()
+        $confirmed = $this->transition($purchaseType, $purchaseId, 'confirmed');
+        if ($confirmed > 0) {
+            return $confirmed;
+        }
+
+        $abandoned = DiscountRedemption::query()
             ->where('purchase_type', $purchaseType)
             ->where('purchase_id', $purchaseId)
-            ->whereIn('status', ['pending', 'released'])
-            ->update(['status' => 'confirmed']);
+            ->where('status', 'abandoned')
+            ->orderByDesc('id')
+            ->first();
+        if ($abandoned === null) {
+            return 0;
+        }
+        $abandoned->status = 'confirmed';
+        $abandoned->save();
+
+        return 1;
     }
 
     /**

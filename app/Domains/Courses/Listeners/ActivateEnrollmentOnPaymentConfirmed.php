@@ -41,6 +41,8 @@ class ActivateEnrollmentOnPaymentConfirmed
     private function activate(int $enrollmentId, int $paymentId): void
     {
         app(ActivatePaidEnrollmentAction::class)->execute($enrollmentId, $paymentId);
-        app(RecordDiscountRedemptionAction::class)->transition('course_enrollment', $enrollmentId, 'confirmed');
+        // §5pq: a payment that lands after the prune gave the code's slot back
+        // takes it again: the code was used.
+        app(RecordDiscountRedemptionAction::class)->confirmLanded('course_enrollment', $enrollmentId);
     }
 }

@@ -4983,6 +4983,72 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pq. A discount slot given back for want of payment is told apart from a refund's (2026-10-09)
+
+Left open by §5pn (KNOWN_ISSUES). The prune cancels a course enrolment that
+has waited a day unpaid, and gives its discount slot back. If BML's
+confirmation arrived after that, the webhook made the enrolment active again,
+but confirmed only `pending` redemptions. So the code stayed free for one use
+more, though the learner had used it.
+
+The Library's fix (§5pn: confirm a `released` row when the payment lands)
+could not be used for courses:
+- both ways of giving a slot back wrote `released`;
+- an enrolment is handed back to every retry, so a `released` row on it may
+  be an earlier attempt's;
+- it may also be a refund's.
+
+Re-confirming it could count one purchase twice, or undo a refund.
+
+**The fix** (`RecordDiscountRedemptionAction`):
+- **Abandonment** (`releaseAbandoned`) writes `abandoned`. That covers:
+  - the prune's course and Library releases;
+  - an expired Bookstore checkout;
+  - a payment that could not start.
+- **A refund** (`releaseForRefund`) still writes `released`.
+- **Every reader** of redemptions already counts only `pending` and
+  `confirmed`, so `abandoned` frees a slot exactly as `released` does. That
+  covers the code's limits, the offers' use counts, and the writer's funding.
+  The column is a string, so nothing else changes.
+- **`confirmLanded`**, when a payment lands:
+  - confirms the purchase's pending row if there is one;
+  - otherwise confirms the latest `abandoned` row, so one payment counts as
+    one use;
+  - never touches a refund's `released` row.
+- **The course webhook** (`ActivateEnrollmentOnPaymentConfirmed`) now confirms
+  this way, as the Library's has since §5pn.
+- Rows given back before this change read `released`, whichever the reason. No
+  real purchases exist yet (ADR-021), so none needs sorting.
+
+**Tests:** `AbandonedIsNotRefundedTest`, 4 tests. Three of them fail on
+`main`'s code.
+- A course payment landing after the prune cancelled its enrolment takes
+  the slot back. The enrolment is confirmed, and the code is spent for that
+  learner.
+- A refund's `released` slot is never taken back by a later confirmation.
+- A retry's pending use is confirmed, and an earlier attempt's abandoned one
+  is left alone. This guard passes on `main` too.
+- With nothing pending, only the latest abandoned use is taken back.
+
+What else changed:
+- §5pn's tests and the Bookstore's expiry test now expect `abandoned`.
+- `PaymentRefundTest` still expects `released`.
+- `SmokeMarkerSeeder` also clears a smoke purchase's `abandoned` redemptions.
+
+Whole suite locally: **2936 passed (39108 assertions)**.
+
+**Walk:** this lives in the prune and the webhook, which a browser cannot
+drive here (no gateway). The checkout walks show nothing a buyer sees has
+changed:
+- `abandoned-code.mjs` 4/4. Its two attempts are left `abandoned`, and the
+  code is good again.
+- `wallet-refusal.mjs` 8/8.
+- `buy.mjs` 13/13.
+- `checkout.mjs` 49/49.
+- `earnings.mjs` 13/13.
+
+**Next:** the Library notices' language. That needs a decision (§5pp).
+
 ## 5pp. Every English phrase ships in Dhivehi and Arabic: the last 37 dead keys deleted (C20, 2026-10-09)
 
 `TranslationParityTest` keeps a baseline of English keys with no Dhivehi and

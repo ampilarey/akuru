@@ -190,19 +190,30 @@ Nothing released the Library's. Now:
   did not start*) and gives the slot back at once. A course checkout whose
   payment cannot start gives its slot back at once too.
 
-### A course payment that lands after the prune leaves its code free for one use more — **open**
+### A course payment that lands after the prune leaves its code free for one use more — **fixed (2026-10-09, STATUS §5pq)**
 
-The prune cancels a day-old pending course enrolment and releases its
-redemption. If BML's confirmation arrives after that, the webhook activates the
-enrolment again, but `transition()` confirms only `pending` redemptions, so the
-released one stays released.
+The prune cancels a day-old pending course enrolment and gives its redemption
+back. If BML's confirmation arrived after that, the webhook activated the
+enrolment again, but confirmed only `pending` redemptions, so the code stayed
+free for one use more.
 
-The Library's fix (`confirmLanded`) is not safe here. An enrolment is handed
-back to every retry, so a released row on it may belong to an earlier attempt,
-or to a refund. Re-confirming it would count one purchase twice, or undo a
-refund's release. A fix needs the release to say why it happened, for example
-a separate `abandoned` status. Rare: it needs BML to confirm a payment more
-than a day after the checkout began.
+The Library's fix could not be used here, because both reasons for giving a
+slot back wrote `released`:
+- an enrolment is handed back to every retry, so a `released` row on it
+  could be an earlier attempt's;
+- it could also be a refund's.
+
+Re-confirming such a row could count one purchase twice, or undo a refund.
+
+The two are now told apart:
+- **Abandonment** writes `abandoned`: the prune, an expired Bookstore checkout,
+  a payment that could not start.
+- **A refund** keeps `released`.
+- **When a payment lands**, its pending row is confirmed if there is one.
+  Otherwise the latest `abandoned` row is: one payment, one use.
+
+A refund's row is never touched. The course webhook now confirms the same way
+the Library's does (`AbandonedIsNotRefundedTest`).
 
 ### Accepting the Vendor Agreement lands on a 404 — **fixed (2026-10-09, STATUS §5pm)**
 
