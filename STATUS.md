@@ -5028,7 +5028,7 @@ checks:
   that will do is saved with a Dhivehi message;
 - an absence note with no reason chosen is refused in Dhivehi.
 
-Whole suite locally: **SUITE_RESULT**.
+Whole suite locally: **2967 passed (42900 assertions)**.
 
 **Walk:** `portal-language.mjs` 175/175.
 - The seven pages read right to left under `/dv` and `/ar`, with nothing
