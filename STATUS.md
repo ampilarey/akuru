@@ -4983,6 +4983,74 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ps. The pronunciation screens' four defects: the dean let in, a rollback only when it is one, a name used twice refused, the haraka accuracy (2026-10-09)
+
+Found translating the two screens (§5pr). Each has a one-line cause.
+
+- **The dean was refused the review queue.**
+  - *Cause:* `TeachPronunciationController` admitted
+    `['super_admin', 'admin', 'teacher', 'supervisor', 'dean']`. No role is
+    called `dean`: the dean is `headmaster`, which the screens label *Dean*
+    (ADR-040 slice 3). The menu, written to match, left the dean out too.
+  - *Fix:* the queue admits the teaching staff every teaching door names,
+    the dean among them, and the menu offers it.
+- **Every activation was audited as a rollback.**
+  - *Cause:* the admin screen's *Activate* sent `rollback: 1` every time, and
+    `ActivateAiModelVersionAction` took the caller's word. So switching on the
+    first model ever would be logged as rolling back to it.
+  - *Fix:* the action decides from the versions themselves. A rollback goes
+    back to a version registered before the one in use. The flag is gone
+    from the screen and from the controller, and an old tab that still sends
+    it is not believed.
+- **A version name used twice answered 500.**
+  - *Cause:* `(model_type, version_name)` is unique, and the index was the
+    only check.
+  - *Fix:* `SaveAiModelVersionAction` refuses the name with a reason, in the
+    page's language (*A version named v1 is already registered.*).
+- **The version form had no haraka-accuracy field.**
+  - *Cause:* the table shows a haraka accuracy beside the letter's, and the
+    server took one, but nothing on the screen could enter it.
+  - *Fix:* the form asks for it, in three languages.
+
+**A guard for the first one:** `RoleNamesExistTest` (architecture) reads every
+role name the app checks and holds each to the roles the users screen can
+grant (`RoleLabels::KNOWN`). That covers:
+- a role gate on a user (`hasRole`, `hasAnyRole`, …);
+- a route's `role:` middleware;
+- the navigation's and the workspaces' role lists.
+
+A misspelt role fails closed and says nothing, which is how this one lasted.
+The scan found `dean` and nothing else, and it checks that it still reads
+what it should: more than a hundred names.
+
+**Tests:** `PronunciationStaffScreensTest`, 4 tests, all failing on `main`.
+- The dean opens the queue, gives a verdict and is offered the door; a
+  parent is still refused.
+- v1, v2, back to v1, then v2 from an old tab's request is audited as
+  *activated, activated, rolled back, activated*.
+- A name used twice is refused with its reason, and nothing more is
+  registered.
+- The haraka accuracy is kept and shown.
+
+`PronunciationModuleTest`'s rollback no longer tells the action it is one.
+
+Whole suite locally: **2943 passed (39545 assertions)**.
+
+**Walk:** `pronounce.mjs` 22/22. It adds four steps:
+- the dean opens the review queue, and the dean's menu offers it;
+- a model version registers with both accuracies (*0.9 / 0.8* in its row);
+- the same name again is refused with its reason;
+- no second version is registered.
+
+The walk names each run's version afresh and activates none. The shelf's
+audit log is append-only, so the walk leaves what it made.
+
+`course-screens-language.mjs`: 399/399. The form's new field reads in Dhivehi
+and Arabic, and is named.
+
+On `main`'s code the four new tests and the role guard fail. The walk is not
+run there, because `main`'s form has no haraka field for it to fill.
+
 ## 5pr. The office's and the teacher's pronunciation screens in Dhivehi and Arabic (C19, 2026-10-09)
 
 Left open by CT7b (BACKLOG C19): "the office's and teacher's pronunciation
@@ -5055,7 +5123,7 @@ Whole suite locally: **2937 passed (39484 assertions)**.
 - `pronounce.mjs`: 17/17. The whole loop still runs in English: a recording,
   the teacher's verdict, the approval, the export and both guards.
 
-**Found with this slice, open (next):**
+**Found with this slice, fixed in the next (§5ps):**
 - **The dean is refused the review queue.** Its role list names `dean`, a role
   that does not exist; the dean's role is `headmaster`.
 - **Every activation from the AI admin is audited as a rollback.** Its button

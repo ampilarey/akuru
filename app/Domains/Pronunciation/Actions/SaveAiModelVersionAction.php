@@ -21,9 +21,15 @@ class SaveAiModelVersionAction
         if ($versionName === '') {
             throw ValidationException::withMessages(['version_name' => __('teach.error_pron_version_name')]);
         }
+        // `(model_type, version_name)` is unique, and the index was the only
+        // check: a name used twice answered 500 (STATUS §5ps).
+        $modelType = (string) ($data['model_type'] ?? 'arabic_pronunciation');
+        if (AiModelVersion::query()->where('model_type', $modelType)->where('version_name', $versionName)->exists()) {
+            throw ValidationException::withMessages(['version_name' => __('teach.error_pron_version_taken', ['name' => $versionName])]);
+        }
 
         $version = AiModelVersion::query()->create([
-            'model_type' => $data['model_type'] ?? 'arabic_pronunciation',
+            'model_type' => $modelType,
             'version_name' => $versionName,
             'model_path' => (string) $data['model_path'],
             'letter_labels_path' => $data['letter_labels_path'] ?? null,

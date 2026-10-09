@@ -1025,6 +1025,7 @@ return [
     'pron_model_path' => 'مسار ملف النموذج (.h5)',
     'pron_samples' => 'العينات',
     'pron_letter_accuracy' => 'دقة الحرف (0–1)',
+    'pron_haraka_accuracy' => 'دقة الحركة (0–1)',
     'pron_register_version' => 'تسجيل الإصدار',
     'pron_model_version' => 'إصدار النموذج',
     'pron_accuracy' => 'الدقة (الحرف / الحركة)',
@@ -1070,4 +1071,5 @@ return [
     'error_pron_attempt_reviewed' => 'سبقت مراجعة هذه المحاولة.',
     'error_pron_verdict_needed' => 'حدّد الحرف والحركة المؤكَّدين، أو ارفض العينة.',
     'error_pron_version_name' => 'اسم الإصدار مطلوب.',
+    'error_pron_version_taken' => 'سبق تسجيل إصدار باسم :name.',
 ];

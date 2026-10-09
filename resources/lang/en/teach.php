@@ -1025,6 +1025,7 @@ return [
     'pron_model_path' => 'Model path (.h5)',
     'pron_samples' => 'Samples',
     'pron_letter_accuracy' => 'Letter accuracy (0–1)',
+    'pron_haraka_accuracy' => 'Haraka accuracy (0–1)',
     'pron_register_version' => 'Register version',
     'pron_model_version' => 'Model version',
     'pron_accuracy' => 'Accuracy (letter / haraka)',
@@ -1070,4 +1071,5 @@ return [
     'error_pron_attempt_reviewed' => 'This attempt has already been reviewed.',
     'error_pron_verdict_needed' => 'Set the verified letter and haraka, or reject the sample.',
     'error_pron_version_name' => 'Version name is required.',
+    'error_pron_version_taken' => 'A version named :name is already registered.',
 ];

@@ -82,12 +82,14 @@ export default function Admin({ pending_samples: pendingSamples, model_versions:
                     e.preventDefault();
                     versionForm.post('/admin/pronunciation/versions', { preserveScroll: true, onSuccess: () => versionForm.reset() });
                 }}
-                className="mb-6 grid gap-2 rounded-lg border bg-white p-4 md:grid-cols-6"
+                className="mb-6 grid gap-2 rounded-lg border bg-white p-4 md:grid-cols-7"
             >
                 <input className="form-input" placeholder={t.pron_version_name || 'Version name (v2)'} aria-label={t.pron_version_name || 'Version name (v2)'} value={versionForm.data.version_name} onChange={(e) => versionForm.setData('version_name', e.target.value)} />
                 <input className="form-input md:col-span-2" placeholder={t.pron_model_path || 'Model path (.h5)'} aria-label={t.pron_model_path || 'Model path (.h5)'} value={versionForm.data.model_path} onChange={(e) => versionForm.setData('model_path', e.target.value)} />
                 <input className="form-input" placeholder={t.pron_samples || 'Samples'} aria-label={t.pron_samples || 'Samples'} value={versionForm.data.training_sample_count} onChange={(e) => versionForm.setData('training_sample_count', e.target.value)} />
                 <input className="form-input" placeholder={t.pron_letter_accuracy || 'Letter accuracy (0–1)'} aria-label={t.pron_letter_accuracy || 'Letter accuracy (0–1)'} value={versionForm.data.validation_letter_accuracy} onChange={(e) => versionForm.setData('validation_letter_accuracy', e.target.value)} />
+                {/* The table shows a haraka accuracy beside the letter's; nothing could enter one (STATUS §5ps). */}
+                <input className="form-input" placeholder={t.pron_haraka_accuracy || 'Haraka accuracy (0–1)'} aria-label={t.pron_haraka_accuracy || 'Haraka accuracy (0–1)'} value={versionForm.data.validation_haraka_accuracy} onChange={(e) => versionForm.setData('validation_haraka_accuracy', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={versionForm.processing}>{t.pron_register_version || 'Register version'}</button>
                 <FormErrors errors={versionForm.errors} />
             </form>
@@ -115,7 +117,7 @@ export default function Admin({ pending_samples: pendingSamples, model_versions:
                                 <td className="px-3 py-2">{version.is_active ? t.pron_is_active || '✓ active' : ''}</td>
                                 <td className="px-3 py-2 text-end">
                                     {!version.is_active && (
-                                        <button type="button" className="btn-secondary" onClick={() => refusals.actOn(`version:${version.id}`, () => router.post(`/admin/pronunciation/versions/${version.id}/activate`, { rollback: 1 }, { preserveScroll: true }))}>
+                                        <button type="button" className="btn-secondary" onClick={() => refusals.actOn(`version:${version.id}`, () => router.post(`/admin/pronunciation/versions/${version.id}/activate`, {}, { preserveScroll: true }))}>
                                             {t.pron_activate || 'Activate'}
                                         </button>
                                     )}
