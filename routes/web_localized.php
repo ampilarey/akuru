@@ -847,6 +847,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('items/{item}/assign-reviewer', [AdminLibraryController::class, 'assignReviewer'])->name('admin.library.items.assign-reviewer')->whereNumber('item');
         Route::get('earnings/export', [AdminLibraryController::class, 'exportEarnings'])->name('admin.library.earnings.export');
         Route::post('categories', [AdminLibraryController::class, 'storeCategory'])->name('admin.library.categories.store');
+        Route::post('categories/{category}', [AdminLibraryController::class, 'updateCategory'])->name('admin.library.categories.update')->whereNumber('category');
         // L2b (§29 "suspicious activity", §30.3): the reading-abuse queue.
         Route::get('reading-alerts/export', [AdminLibraryController::class, 'exportReadingAlerts'])->name('admin.library.reading-alerts.export');
         Route::get('reading-alerts', [AdminLibraryController::class, 'readingAlerts'])->name('admin.library.reading-alerts');
