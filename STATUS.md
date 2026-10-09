@@ -4983,6 +4983,103 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pl. A refused wallet payment leaves nothing behind (slice W1, 2026-10-09)
+
+Found by LT6's walk (§5pk). A reader pressed *Pay with wallet* on a Library
+item that cost more than their balance. They were refused (*Insufficient
+wallet balance.*), and no money moved. But the checkout had already written
+two rows, and nothing took them back:
+- **the purchase**, `pending` for good. My Library listed it
+  (*MVR 50.00 — pending*).
+- **a discount code's redemption**, `pending` too.
+  - `ResolveDiscountAction` counts pending redemptions against a code's
+    limits.
+  - So a code good once per reader was spent on a payment that never
+    happened.
+  - The reader could not use it after topping up the wallet.
+
+The course checkout wrote in the same order:
+- a pending enrolment, which holds a seat on the offering;
+- the code's redemption.
+
+The hourly `akuru:prune-expired` cancels such an enrolment once it is a day
+old, and releases its redemption then.
+
+**The fix:**
+- On the wallet path, and for an order discounted to nothing, the following
+  are written in one transaction:
+  - the purchase or enrolment;
+  - the redemption;
+  - the debit;
+  - the grant or activation;
+  - the redemption's confirmation.
+
+  A refused debit rolls all of them back. The Bookstore's checkout already
+  worked this way.
+- What tells people of a Library sale runs after the commit, as before: the
+  writer's earning and its notice, and the sale announcement. Nobody is told
+  of a sale that did not happen.
+- A course already held, paid or free, is still never charged again.
+- The card path is unchanged. Its purchase waits, `pending`, for BML's
+  webhook, as rule 12 asks.
+
+**Tests:** `RefusedWalletPaymentLeavesNothingTest`, 5 tests. Three of them
+fail on `main`'s code.
+- **A Library item refused with a once-per-reader code.** No purchase,
+  redemption or grant is written, and the balance stays as it was. After a
+  top-up, the same reader buys the item with the same code.
+- **My Library after a refusal** says *No purchases yet.*
+- **A wallet holding exactly the price** still pays, and the grant says
+  `wallet`.
+- **A course refused with a once-per-reader code.** No enrolment is written,
+  so no seat is held. No redemption is written, and the balance stays as it
+  was. After a top-up, the enrolment is confirmed and active with the code.
+- **A course already held** is charged once, however often it is bought.
+
+Whole suite locally: **2916 passed (38942 assertions)**.
+
+**Walk:** `scripts/smoke/wallet-refusal.mjs` (new, in `all.mjs`): **8/8**.
+- `SmokeMarkerSeeder` now plants SMOKE-Primer-Costly at MVR 50,000. No
+  wallet the walks build comes near that, and it stays below the 99,999 that
+  `reader.mjs` filters by to find nothing.
+- The student presses *Pay with wallet* on it and is refused beside the
+  button.
+- The book is still for sale to them, the wallet holds what it held, and My
+  Library lists no purchase.
+- The seeder now also clears a smoke item's pending purchases and their
+  pending redemptions. The old code left those behind, and a purchase keeps
+  its item from being deleted.
+
+Against `main`'s code: **7/8**. My Library lists *SMOKE-Primer-Costly —
+MVR 50000.00 pending*.
+
+The money walks still pass:
+- `buy.mjs` 13/13;
+- `reader.mjs` 39/39;
+- `earnings.mjs` 13/13;
+- `money.mjs` 21/21;
+- `gift.mjs` 17/17.
+
+`checkout.mjs` (the Bookstore's) scores 32/34 here and the same **on `main`**,
+from a fresh seed. Its two reds are a real defect, not the walk's, left for
+the next slice (KNOWN_ISSUES):
+- A seller who accepts the Vendor Agreement is sent to `/vendor`, and that
+  address answers 404.
+- Since the ID-card scan (#670, 2026-10-03), `public/vendor/` is a folder
+  holding the scanner's files, and the folder answers before the app does.
+- The acceptance is saved, but the seller is left looking at the agreement.
+
+**Found, not fixed here (KNOWN_ISSUES):** a Library purchase started by card
+and never paid keeps its code's redemption `pending` for good.
+- The prune releases abandoned course redemptions.
+- The Bookstore releases its own when a checkout expires.
+- Nothing releases a Library purchase's.
+
+**Next:**
+1. The Vendor Agreement's 404.
+2. Releasing an abandoned Library card purchase's redemption.
+3. C20's category form, which still takes only an English name.
+
 ## 5pk. The Digital Library's public pages, the wallet and gift cards in Dhivehi and Arabic (C20 slice LT6, 2026-10-09)
 
 The ten pages already went through the `public` book, but on `/dv` and `/ar`

@@ -157,23 +157,71 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found while fixing the refused wallet payment (2026-10-09)
+
+### A Library purchase started by card and never paid keeps its code's redemption for good — **open**
+
+A reader who types a discount code, chooses the card, and closes BML's page
+without paying leaves a `pending` purchase and a `pending` redemption.
+`ResolveDiscountAction` counts pending redemptions against the code's
+limits, so that reader's one use of a once-per-reader code is spent, and a
+code limited to 100 uses runs out after 100 attempts.
+
+The other two checkouts give the slot back:
+- **Courses:** `akuru:prune-expired` cancels a day-old pending enrolment and
+  calls `releaseAbandoned('course_enrollment', …)`.
+- **The Bookstore:** `ExpireCheckoutsAction` releases a checkout's
+  redemption when the checkout expires.
+
+Nothing calls `releaseAbandoned('library_purchase', …)`. The purchase row
+itself is harmless: the reader can try again, and My Library shows it as
+`pending`. But the redemption needs the same release the other two have,
+with a test that a purchase the webhook confirmed late keeps its slot.
+
+### Accepting the Vendor Agreement lands on a 404 — **open**
+
+`checkout.mjs` scores 32/34, on `main` as on W1's branch, from a fresh seed.
+Its two reds are a real defect:
+- The portal posts the agreement to `/vendor/agreement`, with no language
+  prefix. `acceptAgreement` then redirects to `route('vendor.index')`, which
+  in that request is `/vendor`.
+- Since the ID-card scan (#670, 2026-10-03), `public/vendor/` is a folder
+  holding the scanner's files (`public/vendor/tesseract`).
+- A real folder answers before the front controller. `php artisan serve`
+  gives 404. `public/.htaccess` sends nothing that is a folder (`!-d`) to
+  `index.php`, so Apache answers from the folder: a 403 under
+  `Options -Indexes`, or a listing of the scanner's files where listing is
+  on.
+- The acceptance is saved, but the seller is left looking at the agreement,
+  and the walk's next steps find nothing.
+
+Any visit to a bare `/vendor` meets the same folder. Prefixed addresses
+(`/en/vendor`) are unaffected.
+
+The fix is to move the scanner's files out from under an address the app
+uses, with a guard that no folder in `public/` shares its name with a route.
+
 ## Found by the Library's language walk (2026-10-09)
 
-### A wallet payment refused for too small a balance leaves its purchase behind — **open**
+### A wallet payment refused for too small a balance leaves its purchase behind — **fixed (2026-10-09, STATUS §5pl)**
 
-A reader who presses *Pay with wallet* on a Library item with less in the
-wallet than its price is refused (*Insufficient wallet balance.*), and
-nothing is paid. But `StartLibraryCheckoutAction` writes the purchase, and
-any discount code's redemption, before it asks `DebitWalletAction` for the
-money. Nothing rolls them back when the debit refuses. The purchase stays
-`pending` for good, and My Library lists it (*MVR 50.00 — pending*).
+A reader who pressed *Pay with wallet* on a Library item with less in the
+wallet than its price was refused (*Insufficient wallet balance.*), and
+nothing was paid. But `StartLibraryCheckoutAction` wrote the purchase, and
+any discount code's redemption, before it asked `DebitWalletAction` for the
+money, and nothing rolled them back when the debit refused. The purchase
+stayed `pending` for good, and My Library listed it (*MVR 50.00 —
+pending*). The redemption counted against the code's limits, so a code good
+once per reader was spent.
 
-Probed 2026-10-09 with a throwaway test: one refused wallet payment, one
-`pending` purchase of MVR 50.00 left behind.
+`StartCourseCheckoutAction` had the same order. It left a pending enrolment,
+which holds a seat, and the redemption, until the hourly prune cancelled the
+enrolment a day later.
 
-The fix is to check the balance first, or to put the purchase, the
-redemption and the debit in one transaction. That is money code (rule 12),
-so it is its own slice, not part of the language slice LT6.
+Both now write the purchase or enrolment, the redemption, the debit and the
+grant or activation in one transaction, as the Bookstore's checkout already
+did. `RefusedWalletPaymentLeavesNothingTest` pins it, and
+`wallet-refusal.mjs` walks it (8/8; `main` 7/8).
 
 ## Found by the lesson player's language walk (2026-10-08)
 

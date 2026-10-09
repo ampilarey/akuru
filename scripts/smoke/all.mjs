@@ -157,6 +157,7 @@ const WALKS = [
     { name: 'site-pages-language', writes: true, asks: 'Do the about, events, news, gallery, careers, achievements, search and CMS pages read in Dhivehi and Arabic, and is an event registration confirmed — and a second one refused — in Dhivehi?' },
     { name: 'daily-certificate-language', writes: true, asks: 'Do the daily reminders\' archive, a day\'s page and the subscription read in Dhivehi and Arabic, is a subscription saved and paused in Dhivehi, and does the certificate check answer in the scanning browser\'s language?' },
     { name: 'library-public-language', writes: true, asks: 'Do the Library\'s shelf, an item, an author, the offers, the reader, My Library, the wallet and gift cards read in Dhivehi and Arabic, and are a bad gift card code, a bad discount code and a gift card with nowhere to go refused in Dhivehi?' },
+    { name: 'wallet-refusal', writes: true, asks: 'Is a wallet payment the balance cannot cover refused beside the button, with the wallet untouched and no purchase left behind in My Library?' },
 ];
 
 const args = process.argv.slice(2);
