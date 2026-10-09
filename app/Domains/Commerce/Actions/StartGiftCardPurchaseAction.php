@@ -30,19 +30,19 @@ class StartGiftCardPurchaseAction
         $max = (float) app(\App\Domains\Library\Actions\ResolveLibrarySettingAction::class)->execute('gift_card_max');
         if ($amount < $min || $amount > $max || abs($amount - round($amount)) > 0.0001) {
             throw ValidationException::withMessages([
-                'amount' => sprintf('Choose a whole amount between MVR %s and MVR %s.', number_format($min), number_format($max)),
+                'amount' => __('common.gift_card_error_amount', ['min' => number_format($min), 'max' => number_format($max)]),
             ]);
         }
 
         $name = trim((string) ($data['recipient_name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['recipient_name' => 'Say who the gift card is for.']);
+            throw ValidationException::withMessages(['recipient_name' => __('common.gift_card_error_recipient')]);
         }
         $email = trim((string) ($data['recipient_email'] ?? '')) ?: null;
         $mobile = preg_replace('/\s+/', '', (string) ($data['recipient_mobile'] ?? '')) ?: null;
         if ($email === null && $mobile === null) {
             throw ValidationException::withMessages([
-                'recipient_email' => 'Give an email address or a mobile number to send the code to.',
+                'recipient_email' => __('common.gift_card_error_send_to'),
             ]);
         }
 

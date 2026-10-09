@@ -28,8 +28,14 @@
             sitting on the boundary and whether a run passed had become a
             coin toss. Raising it is the honest fix: nothing here leaks, the
             suite has simply grown. Measured peak at 1,181 tests is under 1G.
+
+            Raised again to 2G on 2026-10-09 (STATUS §5pk). At 2,911 tests the
+            peak measured locally is 849 MB, about 0.3 MB a test, and CI ran
+            out at 1G on a run whose every test had passed. The slice that
+            tipped it added 15 tests and about 2 MB, so again nothing new
+            leaks. 2G is twice the local peak.
         -->
-        <ini name="memory_limit" value="1G"/>
+        <ini name="memory_limit" value="2G"/>
         <env name="APP_ENV" value="testing"/>
         <env name="APP_KEY" value="base64:i8oMr3g3LXa5WBZKOOaMkHSgf0Nm2bIpnjIXCL7p/0w="/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>

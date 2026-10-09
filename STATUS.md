@@ -4983,6 +4983,129 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pk. The Digital Library's public pages, the wallet and gift cards in Dhivehi and Arabic (C20 slice LT6, 2026-10-09)
+
+The ten pages already went through the `public` book, but on `/dv` and `/ar`
+a reader still met English throughout. Some 70 of the book's phrases had no
+Dhivehi or Arabic. Among them:
+- the shelf's search, its *Type* and *All categories*, its policy links;
+- My Library's headings and empty lines;
+- the reader's *Previous*, *Next* and bookmark buttons;
+- the wallet's columns;
+- the payment returns.
+
+A kind of item (*Book*, *Article*, *Research paper*) was English everywhere.
+Several things were printed as codes:
+- a purchase's state (`paid`);
+- a wallet row's kind and source (`credit`, `gift card`);
+- the language filter's *Dhivehi* and *Arabic*.
+
+An item with citations headed them with the raw key `public.Citations`, on
+every page, English included.
+
+The refusals a reader could meet were English too:
+- the Library checkout's;
+- the wallet's (*Insufficient wallet balance.*);
+- a gift card's, redeemed or bought;
+- the bank payment's start (*Payment gateway not configured*).
+
+The checkout's refusals on `item` (*This item is not for sale.*, *You already
+have access to this item.*) were never shown at all.
+
+**Through the phrase books:**
+- `public`: 95 rows. 69 are new in Dhivehi and Arabic (23 of them new to
+  English too), and 26 Dhivehi and 7 Arabic rows that were copies of the
+  English are now translated. The untranslated-strings baseline shrinks from
+  84 to 37. The unused *Buy for* is gone, now that the button says
+  *Buy for :price*.
+- A kind of item, a purchase's state, a wallet row's kind and each of its
+  ten sources are named through their own keys. A source with no name of its
+  own still reads as its code.
+- `common`: 18 rows for the shared refusals — the Library checkout's two,
+  the wallet's three, the gift cards' six, and the payment start's seven,
+  written where they arise in `BmlPaymentProvider` and
+  `InitiatePayablePaymentAction`. They now read in the page's language on
+  every checkout, the Bookstore's and a course's included. None of them is
+  stored. BML's own reply, when it sends one, is passed on as it came.
+- An offer's *20% off* and *Buy for MVR 50.00* are one phrase each, so the
+  number sits where each language puts it.
+- The language filter names each language in its own script (English,
+  ދިވެހި, العربية).
+- The English reads as it did.
+
+**On the pages:**
+- A category shows the name the office gave for the page's language
+  (`name_dv`, `name_ar`, which the table and the save action already had),
+  its English otherwise.
+- The checkout's `item` refusal is said under the item's header, whatever
+  the page then shows.
+- The shelf's eight filters, the discount code, the wallet's redeem box and
+  the gift card's amount have names a screen reader can say.
+- The offers', categories' and writers' own words carry
+  `data-office-words`.
+
+**Tests:** `PublicLibrarySpeaksThreeLanguagesTest`, 15 tests.
+- No English typed into the ten views.
+- Every key the views, the five controllers and the seven actions name is in
+  Dhivehi and Arabic, with each kind, sort, level, band, state, type and
+  source. No English refusal is left in them.
+- The shelf, an item, an author, the offers and gift cards are served in
+  Dhivehi and Arabic. The reader, My Library and the wallet are served in
+  Dhivehi, their codes named.
+- A category by its Dhivehi name on a Dhivehi page, and by its English where
+  no Arabic was given.
+- Each refusal in the page's language:
+  - a gift card code that does not exist;
+  - a discount code that does not exist (and no purchase written);
+  - an item not for sale, which is then shown on its page;
+  - a gift card with nowhere to send it;
+  - a payment that could not start.
+- A redeemed card in Arabic, its money as money; the wallet's refusal in
+  English as before.
+
+Whole suite locally: **2911 passed (38903 assertions)**.
+
+**CI's memory limit, raised to 2G.** This slice's first CI run ran out of
+memory near the end of the suite, after every test before it had passed.
+That is a different cause from §5pi's: the warnings are gone, and the suite
+itself has grown.
+- Measured locally the way CI runs it (`./vendor/bin/pest`): peak **849 MB**
+  at 2,911 tests, about 0.3 MB a test. CI uses more than this machine and
+  crossed 1G.
+- This slice's 15 tests add about 2 MB (the Localization tests' peak with
+  and without them: 101 MB and 99 MB), so nothing new leaks.
+- `phpunit.xml` now allows 2G, twice the local peak, with the numbers in its
+  note.
+
+**Walk:** `scripts/smoke/library-public-language.mjs` (new, in `all.mjs`):
+**81/81**.
+- Under `/dv` and `/ar`, as a visitor: the shelf, the research shelf,
+  SMOKE-Primer-Paid, SMOKE-Primer, the offers, gift cards and the first
+  writer the shelf lists. Each answers, reads right to left, carries none of
+  the site's English phrases, and names every field.
+- As the student, in Dhivehi: the reader, My Library, the wallet (its
+  sources named), and both payment returns.
+- Three refusals, each in Dhivehi and none writing a row: a gift card code
+  that does not exist, a discount code that does not exist, and a gift card
+  with nowhere to send it.
+
+Against `main`'s code: **54/81** — the shelf, an item, an author, the
+reader, My Library, the wallet and the returns read in English, eight fields
+have no name, and the wallet's and the gift card's refusals are English.
+
+The English walks still pass: `reader.mjs` 39/39, `gift.mjs` 17/17,
+`author.mjs` 24/24, `library.mjs` 31/31, `earnings.mjs` 13/13,
+`public-rtl.mjs` 90/90.
+
+**Found, not fixed here (KNOWN_ISSUES):** a wallet payment refused for too
+small a balance leaves its purchase behind, `pending`, and My Library lists
+it. The checkout writes the purchase before it debits the wallet. That is
+money code, and its own slice.
+
+**Next (C20):** the Library office's category form takes Dhivehi and Arabic
+names. The table and the save action already hold them; the form has one
+English box, and a category cannot be renamed at all.
+
 ## 5pj. The daily reminders and the certificate check in Dhivehi and Arabic (C20 slice LT5c, 2026-10-08)
 
 On `/dv` and `/ar`, a visitor read:

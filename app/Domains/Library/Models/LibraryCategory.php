@@ -34,4 +34,19 @@ class LibraryCategory extends Model
     {
         return $this->hasMany(LibraryItem::class, 'library_category_id');
     }
+
+    /**
+     * LT6: the name a reader sees — the office's Dhivehi or Arabic where it gave
+     * one for that language, the English name otherwise.
+     */
+    public function nameIn(string $locale): string
+    {
+        $name = match ($locale) {
+            'dv' => $this->name_dv,
+            'ar' => $this->name_ar,
+            default => null,
+        };
+
+        return filled($name) ? (string) $name : (string) $this->name;
+    }
 }

@@ -25,12 +25,12 @@
                 <input type="hidden" name="author" value="{{ $filters['author'] }}">
             @endif
             <div class="flex-1 min-w-48">
-                <label class="block text-xs text-gray-500 mb-1">{{ __('public.Search') }}</label>
-                <input type="text" name="q" value="{{ $filters['q'] ?? '' }}" class="form-input w-full" placeholder="{{ __('public.Search the library') }}">
+                <label class="block text-xs text-gray-500 mb-1" for="library-q">{{ __('public.Search') }}</label>
+                <input type="text" name="q" id="library-q" value="{{ $filters['q'] ?? '' }}" class="form-input w-full" placeholder="{{ __('public.Search the library') }}">
             </div>
             <div>
-                <label class="block text-xs text-gray-500 mb-1">{{ __('public.Type') }}</label>
-                <select name="content_type" class="form-input">
+                <label class="block text-xs text-gray-500 mb-1" for="library-type">{{ __('public.Type') }}</label>
+                <select name="content_type" id="library-type" class="form-input">
                     <option value="">{{ __('public.All types') }}</option>
                     @foreach(['book', 'article', 'research', 'course_material'] as $type)
                         <option value="{{ $type }}" @selected(($filters['content_type'] ?? '') === $type)>{{ __('public.'.$type) }}</option>
@@ -38,11 +38,11 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs text-gray-500 mb-1">{{ __('public.Category') }}</label>
-                <select name="category" class="form-input">
+                <label class="block text-xs text-gray-500 mb-1" for="library-category">{{ __('public.Category') }}</label>
+                <select name="category" id="library-category" class="form-input">
                     <option value="">{{ __('public.All categories') }}</option>
                     @foreach($categories as $category)
-                        <option value="{{ $category['slug'] }}" @selected(($filters['category'] ?? '') === $category['slug'])>{{ $category['name'] }} ({{ $category['published_count'] }})</option>
+                        <option value="{{ $category['slug'] }}" @selected(($filters['category'] ?? '') === $category['slug']) data-office-words>{{ $category['label'] }} ({{ $category['published_count'] }})</option>
                     @endforeach
                 </select>
             </div>
@@ -60,16 +60,16 @@
             @endif
             {{-- §8.2 / §8.3 discovery: free or paid, language, price, and a sort. --}}
             <div>
-                <label class="block text-xs text-gray-500 mb-1">{{ __('public.Access') }}</label>
-                <select name="access" class="form-input">
+                <label class="block text-xs text-gray-500 mb-1" for="library-access">{{ __('public.Access') }}</label>
+                <select name="access" id="library-access" class="form-input">
                     <option value="">{{ __('public.Free and paid') }}</option>
                     <option value="free" @selected(($filters['access'] ?? '') === 'free')>{{ __('public.Free') }}</option>
                     <option value="paid" @selected(($filters['access'] ?? '') === 'paid')>{{ __('public.Paid') }}</option>
                 </select>
             </div>
             <div>
-                <label class="block text-xs text-gray-500 mb-1">{{ __('public.Language') }}</label>
-                <select name="language" class="form-input">
+                <label class="block text-xs text-gray-500 mb-1" for="library-language">{{ __('public.Language') }}</label>
+                <select name="language" id="library-language" class="form-input">
                     <option value="">{{ __('public.All languages') }}</option>
                     @foreach($languages as $code => $label)
                         <option value="{{ $code }}" @selected(($filters['language'] ?? '') === $code)>{{ $label }}</option>
@@ -85,8 +85,8 @@
             </div>
             {{-- B5 (§8.2–§8.4): the remaining filters. --}}
             <div>
-                <label class="block text-xs text-gray-500 mb-1">{{ __('public.Difficulty') }}</label>
-                <select name="difficulty" class="form-input">
+                <label class="block text-xs text-gray-500 mb-1" for="library-difficulty">{{ __('public.Difficulty') }}</label>
+                <select name="difficulty" id="library-difficulty" class="form-input">
                     <option value="">{{ __('public.Any difficulty') }}</option>
                     @foreach($difficulties as $level)
                         <option value="{{ $level }}" @selected(($filters['difficulty'] ?? '') === $level)>{{ __('public.difficulty_'.$level) }}</option>
@@ -94,8 +94,8 @@
                 </select>
             </div>
             <div>
-                <label class="block text-xs text-gray-500 mb-1">{{ __('public.Reading time') }}</label>
-                <select name="reading" class="form-input">
+                <label class="block text-xs text-gray-500 mb-1" for="library-reading">{{ __('public.Reading time') }}</label>
+                <select name="reading" id="library-reading" class="form-input">
                     <option value="">{{ __('public.Any length') }}</option>
                     @foreach($reading_bands as $band)
                         <option value="{{ $band }}" @selected(($filters['reading'] ?? '') === $band)>{{ __('public.reading_'.$band) }}</option>
@@ -112,8 +112,8 @@
                 @endif
             </div>
             <div>
-                <label class="block text-xs text-gray-500 mb-1">{{ __('public.Sort') }}</label>
-                <select name="sort" class="form-input">
+                <label class="block text-xs text-gray-500 mb-1" for="library-sort">{{ __('public.Sort') }}</label>
+                <select name="sort" id="library-sort" class="form-input">
                     @foreach($sorts as $sort)
                         <option value="{{ $sort }}" @selected(($filters['sort'] ?? 'newest') === $sort)>{{ __('public.sort_'.$sort) }}</option>
                     @endforeach
@@ -135,11 +135,11 @@
                 @if($promotion['is_gift_card_bonus'])
                     {{-- B4b: a bonus on gift cards leads to the gift card page, not the shelf. --}}
                     <a href="{{ route('public.gift-cards.index') }}" class="rounded bg-white px-2 py-0.5 hover:underline">
-                        {{ $promotion['name'] }} · {{ __('public.:bonus bonus on gift cards', ['bonus' => $figure]) }}
+                        <span data-office-words>{{ $promotion['name'] }}</span> · {{ __('public.:bonus bonus on gift cards', ['bonus' => $figure]) }}
                     </a>
                 @else
                     <a href="{{ route('public.library.index', ['campaign' => $promotion['slug']]) }}" class="rounded bg-white px-2 py-0.5 hover:underline">
-                        {{ $promotion['name'] }} · {{ $figure }} {{ __('public.off') }}
+                        <span data-office-words>{{ $promotion['name'] }}</span> · {{ __('public.:figure off', ['figure' => $figure]) }}
                     </a>
                 @endif
             @endforeach

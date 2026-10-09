@@ -33,6 +33,6 @@ class WalletController extends Controller
         // "25"); the reader walk (STATUS §5fo) caught the one line that did not.
         $card = $result['gift_card'];
 
-        return back()->with('success', 'Gift card redeemed: '.$card->currency.' '.number_format((float) $result['credited'], 2).' added to your wallet.');
+        return back()->with('success', __('public.Gift card redeemed: :amount added to your wallet.', ['amount' => $card->currency.' '.number_format((float) $result['credited'], 2)]));
     }
 }

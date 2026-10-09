@@ -34,12 +34,12 @@ class StartLibraryCheckoutAction
             ->where('status', 'published')
             ->firstOrFail();
         if ($item->access_type?->value !== 'paid' || (float) $item->price <= 0) {
-            throw ValidationException::withMessages(['item' => 'This item is not for sale.']);
+            throw ValidationException::withMessages(['item' => __('common.library_error_not_for_sale')]);
         }
 
         $access = app(ResolveLibraryAccessAction::class)->execute($item, $userId);
         if ($access['can_read']) {
-            throw ValidationException::withMessages(['item' => 'You already have access to this item.']);
+            throw ValidationException::withMessages(['item' => __('common.library_error_have_access')]);
         }
 
         $amount = (float) $item->price;

@@ -21,7 +21,7 @@ class CreditWalletAction
         ?string $description = null,
     ): WalletTransaction {
         if ($amount <= 0) {
-            throw ValidationException::withMessages(['amount' => 'Credit amount must be positive.']);
+            throw ValidationException::withMessages(['amount' => __('common.wallet_error_credit_positive')]);
         }
 
         return DB::transaction(function () use ($userId, $amount, $sourceType, $sourceId, $description) {

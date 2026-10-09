@@ -33,7 +33,9 @@
                     <span class="font-medium">{{ $row['title'] }}</span>
                     <span class="text-sm text-gray-500"> — {{ $row['currency'] }} {{ $row['amount'] }}</span>
                 </div>
-                <span class="text-sm text-gray-600">{{ $row['status'] }}{{ $row['purchased_at'] ? ' · '.$row['purchased_at'] : '' }}</span>
+                {{-- LT6: the purchase's state in the page's language, not its code. --}}
+                @php($statusKey = 'public.purchase_status_'.$row['status'])
+                <span class="text-sm text-gray-600" data-testid="purchase-status">{{ Lang::has($statusKey) ? __($statusKey) : $row['status'] }}{{ $row['purchased_at'] ? ' · '.$row['purchased_at'] : '' }}</span>
             </div>
         @endforeach
     </div>

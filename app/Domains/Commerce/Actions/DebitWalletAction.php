@@ -21,7 +21,7 @@ class DebitWalletAction
         ?string $description = null,
     ): WalletTransaction {
         if ($amount <= 0) {
-            throw ValidationException::withMessages(['amount' => 'Debit amount must be positive.']);
+            throw ValidationException::withMessages(['amount' => __('common.wallet_error_debit_positive')]);
         }
 
         return DB::transaction(function () use ($userId, $amount, $sourceType, $sourceId, $description) {
@@ -31,7 +31,7 @@ class DebitWalletAction
                 ->first();
             $before = $wallet !== null ? (float) $wallet->balance : 0.0;
             if ($wallet === null || $before + 1e-9 < $amount) {
-                throw ValidationException::withMessages(['amount' => 'Insufficient wallet balance.']);
+                throw ValidationException::withMessages(['amount' => __('common.wallet_error_insufficient')]);
             }
 
             $after = round($before - $amount, 2);

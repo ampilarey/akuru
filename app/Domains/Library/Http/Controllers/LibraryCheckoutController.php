@@ -33,7 +33,7 @@ class LibraryCheckoutController extends Controller
         if ($result['paid_with_wallet']) {
             return redirect()
                 ->route('public.library.read', ['slug' => $slug])
-                ->with('success', 'Purchase complete — enjoy reading.');
+                ->with('success', __('public.Purchase complete — enjoy reading.'));
         }
         if ($result['redirect_url'] !== null) {
             return redirect()->away($result['redirect_url']);
@@ -41,7 +41,7 @@ class LibraryCheckoutController extends Controller
 
         return redirect()
             ->route('public.library.show', $slug)
-            ->with('error', $result['error'] ?? 'Payment could not be started.');
+            ->with('error', $result['error'] ?? __('public.Payment could not be started.'));
     }
 
     public function paymentReturn(Request $request, string $slug)

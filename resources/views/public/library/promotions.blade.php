@@ -24,17 +24,17 @@
                 <img src="{{ $promotion['banner_url'] }}" alt="{{ $promotion['name'] }}" class="mb-4 max-h-56 w-full rounded object-cover" loading="lazy" data-banner="{{ $promotion['slug'] }}">
             @endif
             <div class="flex flex-wrap items-baseline justify-between gap-2">
-                <h2 class="text-xl font-semibold text-brandMaroon-900">{{ $promotion['name'] }}</h2>
+                <h2 class="text-xl font-semibold text-brandMaroon-900" data-office-words>{{ $promotion['name'] }}</h2>
                 @php($figure = $promotion['discount_type'] === 'percentage' ? rtrim(rtrim(number_format($promotion['discount_value'], 2), '0'), '.').'%' : 'MVR '.number_format($promotion['discount_value'], 2))
                 <p class="text-sm text-red-800">
-                    {{ $promotion['is_gift_card_bonus'] ? __('public.:bonus bonus on gift cards', ['bonus' => $figure]) : $figure.' '.__('public.off') }}
+                    {{ $promotion['is_gift_card_bonus'] ? __('public.:bonus bonus on gift cards', ['bonus' => $figure]) : __('public.:figure off', ['figure' => $figure]) }}
                     @if($promotion['ends_on'])
                         · {{ __('public.Offer ends :date', ['date' => $promotion['ends_on']]) }}
                     @endif
                 </p>
             </div>
             @if($promotion['description'])
-                <p class="mt-2 whitespace-pre-line text-gray-700">{{ $promotion['description'] }}</p>
+                <p class="mt-2 whitespace-pre-line text-gray-700" data-office-words>{{ $promotion['description'] }}</p>
             @endif
             @if($promotion['is_gift_card_bonus'])
                 {{-- B4b: the bonus is on the gift card page, where the card is bought. --}}
