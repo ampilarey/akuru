@@ -86,13 +86,10 @@ class AdminPronunciationController extends Controller
     public function activateVersion(Request $request, int $version): RedirectResponse
     {
         abort_unless($request->user()?->can('pronunciation.manage'), 403);
-        $data = $request->validate(['rollback' => 'nullable|boolean']);
 
-        app(ActivateAiModelVersionAction::class)->execute(
-            $version,
-            (int) $request->user()->id,
-            (bool) ($data['rollback'] ?? false),
-        );
+        // Whether this is a rollback is the action's to say, from the versions
+        // themselves (STATUS §5ps).
+        app(ActivateAiModelVersionAction::class)->execute($version, (int) $request->user()->id);
 
         return back()->with('success', __('teach.flash_pron_version_activated'));
     }

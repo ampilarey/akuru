@@ -1025,6 +1025,7 @@ return [
     'pron_model_path' => 'މޮޑެލްގެ ފައިލުގެ މަގު (.h5)',
     'pron_samples' => 'ސާމްޕަލްތައް',
     'pron_letter_accuracy' => 'އަކުރުގެ ދަޤީޤުކަން (0–1)',
+    'pron_haraka_accuracy' => 'ހަރަކާތުގެ ދަޤީޤުކަން (0–1)',
     'pron_register_version' => 'ވާޝަން ރަޖިސްޓަރީކުރޭ',
     'pron_model_version' => 'މޮޑެލްގެ ވާޝަން',
     'pron_accuracy' => 'ދަޤީޤުކަން (އަކުރު / ހަރަކާތް)',
@@ -1070,4 +1071,5 @@ return [
     'error_pron_attempt_reviewed' => 'މި މަސައްކަތް ކުރިންވެސް ރިވިއުކޮށްފައި.',
     'error_pron_verdict_needed' => 'ޔަޤީންކުރި އަކުރާއި ހަރަކާތް ކަނޑައަޅާ، ނުވަތަ ސާމްޕަލް ރިޖެކްޓްކުރޭ.',
     'error_pron_version_name' => 'ވާޝަންގެ ނަން ބޭނުންވޭ.',
+    'error_pron_version_taken' => ':name ގެ ނަމުގައި ވާޝަނެއް ކުރިންވެސް ރަޖިސްޓަރީކޮށްފައިވޭ.',
 ];

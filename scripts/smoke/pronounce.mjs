@@ -21,7 +21,10 @@
  *   6. the admin approves it and the dataset count moves,
  *   7. the export writes a manifest,
  *   8. the model shelf renders — empty is correct, there is no model yet,
- *   9. the two role guards refuse the two people who should be refused.
+ *   9. the two role guards refuse the two people who should be refused,
+ *      and the dean is let into the review queue (STATUS §5ps),
+ *  10. a model version registers with both accuracies, and the same name
+ *      again is refused with a reason rather than a 500 (STATUS §5ps).
  *
  * ## Why step 2 is asserted rather than assumed
  *
@@ -44,7 +47,7 @@
  *   node scripts/smoke/pronounce.mjs
  *
  * Environment: SMOKE_BASE_URL, SMOKE_STAFF, SMOKE_TEACHER, SMOKE_STUDENT,
- * SMOKE_PASSWORD, SMOKE_CHROMIUM.
+ * SMOKE_MARKER (the dean), SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
 
@@ -52,6 +55,7 @@ const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const STAFF = process.env.SMOKE_STAFF ?? 'superadmin@akuru.edu.mv';
 const TEACHER = process.env.SMOKE_TEACHER ?? 'teacher@akuru.edu.mv';
 const STUDENT = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
+const DEAN = process.env.SMOKE_MARKER ?? 'headmaster@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
 const HERMETIC_ARGS = [
@@ -385,6 +389,49 @@ check(
     adminGuard.status() === 403,
     `HTTP ${adminGuard.status()}`,
 );
+
+// The dean, whom the queue's role list named `dean` — a role nobody holds —
+// and so refused; the menu, written to match, never offered the door
+// (STATUS §5ps).
+const dean = await signIn(DEAN);
+const deanQueue = await dean.goto(`${BASE}/en/teach/pronunciation`, { waitUntil: 'networkidle' });
+check('the dean opens the review queue', deanQueue.status() === 200, `HTTP ${deanQueue.status()}`);
+const deanNav = await dean.evaluate(() => JSON.parse(document.querySelector('script[data-page="app"]')?.textContent || '{}').props?.nav ?? {});
+const deanDoors = (deanNav.groups || []).flatMap((group) => group.items || []).map((item) => item.href || '');
+check('and the dean\'s menu offers it', deanDoors.some((href) => href.endsWith('/teach/pronunciation')), `${deanDoors.length} doors`);
+
+// ------------------------------------------- 10. the model shelf's form
+
+// A name of its own each run: the model shelf's audit log is append-only, so
+// the walk leaves its versions rather than delete them, and never activates
+// one (STATUS §5ps).
+const versionName = `SMOKE-Version-${Date.now()}`;
+await admin.goto(`${BASE}/en/admin/pronunciation`, { waitUntil: 'networkidle' });
+const versionForm = admin.locator('main form').filter({ has: admin.getByRole('button', { name: /^Register version$/ }) });
+await versionForm.getByLabel('Version name (v2)', { exact: true }).fill(versionName);
+await versionForm.getByLabel('Model path (.h5)', { exact: true }).fill('/models/smoke.h5');
+await versionForm.getByLabel('Letter accuracy (0–1)', { exact: true }).fill('0.9');
+await versionForm.getByLabel('Haraka accuracy (0–1)', { exact: true }).fill('0.8');
+await versionForm.getByRole('button', { name: /^Register version$/ }).click();
+const registered = await settles(admin, new RegExp(versionName));
+const versionRow = admin.locator('tbody tr', { hasText: versionName });
+const versionText = (await versionRow.first().innerText().catch(() => '')).replace(/\s+/g, ' ');
+check(
+    'a model version registers with both accuracies',
+    /Model version registered/i.test(registered) && /0\.9 \/ 0\.8/.test(versionText),
+    versionText || registered.slice(0, 200),
+);
+
+await versionForm.getByLabel('Version name (v2)', { exact: true }).fill(versionName);
+await versionForm.getByLabel('Model path (.h5)', { exact: true }).fill('/models/smoke-again.h5');
+await versionForm.getByRole('button', { name: /^Register version$/ }).click();
+const versionRefusal = (await versionForm.locator('ul[role="alert"]').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+check(
+    'the same name again is refused, and says why',
+    versionRefusal === `A version named ${versionName} is already registered.`,
+    `said: ${versionRefusal ?? 'nothing'}`,
+);
+check('and no second version is registered', (await admin.locator('tbody tr', { hasText: versionName }).count()) === 1);
 
 const width = Math.max(...results.map(([step]) => step.length));
 for (const [step, ok, detail] of results) {

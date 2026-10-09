@@ -207,7 +207,8 @@ it('approves samples, exports a manifest, and audits model activation and rollba
     expect(AiModelVersion::query()->where('is_active', true)->count())->toBe(1)
         ->and($v2->fresh()->is_active)->toBeTrue();
 
-    app(ActivateAiModelVersionAction::class)->execute($v1->id, $admin->id, isRollback: true);
+    // Going back to v1 is a rollback because v1 came first (STATUS §5ps).
+    app(ActivateAiModelVersionAction::class)->execute($v1->id, $admin->id);
     expect($v1->fresh()->is_active)->toBeTrue()
         ->and($v2->fresh()->is_active)->toBeFalse();
     expect(AiModelVersionEvent::query()->pluck('action')->countBy()->all())

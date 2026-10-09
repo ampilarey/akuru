@@ -241,7 +241,8 @@ final class NavigationMap
                 // no door until the navigation re-audit (ADMIN_PANEL.md §8).
                 ['key' => 'quran_assignments', 'href' => '/teach/assignments', 'roles' => $staff],
                 ['key' => 'quran_milestones', 'href' => '/teach/milestones', 'roles' => $staff],
-                ['key' => 'pronunciation', 'href' => '/teach/pronunciation', 'roles' => ['super_admin', 'admin', 'supervisor', 'teacher']],
+                // The dean too, as the queue's own gate admits (STATUS §5ps).
+                ['key' => 'pronunciation', 'href' => '/teach/pronunciation', 'roles' => $staff],
                 // The Hifz hub redirects to a role's dashboard, Inertia since STATUS §5jw, so a visit follows it.
                 ['key' => 'hifz', 'href' => '/hifz', 'can' => ['view_hifz_programs']],
                 // Blade screens the Blade nav used to link by hand (STATUS §5id).

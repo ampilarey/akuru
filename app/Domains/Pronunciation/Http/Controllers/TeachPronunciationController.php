@@ -20,9 +20,18 @@ use Inertia\Response;
  */
 class TeachPronunciationController extends Controller
 {
+    /**
+     * The teaching staff, as every teaching screen's door names them
+     * (`NavigationMap::STAFF`). This list said `dean`, and no role is called
+     * that: the dean is `headmaster`, whom the screens label *Dean*. So the
+     * dean was refused the queue the list was written to let them into
+     * (STATUS §5ps); `RoleNamesExistTest` now holds every role a gate names.
+     */
+    private const STAFF_ROLES = ['super_admin', 'admin', 'headmaster', 'supervisor', 'teacher'];
+
     public function index(Request $request): Response
     {
-        abort_unless($request->user()?->hasAnyRole(['super_admin', 'admin', 'teacher', 'supervisor', 'dean']), 403);
+        abort_unless($request->user()?->hasAnyRole(self::STAFF_ROLES), 403);
         $queues = app(ListPronunciationQueuesAction::class)->execute();
 
         return Inertia::render('Pronunciation/Teach', [
@@ -36,7 +45,7 @@ class TeachPronunciationController extends Controller
 
     public function review(Request $request, int $attempt): RedirectResponse
     {
-        abort_unless($request->user()?->hasAnyRole(['super_admin', 'admin', 'teacher', 'supervisor', 'dean']), 403);
+        abort_unless($request->user()?->hasAnyRole(self::STAFF_ROLES), 403);
         $data = $request->validate([
             'verified_letter_id' => 'nullable|integer|exists:arabic_letters,id',
             'verified_haraka_id' => 'nullable|integer|exists:arabic_harakas,id',

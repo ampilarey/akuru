@@ -165,6 +165,29 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found translating the pronunciation screens (2026-10-09)
+
+### The dean was refused the pronunciation review queue — **fixed (2026-10-09, STATUS §5ps)**
+
+The queue admitted a `dean`, a role nobody holds: the dean is `headmaster`.
+The menu left the dean out to match. `RoleNamesExistTest` now holds every role
+a gate names to the roles that exist.
+
+### Every model activation was audited as a rollback — **fixed (2026-10-09, STATUS §5ps)**
+
+The AI admin's *Activate* always sent `rollback: 1`, and the action believed
+it. The action now decides: a rollback goes back to an earlier version.
+
+### A model version name used twice answered 500 — **fixed (2026-10-09, STATUS §5ps)**
+
+The table's unique index was the only check. The name is now refused with a
+reason, in the page's language.
+
+### The version form could not take a haraka accuracy — **fixed (2026-10-09, STATUS §5ps)**
+
+The table showed the column and the server took the value; the form had no
+field for it.
+
 ## Found while fixing the refused wallet payment (2026-10-09)
 
 ### A Library purchase started by card and never paid keeps its code's redemption for good — **fixed (2026-10-09, STATUS §5pn)**
