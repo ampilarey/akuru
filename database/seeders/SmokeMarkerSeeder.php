@@ -2725,7 +2725,7 @@ class SmokeMarkerSeeder extends Seeder
         // moved money, so the reset clears both — and their unconfirmed
         // redemptions. A paid one stays, and so does its item.
         $unpaidIds = DB::table('library_purchases')->whereIn('library_item_id', $itemIds)->whereIn('status', ['pending', 'failed'])->pluck('id');
-        DB::table('discount_redemptions')->where('purchase_type', 'library_purchase')->whereIn('purchase_id', $unpaidIds)->whereIn('status', ['pending', 'released'])->delete();
+        DB::table('discount_redemptions')->where('purchase_type', 'library_purchase')->whereIn('purchase_id', $unpaidIds)->whereIn('status', ['pending', 'released', 'abandoned'])->delete();
         DB::table('library_purchases')->whereIn('id', $unpaidIds)->delete();
         DB::table('library_bookmarks')->whereIn('library_item_id', $itemIds)->delete();
         DB::table('library_reading_progress')->whereIn('library_item_id', $itemIds)->delete();

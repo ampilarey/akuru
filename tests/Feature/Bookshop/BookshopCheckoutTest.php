@@ -366,7 +366,8 @@ it('expires an unpaid checkout after its window, releasing stock and the discoun
         ->and($checkout->refresh()->status->value)->toBe('expired')
         ->and(Order::query()->firstOrFail()->status->value)->toBe('expired')
         ->and(StockReservation::query()->count())->toBe(0)
-        ->and(DiscountRedemption::query()->value('status'))->toBe('released')
+        // §5pq: given back as abandoned, not as a refund.
+        ->and(DiscountRedemption::query()->value('status'))->toBe('abandoned')
         ->and($book->refresh()->stock)->toBe(2);
     checkoutAs($user)->get(route('public.shop.checkout.status', $checkout->number))->assertOk()->assertSee('not paid in time');
 

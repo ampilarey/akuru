@@ -7,7 +7,8 @@ use Illuminate\Validation\ValidationException;
 
 /**
  * §35.9 validation + §43.15: a discount reduces the price, nothing else.
- * Limits count pending+confirmed redemptions (released ones freed the slot).
+ * Limits count pending+confirmed redemptions (abandoned and released ones
+ * freed the slot, STATUS §5pq).
  */
 class ResolveDiscountAction
 {

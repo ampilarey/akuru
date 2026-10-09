@@ -140,7 +140,7 @@ it('gives the code back when a Library card purchase has waited a day unpaid', f
     abandonedAge('library_purchases', $purchase->id, 25);
     $this->artisan('akuru:prune-expired')->assertExitCode(0);
 
-    expect(DiscountRedemption::query()->sole()->status)->toBe('released')
+    expect(DiscountRedemption::query()->sole()->status)->toBe('abandoned')
         ->and(abandonedCodeIsFree('LIBONCE', $reader->id))->toBeTrue()
         // The purchase moved no money and stays as it was, for a late payment to find.
         ->and($purchase->fresh()->status)->toBe('pending');
@@ -181,7 +181,7 @@ it('takes the slot back when the payment lands after the release', function () {
     $purchase = abandonedCardPurchase($reader, $item, 'LIBLATE');
     abandonedAge('library_purchases', $purchase->id, 25);
     $this->artisan('akuru:prune-expired')->assertExitCode(0);
-    expect(DiscountRedemption::query()->sole()->status)->toBe('released');
+    expect(DiscountRedemption::query()->sole()->status)->toBe('abandoned');
 
     abandonedConfirm((int) $purchase->payment_id);
 
@@ -237,7 +237,7 @@ it('gives the code back at once, and says so, when the Library payment cannot st
         ->assertSessionHas('error');
 
     expect(LibraryPurchase::query()->sole()->status)->toBe('failed')
-        ->and(DiscountRedemption::query()->sole()->status)->toBe('released')
+        ->and(DiscountRedemption::query()->sole()->status)->toBe('abandoned')
         ->and(abandonedCodeIsFree('LIBDOWN', $reader->id))->toBeTrue();
 
     // My Library names the state in the page's language, not as a code.
@@ -259,7 +259,7 @@ it('gives a course\'s code back at once when its payment cannot start', function
     $this->withoutLocalizationMiddleware()->actingAs($learner)
         ->post(route('learn.courses.enroll', $course->id), ['discount_code' => 'COURSEDOWN']);
 
-    expect(DiscountRedemption::query()->sole()->status)->toBe('released')
+    expect(DiscountRedemption::query()->sole()->status)->toBe('abandoned')
         ->and(abandonedCodeIsFree('COURSEDOWN', $learner->id))->toBeTrue()
         // The enrolment waits for a retry, which is handed the same one.
         ->and(CourseEnrollment::query()->sole()->status)->toBe('pending');
