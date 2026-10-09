@@ -5065,6 +5065,18 @@ have access to this item.*) were never shown at all.
 
 Whole suite locally: **2911 passed (38903 assertions)**.
 
+**CI's memory limit, raised to 2G.** This slice's first CI run ran out of
+memory near the end of the suite, after every test before it had passed.
+That is a different cause from §5pi's: the warnings are gone, and the suite
+itself has grown.
+- Measured locally the way CI runs it (`./vendor/bin/pest`): peak **849 MB**
+  at 2,911 tests, about 0.3 MB a test. CI uses more than this machine and
+  crossed 1G.
+- This slice's 15 tests add about 2 MB (the Localization tests' peak with
+  and without them: 101 MB and 99 MB), so nothing new leaks.
+- `phpunit.xml` now allows 2G, twice the local peak, with the numbers in its
+  note.
+
 **Walk:** `scripts/smoke/library-public-language.mjs` (new, in `all.mjs`):
 **81/81**.
 - Under `/dv` and `/ar`, as a visitor: the shelf, the research shelf,
