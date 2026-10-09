@@ -5063,7 +5063,9 @@ fails with `'2026-'`.
 The tests for the areas it touches (Academics, Localization, Portal): 550
 passed.
 
-Whole suite locally: **FULL_SUITE**.
+Whole suite locally: **2973 passed (45071 assertions)**. The first run had
+one failure, `ThinControllersTest`: `show` had grown by the line that sends
+the book; the helper above fixed it.
 
 **Walk:** `office-language.mjs` 60/60.
 - The nine screens read right to left under `/dv` and `/ar`, with nothing
