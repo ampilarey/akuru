@@ -305,7 +305,10 @@ return [
 
     // URLs which should not be processed, e.g. '/nova', '/nova/*', '/nova-api/*' or specific application URLs
     // Defaults to []
-    'urlsIgnored' => ['/skipped', '/verify-email', '/verify-email/*'],
+    //
+    // `/robots.txt` is answered where crawlers look for it, at the root, not
+    // sent on to `/en/robots.txt` (STATUS §5pm).
+    'urlsIgnored' => ['/skipped', '/verify-email', '/verify-email/*', '/robots.txt'],
 
     'httpMethodsIgnored' => ['POST', 'PUT', 'PATCH', 'DELETE'],
 ];

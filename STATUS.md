@@ -4983,6 +4983,98 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pm. Nothing in `public/` answers for one of the app's addresses (2026-10-09)
+
+Found by W1's run of `checkout.mjs` (§5pl). A seller who accepted the Vendor
+Agreement was sent to `/vendor` and met a 404. The acceptance was saved, but
+the seller was left looking at the agreement.
+
+**Why:**
+- The screens send forms and links to bare addresses (`/vendor`). The
+  localization package then sends a GET on to the remembered language.
+- That only works if the web server hands the request to the app. It hands
+  over nothing that exists as a file or folder: `public/.htaccess` checks
+  `!-f` and `!-d`, and `php artisan serve` does the same.
+- The ID-card scan (#670, 2026-10-03) put its reader in
+  `public/vendor/tesseract`. From then on `/vendor` was a folder: 404 under
+  `artisan serve`, and a 403 under Apache.
+
+Every bare `/vendor` met that folder:
+- the redirect after the agreement;
+- the portal's Home link on its other pages;
+- its product search and paging;
+- *Open your shop portal* on the application page;
+- the link in every seller's notice.
+
+`vendor.mjs` was 30/32 on `main`, and `checkout.mjs` stopped at 32/34.
+
+**The fix:**
+- The scanner's files move to `public/ocr/tesseract/7.0.0`. Five places name
+  the folder, and all five now name the new one:
+  - the copy script (`npm run vendor:ocr`);
+  - the Blade partial that hands the folder to the scanner;
+  - `config/registration.php`;
+  - `IdScanParserTest`;
+  - `id-scan.mjs`.
+
+  The built JavaScript takes the folder from the page, so it is unchanged.
+- **A guard**, `PublicFilesTakeNoAddressTest`. It fails CI when a file or
+  folder in `public/` shares its name with a route's first segment, unless it
+  is listed with why. Four are listed:
+  - `storage`: Laravel's link, with its signed route beneath;
+  - the three PWA files, which their routes serve unchanged.
+- **robots.txt.** The same guard found `public/robots.txt`, Laravel's *allow
+  everything* default, answering `/robots.txt` in place of the app's route.
+  - The route names the sitemap and keeps crawlers out of `/admin/`,
+    `/login` and the rest.
+  - The file is gone, and `/robots.txt` joins the localization package's
+    ignored addresses.
+  - The route now answers at the root rather than being sent on to
+    `/en/robots.txt`.
+
+**On the host:** `git pull` removes the old files, and with them the empty
+`public/vendor` folder. If a bare `/vendor` still answers 403 afterwards,
+something not from the repository is in that folder (`ls public/vendor`).
+
+**Tests:** `PublicFilesTakeNoAddressTest`, 3 tests. All three fail on
+`main`'s layout, the first naming `robots.txt` and `vendor`.
+- No file or folder in `public/` takes a route's address, beyond the four
+  listed.
+- `/robots.txt` answers at the root, as text, with its `Disallow` list and
+  the sitemap.
+- The ID-card reader is in `public/ocr/tesseract`, and `public/vendor` does
+  not exist.
+
+`IdScanParserTest` reads the reader's five files from the new folder.
+
+Whole suite locally: **2919 passed (38949 assertions)**.
+
+**Walk:** `scripts/smoke/bare-addresses.mjs` (new, in `all.mjs`): **9/9**.
+The seller (Fitrah's owner):
+- opens a bare `/vendor` and lands on `/en/vendor`;
+- accepts the Vendor Agreement and sees the portal;
+- follows Home from the orders page;
+- searches the products by name, which reaches the bare address too.
+
+None of it meets a 403 or 404. Then:
+- `/robots.txt` answers 200 at the root with the sitemap;
+- the reader's worker loads from `/ocr/tesseract`.
+
+Against `main`'s code: **0/7**. The bare `/vendor` answers 404, so the walk
+never reaches the portal. `/robots.txt` is the static default, and
+`/ocr/tesseract` does not exist.
+
+The walks this touches pass:
+- `checkout.mjs` **49/49**, up from 32/34. It now reaches its end, so it runs
+  more steps.
+- `vendor.mjs` **32/32**, up from 30/32 on `main`.
+- `id-scan.mjs` **21/21**: the reader loads from the new folder and fills the
+  form from the sample card.
+
+**Next:**
+1. Releasing an abandoned Library card purchase's redemption (KNOWN_ISSUES).
+2. C20's category form, which still takes only an English name.
+
 ## 5pl. A refused wallet payment leaves nothing behind (slice W1, 2026-10-09)
 
 Found by LT6's walk (§5pk). A reader pressed *Pay with wallet* on a Library
