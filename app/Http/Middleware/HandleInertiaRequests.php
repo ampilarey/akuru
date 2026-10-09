@@ -5,11 +5,13 @@ namespace App\Http\Middleware;
 use App\Domains\Notifications\Actions\ListUserNotificationsAction;
 use App\Support\Inertia\Phrases;
 use App\Support\Navigation\ResolveWorkspacesAction;
+use Closure;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Middleware;
 use Inertia\OnceProp;
 use Mcamara\LaravelLocalization\Facades\LaravelLocalization;
+use Symfony\Component\HttpFoundation\Response;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -30,6 +32,41 @@ class HandleInertiaRequests extends Middleware
     public function version(Request $request): ?string
     {
         return parent::version($request);
+    }
+
+    /**
+     * A redirect to another site, answering an Inertia visit, becomes a full
+     * browser visit (STATUS §5px).
+     *
+     * Inertia sends a visit as an XHR, and an XHR follows a 302 by itself.
+     * When the 302 points at the bank's payment page, that is a cross-origin
+     * request the bank does not answer for, so the browser refuses it: the
+     * Pay button on a family's fees page and Enroll on a paid course did
+     * nothing at all. `Inertia::location()` is the protocol's answer — a 409
+     * that tells the page to go there itself, the way logging out already
+     * leaves the shell (STATUS §5mw).
+     *
+     * Here rather than in each controller, so a new payment door cannot forget
+     * it: every `redirect()->away()` an Inertia page reaches is covered, and a
+     * redirect within this site is left as it was.
+     */
+    public function handle(Request $request, Closure $next): Response
+    {
+        $response = parent::handle($request, $next);
+
+        if ($request->header('X-Inertia') && $response->isRedirect() && $this->leavesThisSite($request, (string) $response->headers->get('Location'))) {
+            return Inertia::location((string) $response->headers->get('Location'));
+        }
+
+        return $response;
+    }
+
+    /** A relative address, or one on this host, stays on the site. */
+    private function leavesThisSite(Request $request, string $location): bool
+    {
+        $host = parse_url($location, PHP_URL_HOST);
+
+        return is_string($host) && $host !== '' && strcasecmp($host, $request->getHost()) !== 0;
     }
 
     /**

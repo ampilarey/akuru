@@ -35,7 +35,8 @@
  * until `OWNER_ACTIONS` item 2 sets a webhook secret, which is exactly why
  * the cash path gets this much attention (see money.mjs for the same
  * reasoning on course payments). The Pay buttons are asserted present, not
- * pressed.
+ * pressed here; `pay-buttons.mjs` presses one against a stand-in bank
+ * (STATUS §5px), which is how it was found that they reached nothing.
  *
  * Environment: SMOKE_BASE_URL, SMOKE_ADMIN, SMOKE_PARENT, SMOKE_PASSWORD,
  * SMOKE_CHROMIUM.

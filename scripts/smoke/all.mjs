@@ -161,6 +161,7 @@ const WALKS = [
     { name: 'bare-addresses', writes: true, asks: 'Do a bare /vendor, the Vendor Agreement, the portal\'s Home link and its product search reach the app, and is /robots.txt the app\'s?' },
     { name: 'abandoned-code', writes: true, asks: 'When a card payment cannot start, does My Library say so, and is the once-per-reader code still good for the next try?' },
     { name: 'library-categories', writes: true, asks: 'Can the Library office name a category in Dhivehi and Arabic and rename it, and does the shelf say the name in each language?' },
+    { name: 'pay-buttons', writes: true, asks: 'Do Pay on a family\'s fees and Enroll on a paid course take the browser to the bank, asking it for the right amount?' },
 ];
 
 const args = process.argv.slice(2);

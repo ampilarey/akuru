@@ -135,6 +135,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->dailyAndCertificateWalk($year, $studentId);
         $this->familyCycle();
         $this->portalLanguageCycle($year, $class);
+        $this->payButtonsCycle();
         $this->signupCycle();
         $this->schoolDayCycle();
         $this->timetableCycle($year);
@@ -2903,6 +2904,51 @@ class SmokeMarkerSeeder extends Seeder
             'published_at' => '2025-03-01 09:00:00',
             'approved_by' => (int) $approverId,
         ])->save();
+    }
+
+    /**
+     * `pay-buttons.mjs` (STATUS §5px) presses Pay on `SMOKE-INV-1` as the
+     * parent and Enroll on `SMOKE-Pay-Course` as the student, against a
+     * stand-in bank, and checks the browser gets there. Neither payment is
+     * ever confirmed, so each run leaves one initiated payment on each; they
+     * go here, with the student's pending enrolment on the course, so both
+     * buttons are there to press again. The course is the walk's own: `buy`
+     * pays for `SMOKE-Wallet-Course` with the wallet and needs it unbought.
+     */
+    private function payButtonsCycle(): void
+    {
+        $course = [
+            'course_category_id' => DB::table('course_categories')->orderBy('id')->value('id'),
+            'title' => 'SMOKE-Pay-Course',
+            'short_desc' => 'Planted by SmokeMarkerSeeder: MVR 150, for the Pay-button walk.',
+            'body' => 'Planted by SmokeMarkerSeeder.',
+            'cover_image' => '',
+            'status' => 'open',
+            'workflow_status' => 'published',
+            'fee' => 150,
+            'registration_fee_amount' => 150,
+            'requires_admin_approval' => false,
+            'updated_at' => now(),
+        ];
+        $courseId = (int) DB::table('courses')->where('slug', 'smoke-pay-course')->value('id');
+        if ($courseId > 0) {
+            DB::table('courses')->where('id', $courseId)->update($course);
+        } else {
+            $courseId = DB::table('courses')->insertGetId($course + ['slug' => 'smoke-pay-course', 'created_at' => now()]);
+        }
+
+        $enrollmentIds = DB::table('course_enrollments')->where('course_id', $courseId)->pluck('id');
+        $invoiceId = (int) DB::table('invoices')->where('invoice_number', 'SMOKE-INV-1')->value('id');
+        $paymentIds = DB::table('payments')
+            ->where(fn ($query) => $query->where('course_id', $courseId)
+                ->orWhere(fn ($query) => $query->where('payable_type', 'invoice')->where('payable_id', $invoiceId)))
+            ->whereIn('status', ['initiated', 'pending'])
+            ->pluck('id');
+        DB::table('course_enrollments')->whereIn('id', $enrollmentIds)->update(['payment_id' => null]);
+        DB::table('payment_items')->whereIn('payment_id', $paymentIds)->delete();
+        DB::table('payment_items')->whereIn('enrollment_id', $enrollmentIds)->delete();
+        DB::table('payments')->whereIn('id', $paymentIds)->delete();
+        DB::table('course_enrollments')->whereIn('id', $enrollmentIds)->delete();
     }
 
     /**

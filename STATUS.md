@@ -4983,6 +4983,71 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5px. A Pay button on an Inertia page reaches the bank (2026-10-09)
+
+Found while preparing the fees page for slice PT2. **Two buttons never
+reached the bank:**
+- *Pay* on a family's fees page (`/portal/invoices`);
+- *Enroll — MVR …* on a paid course in the learner's catalogue
+  (`/learn/catalog`, and the course page's *Enroll*).
+
+**Why.**
+- Both post as Inertia visits, and an Inertia visit is an XHR.
+- The controllers answered with `redirect()->away()` to the bank's payment
+  page, a plain 302.
+- An XHR follows a 302 by itself: here, across origins, to a page that does
+  not answer for it. The browser refuses, Inertia reports a network error,
+  and the page stays where it was.
+- Behind the scenes the payment had already started: the bank was asked for
+  the transaction, and an *initiated* payment row was written. The family
+  never saw the bank's page.
+
+It went unseen because nothing ever pressed these buttons:
+- `fees.mjs` and `buy.mjs` assert the buttons are there and stop, because no
+  environment has a gateway (`OWNER_ACTIONS` item 2);
+- the feature tests posted without the `X-Inertia` header a browser sends,
+  so they saw the 302 and passed.
+
+Only the Blade checkouts reached the bank: the Library, gift cards, the
+Bookstore and registration. They post plain forms.
+
+**The fix.** `HandleInertiaRequests` turns any redirect to another host,
+answering an Inertia visit, into `Inertia::location()`: a 409 that tells the
+page to go there itself. Logging out of the shell already did this
+(§5mw). It lives in the middleware rather than in each controller, so a new
+payment door cannot forget it:
+- a redirect within the site is left as it was;
+- a plain form post still gets its 302.
+
+**Tests.** `PayButtonsReachTheBankTest` uses a stand-in provider and sends the
+header a browser sends:
+- a family's Pay is a 409 to the bank's page, and the payment waits for the
+  webhook (rule 12);
+- a plain post still redirects;
+- a learner's Enroll on a paid course is a 409 to the bank;
+- a refused initiation still goes back to the fees page with its reason.
+
+Without the fix, the first two fail: *received 302*. `PayButtonsCycleSmokeResetTest`
+covers the seeder. Whole suite locally: **2960 passed (41158 assertions)**.
+
+**Walk.** New `pay-buttons.mjs`, 6/6. The walk starts what it needs:
+- a stand-in for BML's transaction API on 127.0.0.1:8011;
+- its own dev server on :8013, pointed at the stand-in through
+  `BML_BASE_URL`.
+
+Then:
+- The parent presses *Pay 200.00* on `SMOKE-INV-1`.
+- The student presses *Enroll — MVR 150* on the new `SMOKE-Pay-Course`.
+- Each ends on the bank's page as the document, at the bank's address.
+- The bank was asked for 20000 and 15000 laari.
+
+The same walk with the middleware change removed: 4/6. Both presses stay on
+`/en/portal/invoices` and `/en/learn/catalog`, with `HttpNetworkError:
+Network error` in the console. `SmokeMarkerSeeder::payButtonsCycle()` keeps
+the course and clears what a run leaves: the unconfirmed payments and the
+pending enrolment, never a confirmed payment. The walk is in `all.mjs`; it
+runs locally only, since it starts PHP itself.
+
 ## 5pw. The family's notifications and messages in Dhivehi and Arabic (C21 PT1b, 2026-10-09)
 
 The second slice of BACKLOG C21 covers the notifications page and the three
