@@ -6,10 +6,12 @@ use App\Domains\Courses\Components\Quran\Models\QuranMushaf;
 use App\Domains\Courses\Components\Quran\Models\QuranPage;
 use App\Domains\Courses\Components\Quran\Models\QuranWord;
 use App\Domains\Courses\Components\Quran\Models\QuranWordPosition;
+use App\Domains\Courses\Components\Quran\Services\QuranMushafImportService;
 use App\Http\Controllers\Controller;
 use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -36,7 +38,7 @@ class QuranPageController extends Controller
         $positions = $page->wordPositions()->with('word')->get();
 
         return Inertia::render('Courses/Quran/Pages/Show', [
-            'mushaf' => ['id' => $mushaf->id, 'name' => $mushaf->name],
+            'mushaf' => ['id' => $mushaf->id, 'name' => $mushaf->name, 'locked' => (bool) $mushaf->locked],
             'page' => [
                 'id' => $page->id,
                 'page_number' => $page->page_number,
@@ -74,31 +76,30 @@ class QuranPageController extends Controller
     public function storePosition(Request $request, QuranMushaf $mushaf, QuranPage $page): RedirectResponse
     {
         $this->authorize('manage', QuranMushaf::class);
+        // The page and the word are this mushaf's (STATUS §5pt).
+        abort_unless((int) $page->quran_mushaf_id === (int) $mushaf->id, 404);
 
         $data = $request->validate([
-            'quran_word_id' => 'required|exists:quran_words,id',
+            'quran_word_id' => ['required', Rule::exists('quran_words', 'id')->where('quran_mushaf_id', $mushaf->id)],
             'x' => 'required|numeric|min:0|max:100',
             'y' => 'required|numeric|min:0|max:100',
             'width' => 'required|numeric|min:0|max:100',
             'height' => 'required|numeric|min:0|max:100',
         ]);
-
-        QuranWordPosition::updateOrCreate(
-            [
-                'quran_page_id' => $page->id,
-                'quran_word_id' => $data['quran_word_id'],
-            ],
-            [
-                'quran_mushaf_id' => $mushaf->id,
-                'page_number' => $page->page_number,
-                'x' => $data['x'],
-                'y' => $data['y'],
-                'width' => $data['width'],
-                'height' => $data['height'],
-                'coordinate_type' => 'percentage',
-            ]
-        );
+        app(QuranMushafImportService::class)->savePosition($mushaf, $page, $data);
 
         return back()->with('success', __('teach.flash_qpage_position_saved'));
+    }
+
+    /** A page's image (STATUS §5pt): nothing could set one before. */
+    public function storeImage(Request $request, QuranMushaf $mushaf, QuranPage $page): RedirectResponse
+    {
+        $this->authorize('manage', QuranMushaf::class);
+        abort_unless((int) $page->quran_mushaf_id === (int) $mushaf->id, 404);
+
+        $data = $request->validate(['page_image' => 'required|image|mimes:jpg,jpeg,png,webp|max:10240']);
+        app(QuranMushafImportService::class)->storePageImage($page, $data['page_image']);
+
+        return back()->with('success', __('teach.flash_qpage_image_saved'));
     }
 }

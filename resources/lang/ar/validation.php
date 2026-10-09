@@ -393,6 +393,10 @@ return [
         'verified_letter_id' => 'الحرف المؤكَّد',
         'verified_haraka_id' => 'الحركة المؤكَّدة',
 
+        // A mushaf page's image and a word's box (STATUS §5pt)
+        'page_image' => 'صورة الصفحة',
+        'quran_word_id' => 'الكلمة',
+
         // Dates other forms compare with today or now (their `values` are below)
         'follow_up_on' => 'تاريخ المتابعة',
         'preorder_release_on' => 'تاريخ الإصدار',

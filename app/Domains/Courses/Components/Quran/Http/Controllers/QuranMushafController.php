@@ -2,9 +2,7 @@
 
 namespace App\Domains\Courses\Components\Quran\Http\Controllers;
 
-use App\Domains\Courses\Components\Quran\Models\QuranAyah;
 use App\Domains\Courses\Components\Quran\Models\QuranMushaf;
-use App\Domains\Courses\Components\Quran\Models\QuranWord;
 use App\Domains\Courses\Components\Quran\Services\QuranMushafImportService;
 use App\Http\Controllers\Controller;
 use App\Support\Inertia\Phrases;
@@ -130,6 +128,16 @@ class QuranMushafController extends Controller
         return back()->with('success', __('teach.flash_mushaf_locked'));
     }
 
+    /** A mushaf's pages, given or added after the upload (STATUS §5pt). */
+    public function storePages(Request $request, QuranMushaf $mushaf): RedirectResponse
+    {
+        $this->authorize('manage', QuranMushaf::class);
+        $data = $request->validate(['page_count' => 'required|integer|min:1|max:604']);
+        $count = $this->importService->addPages($mushaf, (int) $data['page_count']);
+
+        return back()->with('success', __('teach.flash_mushaf_pages_added', ['count' => $count]));
+    }
+
     public function importAyah(Request $request, QuranMushaf $mushaf): RedirectResponse
     {
         $this->authorize('manage', QuranMushaf::class);
@@ -142,39 +150,7 @@ class QuranMushafController extends Controller
             'words' => 'nullable|array',
             'words.*' => 'nullable|string',
         ]);
-
-        $ayah = QuranAyah::updateOrCreate(
-            [
-                'quran_mushaf_id' => $mushaf->id,
-                'surah_number' => $data['surah_number'],
-                'ayah_number' => $data['ayah_number'],
-            ],
-            [
-                'text_uthmani' => $data['text_uthmani'],
-                'page_number' => $data['page_number'] ?? null,
-            ]
-        );
-
-        $words = array_values(array_filter(
-            $data['words'] ?? [],
-            fn (?string $word) => $word !== null && trim($word) !== '',
-        ));
-
-        foreach ($words as $i => $wordText) {
-            QuranWord::updateOrCreate(
-                [
-                    'quran_mushaf_id' => $mushaf->id,
-                    'surah_number' => $data['surah_number'],
-                    'ayah_number' => $data['ayah_number'],
-                    'word_number' => $i + 1,
-                ],
-                [
-                    'quran_ayah_id' => $ayah->id,
-                    'word_text' => $wordText,
-                    'page_number' => $data['page_number'] ?? null,
-                ]
-            );
-        }
+        $this->importService->importAyah($mushaf, $data);
 
         return back()->with('success', __('teach.flash_mushaf_ayah_imported'));
     }

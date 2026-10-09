@@ -4983,6 +4983,70 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pt. A mushaf gets its pages and page images after the upload, and a locked mushaf stays locked (C19, 2026-10-09)
+
+Two of the three gaps found with CT5b (BACKLOG C19), and two defects found
+reading their code. The third gap is still the owner's to decide: with no
+mushaf active, `ListAyahsAction` reads every mushaf's ayahs.
+
+**Pages after the upload.**
+- *Before:* the upload form made a mushaf's pages only when it was given a
+  page count, and nothing else could. A mushaf uploaded without one could
+  never be mapped. Its page said so, and offered nothing.
+- *Now:* the mushaf page has a *Pages* form. It adds pages up to the number
+  given, through `QuranMushafImportService::addPages`.
+- Pages are never taken away, because a page may already carry word boxes. A
+  smaller number is refused with that reason.
+
+**A page's image.**
+- *Before:* nothing set `quran_pages.image_path`, so every page view said the
+  page had no image yet.
+- *Now:* the page view takes an image (PNG, JPEG or WebP, up to 10 MB). It is
+  kept on the public disk the view already read from, with its width and
+  height, and a replaced image's file goes.
+
+**A locked mushaf refuses every change.**
+- *Before:* `lock` is the step after approval, and nothing read it. A locked
+  mushaf's ayahs, words and boxes could still be changed from its own page.
+- *Now:* every write goes through the service and refuses a locked mushaf
+  with a reason, in the page's language. Those writes are importing an ayah,
+  adding pages, a page image and a word's box.
+- Both screens say the mushaf is locked, and hide the forms.
+
+**A word's box stays in its own mushaf.**
+- *Before:* the route took any page id and any word id, so a box could join
+  one mushaf's word to another mushaf's page.
+- *Now:* a page of another mushaf answers 404, and a word of another mushaf
+  is refused.
+
+**Thinner controllers (rule 5):** `importAyah` and `storePosition` gave their
+bodies to the service. `importAyah` leaves the long-method baseline (43 lines,
+now 14).
+
+**Phrases:** twelve new `teach` phrases in three languages, and the *no pages
+yet* line rewritten to point at the new form. Laravel's refusals name the
+image and the word.
+
+**Tests:** `MushafPagesTest`, 4 tests.
+- A mushaf uploaded with no count gets three pages, then five; two is
+  refused; a teacher is refused.
+- A page image is kept, shown and replaced, and the old file goes; a PDF is
+  refused.
+- A locked mushaf refuses all four changes, and nothing changes.
+- A box joining two mushafs is refused both ways; a box on its own mushaf is
+  kept.
+
+Whole suite locally: **2947 passed (39665 assertions)**.
+
+**Walk:** `course-screens-language.mjs` 404/404. The dean uses the Dhivehi
+mushaf page and page view on the walk's own uploaded mushaf:
+- one page, below the two the mushaf has, is refused in Dhivehi;
+- a third page is added, confirmed in Dhivehi;
+- a page image is uploaded, confirmed in Dhivehi, and the page shows it, loaded.
+
+The last page the walk reads is now page 3. The mushaf is never approved,
+locked or given an ayah, and `SmokeMarkerSeeder` removes its images with it.
+
 ## 5ps. The pronunciation screens' four defects: the dean let in, a rollback only when it is one, a name used twice refused, the haraka accuracy (2026-10-09)
 
 Found translating the two screens (§5pr). Each has a one-line cause.

@@ -202,6 +202,45 @@ const mushafId = uploaded.mushaf?.name === mushafName ? uploaded.mushaf.id : nul
 check('the uploaded mushaf opens', Boolean(mushafId), page.url().replace(BASE, ''));
 check('with the two pages it was given', uploaded.mushaf?.pages_count === 2, `pages_count=${uploaded.mushaf?.pages_count}`);
 
+// A third page, added after the upload from the Dhivehi mushaf page, and a
+// page image from the Dhivehi page view (STATUS §5pt). Neither had a door. A
+// count below the two it has is refused first: pages are never taken away.
+// The mushaf is never approved, locked or given an ayah.
+await page.goto(`${BASE}/dv/quran/mushafs/${mushafId}`, { waitUntil: 'networkidle' });
+const mushafT = (await props(page)).t ?? {};
+const pagesForm = page.getByTestId('mushaf-pages');
+await pagesForm.getByLabel(mushafT.mushaf_pages_count, { exact: true }).fill('1');
+await pagesForm.getByRole('button', { name: mushafT.mushaf_pages_add, exact: true }).click();
+const fewer = (await pagesForm.locator('ul[role="alert"]').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+check(
+    'fewer pages than the mushaf has are refused on the Dhivehi page, in Dhivehi',
+    Boolean(mushafT.error_mushaf_pages_fewer) && fewer === mushafT.error_mushaf_pages_fewer.replace(':count', '2'),
+    `said: ${fewer ?? 'nothing'}`,
+);
+await pagesForm.getByLabel(mushafT.mushaf_pages_count, { exact: true }).fill('3');
+await pagesForm.getByRole('button', { name: mushafT.mushaf_pages_add, exact: true }).click();
+const pagesAdded = (mushafT.flash_mushaf_pages_added ?? '').replace(':count', '3');
+const pagesTold = await flashReads(page, pagesAdded);
+check('the dean adds a page in Dhivehi and is told so in Dhivehi', Boolean(mushafT.flash_mushaf_pages_added) && pagesTold === pagesAdded, `said: ${pagesTold ?? 'nothing'}`);
+await page.goto(page.url(), { waitUntil: 'networkidle' });
+check('and the mushaf has three pages', (await props(page)).mushaf?.pages_count === 3, `pages_count=${(await props(page)).mushaf?.pages_count}`);
+
+// A one-pixel PNG is an image as far as the rule and getimagesize go.
+const ONE_PIXEL_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
+await page.goto(`${BASE}/dv/quran/mushafs/${mushafId}/pages/1`, { waitUntil: 'networkidle' });
+const pageT = (await props(page)).t ?? {};
+const imageForm = page.getByTestId('qpage-image');
+await imageForm.getByLabel(pageT.qpage_image_label, { exact: true }).setInputFiles({ name: 'page-1.png', mimeType: 'image/png', buffer: Buffer.from(ONE_PIXEL_PNG, 'base64') });
+await imageForm.getByRole('button', { name: pageT.qpage_image_upload, exact: true }).click();
+const imageTold = await flashReads(page, pageT.flash_qpage_image_saved);
+check('the dean uploads a page image in Dhivehi and is told so in Dhivehi', Boolean(pageT.flash_qpage_image_saved) && imageTold === pageT.flash_qpage_image_saved, `said: ${imageTold ?? 'nothing'}`);
+await page.goto(page.url(), { waitUntil: 'networkidle' });
+const pageImage = page.locator('main img[src*="/storage/quran/pages/"]');
+await pageImage.first().waitFor({ state: 'attached', timeout: 10000 }).catch(() => {});
+const loaded = (await pageImage.count()) === 1
+    && await pageImage.first().evaluate((img) => img.complete && img.naturalWidth > 0).catch(() => false);
+check('and the page shows it', loaded, `${await pageImage.count()} image(s)`);
+
 // The clubs (slice CT6a): `SmokeMarkerSeeder` plants SMOKE-Club with the
 // seeded pupil on its roster.
 await page.goto(`${BASE}/en/academics/clubs`, { waitUntil: 'networkidle' });
@@ -413,9 +452,10 @@ const screens = [
     '/quran/mushafs',
     '/quran/mushafs/create',
     `/quran/mushafs/${mushafId}`,
-    // Page 1 with the word-mapping form open; page 2 is the last.
+    // Page 1, with its image and the word-mapping form open; page 3, added
+    // after the upload, is the last (STATUS §5pt).
     [`/quran/mushafs/${mushafId}/pages/1`, page, { open: (viewer) => viewer.locator('main button.mb-4').click() }],
-    `/quran/mushafs/${mushafId}/pages/2`,
+    `/quran/mushafs/${mushafId}/pages/3`,
     ['/learn/quran', pupil],
     // Slice CT6a.
     '/catalog/arabic',

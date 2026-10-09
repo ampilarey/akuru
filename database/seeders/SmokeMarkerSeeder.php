@@ -2026,7 +2026,12 @@ class SmokeMarkerSeeder extends Seeder
      */
     private function mushafCycle(): void
     {
-        DB::table('quran_mushafs')->where('name', 'like', 'SMOKE-Mushaf%')->delete();
+        // The page images the walk uploads go with their mushaf (STATUS §5pt).
+        $walked = DB::table('quran_mushafs')->where('name', 'like', 'SMOKE-Mushaf%')->pluck('id');
+        foreach ($walked as $id) {
+            Storage::disk('public')->deleteDirectory("quran/pages/{$id}");
+        }
+        DB::table('quran_mushafs')->whereIn('id', $walked)->delete();
 
         // The empty module the same walk adds to SMOKE-Course's outline, to
         // be refused publishing it from the Dhivehi page (slice CT6b-2b). The

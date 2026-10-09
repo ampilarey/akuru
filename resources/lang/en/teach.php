@@ -682,7 +682,7 @@ return [
     'mushaf_approve' => 'Approve & activate',
     'mushaf_lock' => 'Lock',
     'mushaf_map_first' => 'Map page 1',
-    'mushaf_no_pages' => 'This mushaf has no pages to map: it was uploaded without a page count.',
+    'mushaf_no_pages' => 'This mushaf has no pages yet. Give it its number of pages below.',
     'mushaf_import_title' => 'Import ayah / words',
     'mushaf_surah' => 'Surah',
     'mushaf_page' => 'Page',
@@ -1072,4 +1072,18 @@ return [
     'error_pron_verdict_needed' => 'Set the verified letter and haraka, or reject the sample.',
     'error_pron_version_name' => 'Version name is required.',
     'error_pron_version_taken' => 'A version named :name is already registered.',
+
+    // A mushaf's pages after the upload, a page's image, and a lock that holds (STATUS §5pt)
+    'mushaf_pages_title' => 'Pages',
+    'mushaf_pages_count' => 'Number of pages',
+    'mushaf_pages_add' => 'Add pages',
+    'mushaf_pages_hint' => 'Pages are added up to this number, and none is ever taken away: a page may already carry word boxes.',
+    'mushaf_locked_note' => 'This mushaf is locked. Its ayahs, words, pages and page images can no longer be changed.',
+    'qpage_image_label' => 'Page image',
+    'qpage_image_upload' => 'Upload image',
+    'qpage_image_replace' => 'Replace image',
+    'flash_mushaf_pages_added' => 'Pages added: the mushaf now has :count.',
+    'flash_qpage_image_saved' => 'Page image saved.',
+    'error_mushaf_pages_fewer' => 'This mushaf already has :count pages, and pages are never taken away.',
+    'error_mushaf_locked' => 'This mushaf is locked, so it can no longer be changed.',
 ];

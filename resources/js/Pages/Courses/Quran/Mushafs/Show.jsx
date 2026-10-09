@@ -1,5 +1,6 @@
 import { Link, router, useForm } from '@inertiajs/react';
 import AppShell from '../../../../Layouts/AppShell';
+import FormErrors from '../../../../Components/FormErrors';
 
 // `:name` placeholders in a phrase, filled in.
 const fill = (text, values) => Object.entries(values).reduce((out, [key, value]) => out.replace(`:${key}`, value), text);
@@ -12,6 +13,10 @@ export default function MushafShow({ mushaf, can_manage = false, can_approve = f
         text_uthmani: '',
         words: ['', ''],
     });
+    // A mushaf's pages, given after the upload (STATUS §5pt): the upload form
+    // made them only when it was given a count, and nothing else could.
+    const pagesForm = useForm({ page_count: '' });
+    const editable = can_manage && !mushaf.locked;
 
     const setWord = (index, value) => {
         const next = [...importForm.data.words];
@@ -25,6 +30,11 @@ export default function MushafShow({ mushaf, can_manage = false, can_approve = f
             preserveScroll: true,
             onSuccess: () => importForm.reset('ayah_number', 'text_uthmani', 'words'),
         });
+    };
+
+    const submitPages = (event) => {
+        event.preventDefault();
+        pagesForm.post(`/quran/mushafs/${mushaf.id}/pages`, { preserveScroll: true, onSuccess: () => pagesForm.reset() });
     };
 
     return (
@@ -64,11 +74,34 @@ export default function MushafShow({ mushaf, can_manage = false, can_approve = f
                 {mushaf.pages_count > 0 ? (
                     <Link className="btn-secondary" href={`/quran/mushafs/${mushaf.id}/pages/1`}>{t.mushaf_map_first || 'Map page 1'}</Link>
                 ) : (
-                    <p className="text-sm text-amber-700">{t.mushaf_no_pages || 'This mushaf has no pages to map: it was uploaded without a page count.'}</p>
+                    <p className="text-sm text-amber-700">{t.mushaf_no_pages || 'This mushaf has no pages yet. Give it its number of pages below.'}</p>
                 )}
             </div>
 
-            {can_manage && (
+            {mushaf.locked && (
+                <p className="mb-6 max-w-2xl rounded border border-gray-300 bg-gray-50 p-3 text-sm text-gray-700" data-testid="mushaf-locked">
+                    {t.mushaf_locked_note || 'This mushaf is locked. Its ayahs, words, pages and page images can no longer be changed.'}
+                </p>
+            )}
+
+            {editable && (
+                <form onSubmit={submitPages} className="mb-6 max-w-2xl space-y-2 rounded-lg border bg-white p-4" data-testid="mushaf-pages">
+                    <h2 className="font-semibold">{t.mushaf_pages_title || 'Pages'}</h2>
+                    <p className="text-sm text-gray-600">{t.mushaf_pages_hint || 'Pages are added up to this number, and none is ever taken away: a page may already carry word boxes.'}</p>
+                    <div className="flex flex-wrap items-center gap-2">
+                        <input
+                            className="form-input w-32" type="number" min="1" max="604" required
+                            placeholder={t.mushaf_pages_count || 'Number of pages'} aria-label={t.mushaf_pages_count || 'Number of pages'}
+                            value={pagesForm.data.page_count}
+                            onChange={(e) => pagesForm.setData('page_count', e.target.value)}
+                        />
+                        <button type="submit" className="btn-primary" disabled={pagesForm.processing}>{t.mushaf_pages_add || 'Add pages'}</button>
+                    </div>
+                    <FormErrors errors={pagesForm.errors} />
+                </form>
+            )}
+
+            {editable && (
                 <form onSubmit={submitImport} className="max-w-2xl space-y-3 rounded-lg border bg-white p-4">
                     <h2 className="font-semibold">{t.mushaf_import_title || 'Import ayah / words'}</h2>
                     <div className="grid grid-cols-3 gap-2">
