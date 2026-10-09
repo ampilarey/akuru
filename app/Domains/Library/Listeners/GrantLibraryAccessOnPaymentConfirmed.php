@@ -33,8 +33,9 @@ class GrantLibraryAccessOnPaymentConfirmed
             $purchase->status = 'paid';
             $purchase->purchased_at = now();
             $purchase->save();
-            // L4: a discount used at checkout is confirmed by the same webhook.
-            app(RecordDiscountRedemptionAction::class)->transition('library_purchase', $purchase->id, 'confirmed');
+            // L4: a discount used at checkout is confirmed by the same webhook,
+            // even when the prune had released it as abandoned (§5pn).
+            app(RecordDiscountRedemptionAction::class)->confirmLanded('library_purchase', $purchase->id);
         }
 
         app(GrantLibraryAccessAction::class)->execute(

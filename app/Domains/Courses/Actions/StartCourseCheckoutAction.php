@@ -129,6 +129,12 @@ class StartCourseCheckoutAction
             ],
         );
         $enrollment->payment_id = $initiated['payment']->id;
+        // §5pn: a payment that could not start gives the code's slot back
+        // now, as the Bookstore's does. The enrolment stays pending: a retry
+        // is handed the same one, and the prune cancels it if none comes.
+        if ($initiated['redirect_url'] === null) {
+            app(RecordDiscountRedemptionAction::class)->releaseAbandoned('course_enrollment', [$enrollment->id]);
+        }
         $enrollment->save();
 
         return [
