@@ -20,6 +20,7 @@ use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Models\LessonLog;
 use App\Http\Controllers\Controller;
 use App\Support\Inertia\Phrases;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -89,14 +90,8 @@ class TeacherRegisterController extends Controller
 
         $settings = app(ResolveAttendanceSettingsAction::class)->execute();
         $perLesson = $settings['mode'] === AttendanceMode::PerLesson;
-        $attached = $lessonLog->teachingMaterials()
-            ->pluck('teaching_materials.id')
-            ->map(fn ($id): int => (int) $id)
-            ->all();
-        $sentHome = $lessonLog->homeworkMaterials()
-            ->pluck('teaching_materials.id')
-            ->map(fn ($id): int => (int) $id)
-            ->all();
+        $attached = $this->materialIds($lessonLog->teachingMaterials());
+        $sentHome = $this->materialIds($lessonLog->homeworkMaterials());
 
         return Inertia::render('Academics/Registers/Show', [
             'register' => app(ListTeacherTodayRegistersAction::class)->serialize(collect([$lessonLog]))->first(),
@@ -195,6 +190,12 @@ class TeacherRegisterController extends Controller
         return redirect()
             ->route('academics.registers.show', $lessonLog)
             ->with('success', __('academics.flash_register_submitted'));
+    }
+
+    /** @return list<int> */
+    private function materialIds(BelongsToMany $materials): array
+    {
+        return $materials->pluck('teaching_materials.id')->map(fn ($id): int => (int) $id)->all();
     }
 
     private function authorizeView(Request $request, LessonLog $lessonLog): void

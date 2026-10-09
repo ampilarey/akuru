@@ -5034,6 +5034,9 @@ English name only.
   formats the time (*Period 1 (08:00–08:45)*).
 - `all.mjs` lists the new walk, and `portal-language`, which PT1a–PT4
   never added to it.
+- `TeacherRegisterController::show` reads the two material lists through
+  one helper, so the method is shorter than its baseline
+  (`ThinControllersTest`) although it now sends the book too.
 
 What the school writes stays as written: a pupil's, class's, subject's and
 period's name, a plan topic, a reason's code, and an emergency contact's
