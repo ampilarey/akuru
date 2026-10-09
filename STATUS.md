@@ -5036,7 +5036,7 @@ image and the word.
 - A box joining two mushafs is refused both ways; a box on its own mushaf is
   kept.
 
-Whole suite locally: **SUITE**.
+Whole suite locally: **2947 passed (39665 assertions)**.
 
 **Walk:** `course-screens-language.mjs` 404/404. The dean uses the Dhivehi
 mushaf page and page view on the walk's own uploaded mushaf:
