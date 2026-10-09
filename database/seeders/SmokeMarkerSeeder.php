@@ -117,6 +117,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->pronunciation();
         $this->recitations();
         $this->examCycle($year);
+        $this->documentsCycle($year);
         $this->hrCycle($year, $admin);
         $this->authorCycle();
         $this->intakeCycle();
@@ -2904,6 +2905,32 @@ class SmokeMarkerSeeder extends Seeder
             'published_at' => '2025-03-01 09:00:00',
             'approved_by' => (int) $approverId,
         ])->save();
+    }
+
+    /**
+     * `documents-language.mjs` (STATUS §5pz) has the dean generate the walk
+     * class's report cards for `SMOKE-Doc-Term` in Dhivehi and then Arabic,
+     * and opens one. The term is the walk's own, so `exams.mjs`'s
+     * `SMOKE-Term` cards are never touched, and the cards it made — drafts,
+     * never published — go here each run with their documents.
+     */
+    private function documentsCycle(AcademicYear $year): void
+    {
+        $termId = (int) (DB::table('terms')
+            ->where('academic_year_id', $year->id)
+            ->where('name', 'SMOKE-Doc-Term')
+            ->value('id')
+            ?? DB::table('terms')->insertGetId([
+                'academic_year_id' => $year->id, 'name' => 'SMOKE-Doc-Term', 'status' => 'upcoming',
+                'start_date' => now()->subDays(30)->toDateString(), 'end_date' => now()->addDays(30)->toDateString(),
+                'sort_order' => 98, 'created_at' => now(), 'updated_at' => now(),
+            ]));
+
+        $cardIds = DB::table('report_cards')->where('term_id', $termId)->pluck('id');
+        DB::table('report_card_revisions')->whereIn('report_card_id', $cardIds)->delete();
+        DB::table('report_card_comments')->whereIn('report_card_id', $cardIds)->delete();
+        DB::table('documents')->where('documentable_type', 'report_card')->whereIn('documentable_id', $cardIds)->delete();
+        DB::table('report_cards')->whereIn('id', $cardIds)->delete();
     }
 
     /**

@@ -4983,6 +4983,73 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pz. The report card and the transcript in Dhivehi and Arabic (C21 DOC1, 2026-10-09)
+
+A family keeps two documents: a term's report card and the transcript.
+Each is made in the language it is asked for. The office picks the card's
+language when it generates a term's cards. A family asks for the transcript
+from the report cards page, in the page's language (§5py). Neither document
+spoke that language:
+- **A Dhivehi report card printed placeholders** where its headings
+  belonged — *Student (DV)*, *Grades (DV)*, *Attendance (DV)*, fifteen of
+  them. The template had a `=== 'dv'` branch for every heading, and the
+  Dhivehi side of each was never written.
+- **An Arabic report card and an Arabic transcript came out in English.**
+  Both templates knew only Dhivehi, and anything else fell back to English,
+  though the page was still set right to left.
+- In every language, the card's attendance line was English (*present 18,
+  late 1, absent 1, excused 0, total 20*), and a behaviour record's type
+  was printed as its code (`compliment`).
+- In every language, the transcript's *Point* column was English and its
+  status history printed codes (`active → graduated`).
+- `ReportCardsTest` pinned *Attendance (DV)*, holding the placeholder as if
+  it were the heading.
+
+**The change:**
+- **The `documents` phrase book gains the two documents' headings** in all
+  three languages: `report_card` with the attendance line's counts as
+  placeholders and the four behaviour types, and `transcript` with its
+  point column and the six student statuses.
+- **Both templates read the book in the document's own locale.** The
+  renderer does not set the app's locale, so the templates pass it. A type
+  or status the book does not know prints as it is.
+- The transcript's Dhivehi *Subject* was a transliteration
+  (`ސަބްޖެކްޓް`). It is now `މާއްދާ`, the word the card uses, and its
+  *Status history* is no longer the single word `ސްޓޭޓަސް`.
+- What the office writes on a card stays as written: the template's header
+  and footer, a teacher's comment, an award's title.
+
+**Tests:** `DocumentsSpeakThreeLanguagesTest` is new, with four tests:
+- every heading is in all three books, in its own script, with the same
+  placeholders;
+- neither template keeps a `(DV)` placeholder or a `=== 'dv'` branch;
+- the report card renders in English, Dhivehi and Arabic with that book's
+  headings, attendance line and behaviour type;
+- the transcript does too, with its point column and status history.
+
+`ReportCardsTest` now holds the Dhivehi heading, and that no placeholder is
+left.
+
+Whole suite locally: **2966 passed (41991 assertions)**.
+
+**Walk:** `documents-language.mjs` is new. It passed 11/11, and again after a
+re-seed.
+- The dean generates `SMOKE-Doc-Term`'s cards for Grade 5 A in Dhivehi, and
+  the queue renders them. The card opens `lang=dv`, right to left, with
+  Dhivehi headings (*ދަރިވަރު:*, *ކްލާސް:*, *ޓާމް:*) and no placeholder
+  left. The same is then checked in Arabic.
+- The parent asks for the transcript from `/dv` and `/ar` report cards. It
+  opens right to left, with its title and point column in that language.
+
+`SmokeMarkerSeeder` plants `SMOKE-Doc-Term` and removes its cards each run
+(`DocumentsCycleSmokeResetTest`). The cards are never published, so no
+family sees them.
+
+Other walks:
+- `exams.mjs` 29/29, with a queue worker running as it asks.
+- `portal-language.mjs` 132/132.
+- `own-data.mjs`: every family saw their own records and nobody else's.
+
 ## 5py. The family's records in Dhivehi and Arabic (C21 PT2, 2026-10-09)
 
 The third slice of BACKLOG C21 covers eight portal pages:
