@@ -5028,7 +5028,7 @@ header a browser sends:
 - a refused initiation still goes back to the fees page with its reason.
 
 Without the fix, the first two fail: *received 302*. `PayButtonsCycleSmokeResetTest`
-covers the seeder.
+covers the seeder. Whole suite locally: **2960 passed (41158 assertions)**.
 
 **Walk.** New `pay-buttons.mjs`, 6/6. The walk starts what it needs:
 - a stand-in for BML's transaction API on 127.0.0.1:8011;
