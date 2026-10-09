@@ -22,7 +22,7 @@ class ReviewPronunciationAttemptAction
     {
         $attempt = ArabicPronunciationAttempt::query()->findOrFail($attemptId);
         if ($attempt->status === 'teacher_reviewed') {
-            throw ValidationException::withMessages(['attempt' => 'This attempt has already been reviewed.']);
+            throw ValidationException::withMessages(['attempt' => __('teach.error_pron_attempt_reviewed')]);
         }
 
         $prediction = $attempt->ai_prediction_id !== null
@@ -31,7 +31,7 @@ class ReviewPronunciationAttemptAction
 
         if (empty($data['reject'])) {
             if (empty($data['verified_letter_id']) || empty($data['verified_haraka_id'])) {
-                throw ValidationException::withMessages(['verified_letter_id' => 'Set the verified letter and haraka, or reject the sample.']);
+                throw ValidationException::withMessages(['verified_letter_id' => __('teach.error_pron_verdict_needed')]);
             }
             if ($attempt->audio_media_file_id !== null) {
                 TrainingSample::query()->create([

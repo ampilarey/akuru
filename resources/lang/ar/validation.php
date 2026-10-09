@@ -384,6 +384,15 @@ return [
         'social_links.*' => 'الرابط',
         'recommendation' => 'التوصية',
 
+        // The pronunciation screens' forms: the model shelf and a teacher's verdict (STATUS §5pr)
+        'version_name' => 'اسم الإصدار',
+        'model_path' => 'مسار ملف النموذج',
+        'training_sample_count' => 'العينات',
+        'validation_letter_accuracy' => 'دقة الحرف',
+        'validation_haraka_accuracy' => 'دقة الحركة',
+        'verified_letter_id' => 'الحرف المؤكَّد',
+        'verified_haraka_id' => 'الحركة المؤكَّدة',
+
         // Dates other forms compare with today or now (their `values` are below)
         'follow_up_on' => 'تاريخ المتابعة',
         'preorder_release_on' => 'تاريخ الإصدار',

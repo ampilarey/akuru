@@ -290,9 +290,10 @@ const admin = await signIn(STAFF);
 
 // Totals read off the screen's own summary line, before and after, because the
 // dataset accumulates across runs and a bare "1" would match whatever was
-// already there.
+// already there. The line reads "Samples so far:" since the screen took its
+// words from the phrase book (STATUS §5pr).
 const totalsOf = (text) => {
-    const match = text.match(/totals: ([^·]*(?:·[^·]*)*?)\s*Export approved/);
+    const match = text.match(/Samples so far: ([^·]*(?:·[^·]*)*?)\s*Export approved/);
     return match ? match[1].trim() : '';
 };
 

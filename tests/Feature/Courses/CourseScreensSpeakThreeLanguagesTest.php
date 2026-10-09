@@ -51,12 +51,16 @@ use App\Domains\Offerings\Models\CourseOfferingSession;
 use App\Domains\People\Enums\GuardianRelationship;
 use App\Domains\Progress\Enums\LessonProgressStatus;
 use App\Domains\Progress\Models\ActivityAttempt;
+use App\Domains\Pronunciation\Models\AiModelVersion;
+use App\Domains\Pronunciation\Models\ArabicPronunciationAttempt;
+use App\Domains\Pronunciation\Models\TrainingSample;
 use App\Enums\Hifz\HifzMilestoneStatus;
 use App\Enums\Hifz\HifzMilestoneType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Queue;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 use Spatie\Permission\Models\Role;
 
@@ -133,6 +137,10 @@ function translatedCourseScreens(): array
         'Offerings/Catalog/Sessions' => 'teach',
         'Offerings/Catalog/Attendance' => 'teach',
         'Portal/Performance' => 'learn',
+        // The office's and the teacher's pronunciation screens: the AI admin
+        // and the review queue (STATUS §5pr).
+        'Pronunciation/Admin' => 'teach',
+        'Pronunciation/Teach' => 'teach',
     ];
 }
 
@@ -202,6 +210,13 @@ it('names every status, decision, unlock rule, block type, pattern, assessment a
         ...array_map(fn ($case) => 'session_type_'.$case->value, SessionType::cases()),
         ...array_map(fn ($case) => 'attendance_status_'.$case->value, AttendanceStatus::cases()),
         ...array_map(fn ($case) => 'attendance_mode_'.$case->value, AttendanceMode::cases()),
+        // The pronunciation screens (STATUS §5pr): a training sample's states,
+        // the two an attempt waits in, every verdict `final_status` may hold,
+        // and the model shelf's one model type.
+        ...array_map(fn ($status) => 'pron_sample_status_'.$status, ['pending_review', 'approved', 'rejected', 'used_for_training']),
+        ...array_map(fn ($status) => 'pron_attempt_status_'.$status, ['submitted', 'ai_checked']),
+        ...array_map(fn ($status) => 'pron_ai_status_'.$status, ['correct', 'wrong_letter', 'wrong_haraka', 'low_confidence', 'needs_teacher_review', 'error']),
+        'pron_model_type_arabic_pronunciation',
     ];
 
     foreach (['en', 'dv', 'ar'] as $locale) {
@@ -704,4 +719,61 @@ it('serves the offerings, their sessions and attendance in Dhivehi, and says wha
 
     app()->setLocale('en');
     expect(__('teach.flash_dual_write_synced', ['sessions' => 2, 'enrollments' => 3]))->toBe('Dual-write synced 2 sessions and 3 enrollments.');
+});
+
+it('serves the office’s and the teacher’s pronunciation screens in Dhivehi, and says what was saved and refused in Dhivehi', function () {
+    // STATUS §5pr. The AI admin is the system admin's (`role:super_admin`,
+    // `pronunciation.manage`); the review queue is the teaching staff's, the
+    // system admin among them. Every message both screens can say came from
+    // the controllers and actions in English.
+    Queue::fake();
+    Storage::fake('local');
+    $admin = actingSystemAdmin(['pronunciation.manage']);
+    $pupil = User::factory()->create();
+    [$baa, $fatha] = [
+        (int) DB::table('arabic_letters')->where('key_name', 'baa')->value('id'),
+        (int) DB::table('arabic_harakas')->where('key_name', 'fatha')->value('id'),
+    ];
+    $this->withoutLocalizationMiddleware()->actingAs($pupil)->post(route('learn.pronounce.store'), [
+        'expected_letter_id' => $baa,
+        'expected_haraka_id' => $fatha,
+        'audio' => UploadedFile::fake()->create('attempt.webm', 40, 'audio/webm'),
+    ]);
+    $attempt = ArabicPronunciationAttempt::query()->sole();
+    $dv = teachBook('dv');
+    $as = fn () => $this->withoutLocalizationMiddleware()->actingAs($admin);
+
+    app()->setLocale('dv');
+    $as()->get(route('teach.pronunciation'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Pronunciation/Teach')
+            ->where('t.pron_review_title', $dv['pron_review_title'])
+            ->where('review_queue.0.id', $attempt->id));
+    $as()->post(route('teach.pronunciation.review', $attempt->id), [])
+        ->assertSessionHasErrors(['verified_letter_id' => $dv['error_pron_verdict_needed']]);
+    $as()->post(route('teach.pronunciation.review', $attempt->id), ['verified_letter_id' => $baa, 'verified_haraka_id' => $fatha])
+        ->assertSessionHas('success', $dv['flash_pron_attempt_reviewed']);
+    $as()->post(route('teach.pronunciation.review', $attempt->id), ['verified_letter_id' => $baa, 'verified_haraka_id' => $fatha])
+        ->assertSessionHasErrors(['attempt' => $dv['error_pron_attempt_reviewed']]);
+
+    $sample = TrainingSample::query()->sole();
+    $as()->get(route('admin.pronunciation.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Pronunciation/Admin')
+            ->where('t.pron_admin_title', $dv['pron_admin_title'])
+            ->where('pending_samples.0.id', $sample->id));
+    $as()->post(route('admin.pronunciation.samples.decide', $sample->id), ['approve' => true])
+        ->assertSessionHas('success', $dv['flash_pron_sample_decided']);
+    $as()->post(route('admin.pronunciation.samples.decide', $sample->id), ['approve' => false])
+        ->assertSessionHasErrors(['sample' => $dv['error_pron_sample_decided']]);
+    $as()->post(route('admin.pronunciation.versions.store'), ['model_path' => '/models/v2.h5'])
+        ->assertSessionHasErrors(['version_name' => 'ވާޝަންގެ ނަން ބޭނުންވޭ.']);
+    $as()->post(route('admin.pronunciation.versions.store'), ['version_name' => 'v2', 'model_path' => '/models/v2.h5'])
+        ->assertSessionHas('success', $dv['flash_pron_version_registered']);
+    $as()->post(route('admin.pronunciation.versions.activate', AiModelVersion::query()->sole()->id))
+        ->assertSessionHas('success', $dv['flash_pron_version_activated']);
+    $as()->post(route('admin.pronunciation.export'))
+        ->assertSessionHas('success', fn (string $said) => str_starts_with($said, '1 ސާމްޕަލް ai/pronunciation/') && str_ends_with($said, ' އަށް އެކްސްޕޯޓްކުރެވިއްޖެ.'));
+
+    app()->setLocale('en');
+    expect(__('teach.flash_pron_exported', ['count' => 2, 'path' => 'ai/manifest.json']))->toBe('Exported 2 samples to ai/manifest.json.')
+        ->and(__('teach.error_pron_verdict_needed'))->toBe('Set the verified letter and haraka, or reject the sample.');
 });

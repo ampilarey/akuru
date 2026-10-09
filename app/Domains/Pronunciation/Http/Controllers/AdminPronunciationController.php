@@ -9,6 +9,7 @@ use App\Domains\Pronunciation\Actions\GetAiDatasetStatsAction;
 use App\Domains\Pronunciation\Actions\ListPronunciationQueuesAction;
 use App\Domains\Pronunciation\Actions\SaveAiModelVersionAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -17,6 +18,9 @@ use Inertia\Response;
 /**
  * §51.16 steps 6–9: the dataset and model shelf. pronunciation.manage
  * gated; every model activation/rollback is audited by the actions.
+ *
+ * The screen reads the `teach` book and says what was saved in the page's
+ * language (STATUS §5pr).
  */
 class AdminPronunciationController extends Controller
 {
@@ -30,6 +34,7 @@ class AdminPronunciationController extends Controller
             'model_versions' => $queues['model_versions'],
             'stats' => app(GetAiDatasetStatsAction::class)->execute(),
             'ai_enabled' => $queues['ai_enabled'],
+            't' => Phrases::once('teach'),
         ]);
     }
 
@@ -48,7 +53,7 @@ class AdminPronunciationController extends Controller
             $data['reason'] ?? null,
         );
 
-        return back()->with('success', 'Sample decided.');
+        return back()->with('success', __('teach.flash_pron_sample_decided'));
     }
 
     public function export(Request $request): RedirectResponse
@@ -56,7 +61,7 @@ class AdminPronunciationController extends Controller
         abort_unless($request->user()?->can('pronunciation.manage'), 403);
         $result = app(ExportApprovedSamplesAction::class)->execute();
 
-        return back()->with('success', "Exported {$result['count']} samples to {$result['manifest_path']}.");
+        return back()->with('success', __('teach.flash_pron_exported', ['count' => $result['count'], 'path' => $result['manifest_path']]));
     }
 
     public function storeVersion(Request $request): RedirectResponse
@@ -75,7 +80,7 @@ class AdminPronunciationController extends Controller
 
         app(SaveAiModelVersionAction::class)->execute($data, (int) $request->user()->id);
 
-        return back()->with('success', 'Model version registered.');
+        return back()->with('success', __('teach.flash_pron_version_registered'));
     }
 
     public function activateVersion(Request $request, int $version): RedirectResponse
@@ -89,6 +94,6 @@ class AdminPronunciationController extends Controller
             (bool) ($data['rollback'] ?? false),
         );
 
-        return back()->with('success', 'Model version activated.');
+        return back()->with('success', __('teach.flash_pron_version_activated'));
     }
 }

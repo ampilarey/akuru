@@ -43,7 +43,9 @@
  * the pupil has not earned on the Arabic page, the reason in Arabic (slice
  * CT6b-2b). `SmokeMarkerSeeder` removes the module and the template. A
  * second SMOKE-Offering, from the Dhivehi offerings page, is refused in
- * Dhivehi (slice CT6b-2c).
+ * Dhivehi (slice CT6b-2c). The system admin opens the pronunciation AI admin
+ * and the review queue, and a model version registered empty from the
+ * Dhivehi admin is refused in Dhivehi (STATUS §5pr).
  *
  *   node scripts/smoke/course-screens-language.mjs
  *
@@ -367,6 +369,23 @@ check(
 await page.goto(`${BASE}/dv/catalog/offerings`, { waitUntil: 'networkidle' });
 check('and no offering is made', ((await props(page)).rows || []).length === offeringsBefore, `${offeringsBefore} → ${((await props(page)).rows || []).length}`);
 
+// A model version registered empty from the Dhivehi pronunciation admin
+// (STATUS §5pr). Laravel's refusal, the two fields named as the form labels
+// them; nothing is registered. The screen, the review queue and their messages
+// were English in every language.
+await office.goto(`${BASE}/dv/admin/pronunciation`, { waitUntil: 'networkidle' });
+const pronT = (await props(office)).t ?? {};
+const versionsBefore = ((await props(office)).model_versions || []).length;
+await office.getByRole('button', { name: pronT.pron_register_version, exact: true }).click();
+const versionRefusal = (await office.locator('main form ul[role="alert"]').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+check(
+    'a model version registered empty is refused on the Dhivehi page, in Dhivehi',
+    Boolean(versionRefusal) && versionRefusal.includes('ވާޝަންގެ ނަން ބޭނުންވޭ.') && versionRefusal.includes('މޮޑެލްގެ ފައިލުގެ މަގު ބޭނުންވޭ.') && !/[A-Za-z]{2,}/.test(versionRefusal),
+    `said: ${versionRefusal ?? 'nothing'}`,
+);
+await office.goto(`${BASE}/dv/admin/pronunciation`, { waitUntil: 'networkidle' });
+check('and no model version is registered', ((await props(office)).model_versions || []).length === versionsBefore, `${versionsBefore} → ${((await props(office)).model_versions || []).length}`);
+
 const screens = [
     '/catalog/courses',
     `/catalog/courses/${course?.id}/outline`,
@@ -424,6 +443,10 @@ const screens = [
     `/catalog/offerings/${offeringId}/sessions`,
     attendancePath,
     ['/portal/performance', pupil],
+    // The office's and the teacher's pronunciation screens (STATUS §5pr). The
+    // AI admin is the system admin's; the review queue lets them in too.
+    ['/admin/pronunciation', office],
+    ['/teach/pronunciation', office],
 ];
 
 // A step's name, with no record's id in it.

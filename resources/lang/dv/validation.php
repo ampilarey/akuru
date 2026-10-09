@@ -384,6 +384,15 @@ return [
         'social_links.*' => 'ލިންކް',
         'recommendation' => 'ލަފާ',
 
+        // The pronunciation screens' forms: the model shelf and a teacher's verdict (STATUS §5pr)
+        'version_name' => 'ވާޝަންގެ ނަން',
+        'model_path' => 'މޮޑެލްގެ ފައިލުގެ މަގު',
+        'training_sample_count' => 'ސާމްޕަލްތައް',
+        'validation_letter_accuracy' => 'އަކުރުގެ ދަޤީޤުކަން',
+        'validation_haraka_accuracy' => 'ހަރަކާތުގެ ދަޤީޤުކަން',
+        'verified_letter_id' => 'ޔަޤީންކުރި އަކުރު',
+        'verified_haraka_id' => 'ޔަޤީންކުރި ހަރަކާތް',
+
         // Dates other forms compare with today or now (their `values` are below)
         'follow_up_on' => 'ފަހުން ގުޅާނެ ތާރީޚު',
         'preorder_release_on' => 'ނެރޭ ތާރީޚު',
