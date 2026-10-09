@@ -29,13 +29,13 @@ class SubmitFormResponseAction
         $matcher = app(ResolveAudienceContextAction::class);
         if (! $matcher->matches($form->target_audience, $form->target_classes, $matcher->execute($userId, $roleNames))) {
             throw ValidationException::withMessages([
-                'form' => 'This form is not for you.',
+                'form' => __('portal.error_form_not_yours'),
             ]);
         }
 
         if (! $form->isOpen()) {
             throw ValidationException::withMessages([
-                'form' => 'This form is closed.',
+                'form' => __('portal.error_form_closed'),
             ]);
         }
 
@@ -59,7 +59,7 @@ class SubmitFormResponseAction
 
         if ($form->hasFee() && $student === null) {
             throw ValidationException::withMessages([
-                'student_id' => 'A paid sign-up has to be for a pupil.',
+                'student_id' => __('portal.error_form_paid_needs_pupil'),
             ]);
         }
 
@@ -129,7 +129,7 @@ class SubmitFormResponseAction
             $isEmpty = $value === null || $value === [] || $value === '';
 
             if (($field['required'] ?? false) && $isEmpty) {
-                $errors["answers.{$key}"] = "“{$field['label']}” is required.";
+                $errors["answers.{$key}"] = __('portal.error_form_field_required', ['field' => $field['label']]);
             }
 
             $clean[$key] = $value;

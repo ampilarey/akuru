@@ -3,6 +3,7 @@
 use App\Domains\Academics\Actions\AssignStudentToClassAction;
 use App\Domains\Academics\Actions\RecordStudentMovementAction;
 use App\Domains\Academics\Actions\SaveAnnouncementAction;
+use App\Domains\Academics\Enums\AbsenceNoteStatus;
 use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Enums\BehaviorType;
 use App\Domains\Academics\Enums\CalendarDayType;
@@ -47,6 +48,13 @@ use Spatie\Permission\Models\Role;
  * whether a child arrived or left and how it was recorded were printed as
  * the server's codes or English labels; the fee payment's three refusals
  * were English, and a Pay button's refusal had no place on the page.
+ *
+ * Slice PT3 (STATUS §5qa) adds the family's requests: absence notes,
+ * sign-up forms, collecting a child, meetings, events, school library books
+ * and a child's Digital Library. Their saved messages and refusals were
+ * English, and four buttons that post with `router` — cancel a meeting,
+ * confirm a pick-up, confirm an event registration, confirm a form answer —
+ * had nowhere to say a refusal.
  */
 uses(RefreshDatabase::class);
 
@@ -59,6 +67,8 @@ function portalDayScreens(): array
         'Portal/Notifications', 'Portal/Messages/Index', 'Portal/Messages/Show', 'Portal/Messages/Create',
         // Slice PT2.
         'Portal/ReportCards', 'Portal/Exams', 'Portal/Awards', 'Portal/Behavior', 'Portal/Invoices', 'Portal/Work', 'Portal/Movements', 'Portal/FoundItems',
+        // Slice PT3.
+        'Portal/AbsenceNotes', 'Portal/Forms', 'Portal/Pickup', 'Portal/Meetings', 'Portal/Events', 'Portal/Loans', 'Portal/ChildLibrary',
     ];
 }
 
@@ -96,6 +106,23 @@ function portalDayServerFiles(): array
         'app/Domains/Academics/Actions/ListMovementsForGuardianAction.php',
         'app/Domains/Finance/Actions/PayPortalInvoiceAction.php',
         'app/Domains/Finance/Actions/InitiateInvoicePaymentAction.php',
+        // Slice PT3.
+        'app/Domains/Portal/Http/Controllers/PortalAbsenceNoteController.php',
+        'app/Domains/Academics/Actions/SubmitAbsenceNoteAction.php',
+        'app/Domains/Portal/Http/Controllers/PortalPickupController.php',
+        'app/Domains/Academics/Actions/RequestPickupAction.php',
+        'app/Domains/People/Actions/SetPickupPinAction.php',
+        'app/Domains/Academics/Actions/AdvancePickupNoticeAction.php',
+        'app/Domains/Portal/Http/Controllers/PortalMeetingController.php',
+        'app/Domains/Academics/Actions/BookMeetingSlotAction.php',
+        'app/Domains/Academics/Actions/CancelMeetingBookingAction.php',
+        'app/Domains/Portal/Http/Controllers/PortalEventController.php',
+        'app/Domains/Website/Actions/ConfirmEventRegistrationAction.php',
+        'app/Domains/Forms/Http/Controllers/PortalFormController.php',
+        'app/Domains/Forms/Actions/SubmitFormResponseAction.php',
+        'app/Domains/Forms/Actions/ConfirmFormResponseAction.php',
+        'app/Domains/Portal/Http/Controllers/PortalLoanController.php',
+        'app/Domains/Portal/Http/Controllers/GuardianChildLibraryController.php',
     ];
 }
 
@@ -162,6 +189,12 @@ it('names every code the family’s day pages show, in all three languages', fun
         ...array_map(fn ($case) => 'plan_status_'.$case->value, PaymentPlanStatus::cases()),
         ...array_map(fn ($case) => 'movement_direction_'.$case->value, MovementDirection::cases()),
         ...array_map(fn ($case) => 'movement_source_'.$case->value, MovementSource::cases()),
+        // Slice PT3: an absence note's state, an event registration's state
+        // and kind, a Library purchase's state.
+        ...array_map(fn ($case) => 'absence_status_'.$case->value, AbsenceNoteStatus::cases()),
+        ...array_map(fn ($status) => 'events_status_'.$status, ['confirmed', 'pending', 'pending_parent', 'waitlisted', 'cancelled', 'attended', 'no_show']),
+        ...array_map(fn ($type) => 'events_type_'.$type, ['none', 'required', 'optional']),
+        ...array_map(fn ($status) => 'library_purchase_status_'.$status, ['pending', 'paid', 'refunded', 'failed']),
     ];
     // A relationship is the `learn` book's, which the shell shares.
     $learn = [
@@ -184,7 +217,7 @@ it('leaves no English in what the server says on the family’s day pages, and s
     expect($english)->toBe([]);
 
     $keys = refusalKeysIn(portalDayServerFiles());
-    expect($keys)->toContain('portal.home_title_parent', 'portal.tile_invoices_unpaid', 'nav.absence_notes', 'portal.error_homework_none', 'portal.flash_message_sent', 'portal.error_thread_not_yours', 'portal.unknown_person', 'portal.error_invoice_paid', 'portal.error_payment_failed');
+    expect($keys)->toContain('portal.home_title_parent', 'portal.tile_invoices_unpaid', 'nav.absence_notes', 'portal.error_homework_none', 'portal.flash_message_sent', 'portal.error_thread_not_yours', 'portal.unknown_person', 'portal.error_invoice_paid', 'portal.error_payment_failed', 'portal.error_pickup_pin_wrong', 'portal.error_meeting_slot_full', 'portal.error_form_field_required');
     foreach ($keys as $key) {
         expect(trans($key, [], 'en'))->not->toBe($key, "{$key} has no English")
             ->and(trans($key, [], 'dv'))->toMatch('/\p{Thaana}/u', "{$key} in Dhivehi")
@@ -344,4 +377,42 @@ it('serves the family’s records in Dhivehi, names how an arrival was recorded,
     $this->withoutLocalizationMiddleware()->actingAs($parent)
         ->post(route('portal.invoices.pay', $notTheirs->id), ['mode' => 'full'])
         ->assertSessionHasErrors(['invoice_id' => $dv['error_invoice_unavailable']]);
+});
+
+it('serves the family’s requests in Dhivehi, and says what was saved and refused in Dhivehi', function () {
+    [$parent, $student] = pt1aParent();
+    $dv = portalBook('dv');
+
+    app()->setLocale('dv');
+    foreach ([
+        'portal.absence-notes' => ['Portal/AbsenceNotes', 'absence_title'],
+        'portal.forms' => ['Portal/Forms', 'forms_title'],
+        'portal.pickup' => ['Portal/Pickup', 'pickup_title'],
+        'portal.meetings' => ['Portal/Meetings', 'meetings_title'],
+        'portal.events' => ['Portal/Events', 'events_title'],
+        'portal.loans' => ['Portal/Loans', 'loans_title'],
+    ] as $route => [$component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($parent)
+            ->get(route($route))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("t.{$key}", $dv[$key]));
+    }
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->get(route('portal.children.library', $student->id))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Portal/ChildLibrary')->where('t.library_reading', $dv['library_reading']));
+
+    // A PIN too short, then one too obvious, then one that is saved.
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->post(route('portal.pickup.pin'), ['pin' => '12'])
+        ->assertSessionHasErrors(['pin' => $dv['error_pickup_pin_digits']]);
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->post(route('portal.pickup.pin'), ['pin' => '1111'])
+        ->assertSessionHasErrors(['pin' => $dv['error_pickup_pin_obvious']]);
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->post(route('portal.pickup.pin'), ['pin' => '4826'])
+        ->assertSessionHas('success', $dv['flash_pickup_pin']);
+
+    // An absence note with no reason chosen is refused in Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->post(route('portal.absence-notes.store'), ['student_id' => $student->id, 'date' => now()->toDateString(), 'reason' => 'Fever.'])
+        ->assertSessionHasErrors(['absence_type_id' => $dv['error_absence_type']]);
 });

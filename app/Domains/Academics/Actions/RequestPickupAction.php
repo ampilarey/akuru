@@ -44,19 +44,19 @@ class RequestPickupAction
 
         if (! $open) {
             throw ValidationException::withMessages([
-                'pickup' => 'Pick-up is not open at the moment. The school opens it for each day.',
+                'pickup' => __('portal.error_pickup_closed'),
             ]);
         }
 
         if (! app(GuardianMayCollectStudentAction::class)->execute($guardianUserId, $studentId)) {
             throw ValidationException::withMessages([
-                'pickup' => 'You are not listed as someone who may collect this child.',
+                'pickup' => __('portal.error_pickup_not_listed'),
             ]);
         }
 
         if (! app(VerifyPickupPinAction::class)->execute($guardianUserId, $pin)) {
             throw ValidationException::withMessages([
-                'pin' => 'That PIN is not right.',
+                'pin' => __('portal.error_pickup_pin_wrong'),
             ]);
         }
 
@@ -74,7 +74,7 @@ class RequestPickupAction
         $yearId = (int) AcademicYear::query()->where('status', 'active')->value('id');
         if ($yearId === 0) {
             throw ValidationException::withMessages([
-                'pickup' => 'No academic year is active.',
+                'pickup' => __('portal.error_pickup_no_year'),
             ]);
         }
 

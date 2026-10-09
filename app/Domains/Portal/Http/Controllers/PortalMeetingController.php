@@ -9,6 +9,7 @@ use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ class PortalMeetingController extends Controller
             'slots' => $board['slots'],
             'bookings' => $board['bookings'],
             'csvUrl' => '/portal/meetings/export',
+            't' => Phrases::once('portal'),
         ]);
     }
 
@@ -47,7 +49,7 @@ class PortalMeetingController extends Controller
             (int) $request->user()->id,
         );
 
-        return redirect()->route('portal.meetings')->with('success', 'Meeting booked.');
+        return redirect()->route('portal.meetings')->with('success', __('portal.flash_meeting_booked'));
     }
 
     public function cancel(Request $request, int $booking): RedirectResponse
@@ -59,7 +61,7 @@ class PortalMeetingController extends Controller
             (int) $request->user()->id,
         );
 
-        return redirect()->route('portal.meetings')->with('success', 'Meeting cancelled.');
+        return redirect()->route('portal.meetings')->with('success', __('portal.flash_meeting_cancelled'));
     }
 
     public function export(Request $request): StreamedResponse

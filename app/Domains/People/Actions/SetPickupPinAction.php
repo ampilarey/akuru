@@ -27,13 +27,13 @@ class SetPickupPinAction
 
         if (! preg_match('/^\d{4,8}$/', $pin)) {
             throw ValidationException::withMessages([
-                'pin' => 'The PIN must be between 4 and 8 digits.',
+                'pin' => __('portal.error_pickup_pin_digits'),
             ]);
         }
 
         if ($this->tooObvious($pin)) {
             throw ValidationException::withMessages([
-                'pin' => 'Choose a less obvious PIN — not all one digit, and not a simple run.',
+                'pin' => __('portal.error_pickup_pin_obvious'),
             ]);
         }
 

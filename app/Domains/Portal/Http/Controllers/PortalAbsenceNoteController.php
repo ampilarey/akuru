@@ -7,6 +7,7 @@ use App\Domains\Academics\Actions\ListPeriodOptionsAction;
 use App\Domains\Academics\Actions\SubmitAbsenceNoteAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -33,6 +34,7 @@ class PortalAbsenceNoteController extends Controller
             // E10c: the school's own reasons, not five strings compiled in.
             'types' => app(\App\Domains\Academics\Actions\ListAbsenceTypesAction::class)->execute(),
             'periods' => app(ListPeriodOptionsAction::class)->execute(),
+            't' => Phrases::once('portal'),
         ]);
     }
 
@@ -56,7 +58,7 @@ class PortalAbsenceNoteController extends Controller
         ]);
 
         if (($data['absence_type_id'] ?? null) === null && ($data['type'] ?? null) === null) {
-            return back()->withErrors(['absence_type_id' => 'Choose a reason.']);
+            return back()->withErrors(['absence_type_id' => __('portal.error_absence_type')]);
         }
 
         $childIds = app(ListGuardianChildrenAction::class)
@@ -77,6 +79,6 @@ class PortalAbsenceNoteController extends Controller
             'attachment_path' => $path,
         ]);
 
-        return redirect()->route('portal.absence-notes')->with('success', 'Absence note submitted.');
+        return redirect()->route('portal.absence-notes')->with('success', __('portal.flash_absence_submitted'));
     }
 }

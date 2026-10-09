@@ -6,6 +6,7 @@ use App\Domains\Library\Actions\ListReaderLibraryForFamilyAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use App\Support\PersonName;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -34,6 +35,7 @@ class GuardianChildLibraryController extends Controller
             ],
             'continue' => $library['continue'],
             'purchases' => $library['purchases'],
+            't' => Phrases::once('portal'),
         ]);
     }
 

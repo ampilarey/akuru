@@ -13,7 +13,7 @@ class ConfirmEventRegistrationAction
 
         if ($registration->status !== 'pending_parent') {
             throw ValidationException::withMessages([
-                'status' => 'Only registrations waiting for parent confirmation can be confirmed.',
+                'status' => __('portal.error_event_not_awaiting'),
             ]);
         }
 

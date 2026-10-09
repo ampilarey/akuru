@@ -25,6 +25,10 @@
  *   - the report cards, exam results, awards, behaviour, fees, a child's
  *     work, arrivals and departures and lost property read in Dhivehi and
  *     Arabic, codes named (slice PT2);
+ *   - absence notes, sign-up forms, collecting a child, meetings, events,
+ *     library books and a child's Digital Library read in Dhivehi and
+ *     Arabic, and a PIN too obvious is refused beside its box, in Dhivehi
+ *     (slice PT3);
  *   - the pupil ticks SMOKE-Lang-Homework done (`SmokeMarkerSeeder` plants it
  *     on a register two days back) and is told so in Dhivehi; the tick holds
  *     over a reload, and unticking it puts it back.
@@ -170,6 +174,10 @@ if ((compose.recipients || []).length === 0) {
     check('and a reply is sent and said so, in Dhivehi', replied === words.flash_reply_sent, `said: ${replied ?? 'nothing'}`);
 }
 
+// A child's Digital Library is reached from the children page (slice PT3).
+await parent.goto(`${BASE}/en/portal/children`, { waitUntil: 'networkidle' });
+const childLibrary = (await parent.getByTestId('child-library').first().getAttribute('href').catch(() => null))?.replace(/^\/(en|dv|ar)/, '') ?? null;
+
 const screens = [
     ['/portal/home', parent],
     ['/portal/children', parent],
@@ -193,6 +201,14 @@ const screens = [
     ['/portal/work', parent],
     ['/portal/movements', parent],
     ['/portal/found-items', parent],
+    // Slice PT3.
+    ['/portal/absence-notes', parent],
+    ['/portal/forms', parent],
+    ['/portal/pickup', parent],
+    ['/portal/meetings', parent],
+    ['/portal/events', parent],
+    ['/portal/loans', parent],
+    ...(childLibrary ? [[childLibrary, parent]] : []),
 ];
 
 for (const locale of ['dv', 'ar']) {
@@ -243,6 +259,17 @@ if ((await payInFull.count()) === 0) {
         tinker(`${invoice}->update(['paid_amount' => ${Number(paidBefore) || 0}]);`);
     }
 }
+
+// ------------------------------------- an obvious PIN, refused in Dhivehi (slice PT3)
+
+await parent.goto(`${BASE}/dv/portal/pickup`, { waitUntil: 'networkidle' });
+const pickupWords = (await props(parent)).t ?? {};
+const pinForm = parent.locator('form').first();
+await pinForm.locator('input[type="password"]').fill('1111');
+await pinForm.locator('button[type="submit"]').click();
+await parent.waitForLoadState('networkidle');
+const pinRefused = (await pinForm.locator('input[type="password"] + span').textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+check('an obvious pick-up PIN is refused beside its box, in Dhivehi', pinRefused === pickupWords.error_pickup_pin_obvious, `said: ${pinRefused ?? 'nothing'}`);
 
 // ------------------------------------- a tile's door keeps the page's language
 
