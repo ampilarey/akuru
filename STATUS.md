@@ -5054,7 +5054,7 @@ correction there corrects both.
 - A pupil's tick is saved, and a tick on a register without homework is
   refused, both in Dhivehi.
 
-Whole suite locally: **SUITE**.
+Whole suite locally: **2955 passed (40548 assertions)**.
 
 **Walk:** `portal-language.mjs` 55/55. `SmokeMarkerSeeder` keeps
 `SMOKE-Lang-Homework` on a submitted register of the pupil's class two
