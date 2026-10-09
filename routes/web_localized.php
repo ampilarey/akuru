@@ -337,6 +337,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/teach/milestones/{milestone}/review', [TeachQuranMilestoneController::class, 'review'])->name('teach.milestones.review')->whereNumber('milestone');
     Route::post('/teach/milestones/{milestone}/decide', [TeachQuranMilestoneController::class, 'decide'])->name('teach.milestones.decide')->whereNumber('milestone');
     Route::get('/teach/quran-sessions/{session}', [TeachQuranSessionController::class, 'show'])->name('teach.quran-sessions.show')->whereNumber('session');
+    // The halaqa sheet's door: the Qur'an component's own session list (STATUS §5pu).
+    Route::get('/teach/quran-sessions', [TeachQuranSessionController::class, 'index'])->name('teach.quran-sessions.index');
     Route::post('/teach/quran-sessions/{session}/records', [TeachQuranSessionController::class, 'storeRecord'])->name('teach.quran-sessions.records.store')->whereNumber('session');
     Route::post('/teach/quran-session-records/{record}/review', [TeachQuranSessionController::class, 'review'])->name('teach.quran-sessions.records.review')->whereNumber('record');
     // Mushaf editorial (F5). These were `hifz.quran.*` and moved with the

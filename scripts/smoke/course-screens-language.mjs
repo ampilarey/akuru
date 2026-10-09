@@ -49,8 +49,12 @@
  *
  *   node scripts/smoke/course-screens-language.mjs
  *
+ * The halaqa sessions list (STATUS §5pu): the dean finds `SMOKE-Hifz-Session`
+ * there and opens its sheet; the seeded teacher, who teaches it, finds it in
+ * their own list and their menu.
+ *
  * Environment: SMOKE_BASE_URL, SMOKE_MARKER, SMOKE_SUPER_ADMIN, SMOKE_STUDENT,
- * SMOKE_PASSWORD, SMOKE_CHROMIUM.
+ * SMOKE_TEACHER, SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
 
@@ -58,6 +62,7 @@ const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const DEAN = process.env.SMOKE_MARKER ?? 'headmaster@akuru.edu.mv';
 const SUPER = process.env.SMOKE_SUPER_ADMIN ?? 'superadmin@akuru.edu.mv';
 const PUPIL = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
+const TEACHER = process.env.SMOKE_TEACHER ?? 'teacher@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const COURSE = 'SMOKE-Course';
 
@@ -246,6 +251,29 @@ check('and the page shows it', loaded, `${await pageImage.count()} image(s)`);
 await page.goto(`${BASE}/en/academics/clubs`, { waitUntil: 'networkidle' });
 const club = ((await props(page)).clubs || []).find((row) => row.title === 'SMOKE-Club');
 check('the dean finds SMOKE-Club among the clubs', Boolean(club));
+
+// The halaqa sheet's door (STATUS §5pu). `SmokeMarkerSeeder` plants
+// SMOKE-Hifz-Session on a hifz course, taught by the seeded teacher. The dean
+// runs the courses, so sees every halaqa session; the teacher sees their own.
+await page.goto(`${BASE}/en/teach/quran-sessions`, { waitUntil: 'networkidle' });
+const halaqaRow = ((await props(page)).sessions || []).find((row) => row.title === 'SMOKE-Hifz-Session');
+check('the dean finds the planted halaqa session in the halaqa sessions list', Boolean(halaqaRow));
+await page.getByTestId(`quran-session-${halaqaRow?.id}`).getByRole('link').click();
+await page.waitForURL(/\/teach\/quran-sessions\/\d+$/, { timeout: 10000 }).catch(() => {});
+// The script tag keeps the list's props after a client-side visit; a fresh
+// load reads the sheet's.
+await page.goto(page.url(), { waitUntil: 'networkidle' });
+check('and its link opens the session\'s sheet', page.url().endsWith(`/teach/quran-sessions/${halaqaRow?.id}`) && (await props(page)).session?.id === halaqaRow?.id, page.url().replace(BASE, ''));
+const teacher = await signIn(TEACHER);
+await teacher.goto(`${BASE}/en/teach/quran-sessions`, { waitUntil: 'networkidle' });
+const teacherProps = await props(teacher);
+check(
+    'the teacher finds the session they teach in their own list',
+    teacherProps.scope === 'mine' && (teacherProps.sessions || []).some((row) => row.title === 'SMOKE-Hifz-Session'),
+    `scope=${teacherProps.scope}, ${(teacherProps.sessions || []).length} session(s)`,
+);
+const teacherDoors = (teacherProps.nav?.groups || []).flatMap((group) => group.items || []).map((item) => item.href || '');
+check('and the teacher\'s menu offers the list', teacherDoors.some((href) => href.endsWith('/teach/quran-sessions')), `${teacherDoors.length} doors`);
 
 // The pupil's activities, assessments and lesson on SMOKE-Course (slice CT7b),
 // found the way the pupil finds them: on the course page.
@@ -487,6 +515,9 @@ const screens = [
     // AI admin is the system admin's; the review queue lets them in too.
     ['/admin/pronunciation', office],
     ['/teach/pronunciation', office],
+    // The halaqa sessions list, as the dean and as the teacher (STATUS §5pu).
+    '/teach/quran-sessions',
+    ['/teach/quran-sessions', teacher],
 ];
 
 // A step's name, with no record's id in it.

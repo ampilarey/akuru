@@ -4983,6 +4983,58 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pu. The halaqa sheet gets a door: the Qur'an component's own session list (C19, 2026-10-09)
+
+Found with CT5a (BACKLOG C19): the halaqa session sheet,
+`/teach/quran-sessions/{id}`, had no door.
+- The teacher's schedule links a session to its attendance only.
+- A Qur'an-only link there would branch the Offerings core on a subject
+  (rule 6).
+
+So the sheet was reached only by typing its address. A teacher who taught a
+halaqa could not find where to record its three lanes.
+
+**The change:**
+- **`/teach/quran-sessions` lists the halaqa sessions** — the sessions of a
+  hifz course — from two weeks back on, soonest first. Each row opens that
+  session's sheet.
+  - A teacher sees the sessions they teach.
+  - Whoever runs the courses (`courses.manage`) sees every one.
+  - A family is refused.
+- **The component decides what a halaqa is, as data.** The Qur'an component
+  passes its own course type, `hifz`, to an engine seam,
+  `ListSessionsByCourseTypeAction` in Offerings. That is how
+  `ListEnrollmentTargetsByCourseTypeAction` already serves its assignments.
+  The engine names no subject.
+- **The Teach menu offers *Halaqa sessions*** to the teaching staff, and the
+  sheet links back to the list.
+- **The page reads the `teach` book**, in three languages, and the menu label
+  reads the `nav` book. Times are shown as digits only, so they read the same
+  in every language.
+
+**Tests:** `HalaqaSessionsTest`, 3 tests.
+- A teacher's list holds their halaqa sessions from yesterday and tomorrow.
+  It leaves out:
+  - another teacher's session;
+  - a session of a course that is not a halaqa;
+  - one from a month ago.
+
+  The row's link opens the sheet, and the menu offers the list.
+- Whoever runs the courses sees every halaqa session, one with no teacher yet
+  among them; a parent is refused.
+- The page and its menu label read in Dhivehi and Arabic.
+
+`CourseScreensSpeakThreeLanguagesTest` holds the new page's source.
+
+Whole suite locally: **SUITE**.
+
+**Walk:** `course-screens-language.mjs` 422/422. `SmokeMarkerSeeder` plants
+`SMOKE-Hifz-Session` on a closed draft hifz course, taught by the seeded teacher.
+- The dean finds the session in the list and opens its sheet from the row.
+- The teacher finds it in their own list, and their menu offers the list.
+- Both lists read in Dhivehi and Arabic, right to left, with nothing in
+  English.
+
 ## 5pt. A mushaf gets its pages and page images after the upload, and a locked mushaf stays locked (C19, 2026-10-09)
 
 Two of the three gaps found with CT5b (BACKLOG C19), and two defects found

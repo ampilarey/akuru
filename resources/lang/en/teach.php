@@ -1086,4 +1086,18 @@ return [
     'flash_qpage_image_saved' => 'Page image saved.',
     'error_mushaf_pages_fewer' => 'This mushaf already has :count pages, and pages are never taken away.',
     'error_mushaf_locked' => 'This mushaf is locked, so it can no longer be changed.',
+
+    // The halaqa sheet's door: the Qur'an component's own session list (STATUS §5pu)
+    'qsessions_title' => 'Halaqa sessions',
+    'qsessions_hint_mine' => 'The halaqa sessions you teach, from :days days back on.',
+    'qsessions_hint_all' => 'Every halaqa session, from :days days back on.',
+    'qsessions_col_when' => 'When',
+    'qsessions_col_session' => 'Session',
+    'qsessions_col_halaqa' => 'Halaqa',
+    'qsessions_col_place' => 'Place',
+    'qsessions_online' => 'Online',
+    'qsessions_open' => 'Open sheet',
+    'qsessions_all' => 'All halaqa sessions',
+    'qsessions_empty_all' => 'No halaqa sessions to show.',
+    'qsessions_empty_mine' => 'No halaqa sessions of yours to show. A session is yours when the office names you its teacher.',
 ];

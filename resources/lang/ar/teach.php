@@ -1086,4 +1086,18 @@ return [
     'flash_qpage_image_saved' => 'حُفظت صورة الصفحة.',
     'error_mushaf_pages_fewer' => 'في هذا المصحف :count صفحة بالفعل، ولا تُحذف الصفحات أبدًا.',
     'error_mushaf_locked' => 'هذا المصحف مقفل، فلم يعد بالإمكان تغييره.',
+
+    // The halaqa sheet's door: the Qur'an component's own session list (STATUS §5pu)
+    'qsessions_title' => 'جلسات الحلقة',
+    'qsessions_hint_mine' => 'جلسات الحلقة التي تدرّسها، منذ :days يومًا فصاعدًا.',
+    'qsessions_hint_all' => 'كل جلسات الحلقة، منذ :days يومًا فصاعدًا.',
+    'qsessions_col_when' => 'الموعد',
+    'qsessions_col_session' => 'الجلسة',
+    'qsessions_col_halaqa' => 'الحلقة',
+    'qsessions_col_place' => 'المكان',
+    'qsessions_online' => 'عبر الإنترنت',
+    'qsessions_open' => 'فتح الكشف',
+    'qsessions_all' => 'كل جلسات الحلقة',
+    'qsessions_empty_all' => 'لا جلسات حلقة لعرضها.',
+    'qsessions_empty_mine' => 'لا جلسات حلقة لك لعرضها. تصبح الجلسة لك حين يسمّيك المكتب معلّمها.',
 ];

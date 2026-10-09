@@ -5,6 +5,7 @@ namespace App\Domains\Courses\Components\Quran\Http\Controllers;
 use App\Domains\Courses\Components\Quran\Actions\ListQuranSessionSheetAction;
 use App\Domains\Courses\Components\Quran\Actions\ReviewQuranSessionRecordAction;
 use App\Domains\Courses\Components\Quran\Actions\SaveQuranSessionRecordAction;
+use App\Domains\Offerings\Actions\ListSessionsByCourseTypeAction;
 use App\Domains\People\Actions\ResolveTeacherForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
@@ -19,9 +20,31 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * F5-P1 (ADR-025 gate item 1): the three-lane halaqa session sheet on the
  * engine — the browser path the legacy Blade HifzSessionRecordController
  * provided, now against engine sessions/enrollments.
+ *
+ * The sheet had no door (C19, found with CT5a): the teacher's schedule links
+ * a session to attendance only, and a Qur'an-only link there would branch the
+ * Offerings core (rule 6). So the component lists its own sessions — a hifz
+ * course's — and each opens its sheet (STATUS §5pu).
  */
 class TeachQuranSessionController extends Controller
 {
+    /** The component's course_type, passed to the engine as data (rule 6). */
+    private const COURSE_TYPE = 'hifz';
+
+    public function index(Request $request): Response
+    {
+        $this->authorizeTeacher($request);
+        // A teacher sees the sessions they teach; whoever runs the courses sees all.
+        $teacherUserId = $request->user()->can('courses.manage') ? null : (int) $request->user()->id;
+
+        return Inertia::render('Courses/Teach/QuranSessions', [
+            'sessions' => app(ListSessionsByCourseTypeAction::class)->execute(self::COURSE_TYPE, $teacherUserId),
+            'scope' => $teacherUserId === null ? 'all' : 'mine',
+            'look_back_days' => ListSessionsByCourseTypeAction::LOOK_BACK_DAYS,
+            't' => Phrases::once('teach'),
+        ]);
+    }
+
     public function show(Request $request, int $session): Response|StreamedResponse
     {
         $this->authorizeTeacher($request);

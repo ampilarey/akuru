@@ -1086,4 +1086,18 @@ return [
     'flash_qpage_image_saved' => 'ޞަފްޙާގެ ފޮޓޯ ރައްކާކުރެވިއްޖެ.',
     'error_mushaf_pages_fewer' => 'މި މުޞްޙަފުގައި މިހާރުވެސް :count ޞަފްޙާ ހުރި، އަދި ޞަފްޙާއެއް ނުފޮހެވޭނެ.',
     'error_mushaf_locked' => 'މި މުޞްޙަފު ތަޅުލާފައިވާތީ، އިތުރަށް ބަދަލެއް ނުކުރެވޭނެ.',
+
+    // The halaqa sheet's door: the Qur'an component's own session list (STATUS §5pu)
+    'qsessions_title' => 'ހަލަޤާ ސެޝަންތައް',
+    'qsessions_hint_mine' => 'ތިބާ ކިޔަވައިދޭ ހަލަޤާ ސެޝަންތައް، :days ދުވަސް ކުރިން ފެށިގެން.',
+    'qsessions_hint_all' => 'ހުރިހާ ހަލަޤާ ސެޝަނެއް، :days ދުވަސް ކުރިން ފެށިގެން.',
+    'qsessions_col_when' => 'ވަގުތު',
+    'qsessions_col_session' => 'ސެޝަން',
+    'qsessions_col_halaqa' => 'ހަލަޤާ',
+    'qsessions_col_place' => 'ތަން',
+    'qsessions_online' => 'އޮންލައިން',
+    'qsessions_open' => 'ޝީޓް ހުޅުވާ',
+    'qsessions_all' => 'ހުރިހާ ހަލަޤާ ސެޝަނެއް',
+    'qsessions_empty_all' => 'ދައްކާނެ ހަލަޤާ ސެޝަނެއް ނެތް.',
+    'qsessions_empty_mine' => 'ދައްކާނެ ތިބާގެ ހަލަޤާ ސެޝަނެއް ނެތް. ސެޝަނެއް ތިބާގެ ވަނީ އޮފީހުން ތިބާ އެ ސެޝަނުގެ މުދައްރިސްކަމުގައި ކަނޑައަޅައިފިނަމައެވެ.',
 ];

@@ -128,6 +128,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->mushafCycle();
         $this->clubCycle();
         $this->hifzCycle();
+        $this->halaqaSessionCycle();
         $this->readerCycle();
         $this->cmsCourseWalk();
         $this->publicEventWalk();
@@ -2083,6 +2084,53 @@ class SmokeMarkerSeeder extends Seeder
         if ($pupilId > 0) {
             app(AddClubMemberAction::class)->execute($clubId, $pupilId);
         }
+    }
+
+    /**
+     * The halaqa sessions list (`/teach/quran-sessions`, STATUS §5pu) shows a
+     * hifz course's sessions, and the seeded database held no hifz course.
+     * `SMOKE-Hifz-Course` is one — closed and a draft, so no catalogue shows it — with an
+     * offering and today's `SMOKE-Hifz-Session`, taught by the seeded
+     * teacher. `course-screens-language.mjs` finds it through the list as the
+     * dean and as the teacher, and opens its sheet. Kept and updated like
+     * `SMOKE-Club`; the session is planted afresh each run.
+     */
+    private function halaqaSessionCycle(): void
+    {
+        $course = [
+            'course_category_id' => (int) DB::table('course_categories')->orderBy('id')->value('id'),
+            'title' => 'SMOKE-Hifz-Course',
+            'short_desc' => 'Planted by SmokeMarkerSeeder.',
+            'body' => 'Planted by SmokeMarkerSeeder.',
+            'cover_image' => '',
+            'status' => 'closed',
+            'course_type' => 'hifz',
+            'workflow_status' => 'draft',
+            'updated_at' => now(),
+        ];
+        $courseId = (int) DB::table('courses')->where('slug', 'smoke-hifz-course')->value('id');
+        if ($courseId > 0) {
+            DB::table('courses')->where('id', $courseId)->update($course);
+        } else {
+            $courseId = DB::table('courses')->insertGetId($course + ['slug' => 'smoke-hifz-course', 'created_at' => now()]);
+        }
+
+        $offeringId = (int) DB::table('course_offerings')->where('slug', 'smoke-hifz-offering')->value('id');
+        if ($offeringId === 0) {
+            $offeringId = DB::table('course_offerings')->insertGetId([
+                'course_id' => $courseId, 'title' => 'SMOKE-Hifz-Offering', 'slug' => 'smoke-hifz-offering',
+                'delivery_mode' => 'face_to_face', 'status' => 'open',
+                'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
+
+        DB::table('course_offering_sessions')->where('course_offering_id', $offeringId)->delete();
+        DB::table('course_offering_sessions')->insert([
+            'course_offering_id' => $offeringId, 'title' => 'SMOKE-Hifz-Session', 'session_type' => 'face_to_face',
+            'starts_at' => now()->setTime(9, 0), 'ends_at' => now()->setTime(10, 0),
+            'teacher_user_id' => DB::table('users')->where('email', 'teacher@akuru.edu.mv')->value('id'),
+            'created_at' => now(), 'updated_at' => now(),
+        ]);
     }
 
     /**
