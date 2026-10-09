@@ -4,6 +4,7 @@ namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Portal\Actions\ComposeTeacherHomeAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -20,9 +21,12 @@ class TeacherHomeController extends Controller
             403,
         );
 
-        return Inertia::render('Portal/TeacherHome', app(ComposeTeacherHomeAction::class)->execute(
-            (int) $request->user()->id,
-            $request->user()->getRoleNames()->all(),
-        ));
+        return Inertia::render('Portal/TeacherHome', [
+            ...app(ComposeTeacherHomeAction::class)->execute(
+                (int) $request->user()->id,
+                $request->user()->getRoleNames()->all(),
+            ),
+            't' => Phrases::once('portal'),
+        ]);
     }
 }

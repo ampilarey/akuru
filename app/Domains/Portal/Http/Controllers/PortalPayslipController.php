@@ -6,6 +6,7 @@ use App\Domains\HR\Actions\ListPayslipsAction;
 use App\Domains\HR\Actions\ResolvePayrollSettingsAction;
 use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -27,6 +28,7 @@ class PortalPayslipController extends Controller
             'rows' => $profile
                 ? app(ListPayslipsAction::class)->execute(null, (int) $profile['id'])->values()
                 : collect(),
+            't' => Phrases::once('portal'),
         ]);
     }
 }

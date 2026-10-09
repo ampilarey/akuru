@@ -36,7 +36,7 @@ class ComposeStaffOverviewAction
         $query = $yearId ? '?academic_year_id='.$yearId : '';
 
         return [
-            'title' => 'Staff overview',
+            'title' => __('portal.overview_title'),
             'yearId' => $yearId,
             'years' => $years,
             'unfilled' => $registers->execute($yearId)->values()->all(),
@@ -46,11 +46,11 @@ class ComposeStaffOverviewAction
             'unpublishedReportCards' => app(ListReportCardsAction::class)->unpublished($yearId)->values()->all(),
             'csvUrl' => '/portal/overview/export'.$query,
             'sections' => [
-                ['key' => 'unfilled', 'label' => 'Unfilled registers', 'href' => '/academics/registers'.$query],
-                ['key' => 'ungraded', 'label' => 'Ungraded exams', 'href' => '/exams/schedule'.$query],
-                ['key' => 'unpublished_report_cards', 'label' => 'Unpublished report cards', 'href' => '/exams/report-cards'],
-                ['key' => 'fill_rates', 'label' => 'Fill rate', 'href' => '/academics/registers'.$query],
-                ['key' => 'plan_adherence', 'label' => 'Plan adherence', 'href' => '/academics/plans'],
+                ['key' => 'unfilled', 'label' => __('portal.overview_unfilled'), 'href' => '/academics/registers'.$query],
+                ['key' => 'ungraded', 'label' => __('portal.overview_ungraded'), 'href' => '/exams/schedule'.$query],
+                ['key' => 'unpublished_report_cards', 'label' => __('portal.overview_unpublished'), 'href' => '/exams/report-cards'],
+                ['key' => 'fill_rates', 'label' => __('portal.overview_fill_rate'), 'href' => '/academics/registers'.$query],
+                ['key' => 'plan_adherence', 'label' => __('portal.overview_plan_adherence'), 'href' => '/academics/plans'],
             ],
         ];
     }

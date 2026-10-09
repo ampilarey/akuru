@@ -5,6 +5,7 @@ namespace App\Domains\Portal\Http\Controllers;
 use App\Domains\Portal\Actions\ComposeStaffOverviewAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -16,10 +17,10 @@ class StaffOverviewController extends Controller
     {
         $this->authorizeOverview($request);
 
-        return Inertia::render(
-            'Portal/StaffOverview',
-            app(ComposeStaffOverviewAction::class)->execute($this->yearId($request)),
-        );
+        return Inertia::render('Portal/StaffOverview', [
+            ...app(ComposeStaffOverviewAction::class)->execute($this->yearId($request)),
+            't' => Phrases::once('portal'),
+        ]);
     }
 
     public function export(Request $request): StreamedResponse

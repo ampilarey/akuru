@@ -29,6 +29,9 @@
  *     library books and a child's Digital Library read in Dhivehi and
  *     Arabic, and a PIN too obvious is refused beside its box, in Dhivehi
  *     (slice PT3);
+ *   - a teacher's day, the staff overview, appraisals, leave, payslips and
+ *     check-in read in Dhivehi and Arabic, their tiles and codes named
+ *     (slice PT4);
  *   - the pupil ticks SMOKE-Lang-Homework done (`SmokeMarkerSeeder` plants it
  *     on a register two days back) and is told so in Dhivehi; the tick holds
  *     over a reload, and unticking it puts it back.
@@ -45,6 +48,9 @@ import { chromium } from 'playwright';
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const PARENT = process.env.SMOKE_PARENT ?? 'parent@akuru.edu.mv';
 const PUPIL = process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv';
+// Slice PT4: a teacher with a staff profile, and the dean for the overview.
+const TEACHER = process.env.SMOKE_TEACHER ?? 'teacher@akuru.edu.mv';
+const DEAN = process.env.SMOKE_DEAN ?? 'headmaster@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const HOMEWORK = 'SMOKE-Lang-Homework';
 const MESSAGE = 'SMOKE-Lang-Message';
@@ -144,6 +150,8 @@ const readMain = (page) => page.evaluate(() => {
 
 const parent = await signIn(PARENT);
 const pupil = await signIn(PUPIL);
+const teacher = await signIn(TEACHER);
+const dean = await signIn(DEAN);
 
 // ------------------------------------- a message, a refusal and a reply, in Dhivehi
 // (slice PT1b). Written first, so the thread is among the screens below.
@@ -209,6 +217,13 @@ const screens = [
     ['/portal/events', parent],
     ['/portal/loans', parent],
     ...(childLibrary ? [[childLibrary, parent]] : []),
+    // Slice PT4: the staff's own pages, as a teacher.
+    ['/portal/teacher', teacher],
+    ['/portal/overview', dean],
+    ['/portal/appraisals', teacher],
+    ['/portal/leave', teacher],
+    ['/portal/payslips', teacher],
+    ['/portal/staff-check-in', teacher],
 ];
 
 for (const locale of ['dv', 'ar']) {

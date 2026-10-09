@@ -59,7 +59,7 @@ class ComposeTeacherHomeAction
             : app(ListUnfilledRegistersAction::class)->execute(null, $teacherId)->values()->all();
 
         return [
-            'title' => 'My day',
+            'title' => __('portal.teacher_title'),
             'teacherId' => $teacherId,
             'today' => $todayPeriods,
             'next' => $teacherId === null ? null : $this->nextTeachingDay($teacherId, $today),
@@ -114,36 +114,36 @@ class ComposeTeacherHomeAction
         $tiles = [
             [
                 'key' => 'registers',
-                'label' => 'Registers',
+                'label' => __('nav.registers'),
                 'href' => '/academics/registers/today',
                 // The badge is what is *owed*, not what exists. A count that
                 // never reaches zero stops being read.
                 'badge' => $owed ?: null,
                 'status' => $owed === 0
-                    ? 'All filled'
-                    : $owed.' to fill',
+                    ? __('portal.tile_registers_none')
+                    : __('portal.tile_registers_owed', ['count' => $owed]),
             ],
             [
                 'key' => 'timetable',
-                'label' => 'My timetable',
+                'label' => __('nav.timetable'),
                 'href' => '/academics/timetable',
                 'badge' => null,
                 'status' => ($todayPeriods['is_school_day'] ?? true) === false
-                    ? (string) ($todayPeriods['note'] ?? 'No lessons today')
+                    ? $this->closedNote($todayPeriods)
                     : ($lessons === 0
-                        ? 'No lessons today'
-                        : $lessons.' lesson'.($lessons === 1 ? '' : 's').' today'
-                            .($covering > 0 ? ' · '.$covering.' covering' : '')),
+                        ? __('portal.tile_lessons_none')
+                        : trans_choice('portal.tile_lessons_count', $lessons, ['count' => $lessons])
+                            .($covering > 0 ? ' · '.__('portal.tile_lessons_covering', ['count' => $covering]) : '')),
             ],
         ];
 
         $unread = app(ListMessageInboxAction::class)->unreadCount($userId);
         $tiles[] = [
             'key' => 'messages',
-            'label' => 'Messages',
+            'label' => __('nav.messages'),
             'href' => '/portal/messages',
             'badge' => $unread ?: null,
-            'status' => $unread === 0 ? 'Nothing new' : $unread.' unread',
+            'status' => $unread === 0 ? __('portal.tile_messages_none') : __('portal.tile_messages_count', ['count' => $unread]),
         ];
 
         // E4: the badge counts only urgent notices, because there is no
@@ -151,41 +151,56 @@ class ComposeTeacherHomeAction
         $notices = app(ListAnnouncementsForUserAction::class)->summary($userId, $roleNames);
         $tiles[] = [
             'key' => 'announcements',
-            'label' => 'Noticeboard',
+            'label' => __('portal.label_noticeboard'),
             'href' => '/portal/announcements',
             'badge' => $notices['urgent'] ?: null,
             'status' => $notices['total'] === 0
-                ? 'Nothing posted'
-                : $notices['total'].' notice'.($notices['total'] === 1 ? '' : 's'),
+                ? __('portal.tile_notices_none')
+                : trans_choice('portal.tile_notices_count', $notices['total'], ['count' => $notices['total']]),
         ];
 
         $tiles[] = [
             'key' => 'materials',
-            'label' => 'Materials',
+            'label' => __('nav.materials'),
             'href' => '/academics/materials',
             'badge' => null,
-            'status' => 'Reusable library',
+            'status' => __('portal.tile_materials'),
         ];
         $tiles[] = [
             'key' => 'plans',
-            'label' => 'Plans',
+            'label' => __('nav.plans'),
             'href' => '/academics/plans',
             'badge' => null,
-            'status' => 'Topics and adherence',
+            'status' => __('portal.tile_plans'),
         ];
 
         $prayer = app(ComposeDashboardPrayerAction::class)->execute();
         $next = $prayer['currentPrayer']['prayer'] ?? null;
         if ($next !== null) {
+            // The prayer is a code; named as the family home names it.
+            $prayerKey = 'portal.prayer_'.$next;
             $tiles[] = [
                 'key' => 'prayer',
-                'label' => 'Prayer times',
+                'label' => __('nav.prayer_times'),
                 'href' => '/prayer-times',
                 'badge' => null,
-                'status' => (string) $next,
+                'status' => trans()->has($prayerKey) ? __($prayerKey) : (string) $next,
             ];
         }
 
         return $tiles;
+    }
+
+    /**
+     * A closed day by the name the office gave it for the page's language,
+     * falling back to the English name, then to a plain "no lessons".
+     *
+     * @param  array<string, mixed>  $day
+     */
+    private function closedNote(array $day): string
+    {
+        $own = ['dv' => $day['note_dhivehi'] ?? null, 'ar' => $day['note_arabic'] ?? null][app()->getLocale()] ?? null;
+
+        return (string) ($own ?: ($day['note'] ?? __('portal.tile_lessons_none')));
     }
 }

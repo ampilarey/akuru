@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ResolveAcademicYearForDateAction;
 use App\Domains\HR\Actions\ListLeaveBalancesAction;
 use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -30,6 +31,7 @@ class PortalLeaveBalanceController extends Controller
                     'academic_year_id' => $year['id'] ?? null,
                 ])->values()
                 : collect(),
+            't' => Phrases::once('portal'),
         ]);
     }
 }

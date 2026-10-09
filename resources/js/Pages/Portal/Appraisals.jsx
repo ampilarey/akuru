@@ -2,37 +2,58 @@ import { useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 
-export default function Appraisals({ staff, appraisals, observations, cpd, cpdSummary = null }) {
+export default function Appraisals({ staff, appraisals, observations, cpd, cpdSummary = null, t = {} }) {
+    // In the page's language (BACKLOG C21, slice PT4). A cycle's name, an
+    // observation's summary and a course's title are what the school wrote.
+    const col = {
+        cycle: t.col_cycle || 'Cycle',
+        status: t.col_status || 'Status',
+        acknowledge: t.appraisals_acknowledge || 'Acknowledge',
+        date: t.col_date || 'Date',
+        class: t.col_class || 'Class',
+        summary: t.col_summary || 'Summary',
+        title: t.col_title || 'Title',
+        hours: t.col_hours || 'Hours',
+    };
+    const cpdLine = cpdSummary
+        ? (cpdSummary.records_this_year === 1
+            ? (t.appraisals_cpd_one || ':hours hours this academic year across 1 record; :total hours all time.')
+            : (t.appraisals_cpd_many || ':hours hours this academic year across :records records; :total hours all time.'))
+            .replace(':hours', cpdSummary.hours_this_year)
+            .replace(':records', cpdSummary.records_this_year)
+            .replace(':total', cpdSummary.hours_total)
+        : null;
+
     return (
-        <AppShell title="My performance">
-            {!staff && <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">No staff profile is linked to this account.</p>}
+        <AppShell title={t.appraisals_title || 'My performance'}>
+            {!staff && <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">{t.staff_no_profile || 'No staff profile is linked to this account.'}</p>}
             {staff && (
                 <>
-                    <h2 className="mb-2 font-medium">Appraisals</h2>
+                    <h2 className="mb-2 font-medium">{t.appraisals_heading || 'Appraisals'}</h2>
                     <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
-                                    <th className="px-3 py-2">Cycle</th>
-                                    <th className="px-3 py-2">Status</th>
-                                    <th className="px-3 py-2">Acknowledge</th>
+                                    <th className="px-3 py-2">{col.cycle}</th>
+                                    <th className="px-3 py-2">{col.status}</th>
+                                    <th className="px-3 py-2">{col.acknowledge}</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {appraisals.map((row) => (
-                                    <AppraisalRow key={row.id} row={row} />
+                                    <AppraisalRow key={row.id} row={row} t={t} />
                                 ))}
                             </tbody>
                         </table>
                     </div>
-                    <h2 className="mb-2 font-medium">Shared observations</h2>
+                    <h2 className="mb-2 font-medium">{t.appraisals_observations || 'Shared observations'}</h2>
                     <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
-                                    <th className="px-3 py-2">Date</th>
-                                    <th className="px-3 py-2">Class</th>
-                                    <th className="px-3 py-2">Summary</th>
+                                    <th className="px-3 py-2">{col.date}</th>
+                                    <th className="px-3 py-2">{col.class}</th>
+                                    <th className="px-3 py-2">{col.summary}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -46,20 +67,17 @@ export default function Appraisals({ staff, appraisals, observations, cpd, cpdSu
                             </tbody>
                         </table>
                     </div>
-                    <h2 className="mb-2 font-medium">CPD</h2>
-                    {cpdSummary && (
-                        <p className="mb-2 text-sm text-gray-700" data-testid="cpd-summary">
-                            <strong>{cpdSummary.hours_this_year}</strong> hours this academic year across {cpdSummary.records_this_year} record{cpdSummary.records_this_year === 1 ? '' : 's'};{' '}
-                            {cpdSummary.hours_total} hours all time.
-                        </p>
+                    <h2 className="mb-2 font-medium">{t.appraisals_cpd || 'Professional development'}</h2>
+                    {cpdLine && (
+                        <p className="mb-2 text-sm text-gray-700" data-testid="cpd-summary">{cpdLine}</p>
                     )}
                     <div className="overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
-                                    <th className="px-3 py-2">Title</th>
-                                    <th className="px-3 py-2">Hours</th>
-                                    <th className="px-3 py-2">Date</th>
+                                    <th className="px-3 py-2">{col.title}</th>
+                                    <th className="px-3 py-2">{col.hours}</th>
+                                    <th className="px-3 py-2">{col.date}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -79,13 +97,13 @@ export default function Appraisals({ staff, appraisals, observations, cpd, cpdSu
     );
 }
 
-function AppraisalRow({ row }) {
+function AppraisalRow({ row, t }) {
     const form = useForm({ staff_comment: '' });
 
     return (
         <tr className="border-t">
             <td className="px-3 py-2">{row.cycle_name}</td>
-            <td className="px-3 py-2">{row.status}</td>
+            <td className="px-3 py-2">{t[`appraisal_status_${row.status}`] || row.status}</td>
             <td className="px-3 py-2">
                 {row.status !== 'acknowledged' && (
                     <form
@@ -95,8 +113,14 @@ function AppraisalRow({ row }) {
                             form.post(`/portal/appraisals/${row.id}/acknowledge`);
                         }}
                     >
-                        <input className="form-input" placeholder="Comment" aria-label="Comment" value={form.data.staff_comment} onChange={(e) => form.setData('staff_comment', e.target.value)} />
-                        <button type="submit" className="btn-secondary" disabled={form.processing}>Acknowledge</button>
+                        <input
+                            className="form-input"
+                            placeholder={t.appraisals_comment || 'Comment'}
+                            aria-label={t.appraisals_comment || 'Comment'}
+                            value={form.data.staff_comment}
+                            onChange={(e) => form.setData('staff_comment', e.target.value)}
+                        />
+                        <button type="submit" className="btn-secondary" disabled={form.processing}>{t.appraisals_acknowledge || 'Acknowledge'}</button>
                         <FormErrors errors={form.errors} />
                     </form>
                 )}
