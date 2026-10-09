@@ -5052,7 +5052,7 @@ test:
 
 `DeviceRegistrationTest` now reads the phone phrases from the `portal` book.
 
-Whole suite locally: **SUITE**.
+Whole suite locally: **2956 passed (41138 assertions)**.
 
 **Walk:** `portal-language.mjs` 82/82.
 - The parent writes `SMOKE-Lang-Message` to their child's teacher and is told
