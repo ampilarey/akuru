@@ -7,11 +7,17 @@ use App\Domains\Academics\Enums\AbsenceNoteStatus;
 use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Enums\BehaviorType;
 use App\Domains\Academics\Enums\CalendarDayType;
+use App\Domains\Academics\Enums\LessonLogStatus;
 use App\Domains\Academics\Enums\MovementDirection;
 use App\Domains\Academics\Enums\MovementSource;
 use App\Domains\Academics\Models\CalendarDay;
+use App\Domains\ExamsGrades\Enums\ExamStatus;
 use App\Domains\Finance\Enums\InvoiceStatus;
 use App\Domains\Finance\Enums\PaymentPlanStatus;
+use App\Domains\HR\Enums\AppraisalStatus;
+use App\Domains\HR\Enums\PayslipStatus;
+use App\Domains\HR\Enums\StaffAttendanceSource;
+use App\Domains\HR\Enums\StaffAttendanceStatus;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Actions\ResolveAttendanceNotificationStateAction;
 use App\Domains\Notifications\Actions\ResolveNotificationPreferencesAction;
@@ -22,6 +28,7 @@ use App\Domains\People\Enums\StudentStatus;
 use App\Enums\Hifz\HifzEnrollmentStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
+use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 
 /**
@@ -55,6 +62,12 @@ use Spatie\Permission\Models\Role;
  * English, and four buttons that post with `router` — cancel a meeting,
  * confirm a pick-up, confirm an event registration, confirm a form answer —
  * had nowhere to say a refusal.
+ *
+ * Slice PT4 (STATUS §5qc) adds the staff's own pages: a teacher's day, the
+ * staff overview, appraisals, leave, payslips and check-in. Their tiles,
+ * headings and refusals were English, and a register's, an exam's, an
+ * appraisal's, a payslip's and a day's attendance state were printed as
+ * codes.
  */
 uses(RefreshDatabase::class);
 
@@ -69,6 +82,8 @@ function portalDayScreens(): array
         'Portal/ReportCards', 'Portal/Exams', 'Portal/Awards', 'Portal/Behavior', 'Portal/Invoices', 'Portal/Work', 'Portal/Movements', 'Portal/FoundItems',
         // Slice PT3.
         'Portal/AbsenceNotes', 'Portal/Forms', 'Portal/Pickup', 'Portal/Meetings', 'Portal/Events', 'Portal/Loans', 'Portal/ChildLibrary',
+        // Slice PT4.
+        'Portal/TeacherHome', 'Portal/StaffOverview', 'Portal/Appraisals', 'Portal/LeaveBalances', 'Portal/Payslips', 'Portal/StaffCheckIn',
     ];
 }
 
@@ -123,6 +138,17 @@ function portalDayServerFiles(): array
         'app/Domains/Forms/Actions/ConfirmFormResponseAction.php',
         'app/Domains/Portal/Http/Controllers/PortalLoanController.php',
         'app/Domains/Portal/Http/Controllers/GuardianChildLibraryController.php',
+        // Slice PT4.
+        'app/Domains/Portal/Actions/ComposeTeacherHomeAction.php',
+        'app/Domains/Portal/Actions/ComposeStaffOverviewAction.php',
+        'app/Domains/Portal/Http/Controllers/TeacherHomeController.php',
+        'app/Domains/Portal/Http/Controllers/StaffOverviewController.php',
+        'app/Domains/Portal/Http/Controllers/PortalAppraisalController.php',
+        'app/Domains/HR/Actions/AcknowledgeAppraisalAction.php',
+        'app/Domains/Portal/Http/Controllers/PortalLeaveBalanceController.php',
+        'app/Domains/Portal/Http/Controllers/PortalPayslipController.php',
+        'app/Domains/Portal/Http/Controllers/PortalStaffCheckInController.php',
+        'app/Domains/HR/Actions/SelfCheckInStaffAttendanceAction.php',
     ];
 }
 
@@ -195,6 +221,15 @@ it('names every code the family’s day pages show, in all three languages', fun
         ...array_map(fn ($status) => 'events_status_'.$status, ['confirmed', 'pending', 'pending_parent', 'waitlisted', 'cancelled', 'attended', 'no_show']),
         ...array_map(fn ($type) => 'events_type_'.$type, ['none', 'required', 'optional']),
         ...array_map(fn ($status) => 'library_purchase_status_'.$status, ['pending', 'paid', 'refunded', 'failed']),
+        // Slice PT4: a register's, an exam's, an appraisal's and a payslip's
+        // state, a staff day's attendance and how it was recorded, a cover.
+        ...array_map(fn ($case) => 'register_status_'.$case->value, LessonLogStatus::cases()),
+        ...array_map(fn ($case) => 'exam_status_'.$case->value, ExamStatus::cases()),
+        ...array_map(fn ($case) => 'appraisal_status_'.$case->value, AppraisalStatus::cases()),
+        ...array_map(fn ($case) => 'payslip_status_'.$case->value, PayslipStatus::cases()),
+        ...array_map(fn ($case) => 'staff_attendance_'.$case->value, StaffAttendanceStatus::cases()),
+        ...array_map(fn ($case) => 'staff_attendance_source_'.$case->value, StaffAttendanceSource::cases()),
+        ...array_map(fn ($status) => 'teacher_cover_'.$status, ['open', 'assigned', 'cancelled', 'closed']),
     ];
     // A relationship is the `learn` book's, which the shell shares.
     $learn = [
@@ -217,7 +252,7 @@ it('leaves no English in what the server says on the family’s day pages, and s
     expect($english)->toBe([]);
 
     $keys = refusalKeysIn(portalDayServerFiles());
-    expect($keys)->toContain('portal.home_title_parent', 'portal.tile_invoices_unpaid', 'nav.absence_notes', 'portal.error_homework_none', 'portal.flash_message_sent', 'portal.error_thread_not_yours', 'portal.unknown_person', 'portal.error_invoice_paid', 'portal.error_payment_failed', 'portal.error_pickup_pin_wrong', 'portal.error_meeting_slot_full', 'portal.error_form_field_required');
+    expect($keys)->toContain('portal.home_title_parent', 'portal.tile_invoices_unpaid', 'nav.absence_notes', 'portal.error_homework_none', 'portal.flash_message_sent', 'portal.error_thread_not_yours', 'portal.unknown_person', 'portal.error_invoice_paid', 'portal.error_payment_failed', 'portal.error_pickup_pin_wrong', 'portal.error_meeting_slot_full', 'portal.error_form_field_required', 'portal.tile_registers_owed', 'portal.overview_unfilled', 'portal.error_checkin_disabled', 'portal.error_appraisal_not_yours');
     foreach ($keys as $key) {
         expect(trans($key, [], 'en'))->not->toBe($key, "{$key} has no English")
             ->and(trans($key, [], 'dv'))->toMatch('/\p{Thaana}/u', "{$key} in Dhivehi")
@@ -415,4 +450,43 @@ it('serves the family’s requests in Dhivehi, and says what was saved and refus
     $this->withoutLocalizationMiddleware()->actingAs($parent)
         ->post(route('portal.absence-notes.store'), ['student_id' => $student->id, 'date' => now()->toDateString(), 'reason' => 'Fever.'])
         ->assertSessionHasErrors(['absence_type_id' => $dv['error_absence_type']]);
+});
+
+it('serves the staff’s own pages in Dhivehi, and says what was refused in Dhivehi', function () {
+    makeYear(['is_current' => true, 'status' => 'active']);
+    $user = User::factory()->create();
+    makeStaffProfile(['user_id' => $user->id]);
+    Permission::findOrCreate('registers.manage', 'web');
+    $user->givePermissionTo('registers.manage');
+    [$dv, $nav] = [portalBook('dv'), portalBook('dv', 'nav')];
+
+    app()->setLocale('dv');
+    // A teacher's day: its title and tiles are the server's, in Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($user)
+        ->get(route('portal.teacher'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Portal/TeacherHome')
+            ->where('title', $dv['teacher_title'])
+            ->where('tiles.0.label', $nav['registers'])
+            ->where('tiles.0.status', $dv['tile_registers_none'])
+            ->where('t.teacher_owed', $dv['teacher_owed']));
+    $this->withoutLocalizationMiddleware()->actingAs($user)
+        ->get(route('portal.overview'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Portal/StaffOverview')
+            ->where('title', $dv['overview_title'])
+            ->where('sections.0.label', $dv['overview_unfilled']));
+    foreach ([
+        'portal.appraisals' => ['Portal/Appraisals', 'appraisals_title'],
+        'portal.leave' => ['Portal/LeaveBalances', 'leave_title'],
+        'portal.payslips' => ['Portal/Payslips', 'payslips_title'],
+        'portal.staff-check-in' => ['Portal/StaffCheckIn', 'checkin_title'],
+    ] as $route => [$component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($user)
+            ->get(route($route))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("t.{$key}", $dv[$key]));
+    }
+
+    // Self check-in is off until the office turns it on: refused in Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($user)
+        ->post(route('portal.staff-check-in.store'))
+        ->assertSessionHasErrors(['check_in' => $dv['error_checkin_disabled']]);
 });

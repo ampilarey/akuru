@@ -34,6 +34,8 @@ class ListDayTimetableForTeacherAction
      *   date: string,
      *   is_school_day: bool,
      *   note: ?string,
+     *   note_dhivehi?: ?string,
+     *   note_arabic?: ?string,
      *   periods: list<array<string, mixed>>
      * }
      */
@@ -58,7 +60,13 @@ class ListDayTimetableForTeacherAction
             ->first();
 
         if ($blocking !== null) {
-            return [...$empty, 'is_school_day' => false, 'note' => (string) $blocking->title];
+            return [
+                ...$empty,
+                'is_school_day' => false,
+                'note' => (string) $blocking->title,
+                'note_dhivehi' => $blocking->title_dhivehi,
+                'note_arabic' => $blocking->title_arabic,
+            ];
         }
 
         $covering = $this->coveringEntryIds($teacherId, $dateStr);

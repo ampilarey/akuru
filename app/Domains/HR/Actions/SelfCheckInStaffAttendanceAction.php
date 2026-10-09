@@ -19,14 +19,14 @@ class SelfCheckInStaffAttendanceAction
         $settings = app(ResolveHrSettingsAction::class)->execute();
         if (! $settings['staff_self_checkin']) {
             throw ValidationException::withMessages([
-                'check_in' => 'Staff self check-in is disabled.',
+                'check_in' => __('portal.error_checkin_disabled'),
             ]);
         }
 
         $profile = app(ResolveStaffProfileForUserAction::class)->execute($userId);
         if ($profile === null) {
             throw ValidationException::withMessages([
-                'check_in' => 'No staff profile is linked to this account.',
+                'check_in' => __('portal.staff_no_profile'),
             ]);
         }
 
@@ -34,7 +34,7 @@ class SelfCheckInStaffAttendanceAction
         $year = app(ResolveAcademicYearForDateAction::class)->execute($date);
         if ($year === null) {
             throw ValidationException::withMessages([
-                'check_in' => 'No academic year covers today.',
+                'check_in' => __('portal.error_checkin_no_year'),
             ]);
         }
 

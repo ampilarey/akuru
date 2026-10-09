@@ -15,7 +15,7 @@ class AcknowledgeAppraisalAction
         $profile = app(ResolveStaffProfileForUserAction::class)->execute($userId);
 
         if ($profile === null || (int) $profile['id'] !== (int) $appraisal->staff_profile_id) {
-            throw ValidationException::withMessages(['appraisal' => 'You can only acknowledge your own appraisal.']);
+            throw ValidationException::withMessages(['appraisal' => __('portal.error_appraisal_not_yours')]);
         }
 
         $appraisal->status = AppraisalStatus::Acknowledged;

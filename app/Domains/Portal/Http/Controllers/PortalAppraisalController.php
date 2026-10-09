@@ -9,6 +9,7 @@ use App\Domains\HR\Actions\ListLessonObservationsAction;
 use App\Domains\HR\Actions\SummarizeCpdHoursAction;
 use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -34,6 +35,7 @@ class PortalAppraisalController extends Controller
                 : collect(),
             'cpd' => $staffId ? app(ListCpdRecordsAction::class)->execute((int) $staffId)->values() : collect(),
             'cpdSummary' => $staffId ? app(SummarizeCpdHoursAction::class)->execute((int) $staffId)->first() : null,
+            't' => Phrases::once('portal'),
         ]);
     }
 
@@ -51,6 +53,6 @@ class PortalAppraisalController extends Controller
             $data['staff_comment'] ?? null,
         );
 
-        return redirect()->route('portal.appraisals')->with('success', 'Appraisal acknowledged.');
+        return redirect()->route('portal.appraisals')->with('success', __('portal.flash_appraisal_acknowledged'));
     }
 }

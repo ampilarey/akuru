@@ -7,6 +7,7 @@ use App\Domains\HR\Actions\ResolveHrSettingsAction;
 use App\Domains\HR\Actions\SelfCheckInStaffAttendanceAction;
 use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,6 +34,7 @@ class PortalStaffCheckInController extends Controller
                     'staff_profile_id' => (int) $profile['id'],
                 ])->values()
                 : collect(),
+            't' => Phrases::once('portal'),
         ]);
     }
 
@@ -47,6 +49,6 @@ class PortalStaffCheckInController extends Controller
 
         return redirect()
             ->route('portal.staff-check-in')
-            ->with('success', 'Checked in.');
+            ->with('success', __('portal.flash_checked_in'));
     }
 }
