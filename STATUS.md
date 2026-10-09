@@ -4983,6 +4983,61 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pp. Every English phrase ships in Dhivehi and Arabic: the last 37 dead keys deleted (C20, 2026-10-09)
+
+`TranslationParityTest` keeps a baseline of English keys with no Dhivehi and
+no Arabic, which may only shrink. It began at 200 (§5bm). After C19 and C20 it
+was 37, all in the `public` book. Its own note says why they were left there:
+proving a key unreachable needs a sweep for lookups built at run time, "which
+is its own slice". This is that slice.
+
+**The sweep:**
+- **Literal uses.** No `public.<key>` appears anywhere in `app`,
+  `resources`, `routes`, `config` or `database`. The two near misses were
+  longer keys: *Enroll Now*, and *Sunday - Thursday* on the contact page.
+- **Built keys.** `__('public.'.$x)` appears eight times. All of them build a
+  Library content type, a gift card order's state or an author's work type,
+  and none can make one of the 37. There is no interpolated key
+  (`"public.{$x}"`), and no weekday name built from a date.
+- **Whole-book use.** The `public` book is never handed to a page whole, so
+  no screen looks one up by variable.
+- **What they were:**
+  - the old home page's placeholders, which `HomepageProductsTest` already
+    asserts are gone (*Open House Day*, *Ready to Start Your Journey?*);
+  - five weekdays (the contact page names only *Friday* and *Saturday*,
+    both translated);
+  - old enrolment words.
+
+**The change:**
+- The 37 lines are deleted from `resources/lang/en/public.php`. Dhivehi and
+  Arabic never had them.
+- The book is now 656 keys in each language.
+- The baseline is empty, so a new English key cannot ship without its
+  Dhivehi and Arabic.
+- KNOWN_ISSUES item 14 (*200 English UI keys have no Dhivehi and no Arabic*)
+  is closed. The test's own note says so too.
+
+**Tests:** `TranslationParityTest` and `PhraseBooksTranslateEachPhraseTest`
+pass, and `HomepageProductsTest` still passes. Whole suite locally: **2932 passed (39088 assertions)**.
+
+**Walk:** a deleted key still in use would show on its page as the raw key
+(`public.Monday`).
+- Sixteen public addresses in each language (home, about, contact, events,
+  news, gallery, courses, the Library and its offers, the shop, careers,
+  achievements, the daily reminders, search, apply, admissions) show no
+  `public.` text.
+- The five public-site language walks pass:
+  - `front-door-language.mjs` 53/53;
+  - `site-pages-language.mjs` 75/75;
+  - `course-pages-language.mjs` 19/19;
+  - `daily-certificate-language.mjs` 30/30;
+  - `library-public-language.mjs` 81/81.
+
+**Next:** the Library notices' language. They are written for someone other
+than the page's reader, and the account keeps no language to write them in.
+That needs a decision: a language on the account, or the notice's own words
+looked up when it is read.
+
 ## 5po. The Library office names a category in Dhivehi and Arabic, and renames it (C20 slice LT7, 2026-10-09)
 
 Since LT6 (§5pk), the shelf's category filter and an item's page say a

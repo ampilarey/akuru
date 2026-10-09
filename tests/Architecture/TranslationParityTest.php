@@ -34,6 +34,13 @@ use Tests\Architecture\Support\ViolationScanner;
  * None of those 18 is reachable today; if one is ever wired up, this baseline
  * is where somebody will find out it needs a translation first.
  *
+ * 2026-10-09 (STATUS §5pp): the gap is closed. The C20 slices translated the
+ * live keys. The sweep for dynamic lookups found that the last 37 (`public.*`:
+ * the old home page's placeholders, five weekdays, old enrolment words) were
+ * reached by nothing, so they were deleted. The baseline is empty: every
+ * English key now ships in Dhivehi and Arabic, and a new one cannot ship
+ * without them.
+ *
  * Dhivehi also has a DB override layer (`translation_overrides`) and an admin
  * editor, so a deployment can fill gaps without a commit. That is deliberately
  * not consulted here: this test measures what the repository *ships*, which is
