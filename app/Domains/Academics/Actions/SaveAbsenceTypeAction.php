@@ -25,7 +25,7 @@ class SaveAbsenceTypeAction
         $name = trim((string) ($data['name'] ?? ''));
 
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Give the reason a name families will recognise.']);
+            throw ValidationException::withMessages(['name' => __('academics.error_type_name')]);
         }
 
         $attributes = [
@@ -48,7 +48,7 @@ class SaveAbsenceTypeAction
             if (($data['code'] ?? $type->code) !== $type->code
                 && AbsenceNote::query()->where('absence_type_id', $type->id)->exists()) {
                 throw ValidationException::withMessages([
-                    'code' => 'This reason is already on notes, so its code cannot change. Edit the name instead.',
+                    'code' => __('academics.error_type_code_used'),
                 ]);
             }
 
@@ -60,11 +60,11 @@ class SaveAbsenceTypeAction
         $code = Str::slug((string) ($data['code'] ?? $name), '_');
 
         if ($code === '') {
-            throw ValidationException::withMessages(['code' => 'That name cannot be turned into a code.']);
+            throw ValidationException::withMessages(['code' => __('academics.error_type_no_code')]);
         }
 
         if (AbsenceType::query()->where('code', $code)->exists()) {
-            throw ValidationException::withMessages(['code' => 'A reason with that code already exists.']);
+            throw ValidationException::withMessages(['code' => __('academics.error_type_code_exists')]);
         }
 
         return AbsenceType::query()->create($attributes + ['code' => $code]);

@@ -25,20 +25,20 @@ class SaveAttendanceSettingsAction
         $mode = AttendanceMode::tryFrom((string) ($data['mode'] ?? ''));
 
         if ($mode === null) {
-            throw ValidationException::withMessages(['mode' => 'Choose how the school takes attendance.']);
+            throw ValidationException::withMessages(['mode' => __('academics.error_policy_mode')]);
         }
 
         $notify = (string) ($data['notify'] ?? 'absent_only');
 
         if (! in_array($notify, ['absent_only', 'absent_and_late'], true)) {
-            throw ValidationException::withMessages(['notify' => 'Choose what families are told about.']);
+            throw ValidationException::withMessages(['notify' => __('academics.error_policy_notify')]);
         }
 
         $chronic = (int) ($data['chronic_threshold'] ?? 5);
 
         if ($chronic < 1 || $chronic > 100) {
             throw ValidationException::withMessages([
-                'chronic_threshold' => 'A chronic-absence threshold of fewer than one day is not a threshold.',
+                'chronic_threshold' => __('academics.error_policy_chronic'),
             ]);
         }
 
@@ -48,11 +48,11 @@ class SaveAttendanceSettingsAction
         // Zero is the off switch for both, and must stay reachable: a school
         // that turns a rule off is asking for its plain numbers back.
         if ($tardies < 0 || $tardies > 20) {
-            throw ValidationException::withMessages(['tardies_per_absence' => 'Between 0 (off) and 20.']);
+            throw ValidationException::withMessages(['tardies_per_absence' => __('academics.error_policy_tardies')]);
         }
 
         if ($minutes < 0 || $minutes > 240) {
-            throw ValidationException::withMessages(['part_lesson_minutes' => 'Between 0 (off) and 240 minutes.']);
+            throw ValidationException::withMessages(['part_lesson_minutes' => __('academics.error_policy_part_lesson')]);
         }
 
         $set = app(SetSettingAction::class);

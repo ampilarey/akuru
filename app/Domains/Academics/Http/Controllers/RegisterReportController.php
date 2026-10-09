@@ -9,6 +9,7 @@ use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\LessonLog;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,6 +31,7 @@ class RegisterReportController extends Controller
             'unfilled' => $lister->execute($year?->id),
             'fillRates' => $lister->fillRates($year?->id),
             'planAdherence' => $lister->planAdherence($year?->id),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -66,7 +68,7 @@ class RegisterReportController extends Controller
 
         return redirect()
             ->route('academics.registers.show', $lessonLog)
-            ->with('success', 'Register unlocked.');
+            ->with('success', __('academics.flash_register_unlocked'));
     }
 
     public function export(Request $request): StreamedResponse

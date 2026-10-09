@@ -163,6 +163,8 @@ const WALKS = [
     { name: 'library-categories', writes: true, asks: 'Can the Library office name a category in Dhivehi and Arabic and rename it, and does the shelf say the name in each language?' },
     { name: 'documents-language', writes: true, asks: 'Does a report card the office makes in Dhivehi or Arabic, and a transcript a family asks for, read in that language — no placeholder heading left?' },
     { name: 'pay-buttons', writes: true, asks: 'Do Pay on a family\'s fees and Enroll on a paid course take the browser to the bank, asking it for the right amount?' },
+    { name: 'portal-language', writes: true, asks: 'Do the family\'s and the staff\'s own portal pages read in Dhivehi and Arabic, codes named, and are a sent message, a refused reply, a refused Pay and a too-obvious PIN said in Dhivehi?' },
+    { name: 'office-language', writes: true, asks: 'Do the office\'s registers and attendance screens read in Dhivehi and Arabic, codes named, and are generating registers and a reason the school already has said in Dhivehi?' },
 ];
 
 const args = process.argv.slice(2);

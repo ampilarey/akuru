@@ -24,8 +24,11 @@ class ListPeriodOptionsAction
             ->map(fn (Period $period): array => [
                 'id' => (int) $period->id,
                 'name' => (string) $period->name,
-                'start_time' => substr((string) $period->start_time, 0, 5),
-                'end_time' => substr((string) $period->end_time, 0, 5),
+                // The times are cast to dates, and a date as a string starts
+                // with its year: the family's form read "Period 1
+                // (2026-–2026-)" (found on the OA1 walk, STATUS §5qd).
+                'start_time' => $period->start_time?->format('H:i') ?? '',
+                'end_time' => $period->end_time?->format('H:i') ?? '',
             ])
             ->all();
     }

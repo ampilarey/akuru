@@ -28,7 +28,7 @@ class GenerateExpectedRegistersAction
     ): array {
         $year = $this->year($academicYearId);
         if ($year === null) {
-            return $this->outcome(0, 0, 'Created 0 expected registers (no academic year).');
+            return $this->outcome(0, 0, __('academics.generated_no_year'));
         }
 
         $fromDate = Carbon::parse($from ?? now()->toDateString(), config('app.timezone'))->startOfDay();
@@ -41,7 +41,7 @@ class GenerateExpectedRegistersAction
             $toDate = $year->end_date->copy()->startOfDay();
         }
         if ($fromDate->gt($toDate)) {
-            return $this->outcome(0, 0, 'Created 0 expected registers (date range is outside the academic year).');
+            return $this->outcome(0, 0, __('academics.generated_outside_year'));
         }
 
         $blocked = CalendarDay::query()
@@ -120,19 +120,19 @@ class GenerateExpectedRegistersAction
     }
 
     /**
+     * The message is said in the page's language (BACKLOG C21, slice OA1).
+     *
      * @return array{created: int, skipped: int, message: string}
      */
     private function outcome(int $created, int $skipped, ?string $message = null): array
     {
         if ($message === null) {
-            if ($created === 0 && $skipped > 0) {
-                $message = "Created 0 expected registers ({$skipped} already exist).";
+            if ($skipped > 0) {
+                $message = __('academics.generated_some_skipped', ['created' => $created, 'skipped' => $skipped]);
             } elseif ($created === 0) {
-                $message = 'Created 0 expected registers (no matching timetable slots on school days in this range).';
-            } elseif ($skipped > 0) {
-                $message = "Created {$created} expected registers ({$skipped} already exist).";
+                $message = __('academics.generated_no_slots');
             } else {
-                $message = "Created {$created} expected registers.";
+                $message = __('academics.generated', ['created' => $created]);
             }
         }
 

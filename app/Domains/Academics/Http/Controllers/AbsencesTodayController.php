@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ListAbsencesForDayAction;
 use App\Domains\Academics\Actions\ListClassesForYearAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -27,6 +28,7 @@ class AbsencesTodayController extends Controller
             'classId' => $filters['class_id'],
             'onlyUnexplained' => $filters['only_unexplained'],
             'classes' => app(ListClassesForYearAction::class)->execute()->values()->all(),
+            't' => Phrases::once('academics'),
         ]);
     }
 

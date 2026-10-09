@@ -13,6 +13,9 @@ use Carbon\Carbon;
 class ExplainEmptyTodayRegistersAction
 {
     /**
+     * Said in the page's language (BACKLOG C21, slice OA1); the code is what
+     * a caller branches on, never the message.
+     *
      * @return array{code: string, message: string, can_generate: bool}
      */
     public function execute(?int $teacherId, ?int $userId, string $date): array
@@ -20,7 +23,7 @@ class ExplainEmptyTodayRegistersAction
         if ($teacherId === null) {
             return [
                 'code' => 'no_teacher',
-                'message' => 'No teacher profile is linked to this login. An admin must create a teachers row for you before Today can list registers.',
+                'message' => __('academics.empty_no_teacher'),
                 'can_generate' => false,
             ];
         }
@@ -28,7 +31,7 @@ class ExplainEmptyTodayRegistersAction
         if (Period::query()->exists() === false) {
             return [
                 'code' => 'no_periods',
-                'message' => 'No periods exist. An admin with timetable access must add periods, then place you on the timetable.',
+                'message' => __('academics.empty_no_periods'),
                 'can_generate' => false,
             ];
         }
@@ -38,7 +41,7 @@ class ExplainEmptyTodayRegistersAction
         if ($year === null) {
             return [
                 'code' => 'no_year',
-                'message' => 'No academic year is active. An admin must activate a year before registers can be generated.',
+                'message' => __('academics.empty_no_year'),
                 'can_generate' => false,
             ];
         }
@@ -53,7 +56,7 @@ class ExplainEmptyTodayRegistersAction
         if ($blocked) {
             return [
                 'code' => 'holiday',
-                'message' => 'This date is a non-teaching day (holiday or similar). Registers are not generated.',
+                'message' => __('academics.empty_non_teaching'),
                 'can_generate' => false,
             ];
         }
@@ -78,14 +81,14 @@ class ExplainEmptyTodayRegistersAction
         if ($slots === 0) {
             return [
                 'code' => 'no_timetable',
-                'message' => 'No timetable slots for you on '.$weekday.'. An admin must place you (or your class) on the timetable for this weekday.',
+                'message' => __('academics.empty_no_slots', ['weekday' => __('academics.weekday_'.$weekday)]),
                 'can_generate' => false,
             ];
         }
 
         return [
             'code' => 'not_generated',
-            'message' => 'Today’s registers have not been generated yet. You can create yours for this date. School-wide generation is still limited to staff with registers.manage.',
+            'message' => __('academics.empty_not_generated'),
             'can_generate' => true,
         ];
     }

@@ -19,6 +19,7 @@ export default function AbsencesToday({
     classId = null,
     onlyUnexplained = false,
     classes = [],
+    t = {},
 }) {
     const [filters, setFilters] = useState({
         date: date || '',
@@ -35,11 +36,16 @@ export default function AbsencesToday({
         });
     };
 
+    // In the page's language (BACKLOG C21, slice OA1). The count stays bold
+    // wherever the language puts it in the sentence; a note's state is a
+    // code, named here. A contact's relationship is what the office typed.
+    const [beforeCount, afterCount] = (t.absences_not_in || ':count not in on :date').replace(':date', date).split(':count');
+
     return (
-        <AppShell title="Absences">
+        <AppShell title={t.absences_title || 'Absences'}>
             <div className="mb-4 flex flex-wrap items-end gap-3 rounded-lg border bg-white p-4">
                 <label className="block text-sm">
-                    <span className="mb-1 block text-gray-600">Date</span>
+                    <span className="mb-1 block text-gray-600">{t.date || 'Date'}</span>
                     <input
                         type="date"
                         className="form-input"
@@ -48,13 +54,13 @@ export default function AbsencesToday({
                     />
                 </label>
                 <label className="block text-sm">
-                    <span className="mb-1 block text-gray-600">Class</span>
+                    <span className="mb-1 block text-gray-600">{t.class || 'Class'}</span>
                     <select
                         className="form-input"
                         value={filters.classId}
                         onChange={(e) => apply({ ...filters, classId: e.target.value })}
                     >
-                        <option value="">All classes</option>
+                        <option value="">{t.absences_all_classes || 'All classes'}</option>
                         {classes.map((item) => (
                             <option key={item.id} value={item.id}>{item.label}</option>
                         ))}
@@ -66,35 +72,35 @@ export default function AbsencesToday({
                         checked={filters.onlyUnexplained}
                         onChange={(e) => apply({ ...filters, onlyUnexplained: e.target.checked })}
                     />
-                    Only unexplained
+                    {t.absences_only_unexplained || 'Only unexplained'}
                 </label>
-                <a className="btn-secondary" href={`/academics/attendance/absences/export${query(filters)}`}>CSV</a>
+                <a className="btn-secondary" href={`/academics/attendance/absences/export${query(filters)}`}>{t.export_csv || 'Export CSV'}</a>
             </div>
 
             <p className="mb-4 text-sm text-gray-600">
-                <span className="font-semibold">{counts.total}</span> not in on {date}
+                {beforeCount}<span className="font-semibold">{counts.total}</span>{afterCount}
                 {counts.unexplained > 0 && (
                     <>
                         {' · '}
-                        <span className="font-semibold text-[#7C2D37]">{counts.unexplained} with no note</span>
+                        <span className="font-semibold text-[#7C2D37]">{(t.absences_no_note_count || ':count with no note').replace(':count', counts.unexplained)}</span>
                     </>
                 )}
             </p>
 
             {students.length === 0 ? (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">
-                    Nobody is marked absent for this day.
+                    {t.absences_nobody || 'Nobody is marked absent for this day.'}
                 </p>
             ) : (
                 <div className="overflow-x-auto rounded-lg border bg-white">
                     <table className="min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
-                                <th className="px-3 py-2">Student</th>
-                                <th className="px-3 py-2">Class</th>
-                                <th className="px-3 py-2">Periods</th>
-                                <th className="px-3 py-2">Note</th>
-                                <th className="px-3 py-2">Ring</th>
+                                <th className="px-3 py-2">{t.col_student || 'Student'}</th>
+                                <th className="px-3 py-2">{t.col_class || 'Class'}</th>
+                                <th className="px-3 py-2">{t.absences_col_periods || 'Periods'}</th>
+                                <th className="px-3 py-2">{t.col_note || 'Note'}</th>
+                                <th className="px-3 py-2">{t.absences_col_ring || 'Ring'}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -116,11 +122,11 @@ export default function AbsencesToday({
                                     </td>
                                     <td className="px-3 py-2">
                                         {row.is_unexplained ? (
-                                            <span className="font-semibold text-[#7C2D37]">No note — call home</span>
+                                            <span className="font-semibold text-[#7C2D37]">{t.absences_call_home || 'No note — call home'}</span>
                                         ) : (
                                             <>
                                                 <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs">
-                                                    {row.note_status}
+                                                    {t[`note_status_${row.note_status}`] || row.note_status}
                                                 </span>
                                                 {row.note_reason && (
                                                     <span className="block text-xs text-gray-600">{row.note_reason}</span>
@@ -143,12 +149,12 @@ export default function AbsencesToday({
                                                         ? ` · ${row.emergency_contact.relationship}`
                                                         : ''}
                                                     {row.emergency_contact.others > 0
-                                                        ? ` · +${row.emergency_contact.others} more`
+                                                        ? ` · ${(t.absences_more || '+:count more').replace(':count', row.emergency_contact.others)}`
                                                         : ''}
                                                 </span>
                                             </>
                                         ) : (
-                                            <span className="text-xs text-gray-500">No contact on file</span>
+                                            <span className="text-xs text-gray-500">{t.absences_no_contact || 'No contact on file'}</span>
                                         )}
                                     </td>
                                 </tr>
@@ -159,7 +165,7 @@ export default function AbsencesToday({
             )}
 
             <p className="mt-4 text-sm text-gray-600">
-                <Link href="/academics/absence-notes" className="text-[#7C2D37] underline">Review absence notes</Link>
+                <Link href="/academics/absence-notes" className="text-[#7C2D37] underline">{t.absences_review_notes || 'Review absence notes'}</Link>
             </p>
         </AppShell>
     );

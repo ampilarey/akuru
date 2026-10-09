@@ -19,6 +19,7 @@ use App\Domains\Academics\Enums\AttendanceMode;
 use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Models\LessonLog;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -51,6 +52,7 @@ class TeacherRegisterController extends Controller
             'teacherId' => $teacherId,
             'registers' => $registers,
             'empty' => $empty,
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -65,7 +67,7 @@ class TeacherRegisterController extends Controller
         $scopeClassTeacher = $request->user()?->can('registers.manage') ? null : $request->user()?->id;
 
         if ($scopeTeacher === null && ! $request->user()?->can('registers.manage')) {
-            abort(403, 'No teacher profile is linked to this login.');
+            abort(403, __('academics.no_teacher_profile'));
         }
 
         $result = app(GenerateExpectedRegistersAction::class)->execute(
@@ -134,6 +136,7 @@ class TeacherRegisterController extends Controller
                     'to' => $lessonLog->date?->toDateString(),
                 ])->where('period_id', $lessonLog->period_id)->values()
                 : collect(),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -191,7 +194,7 @@ class TeacherRegisterController extends Controller
 
         return redirect()
             ->route('academics.registers.show', $lessonLog)
-            ->with('success', 'Register submitted.');
+            ->with('success', __('academics.flash_register_submitted'));
     }
 
     private function authorizeView(Request $request, LessonLog $lessonLog): void

@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import FormErrors from '../../Components/FormErrors';
 import AppShell from '../../Layouts/AppShell';
 
@@ -17,6 +17,10 @@ export default function AbsenceNotes({ children, notes, types, periods = [], t =
     // after they have typed everything.
     const chosenId = String(form.data.absence_type_id);
     const chosen = types.find((type) => `${type.id}` === chosenId);
+    // The school names its own reasons, in Dhivehi and Arabic where it has
+    // (BACKLOG C21, slice OA1).
+    const locale = usePage().props.locale || 'en';
+    const typeName = (type) => ({ dv: type.name_dhivehi, ar: type.name_arabic }[locale]) || type.name;
 
     return (
         <AppShell title={t.absence_title || 'Absence notes'}>
@@ -42,7 +46,7 @@ export default function AbsenceNotes({ children, notes, types, periods = [], t =
                     <span className="mb-1 block text-gray-600">{t.col_type || 'Type'}</span>
                     <select className="form-input w-full" value={form.data.absence_type_id}
                         onChange={(e) => form.setData('absence_type_id', e.target.value)}>
-                        {types.map((type) => <option key={type.id} value={type.id}>{type.name}</option>)}
+                        {types.map((type) => <option key={type.id} value={type.id}>{typeName(type)}</option>)}
                     </select>
                     {chosen?.requires_evidence && (
                         <span className="mt-1 block text-xs text-[#7C2D37]">

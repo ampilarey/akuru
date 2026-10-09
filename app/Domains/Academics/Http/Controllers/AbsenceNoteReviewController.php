@@ -4,11 +4,13 @@ namespace App\Domains\Academics\Http\Controllers;
 
 use App\Domains\Academics\Actions\ApproveAbsenceNoteAction;
 use App\Domains\Academics\Actions\ListAbsenceNotesAction;
+use App\Domains\Academics\Actions\ListAbsenceTypesAction;
 use App\Domains\Academics\Actions\RejectAbsenceNoteAction;
 use App\Domains\Academics\Enums\AbsenceNoteStatus;
 use App\Domains\Academics\Models\AbsenceNote;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -27,6 +29,11 @@ class AbsenceNoteReviewController extends Controller
             'status' => $status,
             'statuses' => array_map(fn (AbsenceNoteStatus $item) => $item->value, AbsenceNoteStatus::cases()),
             'notes' => app(ListAbsenceNotesAction::class)->execute(['status' => $status]),
+            // A note's reason is a code the school named itself, in Dhivehi
+            // and Arabic where it has; retired ones too, since last term's
+            // notes still point at them (BACKLOG C21, slice OA1).
+            'types' => app(ListAbsenceTypesAction::class)->execute(selectableOnly: false),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -41,7 +48,7 @@ class AbsenceNoteReviewController extends Controller
             $data['review_notes'] ?? null,
         );
 
-        return redirect()->route('academics.absence-notes.index')->with('success', 'Absence note approved.');
+        return redirect()->route('academics.absence-notes.index')->with('success', __('academics.flash_note_approved'));
     }
 
     public function reject(Request $request, AbsenceNote $absenceNote): RedirectResponse
@@ -55,7 +62,7 @@ class AbsenceNoteReviewController extends Controller
             $data['review_notes'] ?? null,
         );
 
-        return redirect()->route('academics.absence-notes.index')->with('success', 'Absence note rejected.');
+        return redirect()->route('academics.absence-notes.index')->with('success', __('academics.flash_note_rejected'));
     }
 
     public function export(Request $request): StreamedResponse
