@@ -52,7 +52,11 @@ it('offers the periods and lets a parent attach a document to a note for one les
         ->assertInertia(fn (Assert $page) => $page
             ->component('Portal/AbsenceNotes')
             ->has('periods', 1)
-            ->where('periods.0.id', $period->id));
+            ->where('periods.0.id', $period->id)
+            // The lesson's times, not the first five characters of a date
+            // (STATUS §5qd).
+            ->where('periods.0.start_time', '08:00')
+            ->where('periods.0.end_time', '08:45'));
 
     $this->withoutLocalizationMiddleware()
         ->actingAs($parent)

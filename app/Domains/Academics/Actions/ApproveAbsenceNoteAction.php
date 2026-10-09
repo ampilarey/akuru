@@ -18,7 +18,7 @@ class ApproveAbsenceNoteAction
     {
         if ($note->status === AbsenceNoteStatus::Approved->value || $note->isApproved()) {
             throw ValidationException::withMessages([
-                'status' => 'This note is already approved.',
+                'status' => __('academics.error_note_approved'),
             ]);
         }
 

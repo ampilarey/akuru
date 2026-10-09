@@ -28,7 +28,7 @@ class SubmitRegisterAction
 
         if ($topicId === null && $summary === '') {
             throw ValidationException::withMessages([
-                'taught_summary' => 'Pick a plan topic or enter what was taught.',
+                'taught_summary' => __('academics.error_taught_needed'),
             ]);
         }
 
@@ -36,7 +36,7 @@ class SubmitRegisterAction
             $topic = PlanTopic::query()->find($topicId);
             if ($topic === null) {
                 throw ValidationException::withMessages([
-                    'plan_topic_id' => 'That plan topic does not exist.',
+                    'plan_topic_id' => __('academics.error_topic_missing'),
                 ]);
             }
 
@@ -81,14 +81,14 @@ class SubmitRegisterAction
             $teacherId = $this->teacherId->execute($actorUserId);
             if ($teacherId === null || (int) $log->teacher_id !== $teacherId) {
                 throw ValidationException::withMessages([
-                    'teacher_id' => 'You can only submit your own registers.',
+                    'teacher_id' => __('academics.error_not_your_register'),
                 ]);
             }
         }
 
         if ($log->status === LessonLogStatus::Locked) {
             throw ValidationException::withMessages([
-                'status' => 'This register is locked.',
+                'status' => __('academics.error_register_locked'),
             ]);
         }
 
@@ -98,7 +98,7 @@ class SubmitRegisterAction
 
         if ($log->date?->lte($cutoff) && ! $grace) {
             throw ValidationException::withMessages([
-                'status' => 'This register is locked.',
+                'status' => __('academics.error_register_locked'),
             ]);
         }
     }

@@ -10,6 +10,7 @@ use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -47,6 +48,7 @@ class DailyAttendanceController extends Controller
                     'academic_year_id' => $year?->id,
                 ])->where('period_id', null)->values()
                 : collect(),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -77,7 +79,7 @@ class DailyAttendanceController extends Controller
                 'class_id' => $class->id,
                 'date' => $data['date'],
             ])
-            ->with('success', 'Daily attendance saved.');
+            ->with('success', __('academics.flash_daily_saved'));
     }
 
     private function year(Request $request): ?AcademicYear

@@ -30,6 +30,7 @@ export default function Show({
     attendanceStatuses = ['present', 'absent', 'late', 'left_early'],
     roster = [],
     marks = [],
+    t = {},
 }) {
     const { errors } = usePage().props;
     const existing = Object.fromEntries(marks.map((mark) => [String(mark.student_id), mark]));
@@ -57,19 +58,32 @@ export default function Show({
     // What the register will say was taught. When a topic is picked the title
     // is the answer, so the box below stops being the place to write it
     // (KNOWN_ISSUES #16) — it asks for what the title leaves out instead.
-    const chosenTopic = topics.find((topic) => String(topic.id) === String(form.data.plan_topic_id)) || null;
+    const chosenTopicId = String(form.data.plan_topic_id);
+    const chosenTopic = topics.find((topic) => `${topic.id}` === chosenTopicId) || null;
+    const taughtLabel = chosenTopic
+        ? (t.register_left_out || 'Anything the topic title leaves out (optional)')
+        : (t.register_what_taught || 'What was taught');
+    // In the page's language (BACKLOG C21, slice OA1); a register's and a
+    // mark's state are codes, named here.
+    const col = {
+        student: t.col_student || 'Student',
+        number: t.col_number || 'Number',
+        dob: t.col_date_of_birth || 'Date of birth',
+        status: t.col_status || 'Status',
+        minutesLate: t.col_minutes_late || 'Minutes late',
+    };
 
     return (
-        <AppShell title="Class register">
+        <AppShell title={t.register_title || 'Class register'}>
             <p className="mb-4 text-sm text-gray-600">
-                <Link href="/academics/registers/today" className="text-[#7C2D37] underline">Today</Link>
+                <Link href="/academics/registers/today" className="text-[#7C2D37] underline">{t.register_today || 'Today'}</Link>
                 {' · '}
                 {register.subject_name} · {register.class_name} · {register.date}
             </p>
             {errors?.status && <p className="mb-3 text-sm text-red-600">{errors.status}</p>}
             {errors?.teacher_id && <p className="mb-3 text-sm text-red-600">{errors.teacher_id}</p>}
             <p className="mb-4">
-                <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{register.status}</span>
+                <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{t[`register_status_${register.status}`] || register.status}</span>
             </p>
 
             <form
@@ -84,72 +98,74 @@ export default function Show({
                 }}
                 className="mb-6 grid gap-3 rounded-lg border bg-white p-4"
             >
-                <Field label="Plan topic" error={form.errors.plan_topic_id}>
+                <Field label={t.register_plan_topic || 'Plan topic'} error={form.errors.plan_topic_id}>
                     <select
                         className="form-input w-full"
+                        aria-label={t.register_plan_topic || 'Plan topic'}
                         value={form.data.plan_topic_id}
                         onChange={(e) => form.setData('plan_topic_id', e.target.value)}
                         disabled={!canSubmit}
                     >
-                        <option value="">Free text / none</option>
+                        <option value="">{t.register_free_text || 'Free text / none'}</option>
                         {topics.map((topic) => (
                             <option key={topic.id} value={topic.id}>
-                                {topic.order}. {topic.title}{topic.is_completed ? ' (taught)' : ''}
+                                {topic.order}. {topic.is_completed ? (t.register_topic_taught || ':title (taught)').replace(':title', topic.title) : topic.title}
                             </option>
                         ))}
                     </select>
                     {chosenTopic && (
                         <span className="mt-1 block text-xs text-gray-500">
-                            This register will read “{chosenTopic.title}”, and submitting marks that topic taught on the plan.
+                            {(t.register_will_read || 'This register will read “:title”, and submitting marks that topic taught on the plan.').replace(':title', chosenTopic.title)}
                         </span>
                     )}
                 </Field>
-                <Field
-                    label={chosenTopic ? 'Anything the topic title leaves out (optional)' : 'What was taught'}
-                    error={form.errors.taught_summary}
-                >
+                <Field label={taughtLabel} error={form.errors.taught_summary}>
                     <textarea
                         className="form-input w-full"
+                        aria-label={taughtLabel}
                         rows={3}
                         value={form.data.taught_summary}
                         onChange={(e) => form.setData('taught_summary', e.target.value)}
                         placeholder={chosenTopic
-                            ? 'Leave blank unless the lesson went somewhere the title does not cover.'
+                            ? (t.register_left_out_hint || 'Leave blank unless the lesson went somewhere the title does not cover.')
                             : ''}
                         disabled={!canSubmit}
                     />
                     {chosenTopic && (
                         <span className="mt-1 block text-xs text-gray-500">
-                            No need to type “{chosenTopic.title}” again — a note that only repeats the title is dropped.
+                            {(t.register_no_repeat || 'No need to type “:title” again — a note that only repeats the title is dropped.').replace(':title', chosenTopic.title)}
                         </span>
                     )}
                 </Field>
-                <Field label="Homework">
+                <Field label={t.register_homework || 'Homework'}>
                     <textarea
                         className="form-input w-full"
+                        aria-label={t.register_homework || 'Homework'}
                         rows={2}
                         value={form.data.homework}
                         onChange={(e) => form.setData('homework', e.target.value)}
                         disabled={!canSubmit}
                     />
                 </Field>
-                <Field label="Homework due" error={errors.homework_due_date}>
+                <Field label={t.register_homework_due || 'Homework due'} error={errors.homework_due_date}>
                     <input
                         className="form-input w-full"
                         type="date"
+                        aria-label={t.register_homework_due || 'Homework due'}
                         value={form.data.homework_due_date}
                         onChange={(e) => form.setData('homework_due_date', e.target.value)}
                         disabled={!canSubmit || !form.data.homework}
                     />
                     <span className="mt-1 block text-xs text-gray-500">
                         {nextLessonDate
-                            ? `Defaults to the next lesson for this class (${nextLessonDate}).`
-                            : 'No further lesson found for this class in the next three weeks.'}
+                            ? (t.register_due_default || 'Defaults to the next lesson for this class (:date).').replace(':date', nextLessonDate)
+                            : (t.register_no_next || 'No further lesson found for this class in the next three weeks.')}
                     </span>
                 </Field>
-                <Field label="Materials (comma separated)">
+                <Field label={t.register_materials_text || 'Materials (comma separated)'}>
                     <input
                         className="form-input w-full"
+                        aria-label={t.register_materials_text || 'Materials (comma separated)'}
                         value={form.data.materials}
                         onChange={(e) => form.setData('materials', e.target.value)}
                         disabled={!canSubmit}
@@ -157,13 +173,13 @@ export default function Show({
                 </Field>
                 <div>
                     <p className="mb-2 text-sm text-gray-600">
-                        From the library
+                        {t.register_from_library || 'From the library'}
                         {' · '}
-                        <Link href="/academics/materials" className="text-[#7C2D37] underline">Manage materials</Link>
+                        <Link href="/academics/materials" className="text-[#7C2D37] underline">{t.register_manage_materials || 'Manage materials'}</Link>
                     </p>
                     {materialLibrary.length === 0 ? (
                         <p className="text-xs text-gray-500">
-                            Nothing saved for this subject yet. Write a material once and it is reusable in every lesson.
+                            {t.register_library_empty || 'Nothing saved for this subject yet. Write a material once and it is reusable in every lesson.'}
                         </p>
                     ) : (
                         <div className="grid gap-1 md:grid-cols-2">
@@ -218,7 +234,7 @@ export default function Show({
                                                             : form.data.homework_material_ids.filter((value) => value !== id),
                                                     )}
                                                 />
-                                                Send home with the homework
+                                                {t.register_send_home || 'Send home with the homework'}
                                             </label>
                                         )}
                                     </div>
@@ -227,9 +243,10 @@ export default function Show({
                         </div>
                     )}
                 </div>
-                <Field label="Notes">
+                <Field label={t.register_notes || 'Notes'}>
                     <input
                         className="form-input w-full"
+                        aria-label={t.register_notes || 'Notes'}
                         value={form.data.notes}
                         onChange={(e) => form.setData('notes', e.target.value)}
                         disabled={!canSubmit}
@@ -237,17 +254,17 @@ export default function Show({
                 </Field>
                 {attendanceMode === 'per_lesson' && roster.length > 0 && (
                     <div>
-                        <p className="mb-2 text-sm font-semibold">Attendance</p>
+                        <p className="mb-2 text-sm font-semibold">{t.register_attendance || 'Attendance'}</p>
                         {errors?.attendance && <p className="mb-2 text-xs text-red-600">{errors.attendance}</p>}
                         <div className="overflow-x-auto">
                             <table className="min-w-full text-sm">
                                 <thead className="bg-[#F3EBE0] text-start">
                                     <tr>
-                                        <th className="px-2 py-1">Student</th>
-                                        <th className="px-2 py-1">Number</th>
-                                        <th className="px-2 py-1">Date of birth</th>
-                                        <th className="px-2 py-1">Status</th>
-                                        <th className="px-2 py-1">Minutes late</th>
+                                        <th className="px-2 py-1">{col.student}</th>
+                                        <th className="px-2 py-1">{col.number}</th>
+                                        <th className="px-2 py-1">{col.dob}</th>
+                                        <th className="px-2 py-1">{col.status}</th>
+                                        <th className="px-2 py-1">{col.minutesLate}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -262,6 +279,7 @@ export default function Show({
                                                 <td className="px-2 py-1">
                                                     <select
                                                         className="form-input w-full"
+                                                        aria-label={`${col.status}: ${student.name}`}
                                                         value={row.status}
                                                         disabled={!canSubmit}
                                                         onChange={(e) => setGrid((current) => ({
@@ -269,7 +287,7 @@ export default function Show({
                                                             [key]: { ...row, status: e.target.value },
                                                         }))}
                                                     >
-                                                        {attendanceStatuses.map((status) => <option key={status} value={status}>{status}</option>)}
+                                                        {attendanceStatuses.map((status) => <option key={status} value={status}>{t[`attendance_status_${status}`] || status}</option>)}
                                                     </select>
                                                 </td>
                                                 <td className="px-2 py-1">
@@ -277,6 +295,7 @@ export default function Show({
                                                         className="form-input w-20"
                                                         type="number"
                                                         min="0"
+                                                        aria-label={`${col.minutesLate}: ${student.name}`}
                                                         value={row.minutes_late}
                                                         disabled={!canSubmit}
                                                         onChange={(e) => setGrid((current) => ({
@@ -295,14 +314,14 @@ export default function Show({
                 )}
                 {attendanceMode === 'daily' && (
                     <p className="text-sm text-gray-600">
-                        This school marks attendance once per day.
+                        {t.register_daily_mode || 'This school marks attendance once per day.'}
                         {' '}
-                        <Link href="/academics/attendance/daily" className="text-[#7C2D37] underline">Open daily attendance</Link>
+                        <Link href="/academics/attendance/daily" className="text-[#7C2D37] underline">{t.register_open_daily || 'Open daily attendance'}</Link>
                     </p>
                 )}
                 {canSubmit && (
                     <button type="submit" className="btn-primary justify-self-start" disabled={form.processing}>
-                        Submit register
+                        {t.register_submit || 'Submit register'}
                     </button>
                 )}
             </form>
@@ -315,11 +334,11 @@ export default function Show({
                     }}
                     className="grid gap-3 rounded-lg border bg-white p-4"
                 >
-                    <p className="text-sm text-gray-600">Admin unlock (audited). The teacher then has 24 hours to edit.</p>
-                    <Field label="Reason" error={unlock.errors.reason}>
-                        <input className="form-input w-full" value={unlock.data.reason} onChange={(e) => unlock.setData('reason', e.target.value)} />
+                    <p className="text-sm text-gray-600">{t.register_unlock_intro || 'Admin unlock (audited). The teacher then has 24 hours to edit.'}</p>
+                    <Field label={t.register_reason || 'Reason'} error={unlock.errors.reason}>
+                        <input className="form-input w-full" aria-label={t.register_reason || 'Reason'} value={unlock.data.reason} onChange={(e) => unlock.setData('reason', e.target.value)} />
                     </Field>
-                    <button type="submit" className="btn-secondary justify-self-start">Unlock</button>
+                    <button type="submit" className="btn-secondary justify-self-start">{t.register_unlock || 'Unlock'}</button>
                 </form>
             )}
         </AppShell>

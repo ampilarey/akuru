@@ -25,7 +25,7 @@ class RecordDailyAttendanceAction
         $mode = $this->settings->execute()['mode'];
         if ($mode !== AttendanceMode::Daily) {
             throw ValidationException::withMessages([
-                'mode' => 'Daily attendance is disabled while the school is in per-lesson mode.',
+                'mode' => __('academics.error_daily_disabled'),
             ]);
         }
 
@@ -33,7 +33,7 @@ class RecordDailyAttendanceAction
             $status = AttendanceStatus::tryFrom((string) ($mark['status'] ?? ''));
             if ($status === null) {
                 throw ValidationException::withMessages([
-                    'attendance' => 'Each mark needs a valid status.',
+                    'attendance' => __('academics.error_mark_status'),
                 ]);
             }
 

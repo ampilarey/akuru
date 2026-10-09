@@ -4983,6 +4983,119 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qd. The office's registers and attendance in Dhivehi and Arabic (C21 OA1, 2026-10-09)
+
+The sixth slice of BACKLOG C21, and the first of the school office's
+screens. These are the nine a teacher and the office meet first:
+- a class register with its attendance grid, today's registers and the
+  unfilled list;
+- the attendance reports, daily attendance and who is not in today;
+- absence notes, the attendance policy and the absence reasons.
+
+They read no phrase book, and were English throughout:
+- every heading, column, filter, empty line, button and hint;
+- four codes printed as they are stored: a register's state
+  (*SUBMITTED*), a mark's (*left_early*), how a mark was recorded
+  (*register*) and a note's state (*approved*);
+- why a teacher's day is empty, which the server writes, with the weekday
+  in lower-case English (*No timetable slots for you on sunday.*);
+- what generating registers did (*Created 3 expected registers (2 already
+  exist).*);
+- the eight saved messages and twenty-one refusals.
+
+A note's reason is a code the school names itself, in Dhivehi and Arabic
+where it has. The office's list printed the code (*illness: Fever.*). The
+family's form named every reason in English, because the five reasons a
+school starts with (*Illness*, *Medical appointment*, …) were seeded with an
+English name only.
+
+**The change:**
+- **A new `academics` book**, 204 phrases. It is one book per office
+  domain, as C21 plans. The nine pages read it through
+  `Phrases::once('academics')`.
+- **Codes are named, not printed**, and the weekday is the book's.
+- **What the server says is in the page's language**: why today is empty,
+  what generating did, the saved messages and the refusals. That covers
+  `ExplainEmptyTodayRegistersAction`, `GenerateExpectedRegistersAction`,
+  eight more actions and eight controllers. The English is unchanged except
+  the weekday, which now has its capital.
+- **A note's reason reads by the school's own name for it** in the page's
+  language. The notes screen is now sent the reasons, retired ones too,
+  since last term's notes still point at them. The family's form picks the
+  Dhivehi or Arabic name where there is one.
+- **The five starting reasons gain Dhivehi and Arabic names**
+  (`2026_10_09_000001_absence_reason_names_in_dhivehi_and_arabic`). They are
+  filled only where empty, so a name the office typed stays.
+- **Every field is named**: the register's seven fields, the two grids'
+  status and minutes, and the filters.
+- **Found on the walk and fixed:** the family's absence form offered each
+  lesson as *Period 1 (2026-–2026-)*. `ListPeriodOptionsAction` cut the
+  first five characters from a time the model casts to a date; it now
+  formats the time (*Period 1 (08:00–08:45)*).
+- `all.mjs` lists the new walk, and `portal-language`, which PT1a–PT4
+  never added to it.
+- `TeacherRegisterController::show` reads the two material lists through
+  one helper, so the method is shorter than its baseline
+  (`ThinControllersTest`) although it now sends the book too.
+
+What the school writes stays as written: a pupil's, class's, subject's and
+period's name, a plan topic, a reason's code, and an emergency contact's
+relationship (free text the office types). The CSVs keep their English
+column codes.
+
+**Tests:** a new `AcademicsSpeaksThreeLanguagesTest`, five tests:
+- every phrase on the nine pages is in the book in three languages, with
+  no bare English and no unnamed field;
+- the four codes and the weekdays are named in Dhivehi and Arabic;
+- the eighteen server files write no English, and every key they name has
+  Dhivehi and Arabic;
+- the five starting reasons have Dhivehi and Arabic names, and a name the
+  office typed survives the migration;
+- the eight screens serve in Dhivehi. Why today is empty, what generating
+  did and an approved note are said in Dhivehi. A second approval, a locked
+  register, a register with nothing taught, daily attendance in per-lesson
+  mode, a bad policy and a reason the school already has are each refused
+  in Dhivehi, beside their field.
+
+`AbsenceNoteAttachmentTest` now pins a lesson's times; without the fix it
+fails with `'2026-'`.
+
+The tests for the areas it touches (Academics, Localization, Portal): 550
+passed.
+
+Whole suite locally: **2973 passed (45071 assertions)**. The first run had
+one failure, `ThinControllersTest`: `show` had grown by the line that sends
+the book; the helper above fixed it.
+
+**Walk:** `office-language.mjs` 60/60.
+- The nine screens read right to left under `/dv` and `/ar`, with nothing
+  left in English and every field named. The teacher walks today's
+  registers, a register and daily attendance; the dean walks the rest.
+- The teacher's day says why it is empty in Dhivehi, its weekday named:
+  *ހޮނިހިރު ދުވަހު ތިބާއަށް ޓައިމްޓޭބަލްގައި އެއްވެސް ޕީރިއަޑެއް ނެތް.*
+- The dean's *Generate* is answered in Dhivehi, and a reason the school
+  already has is refused beside its box in Dhivehi.
+- A family chooses among reasons named in Dhivehi, and lessons with their
+  times.
+
+Other walks:
+- `portal-language.mjs` 212/212, run alone after a fresh seed (it covers
+  the family's absence form this slice changed). Run straight after
+  `family.mjs` on a Saturday it was 207/209: `family.mjs` takes the last
+  school day, Thursday, which is the day `portal-language` plants its
+  homework on (two days back), and writes over that homework.
+- `family.mjs` 15/21 on this branch **and on `main`** (c2ffde0), failing the
+  same six steps. On a Saturday it takes Thursday's registers. The first it
+  opens is one the seeder planted for a subject the class's timetable does
+  not have, so it offers no due date (*No further lesson found…*). The
+  pupil's homework then reads *No due date*, the walk cannot read the
+  teacher's name from it, and it writes to the first teacher offered. The
+  teacher it signs in as then has nothing. Taken next.
+- `absence.mjs` and `school-day.mjs` each fail the one step that needs a
+  register for today. It is Saturday in the Maldives, and Saturday has no
+  timetable slots (the teacher's day says so, in Dhivehi, above);
+  `school-day.mjs` stops there, `absence.mjs` passes the rest.
+
 ## 5qc. The staff's own pages in Dhivehi and Arabic (C21 PT4, 2026-10-09)
 
 The fifth slice of BACKLOG C21 covers the six portal pages a member of

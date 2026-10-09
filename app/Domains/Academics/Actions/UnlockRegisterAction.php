@@ -14,7 +14,7 @@ class UnlockRegisterAction
         $trimmed = trim($reason);
         if ($trimmed === '') {
             throw ValidationException::withMessages([
-                'reason' => 'A reason is required to unlock a register.',
+                'reason' => __('academics.error_unlock_reason'),
             ]);
         }
 

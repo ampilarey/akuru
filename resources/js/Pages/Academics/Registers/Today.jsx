@@ -1,31 +1,34 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Today({ date, teacherId, registers, empty }) {
+export default function Today({ date, teacherId, registers, empty, t = {} }) {
     const { errors } = usePage().props;
 
+    // In the page's language (BACKLOG C21, slice OA1); why the day is empty
+    // is the server's, said in the page's language too.
     return (
-        <AppShell title="Today's registers">
+        <AppShell title={t.today_title || 'Today’s registers'}>
             {errors?.status && <p className="mb-3 text-sm text-red-600">{errors.status}</p>}
             <div className="mb-4 flex flex-wrap items-center gap-3">
                 <input
                     className="form-input"
                     type="date"
+                    aria-label={t.date || 'Date'}
                     value={date}
                     onChange={(e) => router.get(`/academics/registers/today?date=${e.target.value}`)}
                 />
-                {!teacherId && <p className="text-sm text-gray-600">No teacher profile is linked to this login.</p>}
+                {!teacherId && <p className="text-sm text-gray-600">{t.no_teacher_profile || 'No teacher profile is linked to this login.'}</p>}
             </div>
             {registers.length === 0 ? (
                 <div className="rounded-lg border bg-white p-4 text-sm text-gray-700">
-                    <p>{empty?.message || 'No registers for this date.'}</p>
+                    <p>{empty?.message || t.today_none || 'No registers for this date.'}</p>
                     {empty?.can_generate && (
                         <button
                             type="button"
                             className="btn-primary mt-3"
                             onClick={() => router.post('/academics/registers/today/generate', { date })}
                         >
-                            Generate my registers for this date
+                            {t.today_generate || 'Generate my registers for this date'}
                         </button>
                     )}
                 </div>
@@ -38,17 +41,17 @@ export default function Today({ date, teacherId, registers, empty }) {
                                     <p className="font-semibold">{item.subject_name}</p>
                                     <p className="text-sm text-gray-600">{item.class_name}</p>
                                     <p className="text-xs text-gray-500">
-                                        {item.period_name || 'Time-based'}
+                                        {item.period_name || t.today_time_based || 'Time-based'}
                                         {item.period_start ? ` · ${String(item.period_start).slice(0, 5)}` : ''}
                                     </p>
                                 </div>
-                                <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{item.status}</span>
+                                <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs uppercase">{t[`register_status_${item.status}`] || item.status}</span>
                             </div>
                             <Link
                                 href={`/academics/registers/${item.id}`}
                                 className="mt-3 inline-block text-sm text-[#7C2D37] underline"
                             >
-                                {item.status === 'submitted' || item.status === 'locked' ? 'View register' : 'Fill register'}
+                                {item.status === 'submitted' || item.status === 'locked' ? (t.today_view || 'View register') : (t.today_fill || 'Fill register')}
                             </Link>
                         </li>
                     ))}

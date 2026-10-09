@@ -12,7 +12,7 @@ class RejectAbsenceNoteAction
     {
         if ($note->isApproved() || $note->isRejected()) {
             throw ValidationException::withMessages([
-                'status' => 'This note has already been reviewed.',
+                'status' => __('academics.error_note_reviewed'),
             ]);
         }
 

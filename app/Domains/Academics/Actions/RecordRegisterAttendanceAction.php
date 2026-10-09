@@ -29,7 +29,7 @@ class RecordRegisterAttendanceAction
 
         if ($log->academic_year_id === null) {
             throw ValidationException::withMessages([
-                'attendance' => 'This register is missing an academic year.',
+                'attendance' => __('academics.error_register_no_year'),
             ]);
         }
 
@@ -37,7 +37,7 @@ class RecordRegisterAttendanceAction
             $status = AttendanceStatus::tryFrom((string) ($mark['status'] ?? ''));
             if ($status === null) {
                 throw ValidationException::withMessages([
-                    'attendance' => 'Each mark needs a valid status.',
+                    'attendance' => __('academics.error_mark_status'),
                 ]);
             }
 

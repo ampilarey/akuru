@@ -10,6 +10,7 @@ use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -36,6 +37,7 @@ class AttendanceReportController extends Controller
             // aggregated. Reported beside the absence figures, never folded in.
             'tardies' => app(ListTardySummaryAction::class)->execute($filters),
             'tardiesPerAbsence' => app(ResolveAttendanceSettingsAction::class)->execute()['tardies_per_absence'],
+            't' => Phrases::once('academics'),
         ]);
     }
 

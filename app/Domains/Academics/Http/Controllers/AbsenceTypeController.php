@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ListAbsenceTypesAction;
 use App\Domains\Academics\Actions\SaveAbsenceTypeAction;
 use App\Domains\Academics\Models\AbsenceType;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -20,6 +21,7 @@ class AbsenceTypeController extends Controller
             // Inactive ones included: a retired reason is still the reason on
             // last term's notes, and the office needs to see it.
             'types' => app(ListAbsenceTypesAction::class)->execute(selectableOnly: false),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -27,14 +29,14 @@ class AbsenceTypeController extends Controller
     {
         $save->execute($this->validated($request));
 
-        return back()->with('success', 'Reason added. Families can choose it now.');
+        return back()->with('success', __('academics.flash_type_added'));
     }
 
     public function update(Request $request, AbsenceType $absenceType, SaveAbsenceTypeAction $save): RedirectResponse
     {
         $save->execute($this->validated($request), $absenceType);
 
-        return back()->with('success', 'Reason updated.');
+        return back()->with('success', __('academics.flash_type_updated'));
     }
 
     /** @return array<string, mixed> */

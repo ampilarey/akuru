@@ -5,6 +5,7 @@ namespace App\Domains\Academics\Http\Controllers;
 use App\Domains\Academics\Actions\ResolveAttendanceSettingsAction;
 use App\Domains\Academics\Actions\SaveAttendanceSettingsAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,6 +26,7 @@ class AttendancePolicyController extends Controller
                 'tardies_per_absence' => $settings['tardies_per_absence'],
                 'part_lesson_minutes' => $settings['part_lesson_minutes'],
             ],
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -32,6 +34,6 @@ class AttendancePolicyController extends Controller
     {
         $save->execute($request->all());
 
-        return back()->with('success', 'Attendance policy saved. Reported figures use it from now on.');
+        return back()->with('success', __('academics.flash_policy_saved'));
     }
 }
