@@ -36,7 +36,7 @@ class PortalNotificationController extends Controller
             'preferences' => app(ResolveNotificationPreferencesAction::class)->execute($userId),
             // SPEC §50: the phones the mobile app has registered for this person.
             'devices' => app(ListDevicesAction::class)->execute($userId),
-            't' => Phrases::once('admin'),
+            't' => Phrases::once('portal'),
         ]);
     }
 
@@ -66,7 +66,7 @@ class PortalNotificationController extends Controller
 
         return redirect()
             ->route('portal.notifications')
-            ->with('success', 'Notification preferences saved.');
+            ->with('success', __('portal.flash_notification_prefs_saved'));
     }
 
     private function userId(Request $request): int

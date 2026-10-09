@@ -401,6 +401,16 @@ return [
         'follow_up_on' => 'تاريخ المتابعة',
         'preorder_release_on' => 'تاريخ الإصدار',
         'expires_at' => 'تاريخ الانتهاء',
+        // The family portal's messages and notifications (slice PT1b)
+        'subject' => 'الموضوع',
+        'recipient_id' => 'المستلم',
+        'class_id' => 'الصف',
+        'audience' => 'الفئة',
+        'target_type' => 'طريقة الإرسال',
+        'poll_question' => 'السؤال',
+        'poll_options' => 'الخيارات',
+        'choice' => 'الإجابة',
+        'preferences' => 'التفضيلات',
     ],
 
     'values' => [

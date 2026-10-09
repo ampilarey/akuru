@@ -71,7 +71,7 @@ class ShowMessageThreadAction
             ->map(fn (Message $message): array => [
                 'id' => (int) $message->id,
                 'sender_id' => (int) $message->sender_id,
-                'sender' => $names[(int) $message->sender_id] ?? 'Unknown',
+                'sender' => $names[(int) $message->sender_id] ?? __('portal.unknown_person'),
                 'is_mine' => (int) $message->sender_id === $userId,
                 'body' => (string) $message->content,
                 'is_important' => (bool) $message->is_important,
@@ -92,7 +92,7 @@ class ShowMessageThreadAction
             'participants' => $participants
                 ->map(fn (MessageParticipant $row): array => [
                     'user_id' => (int) $row->user_id,
-                    'name' => $names[(int) $row->user_id] ?? 'Unknown',
+                    'name' => $names[(int) $row->user_id] ?? __('portal.unknown_person'),
                     'role' => (string) $row->role,
                 ])
                 ->values()

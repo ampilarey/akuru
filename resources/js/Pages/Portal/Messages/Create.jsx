@@ -1,13 +1,10 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
-const AUDIENCES = [
-    { value: 'guardians', label: 'Parents' },
-    { value: 'students', label: 'Students' },
-    { value: 'both', label: 'Parents and students' },
-];
+const AUDIENCES = ['guardians', 'students', 'both'];
 
-export default function Create({ recipients = [], classes = [] }) {
+export default function Create({ recipients = [], classes = [], t = {} }) {
     const canPerson = recipients.length > 0;
     const canClass = classes.length > 0;
 
@@ -24,17 +21,21 @@ export default function Create({ recipients = [], classes = [] }) {
 
     const selectedClass = classes.find((c) => String(c.id) === String(form.data.class_id));
     const reach = selectedClass ? selectedClass.reach[form.data.audience] : 0;
+    const audienceLabel = {
+        guardians: t.messages_audience_guardians || 'Parents',
+        students: t.messages_audience_students || 'Students',
+        both: t.messages_audience_both || 'Parents and students',
+    };
 
     return (
-        <AppShell title="New message">
+        <AppShell title={t.messages_new || 'New message'}>
             <div className="mb-4">
-                <a className="text-sm text-[#7C2D37] hover:underline" href="/portal/messages">← All messages</a>
+                <a className="text-sm text-[#7C2D37] hover:underline" href="/portal/messages">{t.messages_all || '← All messages'}</a>
             </div>
 
             {!canPerson && !canClass ? (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">
-                    There is nobody to write to yet. Teachers appear here once your child is on a class
-                    roster with a timetable.
+                    {t.messages_nobody || 'There is nobody to write to yet. Teachers appear here once your child is on a class roster with a timetable.'}
                 </p>
             ) : (
                 <form
@@ -48,7 +49,7 @@ export default function Create({ recipients = [], classes = [] }) {
                         a single-option chooser is noise. */}
                     {canPerson && canClass && (
                         <div className="flex gap-4 text-sm">
-                            {[['user', 'A person'], ['class', 'A whole class']].map(([value, label]) => (
+                            {[['user', t.messages_target_user || 'A person'], ['class', t.messages_target_class || 'A whole class']].map(([value, label]) => (
                                 <label key={value} className="flex items-center gap-2">
                                     <input
                                         type="radio"
@@ -63,7 +64,7 @@ export default function Create({ recipients = [], classes = [] }) {
 
                     {form.data.target_type === 'user' ? (
                         <label className="block text-sm">
-                            <span className="mb-1 block text-gray-600">To</span>
+                            <span className="mb-1 block text-gray-600">{t.messages_to || 'To'}</span>
                             <select
                                 className="form-input w-full"
                                 value={form.data.recipient_id}
@@ -80,7 +81,7 @@ export default function Create({ recipients = [], classes = [] }) {
                     ) : (
                         <>
                             <label className="block text-sm">
-                                <span className="mb-1 block text-gray-600">Class</span>
+                                <span className="mb-1 block text-gray-600">{t.messages_class || 'Class'}</span>
                                 <select
                                     className="form-input w-full"
                                     value={form.data.class_id}
@@ -88,7 +89,7 @@ export default function Create({ recipients = [], classes = [] }) {
                                 >
                                     {classes.map((klass) => (
                                         <option key={klass.id} value={klass.id}>
-                                            {klass.name} · {klass.students_on_roster} on roster
+                                            {klass.name} · {(t.messages_on_roster || ':count on roster').replace(':count', klass.students_on_roster)}
                                         </option>
                                     ))}
                                 </select>
@@ -96,14 +97,14 @@ export default function Create({ recipients = [], classes = [] }) {
                             </label>
 
                             <label className="block text-sm">
-                                <span className="mb-1 block text-gray-600">Send to</span>
+                                <span className="mb-1 block text-gray-600">{t.messages_send_to || 'Send to'}</span>
                                 <select
                                     className="form-input w-full"
                                     value={form.data.audience}
                                     onChange={(e) => form.setData('audience', e.target.value)}
                                 >
-                                    {AUDIENCES.map((a) => (
-                                        <option key={a.value} value={a.value}>{a.label}</option>
+                                    {AUDIENCES.map((value) => (
+                                        <option key={value} value={value}>{audienceLabel[value]}</option>
                                     ))}
                                 </select>
                             </label>
@@ -113,14 +114,16 @@ export default function Create({ recipients = [], classes = [] }) {
                                 size — a surprise if discovered after. */}
                             <p className="rounded border border-[#E6D9C8] bg-[#FDFBF8] p-2 text-xs text-gray-700">
                                 {reach === 0
-                                    ? 'Nobody in this class has an account for that audience.'
-                                    : `Goes to ${reach} account${reach === 1 ? '' : 's'}. Replies come back to you only, not to the whole class.`}
+                                    ? (t.messages_reach_none || 'Nobody in this class has an account for that audience.')
+                                    : reach === 1
+                                        ? (t.messages_reach_one || 'Goes to 1 account. Replies come back to you only, not to the whole class.')
+                                        : (t.messages_reach_many || 'Goes to :count accounts. Replies come back to you only, not to the whole class.').replace(':count', reach)}
                             </p>
                         </>
                     )}
 
                     <label className="block text-sm">
-                        <span className="mb-1 block text-gray-600">Subject</span>
+                        <span className="mb-1 block text-gray-600">{t.messages_subject || 'Subject'}</span>
                         <input
                             className="form-input w-full"
                             type="text"
@@ -131,7 +134,7 @@ export default function Create({ recipients = [], classes = [] }) {
                     </label>
 
                     <label className="block text-sm">
-                        <span className="mb-1 block text-gray-600">Message</span>
+                        <span className="mb-1 block text-gray-600">{t.messages_body || 'Message'}</span>
                         <textarea
                             className="form-input w-full"
                             rows={6}
@@ -146,12 +149,13 @@ export default function Create({ recipients = [], classes = [] }) {
                     {form.data.target_type === 'class' && (
                         <fieldset className="rounded border border-[#E6D9C8] p-3">
                             <legend className="px-1 text-xs uppercase tracking-wide text-gray-500">
-                                Ask a question (optional)
+                                {t.poll_legend || 'Ask a question (optional)'}
                             </legend>
                             <input
                                 className="form-input w-full"
                                 type="text"
-                                placeholder="e.g. Will your child attend the trip?" aria-label="e.g. Will your child attend the trip?"
+                                placeholder={t.poll_placeholder || 'e.g. Will your child attend the trip?'}
+                                aria-label={t.poll_placeholder || 'e.g. Will your child attend the trip?'}
                                 value={form.data.poll_question}
                                 onChange={(e) => form.setData('poll_question', e.target.value)}
                             />
@@ -164,7 +168,8 @@ export default function Create({ recipients = [], classes = [] }) {
                                         key={index}
                                         className="form-input w-full"
                                         type="text"
-                                        placeholder={`Option ${index + 1}`} aria-label={`Option ${index + 1}`}
+                                        placeholder={(t.poll_option || 'Option :number').replace(':number', index + 1)}
+                                        aria-label={(t.poll_option || 'Option :number').replace(':number', index + 1)}
                                         value={option}
                                         onChange={(e) => {
                                             const next = [...form.data.poll_options];
@@ -180,7 +185,7 @@ export default function Create({ recipients = [], classes = [] }) {
                                     className="mt-2 text-xs text-[#7C2D37] hover:underline"
                                     onClick={() => form.setData('poll_options', [...form.data.poll_options, ''])}
                                 >
-                                    Add option
+                                    {t.poll_add_option || 'Add option'}
                                 </button>
                             )}
                             {form.errors['poll.options'] && (
@@ -189,12 +194,17 @@ export default function Create({ recipients = [], classes = [] }) {
                         </fieldset>
                     )}
 
+                    {/* What no field above says (BACKLOG C21, slice PT1b):
+                        `recipients`, a thread's refusal, and the audience had
+                        no field to sit under and were dropped. */}
+                    <FormErrors errors={form.errors} except={['recipient_id', 'class_id', 'subject', 'body', 'poll.question', 'poll.options']} />
+
                     <button
                         type="submit"
                         className="btn-primary justify-self-start"
                         disabled={form.processing || (form.data.target_type === 'class' && reach === 0)}
                     >
-                        Send
+                        {t.messages_send || 'Send'}
                     </button>
                 </form>
             )}

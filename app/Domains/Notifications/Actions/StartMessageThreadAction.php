@@ -28,7 +28,7 @@ class StartMessageThreadAction
 
         if ($recipients === []) {
             throw ValidationException::withMessages([
-                'recipients' => 'A thread needs at least one recipient other than you.',
+                'recipients' => __('portal.error_thread_no_recipient'),
             ]);
         }
 

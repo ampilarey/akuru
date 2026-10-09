@@ -4983,6 +4983,95 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pw. The family's notifications and messages in Dhivehi and Arabic (C21 PT1b, 2026-10-09)
+
+The second slice of BACKLOG C21 covers the notifications page and the three
+messages pages: the inbox, a thread with its poll, and a new message. Families
+open these every day, and staff use them to write to a class.
+
+They were English throughout:
+- the notifications page read the 72 KB `admin` book, only for its eleven
+  phone phrases;
+- the messages controller's three saved messages were English;
+- so were the thirteen refusals of the five message actions;
+- a person nobody could name was *Unknown*.
+
+**Refusals the pages never showed:**
+- *You are not part of this conversation*, a reply's `thread` refusal;
+- *A thread needs at least one recipient other than you*, a new message's
+  `recipients` refusal.
+
+Each came back under a field no page displayed, so the button simply did
+nothing.
+
+**The change:**
+- **The four pages read the `portal` book**, 98 phrases more.
+  - The page's eleven phone phrases moved there from `admin`. The device
+    controller's two saved messages stay in `admin`, where that controller
+    reads them.
+- **Codes are named, not printed:**
+  - a notification's category, including every category the code writes a
+    notification with;
+  - what reaches a person, by category, instead of the server's English
+    label;
+  - a phone's kind;
+  - a class message's audience.
+- **What the server says is in the page's language:**
+  - sent, replied, answered, preferences saved;
+  - the poll's three refusals;
+  - the reply's three refusals;
+  - the answer's four refusals;
+  - the class message's two refusals;
+  - the thread's one refusal;
+  - a nameless person.
+- **Every refusal has a place.**
+  - The fields keep their own messages.
+  - `FormErrors` with `except` lists what no field says, under the reply
+    box and above the Send button.
+- **Laravel's own messages name the forms' fields** in Dhivehi and Arabic:
+  subject, recipient, class, audience, how it is sent, question, options,
+  answer, preferences.
+- **Counts are said whole:** a class message *goes to 1 account* or *to :count
+  accounts*, and a poll's answers so far, in each language.
+- **A time reads as digits**, `2026-10-09 14:24`, the same in every
+  language. It comes from one small helper, `Components/dateStamp.js`.
+  `toLocaleString()` used the browser's own language, so a Dhivehi page said
+  *2:24 PM*.
+
+A notification's own title and text are written when it is sent, in English,
+and stay as they were written. This is the same question C20 records for the
+Library's notices: the account keeps no language to write them in.
+
+**Tests:** `PortalSpeaksThreeLanguagesTest` covers the four pages, the
+controllers' and actions' files, and the new codes. It also gains a sixth
+test:
+- the notifications, the inbox, a new message and a thread serve in Dhivehi;
+- a reply is said sent in Dhivehi;
+- an answer to a message with no poll is refused in Dhivehi;
+- saved preferences are said in Dhivehi.
+
+`DeviceRegistrationTest` now reads the phone phrases from the `portal` book.
+
+Whole suite locally: **SUITE**.
+
+**Walk:** `portal-language.mjs` 82/82.
+- The parent writes `SMOKE-Lang-Message` to their child's teacher and is told
+  in Dhivehi that it was sent.
+- An empty reply is refused beside its box, in Dhivehi.
+- The reply is sent, and that is said in Dhivehi.
+- The thread, the inbox, a new message and the notifications read right to
+  left under `/dv` and `/ar`, with nothing left in English.
+
+`SmokeMarkerSeeder` clears the walk's thread each run.
+
+The walk set aside *MVR* before it removed the author's words. A stored
+notice saying *113.86 MVR* was the author's whole sentence, and with *MVR*
+gone it no longer matched, so the notice was flagged as English. The walk
+now removes the author's words first.
+
+`family.mjs` 40/40 and `mobile.mjs` 19/19 still pass on the English pages and
+on a phone.
+
 ## 5pv. The family's day in Dhivehi and Arabic: the portal's home, children, attendance, homework, noticeboard and calendar (C21 PT1a, 2026-10-09)
 
 Found closing C19: the course screens, the Library and the public site

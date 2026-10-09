@@ -92,9 +92,8 @@ it('lists a person’s phones on the notification centre and lets them remove on
     expect(Device::query()->whereKey($mine->id)->exists())->toBeFalse();
 
     foreach (['dv', 'ar'] as $locale) {
-        $strings = trans('admin', [], $locale);
-        foreach (['devices_title', 'devices_hint', 'devices_none', 'devices_flash_registered'] as $key) {
-            expect($strings[$key] ?? null)->toBeString()->not->toBe(trans('admin.'.$key, [], 'en'));
+        foreach (['portal.devices_title', 'portal.devices_hint', 'portal.devices_none', 'admin.devices_flash_registered'] as $key) {
+            expect(trans($key, [], $locale))->toBeString()->not->toBe(trans($key, [], 'en'));
         }
     }
 });

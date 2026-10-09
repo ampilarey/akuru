@@ -75,7 +75,7 @@ class ListMessageInboxAction
                         ->filter(fn (MessageParticipant $other): bool => $thread->allowsReplyToAll()
                             || (int) $thread->created_by === $userId
                             || (int) $other->user_id === (int) $thread->created_by)
-                        ->map(fn (MessageParticipant $other): string => $names[(int) $other->user_id] ?? 'Unknown')
+                        ->map(fn (MessageParticipant $other): string => $names[(int) $other->user_id] ?? __('portal.unknown_person'))
                         ->values()
                         ->all(),
                     'last_message_at' => $thread->last_message_at?->toIso8601String(),

@@ -401,6 +401,16 @@ return [
         'follow_up_on' => 'ފަހުން ގުޅާނެ ތާރީޚު',
         'preorder_release_on' => 'ނެރޭ ތާރީޚު',
         'expires_at' => 'ހަމަވާ ތާރީޚު',
+        // The family portal's messages and notifications (slice PT1b)
+        'subject' => 'މައުޟޫޢު',
+        'recipient_id' => 'ލިބޭނެ މީހާ',
+        'class_id' => 'ކްލާސް',
+        'audience' => 'ފޮނުވާ ބައި',
+        'target_type' => 'ފޮނުވާ ގޮތް',
+        'poll_question' => 'ސުވާލު',
+        'poll_options' => 'ޖަވާބުތައް',
+        'choice' => 'ޖަވާބު',
+        'preferences' => 'އިޚްތިޔާރުތައް',
     ],
 
     'values' => [

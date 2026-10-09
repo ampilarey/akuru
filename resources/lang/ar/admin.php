@@ -863,17 +863,6 @@ return [
     'supervisor_hifz_title' => 'تقدم الحفظ',
     'supervisor_hifz_open' => 'فتح لوحة مشرف الحفظ',
     // A person's phones registered by the mobile app (SPEC §50, STATUS §5jr).
-    'devices_title' => 'هواتفك',
-    'devices_hint' => 'يسجّل تطبيق أكورو كل هاتف تسجّل الدخول منه لتصله الإشعارات. أزل هاتفًا لم تعد تستخدمه.',
-    'devices_none' => 'لم يُسجَّل أي هاتف بعد. سجّل الدخول من تطبيق أكورو وسيظهر هنا.',
-    'devices_remove' => 'إزالة',
-    'devices_last_seen' => 'آخر ظهور :when',
-    'devices_never_seen' => 'لم يظهر بعد',
-    'devices_active' => 'يستقبل',
-    'devices_inactive' => 'خرج',
-    'devices_platform_android' => 'أندرويد',
-    'devices_platform_ios' => 'آيفون',
-    'devices_platform_web' => 'متصفح',
     'devices_flash_registered' => 'سيستقبل هذا الهاتف الإشعارات.',
     'devices_flash_removed' => 'لم يعد ذلك الهاتف يستقبل الإشعارات.',
 

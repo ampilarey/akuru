@@ -865,17 +865,6 @@ return [
     'supervisor_hifz_title' => 'Hifz Progress',
     'supervisor_hifz_open' => 'Open Hifz Supervisor Dashboard',
     // A person's phones registered by the mobile app (SPEC §50, STATUS §5jr).
-    'devices_title' => 'Your phones',
-    'devices_hint' => 'The Akuru app registers each phone you sign in on, so notifications reach it. Remove a phone you no longer use.',
-    'devices_none' => 'No phone has registered yet. Sign in on the Akuru app and it will appear here.',
-    'devices_remove' => 'Remove',
-    'devices_last_seen' => 'Last seen :when',
-    'devices_never_seen' => 'Never seen',
-    'devices_active' => 'Receiving',
-    'devices_inactive' => 'Signed out',
-    'devices_platform_android' => 'Android',
-    'devices_platform_ios' => 'iPhone',
-    'devices_platform_web' => 'Browser',
     'devices_flash_registered' => 'This phone will receive notifications.',
     'devices_flash_removed' => 'That phone no longer receives notifications.',
 

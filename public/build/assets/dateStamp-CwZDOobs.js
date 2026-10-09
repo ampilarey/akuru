@@ -1,0 +1,1 @@
+function n(r){if(!r)return"";const t=new Date(r);if(Number.isNaN(t.getTime()))return"";const e=a=>String(a).padStart(2,"0");return`${t.getFullYear()}-${e(t.getMonth()+1)}-${e(t.getDate())} ${e(t.getHours())}:${e(t.getMinutes())}`}export{n as d};
