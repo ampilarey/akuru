@@ -5003,7 +5003,7 @@ a reset finds only these two.
 1 failed and 41 passed before (*Failed asserting that 9 is identical to
 1*), 42 passed after.
 
-Whole suite locally: **SUITE_RESULT**.
+Whole suite locally: **2967 passed (42900 assertions)**.
 
 No walk: nothing a person sees changed.
 
