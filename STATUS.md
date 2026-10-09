@@ -5073,7 +5073,23 @@ Whole suite locally: **FULL_SUITE**.
 - A family chooses among reasons named in Dhivehi, and lessons with their
   times.
 
-Other walks: OTHER_WALKS
+Other walks:
+- `portal-language.mjs` 212/212, run alone after a fresh seed (it covers
+  the family's absence form this slice changed). Run straight after
+  `family.mjs` on a Saturday it was 207/209: `family.mjs` takes the last
+  school day, Thursday, which is the day `portal-language` plants its
+  homework on (two days back), and writes over that homework.
+- `family.mjs` 15/21 on this branch **and on `main`** (c2ffde0), failing the
+  same six steps. On a Saturday it takes Thursday's registers. The first it
+  opens is one the seeder planted for a subject the class's timetable does
+  not have, so it offers no due date (*No further lesson found…*). The
+  pupil's homework then reads *No due date*, the walk cannot read the
+  teacher's name from it, and it writes to the first teacher offered. The
+  teacher it signs in as then has nothing. Taken next.
+- `absence.mjs` and `school-day.mjs` each fail the one step that needs a
+  register for today. It is Saturday in the Maldives, and Saturday has no
+  timetable slots (the teacher's day says so, in Dhivehi, above);
+  `school-day.mjs` stops there, `absence.mjs` passes the rest.
 
 ## 5qc. The staff's own pages in Dhivehi and Arabic (C21 PT4, 2026-10-09)
 
