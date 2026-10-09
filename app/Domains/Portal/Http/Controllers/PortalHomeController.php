@@ -5,6 +5,7 @@ namespace App\Domains\Portal\Http\Controllers;
 use App\Domains\Portal\Actions\ComposePortalHomeAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use App\Support\Navigation\ResolveWorkspacesAction;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -30,10 +31,10 @@ class PortalHomeController extends Controller
             return redirect()->route('dashboard');
         }
 
-        return Inertia::render(
-            'Portal/Home',
-            app(ComposePortalHomeAction::class)->execute((int) $user->id, $user->isParent(), $user->getRoleNames()->all()),
-        );
+        return Inertia::render('Portal/Home', [
+            ...app(ComposePortalHomeAction::class)->execute((int) $user->id, $user->isParent(), $user->getRoleNames()->all()),
+            't' => Phrases::once('portal'),
+        ]);
     }
 
     public function export(Request $request): StreamedResponse

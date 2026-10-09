@@ -65,7 +65,7 @@ class ComposePortalHomeAction
         $hasChildren = collect($people)->contains(fn (array $person): bool => $person['relationship'] !== 'self');
 
         return [
-            'title' => ($isParent || $hasChildren) ? 'Parent Dashboard' : 'Student Dashboard',
+            'title' => ($isParent || $hasChildren) ? __('portal.home_title_parent') : __('portal.home_title_student'),
             'students' => $students,
             'csvUrl' => '/portal/home/export',
             // E1: tiles carry live status, not just navigation. Every count is
@@ -73,17 +73,20 @@ class ComposePortalHomeAction
             // tile can never disagree with the page it links to.
             'tiles' => $this->tiles($students, $userId, $roleNames),
             'nextSchoolDay' => $this->nextSchoolDay($students),
+            // In the page's language (BACKLOG C21, slice PT1a). A section
+            // named like a menu item reads the `nav` book, so the home and the
+            // menu never call one screen two things.
             'sections' => [
-                ['key' => 'attendance', 'label' => 'Attendance', 'href' => '/portal/attendance'],
-                ['key' => 'exams', 'label' => 'Exams / grades', 'href' => '/portal/exams'],
-                ['key' => 'invoices', 'label' => 'Invoices', 'href' => '/portal/invoices'],
-                ['key' => 'courses', 'label' => 'Course progress', 'href' => '/portal/performance'],
-                ['key' => 'hifz', 'label' => 'Hifz', 'href' => null],
-                ['key' => 'announcements', 'label' => 'Noticeboard', 'href' => '/portal/announcements'],
-                ['key' => 'homework', 'label' => 'Homework', 'href' => '/portal/homework'],
-                ['key' => 'messages', 'label' => 'Messages', 'href' => '/portal/messages'],
-                ['key' => 'absence_notes', 'label' => 'Absence notes', 'href' => '/portal/absence-notes'],
-                ['key' => 'meetings', 'label' => 'Meetings', 'href' => '/portal/meetings'],
+                ['key' => 'attendance', 'label' => __('nav.attendance'), 'href' => '/portal/attendance'],
+                ['key' => 'exams', 'label' => __('portal.label_exams'), 'href' => '/portal/exams'],
+                ['key' => 'invoices', 'label' => __('nav.invoices'), 'href' => '/portal/invoices'],
+                ['key' => 'courses', 'label' => __('portal.label_courses'), 'href' => '/portal/performance'],
+                ['key' => 'hifz', 'label' => __('portal.label_hifz'), 'href' => null],
+                ['key' => 'announcements', 'label' => __('portal.label_noticeboard'), 'href' => '/portal/announcements'],
+                ['key' => 'homework', 'label' => __('nav.homework'), 'href' => '/portal/homework'],
+                ['key' => 'messages', 'label' => __('nav.messages'), 'href' => '/portal/messages'],
+                ['key' => 'absence_notes', 'label' => __('nav.absence_notes'), 'href' => '/portal/absence-notes'],
+                ['key' => 'meetings', 'label' => __('nav.meetings'), 'href' => '/portal/meetings'],
             ],
         ];
     }
@@ -118,35 +121,35 @@ class ComposePortalHomeAction
         $tiles = [
             [
                 'key' => 'attendance',
-                'label' => 'Attendance',
+                'label' => __('nav.attendance'),
                 'href' => '/portal/attendance',
                 'badge' => $absences ?: null,
                 'status' => $percents->isEmpty()
-                    ? 'No records yet'
-                    : round((float) $percents->avg(), 1).'% present',
+                    ? __('portal.tile_attendance_none')
+                    : __('portal.tile_attendance_present', ['percent' => round((float) $percents->avg(), 1)]),
             ],
             [
                 'key' => 'invoices',
-                'label' => 'Invoices',
+                'label' => __('nav.invoices'),
                 'href' => '/portal/invoices',
                 'badge' => $unpaid ?: null,
                 'status' => $unpaid === 0
-                    ? 'Nothing due'
-                    : $unpaid.' unpaid · MVR '.number_format($balance, 2),
+                    ? __('portal.tile_invoices_none')
+                    : __('portal.tile_invoices_unpaid', ['count' => $unpaid, 'amount' => number_format($balance, 2)]),
             ],
             [
                 'key' => 'exams',
-                'label' => 'Exams / grades',
+                'label' => __('portal.label_exams'),
                 'href' => '/portal/exams',
                 'badge' => $exams ?: null,
-                'status' => $exams === 0 ? 'No results yet' : $exams.' published',
+                'status' => $exams === 0 ? __('portal.tile_exams_none') : __('portal.tile_exams_count', ['count' => $exams]),
             ],
             [
                 'key' => 'courses',
-                'label' => 'Course progress',
+                'label' => __('portal.label_courses'),
                 'href' => '/portal/performance',
                 'badge' => $courses ?: null,
-                'status' => $courses === 0 ? 'No courses' : $courses.' enrolled',
+                'status' => $courses === 0 ? __('portal.tile_courses_none') : __('portal.tile_courses_count', ['count' => $courses]),
             ],
         ];
 
@@ -155,10 +158,10 @@ class ComposePortalHomeAction
         if ($hifz > 0) {
             $tiles[] = [
                 'key' => 'hifz',
-                'label' => 'Hifz',
+                'label' => __('portal.label_hifz'),
                 'href' => null,
                 'badge' => $hifz,
-                'status' => $hifz.' tracked',
+                'status' => __('portal.tile_hifz_count', ['count' => $hifz]),
             ];
         }
 
@@ -167,21 +170,23 @@ class ComposePortalHomeAction
         $notices = app(ListAnnouncementsForUserAction::class)->summary($userId, $roleNames);
         $tiles[] = [
             'key' => 'announcements',
-            'label' => 'Noticeboard',
+            'label' => __('portal.label_noticeboard'),
             'href' => '/portal/announcements',
             'badge' => $notices['urgent'] ?: null,
             'status' => $notices['total'] === 0
-                ? 'Nothing posted'
-                : $notices['total'].' notice'.($notices['total'] === 1 ? '' : 's'),
+                ? __('portal.tile_notices_none')
+                : trans_choice('portal.tile_notices_count', $notices['total'], ['count' => $notices['total']]),
         ];
 
         $outstandingHomework = $rows->sum(fn (array $student): int => (int) ($student['homework_outstanding'] ?? 0));
         $tiles[] = [
             'key' => 'homework',
-            'label' => 'Homework',
+            'label' => __('nav.homework'),
             'href' => '/portal/homework',
             'badge' => $outstandingHomework ?: null,
-            'status' => $outstandingHomework === 0 ? 'Nothing outstanding' : $outstandingHomework.' to do',
+            'status' => $outstandingHomework === 0
+                ? __('portal.tile_homework_none')
+                : __('portal.tile_homework_count', ['count' => $outstandingHomework]),
         ];
 
         // E2a: an unread badge is the only reason a messages tile earns its
@@ -189,37 +194,42 @@ class ComposePortalHomeAction
         $unreadMessages = app(ListMessageInboxAction::class)->unreadCount($userId);
         $tiles[] = [
             'key' => 'messages',
-            'label' => 'Messages',
+            'label' => __('nav.messages'),
             'href' => '/portal/messages',
             'badge' => $unreadMessages ?: null,
-            'status' => $unreadMessages === 0 ? 'Nothing new' : $unreadMessages.' unread',
+            'status' => $unreadMessages === 0
+                ? __('portal.tile_messages_none')
+                : __('portal.tile_messages_count', ['count' => $unreadMessages]),
         ];
 
         $tiles[] = [
             'key' => 'absence_notes',
-            'label' => 'Absence notes',
+            'label' => __('nav.absence_notes'),
             'href' => '/portal/absence-notes',
             'badge' => null,
-            'status' => 'Send a note',
+            'status' => __('portal.tile_absence_notes'),
         ];
         $tiles[] = [
             'key' => 'meetings',
-            'label' => 'Meetings',
+            'label' => __('nav.meetings'),
             'href' => '/portal/meetings',
             'badge' => null,
-            'status' => 'Book a slot',
+            'status' => __('portal.tile_meetings'),
         ];
 
         $prayer = app(ComposeDashboardPrayerAction::class)->execute();
         $next = $prayer['currentPrayer']['prayer'] ?? null;
         if ($next !== null) {
-            // The one tile EduPage has no answer to.
+            // The one tile EduPage has no answer to. The prayer is a code
+            // (`fajr` …); one the book does not name keeps its own word
+            // rather than showing a key.
+            $prayerKey = 'portal.prayer_'.$next;
             $tiles[] = [
                 'key' => 'prayer',
-                'label' => 'Prayer times',
+                'label' => __('nav.prayer_times'),
                 'href' => '/prayer-times',
                 'badge' => null,
-                'status' => ucfirst((string) $next).' · '.($prayer['currentPrayer']['time'] ?? ''),
+                'status' => (trans()->has($prayerKey) ? __($prayerKey) : ucfirst((string) $next)).' · '.($prayer['currentPrayer']['time'] ?? ''),
             ];
         }
 

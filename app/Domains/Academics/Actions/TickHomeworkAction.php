@@ -23,7 +23,7 @@ class TickHomeworkAction
 
         if ($log === null || trim((string) $log->homework) === '') {
             throw ValidationException::withMessages([
-                'lesson_log_id' => 'That lesson has no homework to tick.',
+                'lesson_log_id' => __('portal.error_homework_none'),
             ]);
         }
 
@@ -32,7 +32,7 @@ class TickHomeworkAction
 
         if (! $onRoster) {
             throw ValidationException::withMessages([
-                'lesson_log_id' => 'That homework is not for this student.',
+                'lesson_log_id' => __('portal.error_homework_not_theirs'),
             ]);
         }
 
@@ -75,7 +75,7 @@ class TickHomeworkAction
 
         if ($classYear === null) {
             throw ValidationException::withMessages([
-                'lesson_log_id' => 'That lesson is not attached to an academic year.',
+                'lesson_log_id' => __('portal.error_homework_no_year'),
             ]);
         }
 

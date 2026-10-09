@@ -4983,6 +4983,91 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pv. The family's day in Dhivehi and Arabic: the portal's home, children, attendance, homework, noticeboard and calendar (C21 PT1a, 2026-10-09)
+
+Found closing C19: the course screens, the Library and the public site
+read in three languages, and the school's own screens did not. **112 of
+the 252 Inertia pages read no phrase book** — the family portal, and the
+office's academics, exams, staff, finance and people screens. The first a
+family opens are the home and its tiles, their children, attendance,
+homework, the noticeboard and the school calendar. Every word on them was
+English, and so was every word the server wrote for them. BACKLOG C21
+takes them in the order a family meets them, then the office's.
+
+**The change:**
+- **A `portal` phrase book** (en/dv/ar, 135 phrases), sent once per
+  locale to the six pages by their controllers (`Phrases::once`).
+  - A relationship and a course enrolment's status come from the `learn`
+    book the shell already shares.
+  - The phone's captions (`data-label`) come from the same phrases as the
+    columns.
+- **What the server writes, in the page's language:**
+  - the home's title and its sections;
+  - every tile's label and status line — *2 notices* and its Dhivehi and
+    Arabic through `trans_choice`, the prayer tile's prayer by name;
+  - the homework tick's saved message and the three refusals of
+    `TickHomeworkAction`.
+- **A tile named like a menu item reads the `nav` book** — Attendance,
+  Invoices, Homework, Messages, Absence notes, Meetings, Prayer times — so
+  the home and the menu never call one screen two things.
+- **Codes are named, not printed:**
+  - an attendance mark;
+  - an invoice's status;
+  - a Hifz row's status, whether an enrolment or progress with no
+    enrolment;
+  - a child's student status;
+  - a notice's type and priority;
+  - a calendar day's type;
+  - whether the family was told of an absence.
+- **The next school day's weekday comes from the book**, because a
+  browser has no Dhivehi weekdays to give.
+- **A calendar day reads by the name the office gave it for the page's
+  language**, and an English page keeps that name as the line beneath.
+- **Smaller fixes on the way:**
+  - the attendance page's child picker had no name;
+  - the home's line *read from each domain's public contract* now says
+    what the page shows.
+- `PortalAttendanceController::index` lost its notification mapping to a
+  private method. It left the long-method baseline (and the baseline's
+  count comment, 47, said 39 entries for some time and now says so).
+
+*Open, for a Dhivehi reader (BACKLOG C21):* the `nav` book names
+*Absences*, *Absence notes* and *Review notes* with `ސަލާމް`. That is not
+a word for an absence that this slice recognised; the school's registers
+say `ހާޒިރެއް ނުވޭ`. The home's tile reads the menu's own label, so one
+correction there corrects both.
+
+**Tests:** `PortalSpeaksThreeLanguagesTest`, 5 tests. All five fail on
+`main`, where there is no `portal` book.
+- Every phrase on the six pages is keyed in three languages, its English
+  the page's own fallback. No text node, placeholder, label, title or
+  phone caption is left in English, and no field is unnamed.
+- Every code the pages show is named in Thaana and in Arabic script: the
+  enums' own cases, the noticeboard's types and priorities, the
+  notification states, the weekdays, the prayers, and the `learn` book's
+  relationships.
+- The server files hold no English sentence, and every key they name
+  reads in Dhivehi and Arabic.
+- A parent's six pages serve in Dhivehi: the title, a menu-named section,
+  every tile, the notices tile counted, a notice the office wrote in
+  Dhivehi, and a calendar day's Dhivehi name.
+- A pupil's tick is saved, and a tick on a register without homework is
+  refused, both in Dhivehi.
+
+Whole suite locally: **2955 passed (40548 assertions)**.
+
+**Walk:** `portal-language.mjs` 55/55. `SmokeMarkerSeeder` keeps
+`SMOKE-Lang-Homework` on a submitted register of the pupil's class two
+days back.
+- The parent's six pages and the pupil's home and homework, under `/dv`
+  and `/ar`: right to left, nothing left in English, every field named.
+- The Homework tile opens the homework page, still in Dhivehi.
+- The pupil ticks the homework done and is told so in Dhivehi. The tick
+  holds over a reload, and unticking it puts it back.
+
+`family.mjs` 40/40 and `mobile.mjs` 19/19 read the English pages and the
+phone layout as before.
+
 ## 5pu. The halaqa sheet gets a door: the Qur'an component's own session list (C19, 2026-10-09)
 
 Found with CT5a (BACKLOG C19): the halaqa session sheet,

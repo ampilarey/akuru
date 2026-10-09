@@ -134,6 +134,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->publicEventWalk();
         $this->dailyAndCertificateWalk($year, $studentId);
         $this->familyCycle();
+        $this->portalLanguageCycle($year, $class);
         $this->signupCycle();
         $this->schoolDayCycle();
         $this->timetableCycle($year);
@@ -2902,6 +2903,42 @@ class SmokeMarkerSeeder extends Seeder
             'published_at' => '2025-03-01 09:00:00',
             'approved_by' => (int) $approverId,
         ])->save();
+    }
+
+    /**
+     * `portal-language.mjs` (STATUS §5pv) has the smoke pupil tick a homework
+     * on the Dhivehi homework page and read what was saved in Dhivehi. The
+     * seeded registers carry no homework until `family.mjs` writes today's,
+     * so this keeps `SMOKE-Lang-Homework` on a register of the pupil's class
+     * two days back — submitted, because a draft is never shown to a family —
+     * and clears its tick each run. Kept and moved along like `SMOKE-Club`,
+     * so it stays inside the homework list's month.
+     */
+    private function portalLanguageCycle(AcademicYear $year, ?ClassRoom $class): void
+    {
+        if ($class === null) {
+            return;
+        }
+        $teacherUserId = (int) DB::table('users')->where('email', 'teacher@akuru.edu.mv')->value('id');
+        $register = [
+            'teacher_id' => (int) (DB::table('teachers')->where('user_id', $teacherUserId)->value('id') ?? DB::table('teachers')->orderBy('id')->value('id')),
+            'subject_id' => (int) DB::table('subjects')->orderBy('id')->value('id'),
+            'classroom_id' => $class->id,
+            'academic_year_id' => $year->id,
+            'status' => 'submitted',
+            'submitted_at' => now(),
+            'date' => now()->subDays(2)->toDateString(),
+            'homework' => 'SMOKE-Lang-Homework: read page 3',
+            'homework_due_date' => now()->addDays(2)->toDateString(),
+            'updated_at' => now(),
+        ];
+        $logId = (int) DB::table('lesson_logs')->where('homework', 'like', 'SMOKE-Lang-Homework%')->value('id');
+        if ($logId > 0) {
+            DB::table('lesson_logs')->where('id', $logId)->update($register);
+        } else {
+            $logId = DB::table('lesson_logs')->insertGetId($register + ['created_at' => now()]);
+        }
+        DB::table('homework_ticks')->where('lesson_log_id', $logId)->delete();
     }
 
     /**

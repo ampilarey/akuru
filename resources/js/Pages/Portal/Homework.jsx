@@ -1,8 +1,8 @@
-import { useForm } from '@inertiajs/react';
+import { useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 
-function Item({ item, studentId, canTick }) {
+function Item({ item, studentId, canTick, t }) {
     const form = useForm({ student_id: studentId, done: !item.is_done });
 
     const toggle = () => {
@@ -20,17 +20,17 @@ function Item({ item, studentId, canTick }) {
                         checked={item.is_done}
                         onChange={toggle}
                         disabled={form.processing}
-                        aria-label={item.is_done ? 'Mark not done' : 'Mark done'}
+                        aria-label={item.is_done ? (t.homework_mark_not_done || 'Mark not done') : (t.homework_mark_done || 'Mark done')}
                     />
                 )}
                 <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-baseline justify-between gap-2">
                         <p className="text-sm font-semibold">
-                            {item.subject || 'Lesson'}
+                            {item.subject || t.homework_lesson || 'Lesson'}
                             {item.teacher ? <span className="font-normal text-gray-500"> · {item.teacher}</span> : null}
                         </p>
                         <span className={`text-xs ${item.is_overdue ? 'font-semibold text-red-600' : 'text-gray-500'}`}>
-                            {item.due_date ? `Due ${item.due_date}` : 'No due date'}
+                            {item.due_date ? (t.homework_due || 'Due :date').replace(':date', item.due_date) : (t.homework_no_due || 'No due date')}
                         </span>
                     </div>
                     <p className={`mt-1 whitespace-pre-wrap text-sm ${item.is_done ? 'text-gray-400 line-through' : 'text-gray-800'}`}>
@@ -42,7 +42,7 @@ function Item({ item, studentId, canTick }) {
                     <FormErrors errors={form.errors} className="mt-1" />
                     {(item.materials || []).length > 0 && (
                         <div className="mt-2 rounded border border-[#E7DBC9] bg-[#FBF7F1] p-2">
-                            <p className="text-xs font-semibold text-gray-600">What you need</p>
+                            <p className="text-xs font-semibold text-gray-600">{t.homework_materials || 'What you need'}</p>
                             <ul className="mt-1 space-y-1">
                                 {item.materials.map((material) => (
                                     <li key={material.id} className="text-sm">
@@ -64,24 +64,26 @@ function Item({ item, studentId, canTick }) {
                             </ul>
                         </div>
                     )}
-                    <p className="mt-1 text-xs text-gray-500">Set on {item.set_on}</p>
+                    <p className="mt-1 text-xs text-gray-500">{(t.homework_set_on || 'Set on :date').replace(':date', item.set_on)}</p>
                 </div>
             </div>
         </li>
     );
 }
 
-export default function Homework({ students = [], canTick = [] }) {
+export default function Homework({ students = [], canTick = [], t = {} }) {
+    // A relationship is named by the `learn` book the shell shares.
+    const learn = usePage().props.i18n?.learn || {};
+
     return (
-        <AppShell title="Homework">
+        <AppShell title={t.homework_title || 'Homework'}>
             <p className="mb-4 text-sm text-gray-600">
-                Homework from the class register, newest and most urgent first. Ticking is your own
-                checklist — it is not seen by grading.
+                {t.homework_intro || 'Homework from the class register, newest and most urgent first. Ticking is your own checklist — it is not seen by grading.'}
             </p>
 
             {students.length === 0 && (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">
-                    No student or linked children.
+                    {t.none_students || 'No student or linked children.'}
                 </p>
             )}
 
@@ -90,11 +92,11 @@ export default function Homework({ students = [], canTick = [] }) {
                     <section key={student.id}>
                         <h2 className="mb-2 text-sm font-semibold">
                             {student.name}
-                            <span className="ms-2 text-xs font-normal uppercase text-gray-500">{student.relationship}</span>
+                            <span className="ms-2 text-xs font-normal uppercase text-gray-500">{learn[`relationship_${student.relationship}`] || student.relationship}</span>
                         </h2>
                         {student.homework.length === 0 ? (
                             <p className="rounded-lg border bg-white p-3 text-sm text-gray-600">
-                                No homework set in the last month.
+                                {t.homework_none || 'No homework set in the last month.'}
                             </p>
                         ) : (
                             <ul className="grid gap-2">
@@ -104,6 +106,7 @@ export default function Homework({ students = [], canTick = [] }) {
                                         item={item}
                                         studentId={student.id}
                                         canTick={canTick.includes(student.id)}
+                                        t={t}
                                     />
                                 ))}
                             </ul>
