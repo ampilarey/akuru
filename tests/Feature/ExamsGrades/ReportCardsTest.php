@@ -196,7 +196,9 @@ it('generates report cards with attendance and parent-visible behavior matching 
     $dv = app(DocumentRendererInterface::class)->render('report-card', $dvPayload);
     expect($dv)->toContain('dir="rtl"')
         ->and($dv)->toContain('lang="dv"')
-        ->and($dv)->toContain('Attendance (DV)');
+        // The heading in Dhivehi, not the placeholder this used to pin (STATUS §5pz).
+        ->and($dv)->toContain(__('documents.report_card.attendance', [], 'dv'))
+        ->and($dv)->not->toContain('(DV)');
 });
 
 it('publishes report cards to the portal and regenerates a published one only with a recorded reason', function () {

@@ -1,8 +1,18 @@
 <!DOCTYPE html>
-<html lang="{{ $locale ?? 'en' }}" dir="{{ $dir ?? 'ltr' }}">
+@php
+    // Every heading in the transcript's own language (STATUS §5pz). Dhivehi
+    // had its headings and Arabic fell back to English; "Point" and the status
+    // history's codes were English in every language.
+    $locale = $locale ?? 'en';
+    $say = fn (string $key) => __("documents.transcript.{$key}", [], $locale);
+    $status = fn (?string $code) => $code !== null && trans()->has("documents.transcript.statuses.{$code}", $locale)
+        ? __("documents.transcript.statuses.{$code}", [], $locale)
+        : (string) $code;
+@endphp
+<html lang="{{ $locale }}" dir="{{ $dir ?? 'ltr' }}">
 <head>
     <meta charset="utf-8">
-    <title>Transcript</title>
+    <title>{{ $say('title') }}</title>
     <style>
         body { font-family: "Noto Sans", "Noto Sans Thaana", "Noto Naskh Arabic", sans-serif; margin: 24px; color: #1f1f1f; }
         h1 { color: #7C2D37; }
@@ -12,20 +22,20 @@
     </style>
 </head>
 <body>
-    <h1>{{ $locale === 'dv' ? 'ޓްރާންސްކްރިޕްޓް' : 'Academic transcript' }}</h1>
-    <p><strong>{{ $locale === 'dv' ? 'ދަރިވަރު' : 'Student' }}:</strong> {{ $student['name'] }} ({{ $student['number'] ?? $student['id'] }})</p>
+    <h1>{{ $say('title') }}</h1>
+    <p><strong>{{ $say('student') }}:</strong> {{ $student['name'] }} ({{ $student['number'] ?? $student['id'] }})</p>
     @if ($gpa !== null)
-        <p><strong>GPA:</strong> {{ $gpa }}</p>
+        <p><strong>{{ $say('gpa') }}:</strong> {{ $gpa }}</p>
     @endif
     <table>
         <thead>
             <tr>
-                <th>{{ $locale === 'dv' ? 'އަހަރު' : 'Year' }}</th>
-                <th>{{ $locale === 'dv' ? 'ޓާމް' : 'Term' }}</th>
-                <th>{{ $locale === 'dv' ? 'ސަބްޖެކްޓް' : 'Subject' }}</th>
+                <th>{{ $say('year') }}</th>
+                <th>{{ $say('term') }}</th>
+                <th>{{ $say('subject') }}</th>
                 <th>%</th>
-                <th>{{ $locale === 'dv' ? 'ގްރޭޑް' : 'Grade' }}</th>
-                <th>Point</th>
+                <th>{{ $say('grade') }}</th>
+                <th>{{ $say('point') }}</th>
             </tr>
         </thead>
         <tbody>
@@ -44,10 +54,10 @@
         </tbody>
     </table>
     @if (count($history) > 0)
-        <h2>{{ $locale === 'dv' ? 'ސްޓޭޓަސް' : 'Status history' }}</h2>
+        <h2>{{ $say('status_history') }}</h2>
         <ul>
             @foreach ($history as $row)
-                <li>{{ $row['effective_date'] }}: {{ $row['from'] }} → {{ $row['to'] }} {{ $row['reason'] ? '('.$row['reason'].')' : '' }}</li>
+                <li>{{ $row['effective_date'] }}: {{ $status($row['from']) }} → {{ $status($row['to']) }} {{ $row['reason'] ? '('.$row['reason'].')' : '' }}</li>
             @endforeach
         </ul>
     @endif
