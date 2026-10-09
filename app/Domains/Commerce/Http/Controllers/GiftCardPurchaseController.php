@@ -51,7 +51,7 @@ class GiftCardPurchaseController extends Controller
 
         return redirect()
             ->route('public.gift-cards.index')
-            ->with('error', $result['error'] ?? 'Payment could not be started.');
+            ->with('error', $result['error'] ?? __('public.Payment could not be started.'));
     }
 
     public function paymentReturn(Request $request)

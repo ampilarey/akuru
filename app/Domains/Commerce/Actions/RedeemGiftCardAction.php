@@ -28,12 +28,12 @@ class RedeemGiftCardAction
         // the status update back with it).
         $card = GiftCard::query()->where('code_hash', $codeHash)->first();
         if ($card === null || $card->status?->value !== 'active') {
-            throw ValidationException::withMessages(['code' => 'Gift card not found or no longer active.']);
+            throw ValidationException::withMessages(['code' => __('common.gift_card_error_not_found')]);
         }
         if ($card->expires_at !== null && $card->expires_at->isPast()) {
             $card->status = 'expired';
             $card->save();
-            throw ValidationException::withMessages(['code' => 'Gift card has expired.']);
+            throw ValidationException::withMessages(['code' => __('common.gift_card_error_expired')]);
         }
 
         return DB::transaction(function () use ($userId, $codeHash) {
@@ -44,11 +44,11 @@ class RedeemGiftCardAction
 
             // Re-verify under the lock — a concurrent redemption may have won.
             if ($card === null || $card->status?->value !== 'active') {
-                throw ValidationException::withMessages(['code' => 'Gift card not found or no longer active.']);
+                throw ValidationException::withMessages(['code' => __('common.gift_card_error_not_found')]);
             }
             $balance = (float) $card->balance_amount;
             if ($balance <= 0) {
-                throw ValidationException::withMessages(['code' => 'Gift card has no remaining balance.']);
+                throw ValidationException::withMessages(['code' => __('common.gift_card_error_empty')]);
             }
 
             GiftCardTransaction::query()->create([

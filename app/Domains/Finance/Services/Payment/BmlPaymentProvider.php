@@ -19,7 +19,7 @@ class BmlPaymentProvider implements PaymentProviderInterface
         if (! $baseUrl || ! $apiKey) {
             Log::warning('BML payment provider: Missing configuration');
 
-            return new PaymentInitiationResult(false, null, null, 'Payment gateway not configured');
+            return new PaymentInitiationResult(false, null, null, __('common.payment_error_not_configured'));
         }
 
         // BML v2: amount in laari (smallest unit). amount_laar is the canonical integer field.
@@ -135,7 +135,7 @@ class BmlPaymentProvider implements PaymentProviderInterface
         } catch (\Throwable $e) {
             Log::error('BML initiate exception', ['error' => $e->getMessage()]);
 
-            return new PaymentInitiationResult(false, null, null, 'Payment gateway error');
+            return new PaymentInitiationResult(false, null, null, __('common.payment_error_gateway'));
         }
     }
 
@@ -194,13 +194,13 @@ class BmlPaymentProvider implements PaymentProviderInterface
     {
         $lower = strtolower($message.' '.$code);
         if ($status === 401 || str_contains($lower, 'unauthorized')) {
-            return 'Payment service is not available right now. Your registration was saved. Please contact us to complete payment, or try again later.';
+            return __('common.payment_error_unavailable');
         }
         if (str_contains($lower, 'duplicate') || str_contains($lower, 'already exist') || str_contains($lower, 'pp-c-004')) {
-            return 'This number or account may already be linked to a payment. Please use a different mobile number, or contact us to complete payment.';
+            return __('common.payment_error_duplicate');
         }
 
-        return $message ?: 'Payment initiation failed. Your registration was saved. Please contact us or try again later.';
+        return $message ?: __('common.payment_error_failed_saved');
     }
 
     /**

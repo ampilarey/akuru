@@ -211,6 +211,8 @@ class ListLibraryItemsAction
             'category' => $item->category ? [
                 'id' => $item->category->id,
                 'name' => $item->category->name,
+                // LT6: what a reader sees; `name` stays the office's English (the CSV's).
+                'label' => $item->category->nameIn(app()->getLocale()),
                 'slug' => $item->category->slug,
             ] : null,
             'tags' => $item->tags->map(fn ($tag) => ['name' => $tag->name, 'slug' => $tag->slug])->values()->all(),

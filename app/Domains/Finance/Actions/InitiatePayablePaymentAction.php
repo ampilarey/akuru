@@ -49,7 +49,7 @@ class InitiatePayablePaymentAction
         array $context = [],
     ): array {
         if ($amount <= 0) {
-            throw ValidationException::withMessages(['amount' => 'Amount must be positive.']);
+            throw ValidationException::withMessages(['amount' => __('common.payment_error_amount')]);
         }
 
         $payment = Payment::query()->create([
@@ -71,7 +71,7 @@ class InitiatePayablePaymentAction
         return [
             'payment' => $payment->refresh(),
             'redirect_url' => $result->success ? $result->redirectUrl : null,
-            'error' => $result->success ? null : ($result->error ?? 'Payment initiation failed.'),
+            'error' => $result->success ? null : ($result->error ?? __('common.payment_error_failed')),
         ];
     }
 

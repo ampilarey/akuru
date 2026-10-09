@@ -32,7 +32,7 @@
             @foreach($bonuses as $bonus)
                 @php($extra = $bonus['discount_type'] === 'percentage' ? rtrim(rtrim(number_format($bonus['discount_value'], 2), '0'), '.').'%' : 'MVR '.number_format($bonus['discount_value'], 2))
                 <p class="mt-1">
-                    <span class="font-medium">{{ $bonus['name'] }}:</span>
+                    <span class="font-medium" data-office-words>{{ $bonus['name'] }}:</span>
                     @if($bonus['minimum_amount'])
                         {{ __('public.Buy MVR :min or more and get :bonus extra on the card', ['min' => number_format($bonus['minimum_amount']), 'bonus' => $extra]) }}
                     @else
@@ -68,7 +68,7 @@
                     <button type="button" class="btn-secondary gift-preset" data-amount="{{ $preset }}">MVR {{ number_format($preset) }}</button>
                 @endforeach
             </div>
-            <input type="number" name="amount" id="gift-amount" class="form-input w-40" min="{{ $min }}" max="{{ $max }}" step="1" value="{{ old('amount', $presets[0] ?? $min) }}" required>
+            <input type="number" name="amount" id="gift-amount" aria-label="{{ __('public.Amount (MVR)') }}" class="form-input w-40" min="{{ $min }}" max="{{ $max }}" step="1" value="{{ old('amount', $presets[0] ?? $min) }}" required>
             <p class="mt-1 text-xs text-gray-500">{{ __('public.Any whole amount from MVR :min to MVR :max.', ['min' => number_format($min), 'max' => number_format($max)]) }}</p>
         </fieldset>
 

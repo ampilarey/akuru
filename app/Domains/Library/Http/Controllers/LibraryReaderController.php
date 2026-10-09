@@ -30,7 +30,7 @@ class LibraryReaderController extends Controller
             $slug,
             max(1, (int) $request->query('page', 1)),
             $user?->id,
-            $user ? trim($user->name.' • '.$user->email) : 'Akuru Institute',
+            $user ? trim($user->name.' • '.$user->email) : __('public.Akuru Institute'),
         );
         if ($reader === null) {
             abort(404);
@@ -63,7 +63,7 @@ class LibraryReaderController extends Controller
             // Enforcement is off by default (config `library.abuse.enforce`):
             // refusing a page locks a paying reader out of a book they own.
             if ($detector->shouldBlock($user->id)) {
-                abort(429, 'Too many reading sessions are open on this account.');
+                abort(429, __('public.Too many reading sessions are open on this account.'));
             }
         }
 

@@ -24,7 +24,7 @@
             <div class="flex flex-wrap items-center gap-3 text-sm text-gray-500">
                 <span class="rounded bg-brandBeige-100 px-2 py-0.5">{{ __('public.'.$item['content_type']) }}</span>
                 @if($item['category'])
-                    <span>{{ $item['category']['name'] }}</span>
+                    <span data-office-words>{{ $item['category']['label'] }}</span>
                 @endif
                 {{-- R1: each author leads where they can — a teacher to their profile, a writer to their author page. --}}
                 @if($item['writer'] && ! collect($item['author_links'])->contains('name', $item['writer']['display_name']))
@@ -50,6 +50,12 @@
             </div>
           </div>
         </header>
+
+        {{-- LT6: the checkout refuses on `item` too — not for sale, or already
+             yours — whatever this page then shows, so it is said up here. --}}
+        @error('item')
+            <p class="mb-6 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert" data-testid="item-refusal">{{ $message }}</p>
+        @enderror
 
         @if($item['abstract'])
             <p class="text-lg text-gray-700 mb-6">{{ $item['abstract'] }}</p>
@@ -109,7 +115,7 @@
                 {{-- B4: a visitor sees the offer too — it is the reason to sign in. --}}
                 @if($item['promotion'])
                     <p class="mb-2 text-sm text-brandMaroon-800" data-testid="item-promotion">
-                        <span class="font-semibold">{{ $item['promotion']['name'] }}</span> —
+                        <span class="font-semibold" data-office-words>{{ $item['promotion']['name'] }}</span> —
                         <s class="text-gray-500">{{ $item['currency'] }} {{ $item['price'] }}</s>
                         <span class="font-semibold">{{ $item['currency'] }} {{ number_format($item['promotion']['price'], 2) }}</span>
                         @if($item['promotion']['ends_on'])
@@ -134,7 +140,7 @@
                 {{-- B4 (§18): a live campaign's price, with the old one struck through. --}}
                 @if($item['promotion'])
                     <p class="mb-3 text-sm text-brandMaroon-800" data-testid="item-promotion">
-                        <span class="font-semibold">{{ $item['promotion']['name'] }}</span> —
+                        <span class="font-semibold" data-office-words>{{ $item['promotion']['name'] }}</span> —
                         <s class="text-gray-500">{{ $item['currency'] }} {{ $item['price'] }}</s>
                         <span class="font-semibold">{{ $item['currency'] }} {{ number_format($item['promotion']['price'], 2) }}</span>
                         @if($item['promotion']['ends_on'])
@@ -144,16 +150,16 @@
                 @endif
                 <form method="POST" action="{{ route('public.library.checkout', $item['slug']) }}" class="inline-flex flex-wrap items-center justify-center gap-2">
                     @csrf
-                    <input type="text" name="discount_code" class="form-input" placeholder="{{ __('public.Discount code') }}">
-                    <button type="submit" class="btn-primary">{{ __('public.Buy for') }} {{ $item['currency'] }} {{ $item['promotion'] ? number_format($item['promotion']['price'], 2) : $item['price'] }}</button>
+                    <input type="text" name="discount_code" class="form-input" placeholder="{{ __('public.Discount code') }}" aria-label="{{ __('public.Discount code') }}">
+                    <button type="submit" class="btn-primary">{{ __('public.Buy for :price', ['price' => $item['currency'].' '.($item['promotion'] ? number_format($item['promotion']['price'], 2) : $item['price'])]) }}</button>
                     <button type="submit" name="pay_with_wallet" value="1" class="btn-secondary">{{ __('public.Pay with wallet') }}</button>
                 </form>
                 <p class="mt-2 text-sm text-gray-500">{{ __('public.Access opens as soon as the bank confirms your payment.') }}</p>
                 @error('discount_code')
-                    <p class="mt-2 text-sm text-red-700">{{ $message }}</p>
+                    <p class="mt-2 text-sm text-red-700" role="alert">{{ $message }}</p>
                 @enderror
                 @error('amount')
-                    <p class="mt-2 text-sm text-red-700">{{ $message }}</p>
+                    <p class="mt-2 text-sm text-red-700" role="alert">{{ $message }}</p>
                 @enderror
             </div>
         @elseif($item['locked'])

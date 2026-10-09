@@ -157,6 +157,24 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the Library's language walk (2026-10-09)
+
+### A wallet payment refused for too small a balance leaves its purchase behind — **open**
+
+A reader who presses *Pay with wallet* on a Library item with less in the
+wallet than its price is refused (*Insufficient wallet balance.*), and
+nothing is paid. But `StartLibraryCheckoutAction` writes the purchase, and
+any discount code's redemption, before it asks `DebitWalletAction` for the
+money. Nothing rolls them back when the debit refuses. The purchase stays
+`pending` for good, and My Library lists it (*MVR 50.00 — pending*).
+
+Probed 2026-10-09 with a throwaway test: one refused wallet payment, one
+`pending` purchase of MVR 50.00 left behind.
+
+The fix is to check the balance first, or to put the purchase, the
+redemption and the debit in one transaction. That is money code (rule 12),
+so it is its own slice, not part of the language slice LT6.
+
 ## Found by the lesson player's language walk (2026-10-08)
 
 ### A lesson with a flashcard block was a blank page — **fixed (2026-10-08, STATUS §5ox)**
@@ -217,9 +235,11 @@ STATUS §5pc, and the offerings' and the Qur'an component's since STATUS §5pd
 site's front door (header, footer, home, error pages, admissions, contact)
 reads in the page's language since STATUS §5pg, and the course catalogue and
 a course page since STATUS §5ph, and its events (registering included),
-news, about and other pages since STATUS §5pi, and the daily reminders and
-the certificate check since STATUS §5pj; the Library's public pages are
-BACKLOG C20's LT6. The console commands stay English.
+news, about and other pages since STATUS §5pi, the daily reminders and the
+certificate check since STATUS §5pj, and the Library's shelf, an item, the
+reader, My Library, the wallet and gift cards — the checkout's, the wallet's,
+the gift cards' and the payment start's refusals among them — since STATUS
+§5pk. The console commands stay English.
 
 ## Found by the middle-name walk (2026-10-08)
 

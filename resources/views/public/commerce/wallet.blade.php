@@ -13,7 +13,7 @@
         </div>
         <form method="POST" action="{{ route('public.wallet.redeem') }}" class="flex gap-2">
             @csrf
-            <input type="text" name="code" class="form-input" placeholder="AKG-XXXX-XXXX-XXXX" required>
+            <input type="text" name="code" class="form-input" placeholder="AKG-XXXX-XXXX-XXXX" aria-label="{{ __('public.Gift card code') }}" dir="ltr" required>
             <button type="submit" class="btn-primary">{{ __('public.Redeem gift card') }}</button>
         </form>
     </div>
@@ -37,7 +37,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-3">
                     <div>
                         <span class="font-medium">{{ $order['currency'] }} {{ $order['amount'] }}</span>
-                        <span class="text-sm text-gray-500"> — {{ $order['recipient_name'] }}</span>
+                        <span class="text-sm text-gray-500" dir="auto"> — {{ $order['recipient_name'] }}</span>
                     </div>
                     <span class="text-sm text-gray-600">
                         {{ __('public.'.$order['status']) }}{{ $order['delivered_to'] ? ' · '.__('public.sent to :to', ['to' => $order['delivered_to']]) : '' }}{{ $order['created_at'] ? ' · '.$order['created_at'] : '' }}
@@ -66,8 +66,11 @@
                 @foreach($wallet['transactions'] as $row)
                     <tr class="border-t">
                         <td class="px-3 py-2">{{ $row['created_at'] }}</td>
-                        <td class="px-3 py-2 {{ $row['type'] === 'credit' ? 'text-green-700' : 'text-red-700' }}">{{ $row['type'] }}</td>
-                        <td class="px-3 py-2">{{ str_replace('_', ' ', $row['source_type']) }}</td>
+                        {{-- LT6: a row's kind and where its money came from, in the page's
+                             language; a source with no name of its own reads as its code. --}}
+                        @php($sourceKey = 'public.wallet_source_'.$row['source_type'])
+                        <td class="px-3 py-2 {{ $row['type'] === 'credit' ? 'text-green-700' : 'text-red-700' }}" data-testid="wallet-type">{{ Lang::has('public.wallet_type_'.$row['type']) ? __('public.wallet_type_'.$row['type']) : $row['type'] }}</td>
+                        <td class="px-3 py-2" data-testid="wallet-source">{{ Lang::has($sourceKey) ? __($sourceKey) : str_replace('_', ' ', $row['source_type']) }}</td>
                         <td class="px-3 py-2">{{ $row['type'] === 'credit' ? '+' : '−' }}{{ $row['amount'] }}</td>
                         <td class="px-3 py-2">{{ $row['balance_after'] }}</td>
                     </tr>

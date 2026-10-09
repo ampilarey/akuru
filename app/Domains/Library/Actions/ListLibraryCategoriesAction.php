@@ -25,6 +25,8 @@ class ListLibraryCategoriesAction
                 'name' => $category->name,
                 'name_dv' => $category->name_dv,
                 'name_ar' => $category->name_ar,
+                // LT6: the name in the page's language, for the shelf's filter.
+                'label' => $category->nameIn(app()->getLocale()),
                 'slug' => $category->slug,
                 'sort_order' => (int) $category->sort_order,
                 'is_active' => (bool) $category->is_active,

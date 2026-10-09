@@ -474,7 +474,6 @@ return [
     'Nothing in progress — find something in the library.' => 'Nothing in progress — find something in the library.',
 
     // Library paid content (L3) — DV/AR first pass pending native review (operator item)
-    'Buy for' => 'Buy for',
     'Access opens as soon as the bank confirms your payment.' => 'Access opens as soon as the bank confirms your payment.',
     'Payment confirmed' => 'Payment confirmed',
     'Your access is ready.' => 'Your access is ready.',
@@ -771,4 +770,29 @@ return [
     'Offering' => 'Offering',
     'Grade' => 'Grade',
     'Institute' => 'Institute',
+
+    // LT6 (BACKLOG C20): the Library's public shelf, an item, the reader, My Library, the wallet and gift cards
+    ':figure off' => ':figure off',
+    'Citations' => 'Citations',
+    'Buy for :price' => 'Buy for :price',
+    'purchase_status_pending' => 'pending',
+    'purchase_status_paid' => 'paid',
+    'purchase_status_refunded' => 'refunded',
+    'Too many reading sessions are open on this account.' => 'Too many reading sessions are open on this account.',
+    'Purchase complete — enjoy reading.' => 'Purchase complete — enjoy reading.',
+    'Payment could not be started.' => 'Payment could not be started.',
+    'Gift card redeemed: :amount added to your wallet.' => 'Gift card redeemed: :amount added to your wallet.',
+    'wallet_type_credit' => 'credit',
+    'wallet_type_debit' => 'debit',
+    'wallet_source_purchase' => 'purchase',
+    'wallet_source_gift_card' => 'gift card',
+    'wallet_source_admin' => 'admin',
+    'wallet_source_refund' => 'refund',
+    'wallet_source_promotion' => 'promotion',
+    'wallet_source_reversal' => 'reversal',
+    'wallet_source_bookshop_checkout' => 'bookshop checkout',
+    'wallet_source_bookshop_refund' => 'bookshop refund',
+    'wallet_source_loyalty_reward' => 'loyalty reward',
+    'wallet_source_referral' => 'referral',
+    'Gift card code' => 'Gift card code',
 ];

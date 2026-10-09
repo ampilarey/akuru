@@ -45,7 +45,8 @@ class PublicLibraryController extends Controller
             'sorts' => ListLibraryItemsAction::SORTS,
             'difficulties' => ListLibraryItemsAction::DIFFICULTIES,
             'reading_bands' => array_keys(ListLibraryItemsAction::READING_BANDS),
-            'languages' => ['en' => 'English', 'dv' => 'Dhivehi', 'ar' => 'Arabic'],
+            // LT6: each language by its own name, as a language picker reads.
+            'languages' => ['en' => 'English', 'dv' => 'ދިވެހި', 'ar' => 'العربية'],
             // R1 (F12): the years research was published in, for the research shelf's year filter.
             'years' => ($filters['content_type'] ?? null) === 'research' ? app(ListLibraryItemsAction::class)->publishedYears('research') : [],
             // §8.1: the office's picks and the reader's own half-read books,
