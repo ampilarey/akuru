@@ -5042,7 +5042,7 @@ looked like a button that did nothing.
   - a verdict, a decision, a registration, an activation and the export are
     each confirmed in Dhivehi, the export with its count and path.
 
-Whole suite locally: **SUITE**.
+Whole suite locally: **2937 passed (39484 assertions)**.
 
 **Walks:**
 - `course-screens-language.mjs`: 399/399. It adds both screens in Dhivehi and
