@@ -3,8 +3,11 @@
 use App\Domains\Identity\Models\User;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Support\Inertia\Phrases;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Support\Header;
 use Spatie\Permission\Models\Role;
+
+uses(RefreshDatabase::class);
 
 /**
  * The phrase books travel once (docs/ADMIN_PANEL.md §7 P2, STATUS §5nm).

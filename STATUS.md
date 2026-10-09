@@ -4983,6 +4983,30 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qb. Two tests left users behind for the rest of the run (TH1, 2026-10-09)
+
+Found while running PAY1's suite (§5px). `DashboardScreensTest` counted nine
+users where it had made one, but only when it ran after the Support tests.
+CI runs the files in alphabetical order, Portal before Support, so it never
+showed there.
+
+**The cause:** `TrackUserActivityTest` and `OncePropsTest` were the only
+Feature tests that write rows without `RefreshDatabase`. Each run left its
+users, roles and activity rows in the test database for every file after
+it. A scan of `tests/Feature` for files that create, insert or save without
+a reset finds only these two.
+
+**The change:** both use `RefreshDatabase`, as their neighbours in
+`tests/Feature/Support` do.
+
+**Tests:** `tests/Feature/Support` followed by `DashboardScreensTest`:
+1 failed and 41 passed before (*Failed asserting that 9 is identical to
+1*), 42 passed after.
+
+Whole suite locally: **2967 passed (42900 assertions)**.
+
+No walk: nothing a person sees changed.
+
 ## 5qa. The family's requests in Dhivehi and Arabic (C21 PT3, 2026-10-09)
 
 The fourth slice of BACKLOG C21 covers the seven portal pages where a

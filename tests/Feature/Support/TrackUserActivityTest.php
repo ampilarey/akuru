@@ -4,9 +4,12 @@ use App\Domains\Identity\Models\User;
 use App\Domains\Settings\Models\DashboardAnalytics;
 use App\Domains\Settings\Models\UserActivity;
 use App\Http\Middleware\TrackUserActivity;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
+
+uses(RefreshDatabase::class);
 
 /**
  * Page-view bookkeeping happens after the response (ADMIN_PANEL.md §7 P3,
