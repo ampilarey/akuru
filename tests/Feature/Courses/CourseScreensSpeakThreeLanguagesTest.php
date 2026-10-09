@@ -141,6 +141,8 @@ function translatedCourseScreens(): array
         // and the review queue (STATUS §5pr).
         'Pronunciation/Admin' => 'teach',
         'Pronunciation/Teach' => 'teach',
+        // The halaqa sheet's door (STATUS §5pu).
+        'Courses/Teach/QuranSessions' => 'teach',
     ];
 }
 

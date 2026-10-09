@@ -195,6 +195,7 @@ return [
     'quran_oversight' => 'ޤުރުއާން އޮވަރސައިޓް',
     'quran_assignments' => 'ޤުރުއާން އެސައިންމަންޓް',
     'quran_milestones' => 'ހިތުދަސްކުރުމުގެ މައިލްސްޓޯން',
+    'quran_sessions' => 'ހަލަޤާ ސެޝަންތައް',
     'tab_panel_website' => 'ވެބްސައިޓް',
     'tab_panel_money' => 'ފިހާރަތައް',
     'tab_panel_system' => 'ސިސްޓަމް',

@@ -191,6 +191,7 @@ return [
     'quran_oversight' => 'إشراف القرآن',
     'quran_assignments' => 'تكليفات القرآن',
     'quran_milestones' => 'مراحل الحفظ',
+    'quran_sessions' => 'جلسات الحلقة',
     'tab_panel_website' => 'الموقع',
     'tab_panel_money' => 'المتاجر',
     'tab_panel_system' => 'النظام',

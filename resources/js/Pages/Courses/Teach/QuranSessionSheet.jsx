@@ -1,4 +1,4 @@
-import { useForm, usePage } from '@inertiajs/react';
+import { Link, useForm, usePage } from '@inertiajs/react';
 import { Fragment, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
@@ -132,7 +132,10 @@ export default function QuranSessionSheet({ session, roster, surahs, options, t 
         <AppShell title={(t.qsheet_title || 'Halaqa sheet — :title').replace(':title', session.title || session.id)}>
             <div className="mb-4 flex items-center justify-between">
                 <p className="text-sm text-gray-600">{session.offering_title} · {session.starts_at?.slice(0, 10)}</p>
-                <a className="btn-secondary" href={`/teach/quran-sessions/${session.id}?format=csv`}>{t.catalog_export || 'Export CSV'}</a>
+                <span className="flex gap-2">
+                    <Link className="btn-secondary" href="/teach/quran-sessions">{t.qsessions_all || 'All halaqa sessions'}</Link>
+                    <a className="btn-secondary" href={`/teach/quran-sessions/${session.id}?format=csv`}>{t.catalog_export || 'Export CSV'}</a>
+                </span>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">

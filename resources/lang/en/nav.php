@@ -196,6 +196,7 @@ return [
     'quran_oversight' => 'Qur’an oversight',
     'quran_assignments' => 'Qur’an assignments',
     'quran_milestones' => 'Memorisation milestones',
+    'quran_sessions' => 'Halaqa sessions',
     // The Institute's phone tab bar (ADMIN_PANEL.md §7 M7, STATUS §5nu): a word per tab.
     'tab_panel_website' => 'Website',
     'tab_panel_money' => 'Shops',
