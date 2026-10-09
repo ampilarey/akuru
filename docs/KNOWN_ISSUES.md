@@ -165,6 +165,19 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found building a mushaf's pages and images (2026-10-09)
+
+### A locked mushaf could still be changed — **fixed (2026-10-09, STATUS §5pt)**
+
+`lock` is the editorial step after approval, and nothing read the column.
+Importing an ayah and saving a word's box went on as before. Every write now
+refuses a locked mushaf with a reason.
+
+### A word's box could join one mushaf's word to another's page — **fixed (2026-10-09, STATUS §5pt)**
+
+The route took any page id and any word id. A page of another mushaf now
+answers 404, and a word of another mushaf is refused.
+
 ## Found translating the pronunciation screens (2026-10-09)
 
 ### The dean was refused the pronunciation review queue — **fixed (2026-10-09, STATUS §5ps)**

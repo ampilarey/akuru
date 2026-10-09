@@ -393,6 +393,10 @@ return [
         'verified_letter_id' => 'ޔަޤީންކުރި އަކުރު',
         'verified_haraka_id' => 'ޔަޤީންކުރި ހަރަކާތް',
 
+        // A mushaf page's image and a word's box (STATUS §5pt)
+        'page_image' => 'ޞަފްޙާގެ ފޮޓޯ',
+        'quran_word_id' => 'ބަސް',
+
         // Dates other forms compare with today or now (their `values` are below)
         'follow_up_on' => 'ފަހުން ގުޅާނެ ތާރީޚު',
         'preorder_release_on' => 'ނެރޭ ތާރީޚު',

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useForm } from '@inertiajs/react';
 import AppShell from '../../../../Layouts/AppShell';
+import FormErrors from '../../../../Components/FormErrors';
 
 // `:name` placeholders in a phrase, filled in.
 const fill = (text, values) => Object.entries(values).reduce((out, [key, value]) => out.replace(`:${key}`, value), text);
@@ -18,6 +19,10 @@ export default function QuranPageShow({
 }) {
     const [mapping, setMapping] = useState(false);
     const form = useForm({ quran_word_id: '', x: 10, y: 10, width: 5, height: 3 });
+    // A page's image (STATUS §5pt): nothing could set one before, so every
+    // page said it had none.
+    const imageForm = useForm({ page_image: null });
+    const editable = can_manage && !mushaf.locked;
     // The box, as a percentage of the page from its left and top edges.
     const boxFields = {
         x: t.qpage_x || 'Left %',
@@ -29,6 +34,11 @@ export default function QuranPageShow({
     const save = (event) => {
         event.preventDefault();
         form.post(`/quran/mushafs/${mushaf.id}/pages/${page.id}/positions`, { preserveScroll: true });
+    };
+
+    const uploadImage = (event) => {
+        event.preventDefault();
+        imageForm.post(`/quran/mushafs/${mushaf.id}/pages/${page.id}/image`, { forceFormData: true, preserveScroll: true, onSuccess: () => imageForm.reset() });
     };
 
     return (
@@ -48,7 +58,27 @@ export default function QuranPageShow({
                 )}
             </div>
 
-            {can_manage && (
+            {mushaf.locked && (
+                <p className="mb-4 rounded border border-gray-300 bg-gray-50 p-3 text-sm text-gray-700" data-testid="mushaf-locked">
+                    {t.mushaf_locked_note || 'This mushaf is locked. Its ayahs, words, pages and page images can no longer be changed.'}
+                </p>
+            )}
+
+            {editable && (
+                <form onSubmit={uploadImage} className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border bg-white p-3" data-testid="qpage-image">
+                    <input
+                        type="file" accept="image/png,image/jpeg,image/webp" className="text-sm" required
+                        aria-label={t.qpage_image_label || 'Page image'}
+                        onChange={(e) => imageForm.setData('page_image', e.target.files?.[0] ?? null)}
+                    />
+                    <button type="submit" className="btn-secondary text-sm" disabled={imageForm.processing || !imageForm.data.page_image}>
+                        {page.image_url ? (t.qpage_image_replace || 'Replace image') : (t.qpage_image_upload || 'Upload image')}
+                    </button>
+                    <FormErrors errors={imageForm.errors} className="w-full" />
+                </form>
+            )}
+
+            {editable && (
                 <button type="button" className="btn-secondary mb-4 text-sm" onClick={() => setMapping(!mapping)}>
                     {mapping ? (t.qpage_stop_mapping || 'Stop mapping') : (t.qpage_map || 'Map word positions')}
                 </button>
@@ -87,7 +117,7 @@ export default function QuranPageShow({
                         </p>
                     ))}
 
-                    {can_manage && mapping && (
+                    {editable && mapping && (
                         <form onSubmit={save} className="mt-4 border-t pt-4">
                             <p className="mb-2 text-sm">{t.qpage_pick_hint || 'Select a word, then set its box as a percentage of the page:'}</p>
                             <select
@@ -123,7 +153,7 @@ export default function QuranPageShow({
                             ))}
                         </form>
                     )}
-                    {can_manage && mapping && words.length === 0 && (
+                    {editable && mapping && words.length === 0 && (
                         <p className="mt-2 text-sm text-gray-500">
                             {t.qpage_no_words || 'No words imported for this page — import an ayah with its words first.'}
                         </p>

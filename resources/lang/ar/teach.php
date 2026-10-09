@@ -682,7 +682,7 @@ return [
     'mushaf_approve' => 'اعتماد وتفعيل',
     'mushaf_lock' => 'قفل',
     'mushaf_map_first' => 'ربط الصفحة 1',
-    'mushaf_no_pages' => 'لا صفحات لربطها في هذا المصحف: رُفع دون عدد صفحات.',
+    'mushaf_no_pages' => 'لا صفحات في هذا المصحف بعد. أعطه عدد صفحاته أدناه.',
     'mushaf_import_title' => 'استيراد آية / كلمات',
     'mushaf_surah' => 'السورة',
     'mushaf_page' => 'الصفحة',
@@ -1072,4 +1072,18 @@ return [
     'error_pron_verdict_needed' => 'حدّد الحرف والحركة المؤكَّدين، أو ارفض العينة.',
     'error_pron_version_name' => 'اسم الإصدار مطلوب.',
     'error_pron_version_taken' => 'سبق تسجيل إصدار باسم :name.',
+
+    // A mushaf's pages after the upload, a page's image, and a lock that holds (STATUS §5pt)
+    'mushaf_pages_title' => 'الصفحات',
+    'mushaf_pages_count' => 'عدد الصفحات',
+    'mushaf_pages_add' => 'إضافة صفحات',
+    'mushaf_pages_hint' => 'تُضاف الصفحات حتى هذا العدد، ولا تُحذف صفحة أبدًا: فقد تحمل الصفحة مربعات كلمات.',
+    'mushaf_locked_note' => 'هذا المصحف مقفل. لم يعد بالإمكان تغيير آياته وكلماته وصفحاته وصور صفحاته.',
+    'qpage_image_label' => 'صورة الصفحة',
+    'qpage_image_upload' => 'رفع الصورة',
+    'qpage_image_replace' => 'استبدال الصورة',
+    'flash_mushaf_pages_added' => 'أُضيفت الصفحات: في المصحف الآن :count صفحة.',
+    'flash_qpage_image_saved' => 'حُفظت صورة الصفحة.',
+    'error_mushaf_pages_fewer' => 'في هذا المصحف :count صفحة بالفعل، ولا تُحذف الصفحات أبدًا.',
+    'error_mushaf_locked' => 'هذا المصحف مقفل، فلم يعد بالإمكان تغييره.',
 ];

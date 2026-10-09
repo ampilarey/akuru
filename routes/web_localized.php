@@ -350,6 +350,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/quran/mushafs/{mushaf}/approve', [QuranMushafController::class, 'approve'])->name('quran.mushafs.approve')->whereNumber('mushaf');
     Route::post('/quran/mushafs/{mushaf}/lock', [QuranMushafController::class, 'lock'])->name('quran.mushafs.lock')->whereNumber('mushaf');
     Route::post('/quran/mushafs/{mushaf}/import-ayah', [QuranMushafController::class, 'importAyah'])->name('quran.mushafs.import-ayah')->whereNumber('mushaf');
+    // A mushaf's pages after the upload, and a page's image (STATUS §5pt).
+    Route::post('/quran/mushafs/{mushaf}/pages', [QuranMushafController::class, 'storePages'])->name('quran.mushafs.pages.store')->whereNumber('mushaf');
+    Route::post('/quran/mushafs/{mushaf}/pages/{page}/image', [QuranPageController::class, 'storeImage'])->name('quran.pages.image.store')->whereNumber('mushaf')->whereNumber('page')->middleware('throttle:30,1,quran-page-image');
     Route::get('/quran/mushafs/{mushaf}/pages/{pageNumber}', [QuranPageController::class, 'show'])->name('quran.pages.show')->whereNumber('mushaf')->whereNumber('pageNumber');
     Route::post('/quran/mushafs/{mushaf}/pages/{page}/positions', [QuranPageController::class, 'storePosition'])->name('quran.pages.positions.store')->whereNumber('mushaf')->whereNumber('page');
     Route::get('/learn/catalog', [LearnCatalogController::class, 'index'])->name('learn.catalog');
