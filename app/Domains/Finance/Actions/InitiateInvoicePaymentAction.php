@@ -17,7 +17,7 @@ class InitiateInvoicePaymentAction
     {
         $balance = round((float) $invoice->total_amount - (float) $invoice->paid_amount, 2);
         if ($balance <= 0) {
-            throw ValidationException::withMessages(['invoice_id' => 'Invoice is already paid.']);
+            throw ValidationException::withMessages(['invoice_id' => __('portal.error_invoice_paid')]);
         }
 
         $amount = $balance;

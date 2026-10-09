@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ListStudentWorkForGuardianAction;
 use App\Domains\Academics\Actions\ReadStudentWorkPhotoAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
@@ -26,6 +27,7 @@ class PortalStudentWorkController extends Controller
     {
         return Inertia::render('Portal/Work', [
             'work' => app(ListStudentWorkForGuardianAction::class)->execute($this->childIds($request)),
+            't' => Phrases::once('portal'),
         ]);
     }
 

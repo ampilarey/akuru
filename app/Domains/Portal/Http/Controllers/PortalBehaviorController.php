@@ -5,6 +5,7 @@ namespace App\Domains\Portal\Http\Controllers;
 use App\Domains\Academics\Actions\ListBehaviorRecordsAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use App\Support\PersonName;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -38,6 +39,7 @@ class PortalBehaviorController extends Controller
                     'parent_visible' => true,
                 ])
                 : collect(),
+            't' => Phrases::once('portal'),
         ]);
     }
 }

@@ -1,11 +1,16 @@
 <?php
 
 use App\Domains\Academics\Actions\AssignStudentToClassAction;
+use App\Domains\Academics\Actions\RecordStudentMovementAction;
 use App\Domains\Academics\Actions\SaveAnnouncementAction;
 use App\Domains\Academics\Enums\AttendanceStatus;
+use App\Domains\Academics\Enums\BehaviorType;
 use App\Domains\Academics\Enums\CalendarDayType;
+use App\Domains\Academics\Enums\MovementDirection;
+use App\Domains\Academics\Enums\MovementSource;
 use App\Domains\Academics\Models\CalendarDay;
 use App\Domains\Finance\Enums\InvoiceStatus;
+use App\Domains\Finance\Enums\PaymentPlanStatus;
 use App\Domains\Identity\Models\User;
 use App\Domains\Notifications\Actions\ResolveAttendanceNotificationStateAction;
 use App\Domains\Notifications\Actions\ResolveNotificationPreferencesAction;
@@ -35,6 +40,13 @@ use Spatie\Permission\Models\Role;
  * `admin` book for its eleven phone phrases, which now live in `portal`; the
  * saved messages and the thirteen refusals of the message actions were
  * English, and a thread's or a recipient's refusal had no place on the page.
+ *
+ * Slice PT2 (STATUS §5py) adds the family's records: report cards, exam
+ * results, awards, behaviour, fees, a child's work, arrivals and departures,
+ * and lost property. A behaviour record's type, a payment plan's state, and
+ * whether a child arrived or left and how it was recorded were printed as
+ * the server's codes or English labels; the fee payment's three refusals
+ * were English, and a Pay button's refusal had no place on the page.
  */
 uses(RefreshDatabase::class);
 
@@ -45,6 +57,8 @@ function portalDayScreens(): array
         'Portal/Home', 'Portal/Children', 'Portal/Attendance', 'Portal/Homework', 'Portal/Announcements', 'Portal/SchoolCalendar',
         // Slice PT1b.
         'Portal/Notifications', 'Portal/Messages/Index', 'Portal/Messages/Show', 'Portal/Messages/Create',
+        // Slice PT2.
+        'Portal/ReportCards', 'Portal/Exams', 'Portal/Awards', 'Portal/Behavior', 'Portal/Invoices', 'Portal/Work', 'Portal/Movements', 'Portal/FoundItems',
     ];
 }
 
@@ -70,6 +84,18 @@ function portalDayServerFiles(): array
         'app/Domains/Notifications/Actions/StartMessageThreadAction.php',
         'app/Domains/Notifications/Actions/ShowMessageThreadAction.php',
         'app/Domains/Notifications/Actions/ListMessageInboxAction.php',
+        // Slice PT2.
+        'app/Domains/Portal/Http/Controllers/PortalReportCardController.php',
+        'app/Domains/Portal/Http/Controllers/PortalExamController.php',
+        'app/Domains/Portal/Http/Controllers/PortalAwardController.php',
+        'app/Domains/Portal/Http/Controllers/PortalBehaviorController.php',
+        'app/Domains/Portal/Http/Controllers/PortalInvoiceController.php',
+        'app/Domains/Portal/Http/Controllers/PortalStudentWorkController.php',
+        'app/Domains/Portal/Http/Controllers/PortalMovementController.php',
+        'app/Domains/Portal/Http/Controllers/PortalFoundItemController.php',
+        'app/Domains/Academics/Actions/ListMovementsForGuardianAction.php',
+        'app/Domains/Finance/Actions/PayPortalInvoiceAction.php',
+        'app/Domains/Finance/Actions/InitiateInvoicePaymentAction.php',
     ];
 }
 
@@ -130,6 +156,12 @@ it('names every code the family’s day pages show, in all three languages', fun
         ]),
         ...array_map(fn ($audience) => 'messages_audience_'.$audience, ['guardians', 'students', 'both']),
         ...array_map(fn ($platform) => 'devices_platform_'.$platform, ['android', 'ios', 'web']),
+        // Slice PT2: a behaviour record's type, a payment plan's state, and an
+        // arrival or departure and how it was recorded.
+        ...array_map(fn ($case) => 'behavior_type_'.$case->value, BehaviorType::cases()),
+        ...array_map(fn ($case) => 'plan_status_'.$case->value, PaymentPlanStatus::cases()),
+        ...array_map(fn ($case) => 'movement_direction_'.$case->value, MovementDirection::cases()),
+        ...array_map(fn ($case) => 'movement_source_'.$case->value, MovementSource::cases()),
     ];
     // A relationship is the `learn` book's, which the shell shares.
     $learn = [
@@ -152,7 +184,7 @@ it('leaves no English in what the server says on the family’s day pages, and s
     expect($english)->toBe([]);
 
     $keys = refusalKeysIn(portalDayServerFiles());
-    expect($keys)->toContain('portal.home_title_parent', 'portal.tile_invoices_unpaid', 'nav.absence_notes', 'portal.error_homework_none', 'portal.flash_message_sent', 'portal.error_thread_not_yours', 'portal.unknown_person');
+    expect($keys)->toContain('portal.home_title_parent', 'portal.tile_invoices_unpaid', 'nav.absence_notes', 'portal.error_homework_none', 'portal.flash_message_sent', 'portal.error_thread_not_yours', 'portal.unknown_person', 'portal.error_invoice_paid', 'portal.error_payment_failed');
     foreach ($keys as $key) {
         expect(trans($key, [], 'en'))->not->toBe($key, "{$key} has no English")
             ->and(trans($key, [], 'dv'))->toMatch('/\p{Thaana}/u', "{$key} in Dhivehi")
@@ -273,4 +305,43 @@ it('serves notifications and messages in Dhivehi, and says what was sent and ref
     $this->withoutLocalizationMiddleware()->actingAs($parent)
         ->post(route('portal.notifications.preferences'), ['preferences' => ['message' => true]])
         ->assertSessionHas('success', $dv['flash_notification_prefs_saved']);
+});
+
+it('serves the family’s records in Dhivehi, names how an arrival was recorded, and refuses a payment in Dhivehi', function () {
+    [$parent, $student, $year] = pt1aParent();
+    $staff = User::factory()->create();
+    app(RecordStudentMovementAction::class)->execute((int) $student->id, MovementDirection::In, (int) $staff->id, MovementSource::Card);
+    $paid = makeSchoolInvoice((int) $staff->id, (int) $student->id, (int) $year->id, 500);
+    $paid->forceFill(['paid_amount' => 500])->save();
+    $notTheirs = makeSchoolInvoice((int) $staff->id, (int) makeStudent()->id, (int) $year->id, 300);
+    $dv = portalBook('dv');
+
+    app()->setLocale('dv');
+    foreach ([
+        'portal.report-cards' => ['Portal/ReportCards', 'report_cards_title'],
+        'portal.exams' => ['Portal/Exams', 'exams_title'],
+        'portal.awards' => ['Portal/Awards', 'awards_title'],
+        'portal.behavior' => ['Portal/Behavior', 'behavior_title'],
+        'portal.invoices' => ['Portal/Invoices', 'fees_title'],
+        'portal.work' => ['Portal/Work', 'work_title'],
+        'portal.movements' => ['Portal/Movements', 'movements_title'],
+        'portal.found-items' => ['Portal/FoundItems', 'found_title'],
+    ] as $route => [$component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($parent)
+            ->get(route($route))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("t.{$key}", $dv[$key]));
+    }
+
+    // How an arrival was recorded travels as a code the page names.
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->get(route('portal.movements'))
+        ->assertInertia(fn (Assert $page) => $page->where('movements.0.source', 'card')->where('movements.0.direction', 'in'));
+
+    // A paid invoice, and one that is not theirs, are refused in Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->post(route('portal.invoices.pay', $paid->id), ['mode' => 'full'])
+        ->assertSessionHasErrors(['invoice_id' => $dv['error_invoice_paid']]);
+    $this->withoutLocalizationMiddleware()->actingAs($parent)
+        ->post(route('portal.invoices.pay', $notTheirs->id), ['mode' => 'full'])
+        ->assertSessionHasErrors(['invoice_id' => $dv['error_invoice_unavailable']]);
 });

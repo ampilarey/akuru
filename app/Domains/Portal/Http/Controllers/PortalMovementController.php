@@ -5,6 +5,7 @@ namespace App\Domains\Portal\Http\Controllers;
 use App\Domains\Academics\Actions\ListMovementsForGuardianAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,6 +36,7 @@ class PortalMovementController extends Controller
             'date' => $date,
             'has_children' => $children->isNotEmpty(),
             'movements' => app(ListMovementsForGuardianAction::class)->execute($ids, $date),
+            't' => Phrases::once('portal'),
         ]);
     }
 }

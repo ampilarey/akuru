@@ -16,7 +16,7 @@ class PayPortalInvoiceAction
     {
         $invoice = Invoice::query()->find($invoiceId);
         if ($invoice === null || ! in_array($invoice->student_id, $allowedStudentIds, true)) {
-            throw ValidationException::withMessages(['invoice_id' => 'Invoice is not available.']);
+            throw ValidationException::withMessages(['invoice_id' => __('portal.error_invoice_unavailable')]);
         }
 
         $initiated = app(InitiateInvoicePaymentAction::class)->execute($invoice, $userId, $mode);
@@ -26,7 +26,7 @@ class PayPortalInvoiceAction
 
         return [
             'redirect_url' => $result->success ? $result->redirectUrl : null,
-            'error' => $result->success ? null : ($result->error ?? 'Payment initiation failed.'),
+            'error' => $result->success ? null : ($result->error ?? __('portal.error_payment_failed')),
         ];
     }
 }

@@ -49,13 +49,15 @@ class ListMovementsForGuardianAction
 
         return $movements->map(fn (StudentMovement $movement): array => [
             'id' => (int) $movement->id,
-            'student' => $students->get((int) $movement->student_id)['name'] ?? 'Unknown',
+            'student' => $students->get((int) $movement->student_id)['name'] ?? __('portal.unknown_person'),
             'direction' => $movement->direction->value,
             'direction_label' => $movement->direction->label(),
             'at' => $movement->at?->toDateTimeString(),
             // Families are told a card recorded it rather than being left to
             // assume a member of staff watched their child walk out.
             'source_label' => $movement->source->label(),
+            // Named by the page in its own language (BACKLOG C21, slice PT2).
+            'source' => $movement->source->value,
         ])->values();
     }
 }

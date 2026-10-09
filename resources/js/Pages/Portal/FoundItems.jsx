@@ -2,21 +2,21 @@ import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 
-export default function FoundItems({ items = [], filters = {} }) {
+export default function FoundItems({ items = [], filters = {}, t = {} }) {
     const [q, setQ] = useState(filters.q || '');
 
     return (
-        <AppShell title="Lost and found">
+        <AppShell title={t.found_title || 'Lost and found'}>
             <p className="mb-4 text-sm text-gray-600">
-                Things handed in to the school this year and not yet collected. If you
-                recognise something, ask where it is being held.
+                {t.found_intro || 'Things handed in to the school this year and not yet collected. If you recognise something, ask where it is being held.'}
             </p>
 
             <div className="mb-3 flex flex-wrap items-center gap-2">
                 <input
                     type="search"
                     className="form-input w-64 text-sm"
-                    placeholder="Search" aria-label="Search"
+                    placeholder={t.found_search || 'Search'}
+                    aria-label={t.found_search || 'Search'}
                     value={q}
                     onChange={(e) => setQ(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && router.get('/portal/found-items', { q }, { preserveState: true, replace: true })}
@@ -29,10 +29,10 @@ export default function FoundItems({ items = [], filters = {} }) {
                         <p className="font-medium">{item.title}</p>
                         {item.description && <p className="mt-1 text-sm text-gray-600">{item.description}</p>}
                         <p className="mt-2 text-xs text-gray-500">
-                            Found {item.found_at}
+                            {(t.found_on || 'Found :date').replace(':date', item.found_at)}
                             {item.location ? ` · ${item.location}` : ''}
                         </p>
-                        {item.held_at && <p className="text-xs text-gray-500">Held at {item.held_at}</p>}
+                        {item.held_at && <p className="text-xs text-gray-500">{(t.found_held || 'Held at :place').replace(':place', item.held_at)}</p>}
                         {item.has_photo && (
                             <a
                                 href={`/portal/found-items/${item.id}/photo`}
@@ -40,7 +40,7 @@ export default function FoundItems({ items = [], filters = {} }) {
                                 rel="noreferrer"
                                 className="mt-1 inline-block text-xs text-[#7C2D37] underline"
                             >
-                                See photo
+                                {t.found_photo || 'See photo'}
                             </a>
                         )}
                     </li>
@@ -49,7 +49,7 @@ export default function FoundItems({ items = [], filters = {} }) {
 
             {items.length === 0 && (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">
-                    Nothing is waiting to be collected.
+                    {t.found_none || 'Nothing is waiting to be collected.'}
                 </p>
             )}
         </AppShell>
