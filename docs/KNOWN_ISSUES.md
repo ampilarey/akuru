@@ -148,12 +148,20 @@ a question with a default, so "do nothing" is always a legible choice.
 
 **Language**
 
-14. **200 English UI keys have no Dhivehi and no Arabic**, 152 of them
+14. ~~**200 English UI keys have no Dhivehi and no Arabic**, 152 of them
     referenced from live `public.*` pages — the marketing site, admissions and
-    checkout. A ratchet stops it growing (STATUS §5bm); closing it needs a
-    native speaker, and deliberately was not attempted by the agent. Both
-    languages are now editable from the admin screen without a deploy
-    (§5bn), so this can be done by a person with no repository access.
+    checkout. A ratchet stops it growing (STATUS §5bm).~~ — **closed
+    2026-10-09 (STATUS §5pp).**
+    - The C19 and C20 slices translated every key a page names, and their
+      walks read each page in Dhivehi and Arabic.
+    - The last 37 were reached by nothing, so they were deleted. They were
+      the old home page's placeholders, five weekdays and old enrolment
+      words.
+    - The untranslated baseline is empty, so a new English key cannot ship
+      without its Dhivehi and Arabic.
+    - The translations are the agent's. A native speaker's read is still
+      worth having, and both languages can be edited from the admin screen
+      without a deploy (§5bn).
 
 ---
 
