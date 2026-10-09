@@ -680,6 +680,7 @@ return [
     'purchase_status_pending' => 'ފައިސާ ލިބެންދެން މަޑުކުރަނީ',
     'purchase_status_paid' => 'ފައިސާ ދައްކާފައި',
     'purchase_status_refunded' => 'ފައިސާ އަނބުރާ ދީފައި',
+    'purchase_status_failed' => 'ފައިސާ ދެއްކުން ފެށިއެއް ނުދިޔަ',
     'This item has no reader pages yet.' => 'މި ފޮތުގައި އަދި ކިޔޭނެ ޞަފްޙާއެއް ނެތް.',
     'Previous' => 'ކުރީގެ',
     'Remove bookmark' => 'ބުކްމާކް ފޮހެލައްވާ',

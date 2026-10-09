@@ -121,6 +121,13 @@ class StartLibraryCheckoutAction
             $returnUrl,
         );
         $purchase->payment_id = $initiated['payment']->id;
+        // §5pn: a payment that could not start will never be paid. The
+        // purchase says so, and the code's slot comes back now, as the
+        // Bookstore's does, not a day later from the prune.
+        if ($initiated['redirect_url'] === null) {
+            $purchase->status = 'failed';
+            app(RecordDiscountRedemptionAction::class)->releaseAbandoned('library_purchase', [$purchase->id]);
+        }
         $purchase->save();
 
         return [

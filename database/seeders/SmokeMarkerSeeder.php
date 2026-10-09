@@ -2714,17 +2714,19 @@ class SmokeMarkerSeeder extends Seeder
     {
         // `smoke-primer-upload` is what the walk's own upload step makes.
         $itemIds = DB::table('library_items')
-            ->where(fn ($q) => $q->whereIn('slug', ['smoke-primer', 'smoke-primer-pdf', 'smoke-primer-paid', 'smoke-primer-costly', 'smoke-research-published'])->orWhere('slug', 'like', 'smoke-primer-upload%'))
+            ->where(fn ($q) => $q->whereIn('slug', ['smoke-primer', 'smoke-primer-pdf', 'smoke-primer-paid', 'smoke-primer-costly', 'smoke-primer-unstarted', 'smoke-research-published'])->orWhere('slug', 'like', 'smoke-primer-upload%'))
             ->pluck('id');
         // `wallet-refusal.mjs` presses Pay with wallet on SMOKE-Primer-Costly,
         // which no seeded wallet can pay. Before W1 that left a `pending`
         // purchase behind, and a purchase keeps its item from being deleted
-        // (money tables refuse it). A pending purchase moved no money, so the
-        // reset clears those — and their pending redemptions. A paid one
-        // stays, and so does its item.
-        $pendingIds = DB::table('library_purchases')->whereIn('library_item_id', $itemIds)->where('status', 'pending')->pluck('id');
-        DB::table('discount_redemptions')->where('purchase_type', 'library_purchase')->whereIn('purchase_id', $pendingIds)->where('status', 'pending')->delete();
-        DB::table('library_purchases')->whereIn('id', $pendingIds)->delete();
+        // (money tables refuse it). `abandoned-code.mjs` presses Buy on
+        // SMOKE-Primer-Unstarted with no gateway to start, which leaves a
+        // `failed` one (§5pn). Neither
+        // moved money, so the reset clears both — and their unconfirmed
+        // redemptions. A paid one stays, and so does its item.
+        $unpaidIds = DB::table('library_purchases')->whereIn('library_item_id', $itemIds)->whereIn('status', ['pending', 'failed'])->pluck('id');
+        DB::table('discount_redemptions')->where('purchase_type', 'library_purchase')->whereIn('purchase_id', $unpaidIds)->whereIn('status', ['pending', 'released'])->delete();
+        DB::table('library_purchases')->whereIn('id', $unpaidIds)->delete();
         DB::table('library_bookmarks')->whereIn('library_item_id', $itemIds)->delete();
         DB::table('library_reading_progress')->whereIn('library_item_id', $itemIds)->delete();
         DB::table('library_reading_events')->whereIn('library_item_id', $itemIds)->delete();
@@ -2797,6 +2799,31 @@ class SmokeMarkerSeeder extends Seeder
             'body' => '<p>SMOKE-Primer-Costly-Page-One</p>',
         ]);
         app(\App\Domains\Library\Actions\PublishLibraryItemAction::class)->execute($costly->id, (int) $approverId);
+
+        // §5pn: a book and a code each reader may use once, for
+        // `abandoned-code.mjs` to start a card payment with twice. The
+        // redemptions are the walk's own, and so is the book: its unpaid
+        // attempts stay off SMOKE-Primer-Costly, whose My Library row
+        // `wallet-refusal.mjs` reads.
+        $unstarted = app(\App\Domains\Library\Actions\SaveLibraryItemAction::class)->execute([
+            'title' => 'SMOKE-Primer-Unstarted',
+            'slug' => 'smoke-primer-unstarted',
+            'content_type' => 'book',
+            'access_type' => 'paid',
+            'price' => 120,
+            'description' => 'Planted by SmokeMarkerSeeder: bought by card where no gateway can start.',
+            'body' => '<p>SMOKE-Primer-Unstarted-Page-One</p>',
+        ]);
+        app(\App\Domains\Library\Actions\PublishLibraryItemAction::class)->execute($unstarted->id, (int) $approverId);
+        $onceIds = DB::table('discount_codes')->where('code', 'SMOKE-LIB-ONCE')->pluck('id');
+        DB::table('discount_redemptions')->whereIn('discount_code_id', $onceIds)->delete();
+        DB::table('discount_codes')->whereIn('id', $onceIds)->delete();
+        app(\App\Domains\Commerce\Actions\SaveDiscountCodeAction::class)->execute([
+            'code' => 'SMOKE-LIB-ONCE',
+            'discount_type' => 'fixed',
+            'discount_value' => 10,
+            'per_user_limit' => 1,
+        ]);
 
         // One research paper already out, planted as R2's import plants them
         // (reviewed and published elsewhere), so the research shelf has a year

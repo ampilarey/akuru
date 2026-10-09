@@ -95,6 +95,28 @@ class RecordDiscountRedemptionAction
     }
 
     /**
+     * The payment landed: the redemption counts, even one already released
+     * as abandoned (STATUS §5pn).
+     *
+     * `akuru:prune-expired` releases the slot of a purchase whose payment has
+     * not landed in a day. A bank payment that confirms after that still
+     * bought at the reduced price, so it takes its slot back rather than
+     * leaving the code free for one use more.
+     *
+     * Only the webhook's listeners call this, and the payment service fires
+     * that event once, on the first confirmation. A refund comes after a
+     * confirmation, never before, so this never undoes a refund's release.
+     */
+    public function confirmLanded(string $purchaseType, int $purchaseId): int
+    {
+        return DiscountRedemption::query()
+            ->where('purchase_type', $purchaseType)
+            ->where('purchase_id', $purchaseId)
+            ->whereIn('status', ['pending', 'released'])
+            ->update(['status' => 'confirmed']);
+    }
+
+    /**
      * P4.3: a fully refunded purchase gives its usage slot back — pending
      * AND confirmed redemptions release, since the customer kept nothing.
      */

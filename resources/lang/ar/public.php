@@ -680,6 +680,7 @@ return [
     'purchase_status_pending' => 'بانتظار الدفع',
     'purchase_status_paid' => 'مدفوع',
     'purchase_status_refunded' => 'مُسترد',
+    'purchase_status_failed' => 'لم يبدأ الدفع',
     'This item has no reader pages yet.' => 'لا توجد صفحات للقراءة في هذا العمل بعد.',
     'Previous' => 'السابق',
     'Remove bookmark' => 'أزل العلامة المرجعية',

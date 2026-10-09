@@ -159,24 +159,42 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ## Found while fixing the refused wallet payment (2026-10-09)
 
-### A Library purchase started by card and never paid keeps its code's redemption for good — **open**
+### A Library purchase started by card and never paid keeps its code's redemption for good — **fixed (2026-10-09, STATUS §5pn)**
 
-A reader who types a discount code, chooses the card, and closes BML's page
-without paying leaves a `pending` purchase and a `pending` redemption.
-`ResolveDiscountAction` counts pending redemptions against the code's
-limits, so that reader's one use of a once-per-reader code is spent, and a
-code limited to 100 uses runs out after 100 attempts.
+A reader typed a discount code, chose the card, and closed BML's page without
+paying. That left a `pending` purchase and a `pending` redemption.
+`ResolveDiscountAction` counts pending redemptions against the code's limits,
+so that reader's one use of a once-per-reader code was spent, and a code
+limited to 100 uses ran out after 100 attempts.
 
-The other two checkouts give the slot back:
+The other two checkouts gave the slot back:
 - **Courses:** `akuru:prune-expired` cancels a day-old pending enrolment and
-  calls `releaseAbandoned('course_enrollment', …)`.
-- **The Bookstore:** `ExpireCheckoutsAction` releases a checkout's
-  redemption when the checkout expires.
+  releases its redemption.
+- **The Bookstore:** its checkout releases its redemption when the checkout
+  expires, or when its payment cannot start.
 
-Nothing calls `releaseAbandoned('library_purchase', …)`. The purchase row
-itself is harmless: the reader can try again, and My Library shows it as
-`pending`. But the redemption needs the same release the other two have,
-with a test that a purchase the webhook confirmed late keeps its slot.
+Nothing released the Library's. Now:
+- The prune releases the redemption of a Library purchase that has waited a
+  day unpaid. The purchase stays `pending` for a late payment to find.
+- A payment that lands after that release takes the slot back
+  (`confirmLanded`), so the code is not left free for one use more.
+- A payment that cannot start marks its purchase `failed` (My Library: *payment
+  did not start*) and gives the slot back at once. A course checkout whose
+  payment cannot start gives its slot back at once too.
+
+### A course payment that lands after the prune leaves its code free for one use more — **open**
+
+The prune cancels a day-old pending course enrolment and releases its
+redemption. If BML's confirmation arrives after that, the webhook activates the
+enrolment again, but `transition()` confirms only `pending` redemptions, so the
+released one stays released.
+
+The Library's fix (`confirmLanded`) is not safe here. An enrolment is handed
+back to every retry, so a released row on it may belong to an earlier attempt,
+or to a refund. Re-confirming it would count one purchase twice, or undo a
+refund's release. A fix needs the release to say why it happened, for example
+a separate `abandoned` status. Rare: it needs BML to confirm a payment more
+than a day after the checkout began.
 
 ### Accepting the Vendor Agreement lands on a 404 — **fixed (2026-10-09, STATUS §5pm)**
 

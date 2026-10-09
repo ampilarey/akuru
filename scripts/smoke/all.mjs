@@ -159,6 +159,7 @@ const WALKS = [
     { name: 'library-public-language', writes: true, asks: 'Do the Library\'s shelf, an item, an author, the offers, the reader, My Library, the wallet and gift cards read in Dhivehi and Arabic, and are a bad gift card code, a bad discount code and a gift card with nowhere to go refused in Dhivehi?' },
     { name: 'wallet-refusal', writes: true, asks: 'Is a wallet payment the balance cannot cover refused beside the button, with the wallet untouched and no purchase left behind in My Library?' },
     { name: 'bare-addresses', writes: true, asks: 'Do a bare /vendor, the Vendor Agreement, the portal\'s Home link and its product search reach the app, and is /robots.txt the app\'s?' },
+    { name: 'abandoned-code', writes: true, asks: 'When a card payment cannot start, does My Library say so, and is the once-per-reader code still good for the next try?' },
 ];
 
 const args = process.argv.slice(2);

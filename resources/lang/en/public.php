@@ -778,6 +778,7 @@ return [
     'purchase_status_pending' => 'pending',
     'purchase_status_paid' => 'paid',
     'purchase_status_refunded' => 'refunded',
+    'purchase_status_failed' => 'payment did not start',
     'Too many reading sessions are open on this account.' => 'Too many reading sessions are open on this account.',
     'Purchase complete — enjoy reading.' => 'Purchase complete — enjoy reading.',
     'Payment could not be started.' => 'Payment could not be started.',

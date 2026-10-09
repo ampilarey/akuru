@@ -4983,6 +4983,91 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5pn. An abandoned Library card purchase gives its discount code back (2026-10-09)
+
+Found while fixing W1 (§5pl, KNOWN_ISSUES). A reader typed a discount code,
+chose the card, and never paid: they closed BML's page, or the payment could
+not start at all. That left a `pending` purchase and a `pending` redemption.
+`ResolveDiscountAction` counts pending redemptions against a code's limits:
+- a once-per-reader code was spent, and the next try was told *You have
+  already used this code.*;
+- a code limited to 100 uses ran out after 100 attempts.
+
+Courses gave the slot back in the hourly prune, a day later. The Bookstore
+gave it back when its checkout expired or its payment could not start. The
+Library never did.
+
+**The fix:**
+- **The prune** (`akuru:prune-expired`) releases the redemption of a Library
+  purchase that has waited a day unpaid, as it already does for a course
+  enrolment.
+  - The purchase stays `pending`. It moved no money, and a late payment
+    still finds it.
+- **A payment that lands after the release** takes the slot back. The
+  Library's webhook listener now confirms the redemption whether it is
+  `pending` or released (`RecordDiscountRedemptionAction::confirmLanded`).
+  - This is safe because the event fires once per payment.
+  - Every Library attempt is its own purchase row, so a released row on it
+    is that attempt's own.
+- **A payment that cannot start** (gateway down, or not set up):
+  - the Library purchase becomes `failed` and its slot comes back at once,
+    as the Bookstore's does. My Library names the state in all three
+    languages: *payment did not start*, ފައިސާ ދެއްކުން ފެށިއެއް ނުދިޔަ,
+    لم يبدأ الدفع;
+  - a course checkout gives its slot back at once too. Its enrolment stays
+    pending, and the retry is handed the same one.
+
+**Left open (KNOWN_ISSUES):** a course payment that lands after the prune
+leaves its code free for one use more.
+- An enrolment is handed back to every retry, so a released row on it may
+  be an earlier attempt's, or a refund's.
+- Re-confirming it as the Library does could count one purchase twice.
+- It needs the release to record why it happened.
+
+**Tests:** `AbandonedPurchaseReleasesItsCodeTest`, 7 tests. Four of them fail
+on `main`'s code.
+- **A day-old unpaid Library purchase:** the slot comes back, and the
+  purchase stays `pending`.
+- **Guards** (these pass on `main` too):
+  - a purchase less than a day old keeps its slot;
+  - a paid purchase never loses its slot;
+  - a dry run releases nothing.
+- **A payment landing after the release** grants the book and takes the
+  slot back.
+- **A Library payment that cannot start:**
+  - the purchase reads `failed` and the slot is back;
+  - My Library says *payment did not start*, and says it in Dhivehi on a
+    Dhivehi page.
+- **A course payment that cannot start** gives its slot back. The retry, with
+  the gateway working, uses the code once.
+
+Whole suite locally: **2926 passed (39001 assertions)**.
+
+**Walk:** `scripts/smoke/abandoned-code.mjs` (new, in `all.mjs`): **4/4**.
+`SmokeMarkerSeeder` plants SMOKE-Primer-Unstarted and SMOKE-LIB-ONCE, a code
+good once per reader. Here no gateway is set up, so a card payment cannot
+start. The student:
+- types the code and presses *Buy*, and is told the payment could not start;
+- finds it in My Library as *payment did not start*;
+- presses *Buy* again with the same code. It is accepted, and they are told
+  only that the payment could not start.
+
+It runs twice in a row without a reseed. The reseed also clears a smoke item's
+`failed` purchases.
+
+Against `main`'s code: **1/4**. My Library lists *SMOKE-Primer-Unstarted —
+MVR 110.00 pending*, and the second try is told *You have already used this
+code.*
+
+The walks around it still pass:
+- `wallet-refusal.mjs` 8/8, after this walk too;
+- `reader.mjs` 39/39;
+- `buy.mjs` 13/13;
+- `library.mjs` 31/31;
+- `library-public-language.mjs` 81/81.
+
+**Next:** C20's category form, which still takes only an English name.
+
 ## 5pm. Nothing in `public/` answers for one of the app's addresses (2026-10-09)
 
 Found by W1's run of `checkout.mjs` (§5pl). A seller who accepted the Vendor
