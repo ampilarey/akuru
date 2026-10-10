@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Academics\Actions\AssignStudentToClassAction;
 use App\Domains\Academics\Actions\SaveAnnouncementAction;
 use App\Domains\Academics\Actions\SaveRoomBookingAction;
 use App\Domains\Academics\Actions\SaveStudentWorkAction;
@@ -12,17 +13,27 @@ use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Enums\BehaviorType;
 use App\Domains\Academics\Enums\CalendarDayType;
 use App\Domains\Academics\Enums\CoursePlanStatus;
+use App\Domains\Academics\Enums\FoundItemStatus;
 use App\Domains\Academics\Enums\LessonLogStatus;
 use App\Domains\Academics\Enums\MeetingSlotStatus;
+use App\Domains\Academics\Enums\MovementDirection;
+use App\Domains\Academics\Enums\MovementSource;
 use App\Domains\Academics\Enums\PromotionOutcome;
 use App\Domains\Academics\Enums\RoomType;
+use App\Domains\Academics\Enums\SchoolRequestStatus;
+use App\Domains\Academics\Enums\SchoolRequestType;
 use App\Domains\Academics\Enums\TermStatus;
 use App\Domains\Academics\Models\AbsenceNote;
 use App\Domains\Academics\Models\AbsenceType;
+use App\Domains\Academics\Models\FoundItem;
+use App\Domains\Academics\Models\SchoolRequest;
+use App\Domains\Academics\Models\StudentGateCard;
+use App\Domains\Academics\Models\StudentMovement;
 use App\Domains\Courses\Enums\AssessmentStatus;
 use App\Domains\Courses\Enums\AssessmentType;
 use App\Domains\Identity\Models\User;
 use App\Domains\People\Enums\StudentStatus;
+use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -62,6 +73,13 @@ use Inertia\Testing\AssertableInertia as Assert;
  * and the categories a school starts with were printed as codes; a refused
  * move or hide of a pupil's work, and a refused file removal, were said
  * nowhere on the page.
+ *
+ * OA4 (STATUS §5qi) adds the gate and its cards with their printed sheet,
+ * pick-up, lost property and requests. A movement's direction and how it was
+ * recorded came from the server in English; a request's type and state were
+ * printed as codes (*parent general*, *PENDING*); and a tap taken back twice,
+ * a send another member of staff had already made, and an item already
+ * handed back were refused where the page said nothing.
  */
 uses(RefreshDatabase::class);
 
@@ -80,6 +98,9 @@ function academicsScreens(): array
         // OA3: teaching.
         'Academics/Materials/Index', 'Academics/Plans/Index', 'Academics/Work/Index', 'Academics/Teach/Meetings',
         'Academics/Meetings/Index', 'Academics/Announcements/Index', 'Academics/Behavior/Index',
+        // OA4: the gate, pick-up, lost property and requests.
+        'Academics/Gate/Console', 'Academics/Gate/Cards', 'Academics/Gate/PrintCards', 'Academics/Pickup/Console',
+        'Academics/FoundItems/Index', 'Academics/Requests/Index',
     ];
 }
 
@@ -147,6 +168,22 @@ function academicsServerFiles(): array
         'app/Domains/Academics/Actions/GenerateMeetingSlotsAction.php',
         'app/Domains/Academics/Actions/SaveMeetingSlotAction.php',
         'app/Domains/Academics/Actions/SaveBehaviorRecordAction.php',
+        // OA4.
+        'app/Domains/Academics/Http/Controllers/GateMovementController.php',
+        'app/Domains/Academics/Http/Controllers/GateCardController.php',
+        'app/Domains/Academics/Http/Controllers/PickupConsoleController.php',
+        'app/Domains/Academics/Http/Controllers/FoundItemController.php',
+        'app/Domains/Academics/Http/Controllers/SchoolRequestController.php',
+        'app/Domains/Academics/Actions/ResolveGateCardAction.php',
+        'app/Domains/Academics/Actions/RecordStudentMovementAction.php',
+        'app/Domains/Academics/Actions/VoidStudentMovementAction.php',
+        'app/Domains/Academics/Actions/ListGateMovementsAction.php',
+        'app/Domains/Academics/Actions/ListPickupNoticesAction.php',
+        'app/Domains/Academics/Actions/SaveFoundItemAction.php',
+        'app/Domains/Academics/Actions/ReturnFoundItemAction.php',
+        'app/Domains/Academics/Actions/SubmitSchoolRequestAction.php',
+        'app/Domains/Academics/Actions/ReviewSchoolRequestAction.php',
+        'app/Domains/Academics/Actions/BuildSchoolRequestPayloadAction.php',
     ];
 }
 
@@ -212,6 +249,13 @@ it('names every code the registers and attendance screens show, in all three lan
         ...array_map(fn ($priority) => 'notice_priority_'.$priority, SaveAnnouncementAction::PRIORITIES),
         ...array_map(fn ($audience) => 'notice_audience_'.$audience, SaveAnnouncementAction::AUDIENCES),
         ...array_map(fn ($category) => 'behavior_category_'.$category, ['conduct', 'homework', 'other']),
+        // OA4: a movement's direction and how it was recorded, a request's
+        // type and state, and whether a found item is still on the shelf.
+        ...array_map(fn ($case) => 'movement_direction_'.$case->value, MovementDirection::cases()),
+        ...array_map(fn ($case) => 'movement_source_'.$case->value, MovementSource::cases()),
+        ...array_map(fn ($case) => 'request_type_'.$case->value, SchoolRequestType::cases()),
+        ...array_map(fn ($case) => 'request_status_'.$case->value, SchoolRequestStatus::cases()),
+        ...array_map(fn ($case) => 'found_status_'.$case->value, FoundItemStatus::cases()),
     ];
 
     foreach ($codes as $key) {
@@ -231,7 +275,8 @@ it('leaves no English in what the server says on the registers and attendance sc
     $keys = refusalKeysIn(academicsServerFiles());
     expect($keys)->toContain('academics.flash_register_submitted', 'academics.no_teacher_profile', 'academics.empty_no_slots', 'academics.generated_some_skipped', 'academics.error_register_locked', 'academics.error_mark_status', 'academics.error_note_approved', 'academics.error_type_code_exists', 'academics.error_policy_part_lesson')
         ->and($keys)->toContain('academics.flash_year_created', 'academics.error_year_another_active', 'academics.error_class_exists', 'academics.flash_copied_week', 'academics.copied_conflict_reason', 'academics.error_timetable_conflicts', 'academics.error_booking_clashes', 'academics.error_promotion_dry_run', 'academics.error_promotion_unmapped', 'academics.error_room_not_bookable')
-        ->and($keys)->toContain('academics.flash_notice_published', 'academics.flash_meeting_slots_saved', 'academics.error_slot_length', 'academics.error_slot_overlap', 'academics.error_material_not_yours', 'academics.error_work_same_pupil', 'academics.error_work_photo', 'academics.error_topic_title_required', 'academics.error_category_required');
+        ->and($keys)->toContain('academics.flash_notice_published', 'academics.flash_meeting_slots_saved', 'academics.error_slot_length', 'academics.error_slot_overlap', 'academics.error_material_not_yours', 'academics.error_work_same_pupil', 'academics.error_work_photo', 'academics.error_topic_title_required', 'academics.error_category_required')
+        ->and($keys)->toContain('academics.flash_gate_arrived', 'academics.flash_gate_left', 'academics.flash_cards_issued', 'academics.error_gate_card_replaced', 'academics.error_movement_taken_back', 'academics.unknown_name', 'academics.flash_pickup_sent', 'academics.error_found_already_returned', 'academics.found_attr_held_at', 'academics.error_request_reject_reason', 'academics.error_request_not_your_child');
     foreach ($keys as $key) {
         expect(trans($key, [], 'en'))->not->toBe($key, "{$key} has no English")
             ->and(trans($key, [], 'dv'))->toMatch('/\p{Thaana}/u', "{$key} in Dhivehi")
@@ -481,4 +526,105 @@ it('serves the teaching screens in Dhivehi, and says what was saved and refused 
     $this->withoutLocalizationMiddleware()->actingAs($office)
         ->post(route('academics.work.reassign', $work->id), ['student_id' => $pupil->id])
         ->assertSessionHasErrors(['student_id' => $dv['error_work_same_pupil']]);
+});
+
+it('serves the gate, pick-up, lost property and requests screens in Dhivehi, and says what was saved and refused in Dhivehi', function () {
+    $this->travelTo(Carbon::parse('2026-09-01 10:15:00', config('app.timezone')));
+    $year = makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active']);
+    $class = makeClass($year, 'Grade 3', 'A');
+    $office = actingPeopleAdmin(['requests.submit', 'requests.review']);
+    $dv = academicsBook('dv');
+
+    app()->setLocale('dv');
+    foreach ([
+        ['academics.gate.index', [], 'Academics/Gate/Console', 'gate_title'],
+        ['academics.gate.cards', [], 'Academics/Gate/Cards', 'cards_title'],
+        ['academics.gate.cards.print', ['class_id' => $class->id], 'Academics/Gate/PrintCards', 'print_cards_none'],
+        ['academics.pickup.index', [], 'Academics/Pickup/Console', 'pickup_title'],
+        ['academics.found-items.index', [], 'Academics/FoundItems/Index', 'found_title'],
+        ['academics.requests.index', [], 'Academics/Requests/Index', 'requests_title'],
+    ] as [$route, $parameters, $component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($office)
+            ->get(route($route, $parameters))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("t.{$key}", $dv[$key]));
+    }
+
+    // At the gate: a code that is no card is refused in red, in Dhivehi,
+    // and nothing is recorded.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.gate.scan'), ['code' => 'hello', 'direction' => 'in'])
+        ->assertSessionHas('error', $dv['error_gate_not_a_card']);
+    expect(StudentMovement::query()->count())->toBe(0);
+
+    // A pupil tapped in by name, and the tap taken back; taken back twice is
+    // refused. The console did not show that refusal at all.
+    $pupil = makeStudent(['first_name' => 'Aminath', 'last_name' => 'Rasheed']);
+    app(AssignStudentToClassAction::class)->execute($class, $pupil->id);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.gate.record'), ['student_id' => $pupil->id, 'direction' => 'in'])
+        ->assertSessionHas('success', $dv['flash_gate_recorded']);
+    $movement = StudentMovement::query()->firstOrFail();
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.gate.void', $movement->id))
+        ->assertSessionHas('success', $dv['flash_gate_taken_back']);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.gate.void', $movement->id))
+        ->assertSessionHasErrors(['movement' => $dv['error_movement_taken_back']]);
+
+    // A card issued, counted in Dhivehi; scanned, it names the pupil and the
+    // time in Dhivehi; replaced, the old one is refused with the day it was.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.gate.cards.issue'), ['class_id' => $class->id])
+        ->assertSessionHas('success', trans_choice('academics.flash_cards_issued', 1, ['count' => 1], 'dv'));
+    $card = StudentGateCard::query()->active()->where('student_id', $pupil->id)->firstOrFail();
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.gate.scan'), ['code' => $card->code(), 'direction' => 'out'])
+        ->assertSessionHas('success', fn (string $said) => str_contains($said, 'Aminath') && str_contains($said, '10:15 ގައި ދިޔަ'));
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.gate.cards.reissue', $pupil->id))
+        ->assertSessionHas('success', $dv['flash_card_reissued']);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.gate.scan'), ['code' => $card->code(), 'direction' => 'in'])
+        ->assertSessionHas('error', __('academics.error_gate_card_replaced', ['date' => '2026-09-01'], 'dv'));
+
+    // Pick-up opened and closed, in Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.pickup.open'), ['date' => '2026-09-01'])
+        ->assertSessionHas('success', $dv['flash_pickup_opened']);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.pickup.close'), ['date' => '2026-09-01'])
+        ->assertSessionHas('success', $dv['flash_pickup_closed']);
+
+    // Lost property logged and handed back; handed back twice is refused
+    // with the day it went, beside the button. It was refused in silence.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.found-items.store'), ['title' => 'Blue water bottle'])
+        ->assertSessionHas('success', $dv['flash_found_logged']);
+    $item = FoundItem::query()->firstOrFail();
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.found-items.return', $item->id), ['returned_to' => 'Aminath'])
+        ->assertSessionHas('success', $dv['flash_found_returned']);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.found-items.return', $item->id))
+        ->assertSessionHasErrors(['status' => __('academics.error_found_already_returned', ['date' => '2026-09-01'], 'dv')]);
+
+    // A request filed and reviewed. A rejection needs its reason, a decided
+    // request cannot be decided again, and a pupil who is not one's own child
+    // is refused — all in Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.requests.store'), ['type' => 'other', 'reason' => 'A day off for a family wedding.'])
+        ->assertSessionHas('success', $dv['flash_request_submitted']);
+    $filed = SchoolRequest::query()->firstOrFail();
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.requests.review', $filed->id), ['status' => 'rejected', 'review_notes' => ''])
+        ->assertSessionHasErrors(['review_notes' => $dv['error_request_reject_reason']]);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.requests.review', $filed->id), ['status' => 'approved'])
+        ->assertSessionHas('success', $dv['flash_request_reviewed']);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.requests.review', $filed->id), ['status' => 'approved'])
+        ->assertSessionHasErrors(['status' => $dv['error_request_not_pending']]);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.requests.store'), ['type' => 'parent_general', 'reason' => 'About my child.', 'student_id' => $pupil->id])
+        ->assertSessionHasErrors(['student_id' => $dv['error_request_not_your_child']]);
 });

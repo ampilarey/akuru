@@ -24,13 +24,13 @@ class VoidStudentMovementAction
 
         if ($movement === null) {
             throw ValidationException::withMessages([
-                'movement' => 'That movement no longer exists.',
+                'movement' => __('academics.error_movement_gone'),
             ]);
         }
 
         if ($movement->voided_at !== null) {
             throw ValidationException::withMessages([
-                'movement' => 'That movement has already been taken back.',
+                'movement' => __('academics.error_movement_taken_back'),
             ]);
         }
 

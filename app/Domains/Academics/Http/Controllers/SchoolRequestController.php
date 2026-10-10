@@ -15,6 +15,7 @@ use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -56,6 +57,7 @@ class SchoolRequestController extends Controller
             'children' => app(ListGuardianChildrenAction::class)->executeForGuardianUserId($userId)
                 ->map(fn (object $child) => ['id' => (int) $child->id, 'name' => PersonName::ofStudent($child)])
                 ->values(),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -88,7 +90,7 @@ class SchoolRequestController extends Controller
             'reason' => $data['reason'],
         ]);
 
-        return redirect()->route('academics.requests.index')->with('success', 'Request submitted.');
+        return redirect()->route('academics.requests.index')->with('success', __('academics.flash_request_submitted'));
     }
 
     public function review(Request $request, SchoolRequest $schoolRequest): RedirectResponse
@@ -107,7 +109,7 @@ class SchoolRequestController extends Controller
             $data['review_notes'] ?? null,
         );
 
-        return redirect()->route('academics.requests.index')->with('success', 'Request reviewed.');
+        return redirect()->route('academics.requests.index')->with('success', __('academics.flash_request_reviewed'));
     }
 
     public function export(Request $request): StreamedResponse

@@ -2,7 +2,8 @@
  * Do the office's Academics screens read in Dhivehi and Arabic? (BACKLOG
  * C21: slice OA1, the registers and attendance, STATUS §5qd; slice OA2, the
  * school's structure and time, STATUS §5qf; slice OA3, teaching, STATUS
- * §5qh.)
+ * §5qh; slice OA4, the gate, pick-up, lost property and requests, STATUS
+ * §5qi.)
  *
  * The seeded teacher opens today's registers, one of their registers and
  * daily attendance; the dean opens the unfilled registers, the attendance
@@ -11,7 +12,9 @@
  * a class's roster, the school calendar, the timetable, the promotion
  * wizard, the rooms and their bookings; and the teaching screens — the
  * teacher's materials, plans, behaviour records and meetings, and the office's
- * meetings, noticeboard and pupils' work — under /dv and /ar. The walk lists what is still in Latin
+ * meetings, noticeboard and pupils' work; and the gate with its cards and
+ * their printed sheet, pick-up, lost property and requests (the teacher's
+ * and the office's) — under /dv and /ar. The walk lists what is still in Latin
  * letters in each page's main: every text node, placeholder, aria-label,
  * title and phone caption (`data-label`). What a page shows of its data (a
  * pupil's name, a subject, a reason the office typed, the code it was given)
@@ -37,7 +40,9 @@
  *   - the dean adds a calendar day on a date that has one and is refused
  *     beside the date, in Dhivehi;
  *   - the dean asks for meeting slots 200 minutes long and is refused beside
- *     the minutes, in Dhivehi; nothing is made.
+ *     the minutes, in Dhivehi; nothing is made;
+ *   - the dean types a code that is no gate card at the gate and is refused,
+ *     in red, in Dhivehi; nothing is recorded.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/office-language.mjs
@@ -64,14 +69,18 @@ const CODE_KEYS = new Set([
     'outcome', 'assessment_type', 'view', 'day_of_week',
     // OA3: a notice's priority and audience.
     'priority', 'priorities', 'audiences', 'target_audience',
+    // OA4: a movement's direction and where a pupil is now, and the English
+    // labels the server still sends beside them for an old page.
+    'direction', 'current', 'direction_label', 'source_label',
 ]);
 // Props that are a list of codes when they are a list of strings — a
 // calendar day's or a room's types, the timetable's days — and the school's
 // own records otherwise: the absence reasons are `types`, the calendar's
 // entries `days`.
 const CODE_LISTS = new Set(['types', 'days']);
-// The names of formats, the same in every language.
-const ALWAYS_FINE = [/https?:\/\/\S*/g, /\bCSV\b/g, /\bPDF\b/g, /[\w.+-]+@[\w-]+(\.[\w-]+)+/g];
+// The names of formats and a unit, the same in every language (the gate's
+// QR code, a 5 MB upload; slice OA4).
+const ALWAYS_FINE = [/https?:\/\/\S*/g, /\bCSV\b/g, /\bPDF\b/g, /\bQR\b/g, /\bMB\b/g, /[\w.+-]+@[\w-]+(\.[\w-]+)+/g];
 
 const browser = await chromium.launch({
     args: ['--no-first-run', '--disable-background-networking'],
@@ -191,6 +200,14 @@ const screens = [
     ['/academics/meetings', dean],
     ['/announcements', dean],
     ['/academics/work', dean],
+    // OA4.
+    ['/academics/gate', dean],
+    ['/academics/gate/cards', dean],
+    ...(Number(rosterClassId) > 0 ? [['/academics/gate/cards/print', dean, `?class_id=${rosterClassId}`]] : []),
+    ['/academics/pickup', dean],
+    ['/academics/found-items', dean],
+    ['/academics/requests', dean],
+    ['/academics/requests', teacher],
 ];
 
 for (const locale of ['dv', 'ar']) {
@@ -308,6 +325,19 @@ const tooLong = (await slotForm.locator('span.text-red-600').first().textContent
 await dean.goto(`${BASE}/dv/academics/meetings`, { waitUntil: 'networkidle' });
 const slotsAfter = ((await props(dean)).slots || []).length;
 check('meeting slots 200 minutes long are refused beside the minutes, in Dhivehi, and none is made', tooLong === meetingsBook.error_slot_length && slotsAfter === slotsBefore, `said: ${tooLong ?? 'nothing'}; slots ${slotsBefore} → ${slotsAfter}`);
+
+// ------------------------------------- a code that is no card, refused in Dhivehi
+
+await dean.goto(`${BASE}/dv/academics/gate`, { waitUntil: 'networkidle' });
+const gateBook = (await props(dean)).t ?? {};
+const recordedBefore = ((await props(dean)).movements || []).length;
+await dean.getByLabel(gateBook.gate_code, { exact: true }).fill('AKURU-WALK');
+await dean.getByRole('button', { name: gateBook.gate_record, exact: true }).click();
+await dean.waitForLoadState('networkidle');
+const notACard = (await dean.getByTestId('flash-error').textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+await dean.goto(`${BASE}/dv/academics/gate`, { waitUntil: 'networkidle' });
+const recordedAfter = ((await props(dean)).movements || []).length;
+check('a code that is no gate card is refused, in red, in Dhivehi, and nothing is recorded', notACard === gateBook.error_gate_not_a_card && recordedAfter === recordedBefore, `said: ${notACard ?? 'nothing'}; movements ${recordedBefore} → ${recordedAfter}`);
 
 await browser.close();
 

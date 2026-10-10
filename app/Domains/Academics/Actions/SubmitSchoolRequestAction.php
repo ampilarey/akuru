@@ -16,7 +16,7 @@ class SubmitSchoolRequestAction
     {
         $reason = trim((string) ($data['reason'] ?? ''));
         if ($reason === '') {
-            throw ValidationException::withMessages(['reason' => 'A reason is required.']);
+            throw ValidationException::withMessages(['reason' => __('academics.error_request_reason')]);
         }
 
         $request = SchoolRequest::query()->create([

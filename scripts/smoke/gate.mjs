@@ -226,10 +226,12 @@ check('the gate log marks both scans as QR', (await logged.filter({ hasText: 'QR
 const parent = await signIn(browser, PARENT);
 await parent.goto(`${BASE}/en/portal/movements`, { waitUntil: 'networkidle' });
 const family = await text(parent);
-// The page lists times, newest first; both of today's scans are on it.
+// The page lists times, newest first; both of today's scans are on it. The
+// family's page names the source from the portal book — "QR code" since
+// slice PT2, where the office's gate log says "QR".
 check(
     'the parent sees today\'s arrival and departure, recorded by QR',
-    family.includes(NAME) && new RegExp(`Recorded: QR Left \\d\\d:\\d\\d`).test(family) && new RegExp(`Recorded: QR Arrived \\d\\d:\\d\\d`).test(family),
+    family.includes(NAME) && new RegExp(`Recorded: QR code Left \\d\\d:\\d\\d`).test(family) && new RegExp(`Recorded: QR code Arrived \\d\\d:\\d\\d`).test(family),
     family.slice(0, 200),
 );
 

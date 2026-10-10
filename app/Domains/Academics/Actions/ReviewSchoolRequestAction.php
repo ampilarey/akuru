@@ -15,13 +15,13 @@ class ReviewSchoolRequestAction
     {
         if ($request->status !== SchoolRequestStatus::Pending) {
             throw ValidationException::withMessages([
-                'status' => 'Only pending requests can be reviewed.',
+                'status' => __('academics.error_request_not_pending'),
             ]);
         }
 
         if (! in_array($status, [SchoolRequestStatus::Approved, SchoolRequestStatus::Rejected, SchoolRequestStatus::Cancelled], true)) {
             throw ValidationException::withMessages([
-                'status' => 'Invalid review status.',
+                'status' => __('academics.error_request_bad_status'),
             ]);
         }
 
@@ -30,7 +30,7 @@ class ReviewSchoolRequestAction
         // the family was told "rejected." and nothing else.
         if ($status === SchoolRequestStatus::Rejected && trim((string) $notes) === '') {
             throw ValidationException::withMessages([
-                'review_notes' => 'Say why: a rejected request states its reason to the person who asked.',
+                'review_notes' => __('academics.error_request_reject_reason'),
             ]);
         }
 

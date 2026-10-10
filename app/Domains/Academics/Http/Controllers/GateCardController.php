@@ -9,6 +9,7 @@ use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,6 +31,7 @@ class GateCardController extends Controller
             'classes' => $classes,
             'class_id' => $classId,
             'pupils' => $classId > 0 ? $cards->execute($classId) : [],
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -40,15 +42,15 @@ class GateCardController extends Controller
         $count = $issue->execute($roster->execute((int) $data['class_id'])->pluck('student_id')->all(), (int) $request->user()->id);
 
         return back()->with('success', $count === 0
-            ? 'Every pupil in this class already has a card.'
-            : ($count === 1 ? '1 card issued.' : "{$count} cards issued."));
+            ? __('academics.flash_cards_all_have')
+            : trans_choice('academics.flash_cards_issued', $count, ['count' => $count]));
     }
 
     public function reissue(Request $request, int $student, IssueGateCardsAction $issue): RedirectResponse
     {
         $issue->execute([$student], (int) $request->user()->id, reissue: true);
 
-        return back()->with('success', 'New card issued. The old one no longer works.');
+        return back()->with('success', __('academics.flash_card_reissued'));
     }
 
     public function print(Request $request, ListGateCardsAction $cards): Response
@@ -59,6 +61,7 @@ class GateCardController extends Controller
         return Inertia::render('Academics/Gate/PrintCards', [
             'class_name' => $class['name'] ?? '',
             'pupils' => array_values(array_filter($cards->execute((int) $data['class_id']), fn (array $row) => $row['card'] !== null)),
+            't' => Phrases::once('academics'),
         ]);
     }
 

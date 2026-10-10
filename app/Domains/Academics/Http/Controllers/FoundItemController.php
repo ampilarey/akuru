@@ -9,6 +9,7 @@ use App\Domains\Academics\Models\FoundItem;
 use App\Domains\Media\Actions\ReadPrivateMediaAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -35,6 +36,7 @@ class FoundItemController extends Controller
         return Inertia::render('Academics/FoundItems/Index', [
             'filters' => $filters,
             'items' => app(ListFoundItemsAction::class)->execute($filters),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -44,7 +46,7 @@ class FoundItemController extends Controller
 
         $save->execute($data, (int) $request->user()->id, null, $request->file('photo'));
 
-        return back()->with('success', 'Item logged.');
+        return back()->with('success', __('academics.flash_found_logged'));
     }
 
     public function update(Request $request, FoundItem $foundItem, SaveFoundItemAction $save): RedirectResponse
@@ -53,7 +55,7 @@ class FoundItemController extends Controller
 
         $save->execute($data, (int) $request->user()->id, $foundItem, $request->file('photo'));
 
-        return back()->with('success', 'Item updated.');
+        return back()->with('success', __('academics.flash_found_updated'));
     }
 
     public function return(Request $request, FoundItem $foundItem, ReturnFoundItemAction $return): RedirectResponse
@@ -64,7 +66,7 @@ class FoundItemController extends Controller
 
         $return->execute($foundItem, (int) $request->user()->id, $data['returned_to'] ?? null);
 
-        return back()->with('success', 'Marked as returned.');
+        return back()->with('success', __('academics.flash_found_returned'));
     }
 
     /**
@@ -119,8 +121,8 @@ class FoundItemController extends Controller
             'found_at' => ['nullable', 'date'],
             'photo' => ['nullable', 'file', 'image', 'max:8192'],
         ], [], [
-            'held_at' => 'where it is held',
-            'found_at' => 'date found',
+            'held_at' => __('academics.found_attr_held_at'),
+            'found_at' => __('academics.found_attr_found_at'),
         ]);
     }
 }

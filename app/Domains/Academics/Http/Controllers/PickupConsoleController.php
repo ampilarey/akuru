@@ -8,6 +8,7 @@ use App\Domains\Academics\Actions\OpenPickupWindowAction;
 use App\Domains\Academics\Models\PickupNotice;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,6 +31,7 @@ class PickupConsoleController extends Controller
             'is_open' => app(OpenPickupWindowAction::class)->isOpen($date),
             'waiting' => $lists['waiting'],
             'left' => $lists['left'],
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -80,27 +82,27 @@ class PickupConsoleController extends Controller
     {
         $window->open((int) $request->user()->id, (string) $request->input('date', now()->toDateString()));
 
-        return back()->with('success', 'Pick-up is open.');
+        return back()->with('success', __('academics.flash_pickup_opened'));
     }
 
     public function close(Request $request, OpenPickupWindowAction $window): RedirectResponse
     {
         $window->close((string) $request->input('date', now()->toDateString()));
 
-        return back()->with('success', 'Pick-up is closed.');
+        return back()->with('success', __('academics.flash_pickup_closed'));
     }
 
     public function send(Request $request, PickupNotice $notice, AdvancePickupNoticeAction $advance): RedirectResponse
     {
         $advance->send($notice, (int) $request->user()->id);
 
-        return back()->with('success', 'Child sent to reception.');
+        return back()->with('success', __('academics.flash_pickup_sent'));
     }
 
     public function cancel(PickupNotice $notice, AdvancePickupNoticeAction $advance): RedirectResponse
     {
         $advance->cancel($notice);
 
-        return back()->with('success', 'Request cancelled.');
+        return back()->with('success', __('academics.flash_pickup_cancelled'));
     }
 }
