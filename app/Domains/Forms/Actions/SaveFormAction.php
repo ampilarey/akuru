@@ -25,7 +25,7 @@ class SaveFormAction
 
         if ($fields === []) {
             throw ValidationException::withMessages([
-                'fields' => 'A form needs at least one question.',
+                'fields' => __('academics.error_form_no_question'),
             ]);
         }
 
@@ -46,7 +46,7 @@ class SaveFormAction
         ];
 
         if ($attributes['title'] === '') {
-            throw ValidationException::withMessages(['title' => 'A form needs a title.']);
+            throw ValidationException::withMessages(['title' => __('academics.error_form_title')]);
         }
 
         // An anonymous answer has nobody to confirm for, so the two settings
@@ -54,7 +54,7 @@ class SaveFormAction
         // never become confirmable.
         if ($attributes['is_anonymous'] && $attributes['requires_parent_confirmation']) {
             throw ValidationException::withMessages([
-                'requires_parent_confirmation' => 'An anonymous form cannot ask a guardian to confirm.',
+                'requires_parent_confirmation' => __('academics.error_form_anonymous_confirm'),
             ]);
         }
 
@@ -63,7 +63,7 @@ class SaveFormAction
         // a pupil the form promised not to identify.
         if ($attributes['is_anonymous'] && $attributes['fee_amount'] !== null) {
             throw ValidationException::withMessages([
-                'fee_amount' => 'An anonymous form cannot charge a fee.',
+                'fee_amount' => __('academics.error_form_anonymous_fee'),
             ]);
         }
 
@@ -118,7 +118,7 @@ class SaveFormAction
 
             if ($type->needsOptions() && count($options) < 2) {
                 throw ValidationException::withMessages([
-                    "fields.{$index}.options" => "“{$label}” needs at least two options.",
+                    "fields.{$index}.options" => __('academics.error_form_options', ['label' => $label]),
                 ]);
             }
 

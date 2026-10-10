@@ -4983,6 +4983,134 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qr. The office's sign-up forms and the school's events in Dhivehi and Arabic (C21 SE1, 2026-10-10)
+
+The eighteenth slice of BACKLOG C21, and the first of the pages found
+English after PE2 (§5qq). Four office screens:
+- the sign-up forms and surveys (`/forms`): the list, and making one with
+  its questions, the classes it is for, a closing time, a fee;
+- a form's results: who answered, when, whether a parent confirmed, the
+  CSV, and closing it;
+- the school's events (`/academics/events`): the list, making an event or
+  an elective, the CSV;
+- an event: its details, registering a pupil, who is registered, the
+  second round.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and hint;
+- a question's type, a form's state, an event's type, state and kind of
+  registration and a registration's state, printed as codes
+  (*multi_select*, *pending_parent*) or by the page's own English
+  (*Choose several*);
+- an event, by its English title alone, though the school gives it a
+  Dhivehi and an Arabic one;
+- seven saved messages and eleven refusals, and the names Laravel's own
+  refusals gave a form's questions — a blank question read *question
+  ބޭނުންވޭ*.
+
+Six defects were found on the way:
+- **A second event with an English title an earlier one had was
+  refused**, and the refusal was said nowhere. An event's address is made
+  from its title, so next year's Sports Day had the address this year's
+  had; the refusal was keyed to the address, which the form has no box
+  for. An address made from the title is now made free (*sports-day-2*),
+  and an event keeps the one it has while its title still makes it; an
+  address given outright is still refused when another event has it.
+- **The events list could not be read for a year or a state**, though the
+  server took both; the screen offered neither. It offers both, and the
+  CSV reads the same.
+- **A refused Close, Confirm or second round was said nowhere**, and the
+  registration form said only a pupil's refusal — an event not open for
+  registration was refused with nothing on the page. Each is said where it
+  was asked for.
+- **The event forms said almost none of their refusals.** The edit form
+  said only a title's; the new event form not its Dhivehi or Arabic title,
+  its type, state, registration, year or seats. Each is said beside its
+  field, and the rest under the form; so is the form composer's, which
+  said nothing of a description, a class or a single option.
+- **A form's answers printed a yes or no as a code** (*yes*), and every
+  time as the server's ISO stamp (*2026-10-10T13:05:00+05:00*). A yes or
+  no is named, and a time reads as its date and hour.
+- **The family's side of a form refused in English** a child that was not
+  theirs, and asked in English which child an answer was for.
+
+**The change:**
+- **The `academics` book grows by 118 phrases** in three languages (94 for
+  the pages, 24 for the server), 869 in all; the `portal` book by two. The
+  four pages read the `academics` book through `Phrases::once('academics')`.
+- **Codes are named**: a question's type, a form's state, an event's type,
+  state and kind of registration, and a registration's state.
+- **An event reads by the title the school gave it in the page's
+  language**, and by its English title where it gave no other.
+- **What the server says is in the page's language**: the saved messages
+  and refusals of two controllers and three actions, with the number of
+  registrations the second round moved up, and the questions named so in
+  Laravel's own refusals.
+- **Every field the four screens post is named** in Laravel's own
+  refusals: 18 more fields in Dhivehi and Arabic.
+- **Every field is named** for a screen reader, and options may be
+  separated with the Arabic comma (`،`) a Dhivehi or Arabic keyboard types.
+
+What the school writes stays as written: a form's title, description,
+questions and options, a family's answers, an event's titles, place and
+description, and a pupil's name. The CSVs keep their English column codes.
+
+**Tests:**
+- `FormsAndEventsSpeakThreeLanguagesTest` (new) covers the four screens,
+  the five server files and the codes, and checks every field the two
+  controllers validate is named in Dhivehi and Arabic. It serves the
+  screens in Dhivehi, where:
+  - a blank question is refused by its Dhivehi name; a choice with one
+    option is refused by the question's own words; an anonymous form with
+    a fee is refused; a form is saved, its results read, and it is closed,
+    each said in Dhivehi;
+  - a family answering for a child that is not theirs is refused in
+    Dhivehi;
+  - an event with no place is refused by the place's Dhivehi name; one is
+    saved, and next year's with the same English title is saved too, with
+    its own address; saving the first again keeps its address;
+  - the list reads for a state;
+  - a pupil is registered, a Confirm of a registration not waiting for a
+    parent is refused, and the second round says what it did, each in
+    Dhivehi.
+
+The tests for the areas it touches (Localization, Architecture, Forms,
+Website, Portal): **555 passed (27298 assertions)**.
+
+Whole suite locally: **3012 passed (59913 assertions)**.
+
+**Walks:**
+- **`office-language.mjs`** grows from 203 to 237 steps:
+  - the sign-up forms and a form's results, and the events and an event,
+    read right to left under `/dv` and `/ar`, with nothing left in English
+    and every field named;
+  - in Dhivehi, the dean:
+    - saves a form with a blank question, and is refused under the
+      question, named in Dhivehi; no form is made;
+    - with the question, saves it, told in Dhivehi; it is listed as open;
+    - closes it from its results, told in Dhivehi;
+    - creates an event with no place, and is refused beside the place;
+      none is made;
+    - with a place, makes it, told in Dhivehi; it is listed by its Dhivehi
+      title;
+    - makes next year's with the same English title, told in Dhivehi; it
+      has an address of its own;
+    - reads the list for its drafts: the address carries the state, and
+      every row names it;
+    - opens the second round, told what it did; registers a pupil, told
+      in Dhivehi; and presses Confirm on a page left open while the
+      registration was confirmed elsewhere, and is refused under its row,
+      in Dhivehi — a refused Confirm was said nowhere; nothing changes.
+
+The other walks: `signup.mjs` 17/17, `events.mjs` 6/6,
+`site-pages-language.mjs` 75/75 (the public events, whose addresses come
+from the same titles), `portal-language.mjs` 212/212, `identity.mjs` 47/47,
+`family.mjs` 40/40, `sweep.mjs` 25/25, `create-sweep.mjs` 6/6,
+`own-data.mjs` passed, `admin-hub.mjs` 26/26, `admin-layout.mjs` 15/15,
+`admin.mjs` 43/43, `rtl.mjs` 8/8, `nav.mjs` 14/14 and `mobile.mjs` 19/19.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5qq. The staff profiles, the custom fields and the sensitive records in Dhivehi and Arabic (C21 PE2, 2026-10-10)
 
 The seventeenth slice of BACKLOG C21, and the second and last of People.

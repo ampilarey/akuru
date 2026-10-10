@@ -566,4 +566,8 @@ return [
     'tile_materials' => 'އަލުން ބޭނުންކުރެވޭ ލައިބްރަރީ',
     'tile_plans' => 'މައުޟޫޢުތަކާއި ކުރިއަށްދިޔަ މިންވަރު',
     'col_year' => 'އަހަރު',
+
+    // A family's form, what the server says (slice SE1).
+    'error_form_not_your_child' => 'އެއީ ތިބާގެ ދަރިއެއް ނޫން.',
+    'error_form_which_child' => 'މިއީ ކޮން ދަރިއަކަށްތޯ ބުނެދީ.',
 ];
