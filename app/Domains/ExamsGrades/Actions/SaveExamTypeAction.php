@@ -15,7 +15,7 @@ class SaveExamTypeAction
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Name is required.']);
+            throw ValidationException::withMessages(['name' => __('exams.error_name_required')]);
         }
 
         $code = ExamTypeCode::from((string) $data['code']);
@@ -26,7 +26,7 @@ class SaveExamTypeAction
             ->exists();
 
         if ($duplicate) {
-            throw ValidationException::withMessages(['code' => 'That exam type code already exists.']);
+            throw ValidationException::withMessages(['code' => __('exams.error_type_code_exists')]);
         }
 
         $payload = [

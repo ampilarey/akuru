@@ -20,12 +20,12 @@ class BulkScheduleExamsAction
             $subjectIds = is_array($decoded) ? $decoded : [];
         }
         if (! is_array($subjectIds) || $subjectIds === []) {
-            throw ValidationException::withMessages(['subject_ids' => 'Pick at least one subject.']);
+            throw ValidationException::withMessages(['subject_ids' => __('exams.error_pick_subject')]);
         }
 
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Name is required.']);
+            throw ValidationException::withMessages(['name' => __('exams.error_name_required')]);
         }
 
         // One query for every subject named, rather than one per subject.
@@ -37,7 +37,7 @@ class BulkScheduleExamsAction
         foreach ($subjectIds as $subjectId) {
             $subjectName = $names[(int) $subjectId] ?? null;
             if ($subjectName === null) {
-                throw ValidationException::withMessages(['subject_ids' => "Unknown subject {$subjectId}."]);
+                throw ValidationException::withMessages(['subject_ids' => __('exams.error_subject_unknown', ['id' => $subjectId])]);
             }
 
             $created[] = app(SaveExamAction::class)->execute([

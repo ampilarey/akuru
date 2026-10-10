@@ -4983,6 +4983,117 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qj. The exam cycle's office screens in Dhivehi and Arabic (C21 EG1, 2026-10-10)
+
+The tenth slice of BACKLOG C21, and the first of ExamsGrades. These six
+screens are the office's half of the exam cycle:
+- the exam schedule;
+- an exam's marks;
+- the gradebook;
+- the assessment weights;
+- the grade scales;
+- the exam types.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and hint;
+- an exam's state, an exam type's code and a scale's kind, printed as
+  codes (*marks_entry*, *percentage_bands*);
+- a subject and an exam type, by their English names, though the school
+  names them in three languages;
+- the weights screen printed ids (*year 3 / class — / subject —*) and the
+  stored JSON of a scheme's weights;
+- thirteen saved messages and forty-two refusals. Among them were a clash
+  (*This class already has 2 exam(s) on that date (max 2).*) and a move
+  the exam's state does not allow (*Cannot move from scheduled to
+  locked.*, both states as codes).
+
+Three refusals were said nowhere on the page:
+- **A refused import of marks.** The marks screen showed nothing.
+- **A mark refused for its exam's state** (an exam not yet taking marks,
+  or locked). The row showed only a refusal of the mark itself.
+- **A refused tick of Absent or Exempt.** The tick posted on its own, and
+  what it was refused for was lost.
+
+**The change:**
+- **A new `exams` book**, 168 phrases in three languages. The six pages
+  read it through `Phrases::once('exams')`.
+- **Codes are named, not printed**: an exam's state, an exam type's code,
+  a scale's kind.
+- **A subject and an exam type read by the school's own name** for them
+  in the page's language. The catalog sends their Dhivehi and Arabic names.
+- **The weights screen names what it shows**: a scheme's year, class and
+  subject, and its weights by exam type.
+- **The six exam types a school starts with are named in Dhivehi and
+  Arabic** (a migration that fills them by code where they are empty; a
+  name the office typed stays), as OA1 did for the absence reasons.
+- **What the server says is in the page's language**: the saved messages
+  and refusals of six controllers and eight actions. The exams scheduled
+  at once and the marks imported are counted (one, two, and many in
+  Arabic). A move the state does not allow names both states.
+- **The three refusals are shown**: an import's above the table, and a
+  mark's or a tick's under the pupil's row (a tick now posts through the
+  row's form).
+- **Every field is named**, a pupil's mark, Absent and Exempt boxes by the
+  pupil's name.
+
+What the school writes stays as written: an exam's name, a class's and a
+term's name, a scale's name and its bands, a pupil's name and remarks. The
+CSVs keep their English column codes.
+
+**Tests:**
+- `ExamsGradesSpeaksThreeLanguagesTest` covers the six screens, fourteen
+  server files and the three codes. It also checks:
+  - the six exam types a school starts with have Dhivehi and Arabic names,
+    and a name the office typed stays;
+  - the six screens serve in Dhivehi;
+  - an exam scheduled is said in Dhivehi;
+  - a move from scheduled to locked is refused with both states named in
+    Dhivehi;
+  - a mark for an exam not taking marks is refused;
+  - weights that add to 60 are refused, and say so;
+  - a band with no grade is refused;
+  - an exam type code taken twice is refused.
+
+The tests for the areas it touches (ExamsGrades, Localization,
+Architecture): **273 passed (15773 assertions)**.
+
+Whole suite locally: **2983 passed (50712 assertions)**.
+
+**Walks:**
+- **`exams-language.mjs`** (new) 42/42:
+  - the dean schedules `SMOKE-Lang-Exam` from the Dhivehi schedule and is
+    told so, in Dhivehi;
+  - the six screens read right to left under `/dv` and `/ar`, with nothing
+    left in English and every field named;
+  - in Dhivehi, the dean is refused, and nothing changes, for:
+    - a move from scheduled straight to locked — said under the row, both
+      states in Dhivehi; the exam stays scheduled;
+    - the year's weight scheme saved a second time — said above the
+      weights; no scheme is added;
+    - an exam type with a code the school has — said beside the code; no
+      type is made;
+  - it reads no field's value, so a grade scale's bands, written in their
+    box as JSON, are not taken for English.
+
+  `SmokeMarkerSeeder` removes `SMOKE-Lang-Exam` on every run, as it does
+  `exams.mjs`'s `SMOKE-Exam`.
+
+Two walks needed changing, neither for a defect in the app:
+- **`exams.mjs`** checked an exam's state by finding its code anywhere in
+  the row (*marks_entry*). The row's move list holds every state, so the
+  check matched whichever state it asked for. The row now names the state
+  (*Marks entry*), and the walk reads the status cell itself: 29/29.
+- **`rtl.mjs`** measured English sentences on three Dhivehi and Arabic
+  pages. The exam schedule was the last of the three that had any, so it
+  found nothing to measure. It now puts one English sentence at the top of
+  each page's main, the way an office's English-only notice would sit
+  there, and measures it with any the page has: 8/8.
+
+The other walks: `family.mjs` 40/40, `portal-language.mjs` 212/212,
+`sweep.mjs` 25/25, `create-sweep.mjs` 6/6, `admin-hub.mjs` 26/26,
+`admin-layout.mjs` 15/15, `admin.mjs` 43/43, `nav.mjs` 14/14, `mobile.mjs`
+19/19, `identity.mjs` 47/47.
+
 ## 5qi. The gate, pick-up, lost property and requests in Dhivehi and Arabic (C21 OA4, 2026-10-10)
 
 The ninth slice of BACKLOG C21, and the last of the school office's

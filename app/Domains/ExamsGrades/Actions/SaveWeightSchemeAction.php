@@ -16,17 +16,17 @@ class SaveWeightSchemeAction
     {
         $yearId = (int) ($data['academic_year_id'] ?? 0);
         if ($yearId < 1 || ! DB::table('academic_years')->where('id', $yearId)->exists()) {
-            throw ValidationException::withMessages(['academic_year_id' => 'Academic year is required.']);
+            throw ValidationException::withMessages(['academic_year_id' => __('exams.error_year_required')]);
         }
 
         $classId = $this->optionalId($data['class_id'] ?? null);
         if ($classId !== null && ! DB::table('classes')->where('id', $classId)->exists()) {
-            throw ValidationException::withMessages(['class_id' => 'Class not found.']);
+            throw ValidationException::withMessages(['class_id' => __('exams.error_class_missing')]);
         }
 
         $subjectId = $this->optionalId($data['subject_id'] ?? null);
         if ($subjectId !== null && ! DB::table('subjects')->where('id', $subjectId)->exists()) {
-            throw ValidationException::withMessages(['subject_id' => 'Subject not found.']);
+            throw ValidationException::withMessages(['subject_id' => __('exams.error_subject_missing')]);
         }
 
         $weights = $this->weights($data['weights'] ?? []);
@@ -44,7 +44,7 @@ class SaveWeightSchemeAction
 
         if ($duplicate) {
             throw ValidationException::withMessages([
-                'academic_year_id' => 'A scheme already exists for this year / class / subject scope.',
+                'academic_year_id' => __('exams.error_scheme_exists'),
             ]);
         }
 
@@ -76,7 +76,7 @@ class SaveWeightSchemeAction
         }
 
         if (! is_array($weights) || $weights === []) {
-            throw ValidationException::withMessages(['weights' => 'Weights are required and must sum to 100.']);
+            throw ValidationException::withMessages(['weights' => __('exams.error_weights_required')]);
         }
 
         $normalized = [];
@@ -85,17 +85,17 @@ class SaveWeightSchemeAction
             $id = (int) $typeId;
             $value = (int) $percent;
             if ($id < 1 || $value < 0) {
-                throw ValidationException::withMessages(['weights' => 'Each weight must be a non-negative percent for an exam type.']);
+                throw ValidationException::withMessages(['weights' => __('exams.error_weight_negative')]);
             }
             if (! ExamType::query()->where('id', $id)->exists()) {
-                throw ValidationException::withMessages(['weights' => "Unknown exam type {$id}."]);
+                throw ValidationException::withMessages(['weights' => __('exams.error_type_unknown', ['id' => $id])]);
             }
             $normalized[(string) $id] = $value;
             $sum += $value;
         }
 
         if ($sum !== 100) {
-            throw ValidationException::withMessages(['weights' => "Weights must sum to 100 (got {$sum})."]);
+            throw ValidationException::withMessages(['weights' => __('exams.error_weights_sum', ['sum' => $sum])]);
         }
 
         return $normalized;

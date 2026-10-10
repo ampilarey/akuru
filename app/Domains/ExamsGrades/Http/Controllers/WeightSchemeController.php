@@ -9,6 +9,7 @@ use App\Domains\ExamsGrades\Models\AssessmentWeightScheme;
 use App\Domains\ExamsGrades\Models\ExamType;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -36,6 +37,8 @@ class WeightSchemeController extends Controller
                 ->map(fn (ExamType $type) => [
                     'id' => $type->id,
                     'name' => $type->name,
+                    'name_arabic' => $type->name_arabic,
+                    'name_dhivehi' => $type->name_dhivehi,
                     'code' => $type->code->value,
                     'default_weight' => (int) $type->default_weight,
                 ]),
@@ -46,6 +49,7 @@ class WeightSchemeController extends Controller
                 'subject_id' => $subjectId,
                 'scheme' => $resolved !== null ? $this->serialize($resolved) : null,
             ],
+            't' => Phrases::once('exams'),
         ]);
     }
 
@@ -62,7 +66,7 @@ class WeightSchemeController extends Controller
                 'class_id' => $data['class_id'] ?? null,
                 'subject_id' => $data['subject_id'] ?? null,
             ])
-            ->with('success', 'Weight scheme saved.');
+            ->with('success', __('exams.flash_scheme_saved'));
     }
 
     public function update(Request $request, AssessmentWeightScheme $weightScheme): RedirectResponse
@@ -78,7 +82,7 @@ class WeightSchemeController extends Controller
                 'class_id' => $data['class_id'] ?? null,
                 'subject_id' => $data['subject_id'] ?? null,
             ])
-            ->with('success', 'Weight scheme updated.');
+            ->with('success', __('exams.flash_scheme_updated'));
     }
 
     public function export(Request $request): StreamedResponse

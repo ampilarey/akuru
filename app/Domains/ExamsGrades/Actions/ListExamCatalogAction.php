@@ -41,6 +41,8 @@ class ListExamCatalogAction
                 ->map(fn (ExamType $type) => [
                     'id' => $type->id,
                     'name' => $type->name,
+                    'name_arabic' => $type->name_arabic,
+                    'name_dhivehi' => $type->name_dhivehi,
                     'code' => $type->code->value,
                 ])
                 ->all(),

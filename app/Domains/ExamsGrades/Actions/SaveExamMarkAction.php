@@ -16,7 +16,7 @@ class SaveExamMarkAction
     {
         if (! in_array($exam->status, [ExamStatus::MarksEntry, ExamStatus::Review], true)) {
             throw ValidationException::withMessages([
-                'status' => 'Marks can only be entered while the exam is in marks_entry or review.',
+                'status' => __('exams.error_marks_closed'),
             ]);
         }
 
@@ -25,7 +25,7 @@ class SaveExamMarkAction
 
         if (! $onRoster) {
             throw ValidationException::withMessages([
-                'student_id' => 'Student is not on the exam roster for that date.',
+                'student_id' => __('exams.error_not_on_roster'),
             ]);
         }
 
@@ -36,23 +36,23 @@ class SaveExamMarkAction
 
         if ($absent && $exempt) {
             throw ValidationException::withMessages([
-                'is_absent' => 'Absent and exempt cannot both be set.',
+                'is_absent' => __('exams.error_absent_and_exempt'),
             ]);
         }
 
         if (($absent || $exempt) && $marks !== null) {
             throw ValidationException::withMessages([
-                'marks' => 'Absent or exempt rows cannot have marks.',
+                'marks' => __('exams.error_marks_on_absent'),
             ]);
         }
 
         if ($marks !== null && $marks < 0) {
-            throw ValidationException::withMessages(['marks' => 'Marks cannot be negative.']);
+            throw ValidationException::withMessages(['marks' => __('exams.error_marks_negative')]);
         }
 
         if ($marks !== null && $marks > (float) $exam->max_marks) {
             throw ValidationException::withMessages([
-                'marks' => 'Marks cannot exceed max marks ('.$exam->max_marks.').',
+                'marks' => __('exams.error_marks_above_max', ['max' => $exam->max_marks]),
             ]);
         }
 

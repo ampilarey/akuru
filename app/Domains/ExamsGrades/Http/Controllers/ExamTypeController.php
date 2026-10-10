@@ -7,6 +7,7 @@ use App\Domains\ExamsGrades\Enums\ExamTypeCode;
 use App\Domains\ExamsGrades\Models\ExamType;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -23,6 +24,7 @@ class ExamTypeController extends Controller
         return Inertia::render('ExamsGrades/Types/Index', [
             'types' => ExamType::query()->orderBy('name')->get()->map(fn (ExamType $type) => $this->serialize($type)),
             'codes' => array_map(fn (ExamTypeCode $code) => $code->value, ExamTypeCode::cases()),
+            't' => Phrases::once('exams'),
         ]);
     }
 
@@ -32,7 +34,7 @@ class ExamTypeController extends Controller
 
         app(SaveExamTypeAction::class)->execute($this->validated($request));
 
-        return redirect()->route('exams.types.index')->with('success', 'Exam type saved.');
+        return redirect()->route('exams.types.index')->with('success', __('exams.flash_type_saved'));
     }
 
     public function update(Request $request, ExamType $examType): RedirectResponse
@@ -41,7 +43,7 @@ class ExamTypeController extends Controller
 
         app(SaveExamTypeAction::class)->execute($this->validated($request), $examType);
 
-        return redirect()->route('exams.types.index')->with('success', 'Exam type updated.');
+        return redirect()->route('exams.types.index')->with('success', __('exams.flash_type_updated'));
     }
 
     public function export(Request $request): StreamedResponse

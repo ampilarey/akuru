@@ -15,7 +15,13 @@
  *      to (`text-end`, `text-right`) — English lines stay on the right;
  *   3. on /en, nothing moved: the same elements are left-aligned as before.
  *
- * Read-only.
+ * The three pages now speak Dhivehi and Arabic throughout (BACKLOG C21; the
+ * exam schedule was the last, in slice EG1), so what English is left on them
+ * is the school's own — a name, a notice written only in English. The walk
+ * puts one such sentence at the top of each page's main, the way an office's
+ * English notice would sit there, and measures it with any the page has.
+ *
+ * Read-only: the sentence is added in the browser, not saved.
  *
  *   node scripts/smoke/rtl.mjs
  *
@@ -57,6 +63,13 @@ check('the office signs in', !page.url().includes('/login'), page.url());
 // punctuation of each English sentence are drawn, and each text element's
 // computed alignment.
 const measure = () => page.evaluate(() => {
+    const main = document.querySelector('main');
+    if (main && !main.querySelector('[data-rtl-probe]')) {
+        const probe = document.createElement('p');
+        probe.setAttribute('data-rtl-probe', '');
+        probe.textContent = 'No exams are still in marks entry.';
+        main.prepend(probe);
+    }
     const TEXT = 'main :is(p, li, dt, dd, blockquote, figcaption, label, caption, td, h1, h2, h3, h4, h5, h6, [role="status"], [role="alert"])';
     const sentences = [];
     const flipped = [];

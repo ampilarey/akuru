@@ -23,11 +23,11 @@ class TransitionExamStatusAction
         if ($isUnlock) {
             $note = trim((string) $reason);
             if ($note === '') {
-                throw ValidationException::withMessages(['reason' => 'Unlock requires a reason.']);
+                throw ValidationException::withMessages(['reason' => __('exams.error_unlock_reason')]);
             }
         } elseif (! in_array($to, $from->allowedNext(), true)) {
             throw ValidationException::withMessages([
-                'status' => "Cannot move from {$from->value} to {$to->value}.",
+                'status' => __('exams.error_cannot_move', ['from' => __('exams.exam_status_'.$from->value), 'to' => __('exams.exam_status_'.$to->value)]),
             ]);
         }
 

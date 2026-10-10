@@ -7,6 +7,7 @@ use App\Domains\ExamsGrades\Enums\GradeScaleType;
 use App\Domains\ExamsGrades\Models\GradeScale;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -23,6 +24,7 @@ class GradeScaleController extends Controller
         return Inertia::render('ExamsGrades/Scales/Index', [
             'scales' => GradeScale::query()->orderByDesc('is_default')->orderBy('name')->get()->map(fn (GradeScale $scale) => $this->serialize($scale)),
             'types' => array_map(fn (GradeScaleType $type) => $type->value, GradeScaleType::cases()),
+            't' => Phrases::once('exams'),
         ]);
     }
 
@@ -32,7 +34,7 @@ class GradeScaleController extends Controller
 
         app(SaveGradeScaleAction::class)->execute($this->validated($request));
 
-        return redirect()->route('exams.scales.index')->with('success', 'Grade scale saved.');
+        return redirect()->route('exams.scales.index')->with('success', __('exams.flash_scale_saved'));
     }
 
     public function update(Request $request, GradeScale $gradeScale): RedirectResponse
@@ -41,7 +43,7 @@ class GradeScaleController extends Controller
 
         app(SaveGradeScaleAction::class)->execute($this->validated($request), $gradeScale);
 
-        return redirect()->route('exams.scales.index')->with('success', 'Grade scale updated.');
+        return redirect()->route('exams.scales.index')->with('success', __('exams.flash_scale_updated'));
     }
 
     public function export(Request $request): StreamedResponse

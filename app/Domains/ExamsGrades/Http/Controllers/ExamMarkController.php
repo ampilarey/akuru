@@ -9,6 +9,7 @@ use App\Domains\ExamsGrades\Actions\SaveExamMarkAction;
 use App\Domains\ExamsGrades\Models\Exam;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,6 +34,7 @@ class ExamMarkController extends Controller
             ],
             'rows' => $grid['rows']->values(),
             'progress' => $grid['progress'],
+            't' => Phrases::once('exams'),
         ]);
     }
 
@@ -57,7 +59,7 @@ class ExamMarkController extends Controller
 
         return redirect()
             ->route('exams.marks.show', $exam)
-            ->with('success', 'Mark saved.');
+            ->with('success', __('exams.flash_mark_saved'));
     }
 
     public function import(Request $request, Exam $exam): RedirectResponse
@@ -77,7 +79,7 @@ class ExamMarkController extends Controller
 
         return redirect()
             ->route('exams.marks.show', $exam)
-            ->with('success', $result['saved'].' marks imported.');
+            ->with('success', trans_choice('exams.flash_marks_imported', $result['saved'], ['count' => $result['saved']]));
     }
 
     public function export(Request $request, Exam $exam): StreamedResponse

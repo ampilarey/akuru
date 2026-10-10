@@ -8,6 +8,7 @@ use App\Domains\ExamsGrades\Actions\ListExamCatalogAction;
 use App\Domains\ExamsGrades\Actions\ListGradebookAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -38,6 +39,7 @@ class GradebookController extends Controller
             'classId' => $classId,
             'subjectId' => $subjectId,
             'termId' => $termId,
+            't' => Phrases::once('exams'),
         ]);
     }
 
@@ -59,7 +61,7 @@ class GradebookController extends Controller
 
         return redirect()
             ->route('exams.gradebook.index', $data)
-            ->with('success', 'Term grades recomputed.');
+            ->with('success', __('exams.flash_grades_recomputed'));
     }
 
     public function export(Request $request): StreamedResponse

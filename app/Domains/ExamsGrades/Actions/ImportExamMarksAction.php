@@ -14,7 +14,7 @@ class ImportExamMarksAction
     public function execute(Exam $exam, array $rows, int $actorId): array
     {
         if ($rows === []) {
-            throw ValidationException::withMessages(['rows' => 'CSV has no mark rows.']);
+            throw ValidationException::withMessages(['rows' => __('exams.error_import_empty')]);
         }
 
         $saved = 0;
@@ -22,7 +22,7 @@ class ImportExamMarksAction
             $studentId = (int) ($row['student_id'] ?? 0);
             if ($studentId < 1) {
                 throw ValidationException::withMessages([
-                    'rows' => 'Row '.($index + 1).' is missing student_id.',
+                    'rows' => __('exams.error_import_row_student', ['row' => $index + 1]),
                 ]);
             }
 

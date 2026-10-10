@@ -18,7 +18,7 @@ class SaveExamAction
     {
         if ($exam !== null && ! $exam->status->allowsEdits()) {
             throw ValidationException::withMessages([
-                'status' => 'Locked exams cannot be edited. Unlock first.',
+                'status' => __('exams.error_exam_locked'),
             ]);
         }
 
@@ -43,37 +43,37 @@ class SaveExamAction
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Name is required.']);
+            throw ValidationException::withMessages(['name' => __('exams.error_name_required')]);
         }
 
         $yearId = (int) ($data['academic_year_id'] ?? 0);
         if ($yearId < 1 || ! DB::table('academic_years')->where('id', $yearId)->exists()) {
-            throw ValidationException::withMessages(['academic_year_id' => 'Academic year is required.']);
+            throw ValidationException::withMessages(['academic_year_id' => __('exams.error_year_required')]);
         }
 
         $termId = (int) ($data['term_id'] ?? 0);
         if ($termId < 1 || ! DB::table('terms')->where('id', $termId)->where('academic_year_id', $yearId)->exists()) {
-            throw ValidationException::withMessages(['term_id' => 'Term must belong to the academic year.']);
+            throw ValidationException::withMessages(['term_id' => __('exams.error_term_not_in_year')]);
         }
 
         $classId = (int) ($data['class_id'] ?? 0);
         if ($classId < 1 || ! DB::table('classes')->where('id', $classId)->exists()) {
-            throw ValidationException::withMessages(['class_id' => 'Class is required.']);
+            throw ValidationException::withMessages(['class_id' => __('exams.error_class_required')]);
         }
 
         $subjectId = (int) ($data['subject_id'] ?? 0);
         if ($subjectId < 1 || ! DB::table('subjects')->where('id', $subjectId)->exists()) {
-            throw ValidationException::withMessages(['subject_id' => 'Subject is required.']);
+            throw ValidationException::withMessages(['subject_id' => __('exams.error_subject_required')]);
         }
 
         $typeId = (int) ($data['exam_type_id'] ?? 0);
         if ($typeId < 1 || ! ExamType::query()->where('id', $typeId)->exists()) {
-            throw ValidationException::withMessages(['exam_type_id' => 'Exam type is required.']);
+            throw ValidationException::withMessages(['exam_type_id' => __('exams.error_type_required')]);
         }
 
         $roomId = $this->optionalId($data['room_id'] ?? null);
         if ($roomId !== null && ! DB::table('rooms')->where('id', $roomId)->where('active', true)->exists()) {
-            throw ValidationException::withMessages(['room_id' => 'Room not found.']);
+            throw ValidationException::withMessages(['room_id' => __('exams.error_room_missing')]);
         }
 
         $date = $this->nullableString($data['exam_date'] ?? null);
@@ -81,19 +81,19 @@ class SaveExamAction
         $end = $this->normalizeTime($data['end_time'] ?? null);
         if (($start === null) !== ($end === null)) {
             throw ValidationException::withMessages([
-                'start_time' => 'Provide both start and end time, or neither.',
+                'start_time' => __('exams.error_times_pair'),
             ]);
         }
 
         $maxMarks = (float) ($data['max_marks'] ?? 100);
         if ($maxMarks <= 0) {
-            throw ValidationException::withMessages(['max_marks' => 'Max marks must be greater than 0.']);
+            throw ValidationException::withMessages(['max_marks' => __('exams.error_max_marks')]);
         }
 
         $weight = $data['weight_override'] ?? null;
         $weight = $weight === '' || $weight === null ? null : (int) $weight;
         if ($weight !== null && ($weight < 0 || $weight > 100)) {
-            throw ValidationException::withMessages(['weight_override' => 'Weight override must be 0–100.']);
+            throw ValidationException::withMessages(['weight_override' => __('exams.error_weight_override')]);
         }
 
         $payload = [
@@ -143,7 +143,7 @@ class SaveExamAction
 
         if ($blocked && ! $confirmCalendar) {
             throw ValidationException::withMessages([
-                'exam_date' => 'That date is a holiday or closure. Confirm to schedule anyway.',
+                'exam_date' => __('exams.error_date_closed'),
             ]);
         }
 
@@ -156,7 +156,7 @@ class SaveExamAction
 
         if ($sameDay >= $maxPerDay && ! $confirmSameDay) {
             throw ValidationException::withMessages([
-                'exam_date' => "This class already has {$sameDay} exam(s) on that date (max {$maxPerDay}). Confirm to schedule anyway.",
+                'exam_date' => __('exams.error_same_day', ['count' => $sameDay, 'max' => $maxPerDay]),
             ]);
         }
 
@@ -182,7 +182,7 @@ class SaveExamAction
 
         if ($otherExam !== null) {
             throw ValidationException::withMessages([
-                'room_id' => 'Another exam uses this room at that time. Confirm to schedule anyway.',
+                'room_id' => __('exams.error_room_exam_clash'),
             ]);
         }
 
@@ -200,7 +200,7 @@ class SaveExamAction
 
         if ($conflicts !== []) {
             throw ValidationException::withMessages([
-                'room_id' => 'Room is booked or has a timetable slot at that time. Confirm to schedule anyway.',
+                'room_id' => __('exams.error_room_slot_clash'),
             ]);
         }
     }
