@@ -4983,6 +4983,89 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qu. The translations editor, the operator checklist and the OTP abuse list in Dhivehi and Arabic (C21 SY1, 2026-10-10)
+
+The twenty-first slice of BACKLOG C21, and the fourth of the pages found
+English after PE2 (§5qq). Three of the system admin's screens:
+- the translations editor (`/admin/translations`): the Dhivehi and Arabic
+  strings of the books it offers, a correction saved over one, a machine
+  draft, the CSV;
+- the operator close-out checklist (`/admin/operations`): who ticked which
+  step and when;
+- the OTP abuse list (`/admin/users/otp-abuse`): every time a sign-in code's
+  limit refused somebody, by contact.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and hint;
+- a language by its English name, what tripped a code's limit by the page's
+  own English, and the channel it came on as a code (*sms*);
+- the server's refusals of an unknown book, key, language or checklist
+  item.
+
+Two defects were found on the way:
+- **A refused correction or tick was said nowhere.** Both post with
+  `router` and nothing showed what came back. Each is said under its row.
+- **A refused machine draft broke off silently.** *Suggest* asks outside
+  Inertia and caught nothing, so a refusal was an unhandled error in the
+  browser's console and nothing on the page. It is said under its row.
+
+**The change:**
+- **The `admin` book grows by 59 phrases** in three languages (55 for the
+  pages, 4 for the server), 1303 in all. The three pages read it through
+  `Phrases::once('admin')`, as the feature walkthrough already did.
+- **What tripped a limit and its channel are named**, and a language by
+  its name in the page's language.
+- **What the server says is in the page's language**: the refusals of
+  three actions and the catalogue's.
+- **Every field is named** for a screen reader: a checklist item's box by
+  the item.
+
+What the system admin's record says stays as written: the checklist's
+sections and items are the operator's own (docs/OPERATOR_CHECKLIST.md), as
+the feature walkthrough's are, and the editor shows the strings it edits,
+their keys and their books as they are. The CSVs keep their English column
+codes.
+
+**Tests:**
+- `SystemScreensSpeakThreeLanguagesTest` (new) covers the three screens and
+  the seven server files, and checks what tripped, the channels and the
+  language names in three languages. It serves the screens in Dhivehi,
+  where an unknown book and an unknown key are refused for a correction, an
+  unknown key for a machine draft, and an unknown item for a tick, each in
+  Dhivehi.
+
+The tests for the areas it touches: the new test, Settings and the OTP
+limits **47 passed (893 assertions)**; Localization, Architecture,
+Settings, Identity, Admin, Routes and Nav **549 passed (29628
+assertions)**.
+
+Whole suite locally: **3029 passed (61346 assertions)**.
+
+**Walks:**
+- **`system-language.mjs`** (new), 24 steps. The system admin opens the
+  translations editor, the checklist and the OTP abuse list under `/dv` and
+  `/ar`: right to left, nothing left in English, every field named. Then,
+  in Dhivehi, the system admin:
+  - saves a correction to one Dhivehi string of the `common` book, and the
+    editor says it is active, in Dhivehi; clears it, the file's string back;
+  - ticks a checklist item — struck through, with who ticked it — and
+    unticks it;
+  - reads an abuse event planted for the walk, what tripped and its channel
+    named in Dhivehi.
+
+  Its first run stopped at the tick: Playwright's `check()` wants a box to
+  turn at once, and this one turns when the server's tick comes back. The
+  walk clicks it and waits for the strike; the tick the stopped run left
+  was removed.
+
+The other walks: `admin.mjs` 43/43, `admin-pages.mjs` 3/3,
+`admin-layout.mjs` 15/15, `admin-mobile.mjs` 13/13, `admin-hub.mjs` 26/26,
+`long-pages.mjs` 17/17 (the editor's paged rows), `phone-targets.mjs` 5/5,
+`team.mjs` 8/8, `rtl.mjs` 8/8, `nav.mjs` 14/14, `mobile.mjs` 19/19,
+`sweep.mjs` 25/25 and `identity.mjs` 47/47.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5qt. The library desk in Dhivehi and Arabic (C21 LD1, 2026-10-10)
 
 The twentieth slice of BACKLOG C21, and the third of the pages found

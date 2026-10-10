@@ -1,9 +1,13 @@
 import { router } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
 
-function Section({ section, checked }) {
+// One section of the checklist. Its title and items are the operator's own
+// record (docs/OPERATOR_CHECKLIST.md) and stay as written, as the feature
+// walkthrough's do; a refused tick is said under its item.
+function Section({ section, checked, refusals }) {
     const toggle = (key) =>
-        router.post(`/admin/operations/${key}/toggle`, {}, { preserveScroll: true });
+        refusals.actOn(`item:${key}`, () => router.post(`/admin/operations/${key}/toggle`, {}, { preserveScroll: true }));
 
     return (
         <div className="mb-6 rounded-lg border bg-white">
@@ -17,6 +21,7 @@ function Section({ section, checked }) {
                                 type="checkbox"
                                 checked={Boolean(state)}
                                 onChange={() => toggle(item.key)}
+                                aria-label={item.label}
                                 className="mt-1 h-4 w-4 rounded border-gray-300"
                             />
                             <div className="text-sm">
@@ -27,6 +32,7 @@ function Section({ section, checked }) {
                                         {state.at}
                                     </p>
                                 )}
+                                <FormErrors errors={refusals.errorsFor(`item:${item.key}`)} className="mt-1" />
                             </div>
                         </li>
                     );
@@ -36,36 +42,37 @@ function Section({ section, checked }) {
     );
 }
 
-export default function Operations({ sections, checked, done, total }) {
+/**
+ * The operator close-out checklist. The page's words are the `admin` book's
+ * (slice SY1, STATUS §5qu); a refused tick is said under its item — it was
+ * said nowhere.
+ */
+export default function Operations({ sections, checked, done, total, t = {} }) {
+    const refusals = useRowRefusals();
+
     return (
-        <AppShell title="Operations checklist">
+        <AppShell title={t.ops_title || 'Operations checklist'}>
             <div className="mx-auto max-w-3xl px-4 py-6">
                 <div className="mb-6 flex flex-wrap items-center gap-4">
                     <div>
-                        <h1 className="text-xl font-bold">Operator close-out checklist</h1>
+                        <h1 className="text-xl font-bold">{t.ops_heading || 'Operator close-out checklist'}</h1>
                         <p className="text-sm text-gray-500">
-                            Shared across operators — a tick records who and when. The evidence of
-                            record stays in STATUS.md.
+                            {t.ops_intro || 'Shared across operators — a tick records who and when. The evidence of record stays in STATUS.md.'}
                         </p>
                     </div>
                     <div className="ms-auto flex items-center gap-3">
                         <span className="text-sm font-medium tabular-nums">
-                            {done} / {total} done
+                            {(t.ops_done || ':done of :total done').replace(':done', done).replace(':total', total)}
                         </span>
-                        <a
-                            href="/admin/operations/export"
-                            className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-                        >
-                            CSV
+                        <a href="/admin/operations/export" className="rounded border px-3 py-1 text-sm hover:bg-gray-50">
+                            {t.ft_export || 'Export CSV'}
                         </a>
-                        <a
-                            href="/admin/operations/features"
-                            className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-                        >
-                            Feature walkthrough
+                        <a href="/admin/operations/features" className="rounded border px-3 py-1 text-sm hover:bg-gray-50">
+                            {t.ops_features || 'Feature walkthrough'}
                         </a>
                     </div>
                 </div>
+                <FormErrors errors={refusals.unplaced} className="mb-4" />
                 <div className="mb-6 h-2 overflow-hidden rounded bg-gray-200">
                     <div
                         className="h-full rounded bg-emerald-600 transition-all"
@@ -73,7 +80,7 @@ export default function Operations({ sections, checked, done, total }) {
                     />
                 </div>
                 {sections.map((section) => (
-                    <Section key={section.key} section={section} checked={checked} />
+                    <Section key={section.key} section={section} checked={checked} refusals={refusals} />
                 ))}
             </div>
         </AppShell>

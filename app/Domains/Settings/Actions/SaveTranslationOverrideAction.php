@@ -24,12 +24,12 @@ class SaveTranslationOverrideAction
         ListTranslationCatalogAction::assertEditableLocale($locale);
 
         if (! in_array($group, ListTranslationCatalogAction::groups(), true)) {
-            throw ValidationException::withMessages(['group' => 'Unknown translation group.']);
+            throw ValidationException::withMessages(['group' => __('admin.error_translation_group')]);
         }
 
         $reference = Lang::get($group.'.'.$key, [], 'en');
         if (! is_string($reference) || $reference === $group.'.'.$key) {
-            throw ValidationException::withMessages(['key' => 'Unknown translation key.']);
+            throw ValidationException::withMessages(['key' => __('admin.error_translation_key')]);
         }
 
         $value = $value !== null ? trim($value) : '';

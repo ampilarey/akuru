@@ -53,7 +53,7 @@ class ListTranslationCatalogAction
     public static function assertEditableLocale(string $locale): string
     {
         if (! in_array($locale, self::locales(), true)) {
-            throw ValidationException::withMessages(['locale' => 'That language is not editable here.']);
+            throw ValidationException::withMessages(['locale' => __('admin.error_translation_locale')]);
         }
 
         return $locale;

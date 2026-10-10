@@ -6,6 +6,7 @@ use App\Domains\Settings\Actions\ListTranslationCatalogAction;
 use App\Domains\Settings\Actions\SaveTranslationOverrideAction;
 use App\Domains\Settings\Actions\SuggestTranslationAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use App\Support\Contracts\MachineTranslatorInterface;
 use App\Support\Csv;
 use App\Support\Translation\NullMachineTranslator;
@@ -34,6 +35,7 @@ class TranslationController extends Controller
                 max(1, (int) $request->query('page', 1)),
             ),
             'suggest_available' => ! (app(MachineTranslatorInterface::class) instanceof NullMachineTranslator),
+            't' => Phrases::once('admin'),
         ]);
     }
 

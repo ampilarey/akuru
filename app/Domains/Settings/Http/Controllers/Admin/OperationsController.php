@@ -23,7 +23,7 @@ class OperationsController extends Controller
 {
     public function index(ListOperatorChecklistAction $list): Response
     {
-        return Inertia::render('Settings/Operations', $list->execute());
+        return Inertia::render('Settings/Operations', [...$list->execute(), 't' => Phrases::once('admin')]);
     }
 
     public function features(ListFeatureWalkthroughAction $list): Response
