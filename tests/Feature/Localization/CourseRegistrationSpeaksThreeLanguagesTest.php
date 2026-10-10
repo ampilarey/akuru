@@ -129,8 +129,9 @@ it('starts nothing, logs in to nothing and enrols in nothing for a closed course
     app()->setLocale('dv');
     $closed = rg1aCourse(['status' => 'closed', 'title' => 'RG1a Closed']);
 
-    $this->post(route('courses.register.start'), rg1aNewRegistration($closed))
-        ->assertRedirect(route('courses.checkout.show', $closed));
+    $this->from(route('courses.checkout.show', $closed))->post(route('courses.register.start'), rg1aNewRegistration($closed))
+        ->assertRedirect(route('courses.checkout.show', $closed))
+        ->assertSessionHasErrors(['course_id' => $dv['error_closed']]);
     expect(session('reg_pending_data'))->toBeNull();
 
     $user = User::factory()->create(['password' => Hash::make('secret-pass-1'), 'force_password_change' => false]);

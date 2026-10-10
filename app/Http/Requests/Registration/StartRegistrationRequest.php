@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Registration;
 
+use App\Domains\Courses\Models\Course;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StartRegistrationRequest extends FormRequest
@@ -30,6 +31,12 @@ class StartRegistrationRequest extends FormRequest
         $validator->after(function ($validator) {
             $type = $this->input('contact_type');
             $value = $this->input('contact_value');
+
+            // A closed course's old register form still posts here; nothing is started for it (slice RG1a).
+            $course = $this->filled('course_id') ? Course::query()->find((int) $this->input('course_id')) : null;
+            if ($course !== null && ! $course->is_enrollment_open) {
+                $validator->errors()->add('course_id', __('register.error_closed'));
+            }
 
             if (! empty($value)) {
                 if ($type === 'mobile') {

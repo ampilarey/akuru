@@ -23,6 +23,7 @@ use App\Http\Requests\Registration\StartRegistrationRequest;
 use App\Http\Requests\Registration\VerifyOtpRequest;
 use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -74,11 +75,7 @@ class CourseRegistrationController extends PublicRegistrationController
     /** Password login at checkout — for returning users who know their password. */
     public function checkoutLogin(Request $request, Course $course): RedirectResponse
     {
-        // A closed course's checkout says so, and has no login to continue (slice RG1a).
-        if (! $course->is_enrollment_open) {
-            return redirect()->route('courses.checkout.show', $course);
-        }
-
+        $this->ensureEnrollmentOpen($course);
         $request->validate([
             'login_contact' => ['required', 'string'],
             'password' => ['required', 'string'],
@@ -87,11 +84,9 @@ class CourseRegistrationController extends PublicRegistrationController
         // Brute-force protection: max 10 attempts per contact+IP per 15 minutes
         $throttleKey = 'checkout-login:'.sha1($request->input('login_contact').'|'.$request->ip());
         if (RateLimiter::tooManyAttempts($throttleKey, 10)) {
-            $minutes = (int) ceil(RateLimiter::availableIn($throttleKey) / 60);
-
             return back()
                 ->withInput($request->only('login_contact'))
-                ->withErrors(['login_contact' => trans_choice('register.error_too_many_logins', $minutes, ['minutes' => $minutes])]);
+                ->withErrors(['login_contact' => trans_choice('register.error_too_many_logins', $minutes = (int) ceil(RateLimiter::availableIn($throttleKey) / 60), ['minutes' => $minutes])]);
         }
 
         $raw = trim($request->input('login_contact'));
@@ -137,6 +132,14 @@ class CourseRegistrationController extends PublicRegistrationController
         return redirect()->route('courses.register.continue');
     }
 
+    /** A closed course's checkout says so and has no login to continue (slice RG1a). */
+    private function ensureEnrollmentOpen(Course $course): void
+    {
+        if (! $course->is_enrollment_open) {
+            throw new HttpResponseException(redirect()->route('courses.checkout.show', $course));
+        }
+    }
+
     /** Legacy entry point — kept for backward compatibility. */
     public function show(Course $course): View
     {
@@ -150,12 +153,6 @@ class CourseRegistrationController extends PublicRegistrationController
     {
         $type = $request->input('contact_type');
         $value = $request->input('contact_value');
-
-        // A closed course's old register form still posts here; nothing is started for it (slice RG1a).
-        $startCourse = $request->filled('course_id') ? Course::query()->find((int) $request->input('course_id')) : null;
-        if ($startCourse !== null && ! $startCourse->is_enrollment_open) {
-            return redirect()->route('courses.checkout.show', $startCourse);
-        }
 
         $normalized = $this->normalizer->normalize($type, $value);
 

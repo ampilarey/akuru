@@ -45,7 +45,7 @@
                 <div class="mb-4 p-4 bg-amber-50 border border-amber-300 rounded-lg text-sm">
                     <p class="font-semibold text-amber-800 mb-1">{{ __('register.existing_title') }}</p>
                     <p class="text-amber-700">
-                        {!! __('register.existing_body', ['contact' => '<strong dir="ltr">'.e(session('existing_account')).'</strong>']) !!}
+                        {{ __('register.existing_body', ['contact' => session('existing_account')]) }}
                     </p>
                 </div>
             @endif
