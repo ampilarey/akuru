@@ -12,6 +12,7 @@ use App\Domains\Commerce\Actions\SaveDiscountCodeAction;
 use App\Domains\Commerce\Models\DiscountCode;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -48,6 +49,8 @@ class AdminCommerceController extends Controller
                     'per_user_limit' => $code->per_user_limit,
                     'status' => $code->status,
                 ])->values()->all(),
+            // CO1: the page's words, in the page's language.
+            't' => Phrases::once('admin'),
         ]);
     }
 
@@ -79,7 +82,7 @@ class AdminCommerceController extends Controller
             'recipient_email' => 'nullable|email|max:255',
             'message' => 'nullable|string|max:500',
             'expires_at' => 'nullable|date|after:now',
-        ]);
+        ], [], $this->fieldNames());
 
         $result = app(IssueGiftCardAction::class)->execute($data + [
             'created_by' => (int) $request->user()->id,
@@ -93,11 +96,11 @@ class AdminCommerceController extends Controller
     public function deactivateGiftCard(Request $request, int $card): RedirectResponse
     {
         abort_unless($request->user()?->can('commerce.manage'), 403);
-        $data = $request->validate(['reason' => 'required|string|max:500']);
+        $data = $request->validate(['reason' => 'required|string|max:500'], [], $this->fieldNames());
 
         app(DeactivateGiftCardAction::class)->execute($card, (int) $request->user()->id, $data['reason']);
 
-        return back()->with('success', 'Gift card deactivated.');
+        return back()->with('success', __('admin.commerce_flash_deactivated'));
     }
 
     public function creditWallet(Request $request): RedirectResponse
@@ -107,17 +110,18 @@ class AdminCommerceController extends Controller
             'user_id' => 'required|integer|exists:users,id',
             'amount' => 'required|numeric|min:0.01|max:100000',
             'description' => 'nullable|string|max:500',
-        ]);
+        ], [], $this->fieldNames());
 
         app(CreditWalletAction::class)->execute(
             (int) $data['user_id'],
             (float) $data['amount'],
             'admin',
             (int) $request->user()->id,
+            // The ledger's own record, kept as it is written (rule 12).
             $data['description'] ?? 'Manual credit',
         );
 
-        return back()->with('success', 'Wallet credited.');
+        return back()->with('success', __('admin.commerce_flash_credited'));
     }
 
     public function storeDiscount(Request $request): RedirectResponse
@@ -133,10 +137,41 @@ class AdminCommerceController extends Controller
             'per_user_limit' => 'nullable|integer|min:1',
             'minimum_order_amount' => 'nullable|numeric|min:0.01',
             'can_use_with_wallet' => 'nullable|boolean',
-        ]);
+        ], [], $this->fieldNames());
 
         app(SaveDiscountCodeAction::class)->execute($data);
 
-        return back()->with('success', 'Discount code saved.');
+        return back()->with('success', __('admin.commerce_flash_discount_saved'));
+    }
+
+    /**
+     * The fields the office posts, named for Laravel's own refusals in the
+     * page's language: an account nobody has read *ޔޫޒަރ އައިޑީ* where it
+     * read *user id* (slice CO1).
+     *
+     * @return array<string, string>
+     */
+    private function fieldNames(): array
+    {
+        return [
+            'amount' => __('admin.commerce_attr_amount'),
+            'recipient_name' => __('admin.commerce_attr_recipient_name'),
+            'recipient_email' => __('admin.commerce_attr_recipient_email'),
+            'message' => __('admin.commerce_attr_message'),
+            'expires_at' => __('admin.commerce_attr_expires_at'),
+            'reason' => __('admin.commerce_attr_reason'),
+            'user_id' => __('admin.commerce_attr_user_id'),
+            // The credit form's *Reason* box.
+            'description' => __('admin.commerce_attr_reason'),
+            'code' => __('admin.commerce_attr_code'),
+            'name' => __('admin.commerce_attr_name'),
+            'discount_type' => __('admin.commerce_attr_discount_type'),
+            'discount_value' => __('admin.commerce_attr_discount_value'),
+            'max_discount_amount' => __('admin.commerce_attr_max_discount_amount'),
+            'usage_limit' => __('admin.commerce_attr_usage_limit'),
+            'per_user_limit' => __('admin.commerce_attr_per_user_limit'),
+            'minimum_order_amount' => __('admin.commerce_attr_minimum_order_amount'),
+            'can_use_with_wallet' => __('admin.commerce_attr_can_use_with_wallet'),
+        ];
     }
 }

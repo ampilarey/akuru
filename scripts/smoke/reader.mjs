@@ -196,7 +196,7 @@ await topRow.locator('[data-testid="deactivate-gift-card"]').click();
 await settles(admin, 'Gift card deactivated.');
 await admin.reload({ waitUntil: 'networkidle' });
 const deactivated = admin.locator('[data-testid="gift-card-row"]', { hasText: 'SMOKE-Deactivate' }).first();
-check('the office deactivates a card and its reason stays on the row', (await deactivated.count()) === 1 && (await deactivated.innerText()).includes('deactivated') && (await deactivated.innerText()).includes('SMOKE-reason: code leaked') && (await deactivated.locator('[data-testid="deactivate-gift-card"]').count()) === 0, (await deactivated.count()) ? (await deactivated.innerText()).replace(/\s+/g, ' ').slice(0, 160) : 'no row for SMOKE-Deactivate');
+check('the office deactivates a card and its reason stays on the row', (await deactivated.count()) === 1 && /deactivated/i.test(await deactivated.innerText()) && (await deactivated.innerText()).includes('SMOKE-reason: code leaked') && (await deactivated.locator('[data-testid="deactivate-gift-card"]').count()) === 0, (await deactivated.count()) ? (await deactivated.innerText()).replace(/\s+/g, ' ').slice(0, 160) : 'no row for SMOKE-Deactivate');
 
 // ------------------------------------------------------- the reader, redeeming
 

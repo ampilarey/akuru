@@ -392,4 +392,14 @@ return [
     'payment_error_unavailable' => 'Payment service is not available right now. Your registration was saved. Please contact us to complete payment, or try again later.',
     'payment_error_duplicate' => 'This number or account may already be linked to a payment. Please use a different mobile number, or contact us to complete payment.',
     'payment_error_failed_saved' => 'Payment initiation failed. Your registration was saved. Please contact us or try again later.',
+
+    // CO1 (BACKLOG C21): the Commerce office's refusals — issuing a gift card, deactivating one, saving a discount code — in the page's language
+    'gift_card_error_issue_amount' => 'Gift card amount must be positive.',
+    'gift_card_error_reason' => 'Say why the card is being deactivated.',
+    'gift_card_error_no_such_card' => 'No such gift card.',
+    'gift_card_error_nothing_left' => 'Only a card with money still on it can be deactivated.',
+    'error_discount_type' => 'Invalid discount type.',
+    'error_discount_value' => 'Invalid discount value.',
+    'error_discount_code_required' => 'Code is required.',
+    'error_discount_code_exists' => 'Code already exists.',
 ];

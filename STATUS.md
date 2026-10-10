@@ -4983,6 +4983,128 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qv. The Commerce office in Dhivehi and Arabic (C21 CO1, 2026-10-10)
+
+The twenty-second slice of BACKLOG C21, and the fifth and last of the pages
+found English after PE2 (§5qq). The Commerce office (`/admin/commerce`) is
+where the system admin:
+- reads what the Institute owes in stored value;
+- issues a gift card, its code shown once;
+- credits a wallet by hand, and saves a discount code;
+- reads the gift cards people bought and where each code went, the cards
+  themselves, and the discount codes.
+
+It read no phrase book, and was English throughout:
+- every heading, column, field, button and hint, and the question
+  *Deactivate* asks;
+- a card's and a purchase's state, where a card came from, a code's type
+  and state and how a bought code went out, printed as codes
+  (*partially_used*, *email+sms*), and an amount as *MVR*;
+- what the server said: its three saved messages, the gift card and
+  discount actions' seven refusals, and every field in Laravel's own
+  refusals (*The selected user id is invalid.*).
+
+One defect was found on the way:
+- **A refused Deactivate was said nowhere.** It posts with `router`, and
+  nothing showed what came back, so a card deactivated meanwhile — on
+  another page, or by somebody else — was refused with nothing on the page.
+  It is said under the card's row.
+
+**The change:**
+- **The `admin` book grows by 91 phrases** in three languages (72 for the
+  page, 19 for the server), 1394 in all. The page reads it through
+  `Phrases::once('admin')`.
+- **The `common` book grows by 8**: the gift card and discount actions'
+  refusals join the wallet's and the gift cards' (LT6), because the vendor
+  portal saves its own discount codes through the same action.
+- **The codes are named**: six card states, three purchase states, two
+  sources, two discount types, two code states and the two ways a code goes
+  out; an amount in rufiyaa by the page's own word for it.
+- **What the server says is in the page's language**: the saved messages,
+  the refusals, and each field named for Laravel's refusals (an account
+  nobody has now reads *ޔޫޒަރ އައިޑީ* where it read *user id*).
+- **Each form claims its own refusals** (`actOn`): a refused Deactivate is
+  said under its card, and a form's refusal under the form, never both.
+
+What the office typed stays as it was written:
+- a recipient's name, a reason, a discount code and its name;
+- the ledger's own record of a hand credit, *Manual credit* when no reason
+  is given (rule 12).
+
+The CSV keeps its English column codes. The credit form's typed *User ID*
+joins the other forms that ask for an id in C22.
+
+**Tests:**
+- `CommerceOfficeSpeaksThreeLanguagesTest` (new) covers the page and the
+  five server files, and checks every state, source, type and way a code
+  goes out in three languages. It serves the office in Dhivehi, and says
+  each of these in Dhivehi:
+  - a deactivation is told; the same card again, and a card nobody has, are
+    refused;
+  - a code is saved; a percentage over a hundred, and the same code again,
+    are refused;
+  - an account nobody has is refused by Laravel, its field named.
+
+  It also checks the actions say the same when called on their own.
+- `reader.mjs` and `gift.mjs` used to match the lowercase code. They now
+  read a card's or a purchase's state by its name: *Deactivated*, *Pending*
+  or *Failed*.
+
+The tests for the areas it touches: the new test, Commerce and Admin **94
+passed (1599 assertions)**; Localization, Architecture, Bookshop, Library,
+Routes and Nav **730 passed (34428 assertions)**.
+
+Whole suite locally: **3033 passed (62093 assertions)**.
+
+**Walks:**
+- **`commerce-language.mjs`** (new), 15 steps. The system admin
+  opens the office under `/dv` and `/ar`: right to left, nothing left in
+  English, every field named. Then, in Dhivehi, the system admin:
+  - issues a gift card. Its code is shown once, with the note in Dhivehi.
+    Its row names its state, where it came from and its amount;
+  - deactivates it and is told so; the row says it, with the reason;
+  - presses *Deactivate* on a page opened before, and is refused under the
+    card's row;
+  - saves a discount code, its type and state named. A percentage over a
+    hundred and the same code again are refused under the form;
+  - credits an account nobody has, and is refused with the field named. No
+    money moves;
+  - reads a gift card purchase planted for the walk, its state and how its
+    code went out named.
+
+  The card it issues is money, and stays with its ledger row (rule 12), as
+  the cards `reader.mjs` issues do. The walk's discount code and purchase
+  are removed first and last.
+
+  Its first run passed 14 of 15. The walk looked for the code's row by the
+  walk's mark, and found the purchase planted for the walk, which carries
+  the same mark. The page was right: the refusal of the same code right
+  after it passed. The walk now finds the code by its own cell.
+
+The other walks:
+- gift cards and discounts: `reader.mjs` 39/39 (the office's deactivation
+  in English), `gift.mjs` 17/17, `buy.mjs` 13/13 (the office's coupon),
+  `vendor-mobile.mjs` 27/27 (a seller's own codes, through the same
+  action), `abandoned-code.mjs` 4/4 and `money.mjs` 21/21;
+- the office: `admin.mjs` 43/43, `admin-pages.mjs` 3/3,
+  `admin-mobile.mjs` 13/13, `admin-layout.mjs` 15/15, `admin-hub.mjs` 26/26
+  and `phone-targets.mjs` 5/5;
+- everywhere: `rtl.mjs` 8/8, `nav.mjs` 14/14, `mobile.mjs` 19/19,
+  `sweep.mjs` 25/25 and `identity.mjs` 47/47.
+
+**Deploy:** no migration. The standard pull command is enough.
+
+With CO1, the thirteen pages are built. The static rule was run over every
+page again, this time on pages that do read a book. It finds three English
+words left on the Bookstore's pages:
+- the office's *ID front* and *ID back* links on a seller's application;
+- a *status* phone caption on the customer's orders.
+
+The rest it finds are codes the walks already read as the same in every
+language (*MVR*, *SKU*, *SMS*, a web address's or a slug's placeholder),
+or the developer's own test page. BACKLOG C21 lists the three words as its
+next slice, SH1.
+
 ## 5qu. The translations editor, the operator checklist and the OTP abuse list in Dhivehi and Arabic (C21 SY1, 2026-10-10)
 
 The twenty-first slice of BACKLOG C21, and the fourth of the pages found

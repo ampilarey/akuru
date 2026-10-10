@@ -15,23 +15,23 @@ class SaveDiscountCodeAction
     {
         $type = DiscountType::tryFrom((string) ($data['discount_type'] ?? ''));
         if ($type === null) {
-            throw ValidationException::withMessages(['discount_type' => 'Invalid discount type.']);
+            throw ValidationException::withMessages(['discount_type' => __('common.error_discount_type')]);
         }
         $value = (float) ($data['discount_value'] ?? 0);
         if ($value <= 0 || ($type === DiscountType::Percentage && $value > 100)) {
-            throw ValidationException::withMessages(['discount_value' => 'Invalid discount value.']);
+            throw ValidationException::withMessages(['discount_value' => __('common.error_discount_value')]);
         }
 
         $codeString = strtoupper(trim((string) ($data['code'] ?? '')));
         if ($codeString === '') {
-            throw ValidationException::withMessages(['code' => 'Code is required.']);
+            throw ValidationException::withMessages(['code' => __('common.error_discount_code_required')]);
         }
         $exists = DiscountCode::query()
             ->where('code', $codeString)
             ->when($code, fn ($query) => $query->whereKeyNot($code->id))
             ->exists();
         if ($exists) {
-            throw ValidationException::withMessages(['code' => 'Code already exists.']);
+            throw ValidationException::withMessages(['code' => __('common.error_discount_code_exists')]);
         }
 
         $payload = [

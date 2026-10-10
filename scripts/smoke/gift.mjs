@@ -189,7 +189,7 @@ check('and shows no gift card code', !/AKG-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}/.
 const office = await signIn(ADMIN);
 await office.goto(`${BASE}/en/admin/commerce`, { waitUntil: 'networkidle' });
 const orders = office.locator('[data-testid="gift-card-orders"] tr', { hasText: RECIPIENT });
-check('the office sees the purchase, its buyer and its status', (await orders.count()) === 1 && /pending|failed/.test(await orders.innerText()), (await orders.count()) ? (await orders.innerText()).replace(/\s+/g, ' ') : 'no row for the order');
+check('the office sees the purchase, its buyer and its status', (await orders.count()) === 1 && /pending|failed/i.test(await orders.innerText()), (await orders.count()) ? (await orders.innerText()).replace(/\s+/g, ' ') : 'no row for the order');
 const csv = await office.request.get(`${BASE}/en/admin/commerce/gift-card-orders/export`);
 check('and can export the purchases', csv.status() === 200 && (await csv.text()).includes(RECIPIENT), `HTTP ${csv.status()}`);
 
