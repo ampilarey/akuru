@@ -167,6 +167,17 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ## Found by the registration language walk (2026-10-10)
 
+### The last page never says a payment is already waiting — **open (P3, for RG1c)**
+
+When a learner enrols in a course they already have a payment waiting
+for, `enroll()` sends them to the last page (`courses.register.complete`)
+with *You already have a payment waiting for this course. Please complete
+it below.* flashed as `info`. Neither that page nor the public layout
+prints `info`, so the learner lands on the page with no word of why. The
+message is in the `register` book since RG1b; showing it belongs to the
+last page's slice, RG1c. Found reading the details form's handlers
+(STATUS §5ra).
+
 ### The checkout's "use a code instead" never sends a code to a registered account — **open (P3, for SI1)**
 
 The checkout's code box posts to `courses.register.start`, which sends a

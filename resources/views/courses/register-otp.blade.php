@@ -14,8 +14,9 @@
                 @endif
             </p>
 
-            @if(session('success'))
-                <div class="mb-4 p-3 bg-green-100 text-green-800 rounded">{{ session('success') }}</div>
+            {{-- A code sent is flashed as success, which the layout shows (printed here too, it showed twice). A resume link lands with its welcome back as info, which the layout does not show, so the page does (slice RG1b). --}}
+            @if(session('info'))
+                <div class="mb-4 p-3 bg-blue-50 text-blue-800 rounded" role="status" data-testid="code-info">{{ session('info') }}</div>
             @endif
             @if($errors->any())
                 <div class="mb-4 p-3 bg-red-100 text-red-800 rounded">{{ $errors->first() }}</div>

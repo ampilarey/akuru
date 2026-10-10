@@ -4983,6 +4983,136 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ra. The course registration's details form and password page in Dhivehi and Arabic (C21 RG1b, 2026-10-10)
+
+The second of RG1's slices (§5qz). Past the code, a learner meets one of two
+pages, and both were English throughout under `/dv` and `/ar`:
+- **the details form** every registration ends on: who is enrolling (a parent
+  or the learner), a child's or their own details, a child's password, the
+  email for the receipt, the courses chosen and the terms;
+- **the password page**, where an account made for a contact (the old
+  contact form, or the checkout's *use a code instead*) gets its owner's
+  details and first password.
+
+What the server said on them was English too:
+- a session ended; a contact not verified; no course chosen;
+- the terms not accepted; an adult under eighteen;
+- an ID card already another learner's;
+- a course already enrolled in, with the enrolment's state;
+- a payment already waiting;
+- the account made;
+- the resume link sent, used or expired, and its welcome back.
+
+Reading the pages found four defects:
+- **A refusal on the password page came after the account was claimed.**
+  The claim spends the code, so after *you must be 18 or older* or *this ID
+  card belongs to…* the person was signed in, with the account already made,
+  in front of a form whose next send went back to the code page. A mistyped
+  year of birth could not be corrected.
+- **The resume link's welcome back was never shown.** Opening a resume link
+  lands on the code page with *Welcome back…* flashed as `info`. Neither the
+  page nor the layout prints `info`.
+- **The code page and the details form printed their messages twice.** The
+  layout shows every `success` flash, and each page printed it again: *a code
+  was sent* and *we sent a link*.
+- **Most of the two pages' fields had no name.** The details form's names,
+  date of birth, gender, child list, relationship, child's password and email
+  had labels that pointed at nothing, as did all of the password page's
+  fields. Its two *show the password* buttons had no name either.
+
+**The change:**
+- **The `register` book grows by 70 phrases** in three languages, for the
+  two pages and what the server says on them.
+  - A child in the parent's list is named with their age, counted in each
+    language (Arabic's one, two, three to ten, and eleven on).
+  - An enrolment's state is named by the page (*enrolment confirmed*,
+    *payment pending*, *waiting for the office to approve it*…), where it was
+    an English phrase or the raw status.
+  - A refusal that tells a parent which choice to make names it as the form
+    labels it: it said *select "Enroll existing child"*, an option the form
+    never had.
+- **The two pages read the book.** Every field is named by its label (an ID
+  number by its own name, where the document's legend heads the box). The
+  eye buttons are named and sit at the field's end, which is the left in
+  Dhivehi and Arabic. The terms sentence keeps its two links where the
+  language puts them, with no raw HTML. Old input printed into the details
+  form's script goes through `@js`.
+- **The password page refuses before the account is claimed.** The age and
+  ID card checks moved ahead of the claim, into one helper, so a refusal
+  leaves the code unspent and the form live. The claim and what follows are
+  unchanged.
+- **The code page shows `info`** (the resume link's welcome back) and leaves
+  `success` to the layout. The details form leaves its own to the layout too.
+
+**Left as it was:** the resume link's own SMS and email are English, as
+C20 decided for every notice (the account keeps no language to write them
+in). The last page's *a payment is already waiting* is translated but still
+never shown: the last page prints no `info`. KNOWN_ISSUES records it, for
+RG1c.
+
+**Tests:**
+- `CourseRegistrationDetailsSpeakThreeLanguagesTest` (new, 13 tests):
+  - no English of the pages' own on the two pages;
+  - every `register` key they name, in three languages;
+  - no English left in the ten methods behind them;
+  - every field named, and the script's old input through `@js`;
+  - in Dhivehi, over HTTP:
+    - the details form, with its fee and the terms' links in their places;
+    - a child named with their age in each language;
+    - the terms not accepted, an adult under eighteen, a course already
+      enrolled in (and confirmed), a child already enrolled (a payment
+      pending), and a new child's ID card already another learner's, with
+      the choice named as the form names it;
+    - every way a session ends behind the two pages;
+    - the password page, an age refused with nothing claimed and the code
+      unspent, then the corrected form making the account;
+    - an ID card refused there, before the claim;
+    - the resume link sent, refused for no course, refused when used, and
+      opened, its welcome back said once on the code page;
+    - a code sent, shown once;
+  - an enrolment's state in each language, for every state the office's
+    enrolment screens name.
+
+  Run over `main`'s copies of the pages and the controller, all 13 of its
+  tests fail, so it is not vacuous.
+
+The registration's own tests, the phrase books' rules and the
+architecture suite first failed one gate, `StatusValuesAreWritableTest`.
+The enrolment states listed in the controller named *completed* in a file
+that also reads registration flows, so the gate took a flow's
+never-written *completed* for reachable. The states are now looked up by
+name, and the gate and the new test pass.
+
+Whole suite locally: **3062 passed (63376 assertions)**.
+
+**Walks:**
+- **`register-language.mjs`** grows to 29 steps:
+  - logging in at the checkout under `/dv` lands on the details form: right
+    to left, nothing left in English either way of enrolling, every field
+    named;
+  - an adult under eighteen refused in Dhivehi, told to choose the parent's
+    way;
+  - the resume link sent, said in Dhivehi, once;
+  - *use a code instead* with a number nobody has: the code (read from the
+    log sender) leads to the password page, right to left, nothing in
+    English, every field named;
+  - a learner under eighteen refused there in Dhivehi; corrected and sent
+    again, the account is made and the next step says so in Dhivehi.
+
+  The planted account and the one made for the number are removed first and
+  last.
+
+  One of its first runs sent the code box empty: about one run in four
+  typed into it before the page's scripts had started (an RG1a step).
+  The walk now waits for them and reads the typed value back, and three
+  runs in a row passed 29/29.
+- The registration and the public site: `register.mjs` 15/15,
+  `signup.mjs` 17/17, `customer-sign-in.mjs` 9/9, `public-rtl.mjs` 90/90
+  and `site-pages-language.mjs` 75/75; and `rtl.mjs` 8/8, `nav.mjs` 14/14,
+  `mobile.mjs` 19/19 and `sweep.mjs` 25/25.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5qz. The course registration's first steps in Dhivehi and Arabic (C21 RG1a, 2026-10-10)
 
 The first of RG1's slices (§5qy). A visitor who opens a course's checkout

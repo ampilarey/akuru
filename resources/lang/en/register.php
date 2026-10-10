@@ -1,8 +1,9 @@
 <?php
 
-// The course registration (BACKLOG C21, slice RG1a): the checkout page every
-// course links to, the page a closed course shows, the code page, and what
-// the server says on them.
+// The course registration (BACKLOG C21): the checkout page every course links
+// to, the page a closed course shows and the code page (slice RG1a), the
+// details form and the password page (slice RG1b), and what the server says
+// on them.
 return [
     'money' => 'MVR :amount',
     'title' => 'Register for :course',
@@ -100,4 +101,80 @@ return [
     'flash_code_sent_phone' => 'A verification code was sent to your phone.',
     'flash_code_sent_email' => 'A verification code was sent to your email.',
     'flash_code_resent' => 'A new verification code has been sent.',
+
+    // The details form (slice RG1b): who is enrolling, their details, the terms.
+    'details_title' => 'Complete your enrollment',
+    'resume_intro' => 'Not finishing now? We can send you a link to come back to this form. It works once, for 24 hours.',
+    'resume_send' => 'Send me a link',
+    'how' => 'How would you like to enroll?',
+    'how_parent' => 'I am a parent or guardian enrolling my child',
+    'how_parent_hint' => "Add your child's details, or choose a child already added",
+    'how_adult' => 'I am 18 or older and enrolling myself',
+    'how_adult_hint' => 'Enter your own details',
+    'child_mode' => 'Your child',
+    'child_new' => 'Add a new child',
+    'child_existing' => 'Choose a child already added',
+    'child_choose' => 'Choose a child',
+    'child_age' => '{1} :name (1 year)|[0,*] :name (:age years)',
+    'id_card_format' => 'A letter, then digits (e.g. A123456)',
+    'relationship' => 'Relationship to the child',
+    'relationship_father' => 'Father',
+    'relationship_mother' => 'Mother',
+    'relationship_guardian' => 'Guardian',
+    'relationship_other' => 'Other',
+    'child_password_title' => "Your child's password",
+    'child_password_body' => 'Your child logs in with their ID card number and this password. If they forget it, the code to reset it goes to your mobile.',
+    'prefilled' => 'Your details are filled in from your profile. Please check them and confirm.',
+    'email_receipt' => 'Email address (optional — for your receipt)',
+    'email_saved' => 'Your email address is saved. Change it if you need to.',
+    'email_confirmation' => 'We send your enrollment confirmation here.',
+    'courses_chosen' => 'Courses chosen:',
+    'term_seats' => 'Enrollment depends on a seat being free and on the office approving it.',
+    'term_fees' => 'Course fees are not refunded unless Akuru Institute cancels the course.',
+    'term_attendance' => 'You must attend the required number of sessions to receive a certificate.',
+    'terms_agree' => 'I have read and agree to the :terms and the :refunds.',
+    'terms_link' => 'Terms & Conditions',
+    'refunds_link' => 'Refund Policy',
+    'confirm_enrollment' => 'Confirm enrollment',
+    'pay_next' => "Next you go to the bank's page to pay.",
+    'continue' => 'Continue',
+    'one_code_next' => "We send one code to your phone to confirm it's you.",
+
+    // The password page (slice RG1b): an account made for a contact gets its details and first password.
+    'step_verify' => 'Verify',
+    'step_profile' => 'Your profile',
+    'step_enroll' => 'Enroll',
+    'profile_title' => 'Complete your profile',
+    'profile_intro' => 'Fill in your details to create your account.',
+    'show_password' => 'Show the password',
+    'create_account' => 'Create my account and continue',
+
+    // What the server says on them.
+    'error_code_first' => 'Please enter the verification code first.',
+    'error_verify_first' => 'Please verify your mobile number or email first.',
+    'error_no_course' => 'No course is chosen. Please start your registration from a course page.',
+    'error_terms' => 'Please accept the Terms & Conditions to continue.',
+    'error_adult_self' => 'You must be 18 or older to enroll yourself. To enroll a child, choose ":option".',
+    'error_adult_password' => 'You must be 18 or older to enroll yourself. A child is enrolled by a parent or guardian, from the course page.',
+    'error_already_enrolled' => 'You are already enrolled in ":course" (:status).',
+    'error_child_enrolled' => ':name is already enrolled in ":course" (:status).',
+    'error_id_enrolled' => 'This :id belongs to :name, who is already enrolled in ":course" (:status).',
+    'error_id_log_in' => 'This :id is already registered to :name. Please log in to that account instead.',
+    'error_id_your_child' => 'This :id is already registered to :name. If this is your child, choose ":option" and pick them from the list.',
+    'id_card_label' => 'ID card :number',
+    'passport_label' => 'passport :number',
+    'this_course' => 'this course',
+    'this_learner' => 'This learner',
+    'status_active' => 'enrollment confirmed',
+    'status_payment_pending' => 'payment pending',
+    'status_pending' => 'waiting for the office to approve it',
+    'status_approved' => 'approved',
+    'status_suspended' => 'suspended',
+    'status_completed' => 'completed',
+    'status_cancelled' => 'cancelled',
+    'info_payment_waiting' => 'You already have a payment waiting for this course. Please complete it below.',
+    'flash_account_ready' => 'Your account is created. Please read the terms, then send your code to confirm your enrollment.',
+    'flash_link_sent' => 'We sent a link to :contact. Open it any time in the next 24 hours to finish; it works once and asks you for a code.',
+    'error_link_used' => 'This link has already been used or has expired. Please start again from the course page.',
+    'flash_welcome_back' => 'Welcome back. Enter the code we just sent to continue your registration.',
 ];
