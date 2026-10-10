@@ -395,4 +395,7 @@ return [
     'error_discount_value' => 'ޑިސްކައުންޓުގެ މިންވަރު ރަނގަޅެއް ނޫން.',
     'error_discount_code_required' => 'ކޯޑެއް ބޭނުންވޭ.',
     'error_discount_code_exists' => 'މި ކޯޑު ކުރިން ވެސް އެބަހުރި.',
+
+    // SH1 (BACKLOG C21): a scoped discount code's refusal, in the page's language
+    'error_discount_status' => 'ކޯޑުގެ ހާލަތު ރަނގަޅެއް ނޫން.',
 ];

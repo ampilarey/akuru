@@ -1928,7 +1928,7 @@ return [
     'customer_joined' => 'انضم :date',
     'customer_sms_on' => 'يتلقى عروض الرسائل',
     'customer_sms_off' => 'لا يتلقى عروض الرسائل',
-    'customer_tags_hint' => 'مفصولة بفواصل، مثل: school, wholesale',
+    'customer_tags_hint' => 'مفصولة بفواصل، مثل: مدرسة، جملة',
     'customer_save_tags' => 'احفظ الوسوم',
     'customer_tags_saved' => 'حُفظت الوسوم.',
     'customer_notes' => 'الملاحظات',
@@ -2019,4 +2019,10 @@ return [
     'notice_preorder_released_body' => 'الطلب :number متاح الآن؛ والمتجر يجهزه لك.',
     'notice_preorder_vendor_title' => 'يمكن إرسال الطلب المسبق :number',
     'notice_preorder_vendor_body' => 'حان تاريخ إصدار الطلب :number. جهّزه وأرسله.',
+
+    // SH1 (BACKLOG C21): the office's ID card links on a seller's application, and the seller portal's gate, in the page's language
+    'application_id_front' => 'وجه بطاقة الهوية',
+    'application_id_back' => 'ظهر بطاقة الهوية',
+    'error_not_a_member' => 'لستَ عضوًا في أي متجر في مكتبة أكورو.',
+    'error_agreement_first' => 'وافق على اتفاقية البائع أولًا.',
 ];

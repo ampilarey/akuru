@@ -359,7 +359,7 @@ export default function VendorStorefront({ t, vendor, designer, preview_url, pub
                             <Field label={t.map_url} hint={t.map_url_hint}><input className="form-input w-full" value={form.data.contact.map_url} onChange={(e) => form.setData('contact', { ...form.data.contact, map_url: e.target.value })} /></Field>
                             <Field label={t.opening_hours} className="md:col-span-3"><textarea className="form-input w-full" rows={2} value={form.data.hours} onChange={(e) => form.setData('hours', e.target.value)} /></Field>
                             {d.options.socials.map((n) => (
-                                <Field key={n} label={t[`social_${n}`]}><input className="form-input w-full" placeholder="https://" aria-label="https://" value={form.data.socials[n]} onChange={(e) => form.setData('socials', { ...form.data.socials, [n]: e.target.value })} data-testid={`social-${n}`} /></Field>
+                                <Field key={n} label={t[`social_${n}`]}><input className="form-input w-full" placeholder="https://" value={form.data.socials[n]} onChange={(e) => form.setData('socials', { ...form.data.socials, [n]: e.target.value })} data-testid={`social-${n}`} /></Field>
                             ))}
                         </div>
                     </Fold>

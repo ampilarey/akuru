@@ -395,4 +395,7 @@ return [
     'error_discount_value' => 'قيمة الخصم غير صالحة.',
     'error_discount_code_required' => 'الرمز مطلوب.',
     'error_discount_code_exists' => 'هذا الرمز موجود من قبل.',
+
+    // SH1 (BACKLOG C21): a scoped discount code's refusal, in the page's language
+    'error_discount_status' => 'حالة الرمز غير صالحة.',
 ];
