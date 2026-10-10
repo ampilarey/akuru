@@ -23,18 +23,18 @@ class SaveEmergencyContactAction
         $phone = trim((string) ($data['phone'] ?? ''));
 
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'A contact needs a name.']);
+            throw ValidationException::withMessages(['name' => __('people.error_contact_name')]);
         }
 
         if ($phone === '') {
-            throw ValidationException::withMessages(['phone' => 'A contact needs a phone number.']);
+            throw ValidationException::withMessages(['phone' => __('people.error_contact_phone')]);
         }
 
         if ($contact !== null && (int) $contact->student_id !== $studentId) {
             // Editing one child's contact through another child's page would
             // rewrite the wrong family's details.
             throw ValidationException::withMessages([
-                'name' => 'That contact belongs to a different student.',
+                'name' => __('people.error_contact_other_student'),
             ]);
         }
 

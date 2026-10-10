@@ -144,15 +144,15 @@ class SaveStudentAction
     private function assertOptionalFks(array $payload): void
     {
         if (($payload['school_id'] ?? null) !== null && ! DB::table('schools')->where('id', $payload['school_id'])->exists()) {
-            throw ValidationException::withMessages(['school_id' => 'School not found.']);
+            throw ValidationException::withMessages(['school_id' => __('people.error_school_missing')]);
         }
 
         if (($payload['class_id'] ?? null) !== null && ! DB::table('classes')->where('id', $payload['class_id'])->exists()) {
-            throw ValidationException::withMessages(['class_id' => 'Class not found.']);
+            throw ValidationException::withMessages(['class_id' => __('people.error_class_missing')]);
         }
 
         if (($payload['user_id'] ?? null) !== null && ! DB::table('users')->where('id', $payload['user_id'])->exists()) {
-            throw ValidationException::withMessages(['user_id' => 'User not found.']);
+            throw ValidationException::withMessages(['user_id' => __('people.error_user_missing')]);
         }
     }
 
@@ -176,7 +176,7 @@ class SaveStudentAction
 
         $yearId = DB::table('classes')->where('id', $classId)->value('academic_year_id');
         if ($yearId === null) {
-            throw ValidationException::withMessages(['class_id' => 'Class has no academic year.']);
+            throw ValidationException::withMessages(['class_id' => __('people.error_class_no_year')]);
         }
 
         $now = now();

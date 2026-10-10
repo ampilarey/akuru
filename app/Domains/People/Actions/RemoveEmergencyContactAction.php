@@ -17,7 +17,7 @@ class RemoveEmergencyContactAction
     {
         if ((int) $contact->student_id !== $studentId) {
             throw ValidationException::withMessages([
-                'contact' => 'That contact belongs to a different student.',
+                'contact' => __('people.error_contact_other_student'),
             ]);
         }
 

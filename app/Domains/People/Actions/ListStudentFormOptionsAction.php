@@ -7,6 +7,7 @@ use App\Domains\People\Enums\GuardianRelationship;
 use App\Domains\People\Enums\GuardianVerificationStatus;
 use App\Domains\People\Enums\StudentStatus;
 use App\Domains\People\Models\ParentGuardian;
+use App\Domains\People\Models\Student;
 use Illuminate\Support\Facades\DB;
 
 class ListStudentFormOptionsAction
@@ -52,5 +53,24 @@ class ListStudentFormOptionsAction
                 GuardianVerificationStatus::cases(),
             ),
         ];
+    }
+
+    /**
+     * The guardians who can be linked to a pupil: those on file and not
+     * linked to them yet. Every guardian was offered, and attaching one
+     * already linked was a 500 page (slice PE1).
+     *
+     * @return list<array{id: int, name: string}>
+     */
+    public function guardiansNotLinkedTo(Student $student): array
+    {
+        return ParentGuardian::query()
+            ->whereNotIn('id', $student->guardians()->pluck('parent_guardians.id'))
+            ->orderBy('last_name')
+            ->orderBy('first_name')
+            ->get(['id', 'first_name', 'last_name'])
+            ->map(fn (ParentGuardian $guardian) => ['id' => (int) $guardian->id, 'name' => $guardian->full_name])
+            ->values()
+            ->all();
     }
 }

@@ -6,7 +6,7 @@ use App\Domains\People\Enums\GuardianRelationship;
 use App\Domains\People\Enums\GuardianVerificationStatus;
 use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
-use InvalidArgumentException;
+use Illuminate\Validation\ValidationException;
 
 class AttachGuardianAction
 {
@@ -37,8 +37,11 @@ class AttachGuardianAction
             ? $relationship
             : GuardianRelationship::from($relationship);
 
+        // A refusal the form can say, in the page's language: it was an
+        // InvalidArgumentException, so attaching a guardian already linked
+        // was a 500 page (slice PE1).
         if ($student->guardians()->where('parent_guardians.id', $guardian->id)->exists()) {
-            throw new InvalidArgumentException('Guardian is already attached to this student.');
+            throw ValidationException::withMessages(['guardian_id' => __('people.error_guardian_already_linked')]);
         }
 
         $student->guardians()->attach($guardian->id, [

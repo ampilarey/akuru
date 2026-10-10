@@ -38,15 +38,15 @@ class SaveCustomFieldValuesAction
             $key = 'field_'.$definition->id;
 
             $rules[$key] = $this->rulesFor($definition);
-            $messages[$key.'.required'] = $definition->localizedLabel().' is required.';
-            $messages[$key.'.in'] = $definition->localizedLabel().' must be one of the allowed options.';
-            $messages[$key.'.min'] = $definition->localizedLabel().' is required.';
+            $messages[$key.'.required'] = __('people.error_field_required', ['field' => $definition->localizedLabel()]);
+            $messages[$key.'.in'] = __('people.error_field_option', ['field' => $definition->localizedLabel()]);
+            $messages[$key.'.min'] = __('people.error_field_required', ['field' => $definition->localizedLabel()]);
 
             if ($definition->field_type === CustomFieldType::Multiselect) {
                 $options = $definition->optionValues();
                 if ($options !== []) {
                     $rules[$key.'.*'] = ['string', 'in:'.implode(',', $options)];
-                    $messages[$key.'.*.in'] = $definition->localizedLabel().' must be one of the allowed options.';
+                    $messages[$key.'.*.in'] = __('people.error_field_option', ['field' => $definition->localizedLabel()]);
                 }
             }
         }

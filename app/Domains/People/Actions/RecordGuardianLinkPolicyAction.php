@@ -46,7 +46,7 @@ class RecordGuardianLinkPolicyAction
 
         if ($link === null) {
             throw ValidationException::withMessages([
-                'guardian' => ['That guardian is not linked to this student.'],
+                'guardian' => [__('people.error_guardian_not_linked')],
             ]);
         }
 
@@ -126,7 +126,7 @@ class RecordGuardianLinkPolicyAction
 
         if ($status === null) {
             throw ValidationException::withMessages([
-                'consent_status' => ['Consent must be one of: '.$this->values(GuardianConsentStatus::cases()).'.'],
+                'consent_status' => [__('people.error_consent_status', ['values' => $this->values(GuardianConsentStatus::cases())])],
             ]);
         }
 
@@ -139,7 +139,7 @@ class RecordGuardianLinkPolicyAction
 
         if ($status === null) {
             throw ValidationException::withMessages([
-                'verification_status' => ['Verification must be one of: '.$this->values(GuardianVerificationStatus::cases()).'.'],
+                'verification_status' => [__('people.error_verification_status', ['values' => $this->values(GuardianVerificationStatus::cases())])],
             ]);
         }
 
