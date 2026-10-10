@@ -385,4 +385,14 @@ return [
     'payment_error_unavailable' => 'خدمة الدفع غير متاحة الآن. حُفظ تسجيلك. تواصل معنا لإتمام الدفع، أو حاول لاحقاً.',
     'payment_error_duplicate' => 'قد يكون هذا الرقم أو الحساب مرتبطاً بدفعة سابقة. استخدم رقم هاتف آخر، أو تواصل معنا لإتمام الدفع.',
     'payment_error_failed_saved' => 'تعذّر بدء الدفع. حُفظ تسجيلك. تواصل معنا أو حاول لاحقاً.',
+
+    // CO1 (BACKLOG C21): the Commerce office's refusals — issuing a gift card, deactivating one, saving a discount code — in the page's language
+    'gift_card_error_issue_amount' => 'يجب أن يكون مبلغ بطاقة الهدية أكبر من صفر.',
+    'gift_card_error_reason' => 'اذكر سبب تعطيل البطاقة.',
+    'gift_card_error_no_such_card' => 'لا توجد بطاقة هدية كهذه.',
+    'gift_card_error_nothing_left' => 'لا تُعطَّل إلا بطاقة ما زال عليها رصيد.',
+    'error_discount_type' => 'نوع الخصم غير صالح.',
+    'error_discount_value' => 'قيمة الخصم غير صالحة.',
+    'error_discount_code_required' => 'الرمز مطلوب.',
+    'error_discount_code_exists' => 'هذا الرمز موجود من قبل.',
 ];

@@ -24,16 +24,16 @@ class DeactivateGiftCardAction
     {
         $reason = trim($reason);
         if ($reason === '') {
-            throw ValidationException::withMessages(['reason' => 'Say why the card is being deactivated.']);
+            throw ValidationException::withMessages(['reason' => __('common.gift_card_error_reason')]);
         }
 
         return DB::transaction(function () use ($giftCardId, $actorUserId, $reason) {
             $card = GiftCard::query()->whereKey($giftCardId)->lockForUpdate()->first();
             if ($card === null) {
-                throw ValidationException::withMessages(['gift_card' => 'No such gift card.']);
+                throw ValidationException::withMessages(['gift_card' => __('common.gift_card_error_no_such_card')]);
             }
             if (! in_array($card->status?->value, ['active', 'partially_used'], true)) {
-                throw ValidationException::withMessages(['gift_card' => 'Only a card with money still on it can be deactivated.']);
+                throw ValidationException::withMessages(['gift_card' => __('common.gift_card_error_nothing_left')]);
             }
 
             GiftCardTransaction::query()->create([

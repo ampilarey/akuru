@@ -21,7 +21,7 @@ class IssueGiftCardAction
     {
         $amount = (float) ($data['amount'] ?? 0);
         if ($amount <= 0) {
-            throw ValidationException::withMessages(['amount' => 'Gift card amount must be positive.']);
+            throw ValidationException::withMessages(['amount' => __('common.gift_card_error_issue_amount')]);
         }
 
         $plain = 'AKG-'.strtoupper(Str::random(4).'-'.Str::random(4).'-'.Str::random(4));
