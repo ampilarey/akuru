@@ -819,7 +819,7 @@ class CourseRegistrationController extends PublicRegistrationController
     public function enrollOtpForm(Request $request): View|RedirectResponse
     {
         if (! session('enroll_pending_course_ids')) {
-            return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_session_restart'));
         }
 
         $user = $request->user();
@@ -847,7 +847,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
         $maskedContact = $contact
             ? $this->maskContact($contact->type, $contact->value)
-            : 'your contact';
+            : __('register.your_contact');
 
         // Pre-compute masked values for all contacts so the view doesn't need controller methods
         $contactsForDisplay = $availableContacts->map(fn ($c) => (object) [
@@ -871,23 +871,23 @@ class CourseRegistrationController extends PublicRegistrationController
             'otp_code' => ['required', 'string', 'size:6'],
             'terms_accepted' => ['accepted'],
         ], [
-            'terms_accepted.accepted' => 'You must accept the Terms & Conditions to continue.',
+            'terms_accepted.accepted' => __('register.error_terms'),
         ]);
 
         if (! session('enroll_pending_course_ids')) {
-            return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_session_restart'));
         }
 
         // OTP verification is always required
         $contactId = session('enroll_otp_contact_id');
         if (! $contactId) {
             return redirect()->route('public.courses.index')
-                ->with('error', 'Session expired. Please start the enrollment again.');
+                ->with('error', __('register.error_session_restart'));
         }
         $contact = \App\Domains\Identity\Models\UserContact::find($contactId);
         if (! $contact) {
             return redirect()->route('public.courses.index')
-                ->with('error', 'Verification contact not found. Please start again.');
+                ->with('error', __('register.error_contact_missing'));
         }
         try {
             $this->otpService->verify($contact, 'login', $request->otp_code);
@@ -897,7 +897,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
         $user = $request->user();
         if (! $user) {
-            return redirect()->route('public.courses.index')->with('error', 'Session expired.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_session'));
         }
 
         return $this->processEnrollmentFromSession($user);
@@ -927,7 +927,7 @@ class CourseRegistrationController extends PublicRegistrationController
         // Session expired — redirect to enrollment form, not homepage
         if (! $contactId) {
             return redirect()->route('courses.register.continue')
-                ->with('error', 'Your session expired. Please fill in the enrollment form again.');
+                ->with('error', __('register.error_session_form'));
         }
 
         $contact = \App\Domains\Identity\Models\UserContact::find($contactId);
@@ -935,7 +935,7 @@ class CourseRegistrationController extends PublicRegistrationController
             $this->clearEnrollPendingSession();
 
             return redirect()->route('courses.register.continue')
-                ->with('error', 'Could not find your verification contact. Please start the enrollment again.');
+                ->with('error', __('register.error_contact_missing'));
         }
 
         try {
@@ -948,10 +948,9 @@ class CourseRegistrationController extends PublicRegistrationController
         $isResend = session('enroll_otp_sent_before');
         session(['enroll_otp_sent_before' => true]);
 
-        $contactLabel = $contact->type === 'email' ? 'email' : 'mobile';
         $msg = $isResend
-            ? "New OTP sent to your {$contactLabel}."
-            : "OTP sent to your {$contactLabel}. Enter it below.";
+            ? __('register.flash_code_resent')
+            : __($contact->type === 'email' ? 'register.flash_code_sent_email' : 'register.flash_code_sent_phone');
 
         return redirect()->route('courses.register.enroll.otp')->with('success', $msg);
     }
@@ -1005,20 +1004,20 @@ class CourseRegistrationController extends PublicRegistrationController
 
             return redirect()->route('courses.register.enroll.otp')
                 ->withErrors($e->errors())
-                ->with('info', 'A new OTP has been sent to your mobile. Please enter it below.');
+                ->with('info', __('register.flash_new_code_below'));
         }
 
         if (empty($result->createdEnrollments) && ! $result->hasPaymentsPending()) {
             $this->clearEnrollPendingSession();
             $this->clearPendingSession();
 
-            $msg = 'You are already enrolled in the selected course(s).';
+            $msg = __('register.error_already_enrolled_any');
             if (! empty($result->existingEnrollments)) {
                 $e = $result->existingEnrollments[0];
                 $e->loadMissing('course');
                 $courseTitle = $e->course?->title ?? '';
                 $status = $this->humanEnrollmentStatus($e);
-                $msg = $courseTitle ? "You are already enrolled in \"{$courseTitle}\" — {$status}." : "You are already enrolled — {$status}.";
+                $msg = $courseTitle ? __('register.error_already_enrolled', ['course' => $courseTitle, 'status' => $status]) : __('register.error_already_enrolled_status', ['status' => $status]);
             }
 
             return redirect()->route('my.enrollments')->with('info', $msg);
@@ -1061,7 +1060,7 @@ class CourseRegistrationController extends PublicRegistrationController
             session(['pending_payment_ref' => $payment->merchant_reference]);
 
             return redirect()->route('courses.register.complete')
-                ->with('error', 'Your enrollment request was received but we could not connect to the payment gateway right now. Please use the "Proceed to payment" button below to complete your payment.');
+                ->with('error', __('register.error_gateway', ['button' => __('register.proceed_to_payment')]));
         }
 
         $this->clearEnrollPendingSession();
@@ -1120,7 +1119,7 @@ class CourseRegistrationController extends PublicRegistrationController
         $paymentRef = session('pending_payment_ref');
 
         if (! $enrollments && ! $paymentRef) {
-            return redirect()->route('public.courses.index')->with('error', 'No enrollment data found.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_no_enrollment'));
         }
 
         $enrollments = $enrollments ?? [];
@@ -1145,7 +1144,8 @@ class CourseRegistrationController extends PublicRegistrationController
             'enrollments' => collect($enrollments)->unique('id')->values(),
             'paymentRef' => $paymentRef,
             'paymentIdForStatus' => $paymentIdForStatus,
-            'paymentError' => session('error'),
+            // Pulled, not read: the page says it with its button, and the layout would say it again (slice RG1c).
+            'paymentError' => session()->pull('error'),
             'showProceedToPayment' => $showProceedToPayment,
         ]);
     }
@@ -1298,7 +1298,7 @@ class CourseRegistrationController extends PublicRegistrationController
     {
         $user = $request->user();
         if (! $user) {
-            return redirect()->route('public.courses.index')->with('error', 'Please log in to retry payment.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_login_to_pay'));
         }
 
         $ref = $request->query('ref');
@@ -1322,13 +1322,13 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         if (! $payment) {
-            return redirect()->route('public.courses.index')->with('error', 'Payment not found.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_payment_missing'));
         }
 
         // If already confirmed, go straight to complete
         if ($payment->isConfirmed()) {
             return redirect()->route('courses.register.complete')
-                ->with('success', 'Your payment is already confirmed!');
+                ->with('success', __('register.flash_already_paid'));
         }
 
         // For failed/expired payments, try to re-initiate
@@ -1342,7 +1342,7 @@ class CourseRegistrationController extends PublicRegistrationController
             return redirect()->away($init->redirectUrl);
         }
 
-        $error = $init->error ?? 'Payment initiation failed.';
+        $error = $init->error ?? __('register.error_payment_start');
 
         return redirect()->route('public.courses.index')->with('error', $error);
     }

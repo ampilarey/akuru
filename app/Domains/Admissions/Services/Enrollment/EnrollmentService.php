@@ -32,7 +32,7 @@ class EnrollmentService
         $dob = \Carbon\Carbon::parse($studentData['dob']);
         if ($dob->age < 18) {
             throw ValidationException::withMessages([
-                'dob' => ['You must be 18 or older to enroll yourself. Please use the parent/guardian flow.'],
+                'dob' => [__('register.error_adult_password')],
             ]);
         }
 
@@ -164,7 +164,7 @@ class EnrollmentService
 
         if ($student === null) {
             throw ValidationException::withMessages([
-                'student' => ['You are not authorized to enroll this student.'],
+                'student' => [__('register.error_not_your_learner')],
             ]);
         }
 
@@ -195,7 +195,7 @@ class EnrollmentService
                 // Check seat availability before enrolling
                 if ($course->isFull()) {
                     throw ValidationException::withMessages([
-                        'course' => ["\"{$course->title}\" is fully booked. No seats are available."],
+                        'course' => [__('register.error_full', ['course' => $course->title])],
                     ]);
                 }
 
@@ -369,7 +369,7 @@ class EnrollmentService
     {
         if (! $user->hasVerifiedContact()) {
             throw ValidationException::withMessages([
-                'contact' => ['Please verify your contact before enrolling.'],
+                'contact' => [__('register.error_verify_first')],
             ]);
         }
     }

@@ -30,7 +30,7 @@ class EnrollAdultRequest extends FormRequest
         $validator->after(function ($validator) {
             $dob = $this->input('dob');
             if ($dob && Carbon::parse($dob)->age < 18) {
-                $validator->errors()->add('dob', 'You must be 18 or older to enroll yourself.');
+                $validator->errors()->add('dob', __('register.error_adult_password'));
             }
         });
     }
