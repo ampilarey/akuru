@@ -165,6 +165,18 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the promotions language walk (2026-10-10)
+
+### A campaign ended before it starts reads its window backwards — **open (P4)**
+
+Ending a campaign that has not started yet (`EndPromotionCampaignAction`)
+moves its end to now, which is before its start, so the office's list
+reads *starts 2027-10-10, ends 2026-10-11*, and so does the CSV. Nothing
+else is wrong: an ended campaign offers nothing, and its redemptions keep
+their terms. The fix is the office's choice of words, not the data's:
+say *ended before it started* for such a row, or keep its end at its start.
+Found by `promotions-language.mjs` (STATUS §5qy).
+
 ## Found by the Bookstore's language walk (2026-10-10)
 
 ### A customer's tags typed in Dhivehi were saved as one — **fixed (2026-10-10, STATUS §5qw)**

@@ -4983,6 +4983,142 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qy. The Library office's promotion campaigns in Dhivehi and Arabic (C21 PC1, 2026-10-10)
+
+The twenty-fourth slice of BACKLOG C21, and the one SH1 found reading the
+server's side (§5qw). The promotions page (`/admin/library/promotions`)
+already read the `admin` book, but what the server said about a campaign
+did not:
+- **The refusals were English.** Starting a campaign with no name, one that
+  ends before it starts, or one taking more than a hundred per cent off was
+  refused in English on a Dhivehi page. So were the refusals only a
+  hand-made post can reach: an unknown kind of discount, funder or target,
+  and a target with no id.
+- **Laravel's own refusals named the fields by their codes.** A campaign
+  with no name read *name ބޭނުންވޭ*, and a banner too large named
+  *banner*.
+- **End's refusal was said nowhere.** End is a button, not a form, and the
+  page kept no place for what came back. A campaign already ended from a
+  tab opened before was refused with nothing on the page.
+
+Reading the page in Dhivehi with a campaign planted for it found two more:
+- **An amount and its cap were put together in English.** A campaign
+  twenty per cent off, at most 30, read *20% (max MVR 30)*, and a card
+  bonus *bonus from MVR 500*.
+- **A target no longer listed was printed as its code.** A campaign on an
+  item since taken off sale, or a writer or category since closed, read
+  *library_item #12*.
+
+**The change:**
+- **The `common` book grows by 7 phrases**, the campaign actions'
+  refusals, beside the Commerce refusals CO1 put there (the actions are
+  Commerce's; the Library office is their caller). A percentage over a
+  hundred reuses CO1's *Invalid discount value.* The funder's refusal names
+  the three funders in words, where it named them as codes (*shared, akuru
+  or writer*).
+- **The `admin` book grows by 17 phrases:**
+  - an amount in rufiyaa, its cap, and a target no longer listed, named by
+    its kind (an item, a writer or a category);
+  - the form's eleven fields, as Laravel's refusals name them.
+
+  A card bonus's minimum is said whole (*500 rufiyaa or more*), where
+  *from* was put before the amount.
+- **The page:**
+  - End says its refusal under the campaign's row, with
+    `useRowRefusals` as the Commerce office does;
+  - the form keeps its own refusals, and no row takes them;
+  - the list puts an amount, a cap and a minimum in the page's language;
+  - a target no longer listed is named by its kind and number.
+- **The page's Arabic spells the rufiyaa as the books' other 62 phrases
+  do** (روفية): four of its phrases spelled it روفيا. The three left with
+  that spelling are other pages' (the Institute's today card and two lines
+  of the public offers page).
+
+**Found, left for later:** ending a campaign that has not started yet
+moves its end to now, before its start, so its window reads backwards
+(*starts 2027-10-10, ends 2026-10-11*). It is harmless — an ended campaign
+offers nothing, and its redemptions keep their terms — and KNOWN_ISSUES
+records it.
+
+**The rest of C21, read again:** the refusal rule run over every file
+under `app/` reads 263 lines in 82 files as English once this slice's are
+gone, and the public site's Blade rule run over every view reads 780
+strings in 77 views. Most are no page's:
+- console commands, logs, a service's own errors and the ledgers'
+  append-only guards;
+- the notifications' own words, which C20 left in English, and the emails
+  (about 100 strings), which follow the same decision;
+- the policy pages (48), the owner's to write;
+- the developer's test pages (84), on no menu.
+
+What a person meets, BACKLOG C21 now lists as its next slices, in the
+order they meet it:
+- **RG1**, the course registration and its checkout: seven Blade pages no
+  slice has read (222 strings) and 58 messages. Two or three slices.
+- **SI1**, signing in and resetting a password by code: the Blade pages
+  (42) and 36 messages.
+- **PY1**, the payment pages (71).
+- **WB1**, the website's public forms and its office (39 messages).
+- **TS1**, the teachers' substitution requests (16 strings, 16 messages)
+  and the registers' last 3.
+- **MD1**, an upload refused (8, which every upload form shares).
+- **DOC2**, the certificates and the ID card (23).
+- Then the offices' remainder, a word or three left on fifteen public
+  pages, and the old Blade screens still running (analytics, the Qur'an
+  progress pages, e-learning, the old layouts: 142). Those may be retired
+  rather than translated, an IA decision of its own.
+
+**Tests:**
+- `PromotionCampaignsSpeakThreeLanguagesTest` (new) checks:
+  - every phrase on the page in three languages, with no English text or
+    attribute, every field named, and every `router` post saying its
+    refusal under a row;
+  - no amount or cap put together in English, and no target printed as its
+    code;
+  - each kind of target, each funder and each state named in three
+    languages, and an amount, a cap, a minimum and an unlisted target said
+    whole in each;
+  - no English left in what the controller and the two actions say, and
+    every key they name in Dhivehi and Arabic;
+  - in Dhivehi, over HTTP: a campaign with no name (Laravel's refusal, the
+    field named in Dhivehi), one ending before it starts and one over a
+    hundred per cent refused, none of them started; one started and ended,
+    told so in Dhivehi; and End pressed again refused in Dhivehi. The
+    action's other refusals, called directly, in Dhivehi.
+
+  Run over `main`'s copies of the page, the books, the controller and the
+  actions, all four tests fail, so they are not vacuous.
+
+The tests for the areas it touches: the new test, the phrase books' rules,
+`NoPageIsLeftInEnglishTest`, the promotions, banner and gift-card bonus
+tests, and the Library and Commerce offices' language tests: **30 passed
+(2535 assertions)**.
+
+Whole suite locally, after the walks: **3041 passed (62652 assertions)**.
+
+**Walks:**
+- **`promotions-language.mjs`** (new), 15 steps, passed on its first run:
+  - The system admin opens the promotions page under `/dv` and `/ar`: right
+    to left, nothing left in English, every field named. A campaign planted
+    for the walk, twenty per cent off at most 30 on an item no longer
+    listed, reads its cap and the item's kind in Dhivehi.
+  - In Dhivehi, a campaign ending before it starts, one taking more than a
+    hundred per cent off, and one with no name are each refused under the
+    form, the last by Laravel with the field named; none is started.
+  - One is started, told in Dhivehi, its row naming its state, discount,
+    funder and cover; then ended, told in Dhivehi, its End gone; and End
+    pressed again on a page opened before is refused under its row.
+  - Every campaign the walk starts or plants begins a year from now, so none
+    reaches a price, and all are removed first and last.
+- The pages that read the same books: `library-office-language.mjs` 41/41,
+  `library-public-language.mjs` 81/81 (the public offers page) and
+  `commerce-language.mjs` 15/15 (the `common` book's Commerce refusals).
+- The office and everywhere: `admin.mjs` 43/43 (the promotions page and its
+  CSV), `admin-mobile.mjs` 13/13, `phone-targets.mjs` 5/5, `rtl.mjs` 8/8,
+  `nav.mjs` 14/14, `mobile.mjs` 19/19 and `sweep.mjs` 25/25.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5qx. The shop walk follows a shop page's own menu (walk health WH3, 2026-10-10)
 
 Found walking SH1 (§5qw): `shop.mjs` stopped at 54 of its steps, on `main`

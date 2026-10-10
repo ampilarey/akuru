@@ -398,4 +398,13 @@ return [
 
     // SH1 (BACKLOG C21): a scoped discount code's refusal, in the page's language
     'error_discount_status' => 'ކޯޑުގެ ހާލަތު ރަނގަޅެއް ނޫން.',
+
+    // PC1 (BACKLOG C21): a promotion campaign's refusals — starting one, ending one — in the page's language
+    'campaign_error_name' => 'ކިޔުންތެރިންނަށް ފެންނާނެ ނަމެއް ކެމްޕެއިނަށް ދީބައްލަވާ.',
+    'campaign_error_type' => 'ކެމްޕެއިނަކުން އުނިކުރެވޭނީ އިންސައްތައަކުން ނުވަތަ ކަނޑައެޅިފައިވާ އަދަދަކުން.',
+    'campaign_error_ends' => 'ކެމްޕެއިން ނިމެން ޖެހޭނީ ފެށުމަށް ފަހުގައި.',
+    'campaign_error_funding' => 'ޑިސްކައުންޓުގެ ޚަރަދު ކުރާނެ ފަރާތް ހޮވާ: ބަހާލައިގެން، އަކުރު ނުވަތަ ލިޔުންތެރިޔާ.',
+    'campaign_error_target' => 'ކެމްޕެއިނެއްގައި ":type" ނުހިމެނޭނެ.',
+    'campaign_error_target_id' => 'ކެމްޕެއިނުގައި ހިމެނޭ ކޮންމެ ބައެއް، ލިޔުންތެރިއެއް ނުވަތަ ލިޔުމެއް ލިސްޓުން ހޮވާ.',
+    'campaign_error_already_ended' => 'މި ކެމްޕެއިން ވަނީ ކުރިން ނިމިފައި.',
 ];

@@ -16,7 +16,7 @@ class EndPromotionCampaignAction
     {
         $campaign = PromotionCampaign::query()->whereKey($campaignId)->firstOrFail();
         if ($campaign->status === 'ended') {
-            throw ValidationException::withMessages(['campaign' => 'This campaign has already ended.']);
+            throw ValidationException::withMessages(['campaign' => __('common.campaign_error_already_ended')]);
         }
 
         $campaign->fill([

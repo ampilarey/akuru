@@ -50,7 +50,7 @@ class AdminLibraryPromotionsController extends Controller
             'targets.*.id' => 'nullable|integer',
             // B4c: the offer's picture; the action sniffs the type again.
             'banner' => 'nullable|image|mimes:jpeg,png,webp|max:4096',
-        ]);
+        ], [], $this->fieldNames());
 
         app(SavePromotionCampaignAction::class)->execute($data, (int) $request->user()->id, $request->file('banner'));
 
@@ -82,5 +82,32 @@ class AdminLibraryPromotionsController extends Controller
             }
             fclose($out);
         }, 'library-promotions.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * The fields the form posts, named for Laravel's own refusals in the
+     * page's language: a campaign with no name reads *ނަން* where it read
+     * *name*, a picture too large *ބެނަރ ފޮޓޯ* (slice PC1).
+     *
+     * @return array<string, string>
+     */
+    private function fieldNames(): array
+    {
+        return [
+            'name' => __('admin.library_promotions_attr_name'),
+            'description' => __('admin.library_promotions_attr_description'),
+            'starts_at' => __('admin.library_promotions_attr_starts_at'),
+            'ends_at' => __('admin.library_promotions_attr_ends_at'),
+            'discount_type' => __('admin.library_promotions_attr_discount_type'),
+            'discount_value' => __('admin.library_promotions_attr_discount_value'),
+            'max_discount_amount' => __('admin.library_promotions_attr_max_discount_amount'),
+            'minimum_amount' => __('admin.library_promotions_attr_minimum_amount'),
+            'funding_source' => __('admin.library_promotions_attr_funding_source'),
+            // What it covers: the list, and each category, writer or item in it.
+            'targets' => __('admin.library_promotions_attr_targets'),
+            'targets.*.type' => __('admin.library_promotions_attr_targets'),
+            'targets.*.id' => __('admin.library_promotions_attr_targets'),
+            'banner' => __('admin.library_promotions_attr_banner'),
+        ];
     }
 }
