@@ -146,6 +146,33 @@ async function settles(page, needle, ms = 6000) {
 
 const hrefs = async (page) => page.$$eval('a', (as) => as.map((a) => a.getAttribute('href') || ''));
 
+const TZ = process.env.SMOKE_TZ ?? 'Indian/Maldives';
+const isoDate = (date = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
+
+// The last day the teacher's timetable has lessons on, today first, asked of
+// their registers page rather than assumed from the calendar (STATUS §5qe).
+// The smoke school's timetable runs Monday to Friday where the Maldives'
+// week runs Sunday to Thursday, and a walk that assumed either went red two
+// days a week. A register planted with no period (`portal-language`'s
+// homework, two days back) is not a lesson, and is not the one walked.
+const pageProps = (page) => page.evaluate(() => JSON.parse(document.querySelector('script[data-page="app"]')?.textContent || '{}').props || {});
+async function lastTeachingDay(page) {
+    for (let back = 0; back < 7; back++) {
+        const day = isoDate(new Date(Date.now() - back * 86400000));
+        await page.goto(`${BASE}/en/academics/registers/today?date=${day}`, { waitUntil: 'networkidle' });
+        const { registers = [], empty = null } = await pageProps(page);
+        if (registers.some((register) => register.period_name) || empty?.can_generate) {
+            return day;
+        }
+    }
+    return isoDate();
+}
+// The lessons on the teacher's registers page, as the links it shows.
+async function lessonLinks(page) {
+    const lessons = new Set(((await pageProps(page)).registers || []).filter((register) => register.period_name).map((register) => String(register.id)));
+    return [...new Set((await hrefs(page)).filter((href) => lessons.has(href.match(/\/academics\/registers\/(\d+)$/)?.[1])))];
+}
+
 // ---------------------------------------------------------------- the pupil
 
 const student = await signIn(STUDENT);
@@ -159,13 +186,11 @@ check('the pupil has a name', NAME.length > 0, NAME || 'no h2 on /portal/perform
 // 1. homework, in the register — the only place it is written
 const teacher = await signIn(TEACHER);
 check('the teacher signs in', !teacher.url().includes('/login'), teacher.url());
-// The school week is Sunday to Thursday: on a Friday or a Saturday in the
-// Maldives there is no register for today by design, and this walk went red
-// every weekend (STATUS §5nv). It takes the last school day instead — the
-// page and its generate button both take a date.
-let schoolDay = new Date(new Date().toLocaleString('en-US', { timeZone: 'Indian/Maldives' }));
-while ([5, 6].includes(schoolDay.getDay())) schoolDay = new Date(schoolDay.getTime() - 86400000);
-const DATE = `${schoolDay.getFullYear()}-${String(schoolDay.getMonth() + 1).padStart(2, '0')}-${String(schoolDay.getDate()).padStart(2, '0')}`;
+// On a day with no lessons there is no register for today by design, and
+// this walk went red every weekend (STATUS §5nv). It takes the last day the
+// teacher has lessons on instead; the page and its generate button both
+// take a date (STATUS §5qe).
+const DATE = await lastTeachingDay(teacher);
 const REGISTERS = `${BASE}/en/academics/registers/today?date=${DATE}`;
 await teacher.goto(REGISTERS, { waitUntil: 'networkidle' });
 const generate = teacher.locator('button:has-text("Generate my registers")').first();
@@ -179,7 +204,7 @@ if (await generate.count()) {
 // than by taking the first link: the teacher may have several classes today.
 let registerUrl = null;
 let CLASS = '';
-for (const href of [...new Set((await hrefs(teacher)).filter((h) => /\/academics\/registers\/\d+$/.test(h)))]) {
+for (const href of await lessonLinks(teacher)) {
     await teacher.goto(new URL(href, BASE).href, { waitUntil: 'networkidle' });
     if ((await teacher.locator('tr', { hasText: NAME }).count()) > 0) {
         registerUrl = teacher.url();
