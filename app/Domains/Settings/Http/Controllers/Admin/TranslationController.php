@@ -8,6 +8,7 @@ use App\Domains\Settings\Actions\SuggestTranslationAction;
 use App\Http\Controllers\Controller;
 use App\Support\Contracts\MachineTranslatorInterface;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use App\Support\Translation\NullMachineTranslator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
@@ -34,6 +35,7 @@ class TranslationController extends Controller
                 max(1, (int) $request->query('page', 1)),
             ),
             'suggest_available' => ! (app(MachineTranslatorInterface::class) instanceof NullMachineTranslator),
+            't' => Phrases::once('admin'),
         ]);
     }
 

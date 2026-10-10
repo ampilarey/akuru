@@ -19,7 +19,7 @@ class ToggleOperatorCheckAction
     {
         // The feature list keeps its own log (`RecordFeatureTestAction`).
         if (! in_array($itemKey, ListOperatorChecklistAction::itemKeys(), true)) {
-            throw ValidationException::withMessages(['item' => 'Unknown checklist item.']);
+            throw ValidationException::withMessages(['item' => __('admin.error_checklist_item')]);
         }
 
         $existing = OperatorCheck::query()->where('item_key', $itemKey)->first();

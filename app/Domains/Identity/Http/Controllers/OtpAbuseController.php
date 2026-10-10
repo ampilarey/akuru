@@ -5,6 +5,7 @@ namespace App\Domains\Identity\Http\Controllers;
 use App\Domains\Identity\Actions\ListOtpAbuseEventsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,7 +22,7 @@ class OtpAbuseController extends Controller
 {
     public function index(Request $request, ListOtpAbuseEventsAction $list): Response
     {
-        return Inertia::render('Identity/OtpAbuse', $list->execute((int) $request->input('days', 7)));
+        return Inertia::render('Identity/OtpAbuse', [...$list->execute((int) $request->input('days', 7)), 't' => Phrases::once('admin')]);
     }
 
     public function export(Request $request, ListOtpAbuseEventsAction $list): StreamedResponse
