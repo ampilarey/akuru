@@ -174,13 +174,13 @@ Arabic keyboard types `،`. *ސްކޫލް، ހޯލްސޭލް* was saved as a sin
 a filter by either word found nobody. The box now splits on both commas,
 and its hint gives its examples in the page's language.
 
-### `shop.mjs` stops on a shop's own page — **open (walk health WH3)**
+### `shop.mjs` stopped on a shop's own page — **fixed (2026-10-10, STATUS §5qx)**
 
-After "a shop in the list opens its own page" the walk clicks the page's
-*Shops* link and times out after 30 seconds: 54 of 55 steps, on `main` and
-on SH1's branch alike. Whether the link is hidden (behind a menu) or gone
-is the next walk-health slice's to find, and then to fix the page or the
-walk.
+After "a shop in the list opens its own page" the walk clicked the store
+index's *Shops* chip and timed out: 54 steps, on `main` and on SH1's branch
+alike. The walk was stale, not the page. Since §5nh (2026-10-02) a shop's
+page has its own menu, and its way back to every shop is *All of Akuru
+Bookstore*. The walk now clicks that, and runs its 80 steps.
 
 ---
 

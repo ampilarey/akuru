@@ -4983,6 +4983,36 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qx. The shop walk follows a shop page's own menu (walk health WH3, 2026-10-10)
+
+Found walking SH1 (§5qw): `shop.mjs` stopped at 54 of its steps, on `main`
+and on SH1's branch alike. On a shop's own page it clicked the store index's
+*Shops* chip (`shop-link-shops`) to go back to every shop, and timed out.
+
+The page was right and the walk was stale. Since §5nh (2026-10-02) a shop's
+page has its own menu, not the store's chips. `ShopLayoutTest` already holds
+that the page has no `shop-link-shops`. The menu's way back to every shop is
+*All of Akuru Bookstore* (`vendor-menu-store`, to `/shop#shops`). §5nh
+changed the walk's phone step and left this one, so every step after it had
+not run since.
+
+**The change:** the walk clicks *All of Akuru Bookstore*, and says so.
+
+**Walks:** `shop.mjs` **80/80**. The 25 steps that had not run since
+2026-10-02 pass too:
+- the shop owners' way in;
+- a shop's own footer, and the store's full one;
+- the store's and a shop's tabs on a phone, the categories sheet, and the
+  deals;
+- the store's front: its hero card, category tiles and folded filters;
+- a shop's card and its one-row phone menu;
+- the filters on a phone;
+- a page that does not run sideways.
+
+**Tests:** no application code changed. Whole suite locally: **3037 passed (62119 assertions)**.
+
+**Deploy:** nothing to deploy — a walk and the documents.
+
 ## 5qw. The Bookstore's last English words, and a rule for every page (C21 SH1, 2026-10-10)
 
 The twenty-third slice of BACKLOG C21, and the one CO1 found (§5qv). The
