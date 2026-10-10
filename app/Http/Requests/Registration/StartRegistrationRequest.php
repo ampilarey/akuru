@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Registration;
 
+use App\Domains\Courses\Models\Course;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StartRegistrationRequest extends FormRequest
@@ -31,15 +32,21 @@ class StartRegistrationRequest extends FormRequest
             $type = $this->input('contact_type');
             $value = $this->input('contact_value');
 
+            // A closed course's old register form still posts here; nothing is started for it (slice RG1a).
+            $course = $this->filled('course_id') ? Course::query()->find((int) $this->input('course_id')) : null;
+            if ($course !== null && ! $course->is_enrollment_open) {
+                $validator->errors()->add('course_id', __('register.error_closed'));
+            }
+
             if (! empty($value)) {
                 if ($type === 'mobile') {
                     $digits = preg_replace('/\D/', '', $value);
                     if (strlen($digits) < 7) {
-                        $validator->errors()->add('contact_value', 'Please enter a valid phone number.');
+                        $validator->errors()->add('contact_value', __('register.error_phone'));
                     }
                 } elseif ($type === 'email') {
                     if (! filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                        $validator->errors()->add('contact_value', 'Please enter a valid email address.');
+                        $validator->errors()->add('contact_value', __('register.error_email'));
                     }
                 }
             }
