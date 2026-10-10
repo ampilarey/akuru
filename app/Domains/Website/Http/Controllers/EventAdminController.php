@@ -13,6 +13,7 @@ use App\Domains\Website\Actions\SaveEventAction;
 use App\Domains\Website\Models\Event;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -32,6 +33,10 @@ class EventAdminController extends Controller
             'types' => ['conference', 'workshop', 'seminar', 'competition', 'celebration', 'meeting', 'other'],
             'statuses' => ['draft', 'published', 'cancelled', 'completed'],
             'registrationTypes' => ['none', 'required', 'optional'],
+            // The list reads for a year and a state, and the CSV with it: the
+            // server took both and the screen offered neither.
+            'filters' => $request->only(['academic_year_id', 'status']),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -40,7 +45,7 @@ class EventAdminController extends Controller
         abort_unless($request->user()?->can('events.manage'), 403);
         app(SaveEventAction::class)->execute($this->eventPayload($request));
 
-        return redirect()->route('academics.events.index')->with('success', 'Event saved.');
+        return redirect()->route('academics.events.index')->with('success', __('academics.flash_event_saved'));
     }
 
     public function update(Request $request, Event $event): RedirectResponse
@@ -48,7 +53,7 @@ class EventAdminController extends Controller
         abort_unless($request->user()?->can('events.manage'), 403);
         app(SaveEventAction::class)->execute($this->eventPayload($request), $event);
 
-        return redirect()->route('academics.events.show', $event)->with('success', 'Event updated.');
+        return redirect()->route('academics.events.show', $event)->with('success', __('academics.flash_event_updated'));
     }
 
     public function show(Request $request, Event $event): Response
@@ -68,6 +73,7 @@ class EventAdminController extends Controller
             'statuses' => ['draft', 'published', 'cancelled', 'completed'],
             'registrationTypes' => ['none', 'required', 'optional'],
             'years' => app(ListAcademicYearsAction::class)->execute()->values(),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -87,7 +93,7 @@ class EventAdminController extends Controller
             'parent_user_id' => null,
         ]);
 
-        return redirect()->route('academics.events.show', $event)->with('success', 'Registration saved.');
+        return redirect()->route('academics.events.show', $event)->with('success', __('academics.flash_event_registration_saved'));
     }
 
     public function confirm(Request $request, Event $event, int $registration): RedirectResponse
@@ -95,7 +101,7 @@ class EventAdminController extends Controller
         abort_unless($request->user()?->can('events.manage'), 403);
         app(ConfirmEventRegistrationAction::class)->execute($registration);
 
-        return redirect()->route('academics.events.show', $event)->with('success', 'Registration confirmed.');
+        return redirect()->route('academics.events.show', $event)->with('success', __('academics.flash_event_registration_confirmed'));
     }
 
     public function secondRound(Request $request, Event $event): RedirectResponse
@@ -105,7 +111,7 @@ class EventAdminController extends Controller
 
         return redirect()
             ->route('academics.events.show', $event)
-            ->with('success', 'Second round opened. Promoted '.$result['promoted'].' waitlisted registration(s).');
+            ->with('success', __('academics.flash_event_second_round', ['count' => $result['promoted']]));
     }
 
     public function export(Request $request): StreamedResponse

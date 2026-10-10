@@ -3,7 +3,7 @@
  * C21: slice OA1, the registers and attendance, STATUS §5qd; slice OA2, the
  * school's structure and time, STATUS §5qf; slice OA3, teaching, STATUS
  * §5qh; slice OA4, the gate, pick-up, lost property and requests, STATUS
- * §5qi.)
+ * §5qi; slice SE1, the sign-up forms and the events, STATUS §5qr.)
  *
  * The seeded teacher opens today's registers, one of their registers and
  * daily attendance; the dean opens the unfilled registers, the attendance
@@ -14,7 +14,8 @@
  * teacher's materials, plans, behaviour records and meetings, and the office's
  * meetings, noticeboard and pupils' work; and the gate with its cards and
  * their printed sheet, pick-up, lost property and requests (the teacher's
- * and the office's) — under /dv and /ar. The walk lists what is still in Latin
+ * and the office's); and the sign-up forms and a form's results, and the
+ * events and an event — under /dv and /ar. The walk lists what is still in Latin
  * letters in each page's main: every text node, placeholder, aria-label,
  * title and phone caption (`data-label`). What a page shows of its data (a
  * pupil's name, a subject, a reason the office typed, the code it was given)
@@ -42,7 +43,22 @@
  *   - the dean asks for meeting slots 200 minutes long and is refused beside
  *     the minutes, in Dhivehi; nothing is made;
  *   - the dean types a code that is no gate card at the gate and is refused,
- *     in red, in Dhivehi; nothing is recorded.
+ *     in red, in Dhivehi; nothing is recorded;
+ *   - the dean saves a form with a blank question and is refused under the
+ *     question, the question named in Dhivehi (it read *question ބޭނުންވޭ*),
+ *     and no form is made; with the question it is saved, said in Dhivehi,
+ *     and listed as open; its results read in Dhivehi and Arabic, and Close
+ *     closes it, said in Dhivehi;
+ *   - the dean creates an event with no place and is refused beside the
+ *     place, in Dhivehi; with one it is made, said in Dhivehi, and listed by
+ *     its Dhivehi title; a second with the same English title is made too
+ *     (it was refused, keyed to an address the form has no box for, and said
+ *     nowhere); the list read for its drafts carries the state in the address
+ *     and names it on every row;
+ *   - on the event, the second round says what it did, in Dhivehi; a pupil is
+ *     registered, said in Dhivehi; and a Confirm on a page left open while
+ *     the registration was confirmed elsewhere is refused under its row, in
+ *     Dhivehi — a refused Confirm was said nowhere — and nothing changes.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/office-language.mjs
@@ -72,6 +88,9 @@ const CODE_KEYS = new Set([
     // OA4: a movement's direction and where a pupil is now, and the English
     // labels the server still sends beside them for an old page.
     'direction', 'current', 'direction_label', 'source_label',
+    // SE1: a question's type, an event's kind of registration, and the codes
+    // the events list was read for.
+    'fieldTypes', 'registrationTypes', 'registration_type', 'filters',
 ]);
 // Props that are a list of codes when they are a list of strings — a
 // calendar day's or a room's types, the timetable's days — and the school's
@@ -208,6 +227,10 @@ const screens = [
     ['/academics/found-items', dean],
     ['/academics/requests', dean],
     ['/academics/requests', teacher],
+    // SE1. A form's results and the office's own event are read below, once
+    // the walk has made them.
+    ['/forms', dean],
+    ['/academics/events', dean],
 ];
 
 for (const locale of ['dv', 'ar']) {
@@ -338,6 +361,138 @@ const notACard = (await dean.getByTestId('flash-error').textContent({ timeout: 1
 await dean.goto(`${BASE}/dv/academics/gate`, { waitUntil: 'networkidle' });
 const recordedAfter = ((await props(dean)).movements || []).length;
 check('a code that is no gate card is refused, in red, in Dhivehi, and nothing is recorded', notACard === gateBook.error_gate_not_a_card && recordedAfter === recordedBefore, `said: ${notACard ?? 'nothing'}; movements ${recordedBefore} → ${recordedAfter}`);
+
+// ------------------------------------- SE1: a sign-up form, refused, saved, closed
+
+async function readScreen(viewer, locale, path) {
+    const label = `${locale}${path} (the dean)`;
+    const response = await viewer.goto(`${BASE}/${locale}${path}`, { waitUntil: 'networkidle' });
+    if (!response || response.status() >= 400 || new URL(viewer.url()).pathname !== `/${locale}${path.split('?')[0]}`) {
+        check(`${label}: the page opens`, false, `HTTP ${response?.status()} ${viewer.url().replace(BASE, '')}`);
+        return;
+    }
+    const found = await readMain(viewer);
+    const left = english(found.texts, authorsWords(await props(viewer)));
+    check(`${label}: right to left`, found.dir === 'rtl', `dir=${found.dir}`);
+    check(`${label}: nothing left in English`, left.length === 0, left.slice(0, 6).join(' | '));
+    check(`${label}: every field is named`, found.unnamed.length === 0, found.unnamed.slice(0, 3).join(' | '));
+}
+const dvSays = (key, args = '[]') => tinker(`echo __('${key}', ${args}, 'dv');`);
+const toldInDhivehi = (page, key, args) => page.getByText(dvSays(key, args), { exact: true }).first().waitFor({ timeout: 10000 }).then(() => true).catch(() => false);
+const countRows = (table, where) => Number(tinker(`echo DB::table('${table}')${where}->count();`));
+
+// The walk's own form and events from an earlier run.
+tinker("DB::table('forms')->where('title', 'SMOKE-Lang-Form')->delete(); $ids = DB::table('events')->where('title', 'SMOKE-Lang-Office-Event')->pluck('id'); DB::table('event_registrations')->whereIn('event_id', $ids)->delete(); DB::table('events')->whereIn('id', $ids)->delete(); echo 'ok';");
+
+await dean.goto(`${BASE}/dv/forms`, { waitUntil: 'networkidle' });
+const formsBook = (await props(dean)).t ?? {};
+await dean.getByRole('button', { name: formsBook.forms_new, exact: true }).click();
+const composer = dean.locator('form').filter({ has: dean.getByRole('button', { name: formsBook.forms_save, exact: true }) }).first();
+await composer.locator('label', { hasText: formsBook.col_title }).locator('input').fill('SMOKE-Lang-Form');
+await composer.getByRole('button', { name: formsBook.forms_save, exact: true }).click();
+const blankQuestion = (await composer.locator('span.text-red-600').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+const wantBlank = tinker("echo __('validation.required', ['attribute' => __('academics.attr_question', [], 'dv')], 'dv');");
+check('a form with a blank question is refused under the question, named in Dhivehi; no form is made', blankQuestion === wantBlank && countRows('forms', "->where('title', 'SMOKE-Lang-Form')") === 0, `said: ${blankQuestion ?? 'nothing'} (want ${wantBlank})`);
+
+await composer.getByLabel(formsBook.forms_question, { exact: true }).first().fill('ދަރިވަރު ދަތުރަށް ދާނެތަ؟');
+await composer.getByLabel(formsBook.forms_question_type, { exact: true }).first().selectOption('yes_no');
+await composer.getByRole('button', { name: formsBook.forms_save, exact: true }).click();
+const formSaved = await toldInDhivehi(dean, 'academics.flash_form_saved');
+const formRow = dean.locator('li', { hasText: 'SMOKE-Lang-Form' }).first();
+const formState = formSaved ? (await formRow.locator('span.uppercase').textContent().catch(() => ''))?.trim() : '';
+check('with the question the form is saved, said in Dhivehi, and listed as open in Dhivehi', formSaved && formState === formsBook.forms_state_open, `told: ${formSaved}; listed: ${formState || 'nothing'}`);
+
+const formId = tinker("echo (int) DB::table('forms')->where('title', 'SMOKE-Lang-Form')->value('id');");
+if (Number(formId) > 0) {
+    for (const locale of ['dv', 'ar']) {
+        await readScreen(dean, locale, `/forms/${formId}/results`);
+    }
+    await dean.goto(`${BASE}/dv/forms/${formId}/results`, { waitUntil: 'networkidle' });
+    await dean.getByRole('button', { name: formsBook.results_close_now, exact: true }).click();
+    const closed = await toldInDhivehi(dean, 'academics.flash_form_updated');
+    const stillOpen = tinker(`echo (int) (App\\Domains\\Forms\\Models\\Form::query()->find(${formId})?->isOpen() ?? 0);`);
+    check('Close sign-up now closes the form, said in Dhivehi', closed && stillOpen === '0', `told: ${closed}; open: ${stillOpen}`);
+}
+
+// ------------------------------------- SE1: an event, refused, made twice, read for a state
+
+await dean.goto(`${BASE}/dv/academics/events`, { waitUntil: 'networkidle' });
+const eventsBook = (await props(dean)).t ?? {};
+const eventForm = dean.locator('form').filter({ has: dean.getByRole('button', { name: eventsBook.events_create_button, exact: true }) }).first();
+const inTwoWeeks = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10);
+await eventForm.locator('label', { hasText: eventsBook.title_en }).locator('input').fill('SMOKE-Lang-Office-Event');
+await eventForm.locator('label', { hasText: eventsBook.title_dv }).locator('input').fill('ސްމޯކް ހަރަކާތް');
+await eventForm.locator('label', { hasText: eventsBook.start }).locator('input').fill(`${inTwoWeeks}T09:00`);
+await eventForm.locator('label', { hasText: eventsBook.status }).locator('select').selectOption('published');
+const eventsBefore = countRows('events', "->where('title', 'SMOKE-Lang-Office-Event')");
+await eventForm.getByRole('button', { name: eventsBook.events_create_button, exact: true }).click();
+const noPlace = (await eventForm.locator('label', { hasText: eventsBook.events_location }).locator('span.text-red-600').textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+const wantPlace = tinker("echo __('validation.required', ['attribute' => __('validation.attributes.location', [], 'dv')], 'dv');");
+check('an event with no place is refused beside the place, in Dhivehi; none is made', noPlace === wantPlace && countRows('events', "->where('title', 'SMOKE-Lang-Office-Event')") === eventsBefore, `said: ${noPlace ?? 'nothing'} (want ${wantPlace})`);
+
+await eventForm.locator('label', { hasText: eventsBook.events_location }).locator('input').fill('ހޯލު');
+await eventForm.getByRole('button', { name: eventsBook.events_create_button, exact: true }).click();
+const eventMade = await toldInDhivehi(dean, 'academics.flash_event_saved');
+const listedByDhivehi = await dean.locator('tbody tr', { hasText: 'ސްމޯކް ހަރަކާތް' }).first().waitFor({ timeout: 10000 }).then(() => true).catch(() => false);
+check('with a place the event is made, said in Dhivehi, and listed by its Dhivehi title', eventMade && listedByDhivehi, `told: ${eventMade}; listed: ${listedByDhivehi}`);
+
+// Next year's, with the same English title.
+await dean.goto(`${BASE}/dv/academics/events`, { waitUntil: 'networkidle' });
+const nextYear = new Date(Date.now() + 380 * 86400000).toISOString().slice(0, 10);
+await eventForm.locator('label', { hasText: eventsBook.title_en }).locator('input').fill('SMOKE-Lang-Office-Event');
+await eventForm.locator('label', { hasText: eventsBook.title_dv }).locator('input').fill('ސްމޯކް ހަރަކާތް');
+await eventForm.locator('label', { hasText: eventsBook.events_location }).locator('input').fill('ހޯލު');
+await eventForm.locator('label', { hasText: eventsBook.start }).locator('input').fill(`${nextYear}T09:00`);
+await eventForm.locator('label', { hasText: eventsBook.status }).locator('select').selectOption('draft');
+await eventForm.getByRole('button', { name: eventsBook.events_create_button, exact: true }).click();
+const secondMade = await toldInDhivehi(dean, 'academics.flash_event_saved');
+const slugs = tinker("echo DB::table('events')->where('title', 'SMOKE-Lang-Office-Event')->orderBy('id')->pluck('slug')->implode(',');");
+check('a second event with the same English title is made too, with its own address', secondMade && slugs === 'smoke-lang-office-event,smoke-lang-office-event-2', `told: ${secondMade}; addresses: ${slugs}`);
+
+// The list, read for its drafts.
+await dean.goto(`${BASE}/dv/academics/events`, { waitUntil: 'networkidle' });
+await dean.locator('form').first().locator('label', { hasText: eventsBook.status }).locator('select').selectOption('draft');
+await dean.getByRole('button', { name: eventsBook.events_filter, exact: true }).click();
+await dean.waitForURL((url) => url.searchParams.get('status') === 'draft', { timeout: 10000 }).catch(() => {});
+const states = (await dean.locator('tbody tr td:first-child p.text-xs').allTextContents()).map((cell) => cell.split('·')[0].trim());
+check('the events list reads for its drafts: the address carries the state, and every row names it', new URL(dean.url()).searchParams.get('status') === 'draft' && states.length >= 1 && states.every((state) => state === eventsBook.event_status_draft), `${dean.url().replace(BASE, '')} · ${states.slice(0, 4).join(' | ')}`);
+
+// ------------------------------------- SE1: on the event — the second round, a registration, a stale Confirm
+
+const eventId = tinker("echo (int) DB::table('events')->where('slug', 'smoke-lang-office-event')->value('id');");
+const pupilForEvent = tinker("echo (int) DB::table('students')->where('user_id', DB::table('users')->where('email', 'student@akuru.edu.mv')->value('id'))->value('id');");
+if (Number(eventId) > 0 && Number(pupilForEvent) > 0) {
+    tinker(`DB::table('events')->where('id', ${eventId})->update(['requires_parent_confirmation' => 1]); echo 'ok';`);
+    await dean.goto(`${BASE}/dv/academics/events/${eventId}`, { waitUntil: 'networkidle' });
+    await dean.getByRole('button', { name: eventsBook.events_second_round, exact: true }).click();
+    const secondRound = await toldInDhivehi(dean, 'academics.flash_event_second_round', "['count' => 0]");
+    check('opening the second round says what it did, in Dhivehi', secondRound, `told: ${secondRound}`);
+
+    await dean.locator('label', { hasText: eventsBook.events_register_student }).locator('select').selectOption(String(pupilForEvent));
+    await dean.getByRole('button', { name: eventsBook.events_register, exact: true }).click();
+    const registered = await toldInDhivehi(dean, 'academics.flash_event_registration_saved');
+    check('a pupil is registered, said in Dhivehi, waiting for a parent', registered && tinker(`echo DB::table('event_registrations')->where('event_id', ${eventId})->value('status');`) === 'pending_parent', `told: ${registered}`);
+
+    // Somebody confirms it elsewhere while this page is open.
+    await dean.goto(`${BASE}/dv/academics/events/${eventId}`, { waitUntil: 'networkidle' });
+    tinker(`DB::table('event_registrations')->where('event_id', ${eventId})->update(['status' => 'confirmed']); echo 'ok';`);
+    // The row is found by the pupil: once the page knows the registration is
+    // confirmed, its Confirm is gone, and the refusal is said under it.
+    const registeredName = ((await props(dean)).registrations || [])[0]?.student_name ?? '';
+    const row = dean.locator('tbody tr', { hasText: registeredName }).first();
+    const offered = registeredName ? await row.getByRole('button', { name: eventsBook.events_confirm, exact: true }).count() : 0;
+    if (offered > 0) {
+        await row.getByRole('button', { name: eventsBook.events_confirm, exact: true }).click();
+    }
+    const refusedConfirm = offered > 0 ? (await row.locator('ul.text-red-600').textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null : 'no Confirm on the page';
+    check('a Confirm on a page left open while the registration was confirmed elsewhere is refused under its row, in Dhivehi', refusedConfirm === dvSays('portal.error_event_not_awaiting') && tinker(`echo DB::table('event_registrations')->where('event_id', ${eventId})->value('status');`) === 'confirmed', `said: ${refusedConfirm ?? 'nothing'}`);
+
+    for (const locale of ['dv', 'ar']) {
+        await readScreen(dean, locale, `/academics/events/${eventId}`);
+    }
+} else {
+    check('the office has its own event and a pupil to register', false, `event ${eventId}, pupil ${pupilForEvent} — seed first`);
+}
 
 await browser.close();
 

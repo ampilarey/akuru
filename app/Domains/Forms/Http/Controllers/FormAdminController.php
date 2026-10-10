@@ -9,6 +9,7 @@ use App\Domains\Forms\Enums\FormFieldType;
 use App\Domains\Forms\Models\Form;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -37,6 +38,7 @@ class FormAdminController extends Controller
             'fieldTypes' => array_map(fn (FormFieldType $t): string => $t->value, FormFieldType::cases()),
             // The classes a sheet may be aimed at (E6: "targeted at one class").
             'classes' => app(ListClassesForYearAction::class)->execute()->where('is_active', true)->values(),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -46,7 +48,7 @@ class FormAdminController extends Controller
 
         app(SaveFormAction::class)->execute($this->validated($request), (int) $request->user()->id);
 
-        return redirect()->route('forms.index')->with('success', 'Form saved.');
+        return redirect()->route('forms.index')->with('success', __('academics.flash_form_saved'));
     }
 
     public function update(Request $request, Form $form): RedirectResponse
@@ -55,14 +57,17 @@ class FormAdminController extends Controller
 
         app(SaveFormAction::class)->execute($this->validated($request), (int) $request->user()->id, $form);
 
-        return redirect()->route('forms.index')->with('success', 'Form updated.');
+        return redirect()->route('forms.index')->with('success', __('academics.flash_form_updated'));
     }
 
     public function results(Request $request, Form $form): Response
     {
         $this->authorizeManage($request);
 
-        return Inertia::render('Forms/Results', app(ListFormResponsesAction::class)->execute((int) $form->id));
+        return Inertia::render('Forms/Results', [
+            ...app(ListFormResponsesAction::class)->execute((int) $form->id),
+            't' => Phrases::once('academics'),
+        ]);
     }
 
     public function export(Request $request, Form $form): StreamedResponse
@@ -120,12 +125,16 @@ class FormAdminController extends Controller
         ], [], [
             // Without these a blank question reads "The fields.0.label field
             // is required." to a member of school staff. The rule is right;
-            // only the name it uses was written for a developer.
-            'fields.*.label' => 'question',
-            'fields.*.type' => 'question type',
-            'fields.*.options' => 'question options',
-            'fee_amount' => 'fee',
-            'requires_parent_confirmation' => 'parent confirmation',
+            // only the name it uses was written for a developer — and it was
+            // written in English, so a Dhivehi refusal read *question ބޭނުންވޭ*.
+            'fields.*.key' => __('academics.attr_question_key'),
+            'fields.*.label' => __('academics.attr_question'),
+            'fields.*.type' => __('academics.attr_question_type'),
+            'fields.*.options' => __('academics.attr_question_options'),
+            'fields.*.options.*' => __('academics.attr_question_option'),
+            'fields.*.required' => __('academics.attr_question_required'),
+            'fee_amount' => __('academics.attr_fee'),
+            'requires_parent_confirmation' => __('academics.attr_parent_confirmation'),
         ]);
     }
 

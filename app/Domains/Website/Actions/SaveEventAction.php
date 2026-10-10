@@ -16,34 +16,32 @@ class SaveEventAction
     {
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'Title is required.']);
+            throw ValidationException::withMessages(['title' => __('academics.error_event_title')]);
         }
 
         $location = trim((string) ($data['location'] ?? ''));
         if ($location === '') {
-            throw ValidationException::withMessages(['location' => 'Location is required.']);
+            throw ValidationException::withMessages(['location' => __('academics.error_event_location')]);
         }
 
         $start = $data['start_date'] ?? null;
         $end = $data['end_date'] ?? $start;
         if ($start === null || $start === '') {
-            throw ValidationException::withMessages(['start_date' => 'Start date is required.']);
+            throw ValidationException::withMessages(['start_date' => __('academics.error_event_start')]);
         }
 
         $slug = trim((string) ($data['slug'] ?? ''));
-        if ($slug === '') {
-            $slug = Str::slug($title);
-        }
-        if ($slug === '') {
-            $slug = 'event-'.Str::lower(Str::random(6));
+        $given = $slug !== '';
+        if (! $given) {
+            $slug = $this->slugFromTitle($title, $event);
         }
 
         $duplicate = Event::query()
             ->where('slug', $slug)
             ->when($event !== null, fn ($query) => $query->where('id', '!=', $event->id))
             ->exists();
-        if ($duplicate) {
-            throw ValidationException::withMessages(['slug' => 'An event with this slug already exists.']);
+        if ($given && $duplicate) {
+            throw ValidationException::withMessages(['slug' => __('academics.error_event_slug')]);
         }
 
         // Rendered raw at public/events/show.blade.php. (`requirements` is an
@@ -89,6 +87,34 @@ class SaveEventAction
         $event->save();
 
         return $event->refresh();
+    }
+
+    /**
+     * An address made from the title, free among the events: the title's own
+     * slug, or it with -2, -3 and so on after it. An event keeps the address
+     * it has while its title still makes it, so a link to it does not move
+     * on every save.
+     */
+    private function slugFromTitle(string $title, ?Event $event): string
+    {
+        $base = Str::slug($title);
+        if ($base === '') {
+            return $event?->slug ?: 'event-'.Str::lower(Str::random(6));
+        }
+        if ($event !== null && preg_match('/^'.preg_quote($base, '/').'(-\d+)?$/', (string) $event->slug) === 1) {
+            return (string) $event->slug;
+        }
+
+        $slug = $base;
+        $taken = fn (string $candidate): bool => Event::query()
+            ->where('slug', $candidate)
+            ->when($event !== null, fn ($query) => $query->where('id', '!=', $event->id))
+            ->exists();
+        for ($n = 2; $taken($slug); $n++) {
+            $slug = $base.'-'.$n;
+        }
+
+        return $slug;
     }
 
     private function nullableString(mixed $value): ?string

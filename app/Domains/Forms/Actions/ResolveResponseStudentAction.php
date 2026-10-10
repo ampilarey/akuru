@@ -42,7 +42,7 @@ class ResolveResponseStudentAction
             // own children.
             if (! app(GuardianCanAccessStudentAction::class)->execute($userId, $chosenStudentId)) {
                 throw ValidationException::withMessages([
-                    'student_id' => 'That is not your child.',
+                    'student_id' => __('portal.error_form_not_your_child'),
                 ]);
             }
 
@@ -55,7 +55,7 @@ class ResolveResponseStudentAction
 
         if (count($candidates) > 1) {
             throw ValidationException::withMessages([
-                'student_id' => 'Please say which child this is for.',
+                'student_id' => __('portal.error_form_which_child'),
             ]);
         }
 

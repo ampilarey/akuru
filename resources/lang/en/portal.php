@@ -576,4 +576,8 @@ return [
     'tile_materials' => 'Reusable library',
     'tile_plans' => 'Topics and adherence',
     'col_year' => 'Year',
+
+    // A family's form, what the server says (slice SE1).
+    'error_form_not_your_child' => 'That is not your child.',
+    'error_form_which_child' => 'Please say which child this is for.',
 ];
