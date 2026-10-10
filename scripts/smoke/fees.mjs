@@ -216,28 +216,30 @@ await structureForm.locator('input[placeholder="Amount"]').first().fill(AMOUNT);
 await structureForm.locator('input[placeholder="Due day"]').first().fill('');
 await structureForm.locator('button:has-text("Create structure")').click();
 check('an active structure is created for the class', await settles(admin, 'Fee structure saved.'), (await text(admin)).slice(0, 200));
-check('it is listed as active', /\bactive\b/.test(await rowText(admin, STRUCTURE)), await rowText(admin, STRUCTURE));
+// A structure's, an invoice's and a plan's state are named since slice FN1
+// (*Active*, *Draft*, *Sent*, *Completed*), and the runs counted in the singular.
+check('it is listed as active', /\bActive\b/.test(await rowText(admin, STRUCTURE)), await rowText(admin, STRUCTURE));
 
 // ----------------------------------------------------------- 2. the drafts
 
 await admin.goto(`${BASE}/en/finance/invoices`, { waitUntil: 'networkidle' });
 const generate = admin.locator('form', { hasText: 'Generate drafts' });
-await generate.locator('select').first().selectOption({ label: `${STRUCTURE} (active)` });
+await generate.locator('select').first().selectOption({ label: `${STRUCTURE} (Active)` });
 await generate.locator('input[type=date]').nth(0).fill(today);
 await generate.locator('input[type=date]').nth(1).fill(today);
 await generate.locator('button:has-text("Generate drafts")').click();
-check('one draft is generated for the class', await settles(admin, '1 draft invoices generated.'), (await text(admin)).slice(0, 160));
+check('one draft is generated for the class', await settles(admin, '1 draft invoice generated.'), (await text(admin)).slice(0, 160));
 
 // The invoice is found by the child's name and the walk's amount, never by a
 // hard-coded number: numbering is `INV-<structure>-<student>-<period>`, and
 // every one of those varies per host.
 const draftRow = await rowText(admin, CHILD);
 const INVOICE = draftRow.match(/INV-[\w-]+/)?.[0] ?? '';
-check('the draft is the structure\'s amount less the seeded 7.77% scholarship', INVOICE !== '' && draftRow.includes(TOTAL) && /\bdraft\b/.test(draftRow), draftRow);
+check('the draft is the structure\'s amount less the seeded 7.77% scholarship', INVOICE !== '' && draftRow.includes(TOTAL) && /\bDraft\b/.test(draftRow), draftRow);
 
 await admin.locator('button:has-text("Issue drafts")').click();
-check('the drafts are issued', await settles(admin, '1 invoices issued.'), (await text(admin)).slice(0, 160));
-check('the invoice is now sent', /\bsent\b/.test(await rowText(admin, INVOICE)), await rowText(admin, INVOICE));
+check('the drafts are issued', await settles(admin, '1 invoice issued.'), (await text(admin)).slice(0, 160));
+check('the invoice is now sent', /\bSent\b/.test(await rowText(admin, INVOICE)), await rowText(admin, INVOICE));
 
 await admin.goto(`${BASE}/en/finance/arrears`, { waitUntil: 'networkidle' });
 const arrears = await rowText(admin, INVOICE);
@@ -258,7 +260,8 @@ check('with a button to pay it in full (BML itself is not pressed)', (await pare
 
 await admin.goto(`${BASE}/en/finance/payment-plans`, { waitUntil: 'networkidle' });
 const planForm = admin.locator('form', { hasText: 'Create plan' });
-await planForm.locator('select').selectOption({ label: `${INVOICE} — ${TOTAL} due` });
+// An open invoice says whose it is since slice FN1 (*number — pupil — balance due*).
+await planForm.locator('select').selectOption(await planForm.locator('option', { hasText: INVOICE }).first().getAttribute('value'));
 await planForm.locator('input[placeholder="Installment 1 amount"]').fill(FIRST);
 await planForm.locator('input[type=date]').nth(0).fill(today);
 await planForm.locator('input[placeholder="Installment 2 amount"]').fill(SECOND);
@@ -310,7 +313,7 @@ if (await firstReceipt.count()) {
 check('the second installment is received by transfer', await receive(SECOND, 'transfer'), (await text(admin)).slice(0, 160));
 
 await admin.goto(`${BASE}/en/finance/payment-plans`, { waitUntil: 'networkidle' });
-check('the plan completes', /\bcompleted\b/.test(await rowText(admin, INVOICE)), await rowText(admin, INVOICE));
+check('the plan completes', /\bCompleted\b/.test(await rowText(admin, INVOICE)), await rowText(admin, INVOICE));
 
 await parent.goto(`${BASE}/en/portal/invoices`, { waitUntil: 'networkidle' });
 const settled = await rowText(parent, INVOICE);

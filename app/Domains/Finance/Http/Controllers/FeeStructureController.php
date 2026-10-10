@@ -14,6 +14,7 @@ use App\Domains\Finance\Enums\FeeStructureStatus;
 use App\Domains\Finance\Models\FeeStructure;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -38,6 +39,7 @@ class FeeStructureController extends Controller
             'appliesTo' => array_map(fn (FeeStructureAppliesTo $value) => $value->value, FeeStructureAppliesTo::cases()),
             'statuses' => array_map(fn (FeeStructureStatus $value) => $value->value, FeeStructureStatus::cases()),
             'frequencies' => array_map(fn (FeeFrequency $value) => $value->value, FeeFrequency::cases()),
+            't' => Phrases::once('finance'),
         ]);
     }
 
@@ -62,7 +64,7 @@ class FeeStructureController extends Controller
 
         return redirect()
             ->route('finance.fee-structures.index', ['academic_year_id' => $structure->academic_year_id])
-            ->with('success', 'Fee structure saved.');
+            ->with('success', __('finance.flash_structure_saved'));
     }
 
     public function update(Request $request, FeeStructure $feeStructure): RedirectResponse
@@ -86,7 +88,7 @@ class FeeStructureController extends Controller
 
         return redirect()
             ->route('finance.fee-structures.index', ['academic_year_id' => $structure->academic_year_id])
-            ->with('success', 'Fee structure updated.');
+            ->with('success', __('finance.flash_structure_updated'));
     }
 
     public function copyLastYear(Request $request): RedirectResponse
@@ -97,11 +99,11 @@ class FeeStructureController extends Controller
             'academic_year_id' => ['required', 'integer'],
         ]);
 
-        app(CopyFeeStructuresFromLastYearAction::class)->execute((int) $data['academic_year_id']);
+        $copies = app(CopyFeeStructuresFromLastYearAction::class)->execute((int) $data['academic_year_id']);
 
         return redirect()
             ->route('finance.fee-structures.index', ['academic_year_id' => $data['academic_year_id']])
-            ->with('success', 'Copied last year as drafts.');
+            ->with('success', trans_choice('finance.flash_structures_copied', $copies->count(), ['count' => $copies->count()]));
     }
 
     public function export(Request $request): StreamedResponse

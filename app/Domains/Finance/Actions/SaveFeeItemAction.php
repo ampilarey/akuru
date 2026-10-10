@@ -16,12 +16,12 @@ class SaveFeeItemAction
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Name is required.']);
+            throw ValidationException::withMessages(['name' => __('finance.error_name_required')]);
         }
 
         $amount = $data['default_amount'] ?? null;
         if ($amount === null || $amount === '' || (float) $amount < 0) {
-            throw ValidationException::withMessages(['default_amount' => 'Amount must be zero or more.']);
+            throw ValidationException::withMessages(['default_amount' => __('finance.error_amount_not_negative')]);
         }
 
         $payload = [

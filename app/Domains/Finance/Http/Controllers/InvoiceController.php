@@ -11,6 +11,7 @@ use App\Domains\Finance\Actions\ListFeeStructuresAction;
 use App\Domains\Finance\Actions\ResolveFinanceSettingsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -37,6 +38,7 @@ class InvoiceController extends Controller
             'period_start' => $period['start_date'] ?? null,
             'period_end' => $period['end_date'] ?? null,
             'monthlyMode' => app(ResolveFinanceSettingsAction::class)->execute()['monthly_mode']->value,
+            't' => Phrases::once('finance'),
         ]);
     }
 
@@ -65,7 +67,7 @@ class InvoiceController extends Controller
                 'academic_year_id' => $data['academic_year_id'],
                 'fee_structure_id' => $data['fee_structure_id'],
             ])
-            ->with('success', $created->count().' draft invoices generated.');
+            ->with('success', trans_choice('finance.flash_invoices_generated', $created->count(), ['count' => $created->count()]));
     }
 
     public function issue(Request $request): RedirectResponse
@@ -86,7 +88,7 @@ class InvoiceController extends Controller
                 'academic_year_id' => $data['academic_year_id'] ?? null,
                 'fee_structure_id' => $data['fee_structure_id'] ?? null,
             ]))
-            ->with('success', $issued->count().' invoices issued.');
+            ->with('success', trans_choice('finance.flash_invoices_issued', $issued->count(), ['count' => $issued->count()]));
     }
 
     public function export(Request $request): StreamedResponse

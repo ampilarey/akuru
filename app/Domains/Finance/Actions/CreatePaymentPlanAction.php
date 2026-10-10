@@ -18,20 +18,20 @@ class CreatePaymentPlanAction
     {
         $invoice = Invoice::query()->find((int) ($data['invoice_id'] ?? 0));
         if ($invoice === null) {
-            throw ValidationException::withMessages(['invoice_id' => 'Invoice not found.']);
+            throw ValidationException::withMessages(['invoice_id' => __('finance.error_invoice_missing')]);
         }
         if ($invoice->payment_plan_id) {
-            throw ValidationException::withMessages(['invoice_id' => 'Invoice already has a payment plan.']);
+            throw ValidationException::withMessages(['invoice_id' => __('finance.error_plan_exists')]);
         }
 
         $balance = round((float) $invoice->total_amount - (float) $invoice->paid_amount, 2);
         if ($balance <= 0) {
-            throw ValidationException::withMessages(['invoice_id' => 'Invoice has no remaining balance.']);
+            throw ValidationException::withMessages(['invoice_id' => __('finance.error_no_balance')]);
         }
 
         $rows = $data['installments'] ?? [];
         if (! is_array($rows) || $rows === []) {
-            throw ValidationException::withMessages(['installments' => 'Add at least one installment.']);
+            throw ValidationException::withMessages(['installments' => __('finance.error_add_installment')]);
         }
 
         $sum = 0.0;
@@ -42,11 +42,11 @@ class CreatePaymentPlanAction
             }
             $amount = round((float) ($row['amount'] ?? 0), 2);
             if ($amount <= 0) {
-                throw ValidationException::withMessages(['installments' => 'Each installment must be greater than zero.']);
+                throw ValidationException::withMessages(['installments' => __('finance.error_installment_positive')]);
             }
             $due = (string) ($row['due_date'] ?? '');
             if ($due === '') {
-                throw ValidationException::withMessages(['due_date' => 'Each installment needs a due date.']);
+                throw ValidationException::withMessages(['due_date' => __('finance.error_installment_due')]);
             }
             $sum += $amount;
             $normalized[] = [
@@ -60,13 +60,13 @@ class CreatePaymentPlanAction
 
         if (abs($sum - $balance) > 0.009) {
             throw ValidationException::withMessages([
-                'installments' => 'Installments must sum to the invoice balance ('.$balance.').',
+                'installments' => __('finance.error_installments_sum', ['balance' => number_format($balance, 2, '.', '')]),
             ]);
         }
 
         $createdBy = (int) ($data['created_by'] ?? 0);
         if ($createdBy < 1) {
-            throw ValidationException::withMessages(['created_by' => 'Created by is required.']);
+            throw ValidationException::withMessages(['created_by' => __('finance.error_created_by')]);
         }
 
         return DB::transaction(function () use ($invoice, $balance, $normalized, $createdBy, $data) {

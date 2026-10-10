@@ -21,7 +21,7 @@ class CopyFeeStructuresFromLastYearAction
         $previous = app(ResolvePreviousAcademicYearAction::class)->execute($targetYearId);
         if ($previous === null) {
             throw ValidationException::withMessages([
-                'academic_year_id' => 'No previous academic year to copy from.',
+                'academic_year_id' => __('finance.error_no_previous_year'),
             ]);
         }
 
@@ -33,7 +33,7 @@ class CopyFeeStructuresFromLastYearAction
 
         if ($sources->isEmpty()) {
             throw ValidationException::withMessages([
-                'academic_year_id' => 'Last year has no fee structures to copy.',
+                'academic_year_id' => __('finance.error_nothing_to_copy'),
             ]);
         }
 

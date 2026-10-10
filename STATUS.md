@@ -4983,6 +4983,148 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qn. The finance office's billing screens in Dhivehi and Arabic (C21 FN1, 2026-10-10)
+
+The fourteenth slice of BACKLOG C21, and the first of Finance. These six
+screens are how the school bills:
+- the fee items;
+- the fee structures — which fees each class pays;
+- the invoices: generating the drafts and issuing them;
+- the fee adjustments: sibling discounts, scholarships, waivers;
+- the payment plans;
+- the finance settings.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and hint;
+- a fee's kind and how often it falls due, a structure's reach and state,
+  an invoice's, a plan's and an adjustment's state, and an adjustment's
+  kind, basis and reach, printed as codes (*one_time*, *sibling_discount*,
+  *all_items*);
+- a year's period printed as *year-2026*;
+- a fee item by its English name, though the school names it in three, and
+  the structures list printed its classes' ids;
+- ten saved messages and thirty-three refusals, and the runs counted in
+  the plural only (*1 draft invoices generated.*).
+
+Four defects were found on the way:
+- **An adjustment for some kinds of fee came off nothing.** The form
+  offered "some kinds of fee" and no way to say which, so the adjustment
+  was saved with none, and the invoice run, matching it against no kind,
+  took nothing off. The form asks which kinds when that is chosen, and the
+  server refuses the adjustment without them (and keeps only kinds the
+  school has).
+- **A structure could bill one fee.** The form had room for one line, and
+  choosing another fee for it kept the first fee's amount and how often it
+  falls due. A structure takes as many fees as it has; choosing a line's
+  fee fills in that fee's amount, frequency and whether it is mandatory
+  (the fee item's own box for that, which no screen could set, is on its
+  form now).
+- **The payment plan form proposed a plan it then refused, and said
+  nothing.** It offered installments due on 1 February and 1 March 2026 —
+  months gone, so a plan saved as proposed was overdue the day it was made
+  — and left the second installment's amount empty, which Laravel refused
+  for a field the page did not show. It now splits the balance across as
+  many installments as the office asks for, due on the first of the coming
+  months, and says any refusal under the form. An open invoice says whose
+  it is; the office chose by number alone.
+- **A refused copy or issue was said nowhere, and a structure, a run or an
+  adjustment only for some of its fields**: a structure for selected
+  classes with none ticked, a run for a period that ends before it starts
+  and an adjustment for no pupil were refused with nothing on the page.
+  Copying last year where there is none is refused beside its button, and
+  every refusal of a form under it; a run that makes no draft says why
+  (each pupil is already invoiced for the period, or owes nothing in it).
+
+**The change:**
+- **A new `finance` book**, 174 phrases in three languages (132 for the
+  pages, 42 for the server). The six pages read it through
+  `Phrases::once('finance')`.
+- **Codes are named**: a fee's kind and frequency, a structure's reach and
+  state, an invoice's, a plan's and an adjustment's state, an adjustment's
+  kind, basis and reach, a year's or a term's period. An invoice's and a
+  plan's state read as the family's portal names them.
+- **A fee item reads by the school's name for it** in the page's language,
+  on the items, a structure's lines and the run's optional fees (the
+  structures now send its Dhivehi and Arabic names); **a structure's
+  classes by their names**.
+- **What the server says is in the page's language**: the saved messages
+  and refusals of six controllers and eight actions, the sibling
+  suggestion's reason among them. The drafts generated, the invoices issued
+  and the structures copied are counted (none, one, two and many in
+  Arabic).
+- **Every field the six screens post is named** in Laravel's own refusals:
+  32 fields in Dhivehi and Arabic.
+- **Every field is named** for a screen reader.
+
+What the school writes stays as written: a fee item it named only in
+English, a structure's name, a pupil's name, an invoice's number. An
+invoice's lines are written when it is generated and stay as written. The
+CSVs keep their English column codes. The adjustment form still takes a
+typed *Student id*; choosing the pupil by name joins the behaviour and
+plan forms in C22.
+
+**Tests:**
+- `FinanceSpeaksThreeLanguagesTest` (new) covers the six screens, 14 server
+  files and the ten codes. It also checks:
+  - every field the finance controllers validate has a Dhivehi and an
+    Arabic name;
+  - the drafts generated, the invoices issued and the structures copied
+    are counted in English and Arabic, and a run that makes none says why;
+  - the six screens serve in Dhivehi;
+  - in Dhivehi: a fee item saved, and one whose amount is no number
+    refused with the field named; a structure for selected classes with
+    none chosen refused; last year copied where there is none, refused; a
+    period that ends before it starts refused; a run over an empty class
+    says why it made nothing; an adjustment for some kinds of fee refused
+    without them and kept with only the kinds the school has; a plan that
+    does not add up refused, the balance in the sentence, and the open
+    invoice saying whose it is; a setting out of its bounds refused.
+
+The tests for the areas it touches (Finance, Localization, Architecture):
+**349 passed (20847 assertions)**; the smoke seeder's own tests (Smoke):
+**25 passed**.
+
+Whole suite locally: **2998 passed (55780 assertions)**.
+
+**Walks:**
+- **`finance-language.mjs`** (new) 45/45:
+  - the six screens read right to left under `/dv` and `/ar`, with nothing
+    left in English and every field named;
+  - in Dhivehi, the office:
+    - makes a fee item whose amount is no number and is refused under the
+      form, the field named in Dhivehi; no item is made;
+    - makes a structure for selected classes and ticks none, and is
+      refused under the form; no structure is made;
+    - copies last year's structures where there is no last year, and is
+      refused beside the button — it was said nowhere;
+    - generates drafts for a period that ends before it starts, and is
+      refused under the form — it was said nowhere; no invoice is made;
+    - saves an adjustment for some kinds of fee, which now offers the
+      kinds, and ticks none: refused under the form; none is saved;
+    - opens a plan for `SMOKE-INV-OPEN`: the invoice says whose it is, its
+      150.00 is split 75.00 and 75.00, due on the first of the next two
+      months; a first installment of 1 does not add up and is refused, the
+      balance in the sentence; no plan is made;
+    - sets the reminder to 200 days, which its box holds (it allows 0 to
+      90), and saves the settings as they were, told so in Dhivehi.
+- **`SmokeMarkerSeeder`** plants `SMOKE-INV-OPEN`, an open invoice with no
+  plan on somebody else's child, afresh each run, and gives `SMOKE-INV-1`
+  a month for its period rather than the word *smoke*, which the invoices
+  list would have printed.
+
+One walk changed, not for a defect in the app: **`fees.mjs`** read a
+structure's, an invoice's and a plan's state as codes (*active*, *draft*,
+*sent*, *completed*), waited for the runs counted in the plural (*1 draft
+invoices generated.*), and chose the plan's invoice by a label that now
+says whose it is. The pages name the states and count one as one, and the
+walk chooses the invoice by its number: 31/31.
+
+The other walks: `sweep.mjs` 25/25, `create-sweep.mjs` 6/6, `own-data.mjs`
+(every family saw their own records, and nobody else's), `pay-buttons.mjs`
+6/6, `money.mjs` 21/21, `admin-hub.mjs` 26/26, `admin-layout.mjs` 15/15,
+`admin.mjs` 43/43, `rtl.mjs` 8/8, `nav.mjs` 14/14, `mobile.mjs` 19/19,
+`portal-language.mjs` 212/212, `family.mjs` 40/40.
+
 ## 5qm. The appraisals, CPD, observations and recruitment in Dhivehi and Arabic (C21 HR2, 2026-10-10)
 
 The thirteenth slice of BACKLOG C21, and the second and last of HR. These

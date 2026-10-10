@@ -13,6 +13,7 @@ use App\Domains\Finance\Enums\FeeAdjustmentType;
 use App\Domains\Finance\Enums\FeeItemType;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -42,6 +43,7 @@ class FeeAdjustmentController extends Controller
             'appliesTo' => array_map(fn (FeeAdjustmentAppliesTo $value) => $value->value, FeeAdjustmentAppliesTo::cases()),
             'statuses' => array_map(fn (FeeAdjustmentStatus $status) => $status->value, FeeAdjustmentStatus::cases()),
             'itemTypes' => array_map(fn (FeeItemType $type) => $type->value, FeeItemType::cases()),
+            't' => Phrases::once('finance'),
         ]);
     }
 
@@ -57,6 +59,7 @@ class FeeAdjustmentController extends Controller
             'value' => ['required', 'numeric', 'min:0.01'],
             'applies_to' => ['required', 'string'],
             'item_types' => ['nullable', 'array'],
+            'item_types.*' => ['string'],
             'valid_from' => ['nullable', 'date'],
             'valid_until' => ['nullable', 'date'],
             'notes' => ['nullable', 'string'],
@@ -73,7 +76,7 @@ class FeeAdjustmentController extends Controller
                 'academic_year_id' => $data['academic_year_id'],
                 'student_id' => $data['student_id'],
             ])
-            ->with('success', 'Fee adjustment saved.');
+            ->with('success', __('finance.flash_adjustment_saved'));
     }
 
     public function export(Request $request): StreamedResponse

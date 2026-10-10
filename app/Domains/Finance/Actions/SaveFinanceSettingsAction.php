@@ -27,21 +27,21 @@ class SaveFinanceSettingsAction
         $mode = InvoiceMonthlyMode::tryFrom((string) ($data['invoice_monthly_mode'] ?? ''));
         if ($mode === null) {
             throw ValidationException::withMessages([
-                'invoice_monthly_mode' => 'Choose one invoice per month or one consolidated invoice.',
+                'invoice_monthly_mode' => __('finance.error_monthly_mode'),
             ]);
         }
 
         $reminderDays = (int) ($data['invoice_reminder_days'] ?? -1);
         if ($reminderDays < 0 || $reminderDays > 90) {
             throw ValidationException::withMessages([
-                'invoice_reminder_days' => 'Between 0 (the day it falls due) and 90 days.',
+                'invoice_reminder_days' => __('finance.error_reminder_days'),
             ]);
         }
 
         $defaultDays = (int) ($data['plan_default_days'] ?? -1);
         if ($defaultDays < 0 || $defaultDays > 365) {
             throw ValidationException::withMessages([
-                'plan_default_days' => 'Between 0 (the day an installment falls overdue) and 365 days.',
+                'plan_default_days' => __('finance.error_default_days'),
             ]);
         }
 

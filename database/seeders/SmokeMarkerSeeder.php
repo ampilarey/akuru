@@ -1228,6 +1228,25 @@ class SmokeMarkerSeeder extends Seeder
             'applies_to' => 'all_items', 'status' => 'approved', 'approved_by' => $admin?->id,
             'created_at' => now(), 'updated_at' => now(),
         ]);
+
+        // An open invoice with no plan, for `finance-language.mjs` to be
+        // refused a plan that does not add up (slice FN1): the payment plans
+        // screen offers only those, and the seed had none. Somebody else's
+        // child, so no walk's family sees a new row; planted afresh each run,
+        // so nothing a walk did to it stays.
+        $openIds = DB::table('invoices')->where('invoice_number', 'SMOKE-INV-OPEN')->pluck('id')->all();
+        $this->forgetInvoices($openIds);
+        DB::table('invoices')->whereIn('id', $openIds)->delete();
+        $other = (int) DB::table('students')->where('id', '!=', $studentId)->orderBy('id')->value('id');
+        if ($other > 0 && $admin !== null) {
+            DB::table('invoices')->insert([
+                'invoice_number' => 'SMOKE-INV-OPEN', 'student_id' => $other, 'academic_year_id' => $year->id,
+                'invoice_type' => 'school_fees', 'issue_date' => now()->toDateString(), 'due_date' => now()->addDays(30)->toDateString(),
+                'status' => 'sent', 'subtotal' => 150, 'total_amount' => 150, 'paid_amount' => 0,
+                'notes' => 'SMOKE-INV-OPEN', 'meta' => json_encode(['period_key' => now()->format('Y-m')]),
+                'created_by' => $admin->id, 'created_at' => now(), 'updated_at' => now(),
+            ]);
+        }
     }
 
     /**
@@ -1682,7 +1701,7 @@ class SmokeMarkerSeeder extends Seeder
                 'status' => 'sent', 'subtotal' => 300, 'total_amount' => 300, 'paid_amount' => 100,
                 // The child's real class, not `SMOKE-Class`: collections groups
                 // by class and month, and the fees walk reads its own class's row.
-                'notes' => 'SMOKE-INV-1', 'meta' => json_encode(['class_id' => $class->id, 'period_key' => 'smoke']),
+                'notes' => 'SMOKE-INV-1', 'meta' => json_encode(['class_id' => $class->id, 'period_key' => now()->format('Y-m')]),
                 'created_by' => $admin->id, 'created_at' => now(), 'updated_at' => now(),
             ],
         );

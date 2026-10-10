@@ -6,6 +6,7 @@ use App\Domains\Finance\Actions\ResolveFinanceSettingsAction;
 use App\Domains\Finance\Actions\SaveFinanceSettingsAction;
 use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -26,6 +27,7 @@ class FinanceSettingsController extends Controller
                 'invoice_reminder_days' => $resolved['reminder_days'],
                 'plan_default_days' => max(0, (int) ($settings->get('finance.plan_default_days') ?? 14)),
             ],
+            't' => Phrases::once('finance'),
         ]);
     }
 
@@ -35,6 +37,6 @@ class FinanceSettingsController extends Controller
 
         $save->execute($request->all());
 
-        return back()->with('success', 'Finance settings saved. Generation, reminders and defaulting use them from now on.');
+        return back()->with('success', __('finance.flash_settings_saved'));
     }
 }
