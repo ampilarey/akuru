@@ -35,11 +35,11 @@ class StartRegistrationRequest extends FormRequest
                 if ($type === 'mobile') {
                     $digits = preg_replace('/\D/', '', $value);
                     if (strlen($digits) < 7) {
-                        $validator->errors()->add('contact_value', 'Please enter a valid phone number.');
+                        $validator->errors()->add('contact_value', __('register.error_phone'));
                     }
                 } elseif ($type === 'email') {
                     if (! filter_var($value, FILTER_VALIDATE_EMAIL)) {
-                        $validator->errors()->add('contact_value', 'Please enter a valid email address.');
+                        $validator->errors()->add('contact_value', __('register.error_email'));
                     }
                 }
             }

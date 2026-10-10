@@ -74,6 +74,11 @@ class CourseRegistrationController extends PublicRegistrationController
     /** Password login at checkout — for returning users who know their password. */
     public function checkoutLogin(Request $request, Course $course): RedirectResponse
     {
+        // A closed course's checkout says so, and has no login to continue (slice RG1a).
+        if (! $course->is_enrollment_open) {
+            return redirect()->route('courses.checkout.show', $course);
+        }
+
         $request->validate([
             'login_contact' => ['required', 'string'],
             'password' => ['required', 'string'],
@@ -82,11 +87,11 @@ class CourseRegistrationController extends PublicRegistrationController
         // Brute-force protection: max 10 attempts per contact+IP per 15 minutes
         $throttleKey = 'checkout-login:'.sha1($request->input('login_contact').'|'.$request->ip());
         if (RateLimiter::tooManyAttempts($throttleKey, 10)) {
-            $seconds = RateLimiter::availableIn($throttleKey);
+            $minutes = (int) ceil(RateLimiter::availableIn($throttleKey) / 60);
 
             return back()
                 ->withInput($request->only('login_contact'))
-                ->withErrors(['login_contact' => 'Too many login attempts. Please try again in '.ceil($seconds / 60).' minutes, or use OTP login.']);
+                ->withErrors(['login_contact' => trans_choice('register.error_too_many_logins', $minutes, ['minutes' => $minutes])]);
         }
 
         $raw = trim($request->input('login_contact'));
@@ -104,7 +109,7 @@ class CourseRegistrationController extends PublicRegistrationController
         // Generic error — never reveal whether account exists
         $fail = fn () => back()
             ->withInput($request->only('login_contact'))
-            ->withErrors(['login_contact' => 'Incorrect contact or password. Try OTP login instead.']);
+            ->withErrors(['login_contact' => __('register.error_wrong_login')]);
 
         if (! $user || ! $user->password || ! Hash::check($request->input('password'), $user->password)) {
             RateLimiter::hit($throttleKey, 15 * 60);
@@ -145,6 +150,13 @@ class CourseRegistrationController extends PublicRegistrationController
     {
         $type = $request->input('contact_type');
         $value = $request->input('contact_value');
+
+        // A closed course's old register form still posts here; nothing is started for it (slice RG1a).
+        $startCourse = $request->filled('course_id') ? Course::query()->find((int) $request->input('course_id')) : null;
+        if ($startCourse !== null && ! $startCourse->is_enrollment_open) {
+            return redirect()->route('courses.checkout.show', $startCourse);
+        }
+
         $normalized = $this->normalizer->normalize($type, $value);
 
         // If this contact already exists + verified → ask the user to log in
@@ -176,16 +188,16 @@ class CourseRegistrationController extends PublicRegistrationController
             ]);
 
             if ($request->id_type === 'national_id' && empty(trim((string) $request->national_id))) {
-                return back()->withErrors(['national_id' => 'Please enter your Maldivian ID card number.'])->withInput();
+                return back()->withErrors(['national_id' => __('register.error_id_card')])->withInput();
             }
             if ($request->id_type === 'passport' && empty(trim((string) $request->passport))) {
-                return back()->withErrors(['passport' => 'Please enter your passport number.'])->withInput();
+                return back()->withErrors(['passport' => __('register.error_passport')])->withInput();
             }
 
             $flowType = $request->input('flow_type') ?: 'adult';
             if ($flowType === 'adult' && \Carbon\Carbon::parse($request->dob)->age < 18) {
                 return back()->withInput()
-                    ->withErrors(['dob' => 'You must be 18 or older to enroll yourself. If enrolling a child, choose "Parent / guardian".']);
+                    ->withErrors(['dob' => __('register.error_adult_or_parent')]);
             }
 
             $emailNorm = $request->filled('email') ? $this->normalizer->normalizeEmail($request->email) : null;
@@ -222,7 +234,7 @@ class CourseRegistrationController extends PublicRegistrationController
             $this->otpService->sendForNewRegistration($type, $normalized);
 
             return redirect()->route('courses.register.otp')
-                ->with('success', 'Verification code sent to your '.($type === 'mobile' ? 'phone' : 'email').'.');
+                ->with('success', __($type === 'mobile' ? 'register.flash_code_sent_phone' : 'register.flash_code_sent_email'));
         }
 
         // ── RETURNING USER / OTP LOGIN path ──
@@ -240,7 +252,7 @@ class CourseRegistrationController extends PublicRegistrationController
         ]);
 
         return redirect()->route('courses.register.otp')
-            ->with('success', 'Verification code sent. Please check your '.($type === 'mobile' ? 'phone' : 'email').'.');
+            ->with('success', __($type === 'mobile' ? 'register.flash_code_sent_phone' : 'register.flash_code_sent_email'));
     }
 
     public function otpForm(Request $request): View|RedirectResponse
@@ -257,12 +269,12 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         if (! session('pending_contact_id')) {
-            return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_session_restart'));
         }
 
         $contact = UserContact::find(session('pending_contact_id'));
         if (! $contact) {
-            return redirect()->route('public.courses.index')->with('error', 'Session expired.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_session'));
         }
 
         return view('courses.register-otp', [
@@ -321,7 +333,7 @@ class CourseRegistrationController extends PublicRegistrationController
         // ── Returning user / OTP login ──
         $contactId = session('pending_contact_id');
         if (! $contactId) {
-            return redirect()->route('public.courses.index')->with('error', 'Session expired.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_session'));
         }
 
         $contact = UserContact::findOrFail($contactId);
@@ -344,12 +356,12 @@ class CourseRegistrationController extends PublicRegistrationController
     {
         $pendingReg = session('reg_pending_data');
         if (! $pendingReg) {
-            return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_session_restart'));
         }
 
         $this->otpService->sendForNewRegistration($pendingReg['contact_type'], $pendingReg['contact_value']);
 
-        return back()->with('success', 'A new verification code has been sent.');
+        return back()->with('success', __('register.flash_code_resent'));
     }
 
     private function maskContact(string $type, string $value): string
@@ -407,10 +419,10 @@ class CourseRegistrationController extends PublicRegistrationController
 
         // Validate that the correct ID field is filled
         if ($request->id_type === 'national_id' && empty(trim((string) $request->national_id))) {
-            return back()->withErrors(['national_id' => 'Please enter your Maldivian ID card number.'])->withInput();
+            return back()->withErrors(['national_id' => __('register.error_id_card')])->withInput();
         }
         if ($request->id_type === 'passport' && empty(trim((string) $request->passport))) {
-            return back()->withErrors(['passport' => 'Please enter your passport number.'])->withInput();
+            return back()->withErrors(['passport' => __('register.error_passport')])->withInput();
         }
 
         $user = app(ClaimAccountWithPasswordAction::class)->execute((int) $userId, $request->all());
@@ -627,6 +639,12 @@ class CourseRegistrationController extends PublicRegistrationController
             return back()->withErrors($courseValidator)->withInput();
         }
         $courseIds = $courseValidator->validated()['course_ids'];
+        // Enrolment closed (its status, or its deadline) since the form opened, or a course
+        // posted by hand: nothing is enrolled in it (slice RG1a).
+        $closedCourse = Course::query()->whereIn('id', $courseIds)->get()->first(fn (Course $course) => ! $course->is_enrollment_open);
+        if ($closedCourse !== null) {
+            return back()->withInput()->withErrors(['course_ids' => __('register.error_closed_named', ['course' => $closedCourse->title])]);
+        }
         $termId = ($request->input('term_id') !== '' && $request->input('term_id') !== null)
             ? (int) $request->input('term_id') : null;
 
@@ -1151,10 +1169,10 @@ class CourseRegistrationController extends PublicRegistrationController
         $validator->after(function ($v) use ($request) {
             $idType = $request->input('id_type');
             if ($idType === 'national_id' && empty(trim((string) $request->input('national_id')))) {
-                $v->errors()->add('national_id', 'Please enter your Maldivian ID card number.');
+                $v->errors()->add('national_id', __('register.error_id_card'));
             }
             if ($idType === 'passport' && empty(trim((string) $request->input('passport')))) {
-                $v->errors()->add('passport', 'Please enter your passport number.');
+                $v->errors()->add('passport', __('register.error_passport'));
             }
         });
 
