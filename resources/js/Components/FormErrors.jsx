@@ -59,7 +59,9 @@ export default function FormErrors({ errors, except = [], className = '' }) {
  * Errors a form on the page is already showing — the same field, the same
  * words — are left to that form. `unplaced` is whatever came back before any
  * row was acted on (a page opened straight onto a refusal), for the page to
- * show once near the top.
+ * show once near the top. `unplacedAmong(keys)` is that, and also what came
+ * back for a row the reload took off the page — an account unlinked
+ * elsewhere, whose refusal would otherwise have gone with its row (slice AC1).
  */
 export function useRowRefusals(...forms) {
     const pageErrors = usePage().props.errors;
@@ -75,5 +77,6 @@ export function useRowRefusals(...forms) {
         },
         errorsFor: (key) => (row === key ? unclaimed : {}),
         unplaced: row === null ? unclaimed : {},
+        unplacedAmong: (keys) => (row === null || !keys.includes(row) ? unclaimed : {}),
     };
 }

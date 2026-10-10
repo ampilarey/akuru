@@ -1100,4 +1100,8 @@ return [
     'qsessions_all' => 'كل جلسات الحلقة',
     'qsessions_empty_all' => 'لا جلسات حلقة لعرضها.',
     'qsessions_empty_mine' => 'لا جلسات حلقة لك لعرضها. تصبح الجلسة لك حين يسمّيك المكتب معلّمها.',
+
+    // A teacher's schedule (slice AC1).
+    'schedule_title' => 'جدول المعلّم',
+    'schedule_none' => 'لم تُسند إليك أي جلسات بعد.',
 ];

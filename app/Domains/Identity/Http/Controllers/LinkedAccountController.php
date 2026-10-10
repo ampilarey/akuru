@@ -8,6 +8,7 @@ use App\Domains\Identity\Actions\SwitchAccountAction;
 use App\Domains\Identity\Actions\TwoFactorAction;
 use App\Domains\Identity\Actions\UnlinkAccountAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -26,6 +27,7 @@ class LinkedAccountController extends Controller
             'me' => ['name' => $request->user()->name],
             // STATUS §5lk: the way to two-step sign-in, from the page your name opens.
             'two_factor' => app(TwoFactorAction::class)->status($request->user()) + ['label' => __('security.link'), 'on' => __('security.state_on'), 'off' => __('security.state_off')],
+            't' => Phrases::once('account'),
         ]);
     }
 
@@ -38,14 +40,14 @@ class LinkedAccountController extends Controller
 
         $target = $link->execute($request->user(), $data['identifier'], $data['password'], $request->ip());
 
-        return back()->with('success', $target->name.' is linked. You can switch to it from any screen.');
+        return back()->with('success', __('account.flash_linked', ['name' => $target->name]));
     }
 
     public function destroy(Request $request, int $account, UnlinkAccountAction $unlink): RedirectResponse
     {
         $unlink->execute($request->user(), $account, $request->ip());
 
-        return back()->with('success', 'Unlinked. Both accounts have lost the shortcut.');
+        return back()->with('success', __('account.flash_unlinked'));
     }
 
     public function switch(Request $request, int $account, SwitchAccountAction $switch): RedirectResponse
@@ -55,6 +57,6 @@ class LinkedAccountController extends Controller
         // Straight to /dashboard so the landing rules decide where the *other*
         // identity belongs, rather than this controller guessing.
         return redirect()->route('dashboard')
-            ->with('success', 'You are now signed in as '.$target->name.'.');
+            ->with('success', __('account.flash_switched', ['name' => $target->name]));
     }
 }

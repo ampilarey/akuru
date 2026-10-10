@@ -74,7 +74,7 @@ class OtpService
             $seconds = RateLimiter::availableIn($sendKey);
             $this->recordAbuse('send_rate', $contact, $purpose, $this->maxSends() + 1, $this->maxSends());
             throw ValidationException::withMessages([
-                'contact' => ['Too many OTP requests. Please try again in '.Wait::describe($seconds).'.'],
+                'contact' => [__('account.error_otp_too_many_requests', ['wait' => Wait::describe($seconds)])],
             ]);
         }
 
@@ -83,7 +83,7 @@ class OtpService
             $seconds = RateLimiter::availableIn($cooldownKey);
             $this->recordAbuse('resend_cooldown', $contact, $purpose, 1, 1);
             throw ValidationException::withMessages([
-                'contact' => ['Please wait '.Wait::describe($seconds).' before requesting a new code.'],
+                'contact' => [__('account.error_otp_wait', ['wait' => Wait::describe($seconds)])],
             ]);
         }
 
@@ -96,7 +96,7 @@ class OtpService
             // Cleanup OTP record so it cannot be abused after a failed send
             $otp->delete();
             throw ValidationException::withMessages([
-                'contact' => ['Unable to send verification code. Please try again.'],
+                'contact' => [__('account.error_otp_send_failed')],
             ]);
         }
 
@@ -134,7 +134,7 @@ class OtpService
             $seconds = RateLimiter::availableIn($key);
             $this->recordAbuse('verify_rate', $contact, $purpose, $this->maxVerifyAttempts() + 1, $this->maxVerifyAttempts());
             throw ValidationException::withMessages([
-                'code' => ['Too many verification attempts. Please try again in '.Wait::describe($seconds).'.'],
+                'code' => [__('account.error_otp_too_many_checks', ['wait' => Wait::describe($seconds)])],
             ]);
         }
 
@@ -148,21 +148,21 @@ class OtpService
         if (! $otp) {
             RateLimiter::hit($key, $this->verifyWindowMinutes() * 60);
             throw ValidationException::withMessages([
-                'code' => ['Invalid or expired verification code.'],
+                'code' => [__('account.error_otp_invalid_or_expired')],
             ]);
         }
 
         if ($otp->attempts >= $this->maxAttemptsPerCode()) {
             $this->recordAbuse('code_attempts', $contact, $purpose, (int) $otp->attempts, $this->maxAttemptsPerCode());
             throw ValidationException::withMessages([
-                'code' => ['Too many failed attempts. Please request a new code.'],
+                'code' => [__('account.error_otp_failed_new_code')],
             ]);
         }
 
         if (! $otp->verify($code)) {
             RateLimiter::hit($key, $this->verifyWindowMinutes() * 60);
             throw ValidationException::withMessages([
-                'code' => ['Invalid verification code.'],
+                'code' => [__('account.error_otp_invalid')],
             ]);
         }
 
@@ -271,7 +271,7 @@ class OtpService
             $this->recordAbuseForValue('send_rate', $normalizedValue, $type, 'verify_contact',
                 $this->maxSends() + 1, $this->maxSends());
             throw ValidationException::withMessages([
-                'contact_value' => ['Too many OTP requests. Please try again in '.Wait::describe($seconds).'.'],
+                'contact_value' => [__('account.error_otp_too_many_requests', ['wait' => Wait::describe($seconds)])],
             ]);
         }
         if (RateLimiter::tooManyAttempts($cooldownKey, 1)) {
@@ -281,7 +281,7 @@ class OtpService
             // cheapest place in the app to burn SMS credit.
             $this->recordAbuseForValue('resend_cooldown', $normalizedValue, $type, 'verify_contact', 1, 1);
             throw ValidationException::withMessages([
-                'contact_value' => ["Please wait {$seconds} seconds before requesting a new code."],
+                'contact_value' => [__('account.error_otp_wait', ['wait' => Wait::describe($seconds)])],
             ]);
         }
 
@@ -307,7 +307,7 @@ class OtpService
         } catch (\Throwable $e) {
             \Illuminate\Support\Facades\Cache::forget($cacheKey);
             throw ValidationException::withMessages([
-                'contact_value' => ['Unable to send verification code. Please try again.'],
+                'contact_value' => [__('account.error_otp_send_failed')],
             ]);
         }
 
@@ -329,7 +329,7 @@ class OtpService
             $this->recordAbuseForValue('verify_rate', $normalizedValue, $type, 'verify_contact',
                 $this->maxVerifyAttempts() + 1, $this->maxVerifyAttempts());
             throw ValidationException::withMessages([
-                'code' => ['Too many attempts. Please try again in '.Wait::describe($seconds).'.'],
+                'code' => [__('account.error_too_many_attempts', ['wait' => Wait::describe($seconds)])],
             ]);
         }
 
@@ -337,7 +337,7 @@ class OtpService
 
         if (! $cached) {
             throw ValidationException::withMessages([
-                'code' => ['Verification code has expired. Please start again.'],
+                'code' => [__('account.error_otp_expired_start_again')],
             ]);
         }
 
@@ -346,7 +346,7 @@ class OtpService
                 (int) ($cached['attempts'] ?? 0), $this->maxAttemptsPerCode());
             \Illuminate\Support\Facades\Cache::forget($cacheKey);
             throw ValidationException::withMessages([
-                'code' => ['Too many failed attempts. Please start the registration again.'],
+                'code' => [__('account.error_otp_failed_start_again')],
             ]);
         }
 
@@ -356,7 +356,7 @@ class OtpService
             ]), now()->addMinutes(10));
             RateLimiter::hit($verifyKey, $this->verifyWindowMinutes() * 60);
             throw ValidationException::withMessages([
-                'code' => ['Invalid verification code.'],
+                'code' => [__('account.error_otp_invalid')],
             ]);
         }
 

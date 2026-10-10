@@ -30,7 +30,7 @@ class UnlinkAccountAction
 
         if (! $exists) {
             throw ValidationException::withMessages([
-                'account' => 'That account is not linked to yours.',
+                'account' => __('account.error_account_not_linked'),
             ]);
         }
 

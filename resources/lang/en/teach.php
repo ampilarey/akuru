@@ -1100,4 +1100,8 @@ return [
     'qsessions_all' => 'All halaqa sessions',
     'qsessions_empty_all' => 'No halaqa sessions to show.',
     'qsessions_empty_mine' => 'No halaqa sessions of yours to show. A session is yours when the office names you its teacher.',
+
+    // A teacher's schedule (slice AC1).
+    'schedule_title' => 'Teacher schedule',
+    'schedule_none' => 'No sessions assigned to you yet.',
 ];

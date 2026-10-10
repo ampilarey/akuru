@@ -37,8 +37,7 @@ class LinkAccountAction
 
         if (RateLimiter::tooManyAttempts($key, self::MAX_ATTEMPTS)) {
             throw ValidationException::withMessages([
-                'identifier' => 'Too many attempts. Try again in '
-                    .Wait::describe(RateLimiter::availableIn($key)).'.',
+                'identifier' => __('account.error_too_many_attempts', ['wait' => Wait::describe(RateLimiter::availableIn($key))]),
             ]);
         }
 
@@ -56,7 +55,7 @@ class LinkAccountAction
 
             // One sentence for every refusal — see the class comment.
             throw ValidationException::withMessages([
-                'identifier' => 'Those details do not match another account you can link.',
+                'identifier' => __('account.error_link_no_match'),
             ]);
         };
 
