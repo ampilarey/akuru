@@ -405,4 +405,13 @@ return [
 
     // SH1 (BACKLOG C21): a scoped discount code's refusal, in the page's language
     'error_discount_status' => 'Invalid status.',
+
+    // PC1 (BACKLOG C21): a promotion campaign's refusals — starting one, ending one — in the page's language
+    'campaign_error_name' => 'Give the campaign a name readers will see.',
+    'campaign_error_type' => 'A campaign takes a percentage or a fixed amount off.',
+    'campaign_error_ends' => 'The campaign must end after it starts.',
+    'campaign_error_funding' => 'Choose who funds the discount: shared, Akuru or the writer.',
+    'campaign_error_target' => 'A campaign cannot cover ":type".',
+    'campaign_error_target_id' => 'Pick each category, writer or item the campaign covers from the list.',
+    'campaign_error_already_ended' => 'This campaign has already ended.',
 ];

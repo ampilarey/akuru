@@ -1,22 +1,27 @@
 import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
-import FormErrors from '../../Components/FormErrors';
+import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
 
 /**
  * B4 (LIBRARY_PLAN §18): the office's promotion campaigns — start one
  * (name, window, discount, who funds it, what it covers), end one, and
  * see how each did. A campaign is never edited: end it and start another.
+ * End's refusal (a campaign ended from another tab) is said under its row
+ * (slice PC1).
  */
 function targetLabel(target, options, t) {
     if (target.type === 'all') return t.library_promotions_covers_all || 'Everything paid in the library';
     if (target.type === 'gift_card') return t.library_promotions_gift_card_label || 'Gift cards (a bonus on the card)';
     const pool = { library_category: options.categories, writer_profile: options.writers, library_item: options.items }[target.type] || [];
     const found = pool.find((row) => row.id === target.id);
-    return found ? found.label : `${target.type} #${target.id}`;
+    if (found) return found.label;
+    // A category or writer since closed, or an item taken off sale: named by its kind, not its code (slice PC1).
+    const kind = t[`library_promotions_kind_${target.type}`] || target.type;
+    return (t.library_promotions_unlisted || ':kind #:id (no longer listed)').replace(':kind', kind).replace(':id', target.id);
 }
 
-function CampaignForm({ options, fundingSources, t }) {
+function CampaignForm({ options, fundingSources, t, actOn }) {
     const [mode, setMode] = useState('all');
     const [picked, setPicked] = useState({ library_category: [], writer_profile: [], library_item: [] });
     const form = useForm({
@@ -38,7 +43,8 @@ function CampaignForm({ options, fundingSources, t }) {
                     ? [{ type: 'gift_card' }]
                     : Object.entries(picked).flatMap(([type, ids]) => ids.map((id) => ({ type, id }))),
         }));
-        form.post('/admin/library/promotions', { preserveScroll: true, forceFormData: true, onSuccess: () => { form.reset(); setPicked({ library_category: [], writer_profile: [], library_item: [] }); setMode('all'); } });
+        // The form says its own refusals; no campaign's row takes them.
+        actOn('campaign-form', () => form.post('/admin/library/promotions', { preserveScroll: true, forceFormData: true, onSuccess: () => { form.reset(); setPicked({ library_category: [], writer_profile: [], library_item: [] }); setMode('all'); } }));
     };
     const pickList = (type, rows, label) => (
         <fieldset className="rounded border p-2">
@@ -105,10 +111,14 @@ function CampaignForm({ options, fundingSources, t }) {
 }
 
 export default function Promotions({ campaigns = [], options = { categories: [], writers: [], items: [] }, funding_sources = [], t = {} }) {
-        const describe = (c) => (c.discount_type === 'percentage' ? `${c.discount_value}%` : `MVR ${c.discount_value}`)
-        + (c.max_discount_amount ? ` (max MVR ${c.max_discount_amount})` : '')
-        + (c.is_gift_card_bonus ? ` ${t.library_promotions_bonus || 'bonus'}` : '')
-        + (c.minimum_amount ? ` ${t.library_promotions_from || 'from'} MVR ${c.minimum_amount}` : '');
+    const refusals = useRowRefusals();
+    const money = (amount) => (t.library_promotions_money || 'MVR :amount').replace(':amount', amount);
+    const describe = (c) => [
+        c.discount_type === 'percentage' ? `${c.discount_value}%` : money(c.discount_value),
+        c.max_discount_amount ? (t.library_promotions_at_most || '(max :amount)').replace(':amount', money(c.max_discount_amount)) : null,
+        c.is_gift_card_bonus ? (t.library_promotions_bonus || 'bonus') : null,
+        c.minimum_amount ? (t.library_promotions_from || 'from :amount').replace(':amount', money(c.minimum_amount)) : null,
+    ].filter(Boolean).join(' ');
     const stateLabel = (state) => t[`library_promotions_state_${state}`] || { live: 'Live', scheduled: 'Scheduled', expired: 'Expired', ended: 'Ended' }[state] || state;
 
     return (
@@ -118,7 +128,8 @@ export default function Promotions({ campaigns = [], options = { categories: [],
                 <a href="/library/promotions" className="underline" target="_blank" rel="noopener">{t.library_promotions_public || 'The public offers page'}</a>
                 <a href="/admin/library" className="ms-auto underline">{t.library_settings_back || 'Back to the Library office'}</a>
             </div>
-            <CampaignForm options={options} fundingSources={funding_sources} t={t} />
+            <FormErrors errors={refusals.unplaced} className="mb-4" />
+            <CampaignForm options={options} fundingSources={funding_sources} t={t} actOn={refusals.actOn} />
 
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="campaigns">
                 <table className="table-stack min-w-full text-sm">
@@ -152,8 +163,9 @@ export default function Promotions({ campaigns = [], options = { categories: [],
                                 <td data-label={t.library_promotions_col_state || 'State'} className="px-3 py-2"><span className={`rounded px-2 py-0.5 text-xs ${c.state === 'live' ? 'bg-green-50 text-green-800' : 'bg-gray-100 text-gray-700'}`} data-state={c.state}>{stateLabel(c.state)}</span></td>
                                 <td className="table-actions px-3 py-2">
                                     {c.status === 'active' && (
-                                        <button type="button" className="text-sm text-red-600" onClick={() => router.post(`/admin/library/promotions/${c.id}/end`, {}, { preserveScroll: true })} data-testid={`end-${c.slug}`}>{t.library_promotions_end || 'End now'}</button>
+                                        <button type="button" className="text-sm text-red-600" onClick={() => refusals.actOn(`campaign:${c.id}`, () => router.post(`/admin/library/promotions/${c.id}/end`, {}, { preserveScroll: true }))} data-testid={`end-${c.slug}`}>{t.library_promotions_end || 'End now'}</button>
                                     )}
+                                    <FormErrors errors={refusals.errorsFor(`campaign:${c.id}`)} className="mt-1 text-start" />
                                 </td>
                             </tr>
                         ))}

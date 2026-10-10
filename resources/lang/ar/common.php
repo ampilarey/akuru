@@ -398,4 +398,13 @@ return [
 
     // SH1 (BACKLOG C21): a scoped discount code's refusal, in the page's language
     'error_discount_status' => 'حالة الرمز غير صالحة.',
+
+    // PC1 (BACKLOG C21): a promotion campaign's refusals — starting one, ending one — in the page's language
+    'campaign_error_name' => 'أعطِ الحملة اسمًا يراه القراء.',
+    'campaign_error_type' => 'تخصم الحملة نسبة مئوية أو مبلغًا ثابتًا.',
+    'campaign_error_ends' => 'يجب أن تنتهي الحملة بعد أن تبدأ.',
+    'campaign_error_funding' => 'اختر من يتحمّل الخصم: مشترك أو أكورو أو الكاتب.',
+    'campaign_error_target' => 'لا يمكن أن تشمل الحملة ":type".',
+    'campaign_error_target_id' => 'اختر من القائمة كل تصنيف أو كاتب أو عنصر تشمله الحملة.',
+    'campaign_error_already_ended' => 'هذه الحملة انتهت من قبل.',
 ];

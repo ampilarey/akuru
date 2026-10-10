@@ -16,7 +16,8 @@ use Illuminate\Validation\ValidationException;
  * a discount, who funds it, and what it covers. Targets are strings and
  * ids; the caller (the Library office) knows what they mean, Commerce only
  * keeps them. A campaign is never edited once started: end it and start
- * another, so a redemption's terms stay what they were.
+ * another, so a redemption's terms stay what they were. Its refusals read
+ * the common book, in the language of the page that asked (slice PC1).
  */
 class SavePromotionCampaignAction
 {
@@ -39,24 +40,24 @@ class SavePromotionCampaignAction
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Give the campaign a name readers will see.']);
+            throw ValidationException::withMessages(['name' => __('common.campaign_error_name')]);
         }
         $type = DiscountType::tryFrom((string) ($data['discount_type'] ?? ''));
         if ($type === null) {
-            throw ValidationException::withMessages(['discount_type' => 'A campaign takes a percentage or a fixed amount off.']);
+            throw ValidationException::withMessages(['discount_type' => __('common.campaign_error_type')]);
         }
         $value = (float) ($data['discount_value'] ?? 0);
         if ($value <= 0 || ($type === DiscountType::Percentage && $value > 100)) {
-            throw ValidationException::withMessages(['discount_value' => 'Invalid discount value.']);
+            throw ValidationException::withMessages(['discount_value' => __('common.error_discount_value')]);
         }
         $starts = ! empty($data['starts_at']) ? Carbon::parse((string) $data['starts_at']) : now();
         $ends = ! empty($data['ends_at']) ? Carbon::parse((string) $data['ends_at']) : null;
         if ($ends !== null && $ends->lte($starts)) {
-            throw ValidationException::withMessages(['ends_at' => 'The campaign must end after it starts.']);
+            throw ValidationException::withMessages(['ends_at' => __('common.campaign_error_ends')]);
         }
         $funding = (string) ($data['funding_source'] ?? 'akuru');
         if (! in_array($funding, self::FUNDING_SOURCES, true)) {
-            throw ValidationException::withMessages(['funding_source' => 'Who funds the discount: shared, akuru or writer.']);
+            throw ValidationException::withMessages(['funding_source' => __('common.campaign_error_funding')]);
         }
         $targets = $this->targets((array) ($data['targets'] ?? []));
 
@@ -104,7 +105,7 @@ class SavePromotionCampaignAction
         foreach ($given as $target) {
             $type = (string) ($target['type'] ?? '');
             if (! in_array($type, self::TARGET_TYPES, true)) {
-                throw ValidationException::withMessages(['targets' => 'Unknown target "'.$type.'".']);
+                throw ValidationException::withMessages(['targets' => __('common.campaign_error_target', ['type' => $type])]);
             }
             if ($type === 'all') {
                 return [['target_type' => 'all', 'target_id' => null]];
@@ -115,7 +116,7 @@ class SavePromotionCampaignAction
                 continue;
             }
             if (! is_numeric($target['id'] ?? null)) {
-                throw ValidationException::withMessages(['targets' => 'Each '.$type.' target needs an id.']);
+                throw ValidationException::withMessages(['targets' => __('common.campaign_error_target_id')]);
             }
             $kept[$type.':'.(int) $target['id']] = ['target_type' => $type, 'target_id' => (int) $target['id']];
         }
