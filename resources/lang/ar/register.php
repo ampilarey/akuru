@@ -1,8 +1,9 @@
 <?php
 
-// The course registration (BACKLOG C21, slice RG1a): the checkout page every
-// course links to, the page a closed course shows, the code page, and what
-// the server says on them.
+// The course registration (BACKLOG C21): the checkout page every course links
+// to, the page a closed course shows and the code page (slice RG1a), the
+// details form and the password page (slice RG1b), and what the server says
+// on them.
 return [
     'money' => ':amount روفية',
     'title' => 'التسجيل في :course',
@@ -100,4 +101,80 @@ return [
     'flash_code_sent_phone' => 'أُرسل رمز تحقق إلى هاتفك.',
     'flash_code_sent_email' => 'أُرسل رمز تحقق إلى بريدك الإلكتروني.',
     'flash_code_resent' => 'أُرسل رمز تحقق جديد.',
+
+    // The details form (slice RG1b): who is enrolling, their details, the terms.
+    'details_title' => 'أكمل تسجيلك في الدورة',
+    'resume_intro' => 'لن تُكمل الآن؟ يمكننا أن نرسل لك رابطًا للعودة إلى هذا النموذج. يعمل مرة واحدة، خلال 24 ساعة.',
+    'resume_send' => 'أرسل لي رابطًا',
+    'how' => 'كيف تريد التسجيل؟',
+    'how_parent' => 'أنا ولي أمر أسجّل طفلي',
+    'how_parent_hint' => 'أضف بيانات طفلك، أو اختر طفلًا أضفته من قبل',
+    'how_adult' => 'عمري 18 سنة أو أكثر وأسجّل نفسي',
+    'how_adult_hint' => 'أدخل بياناتك أنت',
+    'child_mode' => 'طفلك',
+    'child_new' => 'أضف طفلًا جديدًا',
+    'child_existing' => 'اختر طفلًا أضفته من قبل',
+    'child_choose' => 'اختر طفلًا',
+    'child_age' => '{0} :name (أقل من سنة)|{1} :name (سنة واحدة)|{2} :name (سنتان)|[3,10] :name (:age سنوات)|[11,*] :name (:age سنة)',
+    'id_card_format' => 'حرف ثم أرقام (مثال: A123456)',
+    'relationship' => 'صلة القرابة بالطفل',
+    'relationship_father' => 'الأب',
+    'relationship_mother' => 'الأم',
+    'relationship_guardian' => 'الوصي',
+    'relationship_other' => 'أخرى',
+    'child_password_title' => 'كلمة مرور طفلك',
+    'child_password_body' => 'يسجّل طفلك الدخول برقم بطاقة هويته وكلمة المرور هذه. إذا نسيها، يُرسل رمز إعادة تعيينها إلى جوالك.',
+    'prefilled' => 'مُلئت بياناتك من ملفك الشخصي. راجعها وأكّدها.',
+    'email_receipt' => 'البريد الإلكتروني (اختياري — للإيصال)',
+    'email_saved' => 'بريدك الإلكتروني محفوظ. غيّره إن احتجت إلى ذلك.',
+    'email_confirmation' => 'نرسل تأكيد تسجيلك إلى هذا العنوان.',
+    'courses_chosen' => 'الدورات المختارة:',
+    'term_seats' => 'يتوقف التسجيل على توفر مقعد وعلى موافقة المكتب.',
+    'term_fees' => 'لا تُرد رسوم الدورة إلا إذا ألغى معهد أكورو الدورة.',
+    'term_attendance' => 'يجب أن تحضر العدد المطلوب من الجلسات لتحصل على الشهادة.',
+    'terms_agree' => 'قرأت :terms و:refunds وأوافق عليهما.',
+    'terms_link' => 'الشروط والأحكام',
+    'refunds_link' => 'سياسة الاسترداد',
+    'confirm_enrollment' => 'أكّد التسجيل',
+    'pay_next' => 'بعد ذلك تنتقل إلى صفحة البنك للدفع.',
+    'continue' => 'متابعة',
+    'one_code_next' => 'نرسل رمزًا واحدًا إلى هاتفك لنتأكد أنه أنت.',
+
+    // The password page (slice RG1b): an account made for a contact gets its details and first password.
+    'step_verify' => 'التحقق',
+    'step_profile' => 'الملف الشخصي',
+    'step_enroll' => 'التسجيل',
+    'profile_title' => 'أكمل ملفك الشخصي',
+    'profile_intro' => 'املأ بياناتك لإنشاء حسابك.',
+    'show_password' => 'أظهر كلمة المرور',
+    'create_account' => 'أنشئ حسابي وتابع',
+
+    // What the server says on them.
+    'error_code_first' => 'أدخل رمز التحقق أولًا.',
+    'error_verify_first' => 'تحقق من رقم جوالك أو بريدك الإلكتروني أولًا.',
+    'error_no_course' => 'لم تُختر أي دورة. ابدأ التسجيل من صفحة دورة.',
+    'error_terms' => 'وافق على الشروط والأحكام للمتابعة.',
+    'error_adult_self' => 'يجب أن يكون عمرك 18 سنة أو أكثر لتسجّل نفسك. لتسجيل طفل، اختر ":option".',
+    'error_adult_password' => 'يجب أن يكون عمرك 18 سنة أو أكثر لتسجّل نفسك. يسجّل الطفلَ وليُّ أمره، من صفحة الدورة.',
+    'error_already_enrolled' => 'أنت مسجّل من قبل في ":course" (:status).',
+    'error_child_enrolled' => ':name مسجّل من قبل في ":course" (:status).',
+    'error_id_enrolled' => 'هذا :id يخص :name، وهو مسجّل من قبل في ":course" (:status).',
+    'error_id_log_in' => 'هذا :id مسجّل من قبل باسم :name. سجّل الدخول إلى ذلك الحساب بدلًا من ذلك.',
+    'error_id_your_child' => 'هذا :id مسجّل من قبل باسم :name. إذا كان طفلك، اختر ":option" ثم اختره من القائمة.',
+    'id_card_label' => 'رقم الهوية :number',
+    'passport_label' => 'رقم جواز السفر :number',
+    'this_course' => 'هذه الدورة',
+    'this_learner' => 'هذا المتعلم',
+    'status_active' => 'التسجيل مؤكد',
+    'status_payment_pending' => 'الدفع معلّق',
+    'status_pending' => 'بانتظار موافقة المكتب',
+    'status_approved' => 'مقبول',
+    'status_suspended' => 'موقوف',
+    'status_completed' => 'مكتمل',
+    'status_cancelled' => 'ملغى',
+    'info_payment_waiting' => 'لديك دفعة بانتظار السداد لهذه الدورة. أكملها أدناه.',
+    'flash_account_ready' => 'أُنشئ حسابك. اقرأ الشروط، ثم أرسل الرمز لتأكيد تسجيلك.',
+    'flash_link_sent' => 'أرسلنا رابطًا إلى :contact. افتحه في أي وقت خلال 24 ساعة لتكمل؛ يعمل مرة واحدة ويطلب منك رمزًا.',
+    'error_link_used' => 'استُخدم هذا الرابط من قبل أو انتهت صلاحيته. ابدأ من جديد من صفحة الدورة.',
+    'flash_welcome_back' => 'مرحبًا بعودتك. أدخل الرمز الذي أرسلناه للتو لمتابعة تسجيلك.',
 ];

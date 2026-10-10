@@ -376,12 +376,12 @@ class CourseRegistrationController extends PublicRegistrationController
     public function passwordForm(Request $request): View|RedirectResponse
     {
         if (! session('pending_contact_id') || ! session('pending_user_id')) {
-            return redirect()->route('public.courses.index')->with('error', 'Session expired.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_session'));
         }
 
         if (! $this->otpWasVerifiedFor((int) session('pending_user_id'))) {
             return redirect()->route('courses.register.otp')
-                ->with('error', 'Please enter the verification code first.');
+                ->with('error', __('register.error_code_first'));
         }
 
         return view('courses.register-set-password');
@@ -391,7 +391,7 @@ class CourseRegistrationController extends PublicRegistrationController
     {
         $userId = session('pending_user_id');
         if (! $userId) {
-            return redirect()->route('public.courses.index')->with('error', 'Session expired.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_session'));
         }
 
         // Knowing a phone number is not authentication. `pending_user_id` says
@@ -400,7 +400,7 @@ class CourseRegistrationController extends PublicRegistrationController
         // than when it is entered.
         if (! $this->otpWasVerifiedFor((int) $userId)) {
             return redirect()->route('courses.register.otp')
-                ->with('error', 'Please enter the verification code first.');
+                ->with('error', __('register.error_code_first'));
         }
 
         $request->validate([
@@ -422,6 +422,23 @@ class CourseRegistrationController extends PublicRegistrationController
             return back()->withErrors(['passport' => __('register.error_passport')])->withInput();
         }
 
+        // If a course is pending AND this is an adult self-enrollment, we already have
+        // all student data from the profile form — skip register-continue.
+        // For parent/guardian flow the child's details are NOT on this form,
+        // so we must always send them to register-continue to fill in the child's data.
+        $courseIds = session('pending_selected_course_ids', []);
+        // session('checkout_flow') is often "" (empty string) because the hidden input
+        // is never populated on new-account checkout — treat falsy as 'adult'.
+        $selfEnrolling = ! empty($courseIds) && (session('checkout_flow') ?: 'adult') === 'adult';
+
+        // Refused before the account is claimed (slice RG1b). The claim spends
+        // the code, so a refusal after it left the account made and signed in
+        // behind a form whose next send could only go back to the code page:
+        // a mistyped year of birth could not be corrected.
+        if ($selfEnrolling && ($refusal = $this->selfEnrolmentRefusal($request, $courseIds)) !== null) {
+            return back()->withInput()->withErrors($refusal);
+        }
+
         $user = app(ClaimAccountWithPasswordAction::class)->execute((int) $userId, $request->all());
 
         // Spent. One verification authorises one password write, so a second
@@ -433,22 +450,7 @@ class CourseRegistrationController extends PublicRegistrationController
         // Notify super admins via SMS about new registration
         $this->notifyAdminNewRegistration($user);
 
-        // If a course is pending AND this is an adult self-enrollment, we already have
-        // all student data from the profile form — skip register-continue.
-        // For parent/guardian flow the child's details are NOT on this form,
-        // so we must always send them to register-continue to fill in the child's data.
-        $courseIds = session('pending_selected_course_ids', []);
-        // session('checkout_flow') is often "" (empty string) because the hidden input
-        // is never populated on new-account checkout — treat falsy as 'adult'.
-        $checkoutFlow = session('checkout_flow') ?: 'adult';
-
-        if (! empty($courseIds) && $checkoutFlow === 'adult') {
-            // Age check — enrollAdultSelf requires 18+; catch early before OTP step
-            if (\Carbon\Carbon::parse($request->dob)->age < 18) {
-                return back()->withInput()
-                    ->withErrors(['dob' => 'You must be 18 or older to enroll yourself. If this is for a child, use the parent/guardian enrollment flow.']);
-            }
-
+        if ($selfEnrolling) {
             $studentData = [
                 'first_name' => trim($request->first_name),
                 'middle_name' => trim((string) $request->middle_name),
@@ -459,31 +461,6 @@ class CourseRegistrationController extends PublicRegistrationController
                 'national_id' => $request->id_type === 'national_id' ? strtoupper(trim($request->national_id)) : null,
                 'passport' => $request->id_type === 'passport' ? strtoupper(trim($request->passport)) : null,
             ];
-
-            // Duplicate check — same as enroll() adult path
-            $searchNid = $request->id_type === 'national_id' ? strtoupper(trim($request->national_id ?? '')) : null;
-            $searchPassport = $request->id_type === 'passport' ? strtoupper(trim($request->passport ?? '')) : null;
-            $candidate = app(RegisterCourseStudentAction::class)->findWithAccountByIdentity($searchNid, $searchPassport);
-            if ($candidate !== null) {
-                $existingEnrollment = \App\Domains\Courses\Models\CourseEnrollment::where('unified_student_id', $candidate['id'])
-                    ->whereIn('course_id', $courseIds)
-                    ->where('status', '!=', 'rejected')
-                    ->with('course')
-                    ->first();
-                $idLabel = $searchNid ? "ID card {$searchNid}" : "Passport {$searchPassport}";
-                $realName = PersonName::ofStudent($candidate);
-                if ($existingEnrollment) {
-                    $title = $existingEnrollment->course?->title
-                              ?? \App\Domains\Courses\Models\Course::whereIn('id', $courseIds)->first()?->title ?? 'this course';
-                    $status = $this->humanEnrollmentStatus($existingEnrollment);
-
-                    return back()->withInput()
-                        ->withErrors(['national_id' => "This {$idLabel} belongs to {$realName}, who is already enrolled in \"{$title}\" — {$status}."]);
-                }
-
-                return back()->withInput()
-                    ->withErrors(['national_id' => "This {$idLabel} is already registered to {$realName}. Please log in to that account instead."]);
-            }
 
             session([
                 'enroll_pending_data' => $studentData,
@@ -502,11 +479,58 @@ class CourseRegistrationController extends PublicRegistrationController
             session()->forget('enroll_otp_sent');
 
             return redirect()->route('courses.register.enroll.otp')
-                ->with('success', 'Account created! Please read the terms and send your OTP to confirm enrollment.');
+                ->with('success', __('register.flash_account_ready'));
         }
 
         // Parent flow (or adult with no pending courses) → must fill in enrollment form
         return redirect()->route('courses.register.continue');
+    }
+
+    /**
+     * Why the password page may not go on to enrol this person themselves,
+     * keyed by the field it is about, or null (slice RG1b): under eighteen
+     * (enrollAdultSelf requires 18+, caught here before the code step), or an
+     * ID card or passport that is already another learner's — the same check
+     * as enroll()'s adult path.
+     *
+     * @param  list<int>  $courseIds
+     * @return array<string, string>|null
+     */
+    private function selfEnrolmentRefusal(Request $request, array $courseIds): ?array
+    {
+        if (\Carbon\Carbon::parse($request->dob)->age < 18) {
+            return ['dob' => __('register.error_adult_password')];
+        }
+
+        $searchNid = $request->id_type === 'national_id' ? strtoupper(trim($request->national_id ?? '')) : null;
+        $searchPassport = $request->id_type === 'passport' ? strtoupper(trim($request->passport ?? '')) : null;
+        $candidate = app(RegisterCourseStudentAction::class)->findWithAccountByIdentity($searchNid, $searchPassport);
+        if ($candidate === null) {
+            return null;
+        }
+
+        $field = $searchNid ? 'national_id' : 'passport';
+        $idLabel = $this->idLabel($searchNid, $searchPassport);
+        $realName = PersonName::ofStudent($candidate);
+        $existingEnrollment = \App\Domains\Courses\Models\CourseEnrollment::where('unified_student_id', $candidate['id'])
+            ->whereIn('course_id', $courseIds)
+            ->where('status', '!=', 'rejected')
+            ->with('course')
+            ->first();
+        if ($existingEnrollment) {
+            $title = $existingEnrollment->course?->title
+                      ?? \App\Domains\Courses\Models\Course::whereIn('id', $courseIds)->first()?->title ?? __('register.this_course');
+
+            return [$field => __('register.error_id_enrolled', ['id' => $idLabel, 'name' => $realName, 'course' => $title, 'status' => $this->humanEnrollmentStatus($existingEnrollment)])];
+        }
+
+        return [$field => __('register.error_id_log_in', ['id' => $idLabel, 'name' => $realName])];
+    }
+
+    /** An ID card or passport named in a sentence, in the page's language (slice RG1b). */
+    private function idLabel(?string $nationalId, ?string $passport): string
+    {
+        return $nationalId ? __('register.id_card_label', ['number' => $nationalId]) : __('register.passport_label', ['number' => $passport]);
     }
 
     protected function notifyAdminNewRegistration(\App\Domains\Identity\Models\User $user): void
@@ -537,11 +561,11 @@ class CourseRegistrationController extends PublicRegistrationController
     {
         $user = $request->user() ?: $this->verifiedPendingUser();
         if (! $user) {
-            return redirect()->route('public.courses.index')->with('error', 'Session expired.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_session'));
         }
 
         if (! $user->hasVerifiedContact()) {
-            return redirect()->route('public.courses.index')->with('error', 'Please verify your contact first.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_verify_first'));
         }
 
         if (! $request->user()) {
@@ -559,7 +583,7 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         if ($courses->isEmpty()) {
-            return redirect()->route('public.courses.index')->with('error', 'No course selected. Please start registration from a course page.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_no_course'));
         }
 
         // Pre-fill existing student profile for returning users (unified Student first)
@@ -607,10 +631,10 @@ class CourseRegistrationController extends PublicRegistrationController
     {
         $user = $request->user() ?: $this->verifiedPendingUser();
         if (! $user) {
-            return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_session_restart'));
         }
         if (! $user->hasVerifiedContact()) {
-            return redirect()->route('public.courses.index')->with('error', 'Please verify your contact first.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_verify_first'));
         }
         if (! $request->user()) {
             Auth::login($user);
@@ -624,7 +648,7 @@ class CourseRegistrationController extends PublicRegistrationController
         // confirm what they just proved was the funnel's second OTP round.
         $proven = $this->contactRecentlyProven((int) $user->id);
         if ($proven && ! $request->boolean('terms_accepted')) {
-            return back()->withInput()->withErrors(['terms_accepted' => 'Please accept the Terms & Conditions to continue.']);
+            return back()->withInput()->withErrors(['terms_accepted' => __('register.error_terms')]);
         }
 
         $courseValidator = Validator::make($request->all(), [
@@ -665,11 +689,11 @@ class CourseRegistrationController extends PublicRegistrationController
                 if ($existing) {
                     $title = $existing->course?->title
                               ?? \App\Domains\Courses\Models\Course::whereIn('id', $courseIds)->first()?->title
-                              ?? 'this course';
+                              ?? __('register.this_course');
                     $status = $this->humanEnrollmentStatus($existing);
 
                     return back()->withInput()
-                        ->withErrors(['course_ids' => "You are already enrolled in \"{$title}\" — {$status}."]);
+                        ->withErrors(['course_ids' => __('register.error_already_enrolled', ['course' => $title, 'status' => $status])]);
                 }
             }
         }
@@ -685,13 +709,13 @@ class CourseRegistrationController extends PublicRegistrationController
             if ($existing) {
                 $title = $existing->course?->title
                                ?? \App\Domains\Courses\Models\Course::find($courseIds[0])?->title
-                               ?? 'this course';
+                               ?? __('register.this_course');
                 $status = $this->humanEnrollmentStatus($existing);
                 $known = app(RegisterCourseStudentAction::class)->forActor($user->id, $studentId);
-                $studentName = $known !== null ? PersonName::ofStudent($known) : 'This student';
+                $studentName = $known !== null ? PersonName::ofStudent($known) : __('register.this_learner');
 
                 return back()->withInput()
-                    ->withErrors(['student_id' => "{$studentName} is already enrolled in \"{$title}\" — {$status}."]);
+                    ->withErrors(['student_id' => __('register.error_child_enrolled', ['name' => $studentName, 'course' => $title, 'status' => $status])]);
             }
         }
 
@@ -714,21 +738,21 @@ class CourseRegistrationController extends PublicRegistrationController
 
                 // The ID belongs to a known student — always report the real name
                 $realName = PersonName::ofStudent($existingStudent);
-                $idLabel = $searchNid ? "ID card {$searchNid}" : "Passport {$searchPassport}";
+                $idLabel = $this->idLabel($searchNid, $searchPassport);
 
                 if ($existing) {
                     $title = $existing->course?->title
                               ?? \App\Domains\Courses\Models\Course::find($courseIds[0])?->title
-                              ?? 'this course';
+                              ?? __('register.this_course');
                     $status = $this->humanEnrollmentStatus($existing);
 
                     return back()->withInput()
-                        ->withErrors(['national_id' => "This {$idLabel} belongs to {$realName}, who is already enrolled in \"{$title}\" — {$status}."]);
+                        ->withErrors(['national_id' => __('register.error_id_enrolled', ['id' => $idLabel, 'name' => $realName, 'course' => $title, 'status' => $status])]);
                 }
 
-                // ID exists but not yet enrolled in this course — warn the parent
+                // ID exists but not yet enrolled in this course — warn the parent, naming the choice as the form does (slice RG1b)
                 return back()->withInput()
-                    ->withErrors(['national_id' => "This {$idLabel} is already registered to {$realName}. If this is your child, select \"Enroll existing child\" and choose them from the list."]);
+                    ->withErrors(['national_id' => __('register.error_id_your_child', ['id' => $idLabel, 'name' => $realName, 'option' => __('register.child_existing')])]);
             }
         }
 
@@ -749,7 +773,7 @@ class CourseRegistrationController extends PublicRegistrationController
             $this->clearEnrollPendingSession();
 
             return redirect()->route('courses.register.complete')
-                ->with('info', 'You already have a pending payment for this course. Please complete it below.');
+                ->with('info', __('register.info_payment_waiting'));
         }
 
         // COMMERCE_PARITY_PLAN P3: the learner's ID card, both sides (a child's own); never holds the enrolment up.
@@ -1069,21 +1093,20 @@ class CourseRegistrationController extends PublicRegistrationController
         }
     }
 
-    /** Return a human-readable enrollment status for user-facing messages. */
+    /**
+     * An enrolment's state, in the page's language, for the refusals that name
+     * it (slice RG1b): the book's `status_` phrase for the state, a pending one
+     * waiting on its payment told apart. A state the book has no phrase for is
+     * printed as stored. Looked up by name rather than listed here: this file
+     * also reads registration flows, whose status-values gate would take a
+     * listed enrolment state for one of theirs.
+     */
     private function humanEnrollmentStatus(\App\Domains\Courses\Models\CourseEnrollment $enrollment): string
     {
-        if ($enrollment->status === 'active') {
-            return 'enrollment confirmed';
-        }
-        if ($enrollment->status === 'pending') {
-            if (in_array($enrollment->payment_status, ['pending', 'initiated'], true)) {
-                return 'payment pending';
-            }
+        $state = $enrollment->status === 'pending' && in_array($enrollment->payment_status, ['pending', 'initiated'], true)
+            ? 'payment_pending' : (string) $enrollment->status;
 
-            return 'pending admin approval';
-        }
-
-        return ucfirst($enrollment->status);
+        return \Illuminate\Support\Facades\Lang::has("register.status_{$state}") ? __("register.status_{$state}") : $state;
     }
 
     protected function clearEnrollPendingSession(): void
@@ -1177,7 +1200,7 @@ class CourseRegistrationController extends PublicRegistrationController
             $validator->after(function ($validator) use ($request) {
                 $dob = $request->input('dob');
                 if ($dob && \Carbon\Carbon::parse($dob)->age < 18) {
-                    $validator->errors()->add('dob', 'You must be 18 or older to enroll yourself.');
+                    $validator->errors()->add('dob', __('register.error_adult_self', ['option' => __('register.how_parent')]));
                 }
             });
         }
@@ -1202,18 +1225,18 @@ class CourseRegistrationController extends PublicRegistrationController
     {
         $user = $request->user() ?: $this->verifiedPendingUser();
         if (! $user) {
-            return redirect()->route('public.courses.index')->with('error', 'Session expired. Please start again.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_session_restart'));
         }
         $courseIds = array_values(array_filter(array_map('intval', (array) session('pending_selected_course_ids', []))));
         if ($courseIds === [] && session('pending_course_id')) {
             $courseIds = [(int) session('pending_course_id')];
         }
         if ($courseIds === []) {
-            return back()->with('error', 'No course selected. Please start registration from a course page.');
+            return back()->with('error', __('register.error_no_course'));
         }
         $contact = $user->contacts()->whereNotNull('verified_at')->orderByRaw("CASE WHEN type = 'mobile' THEN 0 ELSE 1 END")->first();
         if (! $contact) {
-            return back()->with('error', 'Please verify your contact first.');
+            return back()->with('error', __('register.error_verify_first'));
         }
 
         app(IssueRegistrationResumeLinkAction::class)->execute((int) $user->id, (int) $contact->id, (string) $contact->type, (string) $contact->value, [
@@ -1223,7 +1246,7 @@ class CourseRegistrationController extends PublicRegistrationController
             'course_titles' => Course::whereIn('id', $courseIds)->pluck('title')->all(),
         ]);
 
-        return back()->with('success', 'We sent a link to '.$contact->value.'. Open it any time in the next 24 hours to finish; it works once and will ask you for a code.');
+        return back()->with('success', __('register.flash_link_sent', ['contact' => $contact->value]));
     }
 
     /**
@@ -1239,7 +1262,7 @@ class CourseRegistrationController extends PublicRegistrationController
 
         if (! $flow || ! $flow->contact_id || ! $flow->user_id) {
             return redirect()->route('public.courses.index')
-                ->with('error', 'This link has already been used or has expired. Please start again from the course page.');
+                ->with('error', __('register.error_link_used'));
         }
 
         $payload = $flow->payload ?? [];
@@ -1264,7 +1287,7 @@ class CourseRegistrationController extends PublicRegistrationController
         }
 
         return redirect()->route('courses.register.otp')
-            ->with('info', 'Welcome back. Enter the code we just sent to continue your registration.');
+            ->with('info', __('register.flash_welcome_back'));
     }
 
     /**
