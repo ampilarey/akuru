@@ -9,6 +9,7 @@ use App\Domains\HR\Actions\SaveHrSettingsAction;
 use App\Domains\HR\Actions\SavePayrollSettingsAction;
 use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -35,6 +36,7 @@ class HrSettingsController extends Controller
                 'enabled' => $payroll['enabled'],
             ],
             'canApprovePayroll' => (bool) $request->user()?->can('payroll.approve'),
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -44,7 +46,7 @@ class HrSettingsController extends Controller
 
         $save->execute($request->all());
 
-        return back()->with('success', 'HR settings saved. The portal and every new checklist use them from now on.');
+        return back()->with('success', __('hr.flash_hr_settings_saved'));
     }
 
     public function updatePayroll(Request $request, SavePayrollSettingsAction $save): RedirectResponse
@@ -53,6 +55,6 @@ class HrSettingsController extends Controller
 
         $save->execute($request->all());
 
-        return back()->with('success', 'Payroll settings saved. The next run computes with them.');
+        return back()->with('success', __('hr.flash_payroll_settings_saved'));
     }
 }

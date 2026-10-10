@@ -6,6 +6,7 @@ use App\Domains\HR\Actions\ExpiringDocumentsReportAction;
 use App\Domains\HR\Actions\NotifyExpiringDocumentsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -23,6 +24,7 @@ class ComplianceController extends Controller
         return Inertia::render('HR/Compliance/Index', [
             'within' => $within,
             'rows' => app(ExpiringDocumentsReportAction::class)->execute($within)->values(),
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -32,7 +34,7 @@ class ComplianceController extends Controller
 
         $sent = app(NotifyExpiringDocumentsAction::class)->execute();
 
-        return redirect()->route('hr.compliance.index')->with('success', $sent.' expiry notices sent.');
+        return redirect()->route('hr.compliance.index')->with('success', trans_choice('hr.flash_notices_sent', $sent, ['count' => $sent]));
     }
 
     public function export(Request $request): StreamedResponse

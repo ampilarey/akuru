@@ -251,7 +251,7 @@ check('the balance falls by one day', after === before - 1, `${before} → ${aft
 
 await admin.goto(`${BASE}/en/hr/attendance?date=${leaveDate}`, { waitUntil: 'networkidle' });
 const onLeave = await rowText(admin, NAME || 'Smoke');
-check('the day is on leave in the staff register', /ON_LEAVE/i.test(onLeave) && /Approved leave/.test(onLeave), onLeave || (await text(admin)).slice(0, 160));
+check('the day is on leave in the staff register', /\bOn leave\b/.test(onLeave) && /Approved leave/.test(onLeave), onLeave || (await text(admin)).slice(0, 160));
 
 // "substitution created" — the half of the DoD line that was silently never
 // happening: the approval looked the teacher up by a column nothing sets, so
@@ -290,7 +290,7 @@ check('the expiring permit is on the compliance list', permit.includes(PERMIT) &
 await admin.locator('button:has-text("Send due notices")').click();
 // Fifteen seconds: this posts, sends every due notice, and redirects back,
 // and on staging the flash arrived after the default five (STATUS §5fz).
-const notices = (await settles(admin, 'expiry notices sent.', 15000)) ? (await text(admin)).match(/(\d+) expiry notices sent\./)?.[1] : null;
+const notices = (await settles(admin, 'expiry notice', 15000)) ? (await text(admin)).match(/(\d+) expiry notices? sent\./)?.[1] : null;
 check('the expiry notices go out', notices !== null && Number(notices) >= 1, notices === null ? (await text(admin)).slice(0, 160) : `${notices} sent`);
 
 await staff.goto(`${BASE}/en/portal/notifications`, { waitUntil: 'networkidle' });
@@ -355,7 +355,7 @@ if (payrollOff) {
     await run.locator('button:has-text("Run payroll")').click();
     check(payrollSteps[0], await settles(admin, 'Draft payslips generated.'), (await text(admin)).slice(0, 160));
     const draft = await rowText(admin, NAME || 'Smoke Marker');
-    check(payrollSteps[1], /\d+\.\d\d/.test(draft) && /draft/.test(draft), draft);
+    check(payrollSteps[1], /\d+\.\d\d/.test(draft) && /\bDraft\b/.test(draft), draft);
 
     await admin.locator('button:has-text("Approve")').click();
     check(payrollSteps[2], await settles(admin, 'Period approved.'), (await text(admin)).slice(0, 160));

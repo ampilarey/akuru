@@ -47,7 +47,7 @@ class ResolvePayrollSettingsAction
     {
         $settings = $this->execute();
         if (! $settings['enabled']) {
-            throw ValidationException::withMessages(['payroll' => 'Payroll is disabled.']);
+            throw ValidationException::withMessages(['payroll' => __('hr.error_payroll_disabled')]);
         }
 
         return $settings;

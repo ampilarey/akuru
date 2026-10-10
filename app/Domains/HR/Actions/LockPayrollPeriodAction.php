@@ -15,7 +15,7 @@ class LockPayrollPeriodAction
         $period = PayrollPeriod::query()->findOrFail($periodId);
 
         if (! in_array($period->status, [PayrollPeriodStatus::Approved, PayrollPeriodStatus::Paid], true)) {
-            throw ValidationException::withMessages(['payroll' => 'Lock only after approval.']);
+            throw ValidationException::withMessages(['payroll' => __('hr.error_lock_after_approval')]);
         }
 
         $period->status = PayrollPeriodStatus::Locked;

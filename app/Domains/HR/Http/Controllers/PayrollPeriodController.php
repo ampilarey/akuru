@@ -11,6 +11,7 @@ use App\Domains\HR\Actions\ResolvePayrollSettingsAction;
 use App\Domains\HR\Actions\RunPayrollAction;
 use App\Domains\HR\Models\PayrollPeriod;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -41,6 +42,7 @@ class PayrollPeriodController extends Controller
             'periodId' => $periodId,
             'rows' => $periodId ? app(ListPayslipsAction::class)->execute((int) $periodId)->values() : collect(),
             'canApprove' => (bool) $request->user()?->can('payroll.approve'),
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -57,7 +59,7 @@ class PayrollPeriodController extends Controller
 
         return redirect()
             ->route('hr.payroll.index', ['period_id' => $period->id])
-            ->with('success', 'Draft payslips generated.');
+            ->with('success', __('hr.flash_payslips_generated'));
     }
 
     public function approve(Request $request, PayrollPeriod $payrollPeriod): RedirectResponse
@@ -66,7 +68,7 @@ class PayrollPeriodController extends Controller
 
         app(ApprovePayrollPeriodAction::class)->execute((int) $payrollPeriod->id, (int) $request->user()->id);
 
-        return redirect()->route('hr.payroll.index', ['period_id' => $payrollPeriod->id])->with('success', 'Period approved.');
+        return redirect()->route('hr.payroll.index', ['period_id' => $payrollPeriod->id])->with('success', __('hr.flash_period_approved'));
     }
 
     public function pay(Request $request, PayrollPeriod $payrollPeriod): RedirectResponse
@@ -75,7 +77,7 @@ class PayrollPeriodController extends Controller
 
         app(MarkPayrollPaidAction::class)->execute((int) $payrollPeriod->id);
 
-        return redirect()->route('hr.payroll.index', ['period_id' => $payrollPeriod->id])->with('success', 'Period marked paid.');
+        return redirect()->route('hr.payroll.index', ['period_id' => $payrollPeriod->id])->with('success', __('hr.flash_period_paid'));
     }
 
     public function lock(Request $request, PayrollPeriod $payrollPeriod): RedirectResponse
@@ -84,7 +86,7 @@ class PayrollPeriodController extends Controller
 
         app(LockPayrollPeriodAction::class)->execute((int) $payrollPeriod->id);
 
-        return redirect()->route('hr.payroll.index', ['period_id' => $payrollPeriod->id])->with('success', 'Period locked.');
+        return redirect()->route('hr.payroll.index', ['period_id' => $payrollPeriod->id])->with('success', __('hr.flash_period_locked'));
     }
 
     public function export(Request $request, PayrollPeriod $payrollPeriod): StreamedResponse
@@ -101,6 +103,6 @@ class PayrollPeriodController extends Controller
     private function guard(Request $request, string $permission): void
     {
         abort_unless($request->user()?->can($permission), 403);
-        abort_unless(app(ResolvePayrollSettingsAction::class)->execute()['enabled'], 403, 'Payroll is disabled.');
+        abort_unless(app(ResolvePayrollSettingsAction::class)->execute()['enabled'], 403, __('hr.error_payroll_disabled'));
     }
 }

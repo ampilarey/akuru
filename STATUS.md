@@ -4983,6 +4983,121 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ql. The HR office's screens in Dhivehi and Arabic (C21 HR1, 2026-10-10)
+
+The twelfth slice of BACKLOG C21, and the first of HR. These eight screens
+are the office's half of running the staff:
+- the leave types;
+- the documents about to expire;
+- the contracts;
+- staff attendance for a day, and its reports;
+- the leave balances;
+- payroll;
+- the HR settings.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and hint;
+- a leave type's code, a contract's type and state, a day's attendance and
+  how it was recorded, a document's type and a payslip's state, printed as
+  codes (*ON_LEAVE*, *fixed_term*);
+- a leave type by its English name, though the school has a place for its
+  name in three languages — and the form had no box for two of them;
+- sixteen saved messages and twenty-five refusals, among them a row of an
+  import refused by its number (*Unknown staff on row 3.*).
+
+Four defects were found on the way:
+- **Saving a leave type could only fail.** The form only ever made a new
+  type. The school starts with all eight codes, and the code is unique, so
+  every save was a 500. The form now changes the type of the code chosen,
+  its values filled in from the list (its days, carry-over, whether it
+  needs a document, is paid and is offered), and a new type with a taken
+  code is refused, in the page's language.
+- **A day with no academic year to put it in opened a bare 422 page.** It is
+  refused under the form. (A date outside every year goes to the current
+  year, as it did; the refusal is for a school with none.)
+- **A refused import kept the rows above the one it refused.** The office,
+  told the file was refused, did not know they were. A refused file now
+  writes nothing.
+- **An import with no remarks column was a 500.** The column is optional,
+  as the late minutes are.
+
+**The change:**
+- **A new `hr` book**, 213 phrases in three languages. The eight pages
+  read it through `Phrases::once('hr')`.
+- **Codes are named**: a leave type's code, a contract's type and state, a
+  day's attendance and its source, a document's type, a payslip's state.
+- **A leave type reads by the school's name for it** in the page's
+  language, on the types and on the balances (the balances now send its
+  Dhivehi and Arabic names).
+- **The eight leave types a school starts with are named in Dhivehi and
+  Arabic** (a migration that fills them by code where they are empty; a
+  name the office typed stays), as EG1 did for the exam types.
+- **What the server says is in the page's language**: the saved messages
+  and refusals of eight controllers and twelve actions. The rows imported,
+  the notices sent and the entitlements carried over are counted (one, two
+  and many in Arabic).
+- **A refused fill, import or month-locked day is said** under the form
+  that asked.
+- **Every field the HR screens post is named** in Laravel's own refusals:
+  21 fields in Dhivehi and Arabic.
+- **Every field is named** for a screen reader.
+
+What the school writes stays as written: a member of staff's name and
+department, a document's title, a checklist's items, a remark. The CSVs
+keep their English column codes.
+
+**Tests:**
+- `HrSpeaksThreeLanguagesTest` covers the eight screens, twenty server
+  files and the seven codes. It also checks:
+  - every field the HR controllers validate has a Dhivehi and an Arabic
+    name;
+  - the rows, notices and entitlements are counted in English and Arabic;
+  - the eight starting leave types have Dhivehi and Arabic names, and a
+    name the office typed stays;
+  - a day of attendance with no academic year is refused under the form,
+    in Dhivehi;
+  - the eight screens serve in Dhivehi;
+  - a new leave type with a taken code is refused in Dhivehi, and the type
+    is changed in place, said in Dhivehi;
+  - an import's unknown row is refused by its number in Dhivehi, and the
+    row above it is not kept (the file has no remarks column);
+  - an empty checklist is refused in Dhivehi.
+
+The tests for the areas it touches (HR, Localization, Architecture):
+**274 passed (18536 assertions)**.
+
+Whole suite locally: **2992 passed (53491 assertions)**.
+
+**Walks:**
+- **`hr-language.mjs`** (new) 53/53:
+  - the eight screens read right to left under `/dv` and `/ar`, with
+    nothing left in English and every field named;
+  - in Dhivehi, the office:
+    - saves the Annual leave type as the form fills it in and is told it
+      was updated — it was a 500; no type is added, and its days stay;
+    - marks a day with late minutes that are no number and is refused
+      under the form, the field named in Dhivehi; no day is recorded;
+    - imports a file whose second row is nobody and is refused by the
+      row's number; the first row is not kept;
+    - adjusts a leave balance with no reason and is refused under the row,
+      the field named in Dhivehi; the balance stays;
+    - empties the onboarding checklist and is refused under it; the
+      checklist stays;
+  - it reads no field's value, so a checklist written in its box is not
+    taken for English; `PAYROLL_ENABLED`, the host's switch, is a name.
+
+One walk changed, not for a defect in the app: **`hr.mjs`** read a day's
+attendance and a payslip's state as codes (*ON_LEAVE*, *draft*) and waited
+for notices only in the plural. The pages name them (*On leave*, *Draft*)
+and count one notice as one: 27/27, nine skipped, each saying why (payroll
+is off on this host, and no lesson on the leave day).
+
+The other walks: `sweep.mjs` 25/25, `create-sweep.mjs` 6/6, `own-data.mjs`
+(every family saw their own records, and nobody else's), `admin-hub.mjs`
+26/26, `admin-layout.mjs` 15/15, `admin.mjs` 43/43, `rtl.mjs` 8/8, `nav.mjs`
+14/14, `mobile.mjs` 19/19, `identity.mjs` 47/47, `portal-language.mjs`
+212/212, `family.mjs` 40/40.
+
 ## 5qk. The exams office's other screens in Dhivehi and Arabic (C21 EG2, 2026-10-10)
 
 The eleventh slice of BACKLOG C21, and the second and last of ExamsGrades.

@@ -45,14 +45,14 @@ class SaveHrSettingsAction
         $items = array_values(array_filter(array_map(fn ($line) => trim((string) $line), $lines ?: []), fn ($line) => $line !== ''));
 
         if ($items === []) {
-            throw ValidationException::withMessages([$field => 'At least one item — the checklist is seeded for every new profile.']);
+            throw ValidationException::withMessages([$field => __('hr.error_checklist_empty')]);
         }
         if (count($items) > 30) {
-            throw ValidationException::withMessages([$field => 'At most thirty items.']);
+            throw ValidationException::withMessages([$field => __('hr.error_checklist_too_long')]);
         }
         foreach ($items as $item) {
             if (mb_strlen($item) > 120) {
-                throw ValidationException::withMessages([$field => 'Keep each item under 120 characters.']);
+                throw ValidationException::withMessages([$field => __('hr.error_checklist_item_long')]);
             }
         }
 
