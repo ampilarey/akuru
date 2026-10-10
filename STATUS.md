@@ -4983,6 +4983,26 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qg. The admin walk follows the menu N1 made (walk health, 2026-10-10)
+
+Found by OA2's walks (§5qf). `admin.mjs` failed one step out of 43: *the
+system admin's More menu reaches the whole Institute, and not the School's
+admissions*. The step was written before the navigation re-audit (N1, §5nw,
+#663), which gave the Institute its own Admissions part
+(`panel_admissions`: the course enrolments and their payments,
+`/admin/enrollments`). From then on the system admin's menu offers
+admissions on purpose, and the walk failed for doing what N1 asked.
+
+**The change**, in the walk only: the step now asks for the Admissions part
+among the Institute's links, with the eleven it already wanted (*the system
+admin's More menu reaches the whole Institute, its Admissions part
+included*). The educational admin's School menu still offers the
+enrolments too, and the walk's earlier step for it is unchanged.
+
+**Walk:** `admin.mjs` 43/43, after one seed.
+
+Whole suite locally: **2976 passed (46910 assertions)**.
+
 ## 5qf. The school's structure and time in Dhivehi and Arabic (C21 OA2, 2026-10-10)
 
 The seventh slice of BACKLOG C21, and the second of the school office's.
@@ -5103,8 +5123,8 @@ Other walks that open these screens, each after a fresh seed:
   admin's More menu reaches the whole Institute, and not the School's
   admissions*. Since N1 (§5nw, #663) the Institute's menu has its own
   Admissions part (`panel_admissions`, `/admin/enrollments`), and the walk
-  still asserts the system admin's menu has no admissions. Taken next, as a
-  walk repair.
+  still asserts the system admin's menu has no admissions. Repaired in
+  §5qg.
 
 ## 5qe. Three school-day walks pass on any day of the week (walk health, 2026-10-10)
 
