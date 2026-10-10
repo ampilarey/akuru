@@ -5,6 +5,7 @@ namespace App\Domains\Finance\Http\Controllers;
 use App\Domains\Finance\Actions\ListReconciliationAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -26,6 +27,7 @@ class ReconciliationController extends Controller
             'daily' => $report['daily']->values(),
             'from' => $request->input('from'),
             'to' => $request->input('to'),
+            't' => Phrases::once('finance'),
         ]);
     }
 

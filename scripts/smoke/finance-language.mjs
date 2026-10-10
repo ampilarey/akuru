@@ -1,9 +1,11 @@
 /**
  * Do the office's finance screens read in Dhivehi and Arabic?
- * (BACKLOG C21, slice FN1, STATUS §5qn.)
+ * (BACKLOG C21, slices FN1 and FN2, STATUS §5qn and §5qo.)
  *
  * The office opens the fee items, the fee structures, the invoices, the fee
- * adjustments, the payment plans and the finance settings under /dv and /ar.
+ * adjustments, the payment plans, the finance settings, the manual receipt,
+ * the bank statements, reconciliation, arrears and collections under /dv
+ * and /ar.
  * The walk lists what is still in Latin letters in each page's main: every
  * text node, placeholder, aria-label, title and phone caption
  * (`data-label`). What a page shows of its data (a fee item the school named
@@ -11,7 +13,8 @@
  * is the author's, so a string found among the page's props passes; codes
  * the server sends to be named (a fee's kind and how often it falls due, a
  * structure's reach and state, an invoice's, a plan's and an adjustment's
- * state, an adjustment's kind, basis and reach, an invoice's period) do
+ * state, an adjustment's kind, basis and reach, an invoice's period, how a
+ * receipt was paid, a bank line's state, how long an invoice is overdue) do
  * not, and printed raw they fail. So do the phrase books the page is sent.
  * Each page must be right to left, every field in it named, and it must open
  * where it was asked for.
@@ -37,7 +40,15 @@
  *     made;
  *   - the office sets the reminder to 200 days, which its box holds (it
  *     allows 0 to 90); then saves the settings as they were, and is told
- *     so in Dhivehi.
+ *     so in Dhivehi;
+ *   - the office takes 1000 against `SMOKE-INV-OPEN`, whose balance is 150,
+ *     and is refused under the form, the balance in the sentence; the open
+ *     invoice says whose it is, and no receipt is made;
+ *   - the office imports a statement with a header and no rows, and is
+ *     refused under the form in Dhivehi; nothing is imported;
+ *   - the office reads reconciliation for today alone — the screen offered
+ *     no dates — and collections name each class rather than print its
+ *     id.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/finance-language.mjs
@@ -60,6 +71,9 @@ const CODE_KEYS = new Set([
     // basis and reach, an invoice's period, the monthly mode.
     'type', 'types', 'frequency', 'frequencies', 'status', 'statuses', 'applies_to', 'appliesTo',
     'basis', 'bases', 'item_types', 'itemTypes', 'period_key', 'monthlyMode', 'invoice_monthly_mode',
+    // How a receipt was paid, a bank line's state, how long an invoice is
+    // overdue (slice FN2).
+    'method', 'methods', 'match_status', 'aging_bucket',
 ]);
 // The names of formats and of the currency, the same in every language.
 const ALWAYS_FINE = [/https?:\/\/\S*/g, /\bCSV\b/g, /\bMVR\b/g, /[\w.+-]+@[\w-]+(\.[\w-]+)+/g];
@@ -157,6 +171,12 @@ const screens = [
     '/finance/adjustments',
     '/finance/payment-plans',
     '/finance/settings',
+    // FN2.
+    '/finance/receipts/manual',
+    '/finance/bank-statements',
+    '/finance/reconciliation',
+    '/finance/arrears',
+    '/finance/collections',
 ];
 for (const locale of ['dv', 'ar']) {
     for (const path of screens) {
@@ -296,6 +316,55 @@ await settingsForm.getByRole('button', { name: book.settings_save, exact: true }
 await office.waitForLoadState('networkidle');
 const saved = await said(office.getByTestId('flash-success'));
 check('the settings saved as they were are said in Dhivehi, and nothing moves', saved === book.flash_settings_saved && inDhivehi(saved) && reminder() === reminderBefore, `said: ${saved ?? 'nothing'}`);
+
+// ------------------------------------- more than an invoice's balance, refused (slice FN2)
+
+await office.goto(`${BASE}/dv/finance/receipts/manual`, { waitUntil: 'networkidle' });
+const receiptForm = office.locator('form').filter({ has: office.getByRole('button', { name: book.manual_record, exact: true }) }).first();
+const openReceipt = receiptForm.locator('option', { hasText: 'SMOKE-INV-OPEN' }).first();
+if (await openReceipt.count()) {
+    const receiptsBefore = count('receipts');
+    const receiptOption = (await openReceipt.textContent()) ?? '';
+    await receiptForm.getByLabel(book.manual_invoice, { exact: true }).selectOption(await openReceipt.getAttribute('value'));
+    await receiptForm.getByLabel(book.amount, { exact: true }).fill('1000');
+    await receiptForm.getByRole('button', { name: book.manual_record, exact: true }).click();
+    await office.waitForLoadState('networkidle');
+    const tooMuch = await said(receiptForm.locator('ul.text-red-600'));
+    check('taking more than an invoice\'s balance is refused under the form, in Dhivehi, the balance in the sentence; the invoice says whose it is, and no receipt is made',
+        tooMuch === (book.error_overpayment || '').replace(':balance', '150.00') && inDhivehi(tooMuch) && receiptOption.split('—').length === 3 && count('receipts') === receiptsBefore,
+        `option: ${receiptOption}; said: ${tooMuch ?? 'nothing'}`);
+} else {
+    check('taking more than an invoice\'s balance is refused under the form, in Dhivehi, the balance in the sentence; the invoice says whose it is, and no receipt is made', false, 'no SMOKE-INV-OPEN — re-seed first');
+}
+
+// ------------------------------------- a statement with no rows, refused
+
+await office.goto(`${BASE}/dv/finance/bank-statements`, { waitUntil: 'networkidle' });
+const uploadForm = office.locator('form').filter({ has: office.getByRole('button', { name: book.bank_import, exact: true }) }).first();
+const importsBefore = count('bank_statement_imports');
+await uploadForm.getByLabel(book.bank_file, { exact: true }).setInputFiles({ name: 'empty.csv', mimeType: 'text/csv', buffer: Buffer.from('date,description,reference,amount\n') });
+await uploadForm.getByRole('button', { name: book.bank_import, exact: true }).click();
+await office.waitForLoadState('networkidle');
+const noRows = await said(uploadForm.locator('ul.text-red-600'));
+check('a statement with a header and no rows is refused under the form, in Dhivehi; nothing is imported', noRows === book.error_no_rows && inDhivehi(noRows) && count('bank_statement_imports') === importsBefore, `said: ${noRows ?? 'nothing'}`);
+
+// ------------------------------------- reconciliation for a day, collections by class
+
+await office.goto(`${BASE}/dv/finance/reconciliation`, { waitUntil: 'networkidle' });
+await office.getByLabel(book.reconciliation_from, { exact: true }).fill(today());
+await office.getByLabel(book.reconciliation_to, { exact: true }).fill(today());
+await office.getByRole('button', { name: book.reconciliation_show, exact: true }).click();
+// An Inertia visit is no navigation, so the load state is already idle when
+// the button is pressed: wait for the address to carry the days instead.
+await office.waitForURL((url) => url.searchParams.get('to') === today(), { timeout: 10000 }).catch(() => {});
+const asked = new URL(office.url()).searchParams;
+const exportHref = (await office.locator('a[href*="/finance/reconciliation/export"]').getAttribute('href').catch(() => '')) || '';
+const exported = new URL(exportHref, BASE).searchParams;
+check('reconciliation reads the days the office chooses, and its export the same days', asked.get('from') === today() && asked.get('to') === today() && exported.get('from') === today() && exported.get('to') === today(), `${office.url().replace(BASE, '')} · export ${exportHref}`);
+
+await office.goto(`${BASE}/dv/finance/collections`, { waitUntil: 'networkidle' });
+const classCells = await office.locator('tbody tr td:first-child').allTextContents();
+check('collections name each class rather than print its id', classCells.length > 0 && classCells.every((cell) => !/^\s*\d+\s*$/.test(cell)), classCells.slice(0, 4).join(' | '));
 
 await browser.close();
 

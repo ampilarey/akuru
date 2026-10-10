@@ -27,6 +27,6 @@ class AdminPaymentRefundController extends Controller
             $data['reason'] ?? null,
         );
 
-        return back()->with('success', 'Refund recorded.');
+        return back()->with('success', __('finance.flash_refund_recorded'));
     }
 }

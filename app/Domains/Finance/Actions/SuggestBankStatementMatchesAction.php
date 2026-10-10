@@ -48,7 +48,7 @@ class SuggestBankStatementMatchesAction
         foreach ($lines as $line) {
             $byNumber = $this->matchByInvoiceNumber($line, $open);
             if ($byNumber !== null) {
-                $this->suggest($line, $byNumber, 'Invoice number '.$byNumber->invoice_number.' found in the statement text.');
+                $this->suggest($line, $byNumber, __('finance.note_number_found', ['number' => $byNumber->invoice_number]));
                 $suggested++;
 
                 continue;
@@ -57,7 +57,7 @@ class SuggestBankStatementMatchesAction
             $candidates = $this->matchByAmount($line, $open);
             if ($candidates->count() === 1) {
                 $invoice = $candidates->first();
-                $this->suggest($line, $invoice, 'Amount matches the outstanding balance of '.$invoice->invoice_number.'.');
+                $this->suggest($line, $invoice, __('finance.note_amount_matches', ['number' => $invoice->invoice_number]));
                 $suggested++;
 
                 continue;
@@ -67,9 +67,10 @@ class SuggestBankStatementMatchesAction
                 // Recorded rather than silently skipped: "nothing matched" and
                 // "several matched" are different problems for whoever reviews
                 // this, and only one of them means go and find the reference.
-                $line->match_note = $candidates->count().' invoices share this outstanding balance ('
-                    .$candidates->take(4)->pluck('invoice_number')->implode(', ')
-                    .'). Left unmatched on purpose — pick one by hand.';
+                $line->match_note = __('finance.note_ambiguous', [
+                    'count' => $candidates->count(),
+                    'numbers' => $candidates->take(4)->pluck('invoice_number')->implode(', '),
+                ]);
                 $line->save();
                 $ambiguous++;
             }

@@ -34,7 +34,7 @@ class ConfiguredCsvBankStatementParser implements BankStatementParserInterface
 
         $lines = preg_split('/\r\n|\r|\n/', trim($contents)) ?: [];
         if ($lines === [] || trim((string) $lines[0]) === '') {
-            throw ValidationException::withMessages(['file' => 'The statement file is empty.']);
+            throw ValidationException::withMessages(['file' => __('finance.error_file_empty')]);
         }
 
         $header = array_map(
@@ -49,9 +49,10 @@ class ConfiguredCsvBankStatementParser implements BankStatementParserInterface
 
         if ($amountKey === null && $creditKey === null && $debitKey === null) {
             throw ValidationException::withMessages([
-                'file' => 'No amount column found. Expected one of '
-                    .implode(', ', array_filter([$map['amount'] ?? 'amount', $map['credit'] ?? 'credit', $map['debit'] ?? 'debit']))
-                    .'; the file has: '.implode(', ', $header).'.',
+                'file' => __('finance.error_no_amount_column', [
+                    'expected' => implode(', ', array_filter([$map['amount'] ?? 'amount', $map['credit'] ?? 'credit', $map['debit'] ?? 'debit'])),
+                    'found' => implode(', ', $header),
+                ]),
             ]);
         }
 
@@ -90,7 +91,7 @@ class ConfiguredCsvBankStatementParser implements BankStatementParserInterface
         }
 
         if ($rows === []) {
-            throw ValidationException::withMessages(['file' => 'The statement had a header but no transaction rows.']);
+            throw ValidationException::withMessages(['file' => __('finance.error_no_rows')]);
         }
 
         return $rows;
@@ -104,7 +105,7 @@ class ConfiguredCsvBankStatementParser implements BankStatementParserInterface
         $key = $this->optional($header, $wanted);
         if ($key === null) {
             throw ValidationException::withMessages([
-                'file' => "No {$label} column found. Expected '{$wanted}'; the file has: ".implode(', ', $header).'.',
+                'file' => __('finance.error_no_column', ['column' => __('finance.column_'.$label), 'wanted' => $wanted, 'found' => implode(', ', $header)]),
             ]);
         }
 
@@ -151,8 +152,7 @@ class ConfiguredCsvBankStatementParser implements BankStatementParserInterface
         }
 
         throw ValidationException::withMessages([
-            'file' => 'Could not read the date "'.$raw.'" on row '.($index + 2)
-                .'. Configured formats: '.implode(', ', $formats).'.',
+            'file' => __('finance.error_bad_date', ['date' => $raw, 'row' => $index + 2, 'formats' => implode(', ', $formats)]),
         ]);
     }
 

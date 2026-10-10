@@ -18,18 +18,18 @@ class AllocatePaymentAction
     public function execute(Invoice $invoice, float $amount): Invoice
     {
         if ($amount <= 0) {
-            throw ValidationException::withMessages(['amount' => 'Payment must be greater than zero.']);
+            throw ValidationException::withMessages(['amount' => __('finance.error_payment_positive')]);
         }
 
         return DB::transaction(function () use ($invoice, $amount) {
             $locked = Invoice::query()->whereKey($invoice->id)->lockForUpdate()->first();
             if ($locked === null) {
-                throw ValidationException::withMessages(['invoice_id' => 'Invoice not found.']);
+                throw ValidationException::withMessages(['invoice_id' => __('finance.error_invoice_missing')]);
             }
 
             $remaining = round((float) $locked->total_amount - (float) $locked->paid_amount, 2);
             if (round($amount, 2) - $remaining > 0.009) {
-                throw ValidationException::withMessages(['amount' => 'Overpayment rejected. Remaining balance is '.$remaining.'.']);
+                throw ValidationException::withMessages(['amount' => __('finance.error_overpayment', ['balance' => number_format($remaining, 2, '.', '')])]);
             }
 
             $locked->paid_amount = round((float) $locked->paid_amount + $amount, 2);

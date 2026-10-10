@@ -28,18 +28,18 @@ class RefundPaymentAction
         ?string $reason = null,
     ): PaymentRefund {
         if (! in_array($destination, ['wallet', 'manual'], true)) {
-            throw ValidationException::withMessages(['destination' => 'Refund destination must be wallet or manual.']);
+            throw ValidationException::withMessages(['destination' => __('finance.error_refund_destination')]);
         }
         $amount = round($amount, 2);
         if ($amount <= 0) {
-            throw ValidationException::withMessages(['amount' => 'Refund amount must be positive.']);
+            throw ValidationException::withMessages(['amount' => __('finance.error_refund_positive')]);
         }
 
         return DB::transaction(function () use ($paymentId, $amount, $destination, $refundedByUserId, $reason) {
             $payment = Payment::query()->whereKey($paymentId)->lockForUpdate()->firstOrFail();
 
             if (! in_array($payment->status, ['confirmed', 'paid'], true)) {
-                throw ValidationException::withMessages(['payment' => 'Only confirmed payments can be refunded.']);
+                throw ValidationException::withMessages(['payment' => __('finance.error_refund_unconfirmed')]);
             }
 
             $alreadyRefunded = (float) PaymentRefund::query()
@@ -48,12 +48,12 @@ class RefundPaymentAction
             $refundable = round((float) $payment->amount - $alreadyRefunded, 2);
             if ($amount > $refundable) {
                 throw ValidationException::withMessages([
-                    'amount' => "Refund exceeds the refundable remainder ({$refundable}).",
+                    'amount' => __('finance.error_refund_exceeds', ['refundable' => number_format($refundable, 2, '.', '')]),
                 ]);
             }
 
             if ($destination === 'wallet' && $payment->user_id === null) {
-                throw ValidationException::withMessages(['destination' => 'This payment has no payer account to credit.']);
+                throw ValidationException::withMessages(['destination' => __('finance.error_refund_no_account')]);
             }
 
             $refund = PaymentRefund::query()->create([

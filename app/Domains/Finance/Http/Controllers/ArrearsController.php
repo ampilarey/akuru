@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ListAcademicYearsAction;
 use App\Domains\Finance\Actions\ListArrearsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -24,6 +25,7 @@ class ArrearsController extends Controller
             'years' => $years->values(),
             'yearId' => $yearId,
             'rows' => app(ListArrearsAction::class)->execute($yearId ?: null)->values(),
+            't' => Phrases::once('finance'),
         ]);
     }
 

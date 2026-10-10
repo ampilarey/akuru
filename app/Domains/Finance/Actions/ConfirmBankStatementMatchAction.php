@@ -33,26 +33,25 @@ class ConfirmBankStatementMatchAction
     {
         if ($line->match_status === BankStatementMatchStatus::Confirmed) {
             throw ValidationException::withMessages([
-                'line' => 'This line was already confirmed as receipt '
-                    .(Receipt::query()->find($line->receipt_id)?->receipt_number ?? '—').'.',
+                'line' => __('finance.error_line_confirmed', ['receipt' => Receipt::query()->find($line->receipt_id)?->receipt_number ?? '—']),
             ]);
         }
 
         if (! $line->isCredit()) {
             throw ValidationException::withMessages([
-                'line' => 'Only money coming in can pay an invoice. This line is a debit.',
+                'line' => __('finance.error_line_debit'),
             ]);
         }
 
         $invoice = Invoice::query()->find($invoiceId ?? $line->matched_invoice_id);
         if ($invoice === null) {
-            throw ValidationException::withMessages(['invoice_id' => 'Choose an invoice for this line.']);
+            throw ValidationException::withMessages(['invoice_id' => __('finance.error_line_invoice')]);
         }
 
         $balance = round((float) $invoice->total_amount - (float) $invoice->paid_amount, 2);
         if ($balance <= 0) {
             throw ValidationException::withMessages([
-                'invoice_id' => 'Invoice '.$invoice->invoice_number.' has nothing outstanding.',
+                'invoice_id' => __('finance.error_invoice_settled', ['number' => $invoice->invoice_number]),
             ]);
         }
 
@@ -79,10 +78,12 @@ class ConfirmBankStatementMatchAction
                 'decided_by' => $confirmedBy,
                 'decided_at' => now('Indian/Maldives'),
                 'match_note' => $amount < (float) $line->amount
-                    ? 'Confirmed '.number_format($amount, 2, '.', '').' of '
-                        .number_format((float) $line->amount, 2, '.', '')
-                        .' against '.$invoice->invoice_number.'; the remainder is unplaced.'
-                    : 'Confirmed against '.$invoice->invoice_number.'.',
+                    ? __('finance.note_confirmed_part', [
+                        'amount' => number_format($amount, 2, '.', ''),
+                        'total' => number_format((float) $line->amount, 2, '.', ''),
+                        'number' => $invoice->invoice_number,
+                    ])
+                    : __('finance.note_confirmed', ['number' => $invoice->invoice_number]),
             ])->save();
 
             return $receipt;

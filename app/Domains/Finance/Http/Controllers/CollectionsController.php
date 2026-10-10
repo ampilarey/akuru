@@ -3,9 +3,11 @@
 namespace App\Domains\Finance\Http\Controllers;
 
 use App\Domains\Academics\Actions\ListAcademicYearsAction;
+use App\Domains\Academics\Actions\ListClassesForYearAction;
 use App\Domains\Finance\Actions\ListCollectionsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -24,6 +26,8 @@ class CollectionsController extends Controller
             'years' => $years->values(),
             'yearId' => $yearId,
             'rows' => app(ListCollectionsAction::class)->execute($yearId ?: null)->values(),
+            'classes' => $yearId ? app(ListClassesForYearAction::class)->execute($yearId)->values() : [],
+            't' => Phrases::once('finance'),
         ]);
     }
 

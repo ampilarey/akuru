@@ -243,7 +243,8 @@ check('the invoice is now sent', /\bSent\b/.test(await rowText(admin, INVOICE)),
 
 await admin.goto(`${BASE}/en/finance/arrears`, { waitUntil: 'networkidle' });
 const arrears = await rowText(admin, INVOICE);
-check('arrears lists it as current, with the guardian', arrears.includes(TOTAL) && /current/.test(arrears), arrears || (await text(admin)).slice(0, 160));
+// How long an invoice is overdue is named since slice FN2 (*Under 30 days*).
+check('arrears lists it as current, with the guardian', arrears.includes(TOTAL) && /Under 30 days/.test(arrears), arrears || (await text(admin)).slice(0, 160));
 {
     const [ok, detail] = await csv(admin, '/finance/arrears/export', INVOICE);
     check('the arrears CSV exports', ok, detail);
@@ -275,19 +276,13 @@ check('it starts at nothing paid', (await rowText(admin, INVOICE)).includes(`0.0
 async function receive(amount, method) {
     await admin.goto(`${BASE}/en/finance/receipts/manual`, { waitUntil: 'networkidle' });
     const form = admin.locator('form', { hasText: 'Record cash / transfer' });
-    await form.locator('select').first().selectOption({ label: `${INVOICE} — ${await balanceOf()}` });
+    // An open invoice says whose it is since slice FN2 (*number — pupil — balance*).
+    await form.locator('select').first().selectOption(await form.locator('option', { hasText: INVOICE }).first().getAttribute('value'));
     await form.locator('input[placeholder="Amount"]').fill(amount);
     await form.locator('select').nth(1).selectOption(method);
     await form.locator('button:has-text("Record cash / transfer")').click();
 
     return settles(admin, 'Receipt recorded.');
-}
-
-async function balanceOf() {
-    const option = admin.locator('option', { hasText: INVOICE }).first();
-    const label = (await option.count()) ? (await option.textContent()) ?? '' : '';
-
-    return label.split('—')[1]?.trim() ?? '';
 }
 
 check('the first installment is received in cash', await receive(FIRST, 'cash'), (await text(admin)).slice(0, 160));
@@ -328,7 +323,7 @@ check('collections shows the amount billed and collected', Boolean(collected), (
 
 await admin.goto(`${BASE}/en/finance/reconciliation`, { waitUntil: 'networkidle' });
 const recon = await text(admin);
-check('reconciliation lists both receipts against the invoice', (recon.match(new RegExp(INVOICE, 'g')) || []).length >= 2 && recon.includes('cash') && recon.includes('transfer'), recon.slice(0, 200));
+check('reconciliation lists both receipts against the invoice', (recon.match(new RegExp(INVOICE, 'g')) || []).length >= 2 && /\bCash\b/.test(recon) && /\bTransfer\b/.test(recon), recon.slice(0, 200));
 
 for (const [name, path, needle] of [
     ['invoices', '/finance/invoices/export', INVOICE],

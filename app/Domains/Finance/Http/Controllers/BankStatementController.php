@@ -9,8 +9,10 @@ use App\Domains\Finance\Actions\ListBankStatementLinesAction;
 use App\Domains\Finance\Enums\InvoiceStatus;
 use App\Domains\Finance\Models\BankStatementLine;
 use App\Domains\Finance\Models\Invoice;
+use App\Domains\People\Actions\ListStudentsByIdsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -37,17 +39,22 @@ class BankStatementController extends Controller
             $request->filled('status') ? (string) $request->input('status') : null,
         );
 
+        $open = Invoice::query()
+            ->whereIn('status', [InvoiceStatus::Sent->value, InvoiceStatus::Overdue->value, InvoiceStatus::Draft->value])
+            ->whereColumn('paid_amount', '<', 'total_amount')
+            ->orderByDesc('id')
+            ->limit(200)
+            ->get(['id', 'invoice_number', 'student_id', 'total_amount', 'paid_amount', 'notes']);
+        // An open invoice says whose it is: a line was matched by number alone.
+        $names = app(ListStudentsByIdsAction::class)->execute($open->pluck('student_id')->filter()->all())->keyBy('id');
+
         return Inertia::render('Finance/BankStatements/Index', [
             ...$payload,
-            'open_invoices' => Invoice::query()
-                ->whereIn('status', [InvoiceStatus::Sent->value, InvoiceStatus::Overdue->value, InvoiceStatus::Draft->value])
-                ->whereColumn('paid_amount', '<', 'total_amount')
-                ->orderByDesc('id')
-                ->limit(200)
-                ->get(['id', 'invoice_number', 'total_amount', 'paid_amount'])
+            'open_invoices' => $open
                 ->map(fn (Invoice $invoice): array => [
                     'id' => $invoice->id,
                     'invoice_number' => $invoice->invoice_number,
+                    'student_name' => $names[$invoice->student_id]['name'] ?? $invoice->notes,
                     'balance' => number_format((float) $invoice->total_amount - (float) $invoice->paid_amount, 2, '.', ''),
                 ])
                 ->values(),
@@ -56,6 +63,7 @@ class BankStatementController extends Controller
             // than making somebody read the config to find out why their file
             // was rejected.
             'expected_columns' => array_values(array_filter((array) config('finance.bank_statement.columns'))),
+            't' => Phrases::once('finance'),
         ]);
     }
 
@@ -76,13 +84,12 @@ class BankStatementController extends Controller
         );
 
         $message = $result['duplicate_file']
-            ? 'That statement was already imported — showing the existing one.'
-            : sprintf(
-                '%d line(s) imported, %d suggested match(es), %d left ambiguous.',
-                $result['created'],
-                $result['suggested'],
-                $result['ambiguous'],
-            );
+            ? __('finance.flash_statement_duplicate')
+            : __('finance.flash_statement_imported', [
+                'created' => $result['created'],
+                'suggested' => $result['suggested'],
+                'ambiguous' => $result['ambiguous'],
+            ]);
 
         return redirect()
             ->route('finance.bank-statements.index', ['import' => $result['import']->id])
@@ -103,7 +110,7 @@ class BankStatementController extends Controller
             isset($data['invoice_id']) ? (int) $data['invoice_id'] : null,
         );
 
-        return back()->with('success', 'Receipt recorded against the invoice.');
+        return back()->with('success', __('finance.flash_receipt_against_invoice'));
     }
 
     public function ignore(Request $request, BankStatementLine $line): RedirectResponse
@@ -120,7 +127,7 @@ class BankStatementController extends Controller
             $data['reason'] ?? null,
         );
 
-        return back()->with('success', 'Line marked as not a school payment.');
+        return back()->with('success', __('finance.flash_line_ignored'));
     }
 
     public function export(Request $request): StreamedResponse
