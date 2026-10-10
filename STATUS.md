@@ -4983,6 +4983,98 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qo. The money coming in, in Dhivehi and Arabic (C21 FN2, 2026-10-10)
+
+The fifteenth slice of BACKLOG C21, and the second and last of Finance.
+These five screens are how the school takes money and follows it:
+- the manual receipt: cash or a transfer taken at the office;
+- the bank statements: a bank's export, its credits matched to invoices;
+- reconciliation: receipts against payments, and each day's takings;
+- arrears: the unpaid invoices, oldest due first;
+- collections: what each class was billed and paid, by month.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and hint;
+- how a receipt was paid, a bank line's state and how long an invoice is
+  overdue, printed as codes (*gift_card*, *suggested*, *30*) or
+  abbreviated (*12d*);
+- collections printed a class's id, and an open invoice said nothing of
+  whose it was — on the receipt and on every bank line;
+- what the server wrote on a bank line (*Amount matches the outstanding
+  balance of …*), its saved messages and refusals, and a refund's.
+
+What the office could not see:
+- **A refused Confirm or Not a payment was said nowhere**: a bank charge
+  confirmed as a payment, an invoice already paid, a receipt ignored. And
+  Confirm with no invoice chosen did nothing at all. Each is said under its
+  line now, in the page's language.
+- **Reconciliation could not be read for a day.** The server took a from
+  and a to; the screen offered neither. It has them, and its export reads
+  the same days.
+
+**The change:**
+- **The `finance` book grows by 100 phrases**, 274 in all. The five
+  pages read it through `Phrases::once('finance')`.
+- **Codes are named**: how a receipt was paid, a bank line's state, how
+  long an invoice is overdue (and for how many days).
+- **A class reads by its name** on collections, and **an open invoice says
+  whose it is** on the receipt and the bank lines.
+- **What the server says is in the page's language**: the saved messages
+  and refusals of the receipt, the statements, a line's confirming and
+  ignoring, the allocation behind every receipt, the CSV reader and a
+  refund. A bank line's note is written in the language of whoever
+  imported or decided it, as a notification is written in its sender's
+  (C20), and stays as written.
+- **Every field the screens post is named** in Laravel's own refusals.
+
+What the bank and the school write stays as written: a line's description
+and reference, an invoice's number, a pupil's name, a file's name and the
+column headings the reader expects. The CSVs keep their English column
+codes.
+
+**Tests:**
+- `FinanceSpeaksThreeLanguagesTest` grows to the eleven screens, 27 server
+  files and the thirteen codes. A new test serves the five screens in
+  Dhivehi, and in Dhivehi:
+  - an open invoice says whose it is, and more than its balance is refused,
+    the balance in the sentence; cash is received;
+  - collections send the classes they name;
+  - a statement with a header and no rows is refused;
+  - a statement is imported and counted, the line naming an invoice
+    suggested against it with its note in Dhivehi;
+  - confirming the bank's charge is refused, and ignoring it is noted;
+  - the credit is confirmed against its invoice, noted in Dhivehi.
+
+The tests for the areas it touches (Finance, Localization, Architecture):
+**350 passed (21572 assertions)**.
+
+Whole suite locally: **2999 passed (56505 assertions)**.
+
+**Walks:**
+- **`finance-language.mjs`** 79/79 — the eleven finance screens read
+  right to left under `/dv` and `/ar`, with nothing left in English and
+  every field named; in Dhivehi, besides FN1's steps, the office:
+  - takes 1000 against `SMOKE-INV-OPEN`, whose balance is 150, and is
+    refused under the form, the balance in the sentence; the invoice says
+    whose it is, and no receipt is made;
+  - imports a statement with a header and no rows, and is refused under the
+    form; nothing is imported;
+  - reads reconciliation for today alone — the screen offered no dates —
+    and the address and the export carry the days;
+  - reads collections, which name each class rather than print its id.
+
+One walk changed, not for a defect in the app: **`fees.mjs`** read an
+invoice's age (*current*) and how a receipt was paid (*cash*, *transfer*)
+as codes, and chose the receipt's invoice by a label that now says whose it
+is. The pages name them (*Under 30 days*, *Cash*, *Transfer*), and the walk
+chooses the invoice by its number: 31/31.
+
+The other walks: `sweep.mjs` 25/25, `create-sweep.mjs` 6/6, `own-data.mjs`
+(every family saw their own records, and nobody else's), `pay-buttons.mjs`
+6/6, `money.mjs` 21/21, `admin-hub.mjs` 26/26, `admin-layout.mjs` 15/15,
+`admin.mjs` 43/43, `rtl.mjs` 8/8, `nav.mjs` 14/14, `mobile.mjs` 19/19,
+`portal-language.mjs` 212/212, `family.mjs` 40/40.
+
 ## 5qn. The finance office's billing screens in Dhivehi and Arabic (C21 FN1, 2026-10-10)
 
 The fourteenth slice of BACKLOG C21, and the first of Finance. These six

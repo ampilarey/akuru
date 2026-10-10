@@ -20,7 +20,7 @@ class RecordInvoiceReceiptAction
     {
         $invoice = Invoice::query()->find((int) ($data['invoice_id'] ?? 0));
         if ($invoice === null) {
-            throw ValidationException::withMessages(['invoice_id' => 'Invoice not found.']);
+            throw ValidationException::withMessages(['invoice_id' => __('finance.error_invoice_missing')]);
         }
 
         $paymentId = isset($data['payment_id']) ? (int) $data['payment_id'] : null;
@@ -30,7 +30,7 @@ class RecordInvoiceReceiptAction
 
         $amount = round((float) ($data['amount'] ?? 0), 2);
         if ($amount <= 0) {
-            throw ValidationException::withMessages(['amount' => 'Amount must be greater than zero.']);
+            throw ValidationException::withMessages(['amount' => __('finance.error_amount_positive')]);
         }
 
         $method = ReceiptMethod::from((string) ($data['method'] ?? ReceiptMethod::Cash->value));

@@ -1,13 +1,9 @@
 import { useState } from 'react';
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 
-const STATUS_LABEL = {
-    unmatched: 'Unmatched',
-    suggested: 'Suggested',
-    confirmed: 'Confirmed',
-    ignored: 'Ignored',
-};
+const STATUSES = ['unmatched', 'suggested', 'confirmed', 'ignored'];
 
 const STATUS_CLASS = {
     unmatched: 'bg-gray-100 text-gray-700',
@@ -16,6 +12,14 @@ const STATUS_CLASS = {
     ignored: 'bg-gray-200 text-gray-500',
 };
 
+/**
+ * A bank's statement, imported, and its credits matched to invoices. Every
+ * word is the `finance` book's (slice FN2, STATUS §5qo); a line's state is
+ * named from the book, and an open invoice says whose it is. A refused
+ * Confirm or Not a payment is said under its line — a debit confirmed, a
+ * line with no invoice chosen, an invoice already paid and a receipt
+ * ignored were refused with nothing on the page.
+ */
 export default function BankStatements({
     imports = [],
     selected_import_id = null,
@@ -24,8 +28,11 @@ export default function BankStatements({
     open_invoices = [],
     can_confirm = false,
     expected_columns = [],
+    t = {},
 }) {
+    const statusName = (value) => t[`match_status_${value}`] || value;
     const upload = useForm({ file: null, account_label: '' });
+    const refusals = useRowRefusals(upload);
     // Which invoice each line should be confirmed against. Seeded from the
     // suggestion, but the person can override it before confirming — that
     // override is the entire point of suggesting rather than auto-applying.
@@ -45,37 +52,34 @@ export default function BankStatements({
 
     const confirm = (line) => {
         const invoiceId = chosen[line.id] ?? line.matched_invoice_id ?? '';
-        if (!invoiceId) return;
-        router.post(
-            `/finance/bank-statements/lines/${line.id}/confirm`,
-            { invoice_id: invoiceId },
-            { preserveScroll: true },
-        );
+        refusals.actOn(`line:${line.id}`, () => router.post(`/finance/bank-statements/lines/${line.id}/confirm`, { invoice_id: invoiceId || null }, { preserveScroll: true }));
     };
 
     const ignore = (line) => {
-        router.post(`/finance/bank-statements/lines/${line.id}/ignore`, {}, { preserveScroll: true });
+        refusals.actOn(`line:${line.id}`, () => router.post(`/finance/bank-statements/lines/${line.id}/ignore`, {}, { preserveScroll: true }));
     };
 
     const exportHref = `/finance/bank-statements/export?${new URLSearchParams({
         ...(selected_import_id ? { import: selected_import_id } : {}),
         ...(status ? { status } : {}),
     }).toString()}`;
+    const importLabel = (row) => (t.bank_import_option || ':file · :start → :end · :count lines')
+        .replace(':file', row.original_filename)
+        .replace(':start', row.period_start ?? '?')
+        .replace(':end', row.period_end ?? '?')
+        .replace(':count', row.line_count);
 
     return (
-        <AppShell title="Bank statements">
+        <AppShell title={t.bank_title || 'Bank statements'}>
             <p className="mb-4 text-sm text-gray-600">
-                Import a bank export and match credits to invoices. Nothing here is a payment until you
-                confirm it — and confirming records an ordinary <strong>transfer</strong> receipt, which
-                does not grant access to any paid course. Course access still waits on the payment
-                gateway.
+                {t.bank_intro || 'Import a bank export and match credits to invoices. Nothing here is a payment until you confirm it, and confirming records an ordinary transfer receipt, which does not grant access to any paid course: course access still waits on the payment gateway.'}
             </p>
 
             <form onSubmit={submitUpload} className="mb-6 rounded-lg border bg-white p-4">
-                <h2 className="mb-3 font-semibold">Import a statement</h2>
+                <h2 className="mb-3 font-semibold">{t.bank_import_title || 'Import a statement'}</h2>
                 <div className="flex flex-wrap items-end gap-3">
                     <div>
-                        <label className="mb-1 block text-sm font-medium" htmlFor="file">CSV file</label>
+                        <label className="mb-1 block text-sm font-medium" htmlFor="file">{t.bank_file || 'CSV file'}</label>
                         <input
                             id="file"
                             type="file"
@@ -85,68 +89,60 @@ export default function BankStatements({
                         />
                     </div>
                     <div>
-                        <label className="mb-1 block text-sm font-medium" htmlFor="account_label">Account (optional)</label>
+                        <label className="mb-1 block text-sm font-medium" htmlFor="account_label">{t.bank_account || 'Account (optional)'}</label>
                         <input
                             id="account_label"
                             className="form-input"
-                            placeholder="e.g. BML current"
+                            placeholder={t.bank_account_hint || 'e.g. BML current'}
                             value={upload.data.account_label}
                             onChange={(e) => upload.setData('account_label', e.target.value)}
                         />
                     </div>
                     <button type="submit" className="btn-primary" disabled={upload.processing || !upload.data.file}>
-                        Import
+                        {t.bank_import || 'Import'}
                     </button>
                 </div>
                 {expected_columns.length > 0 && (
                     <p className="mt-3 text-xs text-gray-500">
-                        Expected column headings: {expected_columns.join(', ')}. These are configurable —
-                        if your bank uses different names, they can be mapped without a code change.
+                        {(t.bank_expected || 'Expected column headings: :columns. They can be mapped to your bank’s own names without a code change.').replace(':columns', expected_columns.join(t.list_separator || ', '))}
                     </p>
                 )}
-                {Object.values(upload.errors).map((message) => (
-                    <p key={message} className="mt-2 text-sm text-red-600">{message}</p>
-                ))}
+                <FormErrors errors={upload.errors} className="mt-2" />
             </form>
+            <FormErrors errors={refusals.unplaced} className="mb-4" />
 
             <div className="mb-4 flex flex-wrap items-center gap-2">
                 <select
                     className="form-input"
-                    aria-label="Statement"
+                    aria-label={t.bank_statement || 'Statement'}
                     value={selected_import_id ?? ''}
                     onChange={(e) => router.get(`/finance/bank-statements?import=${e.target.value}`)}
                 >
-                    {imports.length === 0 && <option value="">No statements imported yet</option>}
-                    {imports.map((row) => (
-                        <option key={row.id} value={row.id}>
-                            {row.original_filename} · {row.period_start ?? '?'} → {row.period_end ?? '?'} · {row.line_count} lines
-                        </option>
-                    ))}
+                    {imports.length === 0 && <option value="">{t.bank_no_imports || 'No statements imported yet'}</option>}
+                    {imports.map((row) => <option key={row.id} value={row.id}>{importLabel(row)}</option>)}
                 </select>
                 <select
                     className="form-input"
-                    aria-label="Status filter"
+                    aria-label={t.bank_status_filter || 'Status filter'}
                     value={status ?? ''}
                     onChange={(e) => go({ status: e.target.value })}
                 >
-                    <option value="">All statuses</option>
-                    {Object.entries(STATUS_LABEL).map(([value, label]) => (
-                        <option key={value} value={value}>{label}</option>
-                    ))}
+                    <option value="">{t.bank_all_statuses || 'All statuses'}</option>
+                    {STATUSES.map((value) => <option key={value} value={value}>{statusName(value)}</option>)}
                 </select>
-                <a className="btn-secondary" href={exportHref}>Export CSV</a>
+                <a className="btn-secondary" href={exportHref}>{t.export_csv || 'Export CSV'}</a>
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">Date</th>
-                            <th className="px-3 py-2">Description</th>
-                            <th className="px-3 py-2">Reference</th>
-                            <th className="px-3 py-2">Amount</th>
-                            <th className="px-3 py-2">Status</th>
-                            <th className="px-3 py-2">Invoice</th>
+                            <th className="px-3 py-2">{t.reconciliation_date || 'Date'}</th>
+                            <th className="px-3 py-2">{t.bank_description || 'Description'}</th>
+                            <th className="px-3 py-2">{t.bank_reference || 'Reference'}</th>
+                            <th className="px-3 py-2">{t.amount || 'Amount'}</th>
+                            <th className="px-3 py-2">{t.status || 'Status'}</th>
+                            <th className="px-3 py-2">{t.plans_col_invoice || 'Invoice'}</th>
                             <th className="px-3 py-2" />
                         </tr>
                     </thead>
@@ -154,7 +150,7 @@ export default function BankStatements({
                         {lines.length === 0 && (
                             <tr>
                                 <td className="px-3 py-6 text-center text-gray-500" colSpan={7}>
-                                    No lines to show.
+                                    {t.bank_no_lines || 'No lines to show.'}
                                 </td>
                             </tr>
                         )}
@@ -173,7 +169,7 @@ export default function BankStatements({
                                 </td>
                                 <td className="px-3 py-2">
                                     <span className={`rounded px-2 py-0.5 text-xs ${STATUS_CLASS[line.match_status] ?? ''}`}>
-                                        {STATUS_LABEL[line.match_status] ?? line.match_status}
+                                        {statusName(line.match_status)}
                                     </span>
                                 </td>
                                 <td className="px-3 py-2">
@@ -182,14 +178,15 @@ export default function BankStatements({
                                     ) : (
                                         <select
                                             className="form-input text-xs"
-                                            aria-label={`Invoice for line ${line.id}`}
+                                            aria-label={(t.bank_invoice_for || 'Invoice for line :id').replace(':id', line.id)}
                                             value={chosen[line.id] ?? line.matched_invoice_id ?? ''}
                                             onChange={(e) => setChosen({ ...chosen, [line.id]: e.target.value })}
                                         >
-                                            <option value="">Choose invoice…</option>
+                                            <option value="">{t.bank_choose_invoice || 'Choose an invoice…'}</option>
                                             {open_invoices.map((invoice) => (
                                                 <option key={invoice.id} value={invoice.id}>
-                                                    {invoice.invoice_number} · {invoice.balance} due
+                                                    {(t.plans_invoice_option || ':number — :student — :balance due')
+                                                        .replace(':number', invoice.invoice_number).replace(':student', invoice.student_name || '—').replace(':balance', invoice.balance)}
                                                 </option>
                                             ))}
                                         </select>
@@ -198,14 +195,15 @@ export default function BankStatements({
                                 <td className="px-3 py-2 whitespace-nowrap">
                                     {line.match_status !== 'confirmed' && line.is_credit && can_confirm && (
                                         <button type="button" className="btn-primary text-xs" onClick={() => confirm(line)}>
-                                            Confirm
+                                            {t.bank_confirm || 'Confirm'}
                                         </button>
                                     )}
                                     {line.match_status !== 'confirmed' && line.match_status !== 'ignored' && (
                                         <button type="button" className="btn-secondary ms-1 text-xs" onClick={() => ignore(line)}>
-                                            Not a payment
+                                            {t.bank_ignore || 'Not a payment'}
                                         </button>
                                     )}
+                                    <FormErrors errors={refusals.errorsFor(`line:${line.id}`)} className="mt-1 whitespace-normal" />
                                 </td>
                             </tr>
                         ))}

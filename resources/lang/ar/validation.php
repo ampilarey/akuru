@@ -541,6 +541,10 @@ return [
         'valid_from' => 'صالح من',
         'valid_until' => 'صالح حتى',
         'value' => 'القيمة',
+        // The manual receipt, bank statement and refund fields (slice FN2)
+        'account_label' => 'الحساب',
+        'destination' => 'وجهة الاسترداد',
+        'method' => 'طريقة الدفع',
     ],
 
     'values' => [

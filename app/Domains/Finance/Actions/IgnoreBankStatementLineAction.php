@@ -21,7 +21,7 @@ class IgnoreBankStatementLineAction
     {
         if ($line->match_status === BankStatementMatchStatus::Confirmed) {
             throw ValidationException::withMessages([
-                'line' => 'This line is already a receipt. Reverse it with a refund, not by ignoring it.',
+                'line' => __('finance.error_line_is_receipt'),
             ]);
         }
 
@@ -30,7 +30,7 @@ class IgnoreBankStatementLineAction
             'matched_invoice_id' => null,
             'match_note' => $reason !== null && trim($reason) !== ''
                 ? trim($reason)
-                : 'Not a school payment.',
+                : __('finance.note_not_school_payment'),
             'decided_by' => $decidedBy,
             'decided_at' => now('Indian/Maldives'),
         ])->save();

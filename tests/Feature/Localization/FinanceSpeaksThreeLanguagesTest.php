@@ -1,5 +1,6 @@
 <?php
 
+use App\Domains\Finance\Enums\BankStatementMatchStatus;
 use App\Domains\Finance\Enums\FeeAdjustmentAppliesTo;
 use App\Domains\Finance\Enums\FeeAdjustmentBasis;
 use App\Domains\Finance\Enums\FeeAdjustmentStatus;
@@ -10,15 +11,19 @@ use App\Domains\Finance\Enums\FeeStructureAppliesTo;
 use App\Domains\Finance\Enums\FeeStructureStatus;
 use App\Domains\Finance\Enums\InvoiceStatus;
 use App\Domains\Finance\Enums\PaymentPlanStatus;
+use App\Domains\Finance\Enums\ReceiptMethod;
+use App\Domains\Finance\Models\BankStatementLine;
 use App\Domains\Finance\Models\FeeAdjustment;
 use App\Domains\Finance\Models\FeeStructure;
 use App\Domains\Finance\Models\PaymentPlan;
+use App\Domains\Finance\Models\Receipt;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
 
 /**
  * The school office's finance screens in Dhivehi and Arabic (BACKLOG C21,
- * slice FN1, STATUS §5qn).
+ * slices FN1 and FN2, STATUS §5qn and §5qo).
  *
  * The fee items, the fee structures, the invoices, the fee adjustments, the
  * payment plans and the finance settings read no phrase book. Every word on
@@ -36,6 +41,15 @@ use Inertia\Testing\AssertableInertia as Assert;
  * form proposed installments due in February and March 2026, and left the
  * second's amount empty, so the plan it proposed was refused with nothing
  * on the page; and a refused copy, issue, run or plan was said nowhere.
+ *
+ * FN2 adds the money coming in: the manual receipt, the bank statements,
+ * reconciliation, arrears and collections. How a receipt was paid, a bank
+ * line's state and how long an invoice is overdue were printed as codes
+ * (*gift_card*, *suggested*, *30*); collections printed a class's id; an
+ * open invoice said nothing of whose it was; and the server's notes on a
+ * bank line, its saved messages and refusals were English — a refused
+ * Confirm or Not a payment said nowhere, and Confirm with no invoice chosen
+ * did nothing at all.
  */
 uses(RefreshDatabase::class);
 
@@ -45,6 +59,9 @@ function financeScreens(): array
     return [
         'Finance/FeeItems/Index', 'Finance/FeeStructures/Index', 'Finance/Invoices/Index',
         'Finance/Adjustments/Index', 'Finance/PaymentPlans/Index', 'Finance/Settings/Index',
+        // FN2.
+        'Finance/Receipts/Manual', 'Finance/BankStatements/Index', 'Finance/Reconciliation/Index',
+        'Finance/Arrears/Index', 'Finance/Collections/Index',
     ];
 }
 
@@ -66,6 +83,20 @@ function financeServerFiles(): array
         'app/Domains/Finance/Actions/SuggestSiblingFeeAdjustmentsAction.php',
         'app/Domains/Finance/Actions/CreatePaymentPlanAction.php',
         'app/Domains/Finance/Actions/SaveFinanceSettingsAction.php',
+        // FN2.
+        'app/Domains/Finance/Http/Controllers/ManualReceiptController.php',
+        'app/Domains/Finance/Http/Controllers/BankStatementController.php',
+        'app/Domains/Finance/Http/Controllers/ReconciliationController.php',
+        'app/Domains/Finance/Http/Controllers/ArrearsController.php',
+        'app/Domains/Finance/Http/Controllers/CollectionsController.php',
+        'app/Domains/Finance/Http/Controllers/AdminPaymentRefundController.php',
+        'app/Domains/Finance/Actions/RecordInvoiceReceiptAction.php',
+        'app/Domains/Finance/Actions/AllocatePaymentAction.php',
+        'app/Domains/Finance/Actions/ConfirmBankStatementMatchAction.php',
+        'app/Domains/Finance/Actions/IgnoreBankStatementLineAction.php',
+        'app/Domains/Finance/Actions/SuggestBankStatementMatchesAction.php',
+        'app/Domains/Finance/Actions/RefundPaymentAction.php',
+        'app/Domains/Finance/Services/ConfiguredCsvBankStatementParser.php',
     ];
 }
 
@@ -109,7 +140,7 @@ it('names every field the finance screens post, so a refusal by Laravel’s own 
         preg_match_all("/'([a-z_]+(?:\\.\\*(?:\\.[a-z_]+)?)?)' => \\[(?=[^\\]]*'(?:required|nullable|sometimes|integer|string|array|boolean|date|numeric)')/", file_get_contents(base_path($file)), $found);
         $fields = [...$fields, ...$found[1]];
     }
-    expect($fields)->toContain('default_amount', 'items.*.amount', 'period_end', 'item_types', 'installments.*.due_date');
+    expect($fields)->toContain('default_amount', 'items.*.amount', 'period_end', 'item_types', 'installments.*.due_date', 'method', 'account_label', 'destination');
 
     foreach (array_unique($fields) as $field) {
         expect(array_key_exists($field, $dhivehi))->toBeTrue("{$field} has no Dhivehi name")
@@ -129,6 +160,12 @@ it('names every code the finance screens show, in all three languages', function
         ...array_map(fn ($case) => 'basis_'.$case->value, FeeAdjustmentBasis::cases()),
         ...array_map(fn ($case) => 'adjustment_applies_'.$case->value, FeeAdjustmentAppliesTo::cases()),
         ...array_map(fn ($case) => 'adjustment_status_'.$case->value, FeeAdjustmentStatus::cases()),
+        // FN2: how a receipt was paid, a bank line's state, how long an
+        // invoice is overdue.
+        ...array_map(fn ($case) => 'receipt_method_'.$case->value, ReceiptMethod::cases()),
+        'receipt_method_unknown',
+        ...array_map(fn ($case) => 'match_status_'.$case->value, BankStatementMatchStatus::cases()),
+        'aging_current', 'aging_30', 'aging_60', 'aging_90',
     ];
 
     foreach ($codes as $key) {
@@ -147,7 +184,8 @@ it('leaves no English in what the server says on the finance screens, and says i
 
     $keys = refusalKeysIn(financeServerFiles());
     expect($keys)->toContain('finance.flash_invoices_generated', 'finance.flash_invoices_issued', 'finance.flash_structures_copied',
-        'finance.error_period_order', 'finance.error_adjustment_item_types', 'finance.error_installments_sum', 'finance.suggest_sibling_reason', 'finance.error_reminder_days');
+        'finance.error_period_order', 'finance.error_adjustment_item_types', 'finance.error_installments_sum', 'finance.suggest_sibling_reason', 'finance.error_reminder_days',
+        'finance.flash_statement_imported', 'finance.error_overpayment', 'finance.note_ambiguous', 'finance.error_bad_date', 'finance.error_refund_exceeds');
     foreach ($keys as $key) {
         expect(trans($key, [], 'en'))->not->toBe($key, "{$key} has no English")
             ->and(trans($key, [], 'dv'))->toMatch('/\p{Thaana}/u', "{$key} in Dhivehi")
@@ -252,4 +290,82 @@ it('serves the finance screens in Dhivehi, and says what was saved and refused i
     $this->withoutLocalizationMiddleware()->actingAs($office)
         ->put(route('finance.settings.update'), ['invoice_monthly_mode' => 'per_month', 'invoice_reminder_days' => 200, 'plan_default_days' => 14])
         ->assertSessionHasErrors(['invoice_reminder_days' => $dv['error_reminder_days']]);
+});
+
+it('serves the money coming in in Dhivehi, and says what was received and refused in Dhivehi', function () {
+    $year = makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active', 'start_date' => '2026-01-01', 'end_date' => '2026-12-31']);
+    $class = makeClass($year);
+    $office = actingPeopleAdmin(['finance.manage', 'finance.record-manual-payment']);
+    $student = makeStudent();
+    $dv = financeBook('dv');
+
+    app()->setLocale('dv');
+    foreach ([
+        ['finance.receipts.manual', 'Finance/Receipts/Manual', 'manual_title'],
+        ['finance.bank-statements.index', 'Finance/BankStatements/Index', 'bank_title'],
+        ['finance.reconciliation.index', 'Finance/Reconciliation/Index', 'reconciliation_title'],
+        ['finance.arrears.index', 'Finance/Arrears/Index', 'arrears_title'],
+        ['finance.collections.index', 'Finance/Collections/Index', 'collections_title'],
+    ] as [$route, $component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($office)
+            ->get(route($route))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("t.{$key}", $dv[$key]));
+    }
+
+    // An open invoice says whose it is; paying more than its balance is
+    // refused in Dhivehi, the balance in the sentence; cash is received.
+    $invoice = makeSchoolInvoice($office->id, $student->id, $year->id, 500);
+    $invoice->update(['meta' => ['class_id' => $class->id]]);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->get(route('finance.receipts.manual'))
+        ->assertInertia(fn (Assert $page) => $page->where('invoices.0.student_name', fn ($name) => filled($name)));
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('finance.receipts.store'), ['invoice_id' => $invoice->id, 'amount' => 600, 'method' => 'cash'])
+        ->assertSessionHasErrors(['amount' => __('finance.error_overpayment', ['balance' => '500.00'], 'dv')]);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('finance.receipts.store'), ['invoice_id' => $invoice->id, 'amount' => 200, 'method' => 'cash'])
+        ->assertSessionHas('success', $dv['flash_receipt_recorded']);
+    expect(Receipt::query()->count())->toBe(1);
+
+    // Collections name the class; arrears say how long it is overdue.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->get(route('finance.collections.index'))
+        ->assertInertia(fn (Assert $page) => $page->where('classes.0.id', $class->id)->where('rows.0.class_id', $class->id));
+
+    // A statement with a header and nothing under it is refused in Dhivehi.
+    $empty = UploadedFile::fake()->createWithContent('empty.csv', "date,description,reference,amount\n");
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('finance.bank-statements.store'), ['file' => $empty])
+        ->assertSessionHasErrors(['file' => $dv['error_no_rows']]);
+
+    // A statement is imported and counted in Dhivehi; the line naming the
+    // invoice is suggested against it, the note in Dhivehi.
+    $statement = UploadedFile::fake()->createWithContent('statement.csv', implode("\n", [
+        'date,description,reference,amount',
+        "2026-03-02,School fees,{$invoice->invoice_number},300.00",
+        '2026-03-03,Bank charge,FEE,-5.00',
+    ]));
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('finance.bank-statements.store'), ['file' => $statement])
+        ->assertSessionHas('success', __('finance.flash_statement_imported', ['created' => 2, 'suggested' => 1, 'ambiguous' => 0], 'dv'));
+    $credit = BankStatementLine::query()->where('amount', 300)->sole();
+    $debit = BankStatementLine::query()->where('amount', -5)->sole();
+    expect($credit->match_note)->toBe(__('finance.note_number_found', ['number' => $invoice->invoice_number], 'dv'));
+
+    // Confirming the bank's charge is refused in Dhivehi — it was said
+    // nowhere — and ignoring it is noted in Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('finance.bank-statements.confirm', $debit->id), [])
+        ->assertSessionHasErrors(['line' => $dv['error_line_debit']]);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('finance.bank-statements.ignore', $debit->id), [])
+        ->assertSessionHas('success', $dv['flash_line_ignored']);
+    expect($debit->refresh()->match_note)->toBe($dv['note_not_school_payment']);
+
+    // The credit confirmed against its invoice: a receipt, noted in Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('finance.bank-statements.confirm', $credit->id), [])
+        ->assertSessionHas('success', $dv['flash_receipt_against_invoice']);
+    expect($credit->refresh()->match_note)->toBe(__('finance.note_confirmed', ['number' => $invoice->invoice_number], 'dv'))
+        ->and(Receipt::query()->count())->toBe(2);
 });

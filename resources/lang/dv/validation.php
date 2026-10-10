@@ -541,6 +541,10 @@ return [
         'valid_from' => 'ފެށޭ ތާރީޚު',
         'valid_until' => 'ނިމޭ ތާރީޚު',
         'value' => 'އަގު',
+        // The manual receipt, bank statement and refund fields (slice FN2)
+        'account_label' => 'އެކައުންޓް',
+        'destination' => 'ރިފަންޑް ފޮނުވާ ތަން',
+        'method' => 'ދެއްކި ގޮތް',
     ],
 
     'values' => [
