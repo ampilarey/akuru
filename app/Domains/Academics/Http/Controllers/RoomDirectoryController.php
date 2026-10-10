@@ -7,6 +7,7 @@ use App\Domains\Academics\Enums\RoomType;
 use App\Domains\Academics\Models\Room;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -28,6 +29,7 @@ class RoomDirectoryController extends Controller
         return Inertia::render('Academics/Rooms/Index', [
             'rooms' => $rooms,
             'types' => array_map(fn (RoomType $type) => $type->value, RoomType::cases()),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -39,7 +41,7 @@ class RoomDirectoryController extends Controller
 
         return redirect()
             ->route('academics.rooms.index')
-            ->with('success', 'Room created.');
+            ->with('success', __('academics.flash_room_created'));
     }
 
     public function update(Request $request, Room $room): RedirectResponse
@@ -50,7 +52,7 @@ class RoomDirectoryController extends Controller
 
         return redirect()
             ->route('academics.rooms.index')
-            ->with('success', 'Room updated.');
+            ->with('success', __('academics.flash_room_updated'));
     }
 
     public function export(Request $request): StreamedResponse

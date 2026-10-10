@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\SavePeriodAction;
 use App\Domains\Academics\Models\Period;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,6 +26,7 @@ class PeriodDirectoryController extends Controller
 
         return Inertia::render('Academics/Periods/Index', [
             'periods' => $periods,
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -36,7 +38,7 @@ class PeriodDirectoryController extends Controller
 
         return redirect()
             ->route('academics.periods.index')
-            ->with('success', 'Period created.');
+            ->with('success', __('academics.flash_period_created'));
     }
 
     public function update(Request $request, Period $period): RedirectResponse
@@ -47,7 +49,7 @@ class PeriodDirectoryController extends Controller
 
         return redirect()
             ->route('academics.periods.index')
-            ->with('success', 'Period updated.');
+            ->with('success', __('academics.flash_period_updated'));
     }
 
     public function export(Request $request): StreamedResponse

@@ -185,7 +185,9 @@ await slot(admin).click();
 // The refusal is the red line the save comes back with — read there, not
 // from the page, which always carries the words "Allow conflict".
 const refusal = admin.locator('p.text-red-600');
-const refused = await until(admin, async () => (await refusal.count()) > 0 && /conflicts: .*teacher/i.test(await refusal.first().innerText()));
+// It names what the slot clashes with ("This slot clashes with: the
+// teacher."); it read "Timetable conflicts: teacher#12" (STATUS §5qf).
+const refused = await until(admin, async () => (await refusal.count()) > 0 && /clashes with: .*teacher/i.test(await refusal.first().innerText()));
 check('the same teacher in the same slot elsewhere is refused, and the office is told why', refused && (await entriesIn(slot(admin)).count()) === 0, refused ? (await refusal.first().innerText()).trim().slice(0, 160) : (await text(admin)).slice(0, 160));
 
 // 3. overruled on purpose, with a reason

@@ -18,7 +18,7 @@ class CopyTimetableEntriesAction
     {
         if ($sourceClassId === $targetClassId) {
             throw ValidationException::withMessages([
-                'source_class_id' => 'Choose a different class to copy from.',
+                'source_class_id' => __('academics.error_copy_same_class'),
             ]);
         }
 
@@ -100,7 +100,7 @@ class CopyTimetableEntriesAction
                     'valid_until' => $until,
                     'is_active' => true,
                     'allow_conflict' => $allowConflict,
-                    'conflict_reason' => $allowConflict ? 'Copied from another class timetable.' : null,
+                    'conflict_reason' => $allowConflict ? __('academics.copied_conflict_reason') : null,
                 ], $overrides), null, $allowConflict, null);
                 $copied++;
             } catch (TimetableConflictException|ValidationException) {

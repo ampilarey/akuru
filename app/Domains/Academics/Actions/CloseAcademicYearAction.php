@@ -16,7 +16,7 @@ class CloseAcademicYearAction
             ->count();
 
         if ($openTerms > 0) {
-            throw new RuntimeException('All terms must be closed before closing the academic year.');
+            throw new RuntimeException(__('academics.error_year_terms_open'));
         }
 
         $year->forceFill([

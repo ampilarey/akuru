@@ -2,10 +2,12 @@
 
 namespace App\Domains\Academics\Http\Controllers;
 
+use App\Domains\Academics\Actions\DescribePromotionReportAction;
 use App\Domains\Academics\Actions\PromoteStudentsAction;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -28,7 +30,8 @@ class PromotionController extends Controller
             'targetClasses' => $targetYearId
                 ? ClassRoom::query()->where('academic_year_id', $targetYearId)->get(['id', 'name', 'section'])
                 : [],
-            'report' => $request->session()->get('promotion_report'),
+            'report' => app(DescribePromotionReportAction::class)->execute($request->session()->get('promotion_report')),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -52,7 +55,7 @@ class PromotionController extends Controller
                 'target_year_id' => $data['target_year_id'],
             ])
             ->with('promotion_report', $report)
-            ->with('success', 'Dry-run complete. Review the report before confirming.');
+            ->with('success', __('academics.flash_dry_run'));
     }
 
     public function commit(Request $request): RedirectResponse
@@ -70,7 +73,7 @@ class PromotionController extends Controller
         return redirect()
             ->route('academics.promotion.create')
             ->with('promotion_report', $report)
-            ->with('success', 'Promotion committed.');
+            ->with('success', __('academics.flash_promotion_committed'));
     }
 
     /**

@@ -14,7 +14,7 @@ class AssignClassTeacherAction
             $exists = DB::table('teachers')->where('user_id', $userId)->exists();
             if (! $exists) {
                 throw ValidationException::withMessages([
-                    'class_teacher_id' => 'That user is not a teacher.',
+                    'class_teacher_id' => __('academics.error_not_a_teacher'),
                 ]);
             }
         }

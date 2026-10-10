@@ -15,7 +15,7 @@ class SaveCalendarDayAction
     {
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'Title is required.']);
+            throw ValidationException::withMessages(['title' => __('academics.error_title_required')]);
         }
 
         $date = (string) $data['date'];
@@ -29,7 +29,7 @@ class SaveCalendarDayAction
 
         if ($duplicate) {
             throw ValidationException::withMessages([
-                'date' => 'That date already has a calendar entry for this year.',
+                'date' => __('academics.error_calendar_date_taken'),
             ]);
         }
 

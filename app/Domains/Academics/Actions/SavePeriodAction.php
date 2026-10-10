@@ -14,7 +14,7 @@ class SavePeriodAction
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Name is required.']);
+            throw ValidationException::withMessages(['name' => __('academics.error_name_required')]);
         }
 
         $start = (string) ($data['start_time'] ?? '');
@@ -22,16 +22,16 @@ class SavePeriodAction
         if ($start === '' || $end === '') {
             $errors = [];
             if ($start === '') {
-                $errors['start_time'] = 'Start time is required.';
+                $errors['start_time'] = __('academics.error_start_required');
             }
             if ($end === '') {
-                $errors['end_time'] = 'End time is required.';
+                $errors['end_time'] = __('academics.error_end_required');
             }
             throw ValidationException::withMessages($errors);
         }
 
         if ($end <= $start) {
-            throw ValidationException::withMessages(['end_time' => 'End time must be after start time.']);
+            throw ValidationException::withMessages(['end_time' => __('academics.error_end_after_start')]);
         }
 
         $schoolId = $data['school_id'] ?? app(ResolveDefaultSchoolIdAction::class)->execute();
@@ -44,7 +44,7 @@ class SavePeriodAction
             ->exists();
 
         if ($duplicate) {
-            throw ValidationException::withMessages(['order' => 'A period with this order already exists.']);
+            throw ValidationException::withMessages(['order' => __('academics.error_period_order_taken')]);
         }
 
         $payload = [

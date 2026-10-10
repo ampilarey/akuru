@@ -11,10 +11,11 @@ class RoomBookingClashException extends RuntimeException
      */
     public function __construct(public array $conflicts)
     {
-        $summary = collect($conflicts)
-            ->map(fn (array $conflict) => $conflict['type'].'#'.$conflict['id'])
+        $list = collect($conflicts)
+            ->map(fn (array $conflict) => __('academics.conflict_'.$conflict['type']))
+            ->unique()
             ->implode(', ');
 
-        parent::__construct('Room booking clashes: '.$summary);
+        parent::__construct(__('academics.error_booking_clashes', ['list' => $list]));
     }
 }

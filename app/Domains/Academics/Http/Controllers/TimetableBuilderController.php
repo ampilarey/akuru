@@ -17,6 +17,7 @@ use App\Domains\Academics\Models\TeacherAbsence;
 use App\Domains\Academics\Models\Timetable;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -46,6 +47,7 @@ class TimetableBuilderController extends Controller
         $teacherId = $request->integer('teacher_id') ?: null;
         $roomId = $request->integer('room_id') ?: null;
 
+        $preview = app(PreviewTimetableConflictsAction::class);
         $entries = Timetable::query()
             ->where('academic_year_id', $yearId)
             ->where('is_active', true)
@@ -54,14 +56,7 @@ class TimetableBuilderController extends Controller
             ->when($view === 'room' && $roomId, fn ($query) => $query->where('room_id', $roomId))
             ->orderBy('day_of_week')
             ->get()
-            ->map(fn (Timetable $row) => $this->serializeEntry($row));
-
-        $preview = app(PreviewTimetableConflictsAction::class);
-        $entries = $entries->map(function (array $entry) use ($preview) {
-            $entry['conflicts'] = $preview->execute($entry);
-
-            return $entry;
-        });
+            ->map(fn (Timetable $row) => $this->entryWithConflicts($row, $preview));
 
         return Inertia::render('Academics/Timetable/Builder', [
             'yearId' => $yearId ?: null,
@@ -77,11 +72,12 @@ class TimetableBuilderController extends Controller
                 ->get(['id', 'name', 'section', 'academic_year_id']),
             'periods' => Period::query()->orderBy('order')->get(['id', 'name', 'start_time', 'end_time', 'is_break', 'order']),
             'subjects' => Subject::query()->where('is_active', true)->orderBy('name')->get(['id', 'name', 'code']),
-            'rooms' => Room::query()->where('active', true)->orderBy('name')->get(['id', 'name', 'type']),
+            'rooms' => Room::query()->where('active', true)->orderBy('name')->get(['id', 'name', 'name_arabic', 'name_dhivehi', 'type']),
             'teachers' => app(ListActiveTeachersAction::class)->execute(),
             'entries' => $entries,
             'substitutions' => $this->substitutions($yearId),
             'canOverride' => (bool) $request->user()?->can('timetables.allow_conflict'),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -103,7 +99,7 @@ class TimetableBuilderController extends Controller
 
         return redirect()
             ->route('academics.timetable.index', $request->only(['academic_year_id', 'view', 'class_id', 'teacher_id', 'room_id']))
-            ->with('success', 'Slot removed.');
+            ->with('success', __('academics.flash_slot_removed'));
     }
 
     public function preview(Request $request): JsonResponse
@@ -152,7 +148,7 @@ class TimetableBuilderController extends Controller
                 'class_id' => $data['target_class_id'],
                 'view' => 'class',
             ])
-            ->with('success', "Copied {$result['copied']} slot(s); skipped {$result['skipped']}.");
+            ->with('success', __('academics.flash_copied_from_class', $result));
     }
 
     public function copyWeek(Request $request): RedirectResponse
@@ -177,7 +173,7 @@ class TimetableBuilderController extends Controller
                 'class_id' => $data['class_id'],
                 'view' => 'class',
             ])
-            ->with('success', "Copied week: {$result['copied']} slot(s); skipped {$result['skipped']}.");
+            ->with('success', __('academics.flash_copied_week', $result));
     }
 
     public function export(Request $request): StreamedResponse
@@ -252,7 +248,21 @@ class TimetableBuilderController extends Controller
                 'class_id' => $data['class_id'],
                 'view' => 'class',
             ])
-            ->with('success', $entry ? 'Slot updated.' : 'Slot added.');
+            ->with('success', __($entry ? 'academics.flash_slot_updated' : 'academics.flash_slot_added'));
+    }
+
+    /**
+     * An entry as the builder draws it, with what it clashes with — each kind
+     * a code the page names.
+     *
+     * @return array<string, mixed>
+     */
+    private function entryWithConflicts(Timetable $row, PreviewTimetableConflictsAction $preview): array
+    {
+        $entry = $this->serializeEntry($row);
+        $entry['conflicts'] = $preview->execute($entry);
+
+        return $entry;
     }
 
     /**
