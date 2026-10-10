@@ -15,7 +15,7 @@ class SaveBookTitleAction
         $name = trim((string) ($data['title'] ?? ''));
 
         if ($name === '') {
-            throw ValidationException::withMessages(['title' => 'A book needs a title.']);
+            throw ValidationException::withMessages(['title' => __('circulation.error_title_required')]);
         }
 
         $loanDays = (int) ($data['loan_days'] ?? 14);

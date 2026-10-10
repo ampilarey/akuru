@@ -4,21 +4,23 @@ import AppShell from '../../Layouts/AppShell';
 /**
  * A printable label sheet. Each label carries the accession number as a Code 39
  * barcode and as readable text — a scanner reads the bars, a human reads the
- * number when the label is scuffed.
+ * number when the label is scuffed. Every word is the `circulation` book's
+ * (slice LD1, STATUS §5qt).
  */
-export default function Labels({ title, labels = [] }) {
+export default function Labels({ title, labels = [], t = {} }) {
     return (
-        <AppShell title={`Labels — ${title.title}`}>
+        <AppShell title={(t.labels_title || 'Labels — :title').replace(':title', title.title)}>
             <div className="mb-4 flex flex-wrap gap-3 print:hidden">
-                <button className="btn-primary text-sm" onClick={() => window.print()}>Print</button>
+                <button type="button" className="btn-primary text-sm" onClick={() => window.print()}>{t.print || 'Print'}</button>
                 <Link href={`/circulation/titles/${title.id}`} className="self-center text-sm text-[#7C2D37] underline">
-                    Back to the title
+                    {t.back_to_title || 'Back to the title'}
                 </Link>
             </div>
 
             <p className="mb-4 text-sm text-gray-600 print:hidden">
-                {labels.length} label{labels.length === 1 ? '' : 's'}. Stick one inside each copy before
-                it goes on the shelf — a book without one cannot be issued or taken back.
+                {labels.length === 1 ? (t.labels_one || '1 label.') : (t.labels_many || ':count labels.').replace(':count', labels.length)}
+                {' '}
+                {t.labels_hint || 'Stick one inside each copy before it goes on the shelf — a book without one cannot be issued or taken back.'}
             </p>
 
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -36,7 +38,7 @@ export default function Labels({ title, labels = [] }) {
             </div>
             {labels.length === 0 && (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">
-                    No copies yet, so nothing to label.
+                    {t.labels_none || 'No copies yet, so nothing to label.'}
                 </p>
             )}
         </AppShell>

@@ -11,11 +11,12 @@ enum CopyStatus: string
 
     public function label(): string
     {
+        // In the page's language (slice LD1); the pages name the code themselves.
         return match ($this) {
-            self::Available => 'On the shelf',
-            self::OnLoan => 'On loan',
-            self::Lost => 'Lost',
-            self::Withdrawn => 'Withdrawn',
+            self::Available => __('circulation.copy_status_available'),
+            self::OnLoan => __('circulation.copy_status_on_loan'),
+            self::Lost => __('circulation.copy_status_lost'),
+            self::Withdrawn => __('circulation.copy_status_withdrawn'),
         };
     }
 

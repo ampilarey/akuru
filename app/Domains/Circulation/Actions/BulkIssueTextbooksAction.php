@@ -16,7 +16,8 @@ use Illuminate\Validation\ValidationException;
  * list instead of re-running the whole class and hoping.
  *
  * Each issue still goes through `LendCopyAction` (rule 11), so a bulk issue
- * and a single one cannot drift apart.
+ * and a single one cannot drift apart. Why a pupil was skipped is said in the
+ * page's language (slice LD1).
  *
  * @see BulkReturnTextbooksAction the end-of-term mirror
  */
@@ -31,7 +32,7 @@ class BulkIssueTextbooksAction
         $ids = array_values(array_unique(array_filter(array_map('intval', $studentIds))));
 
         if ($ids === []) {
-            throw ValidationException::withMessages(['students' => 'Choose at least one pupil.']);
+            throw ValidationException::withMessages(['students' => __('circulation.error_choose_pupils')]);
         }
 
         $lend = app(LendCopyAction::class);
@@ -48,7 +49,7 @@ class BulkIssueTextbooksAction
                 ->exists();
 
             if ($alreadyHas) {
-                $skipped[] = ['student_id' => $studentId, 'reason' => 'already has a copy'];
+                $skipped[] = ['student_id' => $studentId, 'reason' => __('circulation.reason_has_copy')];
 
                 continue;
             }
@@ -56,7 +57,7 @@ class BulkIssueTextbooksAction
             $copy = BookCopy::query()->where('book_title_id', $titleId)->available()->first();
 
             if ($copy === null) {
-                $skipped[] = ['student_id' => $studentId, 'reason' => 'no copy left on the shelf'];
+                $skipped[] = ['student_id' => $studentId, 'reason' => __('circulation.reason_none_left')];
 
                 continue;
             }
@@ -72,7 +73,7 @@ class BulkIssueTextbooksAction
                 // Another desk took the copy between the read and the write.
                 $skipped[] = [
                     'student_id' => $studentId,
-                    'reason' => collect($e->errors())->flatten()->first() ?? 'could not be issued',
+                    'reason' => collect($e->errors())->flatten()->first() ?? __('circulation.reason_refused'),
                 ];
             }
         }

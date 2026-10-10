@@ -31,7 +31,7 @@ class ReturnCopyAction
                 ->first();
 
             if ($copy === null) {
-                throw ValidationException::withMessages(['copy' => 'No copy with that accession number.']);
+                throw ValidationException::withMessages(['copy' => __('circulation.error_copy_not_found')]);
             }
 
             /** @var Loan|null $loan */
@@ -39,7 +39,7 @@ class ReturnCopyAction
 
             if ($loan === null) {
                 throw ValidationException::withMessages([
-                    'copy' => 'That copy is not out on loan — nothing to take back.',
+                    'copy' => __('circulation.error_not_on_loan'),
                 ]);
             }
 
