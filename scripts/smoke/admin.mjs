@@ -272,9 +272,12 @@ await su.goto(`${BASE}/en/admin/operations`, { waitUntil: 'networkidle' });
 await su.click('button[aria-controls="app-shell-more"]');
 await settle(su, '#app-shell-more');
 const suLinks = await su.locator('#app-shell-more a').evaluateAll((els) => els.map((el) => el.getAttribute('href')));
-const suWanted = ['/admin/instructors', '/admin/public-site/pages', '/admin/prayer-times/islands', '/admin/commerce', '/admin/library', '/admin/pronunciation', '/admin/bookshop', '/admin/translations', '/admin/operations/features', '/admin/users', '/admin/settings'];
+// Since the navigation re-audit (N1, STATUS §5nw) the Institute has its own
+// Admissions part: the course enrolments and their payments are the
+// Institute's. This step asserted the opposite until §5qg.
+const suWanted = ['/admin/instructors', '/admin/public-site/pages', '/admin/prayer-times/islands', '/admin/commerce', '/admin/library', '/admin/pronunciation', '/admin/bookshop', '/admin/translations', '/admin/operations/features', '/admin/users', '/admin/settings', '/admin/enrollments'];
 const suMissing = suWanted.filter((href) => !suLinks.some((h) => h && h.endsWith(href)));
-check('the system admin\'s More menu reaches the whole Institute, and not the School\'s admissions', suMissing.length === 0 && !suLinks.some((h) => h && h.endsWith('/admin/enrollments')), suMissing.join(', '));
+check('the system admin\'s More menu reaches the whole Institute, its Admissions part included', suMissing.length === 0, suMissing.join(', '));
 
 // ------------------------------------------------------------ 3. the four CSVs
 
