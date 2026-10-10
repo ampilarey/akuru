@@ -402,4 +402,7 @@ return [
     'error_discount_value' => 'Invalid discount value.',
     'error_discount_code_required' => 'Code is required.',
     'error_discount_code_exists' => 'Code already exists.',
+
+    // SH1 (BACKLOG C21): a scoped discount code's refusal, in the page's language
+    'error_discount_status' => 'Invalid status.',
 ];

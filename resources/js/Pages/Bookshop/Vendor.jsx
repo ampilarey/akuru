@@ -569,7 +569,7 @@ function OwnDomain({ settings, isOwner, t, panels }) {
             )}
             <form className="flex flex-wrap items-end gap-2" onSubmit={(e) => { e.preventDefault(); form.post('/vendor/host', { preserveScroll: true }); }}>
                 <label className="w-full text-sm sm:w-auto">{t.host_label}
-                    <input className="form-input block w-full sm:w-72" dir="ltr" placeholder="www.example.mv" aria-label="www.example.mv" value={form.data.custom_host} onChange={(e) => form.setData('custom_host', e.target.value)} disabled={!isOwner} data-testid="host-input" />
+                    <input className="form-input block w-full sm:w-72" dir="ltr" placeholder="www.example.mv" value={form.data.custom_host} onChange={(e) => form.setData('custom_host', e.target.value)} disabled={!isOwner} data-testid="host-input" />
                 </label>
                 {isOwner && <button type="submit" className="btn-secondary" disabled={form.processing} data-testid="host-save">{t.host_save}</button>}
                 <FormErrors errors={form.errors} className="w-full" />

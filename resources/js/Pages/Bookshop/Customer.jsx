@@ -11,13 +11,14 @@ function Tags({ customer, t }) {
     const save = (e) => {
         e.preventDefault();
         // The list goes as an array; a plain router post, never a chained transform.
-        router.post(`/admin/bookshop/customers/${customer.id}/tags`, { tags: form.data.tags.split(',').map((x) => x.trim()).filter(Boolean) }, { preserveScroll: true, onSuccess: (page) => form.setData('tags', page.props.customer.tags.join(', ')) });
+        // Split on the Latin comma and on the one a Dhivehi or Arabic keyboard types (SH1).
+        router.post(`/admin/bookshop/customers/${customer.id}/tags`, { tags: form.data.tags.split(/[,،]/).map((x) => x.trim()).filter(Boolean) }, { preserveScroll: true, onSuccess: (page) => form.setData('tags', page.props.customer.tags.join(', ')) });
     };
 
     return (
         <form className="flex flex-wrap items-end gap-2" onSubmit={save}>
             <label className="text-sm">{t.customer_tags}
-                <input className="form-input block w-80 max-w-full" value={form.data.tags} onChange={(e) => form.setData('tags', e.target.value)} placeholder={t.customer_tags_hint} aria-label={t.customer_tags_hint} data-testid="customer-tags" />
+                <input className="form-input block w-80 max-w-full" value={form.data.tags} onChange={(e) => form.setData('tags', e.target.value)} placeholder={t.customer_tags_hint} data-testid="customer-tags" />
             </label>
             <button type="submit" className="btn-secondary" data-testid="customer-save-tags">{t.customer_save_tags}</button>
         </form>
@@ -86,7 +87,7 @@ export default function Customer({ t = {}, customer }) {
                                 <tr key={o.number} className="border-t">
                                     <td className="p-2 font-mono" data-label={t.customer_orders}>{o.number}</td>
                                     <td className="p-2" data-label={t.campaign_shop}>{o.shop}</td>
-                                    <td className="p-2" data-label="status">{t[`status_${o.status}`] || o.status}</td>
+                                    <td className="p-2" data-label={t.status}>{t[`status_${o.status}`] || o.status}</td>
                                     <td className="p-2 sm:text-end" data-label={t.customer_spent}>MVR {o.total}</td>
                                     <td className="p-2" data-label={t.customer_last_order}>{o.placed_at}</td>
                                 </tr>

@@ -241,7 +241,7 @@ function FieldEditor({ field, kind, settings, onChange, d, t, prefix }) {
             return <Field label={label}><input type="number" min={min} max={max} className="form-input w-24" value={text(value)} onChange={(e) => set(e.target.value)} data-testid={testid} /></Field>;
         }
         case 'video':
-            return <Field label={label}><input className="form-input w-full" placeholder="https://www.youtube.com/watch?v=…" aria-label="https://www.youtube.com/watch?v=…" value={text(value)} onChange={(e) => set(e.target.value)} data-testid={testid} /><span className="block text-xs text-gray-500">{t.video_hint}</span></Field>;
+            return <Field label={label}><input className="form-input w-full" placeholder="https://www.youtube.com/watch?v=…" value={text(value)} onChange={(e) => set(e.target.value)} data-testid={testid} /><span className="block text-xs text-gray-500">{t.video_hint}</span></Field>;
         case 'quotes':
             return (
                 <Field label={`${label} (${t.up_to_n.replace(':n', arg)})`}>

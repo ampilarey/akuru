@@ -71,7 +71,7 @@ export default function VendorApply({ t, open, application, shops = [], agreemen
                     <label className="text-sm md:col-span-2">{form.data.kind === 'personal' ? t.apply_what_personal : t.apply_what_they_sell}
                         <textarea className="form-input w-full" rows={4} value={form.data.what_they_sell} onChange={set('what_they_sell')} required minLength={20} maxLength={2000} placeholder={form.data.kind === 'personal' ? t.apply_what_personal_hint : t.apply_what_hint} aria-label={form.data.kind === 'personal' ? t.apply_what_personal_hint : t.apply_what_hint} data-testid="apply-what" />
                     </label>
-                    {form.data.kind === 'shop' && <label className="text-sm md:col-span-2">{t.apply_link}<input className="form-input w-full" type="url" value={form.data.link} onChange={set('link')} placeholder="https://" aria-label="https://" data-testid="apply-link" /></label>}
+                    {form.data.kind === 'shop' && <label className="text-sm md:col-span-2">{t.apply_link}<input className="form-input w-full" type="url" value={form.data.link} onChange={set('link')} placeholder="https://" data-testid="apply-link" /></label>}
                     <IdentityCardFields form={form} l={id_l} />
                     <label className="flex items-start gap-2 text-sm md:col-span-2">
                         <input type="checkbox" checked={form.data.agreement} onChange={(e) => form.setData('agreement', e.target.checked)} required data-testid="apply-agreement" />

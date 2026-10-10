@@ -2024,4 +2024,10 @@ return [
     'notice_preorder_released_body' => 'Order :number is out now; the shop is preparing it for you.',
     'notice_preorder_vendor_title' => 'Pre-order :number can be sent',
     'notice_preorder_vendor_body' => 'The release date for order :number has come. Prepare and send it.',
+
+    // SH1 (BACKLOG C21): the office's ID card links on a seller's application, and the seller portal's gate, in the page's language
+    'application_id_front' => 'ID front',
+    'application_id_back' => 'ID back',
+    'error_not_a_member' => 'You are not a member of a shop in the Akuru Bookstore.',
+    'error_agreement_first' => 'Accept the Vendor Agreement first.',
 ];
