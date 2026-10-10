@@ -4,6 +4,7 @@ namespace App\Domains\Offerings\Http\Controllers;
 
 use App\Domains\Offerings\Actions\ListScheduleSessionsAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,6 +20,7 @@ class TeacherScheduleController extends Controller
                 offeringIds: [],
                 teacherUserId: (int) $request->user()->id,
             ),
+            't' => Phrases::once('teach'),
         ]);
     }
 }

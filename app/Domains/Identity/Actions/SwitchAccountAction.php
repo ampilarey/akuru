@@ -46,7 +46,7 @@ class SwitchAccountAction
 
         if (! $linked) {
             throw ValidationException::withMessages([
-                'account' => 'That account is not linked to yours.',
+                'account' => __('account.error_account_not_linked'),
             ]);
         }
 
@@ -54,7 +54,7 @@ class SwitchAccountAction
 
         if ($target === null || ! $target->is_active) {
             throw ValidationException::withMessages([
-                'account' => 'That account cannot be used at the moment.',
+                'account' => __('account.error_account_unusable'),
             ]);
         }
 
