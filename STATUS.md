@@ -5045,7 +5045,7 @@ a typed *Student id*, and the plan form a typed *Teacher id*.
 The tests for the areas it touches (Academics, Localization, Architecture):
 547 passed.
 
-Whole suite locally: **FULL_SUITE**.
+Whole suite locally: **2977 passed (48504 assertions)**.
 
 **Walk:** `office-language.mjs` 160/160 (OA2's 117 steps and 43 new):
 - the seven new screens read right to left under `/dv` and `/ar`, with
