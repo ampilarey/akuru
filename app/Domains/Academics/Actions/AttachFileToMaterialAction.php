@@ -46,13 +46,13 @@ class AttachFileToMaterialAction
     {
         if ((int) $material->created_by !== $actorUserId) {
             throw ValidationException::withMessages([
-                'file' => 'You can only add files to materials you wrote.',
+                'file' => __('academics.error_file_not_yours'),
             ]);
         }
 
         if (($file->getSize() ?: 0) > self::MAX_BYTES) {
             throw ValidationException::withMessages([
-                'file' => 'That file is larger than 20 MB.',
+                'file' => __('academics.error_file_too_large'),
             ]);
         }
 

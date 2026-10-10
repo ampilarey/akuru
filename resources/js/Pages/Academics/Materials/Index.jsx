@@ -23,7 +23,7 @@ function queryString(filters) {
     return query ? `?${query}` : '';
 }
 
-export default function Index({ materials = [], subjects = [], filters = {}, userId }) {
+export default function Index({ materials = [], subjects = [], filters = {}, userId, t = {} }) {
     // Kept in local state so typing does not fire a request per keystroke; the
     // search runs on submit.
     const [search, setSearch] = useState({
@@ -45,10 +45,10 @@ export default function Index({ materials = [], subjects = [], filters = {}, use
     };
 
     return (
-        <AppShell title="Teaching materials">
+        <AppShell title={t.materials_title || 'Teaching materials'}>
+            {/* In the page's language (BACKLOG C21, slice OA3). */}
             <p className="mb-4 text-sm text-gray-600">
-                Write a material once and attach it to any lesson. Everyone on the
-                staff can see and reuse these; only the author can edit one.
+                {t.materials_intro || 'Write a material once and attach it to any lesson. Everyone on the staff can see and reuse these; only the author can edit one.'}
             </p>
 
             <form
@@ -58,28 +58,31 @@ export default function Index({ materials = [], subjects = [], filters = {}, use
                 }}
                 className="mb-6 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
             >
-                <Field label="Search title or text">
+                <Field label={t.materials_search_text || 'Search title or text'}>
                     <input
                         className="form-input w-full"
+                        aria-label={t.materials_search_text || 'Search title or text'}
                         value={search.q}
                         onChange={(e) => setSearch({ ...search, q: e.target.value })}
                     />
                 </Field>
-                <Field label="Subject">
+                <Field label={t.subject || 'Subject'}>
                     <select
                         className="form-input w-full"
+                        aria-label={t.subject || 'Subject'}
                         value={search.subject_id}
                         onChange={(e) => setSearch({ ...search, subject_id: e.target.value })}
                     >
-                        <option value="">All subjects</option>
+                        <option value="">{t.materials_all_subjects || 'All subjects'}</option>
                         {subjects.map((subject) => (
                             <option key={subject.id} value={subject.id}>{subject.name}</option>
                         ))}
                     </select>
                 </Field>
-                <Field label="Tag">
+                <Field label={t.materials_tag || 'Tag'}>
                     <input
                         className="form-input w-full"
+                        aria-label={t.materials_tag || 'Tag'}
                         value={search.tag}
                         onChange={(e) => setSearch({ ...search, tag: e.target.value })}
                     />
@@ -91,10 +94,10 @@ export default function Index({ materials = [], subjects = [], filters = {}, use
                             checked={search.mine}
                             onChange={(e) => applySearch({ ...search, mine: e.target.checked })}
                         />
-                        Mine only
+                        {t.materials_mine || 'Mine only'}
                     </label>
-                    <button type="submit" className="btn-primary">Search</button>
-                    <a className="btn-secondary" href={`/academics/materials/export${queryString(search)}`}>CSV</a>
+                    <button type="submit" className="btn-primary">{t.search || 'Search'}</button>
+                    <a className="btn-secondary" href={`/academics/materials/export${queryString(search)}`}>{t.export_csv || 'Export CSV'}</a>
                 </div>
             </form>
 
@@ -108,51 +111,55 @@ export default function Index({ materials = [], subjects = [], filters = {}, use
                 }}
                 className="mb-6 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-2"
             >
-                <p className="text-sm font-semibold md:col-span-2">New material</p>
-                <Field label="Title" error={create.errors.title}>
+                <p className="text-sm font-semibold md:col-span-2">{t.materials_new || 'New material'}</p>
+                <Field label={t.title || 'Title'} error={create.errors.title}>
                     <input
                         className="form-input w-full"
+                        aria-label={t.title || 'Title'}
                         value={create.data.title}
                         onChange={(e) => create.setData('title', e.target.value)}
                     />
                 </Field>
-                <Field label="Subject" error={create.errors.subject_id}>
+                <Field label={t.subject || 'Subject'} error={create.errors.subject_id}>
                     <select
                         className="form-input w-full"
+                        aria-label={t.subject || 'Subject'}
                         value={create.data.subject_id}
                         onChange={(e) => create.setData('subject_id', e.target.value)}
                     >
-                        <option value="">No subject</option>
+                        <option value="">{t.materials_no_subject || 'No subject'}</option>
                         {subjects.map((subject) => (
                             <option key={subject.id} value={subject.id}>{subject.name}</option>
                         ))}
                     </select>
                 </Field>
                 <div className="md:col-span-2">
-                    <Field label="Details" error={create.errors.body}>
+                    <Field label={t.materials_details || 'Details'} error={create.errors.body}>
                         <textarea
                             className="form-input w-full"
                             rows={3}
+                            aria-label={t.materials_details || 'Details'}
                             value={create.data.body}
                             onChange={(e) => create.setData('body', e.target.value)}
                         />
                     </Field>
                 </div>
-                <Field label="Tags (comma separated)" error={create.errors.tags}>
+                <Field label={t.materials_tags || 'Tags (comma separated)'} error={create.errors.tags}>
                     <input
                         className="form-input w-full"
+                        aria-label={t.materials_tags || 'Tags (comma separated)'}
                         value={create.data.tags}
                         onChange={(e) => create.setData('tags', e.target.value)}
                     />
                 </Field>
                 <div className="flex items-end">
-                    <button type="submit" className="btn-primary" disabled={create.processing}>Save material</button>
+                    <button type="submit" className="btn-primary" disabled={create.processing}>{t.materials_save || 'Save material'}</button>
                 </div>
             </form>
 
             {materials.length === 0 ? (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">
-                    No materials match. Add one above and it is available to every lesson.
+                    {t.materials_none || 'No materials match. Add one above and it is available to every lesson.'}
                 </p>
             ) : (
                 <div className="grid gap-3">
@@ -163,6 +170,7 @@ export default function Index({ materials = [], subjects = [], filters = {}, use
                                 material={material}
                                 subjects={subjects}
                                 onDone={() => setEditing(null)}
+                                t={t}
                             />
                         ) : (
                             <article key={material.id} className="rounded-lg border bg-white p-4">
@@ -174,12 +182,12 @@ export default function Index({ materials = [], subjects = [], filters = {}, use
                                             className="text-sm text-[#7C2D37] underline"
                                             onClick={() => setEditing(material.id)}
                                         >
-                                            Edit
+                                            {t.edit || 'Edit'}
                                         </button>
                                     )}
                                 </div>
                                 <p className="mt-1 text-xs text-gray-500">
-                                    {material.subject || 'No subject'} · {material.author}
+                                    {material.subject || (t.materials_no_subject || 'No subject')} · {material.author}
                                 </p>
                                 {material.body && (
                                     <p className="mt-2 whitespace-pre-line text-sm text-gray-700">{material.body}</p>
@@ -201,6 +209,7 @@ export default function Index({ materials = [], subjects = [], filters = {}, use
                                 <Files
                                     material={material}
                                     canEdit={material.created_by === userId}
+                                    t={t}
                                 />
                             </article>
                         )
@@ -211,15 +220,16 @@ export default function Index({ materials = [], subjects = [], filters = {}, use
     );
 }
 
-function humanSize(bytes) {
+// A size in the page's language: the units are the book's.
+function humanSize(bytes, t) {
     if (!bytes) return '';
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${Math.round(bytes / 1024)} KB`;
+    if (bytes < 1024) return (t.size_bytes || ':size B').replace(':size', bytes);
+    if (bytes < 1024 * 1024) return (t.size_kb || ':size KB').replace(':size', Math.round(bytes / 1024));
 
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    return (t.size_mb || ':size MB').replace(':size', (bytes / (1024 * 1024)).toFixed(1));
 }
 
-function Files({ material, canEdit }) {
+function Files({ material, canEdit, t }) {
     const upload = useForm({ file: null });
     const remove = useForm({});
     const files = material.files || [];
@@ -227,7 +237,7 @@ function Files({ material, canEdit }) {
     return (
         <div className="mt-3 border-t pt-3">
             {files.length === 0 ? (
-                <p className="text-xs text-gray-500">No files attached.</p>
+                <p className="text-xs text-gray-500">{t.materials_no_files || 'No files attached.'}</p>
             ) : (
                 <ul className="space-y-1">
                     {files.map((file) => (
@@ -238,14 +248,14 @@ function Files({ material, canEdit }) {
                             >
                                 {file.name}
                             </a>
-                            <span className="text-xs text-gray-500">{humanSize(file.size)}</span>
+                            <span className="text-xs text-gray-500">{humanSize(file.size, t)}</span>
                             {canEdit && (
                                 <button
                                     type="button"
                                     className="text-xs text-gray-500 underline"
                                     onClick={() => remove.delete(`/academics/materials/files/${file.id}`, { preserveScroll: true })}
                                 >
-                                    Remove
+                                    {t.remove || 'Remove'}
                                 </button>
                             )}
                         </li>
@@ -267,19 +277,20 @@ function Files({ material, canEdit }) {
                     <input
                         type="file"
                         className="text-xs"
+                        aria-label={`${t.materials_file || 'File'}: ${material.title}`}
                         onChange={(e) => upload.setData('file', e.target.files[0])}
                     />
                     <button type="submit" className="btn-secondary text-xs" disabled={!upload.data.file || upload.processing}>
-                        Add file
+                        {t.materials_add_file || 'Add file'}
                     </button>
-                    {upload.errors.file && <span className="text-xs text-red-600">{upload.errors.file}</span>}
+                    {(upload.errors.file || remove.errors.file) && <span className="text-xs text-red-600">{upload.errors.file || remove.errors.file}</span>}
                 </form>
             )}
         </div>
     );
 }
 
-function EditCard({ material, subjects, onDone }) {
+function EditCard({ material, subjects, onDone, t }) {
     const form = useForm({
         title: material.title,
         body: material.body || '',
@@ -298,26 +309,26 @@ function EditCard({ material, subjects, onDone }) {
             }}
             className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-2"
         >
-            <Field label="Title" error={form.errors.title}>
-                <input className="form-input w-full" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+            <Field label={t.title || 'Title'} error={form.errors.title}>
+                <input className="form-input w-full" aria-label={t.title || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
             </Field>
-            <Field label="Subject">
-                <select className="form-input w-full" value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
-                    <option value="">No subject</option>
+            <Field label={t.subject || 'Subject'} error={form.errors.subject_id}>
+                <select className="form-input w-full" aria-label={t.subject || 'Subject'} value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
+                    <option value="">{t.materials_no_subject || 'No subject'}</option>
                     {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}
                 </select>
             </Field>
             <div className="md:col-span-2">
-                <Field label="Details">
-                    <textarea className="form-input w-full" rows={3} value={form.data.body} onChange={(e) => form.setData('body', e.target.value)} />
+                <Field label={t.materials_details || 'Details'} error={form.errors.body}>
+                    <textarea className="form-input w-full" rows={3} aria-label={t.materials_details || 'Details'} value={form.data.body} onChange={(e) => form.setData('body', e.target.value)} />
                 </Field>
             </div>
-            <Field label="Tags (comma separated)">
-                <input className="form-input w-full" value={form.data.tags} onChange={(e) => form.setData('tags', e.target.value)} />
+            <Field label={t.materials_tags || 'Tags (comma separated)'} error={form.errors.tags}>
+                <input className="form-input w-full" aria-label={t.materials_tags || 'Tags (comma separated)'} value={form.data.tags} onChange={(e) => form.setData('tags', e.target.value)} />
             </Field>
             <div className="flex items-end gap-3">
-                <button type="submit" className="btn-primary" disabled={form.processing}>Save</button>
-                <button type="button" className="btn-secondary" onClick={onDone}>Cancel</button>
+                <button type="submit" className="btn-primary" disabled={form.processing}>{t.save || 'Save'}</button>
+                <button type="button" className="btn-secondary" onClick={onDone}>{t.cancel || 'Cancel'}</button>
             </div>
         </form>
     );

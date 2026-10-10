@@ -14,6 +14,7 @@ use App\Domains\Academics\Models\CoursePlan;
 use App\Domains\Academics\Models\Subject;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -88,6 +89,7 @@ class CoursePlanController extends Controller
             'classes' => ClassRoom::query()->orderBy('name')->get(['id', 'name', 'section', 'academic_year_id']),
             'subjects' => Subject::query()->orderBy('name')->get(['id', 'name', 'code']),
             'statuses' => array_map(fn (CoursePlanStatus $status) => $status->value, CoursePlanStatus::cases()),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -110,7 +112,7 @@ class CoursePlanController extends Controller
 
         app(SaveCoursePlanAction::class)->execute($data);
 
-        return redirect()->route('academics.plans.index')->with('success', 'Plan saved.');
+        return redirect()->route('academics.plans.index')->with('success', __('academics.flash_plan_saved'));
     }
 
     public function storeTopic(Request $request, CoursePlan $coursePlan): RedirectResponse
@@ -125,7 +127,7 @@ class CoursePlanController extends Controller
             'estimated_minutes' => ['nullable', 'integer', 'min:1'],
         ]));
 
-        return redirect()->route('academics.plans.index')->with('success', 'Topic added.');
+        return redirect()->route('academics.plans.index')->with('success', __('academics.flash_topic_added'));
     }
 
     public function copy(Request $request, CoursePlan $coursePlan): RedirectResponse
@@ -140,7 +142,7 @@ class CoursePlanController extends Controller
             'teacher_id' => ['nullable', 'integer', 'exists:teachers,id'],
         ]));
 
-        return redirect()->route('academics.plans.index')->with('success', 'Plan copied.');
+        return redirect()->route('academics.plans.index')->with('success', __('academics.flash_plan_copied'));
     }
 
     private function assertOwnsTeacher(Request $request, int $teacherId): void

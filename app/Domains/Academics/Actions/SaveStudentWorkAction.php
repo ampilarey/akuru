@@ -32,7 +32,7 @@ class SaveStudentWorkAction
 
         if ($studentId <= 0) {
             throw ValidationException::withMessages([
-                'student_id' => 'Choose whose work this is. Nothing is sent to a family until you do.',
+                'student_id' => __('academics.error_work_choose_first'),
             ]);
         }
 
@@ -40,7 +40,7 @@ class SaveStudentWorkAction
 
         if ($yearId === 0) {
             throw ValidationException::withMessages([
-                'student_id' => 'No academic year is active, so there is nothing to file this against.',
+                'student_id' => __('academics.error_no_year_to_file'),
             ]);
         }
 
@@ -48,7 +48,7 @@ class SaveStudentWorkAction
 
         if (($stored['id'] ?? null) === null) {
             throw ValidationException::withMessages([
-                'photo' => 'That photo could not be saved. A JPEG, PNG, WebP or HEIC, please.',
+                'photo' => __('academics.error_work_photo'),
             ]);
         }
 

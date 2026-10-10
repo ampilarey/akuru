@@ -4983,6 +4983,84 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qh. Teaching in Dhivehi and Arabic (C21 OA3, 2026-10-10)
+
+The eighth slice of BACKLOG C21, and the third of the school office's.
+These seven screens hold what is taught and how a class is getting on:
+- the teaching materials and the teaching plans;
+- the pupils' work, photographed for their families;
+- a teacher's own meetings, and the office's meeting slots;
+- the staff noticeboard and the behaviour records.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and hint, and a file's size;
+- six codes printed as they are stored: a plan's state (*draft*), a
+  behaviour record's type (*compliment*), a meeting slot's state, and a
+  notice's type, priority and audience (*parents*); and the three
+  categories a school starts its behaviour records with (*conduct*);
+- nineteen saved messages and thirty-one refusals.
+
+Three things were wrong, not only English:
+- **A refused move or hide of a pupil's work was said nowhere.** Moving a
+  photo to the pupil it already belongs to, or hiding one already hidden,
+  is refused; the page showed nothing, and the photo stayed where it was.
+- **A refused file removal was said nowhere** on the teaching materials
+  (only the author may remove a file).
+- **The noticeboard read every notice in English**, though the office can
+  write one in Dhivehi and Arabic too: the list was sent only the English
+  text.
+
+**The change:**
+- **The `academics` book grows by 173 phrases**, to 600. The seven pages
+  read it through `Phrases::once('academics')`.
+- **Codes are named, not printed**: the six above and the three behaviour
+  categories. A category the school adds stays as written.
+- **What the server says is in the page's language**: the saved messages
+  and refusals of seven controllers and twelve actions.
+- **The refusals are shown**: a pupil's work refused to move or hide says
+  so above the photos, and under the row that asked; a refused file removal
+  is said beside the file; the meeting form says when its year is missing.
+- **A notice reads in the page's language** where the office wrote it in
+  that language: `ListAnnouncementsForStaffAction` sends the Dhivehi and
+  Arabic text with the English.
+- **Every field is named.**
+
+What the school writes stays as written: a material's, plan's, topic's,
+slot's and notice's title and text, a tag, a behaviour category the school
+adds, a pupil's and a teacher's name. The CSVs keep their English column
+codes.
+
+Found, and parked as BACKLOG C22 (one slice, BH1): the behaviour form takes
+a typed *Student id*, and the plan form a typed *Teacher id*.
+
+**Tests:**
+- `AcademicsSpeaksThreeLanguagesTest` now covers the twenty-five screens,
+  the fifty-eight server files and the new codes, and a seventh test serves
+  the seven new screens in Dhivehi. In it:
+  - a plan and a behaviour record are saved in Dhivehi;
+  - meeting slots 200 minutes long are refused beside the minutes;
+  - a material somebody else wrote is refused to its editor;
+  - a pupil's work moved to the pupil it belongs to is refused.
+
+The tests for the areas it touches (Academics, Localization, Architecture):
+547 passed.
+
+Whole suite locally: **2977 passed (48504 assertions)**.
+
+**Walk:** `office-language.mjs` 160/160 (OA2's 117 steps and 43 new):
+- the seven new screens read right to left under `/dv` and `/ar`, with
+  nothing left in English and every field named — the teacher's materials,
+  plans, behaviour records and meetings, and the dean's meetings,
+  noticeboard and pupils' work;
+- the dean asks for meeting slots 200 minutes long and is refused beside
+  the minutes, in Dhivehi; none is made (counted again from a fresh load).
+
+Also walked: `meetings.mjs` 11/11, `family.mjs` 40/40 (a notice posted
+from the noticeboard reaches the family), `create-sweep.mjs` 6/6,
+`sweep.mjs` 25/25, `portal-language.mjs` 212/212, `admin-hub.mjs` 26/26,
+`admin-layout.mjs` 15/15, `admin.mjs` 43/43, `rtl.mjs` 8/8, `nav.mjs`
+14/14, `mobile.mjs` 19/19, `identity.mjs` 47/47.
+
 ## 5qg. The admin walk follows the menu N1 made (walk health, 2026-10-10)
 
 Found by OA2's walks (§5qf). `admin.mjs` failed one step out of 43: *the

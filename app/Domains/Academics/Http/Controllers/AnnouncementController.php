@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ListAnnouncementsForStaffAction;
 use App\Domains\Academics\Actions\ListClassesForYearAction;
 use App\Domains\Academics\Actions\SaveAnnouncementAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,6 +34,7 @@ class AnnouncementController extends Controller
             'priorities' => SaveAnnouncementAction::PRIORITIES,
             'audiences' => SaveAnnouncementAction::AUDIENCES,
             'classes' => app(ListClassesForYearAction::class)->execute()->where('is_active', true)->values(),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -57,6 +59,6 @@ class AnnouncementController extends Controller
 
         app(SaveAnnouncementAction::class)->execute($data, (int) $request->user()->id);
 
-        return redirect()->route('announcements.index')->with('success', 'Announcement created successfully!');
+        return redirect()->route('announcements.index')->with('success', __('academics.flash_notice_published'));
     }
 }

@@ -15,7 +15,7 @@ class SavePlanTopicAction
     {
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'Topic title is required.']);
+            throw ValidationException::withMessages(['title' => __('academics.error_topic_title_required')]);
         }
 
         $order = isset($data['order']) && $data['order'] !== ''

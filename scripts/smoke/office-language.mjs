@@ -1,14 +1,17 @@
 /**
  * Do the office's Academics screens read in Dhivehi and Arabic? (BACKLOG
  * C21: slice OA1, the registers and attendance, STATUS §5qd; slice OA2, the
- * school's structure and time, STATUS §5qf.)
+ * school's structure and time, STATUS §5qf; slice OA3, teaching, STATUS
+ * §5qh.)
  *
  * The seeded teacher opens today's registers, one of their registers and
  * daily attendance; the dean opens the unfilled registers, the attendance
  * reports, who is not in today, absence notes, the attendance policy and the
  * absence reasons; and then the academic years, the periods, the classes and
  * a class's roster, the school calendar, the timetable, the promotion
- * wizard, the rooms and their bookings — under /dv and /ar. The walk lists what is still in Latin
+ * wizard, the rooms and their bookings; and the teaching screens — the
+ * teacher's materials, plans, behaviour records and meetings, and the office's
+ * meetings, noticeboard and pupils' work — under /dv and /ar. The walk lists what is still in Latin
  * letters in each page's main: every text node, placeholder, aria-label,
  * title and phone caption (`data-label`). What a page shows of its data (a
  * pupil's name, a subject, a reason the office typed, the code it was given)
@@ -32,7 +35,9 @@
  *     in red, in Dhivehi (it was flashed green, in English, as if it had
  *     worked); nothing closes;
  *   - the dean adds a calendar day on a date that has one and is refused
- *     beside the date, in Dhivehi.
+ *     beside the date, in Dhivehi;
+ *   - the dean asks for meeting slots 200 minutes long and is refused beside
+ *     the minutes, in Dhivehi; nothing is made.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/office-language.mjs
@@ -57,6 +62,8 @@ const CODE_KEYS = new Set([
     // OA2: a promotion's outcome, an assessment's kind, the timetable's view
     // and a slot's day.
     'outcome', 'assessment_type', 'view', 'day_of_week',
+    // OA3: a notice's priority and audience.
+    'priority', 'priorities', 'audiences', 'target_audience',
 ]);
 // Props that are a list of codes when they are a list of strings — a
 // calendar day's or a room's types, the timetable's days — and the school's
@@ -176,6 +183,14 @@ const screens = [
     ['/academics/promotion', dean],
     ['/academics/rooms', dean],
     ['/academics/bookings', dean],
+    // OA3.
+    ['/academics/materials', teacher],
+    ['/academics/plans', teacher],
+    ['/academics/behavior', teacher],
+    ['/teach/meetings', teacher],
+    ['/academics/meetings', dean],
+    ['/announcements', dean],
+    ['/academics/work', dean],
 ];
 
 for (const locale of ['dv', 'ar']) {
@@ -275,6 +290,24 @@ if (taken) {
 } else {
     check('a calendar day on a date that has one is refused beside the date, in Dhivehi', false, 'the calendar has no day to collide with — re-seed first: php artisan db:seed --class=SmokeMarkerSeeder');
 }
+
+// ------------------------------------- a slot too long, refused in Dhivehi
+
+await dean.goto(`${BASE}/dv/academics/meetings`, { waitUntil: 'networkidle' });
+const meetingsBook = (await props(dean)).t ?? {};
+const slotForm = dean.locator('form').first();
+const tomorrow = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
+await slotForm.getByLabel(meetingsBook.date, { exact: true }).fill(tomorrow);
+await slotForm.getByLabel(meetingsBook.meetings_minutes, { exact: true }).fill('200');
+const slotsBefore = ((await props(dean)).slots || []).length;
+await slotForm.getByRole('button', { name: meetingsBook.meetings_generate, exact: true }).click();
+await dean.waitForLoadState('networkidle');
+const tooLong = (await slotForm.locator('span.text-red-600').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+// The page's first props are not redrawn by a visit: count again from a
+// fresh load.
+await dean.goto(`${BASE}/dv/academics/meetings`, { waitUntil: 'networkidle' });
+const slotsAfter = ((await props(dean)).slots || []).length;
+check('meeting slots 200 minutes long are refused beside the minutes, in Dhivehi, and none is made', tooLong === meetingsBook.error_slot_length && slotsAfter === slotsBefore, `said: ${tooLong ?? 'nothing'}; slots ${slotsBefore} → ${slotsAfter}`);
 
 await browser.close();
 

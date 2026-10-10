@@ -23,7 +23,7 @@ class SaveMeetingSlotAction
 
         if ($this->hasActiveBookings($slot) && $this->timeChanged($slot, $payload)) {
             throw ValidationException::withMessages([
-                'start_time' => 'Cannot change time on a slot that already has bookings.',
+                'start_time' => __('academics.error_slot_has_bookings'),
             ]);
         }
 
@@ -41,51 +41,51 @@ class SaveMeetingSlotAction
     {
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'Title is required.']);
+            throw ValidationException::withMessages(['title' => __('academics.error_title_required')]);
         }
 
         $yearId = (int) ($data['academic_year_id'] ?? 0);
         if ($yearId < 1 || ! DB::table('academic_years')->where('id', $yearId)->exists()) {
-            throw ValidationException::withMessages(['academic_year_id' => 'Academic year is required.']);
+            throw ValidationException::withMessages(['academic_year_id' => __('academics.error_year_required')]);
         }
 
         $termId = $this->optionalId($data['term_id'] ?? null);
         if ($termId !== null && ! DB::table('terms')->where('id', $termId)->where('academic_year_id', $yearId)->exists()) {
-            throw ValidationException::withMessages(['term_id' => 'Term must belong to the academic year.']);
+            throw ValidationException::withMessages(['term_id' => __('academics.error_term_not_in_year')]);
         }
 
         $teacherId = (int) ($data['teacher_id'] ?? 0);
         if ($teacherId < 1 || ! DB::table('teachers')->where('id', $teacherId)->exists()) {
-            throw ValidationException::withMessages(['teacher_id' => 'Teacher is required.']);
+            throw ValidationException::withMessages(['teacher_id' => __('academics.error_teacher_required')]);
         }
 
         $classId = $this->optionalId($data['class_id'] ?? null);
         if ($classId !== null && ! DB::table('classes')->where('id', $classId)->where('academic_year_id', $yearId)->exists()) {
-            throw ValidationException::withMessages(['class_id' => 'Class must belong to the academic year.']);
+            throw ValidationException::withMessages(['class_id' => __('academics.error_class_not_in_year')]);
         }
 
         $roomId = $this->optionalId($data['room_id'] ?? null);
         if ($roomId !== null && ! DB::table('rooms')->where('id', $roomId)->where('active', true)->exists()) {
-            throw ValidationException::withMessages(['room_id' => 'Room not found.']);
+            throw ValidationException::withMessages(['room_id' => __('academics.error_room_missing')]);
         }
 
         $date = trim((string) ($data['date'] ?? ''));
         if ($date === '') {
-            throw ValidationException::withMessages(['date' => 'Date is required.']);
+            throw ValidationException::withMessages(['date' => __('academics.error_date_required')]);
         }
 
         $start = $this->normalizeTime($data['start_time'] ?? null);
         $end = $this->normalizeTime($data['end_time'] ?? null);
         if ($start === null || $end === null) {
-            throw ValidationException::withMessages(['start_time' => 'Start and end time are required.']);
+            throw ValidationException::withMessages(['start_time' => __('academics.error_times_required')]);
         }
         if ($start >= $end) {
-            throw ValidationException::withMessages(['end_time' => 'End time must be after start time.']);
+            throw ValidationException::withMessages(['end_time' => __('academics.error_end_after_start')]);
         }
 
         $capacity = (int) ($data['capacity'] ?? 1);
         if ($capacity < 1) {
-            throw ValidationException::withMessages(['capacity' => 'Capacity must be at least 1.']);
+            throw ValidationException::withMessages(['capacity' => __('academics.error_capacity_min')]);
         }
 
         $status = MeetingSlotStatus::tryFrom((string) ($data['status'] ?? MeetingSlotStatus::Draft->value))
@@ -138,7 +138,7 @@ class SaveMeetingSlotAction
 
         if ($overlap !== null) {
             throw ValidationException::withMessages([
-                'start_time' => 'That teacher already has a meeting slot overlapping this time.',
+                'start_time' => __('academics.error_slot_overlap'),
             ]);
         }
     }

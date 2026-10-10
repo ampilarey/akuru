@@ -1,13 +1,19 @@
 <?php
 
+use App\Domains\Academics\Actions\SaveAnnouncementAction;
 use App\Domains\Academics\Actions\SaveRoomBookingAction;
+use App\Domains\Academics\Actions\SaveStudentWorkAction;
+use App\Domains\Academics\Actions\SaveTeachingMaterialAction;
 use App\Domains\Academics\Actions\SaveTimetableEntryAction;
 use App\Domains\Academics\Enums\AbsenceNoteStatus;
 use App\Domains\Academics\Enums\AcademicYearStatus;
 use App\Domains\Academics\Enums\AttendanceSource;
 use App\Domains\Academics\Enums\AttendanceStatus;
+use App\Domains\Academics\Enums\BehaviorType;
 use App\Domains\Academics\Enums\CalendarDayType;
+use App\Domains\Academics\Enums\CoursePlanStatus;
 use App\Domains\Academics\Enums\LessonLogStatus;
+use App\Domains\Academics\Enums\MeetingSlotStatus;
 use App\Domains\Academics\Enums\PromotionOutcome;
 use App\Domains\Academics\Enums\RoomType;
 use App\Domains\Academics\Enums\TermStatus;
@@ -15,8 +21,11 @@ use App\Domains\Academics\Models\AbsenceNote;
 use App\Domains\Academics\Models\AbsenceType;
 use App\Domains\Courses\Enums\AssessmentStatus;
 use App\Domains\Courses\Enums\AssessmentType;
+use App\Domains\Identity\Models\User;
 use App\Domains\People\Enums\StudentStatus;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Inertia\Testing\AssertableInertia as Assert;
 
 /**
@@ -45,6 +54,14 @@ use Inertia\Testing\AssertableInertia as Assert;
  * activate was flashed green, in English, as if it had worked; and a
  * promotion nobody had previewed, or one with a class mapped nowhere, was a
  * 500 page.
+ *
+ * OA3 (STATUS §5qh) adds teaching: the teaching materials, the teaching
+ * plans, the pupils' work, a teacher's own meetings and the office's, the
+ * staff noticeboard and the behaviour records. A plan's, a slot's and a
+ * notice's state, type, priority and audience, and a behaviour record's type
+ * and the categories a school starts with were printed as codes; a refused
+ * move or hide of a pupil's work, and a refused file removal, were said
+ * nowhere on the page.
  */
 uses(RefreshDatabase::class);
 
@@ -60,6 +77,9 @@ function academicsScreens(): array
         'Academics/Years/Index', 'Academics/Periods/Index', 'Academics/Classes/Index', 'Academics/Classes/Show',
         'Academics/Calendar/Index', 'Academics/Timetable/Builder', 'Academics/Promotion/Wizard',
         'Academics/Rooms/Index', 'Academics/Bookings/Index',
+        // OA3: teaching.
+        'Academics/Materials/Index', 'Academics/Plans/Index', 'Academics/Work/Index', 'Academics/Teach/Meetings',
+        'Academics/Meetings/Index', 'Academics/Announcements/Index', 'Academics/Behavior/Index',
     ];
 }
 
@@ -107,6 +127,26 @@ function academicsServerFiles(): array
         'app/Domains/Academics/Actions/SaveRoomBookingAction.php',
         'app/Domains/Academics/Exceptions/TimetableConflictException.php',
         'app/Domains/Academics/Exceptions/RoomBookingClashException.php',
+        // OA3.
+        'app/Domains/Academics/Http/Controllers/TeachingMaterialController.php',
+        'app/Domains/Academics/Http/Controllers/CoursePlanController.php',
+        'app/Domains/Academics/Http/Controllers/StudentWorkController.php',
+        'app/Domains/Academics/Http/Controllers/TeachMeetingController.php',
+        'app/Domains/Academics/Http/Controllers/MeetingSlotController.php',
+        'app/Domains/Academics/Http/Controllers/AnnouncementController.php',
+        'app/Domains/Academics/Http/Controllers/BehaviorRecordController.php',
+        'app/Domains/Academics/Actions/SaveTeachingMaterialAction.php',
+        'app/Domains/Academics/Actions/AttachFileToMaterialAction.php',
+        'app/Domains/Academics/Actions/RemoveMaterialFileAction.php',
+        'app/Domains/Academics/Actions/SaveCoursePlanAction.php',
+        'app/Domains/Academics/Actions/SavePlanTopicAction.php',
+        'app/Domains/Academics/Actions/CopyPlanAction.php',
+        'app/Domains/Academics/Actions/SaveStudentWorkAction.php',
+        'app/Domains/Academics/Actions/ReassignStudentWorkAction.php',
+        'app/Domains/Academics/Actions/HideStudentWorkAction.php',
+        'app/Domains/Academics/Actions/GenerateMeetingSlotsAction.php',
+        'app/Domains/Academics/Actions/SaveMeetingSlotAction.php',
+        'app/Domains/Academics/Actions/SaveBehaviorRecordAction.php',
     ];
 }
 
@@ -163,6 +203,15 @@ it('names every code the registers and attendance screens show, in all three lan
         ...array_map(fn ($type) => 'conflict_'.$type, ['teacher', 'room', 'class', 'booking', 'timetable']),
         ...array_map(fn ($month) => 'month_'.$month, range(1, 12)),
         ...array_map(fn ($day) => 'weekday_initial_'.$day, ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']),
+        // OA3. A behaviour category is the school's own word; the three a
+        // school starts with are named.
+        ...array_map(fn ($case) => 'plan_status_'.$case->value, CoursePlanStatus::cases()),
+        ...array_map(fn ($case) => 'behavior_type_'.$case->value, BehaviorType::cases()),
+        ...array_map(fn ($case) => 'meeting_status_'.$case->value, MeetingSlotStatus::cases()),
+        ...array_map(fn ($type) => 'notice_type_'.$type, SaveAnnouncementAction::TYPES),
+        ...array_map(fn ($priority) => 'notice_priority_'.$priority, SaveAnnouncementAction::PRIORITIES),
+        ...array_map(fn ($audience) => 'notice_audience_'.$audience, SaveAnnouncementAction::AUDIENCES),
+        ...array_map(fn ($category) => 'behavior_category_'.$category, ['conduct', 'homework', 'other']),
     ];
 
     foreach ($codes as $key) {
@@ -181,7 +230,8 @@ it('leaves no English in what the server says on the registers and attendance sc
 
     $keys = refusalKeysIn(academicsServerFiles());
     expect($keys)->toContain('academics.flash_register_submitted', 'academics.no_teacher_profile', 'academics.empty_no_slots', 'academics.generated_some_skipped', 'academics.error_register_locked', 'academics.error_mark_status', 'academics.error_note_approved', 'academics.error_type_code_exists', 'academics.error_policy_part_lesson')
-        ->and($keys)->toContain('academics.flash_year_created', 'academics.error_year_another_active', 'academics.error_class_exists', 'academics.flash_copied_week', 'academics.copied_conflict_reason', 'academics.error_timetable_conflicts', 'academics.error_booking_clashes', 'academics.error_promotion_dry_run', 'academics.error_promotion_unmapped', 'academics.error_room_not_bookable');
+        ->and($keys)->toContain('academics.flash_year_created', 'academics.error_year_another_active', 'academics.error_class_exists', 'academics.flash_copied_week', 'academics.copied_conflict_reason', 'academics.error_timetable_conflicts', 'academics.error_booking_clashes', 'academics.error_promotion_dry_run', 'academics.error_promotion_unmapped', 'academics.error_room_not_bookable')
+        ->and($keys)->toContain('academics.flash_notice_published', 'academics.flash_meeting_slots_saved', 'academics.error_slot_length', 'academics.error_slot_overlap', 'academics.error_material_not_yours', 'academics.error_work_same_pupil', 'academics.error_work_photo', 'academics.error_topic_title_required', 'academics.error_category_required');
     foreach ($keys as $key) {
         expect(trans($key, [], 'en'))->not->toBe($key, "{$key} has no English")
             ->and(trans($key, [], 'dv'))->toMatch('/\p{Thaana}/u', "{$key} in Dhivehi")
@@ -372,4 +422,63 @@ it('serves the school structure and time screens in Dhivehi, and says what was s
     $this->withoutLocalizationMiddleware()->actingAs($office)
         ->post(route('academics.promotion.commit'), ['source_year_id' => $year->id, 'target_year_id' => $next->id])
         ->assertSessionHasErrors(['promotion' => $dv['error_promotion_dry_run']]);
+});
+
+it('serves the teaching screens in Dhivehi, and says what was saved and refused in Dhivehi', function () {
+    Storage::fake('local');
+    $year = makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active']);
+    $class = makeClass($year, 'Grade 4', 'A');
+    $office = actingPeopleAdmin(['registers.fill', 'registers.manage', 'behavior.record', 'behavior.manage', 'meetings.manage']);
+    $teacher = makeTeacherRow();
+    $dv = academicsBook('dv');
+
+    app()->setLocale('dv');
+    foreach ([
+        ['academics.materials.index', 'Academics/Materials/Index', 'materials_title'],
+        ['academics.plans.index', 'Academics/Plans/Index', 'plans_title'],
+        ['academics.work.index', 'Academics/Work/Index', 'work_title'],
+        ['academics.meetings.index', 'Academics/Meetings/Index', 'meetings_title'],
+        ['announcements.index', 'Academics/Announcements/Index', 'notices_title'],
+        ['academics.behavior.index', 'Academics/Behavior/Index', 'behavior_title'],
+    ] as [$route, $component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($office)
+            ->get(route($route))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("t.{$key}", $dv[$key]));
+    }
+    // A teacher's own meetings.
+    $this->withoutLocalizationMiddleware()->actingAs(User::query()->findOrFail($teacher->user_id))
+        ->get(route('teach.meetings'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->component('Academics/Teach/Meetings')->where('t.teach_meetings_title', $dv['teach_meetings_title']));
+
+    // Saved, in Dhivehi: a plan and a behaviour record.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.plans.store'), [
+            'title' => 'Reading', 'teacher_id' => $teacher->id, 'subject_id' => makeSubject()->id,
+            'classroom_id' => $class->id, 'academic_year_id' => $year->id,
+        ])
+        ->assertSessionHas('success', $dv['flash_plan_saved']);
+    $pupil = makeStudent(['first_name' => 'Aishath', 'last_name' => 'Naseem']);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.behavior.store'), [
+            'student_id' => $pupil->id, 'academic_year_id' => $year->id, 'type' => 'compliment',
+            'category' => 'conduct', 'description' => 'Helped a friend.', 'date' => '2026-09-01',
+        ])
+        ->assertSessionHas('success', $dv['flash_behavior_saved']);
+
+    // Refused, in Dhivehi, beside the field: slots too long, a material
+    // somebody else wrote, and work moved to the pupil it already belongs to.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.meetings.store'), [
+            'academic_year_id' => $year->id, 'teacher_id' => $teacher->id, 'title' => 'Parent-teacher meeting',
+            'date' => '2026-09-02', 'start_time' => '18:00', 'end_time' => '19:00', 'slot_minutes' => 200,
+        ])
+        ->assertSessionHasErrors(['slot_minutes' => $dv['error_slot_length']]);
+    $theirs = app(SaveTeachingMaterialAction::class)->execute(['title' => 'Worksheet'], (int) User::factory()->create()->id);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->put(route('academics.materials.update', $theirs->id), ['title' => 'Mine now'])
+        ->assertSessionHasErrors(['title' => $dv['error_material_not_yours']]);
+    $work = app(SaveStudentWorkAction::class)->execute(['student_id' => $pupil->id], (int) $office->id, UploadedFile::fake()->image('work.jpg', 800, 600));
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('academics.work.reassign', $work->id), ['student_id' => $pupil->id])
+        ->assertSessionHasErrors(['student_id' => $dv['error_work_same_pupil']]);
 });

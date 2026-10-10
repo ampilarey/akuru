@@ -31,19 +31,19 @@ class ReassignStudentWorkAction
 
         if ($work === null) {
             throw ValidationException::withMessages([
-                'work' => 'That piece of work no longer exists.',
+                'work' => __('academics.error_work_gone'),
             ]);
         }
 
         if ($toStudentId <= 0) {
             throw ValidationException::withMessages([
-                'student_id' => 'Choose whose work this is.',
+                'student_id' => __('academics.error_work_choose'),
             ]);
         }
 
         if ((int) $work->student_id === $toStudentId) {
             throw ValidationException::withMessages([
-                'student_id' => 'That is already whose work this is.',
+                'student_id' => __('academics.error_work_same_pupil'),
             ]);
         }
 
