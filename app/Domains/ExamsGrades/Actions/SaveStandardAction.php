@@ -16,7 +16,7 @@ class SaveStandardAction
         $code = trim((string) ($data['code'] ?? ''));
         $title = trim((string) ($data['title'] ?? ''));
         if ($code === '' || $title === '') {
-            throw ValidationException::withMessages(['code' => 'Code and title are required.']);
+            throw ValidationException::withMessages(['code' => __('exams.error_code_title_required')]);
         }
 
         $duplicate = Standard::query()
@@ -24,17 +24,17 @@ class SaveStandardAction
             ->when($standard !== null, fn ($query) => $query->where('id', '!=', $standard->id))
             ->exists();
         if ($duplicate) {
-            throw ValidationException::withMessages(['code' => 'That standard code already exists.']);
+            throw ValidationException::withMessages(['code' => __('exams.error_standard_code_exists')]);
         }
 
         $subjectId = $this->optionalId($data['subject_id'] ?? null);
         if ($subjectId !== null && ! DB::table('subjects')->where('id', $subjectId)->exists()) {
-            throw ValidationException::withMessages(['subject_id' => 'Subject not found.']);
+            throw ValidationException::withMessages(['subject_id' => __('exams.error_subject_missing')]);
         }
 
         $parentId = $this->optionalId($data['parent_id'] ?? null);
         if ($parentId !== null && ! Standard::query()->where('id', $parentId)->exists()) {
-            throw ValidationException::withMessages(['parent_id' => 'Parent standard not found.']);
+            throw ValidationException::withMessages(['parent_id' => __('exams.error_parent_missing')]);
         }
 
         $payload = [

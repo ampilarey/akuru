@@ -1,11 +1,12 @@
 /**
  * Do the office's exams and grades screens read in Dhivehi and Arabic?
- * (BACKLOG C21, slice EG1, STATUS §5qj.)
+ * (BACKLOG C21, slices EG1 and EG2, STATUS §5qj and §5qk.)
  *
  * The dean schedules an exam from the Dhivehi schedule and is told it was
  * scheduled, in Dhivehi. Then the dean opens the exam schedule, that exam's
- * marks, the gradebook, the assessment weights, the grade scales and the
- * exam types under /dv and /ar. The walk lists what is still in Latin
+ * marks, the gradebook, the assessment weights, the grade scales, the exam
+ * types, the awards, the competencies, the standards, the report cards and
+ * their templates under /dv and /ar. The walk lists what is still in Latin
  * letters in each page's main: every text node, placeholder, aria-label,
  * title and phone caption (`data-label`). What a page shows of its data (an
  * exam's name, a class, a subject or exam type the school named only in
@@ -23,10 +24,23 @@
  *     above the weights, in Dhivehi; no second scheme is made (if the year
  *     had none, the first save is said in Dhivehi too);
  *   - the dean adds an exam type with a code the school already has and is
- *     refused beside the code, in Dhivehi; no type is made.
+ *     refused beside the code, in Dhivehi; no type is made;
+ *   - the dean issues an award to no pupil and is refused under the form, in
+ *     Dhivehi — Laravel's own rule, which named the field in English
+ *     (*student ids ބޭނުންވޭ.*); nothing is issued;
+ *   - the dean publishes a class's report cards with none ready and is
+ *     refused under the form, in Dhivehi; nothing is published;
+ *   - the dean makes a template with no section ticked and is refused under
+ *     the sections, in Dhivehi; no template is made;
+ *   - the dean adds a standard with a code the school has (`SMOKE-STD-1`) and
+ *     is refused beside the code, in Dhivehi; no standard is made;
+ *   - the dean tags `SMOKE-Standard` against a plan topic: the list offers
+ *     the plans' topics (it offered the exams, so a topic was tagged by an
+ *     exam's id), and the tag is said in Dhivehi and made against the topic.
  *
  * The exam is `SMOKE-Lang-Exam`, in `SMOKE-Term`; `SmokeMarkerSeeder`
- * removes it on every run, as it does `exams.mjs`'s `SMOKE-Exam`.
+ * removes it on every run, as it does `exams.mjs`'s `SMOKE-Exam`, and plants
+ * `SMOKE-Standard` afresh, so the walk's tag goes with it.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/exams-language.mjs
@@ -51,12 +65,16 @@ const CODE_KEYS = new Set([
     'i18n', 't', 'nav', 'auth', 'locale', 'locales', 'locale_urls', 'errors', 'flash', 'csvUrl', 'href',
     // An exam's state, an exam type's code, a scale's kind.
     'status', 'statuses', 'code', 'codes', 'type',
+    // An award's level, a report card template's sections (slice EG2).
+    'level', 'levels', 'sections',
 ]);
+// A standard's code is the school's own (*MATH.1*), not one to be named.
+const AUTHORS_ON = { '/exams/standards': new Set(['code']) };
 // A list of codes when it is a list of strings — a grade scale's kinds — and
 // the school's own records otherwise: the exam types are `types` too.
 const CODE_LISTS = new Set(['types']);
 // The names of formats, the same in every language.
-const ALWAYS_FINE = [/https?:\/\/\S*/g, /\bCSV\b/g, /\bJSON\b/g, /[\w.+-]+@[\w-]+(\.[\w-]+)+/g];
+const ALWAYS_FINE = [/https?:\/\/\S*/g, /\bCSV\b/g, /\bJSON\b/g, /\bPDF\b/g, /[\w.+-]+@[\w-]+(\.[\w-]+)+/g];
 
 const browser = await chromium.launch({
     args: ['--no-first-run', '--disable-background-networking'],
@@ -68,8 +86,8 @@ const check = (step, ok, detail = '') => results.push([step, ok, detail]);
 const props = (page) => page.evaluate(() => JSON.parse(document.querySelector('script[data-page="app"]')?.textContent || '{}').props || {});
 const tinker = (code) => execFileSync('php', ['artisan', 'tinker', `--execute=${code}`], { encoding: 'utf8' }).trim().split('\n').pop();
 
-function authorsWords(value, key = '', out = []) {
-    if (CODE_KEYS.has(key) || (CODE_LISTS.has(key) && Array.isArray(value) && value.every((item) => typeof item === 'string'))) {
+function authorsWords(value, key = '', out = [], authors = new Set()) {
+    if ((CODE_KEYS.has(key) && !authors.has(key)) || (CODE_LISTS.has(key) && Array.isArray(value) && value.every((item) => typeof item === 'string'))) {
         return out;
     }
     if (typeof value === 'string') {
@@ -77,9 +95,9 @@ function authorsWords(value, key = '', out = []) {
             out.push(value.trim());
         }
     } else if (Array.isArray(value)) {
-        value.forEach((item) => authorsWords(item, key, out));
+        value.forEach((item) => authorsWords(item, key, out, authors));
     } else if (value && typeof value === 'object') {
-        Object.entries(value).forEach(([k, v]) => authorsWords(v, k, out));
+        Object.entries(value).forEach(([k, v]) => authorsWords(v, k, out, authors));
     }
     return out;
 }
@@ -180,6 +198,12 @@ const screens = [
     '/exams/weights',
     '/exams/scales',
     '/exams/types',
+    // EG2.
+    '/exams/awards',
+    '/exams/competencies',
+    '/exams/standards',
+    '/exams/report-cards',
+    '/exams/report-templates',
 ];
 for (const locale of ['dv', 'ar']) {
     for (const path of screens) {
@@ -190,7 +214,7 @@ for (const locale of ['dv', 'ar']) {
             continue;
         }
         const found = await readMain(dean);
-        const left = english(found.texts, authorsWords(await props(dean)));
+        const left = english(found.texts, authorsWords(await props(dean), '', [], AUTHORS_ON[path]));
         check(`${label}: right to left`, found.dir === 'rtl', `dir=${found.dir}`);
         check(`${label}: nothing left in English`, left.length === 0, left.slice(0, 6).join(' | '));
         check(`${label}: every field is named`, found.unnamed.length === 0, found.unnamed.slice(0, 3).join(' | '));
@@ -250,6 +274,99 @@ await dean.waitForLoadState('networkidle');
 const taken = (await typeForm.locator('span.text-red-600').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
 const typesAfter = typeCount();
 check('an exam type with a code the school has is refused beside the code, in Dhivehi; none is made', taken === book.error_type_code_exists && typesAfter === typesBefore, `said: ${taken ?? 'nothing'}; types ${typesBefore} → ${typesAfter}`);
+
+// ------------------------------------- an award issued to nobody, refused in Dhivehi
+
+const issuedCount = () => Number(tinker("echo DB::table('student_awards')->count();"));
+const required = tinker("echo __('validation.required', ['attribute' => __('validation.attributes.student_ids', [], 'dv')], 'dv');");
+await dean.goto(`${BASE}/dv/exams/awards`, { waitUntil: 'networkidle' });
+const issueForm = dean.locator('form').filter({ has: dean.getByRole('button', { name: book.awards_issue, exact: true }) }).first();
+const issuedBefore = issuedCount();
+await issueForm.getByLabel(book.awards_students, { exact: true }).selectOption([]);
+await issueForm.getByRole('button', { name: book.awards_issue, exact: true }).click();
+await dean.waitForLoadState('networkidle');
+const nobody = (await issueForm.locator('p.text-red-600').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+const issuedAfter = issuedCount();
+check('an award issued to no pupil is refused under the form, the field named in Dhivehi; nothing is issued', nobody === required && inDhivehi(nobody) && issuedAfter === issuedBefore, `said: ${nobody ?? 'nothing'}; issued ${issuedBefore} → ${issuedAfter}`);
+
+// ------------------------------------- nothing ready to publish, refused in Dhivehi
+
+const published = () => Number(tinker("echo DB::table('report_cards')->where('status', 'published')->count();"));
+const termId = Number(tinker(`echo (int) DB::table('terms')->where('name', '${TERM}')->value('id');`));
+await dean.goto(`${BASE}/dv/exams/report-cards`, { waitUntil: 'networkidle' });
+const publishForm = dean.locator('form').filter({ has: dean.getByRole('button', { name: book.reportcards_publish, exact: true }) }).first();
+const classIds = await publishForm.getByLabel(book.class, { exact: true }).locator('option').evaluateAll((options) => options.map((option) => option.value));
+let quiet = null;
+for (const id of classIds) {
+    if (Number(tinker(`echo DB::table('report_cards')->where('class_id', ${Number(id)})->where('term_id', ${termId})->where('status', 'ready')->count();`)) === 0) {
+        quiet = id;
+        break;
+    }
+}
+if (quiet && termId > 0) {
+    await publishForm.getByLabel(book.class, { exact: true }).selectOption(quiet);
+    await publishForm.getByLabel(book.term, { exact: true }).selectOption(String(termId));
+    const publishedBefore = published();
+    await publishForm.getByRole('button', { name: book.reportcards_publish, exact: true }).click();
+    await dean.waitForLoadState('networkidle');
+    const none = (await publishForm.locator('p.text-red-600').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+    const publishedAfter = published();
+    check('publishing a class’s report cards with none ready is refused under the form, in Dhivehi; nothing is published', none === book.error_none_ready && inDhivehi(none) && publishedAfter === publishedBefore, `said: ${none ?? 'nothing'}; published ${publishedBefore} → ${publishedAfter}`);
+} else {
+    check('publishing a class’s report cards with none ready is refused under the form, in Dhivehi; nothing is published', false, `no class without ready cards in ${TERM} (term ${termId})`);
+}
+
+// ------------------------------------- a template with no section, refused in Dhivehi
+
+const templateCount = () => Number(tinker("echo DB::table('report_card_templates')->count();"));
+await dean.goto(`${BASE}/dv/exams/report-templates`, { waitUntil: 'networkidle' });
+const templateForm = dean.locator('form').filter({ has: dean.getByRole('button', { name: book.templates_create, exact: true }) }).first();
+const templatesBefore = templateCount();
+await templateForm.getByLabel(book.name, { exact: true }).fill('SMOKE-Lang-Template');
+for (const box of await templateForm.locator('fieldset input[type=checkbox]').all()) {
+    await box.uncheck();
+}
+await templateForm.getByRole('button', { name: book.templates_create, exact: true }).click();
+await dean.waitForLoadState('networkidle');
+const noSection = (await templateForm.locator('fieldset span.text-red-600').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+const templatesAfter = templateCount();
+check('a template with no section ticked is refused under the sections, in Dhivehi; none is made', noSection === book.error_section_required && inDhivehi(noSection) && templatesAfter === templatesBefore, `said: ${noSection ?? 'nothing'}; templates ${templatesBefore} → ${templatesAfter}`);
+
+// ------------------------------------- a standard code taken, refused in Dhivehi
+
+const standardCount = () => Number(tinker("echo DB::table('standards')->count();"));
+const standardId = Number(tinker("echo (int) DB::table('standards')->where('code', 'SMOKE-STD-1')->value('id');"));
+await dean.goto(`${BASE}/dv/exams/standards`, { waitUntil: 'networkidle' });
+const standardForm = dean.locator('form').filter({ has: dean.getByRole('button', { name: book.standards_create, exact: true }) }).first();
+const standardsBefore = standardCount();
+await standardForm.getByLabel(book.standards_code, { exact: true }).fill('SMOKE-STD-1');
+await standardForm.getByLabel(book.title_en, { exact: true }).fill('SMOKE-Standard again');
+await standardForm.getByRole('button', { name: book.standards_create, exact: true }).click();
+await dean.waitForLoadState('networkidle');
+const codeTaken = (await standardForm.locator('span.text-red-600').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+const standardsAfter = standardCount();
+check('a standard with a code the school has is refused beside the code, in Dhivehi; none is made', standardId > 0 && codeTaken === book.error_standard_code_exists && inDhivehi(codeTaken) && standardsAfter === standardsBefore, `said: ${codeTaken ?? 'nothing'}; standards ${standardsBefore} → ${standardsAfter}`);
+
+// ------------------------------------- a standard tagged against a plan's topic, said in Dhivehi
+
+const topics = JSON.parse(tinker("echo json_encode(DB::table('plan_topics')->join('course_plans', 'course_plans.id', '=', 'plan_topics.course_plan_id')->orderBy('course_plans.title')->orderBy('plan_topics.order')->get(['plan_topics.id', 'plan_topics.title', 'course_plans.title as plan_title']));") || '[]');
+await dean.goto(`${BASE}/dv/exams/standards`, { waitUntil: 'networkidle' });
+const tagForm = dean.locator('form').filter({ has: dean.getByRole('button', { name: book.standards_tag, exact: true }) }).first();
+await tagForm.getByLabel(book.standards_standard, { exact: true }).selectOption(String(standardId));
+await tagForm.getByLabel(book.standards_tag_what, { exact: true }).selectOption('plan_topic');
+const offered = await tagForm.getByLabel(book.taggable_plan_topic, { exact: true }).locator('option').evaluateAll((options) => options.map((option) => [option.value, option.textContent.trim()]));
+const expectedTopics = topics.map((topic) => [String(topic.id), `${topic.plan_title} — ${topic.title}`]);
+check('a plan topic is chosen from the plans’ topics, not the exams', topics.length > 0 && JSON.stringify(offered) === JSON.stringify(expectedTopics), `offered: ${offered.map(([, name]) => name).slice(0, 3).join(' | ') || 'nothing'}; topics: ${topics.length}`);
+if (topics.length > 0) {
+    await tagForm.getByLabel(book.taggable_plan_topic, { exact: true }).selectOption(String(topics[0].id));
+    await tagForm.getByRole('button', { name: book.standards_tag, exact: true }).click();
+    await dean.waitForLoadState('networkidle');
+    const tagged = (await dean.getByTestId('flash-success').textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+    const tag = tinker(`echo DB::table('standard_taggables')->where('standard_id', ${standardId})->where('taggable_type', 'plan_topic')->where('taggable_id', ${Number(topics[0].id)})->exists() ? 'yes' : 'no';`);
+    check('the standard is tagged against the topic, and said in Dhivehi', tagged === book.flash_standard_tagged && inDhivehi(tagged) && tag === 'yes', `said: ${tagged ?? 'nothing'}; a plan_topic tag for topic ${topics[0].id}: ${tag}`);
+} else {
+    check('the standard is tagged against the topic, and said in Dhivehi', false, 'no plan topic to tag');
+}
 
 await browser.close();
 

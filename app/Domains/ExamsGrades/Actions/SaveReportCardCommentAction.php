@@ -18,7 +18,7 @@ class SaveReportCardCommentAction
         $type = ReportCardCommentType::from((string) $data['comment_type']);
         $comment = trim((string) ($data['comment'] ?? ''));
         if ($comment === '') {
-            throw ValidationException::withMessages(['comment' => 'Comment is required.']);
+            throw ValidationException::withMessages(['comment' => __('exams.error_comment_required')]);
         }
 
         return ReportCardComment::query()->updateOrCreate(

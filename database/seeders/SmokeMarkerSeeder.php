@@ -312,6 +312,10 @@ class SmokeMarkerSeeder extends Seeder
         ]);
     }
 
+    /**
+     * `exams-language.mjs` tags this standard against a plan topic and is
+     * refused its code a second time; planted afresh, its tags go with it.
+     */
     private function standards(): void
     {
         DB::table('standards')->where('title', 'SMOKE-Standard')->delete();

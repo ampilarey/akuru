@@ -40,7 +40,7 @@ class GenerateReportCardsAction
         $template = $this->resolveTemplate($classId, $templateId);
         $term = DB::table('terms')->where('id', $termId)->first();
         if ($term === null) {
-            throw ValidationException::withMessages(['term_id' => 'Term not found.']);
+            throw ValidationException::withMessages(['term_id' => __('exams.error_term_missing')]);
         }
 
         $asOf = $term->end_date ?? now()->toDateString();
@@ -117,7 +117,7 @@ class GenerateReportCardsAction
 
         if ($published && $reason === null) {
             throw ValidationException::withMessages([
-                'status' => 'A published report card is regenerated only with a reason, which is recorded against it.',
+                'status' => __('exams.error_regenerate_reason'),
             ]);
         }
 
@@ -173,6 +173,6 @@ class GenerateReportCardsAction
         });
 
         return $match ?? $templates->first(fn (ReportCardTemplate $template) => ($template->applies_to ?? []) === [])
-            ?? throw ValidationException::withMessages(['template_id' => 'No active report card template applies to this class.']);
+            ?? throw ValidationException::withMessages(['template_id' => __('exams.error_no_template')]);
     }
 }

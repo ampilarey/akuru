@@ -52,6 +52,8 @@ class ListStandardsCoverageAction
                 'id' => $standard->id,
                 'code' => $standard->code,
                 'title' => $standard->title,
+                'title_arabic' => $standard->title_arabic,
+                'title_dhivehi' => $standard->title_dhivehi,
                 'subject_id' => $standard->subject_id,
                 'parent_id' => $standard->parent_id,
                 'exams_tagged' => $exams->count(),
@@ -59,5 +61,25 @@ class ListStandardsCoverageAction
                 'covered' => $exams->count() > 0 || $topics->count() > 0,
             ];
         });
+    }
+
+    /**
+     * The plans' topics a standard can be tagged against, by plan and order.
+     *
+     * @return list<array{id: int, title: string, plan_title: string}>
+     */
+    public function topics(): array
+    {
+        return DB::table('plan_topics')
+            ->join('course_plans', 'course_plans.id', '=', 'plan_topics.course_plan_id')
+            ->orderBy('course_plans.title')
+            ->orderBy('plan_topics.order')
+            ->get(['plan_topics.id', 'plan_topics.title', 'course_plans.title as plan_title'])
+            ->map(fn ($row) => [
+                'id' => (int) $row->id,
+                'title' => (string) $row->title,
+                'plan_title' => (string) $row->plan_title,
+            ])
+            ->all();
     }
 }

@@ -23,7 +23,7 @@ class PublishReportCardsAction
             ->get();
 
         if ($cards->isEmpty()) {
-            throw ValidationException::withMessages(['status' => 'No ready report cards to publish.']);
+            throw ValidationException::withMessages(['status' => __('exams.error_none_ready')]);
         }
 
         $now = now();

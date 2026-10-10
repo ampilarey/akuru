@@ -320,7 +320,7 @@ await generate.locator('select').nth(0).selectOption(classId);
 await generate.locator('select').nth(1).selectOption(termId);
 await generate.locator('button:has-text("Generate")').click();
 check('report cards are queued', await settles(admin, 'Report cards queued.'), (await text(admin)).slice(0, 160));
-check('the overview counts them as unpublished', /\d+ unpublished report card/.test(await text(admin)), (await text(admin)).slice(0, 160));
+check('the overview counts them as unpublished', /Unpublished report cards: \d+/.test(await text(admin)), (await text(admin)).slice(0, 160));
 
 // The render job.
 let cardRow = '';
@@ -328,15 +328,15 @@ const deadline = Date.now() + QUEUE_WAIT * 1000;
 while (Date.now() < deadline) {
     await admin.goto(cardsUrl, { waitUntil: 'networkidle' });
     cardRow = await rowText(admin, CHILD);
-    if (/\bready\b/.test(cardRow)) {
+    if (/\bReady\b/.test(cardRow)) {
         break;
     }
     await admin.waitForTimeout(1000);
 }
 check(
     `the render job finishes within ${QUEUE_WAIT}s`,
-    /\bready\b/.test(cardRow),
-    /\bready\b/.test(cardRow) ? '' : `${cardRow || 'no row for ' + CHILD} — is a queue worker running? (php artisan queue:work)`,
+    /\bReady\b/.test(cardRow),
+    /\bReady\b/.test(cardRow) ? '' : `${cardRow || 'no row for ' + CHILD} — is a queue worker running? (php artisan queue:work)`,
 );
 
 const publish = admin.locator('form', { hasText: 'Publish ready cards' });
@@ -344,7 +344,7 @@ await publish.locator('select').nth(0).selectOption(classId);
 await publish.locator('select').nth(1).selectOption(termId);
 await publish.locator('button:has-text("Publish ready cards")').click();
 check('the ready cards publish', await settles(admin, 'Report cards published.'), (await text(admin)).slice(0, 160));
-check('the child\'s card is published', /\bpublished\b/.test(await rowText(admin, CHILD)), await rowText(admin, CHILD));
+check('the child\'s card is published', /\bPublished\b/.test(await rowText(admin, CHILD)), await rowText(admin, CHILD));
 
 // ------------------------------------------- 5b. correct a published card
 
@@ -370,7 +370,7 @@ while (Date.now() < revisionDeadline) {
     }
     await admin.waitForTimeout(1000);
 }
-check('the revision and its reason show on the row, still published', /\bpublished\b/.test(revised) && /1 — SMOKE: mark corrected/.test(revised), revised);
+check('the revision and its reason show on the row, still published', /\bPublished\b/.test(revised) && /1 — SMOKE: mark corrected/.test(revised), revised);
 
 // ----------------------------------------------------- 6. back to the parent
 

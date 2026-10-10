@@ -13,6 +13,7 @@ use App\Domains\ExamsGrades\Models\StudentAward;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,6 +34,7 @@ class AwardController extends Controller
             'issued' => app(ListAwardsAction::class)->issued([
                 'academic_year_id' => $request->integer('academic_year_id') ?: null,
             ])->values(),
+            't' => Phrases::once('exams'),
         ]);
     }
 
@@ -49,7 +51,7 @@ class AwardController extends Controller
             'active' => ['sometimes', 'boolean'],
         ]));
 
-        return redirect()->route('exams.awards.index')->with('success', 'Award saved.');
+        return redirect()->route('exams.awards.index')->with('success', __('exams.flash_award_saved'));
     }
 
     public function issue(Request $request): RedirectResponse
@@ -66,7 +68,7 @@ class AwardController extends Controller
             'notes' => ['nullable', 'string'],
         ]), (int) $request->user()->id);
 
-        return redirect()->route('exams.awards.index')->with('success', 'Awards issued.');
+        return redirect()->route('exams.awards.index')->with('success', __('exams.flash_awards_issued'));
     }
 
     public function idCard(Request $request): HttpResponse

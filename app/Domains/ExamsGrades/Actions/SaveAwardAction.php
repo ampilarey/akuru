@@ -15,7 +15,7 @@ class SaveAwardAction
     {
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'Title is required.']);
+            throw ValidationException::withMessages(['title' => __('exams.error_title_required')]);
         }
 
         $payload = [

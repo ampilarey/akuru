@@ -17,7 +17,7 @@ class TagStandardAction
     {
         $standard = Standard::query()->find((int) ($data['standard_id'] ?? 0));
         if ($standard === null || ! $standard->active) {
-            throw ValidationException::withMessages(['standard_id' => 'Standard not found.']);
+            throw ValidationException::withMessages(['standard_id' => __('exams.error_standard_missing')]);
         }
 
         $type = (string) ($data['taggable_type'] ?? '');
@@ -29,15 +29,15 @@ class TagStandardAction
         };
 
         if ($alias === null || $id < 1) {
-            throw ValidationException::withMessages(['taggable_type' => 'Tag exams or plan topics only.']);
+            throw ValidationException::withMessages(['taggable_type' => __('exams.error_tag_kind')]);
         }
 
         if ($alias === 'exam' && ! Exam::query()->where('id', $id)->exists()) {
-            throw ValidationException::withMessages(['taggable_id' => 'Exam not found.']);
+            throw ValidationException::withMessages(['taggable_id' => __('exams.error_exam_missing')]);
         }
 
         if ($alias === 'plan_topic' && ! DB::table('plan_topics')->where('id', $id)->exists()) {
-            throw ValidationException::withMessages(['taggable_id' => 'Plan topic not found.']);
+            throw ValidationException::withMessages(['taggable_id' => __('exams.error_topic_missing')]);
         }
 
         return StandardTaggable::query()->firstOrCreate([

@@ -26,7 +26,7 @@ class IssueStudentAwardsAction
         ), fn (int $id) => $id > 0)));
 
         if ($studentIds === []) {
-            throw ValidationException::withMessages(['student_ids' => 'Select at least one student.']);
+            throw ValidationException::withMessages(['student_ids' => __('exams.error_pick_student')]);
         }
 
         $yearId = (int) $data['academic_year_id'];

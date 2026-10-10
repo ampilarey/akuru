@@ -10,6 +10,7 @@ use App\Domains\ExamsGrades\Actions\TagStandardAction;
 use App\Domains\ExamsGrades\Models\Standard;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -29,16 +30,20 @@ class StandardController extends Controller
             ...app(ListExamCatalogAction::class)->execute(),
             'exams' => app(ListExamsAction::class)->execute(),
             'coverage' => app(ListStandardsCoverageAction::class)->execute($subjectId, $termId)->values(),
+            'topics' => app(ListStandardsCoverageAction::class)->topics(),
             'standards' => Standard::query()->orderBy('code')->get()->map(fn (Standard $row) => [
                 'id' => $row->id,
                 'code' => $row->code,
                 'title' => $row->title,
+                'title_arabic' => $row->title_arabic,
+                'title_dhivehi' => $row->title_dhivehi,
                 'subject_id' => $row->subject_id,
                 'parent_id' => $row->parent_id,
                 'active' => $row->active,
             ]),
             'subjectId' => $subjectId,
             'termId' => $termId,
+            't' => Phrases::once('exams'),
         ]);
     }
 
@@ -57,7 +62,7 @@ class StandardController extends Controller
             'active' => ['sometimes', 'boolean'],
         ]));
 
-        return redirect()->route('exams.standards.index')->with('success', 'Standard saved.');
+        return redirect()->route('exams.standards.index')->with('success', __('exams.flash_standard_saved'));
     }
 
     public function tag(Request $request): RedirectResponse
@@ -70,7 +75,7 @@ class StandardController extends Controller
             'taggable_id' => ['required', 'integer'],
         ]));
 
-        return redirect()->route('exams.standards.index')->with('success', 'Standard tagged.');
+        return redirect()->route('exams.standards.index')->with('success', __('exams.flash_standard_tagged'));
     }
 
     public function export(Request $request): StreamedResponse

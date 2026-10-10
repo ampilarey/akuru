@@ -27,7 +27,7 @@ class SaveReportCardTemplateAction
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Name is required.']);
+            throw ValidationException::withMessages(['name' => __('exams.error_name_required')]);
         }
 
         $sections = $this->sections($data['sections'] ?? self::SECTIONS);
@@ -68,7 +68,7 @@ class SaveReportCardTemplateAction
         }
 
         if ($clean === []) {
-            throw ValidationException::withMessages(['sections' => 'At least one valid section is required.']);
+            throw ValidationException::withMessages(['sections' => __('exams.error_section_required')]);
         }
 
         return array_values(array_unique($clean));
