@@ -18,7 +18,7 @@ class RemoveMaterialFileAction
     {
         if ((int) $file->material?->created_by !== $actorUserId) {
             throw ValidationException::withMessages([
-                'file' => 'You can only remove files from materials you wrote.',
+                'file' => __('academics.error_file_remove_not_yours'),
             ]);
         }
 

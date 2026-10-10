@@ -28,6 +28,8 @@ class ListAnnouncementsForStaffAction
                 'title_dhivehi' => $row->title_dhivehi,
                 'title_arabic' => $row->title_arabic,
                 'content' => $row->content,
+                'content_dhivehi' => $row->content_dhivehi,
+                'content_arabic' => $row->content_arabic,
                 'type' => $row->type,
                 'priority' => $row->priority,
                 'target_audience' => $row->target_audience ?: ['all'],

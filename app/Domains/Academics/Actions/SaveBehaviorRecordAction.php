@@ -20,7 +20,7 @@ class SaveBehaviorRecordAction
     {
         $description = trim((string) ($data['description'] ?? ''));
         if ($description === '') {
-            throw ValidationException::withMessages(['description' => 'Description is required.']);
+            throw ValidationException::withMessages(['description' => __('academics.error_description_required')]);
         }
 
         $payload = [
@@ -43,7 +43,7 @@ class SaveBehaviorRecordAction
         ];
 
         if ($payload['category'] === '') {
-            throw ValidationException::withMessages(['category' => 'Category is required.']);
+            throw ValidationException::withMessages(['category' => __('academics.error_category_required')]);
         }
 
         if ($record === null) {

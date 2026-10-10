@@ -10,6 +10,7 @@ use App\Domains\Academics\Enums\MeetingSlotStatus;
 use App\Domains\Academics\Models\MeetingSlot;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,6 +31,7 @@ class MeetingSlotController extends Controller
             ...$options,
             'yearId' => $yearId,
             'slots' => app(ListMeetingSlotsAction::class)->execute($yearId)->all(),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -50,7 +52,7 @@ class MeetingSlotController extends Controller
 
         return redirect()
             ->route('academics.meetings.index', $request->only(['academic_year_id']))
-            ->with('success', 'Meeting slots saved.');
+            ->with('success', __('academics.flash_meeting_slots_saved'));
     }
 
     public function update(Request $request, MeetingSlot $meetingSlot): RedirectResponse
@@ -61,7 +63,7 @@ class MeetingSlotController extends Controller
 
         return redirect()
             ->route('academics.meetings.index', ['academic_year_id' => $meetingSlot->academic_year_id])
-            ->with('success', 'Meeting slot updated.');
+            ->with('success', __('academics.flash_meeting_slot_updated'));
     }
 
     public function destroy(Request $request, MeetingSlot $meetingSlot): RedirectResponse
@@ -79,7 +81,7 @@ class MeetingSlotController extends Controller
 
         return redirect()
             ->route('academics.meetings.index', ['academic_year_id' => $yearId])
-            ->with('success', $hasBookings ? 'Meeting slot cancelled.' : 'Meeting slot removed.');
+            ->with('success', __($hasBookings ? 'academics.flash_meeting_slot_cancelled' : 'academics.flash_meeting_slot_removed'));
     }
 
     public function export(Request $request): StreamedResponse

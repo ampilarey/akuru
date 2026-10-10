@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ListTeacherMeetingsAction;
 use App\Domains\People\Actions\ResolveTeacherForUserAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -29,6 +30,7 @@ class TeachMeetingController extends Controller
         return Inertia::render('Academics/Teach/Meetings', [
             'teacher' => $teacher,
             'slots' => app(ListTeacherMeetingsAction::class)->execute($teacher['id']),
+            't' => Phrases::once('academics'),
         ]);
     }
 

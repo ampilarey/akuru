@@ -10,6 +10,7 @@ use App\Domains\Academics\Actions\SaveStudentWorkAction;
 use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
@@ -28,6 +29,7 @@ class StudentWorkController extends Controller
             'q' => $query,
             'matches' => $query === '' ? [] : app(SearchRosterCandidatesAction::class)->execute($query, 12),
             'work' => app(ListStudentWorkAction::class)->execute(),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -77,7 +79,7 @@ class StudentWorkController extends Controller
 
         $save->execute($data, (int) $request->user()->id, $request->file('photo'));
 
-        return back()->with('success', 'Saved, and the family can see it.');
+        return back()->with('success', __('academics.flash_work_saved'));
     }
 
     public function reassign(Request $request, int $work, ReassignStudentWorkAction $reassign): RedirectResponse
@@ -86,21 +88,21 @@ class StudentWorkController extends Controller
 
         $reassign->execute($work, (int) $data['student_id'], (int) $request->user()->id);
 
-        return back()->with('success', 'Moved. The first family can no longer see it.');
+        return back()->with('success', __('academics.flash_work_moved'));
     }
 
     public function hide(Request $request, int $work, HideStudentWorkAction $hide): RedirectResponse
     {
         $hide->execute($work, (int) $request->user()->id);
 
-        return back()->with('success', 'Hidden from families.');
+        return back()->with('success', __('academics.flash_work_hidden'));
     }
 
     public function restore(int $work, HideStudentWorkAction $hide): RedirectResponse
     {
         $hide->restore($work);
 
-        return back()->with('success', 'Visible to families again.');
+        return back()->with('success', __('academics.flash_work_restored'));
     }
 
     public function photo(int $work, ReadStudentWorkPhotoAction $read): HttpResponse

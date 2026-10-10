@@ -22,11 +22,11 @@ class HideStudentWorkAction
         $work = StudentWork::query()->find($workId);
 
         if ($work === null) {
-            throw ValidationException::withMessages(['work' => 'That piece of work no longer exists.']);
+            throw ValidationException::withMessages(['work' => __('academics.error_work_gone')]);
         }
 
         if ($work->hidden_at !== null) {
-            throw ValidationException::withMessages(['work' => 'That is already hidden from families.']);
+            throw ValidationException::withMessages(['work' => __('academics.error_work_already_hidden')]);
         }
 
         $work->update(['hidden_at' => now(), 'hidden_by' => $staffUserId]);
@@ -40,7 +40,7 @@ class HideStudentWorkAction
         $work = StudentWork::query()->find($workId);
 
         if ($work === null) {
-            throw ValidationException::withMessages(['work' => 'That piece of work no longer exists.']);
+            throw ValidationException::withMessages(['work' => __('academics.error_work_gone')]);
         }
 
         $work->update(['hidden_at' => null, 'hidden_by' => null]);

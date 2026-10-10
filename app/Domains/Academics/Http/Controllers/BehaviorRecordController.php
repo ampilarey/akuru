@@ -9,6 +9,7 @@ use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\BehaviorRecord;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -32,6 +33,7 @@ class BehaviorRecordController extends Controller
             'categories' => $lister->categories(),
             'records' => $lister->execute(['academic_year_id' => $yearId]),
             'canManage' => (bool) $request->user()?->can('behavior.manage'),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -45,7 +47,7 @@ class BehaviorRecordController extends Controller
             (int) $request->user()->id,
         );
 
-        return redirect()->route('academics.behavior.index', $request->only(['academic_year_id']))->with('success', 'Behavior record saved.');
+        return redirect()->route('academics.behavior.index', $request->only(['academic_year_id']))->with('success', __('academics.flash_behavior_saved'));
     }
 
     public function update(Request $request, BehaviorRecord $behaviorRecord): RedirectResponse
@@ -54,7 +56,7 @@ class BehaviorRecordController extends Controller
 
         app(SaveBehaviorRecordAction::class)->execute($this->validated($request), $behaviorRecord, (int) $request->user()->id);
 
-        return redirect()->route('academics.behavior.index', ['academic_year_id' => $behaviorRecord->academic_year_id])->with('success', 'Behavior record updated.');
+        return redirect()->route('academics.behavior.index', ['academic_year_id' => $behaviorRecord->academic_year_id])->with('success', __('academics.flash_behavior_updated'));
     }
 
     public function destroy(Request $request, BehaviorRecord $behaviorRecord): RedirectResponse
@@ -64,7 +66,7 @@ class BehaviorRecordController extends Controller
         $yearId = $behaviorRecord->academic_year_id;
         app(SaveBehaviorRecordAction::class)->delete($behaviorRecord, (int) $request->user()->id);
 
-        return redirect()->route('academics.behavior.index', ['academic_year_id' => $yearId])->with('success', 'Behavior record removed.');
+        return redirect()->route('academics.behavior.index', ['academic_year_id' => $yearId])->with('success', __('academics.flash_behavior_removed'));
     }
 
     public function export(Request $request): StreamedResponse

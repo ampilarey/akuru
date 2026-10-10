@@ -18,7 +18,7 @@ class GenerateMeetingSlotsAction
         $minutes = (int) ($data['slot_minutes'] ?? 0);
         if ($minutes < 5 || $minutes > 120) {
             throw ValidationException::withMessages([
-                'slot_minutes' => 'Slot length must be between 5 and 120 minutes.',
+                'slot_minutes' => __('academics.error_slot_length'),
             ]);
         }
 
@@ -26,7 +26,7 @@ class GenerateMeetingSlotsAction
         $start = $this->normalizeTime($data['start_time'] ?? null);
         $end = $this->normalizeTime($data['end_time'] ?? null);
         if ($date === '' || $start === null || $end === null) {
-            throw ValidationException::withMessages(['start_time' => 'Date, start, and end time are required.']);
+            throw ValidationException::withMessages(['start_time' => __('academics.error_slot_window_required')]);
         }
 
         $cursor = Carbon::parse($date.' '.$start);
@@ -43,7 +43,7 @@ class GenerateMeetingSlotsAction
 
         if ($windows === []) {
             throw ValidationException::withMessages([
-                'slot_minutes' => 'That window is shorter than one slot.',
+                'slot_minutes' => __('academics.error_slot_window_short'),
             ]);
         }
 

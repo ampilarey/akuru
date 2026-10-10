@@ -21,7 +21,7 @@ class SaveTeachingMaterialAction
     {
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'A material needs a title.']);
+            throw ValidationException::withMessages(['title' => __('academics.error_material_title')]);
         }
 
         $attributes = [
@@ -34,7 +34,7 @@ class SaveTeachingMaterialAction
         if ($material !== null) {
             if ((int) $material->created_by !== $authorId) {
                 throw ValidationException::withMessages([
-                    'title' => 'You can only edit materials you wrote.',
+                    'title' => __('academics.error_material_not_yours'),
                 ]);
             }
 

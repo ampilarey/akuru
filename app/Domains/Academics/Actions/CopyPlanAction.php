@@ -17,7 +17,7 @@ class CopyPlanAction
         $classroomId = (int) ($data['classroom_id'] ?? 0);
         if ($classroomId < 1) {
             throw ValidationException::withMessages([
-                'classroom_id' => 'A target class is required.',
+                'classroom_id' => __('academics.error_target_class_required'),
             ]);
         }
 

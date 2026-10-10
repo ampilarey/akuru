@@ -15,7 +15,7 @@ class SaveCoursePlanAction
     {
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'Title is required.']);
+            throw ValidationException::withMessages(['title' => __('academics.error_title_required')]);
         }
 
         $yearId = isset($data['academic_year_id']) && $data['academic_year_id'] !== ''

@@ -11,6 +11,7 @@ use App\Domains\Academics\Models\TeachingMaterial;
 use App\Domains\Academics\Models\TeachingMaterialFile;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -35,6 +36,7 @@ class TeachingMaterialController extends Controller
             'materials' => app(ListTeachingMaterialsAction::class)->execute($filters),
             'subjects' => app(ListSubjectsAction::class)->execute(),
             'userId' => (int) $request->user()->id,
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -74,7 +76,7 @@ class TeachingMaterialController extends Controller
         app(SaveTeachingMaterialAction::class)
             ->execute($this->validated($request), (int) $request->user()->id);
 
-        return redirect()->route('academics.materials.index')->with('success', 'Material saved.');
+        return redirect()->route('academics.materials.index')->with('success', __('academics.flash_material_saved'));
     }
 
     public function update(Request $request, TeachingMaterial $material): RedirectResponse
@@ -86,7 +88,7 @@ class TeachingMaterialController extends Controller
         app(SaveTeachingMaterialAction::class)
             ->execute($this->validated($request), (int) $request->user()->id, $material);
 
-        return redirect()->route('academics.materials.index')->with('success', 'Material updated.');
+        return redirect()->route('academics.materials.index')->with('success', __('academics.flash_material_updated'));
     }
 
     public function storeFile(Request $request, TeachingMaterial $material): RedirectResponse
@@ -105,7 +107,7 @@ class TeachingMaterialController extends Controller
             (int) $request->user()->id,
         );
 
-        return redirect()->route('academics.materials.index')->with('success', 'File added.');
+        return redirect()->route('academics.materials.index')->with('success', __('academics.flash_file_added'));
     }
 
     public function destroyFile(Request $request, TeachingMaterialFile $file): RedirectResponse
@@ -114,7 +116,7 @@ class TeachingMaterialController extends Controller
 
         app(RemoveMaterialFileAction::class)->execute($file, (int) $request->user()->id);
 
-        return redirect()->route('academics.materials.index')->with('success', 'File removed.');
+        return redirect()->route('academics.materials.index')->with('success', __('academics.flash_file_removed'));
     }
 
     /**
