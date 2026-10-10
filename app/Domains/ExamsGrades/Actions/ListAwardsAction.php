@@ -18,6 +18,8 @@ class ListAwardsAction
         return Award::query()->orderBy('title')->get()->map(fn (Award $award) => [
             'id' => $award->id,
             'title' => $award->title,
+            'title_arabic' => $award->title_arabic,
+            'title_dhivehi' => $award->title_dhivehi,
             'level' => $award->level?->value,
             'active' => $award->active,
             'description' => $award->description,
@@ -67,6 +69,8 @@ class ListAwardsAction
                 'student_name' => PersonName::ofStudent($student),
                 'student_number' => $student->student_id ?? null,
                 'award' => $row->award?->title,
+                'award_arabic' => $row->award?->title_arabic,
+                'award_dhivehi' => $row->award?->title_dhivehi,
                 'level' => $row->award?->level?->value,
                 'awarded_date' => $row->awarded_date?->toDateString(),
                 'certificate_document_id' => $row->certificate_document_id,

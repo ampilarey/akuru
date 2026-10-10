@@ -16,22 +16,22 @@ class SaveCompetencyAssessmentAction
     {
         $competency = Competency::query()->find((int) ($data['competency_id'] ?? 0));
         if ($competency === null) {
-            throw ValidationException::withMessages(['competency_id' => 'Competency is required.']);
+            throw ValidationException::withMessages(['competency_id' => __('exams.error_competency_required')]);
         }
 
         $studentId = (int) ($data['student_id'] ?? 0);
         if ($studentId < 1 || ! DB::table('students')->where('id', $studentId)->exists()) {
-            throw ValidationException::withMessages(['student_id' => 'Student is required.']);
+            throw ValidationException::withMessages(['student_id' => __('exams.error_student_required')]);
         }
 
         $termId = (int) ($data['term_id'] ?? 0);
         if ($termId < 1 || ! DB::table('terms')->where('id', $termId)->exists()) {
-            throw ValidationException::withMessages(['term_id' => 'Term is required.']);
+            throw ValidationException::withMessages(['term_id' => __('exams.error_term_required')]);
         }
 
         $level = trim((string) ($data['level'] ?? ''));
         if ($level === '') {
-            throw ValidationException::withMessages(['level' => 'Level is required.']);
+            throw ValidationException::withMessages(['level' => __('exams.error_level_required')]);
         }
 
         return CompetencyAssessment::query()->updateOrCreate(

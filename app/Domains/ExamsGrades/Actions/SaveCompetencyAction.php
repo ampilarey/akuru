@@ -15,12 +15,12 @@ class SaveCompetencyAction
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Name is required.']);
+            throw ValidationException::withMessages(['name' => __('exams.error_name_required')]);
         }
 
         $subjectId = (int) ($data['subject_id'] ?? 0);
         if ($subjectId < 1 || ! DB::table('subjects')->where('id', $subjectId)->exists()) {
-            throw ValidationException::withMessages(['subject_id' => 'Subject is required.']);
+            throw ValidationException::withMessages(['subject_id' => __('exams.error_subject_required')]);
         }
 
         $payload = [

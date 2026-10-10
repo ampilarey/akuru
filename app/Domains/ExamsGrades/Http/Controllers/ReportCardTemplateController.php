@@ -7,6 +7,7 @@ use App\Domains\ExamsGrades\Actions\SaveReportCardTemplateAction;
 use App\Domains\ExamsGrades\Models\ReportCardTemplate;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -31,6 +32,7 @@ class ReportCardTemplateController extends Controller
                 'active' => $row->active,
             ]),
             'sections' => SaveReportCardTemplateAction::SECTIONS,
+            't' => Phrases::once('exams'),
         ]);
     }
 
@@ -47,7 +49,7 @@ class ReportCardTemplateController extends Controller
             'active' => ['sometimes', 'boolean'],
         ]));
 
-        return redirect()->route('exams.report-templates.index')->with('success', 'Template saved.');
+        return redirect()->route('exams.report-templates.index')->with('success', __('exams.flash_template_saved'));
     }
 
     public function update(Request $request, ReportCardTemplate $reportCardTemplate): RedirectResponse
@@ -63,7 +65,7 @@ class ReportCardTemplateController extends Controller
             'active' => ['sometimes', 'boolean'],
         ]), $reportCardTemplate);
 
-        return redirect()->route('exams.report-templates.index')->with('success', 'Template updated.');
+        return redirect()->route('exams.report-templates.index')->with('success', __('exams.flash_template_updated'));
     }
 
     public function export(Request $request): StreamedResponse

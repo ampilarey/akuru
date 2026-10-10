@@ -8,6 +8,7 @@ use App\Domains\ExamsGrades\Actions\SaveCompetencyAssessmentAction;
 use App\Domains\ExamsGrades\Models\Competency;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -39,6 +40,7 @@ class CompetencyController extends Controller
                     'description' => $row->description,
                     'sort_order' => $row->sort_order,
                 ]),
+            't' => Phrases::once('exams'),
         ]);
     }
 
@@ -55,7 +57,7 @@ class CompetencyController extends Controller
             'sort_order' => ['nullable', 'integer'],
         ]));
 
-        return redirect()->route('exams.competencies.index')->with('success', 'Competency saved.');
+        return redirect()->route('exams.competencies.index')->with('success', __('exams.flash_competency_saved'));
     }
 
     public function assess(Request $request): RedirectResponse
@@ -70,7 +72,7 @@ class CompetencyController extends Controller
             'notes' => ['nullable', 'string'],
         ]), (int) $request->user()->id);
 
-        return redirect()->back()->with('success', 'Assessment saved.');
+        return redirect()->back()->with('success', __('exams.flash_assessment_saved'));
     }
 
     public function export(Request $request): StreamedResponse

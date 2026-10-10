@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Support\Contracts\PdfConverterInterface;
 use App\Support\Csv;
 use App\Support\Http\DocumentResponse;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -40,6 +41,7 @@ class ReportCardController extends Controller
             'pdf_available' => app(PdfConverterInterface::class)->enabled(),
             'classId' => $classId,
             'termId' => $termId,
+            't' => Phrases::once('exams'),
         ]);
     }
 
@@ -68,7 +70,7 @@ class ReportCardController extends Controller
 
         return redirect()
             ->route('exams.report-cards.index', ['class_id' => $data['class_id'], 'term_id' => $data['term_id']])
-            ->with('success', 'Report cards queued.');
+            ->with('success', __('exams.flash_cards_queued'));
     }
 
     public function publish(Request $request): RedirectResponse
@@ -84,7 +86,7 @@ class ReportCardController extends Controller
 
         return redirect()
             ->route('exams.report-cards.index', $data)
-            ->with('success', 'Report cards published.');
+            ->with('success', __('exams.flash_cards_published'));
     }
 
     public function comment(Request $request): RedirectResponse
@@ -101,7 +103,7 @@ class ReportCardController extends Controller
 
         app(SaveReportCardCommentAction::class)->execute($data, (int) $request->user()->id);
 
-        return redirect()->route('exams.report-cards.index')->with('success', 'Comment saved.');
+        return redirect()->route('exams.report-cards.index')->with('success', __('exams.flash_comment_saved'));
     }
 
     public function download(Request $request, ReportCard $reportCard): HttpResponse

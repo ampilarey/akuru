@@ -4983,6 +4983,117 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qk. The exams office's other screens in Dhivehi and Arabic (C21 EG2, 2026-10-10)
+
+The eleventh slice of BACKLOG C21, and the second and last of ExamsGrades.
+These five screens are the rest of the exams office:
+- the awards and the certificates issued for them;
+- a subject's competencies;
+- the curriculum standards, and how far the exams and plans cover them;
+- the report cards;
+- the report card templates.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and note;
+- an award's level, a report card's state and a template's sections,
+  printed as codes (*ready*, *grades_table, attendance_summary*). A
+  template's sections were asked for as codes typed with commas;
+- an award and a standard by their English titles, and a competency by its
+  English name, though the school writes them in three languages; the
+  competencies list printed a subject's id;
+- eleven saved messages and twenty-three refusals.
+
+Three defects were found on the way:
+- **Most refusals were said nowhere.**
+  - The awards page showed none, from either of its forms.
+  - The report cards showed only a regeneration's missing reason. A class
+    no template applies to, a publish with none ready and an empty comment
+    said nothing.
+  - The tag form showed none.
+  - A template refused for its sections, a competency for its subject and
+    a standard for its subject or parent said nothing.
+- **A standard was tagged against a plan topic by an exam's id.** The tag
+  form offered the exams whatever it was asked to tag. Choosing *Plan
+  topic* tagged the standard against whichever topic had that exam's id, or
+  was refused.
+- **Laravel's own refusals named the field in English.** An award issued to
+  nobody read *student ids ބޭނުންވޭ.* The validation books had no name for
+  most of the exams screens' fields, EG1's among them.
+
+**The change:**
+- **The `exams` book grows by 117 phrases**, to 285, and the five pages read
+  it through `Phrases::once('exams')`.
+- **Codes are named**: an award's level, a report card's state, who wrote a
+  comment, a template's sections (ticked by name, no longer typed as
+  codes), and the language a card or a transcript is made in (named, not
+  abbreviated).
+- **The school's words in the page's language**: an award's and a
+  standard's title and a competency's name read in the page's language
+  where the school wrote one, and the forms take them in Dhivehi and Arabic;
+  a subject reads by its own name for the page's language.
+- **A plan topic is chosen from the plans' topics.** The server sends them
+  by plan and order, and the list names each by its plan.
+- **What the server says is in the page's language**: the saved messages
+  and refusals of five controllers and ten actions.
+- **Every refusal is shown** under the form that asked.
+- **Every field the exams screens post is named** in Laravel's own refusals:
+  56 fields in Dhivehi and Arabic, EG1's screens' too.
+- **Every field is named** for a screen reader.
+
+What the school writes stays as written: a template's name, header and
+footer, a pupil's name, a class and a term, a standard's code, a revision's
+reason. The CSVs keep their English column codes.
+
+**Tests:**
+- `ExamsGradesSpeaksThreeLanguagesTest` grows to the eleven screens,
+  twenty-nine server files and the codes. It also checks:
+  - every field the exams controllers validate has a Dhivehi and an Arabic
+    name, and an award issued to nobody is refused whole in Dhivehi;
+  - the five new screens serve in Dhivehi;
+  - an award saved with its Dhivehi title is said in Dhivehi, and issued
+    to no pupil is refused in Dhivehi;
+  - nothing ready to publish, a template with no section it knows, a
+    standard code taken twice and a plan topic that is not there are
+    refused in Dhivehi.
+
+The tests for the areas it touches (ExamsGrades, Localization,
+Architecture): **275 passed (17008 assertions)**.
+
+Whole suite locally: **2985 passed (51947 assertions)**.
+
+**Walks:**
+- **`exams-language.mjs`** 78/78 (42 before):
+  - the eleven screens read right to left under `/dv` and `/ar`, with
+    nothing left in English and every field named;
+  - in Dhivehi, the dean is refused, and nothing changes, for:
+    - an award issued to no pupil — under the form, the field named in
+      Dhivehi; nothing is issued;
+    - a class's report cards published with none ready — under the form;
+      nothing is published;
+    - a template with no section ticked — under the sections; no template
+      is made;
+    - a standard with a code the school has (`SMOKE-STD-1`) — beside the
+      code; no standard is made;
+  - the tag form offers the plans' topics for *Plan topic*, and
+    `SMOKE-Standard` is tagged against one, said in Dhivehi, with a
+    `plan_topic` tag for that topic;
+  - a standard's code is the school's own, so the walk takes it as the
+    author's on the standards page; *PDF* is a format's name.
+
+  `SmokeMarkerSeeder` plants `SMOKE-Standard` afresh on every run, so the
+  walk's tag goes with it.
+
+One walk changed, not for a defect in the app: **`exams.mjs`** read a report
+card's state and the unpublished count as codes (*ready*, *3 unpublished
+report cards*). The list names them now (*Ready*, *Unpublished report cards:
+3*): 29/29.
+
+The other walks: `documents-language.mjs` 11/11 (the report card form it
+drives), `family.mjs` 40/40, `portal-language.mjs` 212/212, `sweep.mjs`
+25/25, `create-sweep.mjs` 6/6, `admin-hub.mjs` 26/26, `admin-layout.mjs`
+15/15, `admin.mjs` 43/43, `rtl.mjs` 8/8, `nav.mjs` 14/14, `mobile.mjs` 19/19,
+`identity.mjs` 47/47.
+
 ## 5qj. The exam cycle's office screens in Dhivehi and Arabic (C21 EG1, 2026-10-10)
 
 The tenth slice of BACKLOG C21, and the first of ExamsGrades. These six
