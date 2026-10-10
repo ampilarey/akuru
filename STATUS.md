@@ -4983,6 +4983,106 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qs. A person's linked accounts, the sign-in codes' refusals and a teacher's schedule in Dhivehi and Arabic (C21 AC1, 2026-10-10)
+
+The nineteenth slice of BACKLOG C21, and the second of the pages found
+English after PE2 (§5qq). Two screens, and what the server says on every
+page that asks for a code:
+- a person's linked accounts (`/account/linked`), which every account
+  has: the accounts linked to theirs, switching to one, unlinking it, and
+  linking another;
+- a teacher's schedule (`/teach/schedule`): the sessions they are to
+  teach;
+- the sign-in and registration codes' refusals, said on the pages that
+  send or check a code.
+
+They read no phrase book, and were English throughout:
+- every heading, hint, field and button;
+- a session's time, printed as the server's stamp
+  (*2026-10-12T08:00:00+05:00*);
+- three saved messages and four refusals of the linked accounts;
+- the codes' fourteen refusals, on every page that asks for one;
+- a wait (*1 minute*, *45 seconds*), in any language — the words
+  `Wait::describe` puts into a refusal.
+
+Three defects were found on the way:
+- **A refused Switch or Unlink was said nowhere.** The buttons post with
+  `router`, and nothing showed what came back: an account unlinked from
+  the other side, or one that can no longer be used, refused the press
+  with nothing on the page. Each is said under its account — or above the
+  list when the reload has taken the account off it, as it does for one
+  unlinked elsewhere, whose refusal would otherwise have gone with its
+  row. `useRowRefusals` gains `unplacedAmong(keys)` for that.
+- **The link form said only the sign-in details' refusal.** A blank
+  password was refused with nothing on the page. Every refusal of the
+  form is said under it.
+- **The registration's code wait printed raw seconds** (*Please wait 300
+  seconds*): the one refusal of the fourteen that did not say its wait
+  the way a person would. It says *5 minutes*, in the page's language.
+
+**The change:**
+- **The `account` book grows by 32 phrases** in three languages (12 for
+  the page, 20 for the server), 171 in all; the `teach` book by two. The
+  linked accounts page reads `Phrases::once('account')`, the schedule
+  `Phrases::once('teach')`.
+- **What the server says is in the page's language**: the linked
+  accounts' saved messages and refusals, from the controller and three
+  actions, and the codes' fourteen refusals from `OtpService`.
+- **A wait is said in the page's language** — *1 ސިކުންތު*, *2 މިނެޓު*,
+  *دقيقة واحدة* — and the same in English as before.
+- **A session's time reads as its date and hour.**
+
+What a person's account says stays as written: their name, and the other
+account's. The linked account's roles were already named in the page's
+language (Workspaces slice 3). The link form's too-many-tries refusal now
+reads the way the codes' does (*Too many attempts. Please try again in
+:wait.*): two sentences with one Dhivehi translation are one phrase.
+
+**Tests:**
+- `AccountsSpeakThreeLanguagesTest` (new) covers the two screens and the
+  seven server files, and checks a wait in three languages. It serves the
+  screens in Dhivehi, where:
+  - a wrong password is refused in Dhivehi; the right one links, said so;
+  - a Switch to, and an Unlink of, an account not linked is refused in
+    Dhivehi; an Unlink of a linked one is said in Dhivehi;
+  - too many tries are refused with the wait in Dhivehi, no English left;
+  - a code asked for again too soon, and a wrong code, are refused in
+    Dhivehi;
+  - the registration's code wait reads *2 minutes* in English and in
+    Dhivehi, not *120 seconds*.
+
+The tests for the areas it touches (Localization, Architecture, Identity,
+Auth, Offerings, the registration flow, course registration): **530
+passed (26550 assertions)**.
+
+Whole suite locally: **3018 passed (60131 assertions)**.
+
+**Walks:**
+- **`account-language.mjs`** (new), 18 steps. The seeded teacher opens
+  their linked accounts and their schedule under `/dv` and `/ar`: right
+  to left, nothing left in English, every field named. Then, in Dhivehi,
+  the teacher:
+  - links the parent's account with a wrong password, and is refused
+    under the form, in Dhivehi; nothing is linked;
+  - links it with the right one, told in Dhivehi; the account is listed
+    by its roles in Dhivehi;
+  - presses Unlink on a page left open while the link was undone
+    elsewhere, and is refused above the list, in Dhivehi, the account no
+    longer on it;
+  - links it again, switches to it, and is told in Dhivehi whose account
+    it now is; switches back the same way;
+  - unlinks it, told in Dhivehi; nothing is left linked.
+
+The other walks: `identity.mjs` 47/47, `two-factor.mjs` 19/19,
+`customer-sign-in.mjs` 9/9 and `register.mjs` 15/15 (the pages that send
+and check a code), `portal-language.mjs` 212/212, `office-language.mjs`
+237/237 (the teacher's pages), `signup.mjs` 17/17, `mobile.mjs` 19/19,
+`sweep.mjs` 25/25, `admin-hub.mjs` 26/26, `admin-layout.mjs` 15/15,
+`admin.mjs` 43/43, `rtl.mjs` 8/8, `nav.mjs` 14/14 and `own-data.mjs`
+passed.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5qr. The office's sign-up forms and the school's events in Dhivehi and Arabic (C21 SE1, 2026-10-10)
 
 The eighteenth slice of BACKLOG C21, and the first of the pages found
