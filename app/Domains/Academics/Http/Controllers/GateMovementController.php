@@ -11,6 +11,7 @@ use App\Domains\Academics\Enums\MovementSource;
 use App\Domains\People\Actions\ListStudentsByIdsAction;
 use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -47,6 +48,7 @@ class GateMovementController extends Controller
             'movements' => $lists['movements'],
             'in_count' => $lists['in_count'],
             'out_count' => $lists['out_count'],
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -65,7 +67,7 @@ class GateMovementController extends Controller
             note: $data['note'] ?? null,
         );
 
-        return back()->with('success', 'Recorded at the gate.');
+        return back()->with('success', __('academics.flash_gate_recorded'));
     }
 
     /**
@@ -93,16 +95,18 @@ class GateMovementController extends Controller
             MovementSource::Qr,
         );
 
-        $name = (string) ($students->execute([$card['student_id']])->first()['name'] ?? 'Pupil');
-        $verb = $data['direction'] === 'in' ? 'arrived' : 'left';
+        $said = [
+            'name' => (string) ($students->execute([$card['student_id']])->first()['name'] ?? __('academics.col_pupil')),
+            'time' => $movement->at->timezone(config('app.timezone'))->format('H:i'),
+        ];
 
-        return back()->with('success', "{$name} {$verb} at ".$movement->at->timezone(config('app.timezone'))->format('H:i').'.');
+        return back()->with('success', $data['direction'] === 'in' ? __('academics.flash_gate_arrived', $said) : __('academics.flash_gate_left', $said));
     }
 
     public function void(Request $request, int $movement, VoidStudentMovementAction $void): RedirectResponse
     {
         $void->execute($movement, (int) $request->user()->id);
 
-        return back()->with('success', 'Taken back. The record shows it was corrected.');
+        return back()->with('success', __('academics.flash_gate_taken_back'));
     }
 }

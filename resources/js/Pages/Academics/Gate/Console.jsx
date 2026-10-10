@@ -1,4 +1,4 @@
-import { Link, router } from '@inertiajs/react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import QrCameraScanner from '../../../Components/QrCameraScanner';
 import { readPreference, writePreference } from '../../../Platform';
@@ -10,8 +10,10 @@ import AppShell from '../../../Layouts/AppShell';
  * camera hands over what it decodes; a person can type the code printed under
  * the QR. The direction is chosen once and stays, because a morning at the
  * gate is all arrivals and an afternoon all departures.
+ *
+ * Every word is the `academics` book's (slice OA4, STATUS §5qi).
  */
-function ScanPanel() {
+function ScanPanel({ t }) {
     const [direction, setDirection] = useState(() => readPreference('gate.direction', new Date().getHours() < 12 ? 'in' : 'out'));
     const [code, setCode] = useState('');
     const [camera, setCamera] = useState(false);
@@ -32,12 +34,14 @@ function ScanPanel() {
         });
     }, [direction]);
 
+    const directions = [['in', t.gate_arriving || 'Arriving'], ['out', t.gate_leaving || 'Leaving']];
+
     return (
         <div className="mb-6 rounded-lg border-2 border-[#7C2D37] bg-white p-4">
             <div className="flex flex-wrap items-center justify-between gap-3">
-                <h2 className="text-sm font-semibold">Scan a gate card</h2>
-                <div className="flex overflow-hidden rounded border" role="group" aria-label="Direction">
-                    {[['in', 'Arriving'], ['out', 'Leaving']].map(([value, label]) => (
+                <h2 className="text-sm font-semibold">{t.gate_scan_title || 'Scan a gate card'}</h2>
+                <div className="flex overflow-hidden rounded border" role="group" aria-label={t.gate_direction || 'Direction'}>
+                    {directions.map(([value, label]) => (
                         <button
                             key={value}
                             type="button"
@@ -62,26 +66,28 @@ function ScanPanel() {
                     autoFocus
                     name="gate-code"
                     autoComplete="off"
+                    dir="ltr"
                     className="form-input min-w-0 flex-1"
-                    placeholder="Scan with a handheld scanner, or type the code under the QR"
+                    aria-label={t.gate_code || 'Gate card code'}
+                    placeholder={t.gate_scan_placeholder || 'Scan with a handheld scanner, or type the code under the QR'}
                     value={code}
                     onChange={(e) => setCode(e.target.value)}
                 />
-                <button type="submit" className="btn-primary">Record</button>
+                <button type="submit" className="btn-primary">{t.gate_record || 'Record'}</button>
                 <button type="button" className="btn-secondary" onClick={() => setCamera((open) => !open)}>
-                    {camera ? 'Close camera' : 'Use camera'}
+                    {camera ? (t.gate_close_camera || 'Close camera') : (t.gate_use_camera || 'Use camera')}
                 </button>
             </form>
             {camera && <QrCameraScanner onCode={submit} onClose={() => setCamera(false)} />}
             <p className="mt-2 text-xs text-gray-500">
-                No card? Find the pupil by name below. Cards are issued and printed on{' '}
-                <Link href="/academics/gate/cards" className="text-[#7C2D37] underline">Gate cards</Link>.
+                {t.gate_no_card || 'No card? Find the pupil by name below. Cards are issued and printed on'}{' '}
+                <Link href="/academics/gate/cards" className="text-[#7C2D37] underline">{t.cards_title || 'Gate cards'}</Link>.
             </p>
         </div>
     );
 }
 
-function SearchResult({ child }) {
+function SearchResult({ child, t }) {
     const record = (direction) =>
         router.post('/academics/gate/record', { student_id: child.id, direction }, { preserveScroll: true });
 
@@ -92,7 +98,7 @@ function SearchResult({ child }) {
                     {child.name}
                     {child.indistinguishable && (
                         <span className="ms-2 rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-800">
-                            same name as another pupil — check the number
+                            {t.same_name_check || 'same name as another pupil — check the number'}
                         </span>
                     )}
                 </p>
@@ -103,69 +109,80 @@ function SearchResult({ child }) {
             <div className="flex items-center gap-2">
                 {child.current && (
                     <span className="rounded bg-gray-100 px-2 py-0.5 text-xs text-gray-700">
-                        currently {child.current === 'in' ? 'in' : 'out'}
+                        {child.current === 'in' ? (t.gate_currently_in || 'currently in') : (t.gate_currently_out || 'currently out')}
                     </span>
                 )}
-                <button className="btn-primary text-xs" onClick={() => record('in')}>Arrived</button>
-                <button className="btn-secondary text-xs" onClick={() => record('out')}>Left</button>
+                <button className="btn-primary text-xs" onClick={() => record('in')}>{t.gate_mark_arrived || 'Arrived'}</button>
+                <button className="btn-secondary text-xs" onClick={() => record('out')}>{t.gate_mark_left || 'Left'}</button>
             </div>
         </li>
     );
 }
 
-export default function Console({ date, q = '', matches = [], movements = [], in_count = 0, out_count = 0 }) {
+export default function Console({ date, q = '', matches = [], movements = [], in_count = 0, out_count = 0, t = {} }) {
     const [query, setQuery] = useState(q);
+    // A tap on a name or a "Take back" the server refused (no year is
+    // active; the movement was already taken back) is said here, not lost.
+    const { errors = {} } = usePage().props;
 
     const search = (value) => {
         setQuery(value);
         router.get('/academics/gate', { date, q: value }, { preserveState: true, replace: true });
     };
 
+    const direction = (m) => t[`movement_direction_${m.direction}`] || m.direction_label;
+    const source = (m) => t[`movement_source_${m.source}`] || m.source_label;
+
     return (
-        <AppShell title="At the gate">
+        <AppShell title={t.gate_title || 'At the gate'}>
             <div className="mb-4 flex flex-wrap items-center gap-3">
                 <input
                     type="date"
                     className="form-input text-sm"
+                    aria-label={t.date || 'Date'}
                     value={date}
                     onChange={(e) => router.get('/academics/gate', { date: e.target.value, q: query }, { preserveState: true, replace: true })}
                 />
-                <span className="rounded bg-emerald-50 px-2 py-0.5 text-sm text-emerald-800">In: {in_count}</span>
-                <span className="rounded bg-gray-100 px-2 py-0.5 text-sm text-gray-700">Out: {out_count}</span>
+                <span className="rounded bg-emerald-50 px-2 py-0.5 text-sm text-emerald-800">{(t.gate_in_count || 'In: :count').replace(':count', in_count)}</span>
+                <span className="rounded bg-gray-100 px-2 py-0.5 text-sm text-gray-700">{(t.gate_out_count || 'Out: :count').replace(':count', out_count)}</span>
             </div>
 
-            <ScanPanel />
+            {errors.movement && (
+                <p className="mb-4 rounded border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700" role="alert">{errors.movement}</p>
+            )}
+
+            <ScanPanel t={t} />
 
             <div className="mb-6 rounded-lg border bg-white p-4">
                 <label className="block text-sm">
-                    <span className="mb-1 block font-semibold">Find a pupil</span>
+                    <span className="mb-1 block font-semibold">{t.gate_find || 'Find a pupil'}</span>
                     <input
                         className="form-input w-full"
-                        placeholder="Name or student number"
+                        placeholder={t.gate_find_placeholder || 'Name or student number'}
                         value={query}
                         onChange={(e) => search(e.target.value)}
                     />
                 </label>
                 {query.length > 0 && query.length < 2 && (
-                    <p className="mt-2 text-xs text-gray-500">Keep typing — at least two letters.</p>
+                    <p className="mt-2 text-xs text-gray-500">{t.gate_keep_typing || 'Keep typing — at least two letters.'}</p>
                 )}
                 {query.length >= 2 && matches.length === 0 && (
-                    <p className="mt-2 text-sm text-gray-600">Nobody matches “{query}”.</p>
+                    <p className="mt-2 text-sm text-gray-600">{(t.gate_nobody_matches || 'Nobody matches “:query”.').replace(':query', query)}</p>
                 )}
                 {matches.length > 0 && (
-                    <ul className="mt-3">{matches.map((child) => <SearchResult key={child.id} child={child} />)}</ul>
+                    <ul className="mt-3">{matches.map((child) => <SearchResult key={child.id} child={child} t={t} />)}</ul>
                 )}
             </div>
 
-            <h2 className="mb-2 text-sm font-semibold">Recorded today ({movements.filter((m) => !m.voided).length})</h2>
+            <h2 className="mb-2 text-sm font-semibold">{(t.gate_recorded_today || 'Recorded today (:count)').replace(':count', movements.filter((m) => !m.voided).length)}</h2>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
-                            <th className="px-3 py-2 text-start">Pupil</th>
-                            <th className="px-3 py-2 text-start">Direction</th>
-                            <th className="px-3 py-2 text-start">Time</th>
-                            <th className="px-3 py-2 text-start">Recorded</th>
+                            <th className="px-3 py-2 text-start">{t.col_pupil || 'Pupil'}</th>
+                            <th className="px-3 py-2 text-start">{t.gate_direction || 'Direction'}</th>
+                            <th className="px-3 py-2 text-start">{t.col_time || 'Time'}</th>
+                            <th className="px-3 py-2 text-start">{t.gate_col_recorded || 'Recorded'}</th>
                             <th className="px-3 py-2 text-start" />
                         </tr>
                     </thead>
@@ -176,11 +193,11 @@ export default function Console({ date, q = '', matches = [], movements = [], in
                                     {m.student}
                                     {m.student_number && <span className="ms-2 text-xs text-gray-500">{m.student_number}</span>}
                                 </td>
-                                <td className="px-3 py-2">{m.direction_label}</td>
-                                <td className="px-3 py-2 text-xs text-gray-600">{m.at?.slice(11, 16)}</td>
+                                <td className="px-3 py-2">{direction(m)}</td>
+                                <td className="px-3 py-2 text-xs text-gray-600" dir="ltr">{m.at?.slice(11, 16)}</td>
                                 <td className="px-3 py-2 text-xs text-gray-600">
-                                    {m.recorded_by ?? m.source_label}
-                                    {m.recorded_by && m.source && m.source !== 'manual' && ` · ${m.source_label}`}
+                                    {m.recorded_by ?? source(m)}
+                                    {m.recorded_by && m.source && m.source !== 'manual' && ` · ${source(m)}`}
                                     {m.note && <span className="block">“{m.note}”</span>}
                                 </td>
                                 <td className="px-3 py-2">
@@ -189,7 +206,7 @@ export default function Console({ date, q = '', matches = [], movements = [], in
                                             className="text-xs text-[#7C2D37] underline"
                                             onClick={() => router.post(`/academics/gate/${m.id}/void`, {}, { preserveScroll: true })}
                                         >
-                                            Take back
+                                            {t.gate_take_back || 'Take back'}
                                         </button>
                                     )}
                                 </td>
@@ -198,13 +215,12 @@ export default function Console({ date, q = '', matches = [], movements = [], in
                     </tbody>
                 </table>
                 {movements.length === 0 && (
-                    <p className="px-4 py-6 text-center text-sm text-gray-500">Nothing recorded yet today.</p>
+                    <p className="px-4 py-6 text-center text-sm text-gray-500">{t.gate_nothing_today || 'Nothing recorded yet today.'}</p>
                 )}
             </div>
 
             <p className="mt-4 text-xs text-gray-500">
-                A mistake is taken back, never deleted — a family told their child left at a time
-                they did not is owed an explanation, and a removed row cannot give one.
+                {t.gate_footer || 'A mistake is taken back, never deleted — a family told their child left at a time they did not is owed an explanation, and a removed row cannot give one.'}
             </p>
         </AppShell>
     );

@@ -4983,6 +4983,103 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qi. The gate, pick-up, lost property and requests in Dhivehi and Arabic (C21 OA4, 2026-10-10)
+
+The ninth slice of BACKLOG C21, and the last of the school office's
+Academics screens. These six are the front office's:
+- the gate console, its cards per class, and the printed sheet of cards;
+- the pick-up console;
+- lost and found;
+- requests — a family's, a member of staff's, and the office's review of
+  them.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and hint;
+- a movement's direction and how it was recorded, which the server sent
+  in English (*Arrived*, *By hand*);
+- a request's type and state, printed as codes (*parent general*,
+  *PENDING*);
+- sixteen saved messages and seventeen refusals — among them what a scanned
+  card says at the gate (*This card was replaced on … and no longer
+  works.*) and the count of cards issued.
+
+Three refusals were said nowhere on the page:
+- **A tap at the gate taken back twice**, or a tap with no school year
+  active: the console showed no error at all.
+- **A send to reception another member of staff had already made**, or a
+  cancel of a child already sent: the pick-up console showed nothing (the
+  refusal itself was already in the page's language, from PT3).
+- **An item already handed back**: lost and found's return form showed
+  nothing.
+
+**The change:**
+- **The `academics` book grows by 151 phrases**, to 751. The six pages read
+  it through `Phrases::once('academics')`.
+- **Codes are named, not printed**: a movement's direction and source, a
+  request's type and state, and whether a found item is still here. The
+  server's English labels stay in the props for nothing else to read.
+- **What the server says is in the page's language**: the saved messages
+  and refusals of five controllers and ten actions, the count of cards
+  issued (one, two, and many in Arabic), and a missing name (*Unknown*).
+  Two of lost and found's field names in a refusal (*where it is held*,
+  *date found*) are the book's.
+- **The three refusals are shown**: above the gate's scan panel, above the
+  pick-up lists, and under the return form that asked.
+- **The printed card sheet** reads its toolbar in the page's language and
+  direction; the cards themselves keep one layout, left to right, because
+  their code is read in Latin letters.
+- **Every field is named**, the gate's code box and date among them.
+
+What the school writes stays as written: a pupil's, a guardian's and a
+class's name, a found item's title, description and places, a leave type's
+name (HR's), a request's reason and notes. The CSVs keep their English
+column codes, and a stored document's title (*Leave 2026-09-01: file.pdf*)
+stays as filed.
+
+**Tests:**
+- `AcademicsSpeaksThreeLanguagesTest` now covers the thirty-one screens,
+  the seventy-three server files and the new codes, and an eighth test
+  serves the six new screens in Dhivehi. In it:
+  - a code that is no card is refused in red at the gate, and nothing is
+    recorded;
+  - a tap is recorded and taken back; taken back twice is refused;
+  - a card issued is counted, scanned it names the pupil and the time,
+    and replaced the old one is refused with the day it was;
+  - pick-up is opened and closed;
+  - a found item is logged and handed back; handed back twice is refused
+    with the day it went;
+  - a request is filed; rejected without a reason, decided twice, and
+    filed about a pupil who is not one's child, it is refused.
+
+The tests for the areas it touches (Academics, Localization, Architecture):
+**548 passed (15935 assertions)**.
+
+Whole suite locally: **2978 passed (49547 assertions)**.
+
+**Walk:** `office-language.mjs` 203/203:
+- the six new screens read right to left under `/dv` and `/ar`, with
+  nothing left in English and every field named — the dean's gate, cards,
+  printed sheet, pick-up, lost and found and requests, and the teacher's
+  requests;
+- the dean types a code that is no gate card and is refused, in red, in
+  Dhivehi; nothing is recorded (counted again from a fresh load).
+
+`gate.mjs` 12/12. Two walks needed fixing first, and neither failure was
+OA4's:
+- **`gate.mjs` had failed its last step since PT2 (#718).** PT2 named a
+  movement's source *QR code* on the family's arrivals page, from the
+  `portal` book, and the walk still expected the server's English *QR*.
+  It now expects what the family reads.
+- **`office-language.mjs` read *QR* and *MB* as English** in a Dhivehi or
+  Arabic sentence (the gate's QR code, a 5 MB upload). They are the names
+  of a format and a unit, the same in every language, and pass as they
+  already do in `portal-language.mjs` and the Library walks.
+
+The other walks: `pickup.mjs` 16/16, `requests.mjs` 23/23, `hr.mjs` 27/27,
+`family.mjs` 40/40, `sweep.mjs` 25/25, `create-sweep.mjs` 6/6,
+`admin-hub.mjs` 26/26, `admin-layout.mjs` 15/15, `admin.mjs` 43/43,
+`rtl.mjs` 8/8, `nav.mjs` 14/14, `mobile.mjs` 19/19, `identity.mjs` 47/47.
+
 ## 5qh. Teaching in Dhivehi and Arabic (C21 OA3, 2026-10-10)
 
 The eighth slice of BACKLOG C21, and the third of the school office's.

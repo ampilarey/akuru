@@ -45,14 +45,14 @@ class ListGateMovementsAction
         $rows = $movements->map(fn (StudentMovement $movement): array => [
             'id' => (int) $movement->id,
             'student_id' => (int) $movement->student_id,
-            'student' => $students->get((int) $movement->student_id)['name'] ?? 'Unknown',
+            'student' => $students->get((int) $movement->student_id)['name'] ?? __('academics.unknown_name'),
             'student_number' => $students->get((int) $movement->student_id)['student_number'] ?? null,
             'direction' => $movement->direction->value,
             'direction_label' => $movement->direction->label(),
             'at' => $movement->at?->toDateTimeString(),
             'source' => $movement->source->value,
             'source_label' => $movement->source->label(),
-            'recorded_by' => $movement->recorded_by ? ($staff->get((int) $movement->recorded_by) ?? 'Unknown') : null,
+            'recorded_by' => $movement->recorded_by ? ($staff->get((int) $movement->recorded_by) ?? __('academics.unknown_name')) : null,
             'note' => $movement->note,
             'voided' => $movement->voided_at !== null,
         ]);

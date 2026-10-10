@@ -30,7 +30,7 @@ class SaveFoundItemAction
     {
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'Say what the item is.']);
+            throw ValidationException::withMessages(['title' => __('academics.error_found_title')]);
         }
 
         $attributes = [
@@ -57,7 +57,7 @@ class SaveFoundItemAction
         $yearId = (int) AcademicYear::query()->where('status', 'active')->value('id');
         if ($yearId === 0) {
             throw ValidationException::withMessages([
-                'title' => 'No academic year is active, so there is nothing to file this against.',
+                'title' => __('academics.error_no_year_to_file'),
             ]);
         }
 

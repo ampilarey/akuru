@@ -24,7 +24,7 @@ class ReturnFoundItemAction
     {
         if ($item->status === FoundItemStatus::Returned) {
             throw ValidationException::withMessages([
-                'status' => 'This item was already returned on '.$item->returned_at?->toDateString().'.',
+                'status' => __('academics.error_found_already_returned', ['date' => $item->returned_at?->toDateString()]),
             ]);
         }
 

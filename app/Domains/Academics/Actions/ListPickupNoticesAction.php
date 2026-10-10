@@ -44,9 +44,9 @@ class ListPickupNoticesAction
         $rows = $notices->map(fn (PickupNotice $notice): array => [
             'id' => (int) $notice->id,
             'student_id' => (int) $notice->student_id,
-            'student' => $students->get((int) $notice->student_id)['name'] ?? 'Unknown',
+            'student' => $students->get((int) $notice->student_id)['name'] ?? __('academics.unknown_name'),
             'student_number' => $students->get((int) $notice->student_id)['student_number'] ?? null,
-            'guardian' => $guardians->get((int) $notice->guardian_user_id) ?? 'Unknown',
+            'guardian' => $guardians->get((int) $notice->guardian_user_id) ?? __('academics.unknown_name'),
             'status' => $notice->status->value,
             'note' => $notice->note,
             'requested_at' => $notice->requested_at?->toDateTimeString(),

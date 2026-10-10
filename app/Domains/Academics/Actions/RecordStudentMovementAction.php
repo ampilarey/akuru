@@ -59,7 +59,7 @@ class RecordStudentMovementAction
 
         if ($yearId === 0) {
             throw ValidationException::withMessages([
-                'movement' => 'No academic year is active, so there is nothing to record this against.',
+                'movement' => __('academics.error_movement_no_year'),
             ]);
         }
 

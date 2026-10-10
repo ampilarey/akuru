@@ -24,17 +24,17 @@ class ResolveGateCardAction
         }
 
         if (strlen($token) !== 16) {
-            return ['student_id' => null, 'reason' => 'That is not an Akuru gate card.'];
+            return ['student_id' => null, 'reason' => __('academics.error_gate_not_a_card')];
         }
 
         $card = StudentGateCard::query()->where('token', $token)->first();
 
         if ($card === null) {
-            return ['student_id' => null, 'reason' => 'This card is not recognised.'];
+            return ['student_id' => null, 'reason' => __('academics.error_gate_card_unknown')];
         }
 
         if ($card->revoked_at !== null) {
-            return ['student_id' => null, 'reason' => 'This card was replaced on '.$card->revoked_at->toDateString().' and no longer works. Ask the office for the new one.'];
+            return ['student_id' => null, 'reason' => __('academics.error_gate_card_replaced', ['date' => $card->revoked_at->toDateString()])];
         }
 
         return ['student_id' => (int) $card->student_id, 'reason' => null];

@@ -8,6 +8,10 @@ import { useEffect, useState } from 'react';
  *
  * The QR is drawn here, as SVG, so it prints sharp and the host needs no
  * image library. Error correction "M" survives a scuffed or folded card.
+ *
+ * The toolbar reads in the page's language and direction (slice OA4, STATUS
+ * §5qi); the cards keep one layout, left to right, whatever the language —
+ * the code under the QR is read off them in Latin letters.
  */
 function Qr({ code }) {
     const [svg, setSvg] = useState('');
@@ -25,15 +29,15 @@ function Qr({ code }) {
     return <div className="h-32 w-32 shrink-0" data-qr={svg ? 'drawn' : 'pending'} dangerouslySetInnerHTML={{ __html: svg }} />;
 }
 
-export default function PrintCards({ class_name: className = '', pupils = [] }) {
+export default function PrintCards({ class_name: className = '', pupils = [], t = {} }) {
     return (
-        <div className="min-h-screen bg-white p-6 text-gray-900" dir="ltr">
+        <div className="min-h-screen bg-white p-6 text-gray-900">
             <style>{'@page { size: A4; margin: 10mm } @media print { .no-print { display: none } }'}</style>
             <div className="no-print mb-4 flex items-center justify-between">
-                <p className="text-sm text-gray-600">{pupils.length} cards · {className}</p>
-                <button type="button" className="btn-primary" onClick={() => window.print()}>Print</button>
+                <p className="text-sm text-gray-600">{(t.print_cards_count || ':count cards · :class').replace(':count', pupils.length).replace(':class', className)}</p>
+                <button type="button" className="btn-primary" onClick={() => window.print()}>{t.print || 'Print'}</button>
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4" dir="ltr">
                 {pupils.map((p) => (
                     <div
                         key={p.student_id}
@@ -51,7 +55,7 @@ export default function PrintCards({ class_name: className = '', pupils = [] }) 
                     </div>
                 ))}
             </div>
-            {pupils.length === 0 && <p className="text-sm text-gray-600">No cards issued for this class yet.</p>}
+            {pupils.length === 0 && <p className="text-sm text-gray-600">{t.print_cards_none || 'No cards issued for this class yet.'}</p>}
         </div>
     );
 }

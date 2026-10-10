@@ -38,7 +38,7 @@ class BuildSchoolRequestPayloadAction
                 ? (int) $data['teacher_id']
                 : app(ResolveTeacherIdForUserAction::class)->execute($userId);
             if ($teacherId === null) {
-                throw ValidationException::withMessages(['teacher_id' => 'A teacher profile is required for leave.']);
+                throw ValidationException::withMessages(['teacher_id' => __('academics.error_request_teacher_profile')]);
             }
 
             return [
@@ -51,11 +51,11 @@ class BuildSchoolRequestPayloadAction
         if ($type === SchoolRequestType::StaffLeave) {
             $profile = app(ResolveStaffProfileForUserAction::class)->execute($userId);
             if ($profile === null) {
-                throw ValidationException::withMessages(['type' => 'A staff profile is required for leave.']);
+                throw ValidationException::withMessages(['type' => __('academics.error_request_staff_profile')]);
             }
             $leaveTypeId = (int) ($data['leave_type_id'] ?? 0);
             if ($leaveTypeId < 1) {
-                throw ValidationException::withMessages(['leave_type_id' => 'A leave type is required.']);
+                throw ValidationException::withMessages(['leave_type_id' => __('academics.error_request_leave_type')]);
             }
 
             $documentId = isset($data['document_id']) && $data['document_id'] !== '' ? (int) $data['document_id'] : null;
@@ -94,7 +94,7 @@ class BuildSchoolRequestPayloadAction
             $children = app(ListGuardianChildrenAction::class)->executeForGuardianUserId($userId)
                 ->map(fn (object $child) => (int) $child->id);
             if (! $children->contains($studentId)) {
-                throw ValidationException::withMessages(['student_id' => 'That pupil is not one of your children.']);
+                throw ValidationException::withMessages(['student_id' => __('academics.error_request_not_your_child')]);
             }
 
             return [
