@@ -8,6 +8,7 @@ use App\Domains\HR\Enums\JobPostingStatus;
 use App\Domains\HR\Models\JobPosting;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -24,6 +25,7 @@ class JobPostingController extends Controller
         return Inertia::render('HR/Recruitment/Postings', [
             'rows' => app(ListJobPostingsAction::class)->execute()->values(),
             'statuses' => array_map(fn (JobPostingStatus $status) => $status->value, JobPostingStatus::cases()),
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -33,7 +35,7 @@ class JobPostingController extends Controller
 
         app(SaveJobPostingAction::class)->execute($this->validated($request));
 
-        return redirect()->route('hr.postings.index')->with('success', 'Job posting saved.');
+        return redirect()->route('hr.postings.index')->with('success', __('hr.flash_posting_saved'));
     }
 
     public function update(Request $request, JobPosting $jobPosting): RedirectResponse
@@ -42,7 +44,7 @@ class JobPostingController extends Controller
 
         app(SaveJobPostingAction::class)->execute($this->validated($request), $jobPosting);
 
-        return redirect()->route('hr.postings.index')->with('success', 'Job posting updated.');
+        return redirect()->route('hr.postings.index')->with('success', __('hr.flash_posting_updated'));
     }
 
     public function export(Request $request): StreamedResponse

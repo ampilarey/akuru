@@ -9,6 +9,7 @@ use App\Domains\HR\Actions\SaveLessonObservationAction;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -26,6 +27,7 @@ class LessonObservationController extends Controller
             'classes' => app(ListClassesForYearAction::class)->execute()->values(),
             'subjects' => app(ListSubjectsAction::class)->execute()->values(),
             'rows' => app(ListLessonObservationsAction::class)->execute()->values(),
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -42,7 +44,7 @@ class LessonObservationController extends Controller
             'shared_with_staff' => ['sometimes', 'boolean'],
         ]) + ['observer_id' => $request->user()?->id]);
 
-        return redirect()->route('hr.observations.index')->with('success', 'Observation saved.');
+        return redirect()->route('hr.observations.index')->with('success', __('hr.flash_observation_saved'));
     }
 
     public function export(Request $request): StreamedResponse

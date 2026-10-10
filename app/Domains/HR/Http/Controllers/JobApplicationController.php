@@ -9,6 +9,7 @@ use App\Domains\HR\Actions\SaveJobApplicationAction;
 use App\Domains\HR\Enums\JobApplicationStatus;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -26,6 +27,7 @@ class JobApplicationController extends Controller
             'postings' => app(ListJobPostingsAction::class)->execute()->values(),
             'statuses' => array_map(fn (JobApplicationStatus $status) => $status->value, JobApplicationStatus::cases()),
             'rows' => app(ListJobApplicationsAction::class)->execute($request->integer('job_posting_id') ?: null)->values(),
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -42,7 +44,7 @@ class JobApplicationController extends Controller
             'status' => ['nullable', Rule::enum(JobApplicationStatus::class)],
         ]) + ['reviewed_by' => $request->user()?->id]);
 
-        return redirect()->route('hr.applications.index')->with('success', 'Application recorded.');
+        return redirect()->route('hr.applications.index')->with('success', __('hr.flash_application_recorded'));
     }
 
     public function hire(Request $request, int $application): RedirectResponse
@@ -53,7 +55,7 @@ class JobApplicationController extends Controller
 
         return redirect()
             ->route('hr.onboarding.index', ['staff_profile_id' => $result['staff_profile_id']])
-            ->with('success', 'Applicant hired and onboarding opened.');
+            ->with('success', __('hr.flash_applicant_hired'));
     }
 
     public function export(Request $request): StreamedResponse

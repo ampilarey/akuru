@@ -37,6 +37,8 @@ class ListLessonObservationsAction
                     'class_name' => is_array($class) ? ($class['label'] ?? null) : null,
                     'subject_id' => $row->subject_id,
                     'subject_name' => is_array($subject) ? ($subject['name'] ?? null) : null,
+                    'subject_name_arabic' => is_array($subject) ? ($subject['name_arabic'] ?? null) : null,
+                    'subject_name_dhivehi' => is_array($subject) ? ($subject['name_dhivehi'] ?? null) : null,
                     'summary' => $row->summary,
                     'shared_with_staff' => $row->shared_with_staff,
                 ];

@@ -1,10 +1,11 @@
 /**
  * Do the office's HR screens read in Dhivehi and Arabic?
- * (BACKLOG C21, slice HR1, STATUS §5ql.)
+ * (BACKLOG C21, slices HR1 and HR2, STATUS §5ql and §5qm.)
  *
  * The office opens the leave types, the expiring documents, the contracts,
- * staff attendance and its reports, the leave balances, payroll and the HR
- * settings under /dv and /ar. The walk lists what is still in Latin letters
+ * staff attendance and its reports, the leave balances, payroll, the HR
+ * settings, the appraisals, CPD, lesson observations, job postings,
+ * applications and the onboarding checklists under /dv and /ar. The walk lists what is still in Latin letters
  * in each page's main: every text node, placeholder, aria-label, title and
  * phone caption (`data-label`). What a page shows of its data (a member of
  * staff's name, a department, a checklist item, a leave type the school
@@ -30,7 +31,15 @@
  *   - the office adjusts a leave balance with no reason and is refused
  *     under the row, the field named in Dhivehi; the balance stays;
  *   - the office empties the onboarding checklist and is refused under it;
- *     the checklist stays.
+ *     the checklist stays;
+ *   - the office opens an appraisal cycle with no name and is refused under
+ *     the form; no cycle is made;
+ *   - the office records CPD hours that are no number and is refused under
+ *     the form, the field named in Dhivehi; no record is made;
+ *   - the office records an application for `SMOKE-Vacancy` with no email,
+ *     is told so in Dhivehi, and hiring it is refused under its row — it was
+ *     said nowhere; the applicant stays an applicant. `SmokeMarkerSeeder`
+ *     plants the vacancy afresh, so the application goes with it.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/hr-language.mjs
@@ -51,6 +60,8 @@ const CODE_KEYS = new Set([
     // A leave type's code, a contract's type and state, a day's attendance
     // and how it was recorded, a document's type, a payslip's state.
     'code', 'codes', 'leave_code', 'contract_type', 'status', 'statuses', 'source', 'document_type',
+    // A posting's kind of work, a checklist's kind (slice HR2).
+    'employment_type', 'kind',
 ]);
 // A list of codes when it is a list of strings — the contract types — and
 // the school's own records otherwise: the leave types are `types` too.
@@ -138,6 +149,8 @@ const readMain = (page) => page.evaluate(() => {
 
 const inDhivehi = (said) => Boolean(said) && /\p{Script=Thaana}/u.test(said) && !/[A-Za-z]{3,}/.test(said);
 const said = async (locator) => (await locator.first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+// The school's own day (Indian/Maldives), not the walker's.
+const today = () => new Intl.DateTimeFormat('en-CA', { timeZone: 'Indian/Maldives' }).format(new Date());
 const office = await signIn(ADMIN);
 
 // ------------------------------------- every screen, in Dhivehi and Arabic
@@ -151,6 +164,13 @@ const screens = [
     '/hr/leave-balances',
     '/hr/payroll',
     '/hr/settings',
+    // HR2.
+    '/hr/appraisals',
+    '/hr/cpd',
+    '/hr/observations',
+    '/hr/postings',
+    '/hr/applications',
+    '/hr/onboarding',
 ];
 for (const locale of ['dv', 'ar']) {
     for (const path of screens) {
@@ -248,6 +268,58 @@ await office.waitForLoadState('networkidle');
 const emptyList = await said(hrForm.locator('span.text-red-600'));
 const listAfter = checklist();
 check('an empty onboarding checklist is refused under it, in Dhivehi; the checklist stays', emptyList === book.error_checklist_empty && inDhivehi(emptyList) && listAfter === listBefore, `said: ${emptyList ?? 'nothing'}`);
+
+// ------------------------------------- an appraisal cycle with no name, refused in Dhivehi
+
+const cycles = () => Number(tinker("echo DB::table('appraisal_cycles')->count();"));
+const nameRequired = tinker("echo __('validation.required', ['attribute' => __('validation.attributes.name', [], 'dv')], 'dv');");
+await office.goto(`${BASE}/dv/hr/appraisals`, { waitUntil: 'networkidle' });
+const cycleForm = office.locator('form').filter({ has: office.getByRole('button', { name: book.appraisals_open_cycle, exact: true }) }).first();
+const cyclesBefore = cycles();
+await cycleForm.getByLabel(book.appraisals_opens, { exact: true }).fill(today());
+await cycleForm.getByLabel(book.appraisals_closes, { exact: true }).fill(today());
+await cycleForm.getByRole('button', { name: book.appraisals_open_cycle, exact: true }).click();
+await office.waitForLoadState('networkidle');
+const noName = await said(cycleForm.locator('ul.text-red-600'));
+check('an appraisal cycle with no name is refused under the form, in Dhivehi; none is made', noName === nameRequired && inDhivehi(noName) && cycles() === cyclesBefore, `said: ${noName ?? 'nothing'}`);
+
+// ------------------------------------- CPD hours that are no number, refused in Dhivehi
+
+const cpdRecords = () => Number(tinker("echo DB::table('cpd_records')->count();"));
+const hoursNumeric = tinker("echo __('validation.numeric', ['attribute' => __('validation.attributes.hours', [], 'dv')], 'dv');");
+await office.goto(`${BASE}/dv/hr/cpd`, { waitUntil: 'networkidle' });
+const cpdForm = office.locator('form').filter({ has: office.getByRole('button', { name: book.cpd_save, exact: true }) }).first();
+const cpdBefore = cpdRecords();
+await cpdForm.getByLabel(book.cpd_course, { exact: true }).fill('SMOKE-Lang-CPD');
+await cpdForm.getByLabel(book.cpd_hours, { exact: true }).fill('four');
+await cpdForm.getByRole('button', { name: book.cpd_save, exact: true }).click();
+await office.waitForLoadState('networkidle');
+const noHours = await said(cpdForm.locator('ul.text-red-600'));
+check('CPD hours that are no number are refused under the form, the field named in Dhivehi; no record is made', noHours === hoursNumeric && inDhivehi(noHours) && cpdRecords() === cpdBefore, `said: ${noHours ?? 'nothing'}`);
+
+// ------------------------------------- an applicant with no email, refused at hire in Dhivehi
+
+const APPLICANT = 'SMOKE-Lang-Applicant';
+const vacancy = Number(tinker("echo (int) DB::table('job_postings')->where('title', 'SMOKE-Vacancy')->value('id');"));
+await office.goto(`${BASE}/dv/hr/applications`, { waitUntil: 'networkidle' });
+const applyForm = office.locator('form').filter({ has: office.getByRole('button', { name: book.applications_record, exact: true }) }).first();
+if (vacancy > 0) {
+    await applyForm.getByLabel(book.applications_job, { exact: true }).selectOption(String(vacancy));
+    await applyForm.getByLabel(book.name, { exact: true }).fill(APPLICANT);
+    await applyForm.getByRole('button', { name: book.applications_record, exact: true }).click();
+    await office.waitForLoadState('networkidle');
+    const recorded = await said(office.getByTestId('flash-success'));
+    check('an application is recorded and said in Dhivehi', recorded === book.flash_application_recorded && inDhivehi(recorded), `said: ${recorded ?? 'nothing'}`);
+    const applicantRow = office.locator('tbody tr', { hasText: APPLICANT }).first();
+    await applicantRow.getByRole('button', { name: book.applications_hire, exact: true }).click();
+    await office.waitForLoadState('networkidle');
+    const noEmail = await said(applicantRow.locator('ul.text-red-600'));
+    const status = tinker(`echo DB::table('job_applications')->where('name', '${APPLICANT}')->orderByDesc('id')->value('status');`);
+    check('hiring an applicant with no email is refused under the row, in Dhivehi; they stay an applicant', noEmail === book.error_hire_email && inDhivehi(noEmail) && status === 'received', `said: ${noEmail ?? 'nothing'}; status ${status}`);
+} else {
+    check('an application is recorded and said in Dhivehi', false, 'no SMOKE-Vacancy');
+    check('hiring an applicant with no email is refused under the row, in Dhivehi; they stay an applicant', false, 'no SMOKE-Vacancy');
+}
 
 await browser.close();
 

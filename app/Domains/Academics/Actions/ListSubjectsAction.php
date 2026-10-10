@@ -14,10 +14,12 @@ class ListSubjectsAction
     {
         return DB::table('subjects')
             ->orderBy('name')
-            ->get(['id', 'name', 'code'])
+            ->get(['id', 'name', 'name_arabic', 'name_dhivehi', 'code'])
             ->map(fn ($row) => [
                 'id' => (int) $row->id,
                 'name' => $row->name,
+                'name_arabic' => $row->name_arabic,
+                'name_dhivehi' => $row->name_dhivehi,
                 'code' => $row->code,
             ])
             ->values();

@@ -312,7 +312,8 @@ await appraise.locator('select').nth(1).selectOption({ label: NAME || 'Smoke Mar
 await appraise.locator('input[placeholder="Strengths"]').fill('SMOKE-Strengths');
 await appraise.locator('button:has-text("Save appraisal")').click();
 check('an appraisal is written for the staff member', await settles(admin, 'Appraisal saved.'), (await text(admin)).slice(0, 160));
-check('it is a draft awaiting the staff member', /\bdraft\b|\bsubmitted\b/.test(await rowText(admin, CYCLE)), await rowText(admin, CYCLE));
+// An appraisal's state is named on the list since slice HR2 (*Draft*).
+check('it is a draft awaiting the staff member', /\bDraft\b|\bSubmitted\b/.test(await rowText(admin, CYCLE)), await rowText(admin, CYCLE));
 
 await staff.goto(`${BASE}/en/portal/appraisals`, { waitUntil: 'networkidle' });
 const mine = staff.locator('tr', { hasText: CYCLE }).first();
@@ -321,7 +322,7 @@ if (await mine.count()) {
     await mine.locator('input[placeholder="Comment"]').fill('SMOKE-Acknowledged');
     await mine.locator('button:has-text("Acknowledge")').click();
     check('and acknowledges it', await settles(staff, 'Appraisal acknowledged.'), (await text(staff)).slice(0, 160));
-    check('which the office sees', /acknowledged/.test(await (await admin.goto(`${BASE}/en/hr/appraisals`, { waitUntil: 'networkidle' }), rowText(admin, CYCLE))), await rowText(admin, CYCLE));
+    check('which the office sees', /\bAcknowledged\b/.test(await (await admin.goto(`${BASE}/en/hr/appraisals`, { waitUntil: 'networkidle' }), rowText(admin, CYCLE))), await rowText(admin, CYCLE));
 }
 
 // --------------------------------------------------------------- 5. payroll
