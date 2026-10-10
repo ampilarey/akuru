@@ -10,12 +10,12 @@ class AdjustLeaveBalanceAction
     public function execute(int $entitlementId, float $days, string $reason): LeaveEntitlement
     {
         if ($days == 0.0) {
-            throw ValidationException::withMessages(['days' => 'Adjustment cannot be zero.']);
+            throw ValidationException::withMessages(['days' => __('hr.error_adjust_zero')]);
         }
 
         $reason = trim($reason);
         if ($reason === '') {
-            throw ValidationException::withMessages(['reason' => 'Adjustment reason is required.']);
+            throw ValidationException::withMessages(['reason' => __('hr.error_adjust_reason')]);
         }
 
         $entitlement = LeaveEntitlement::query()->findOrFail($entitlementId);

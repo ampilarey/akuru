@@ -8,6 +8,7 @@ use App\Domains\HR\Enums\LeaveTypeCode;
 use App\Domains\HR\Models\LeaveType;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -24,6 +25,7 @@ class LeaveTypeController extends Controller
         return Inertia::render('HR/Leave/Types', [
             'types' => app(ListLeaveTypesAction::class)->execute()->values(),
             'codes' => array_map(fn (LeaveTypeCode $code) => $code->value, LeaveTypeCode::cases()),
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -33,7 +35,7 @@ class LeaveTypeController extends Controller
 
         app(SaveLeaveTypeAction::class)->execute($this->validated($request));
 
-        return redirect()->route('hr.leave-types.index')->with('success', 'Leave type saved.');
+        return redirect()->route('hr.leave-types.index')->with('success', __('hr.flash_leave_type_saved'));
     }
 
     public function update(Request $request, LeaveType $leaveType): RedirectResponse
@@ -42,7 +44,7 @@ class LeaveTypeController extends Controller
 
         app(SaveLeaveTypeAction::class)->execute($this->validated($request), $leaveType);
 
-        return redirect()->route('hr.leave-types.index')->with('success', 'Leave type updated.');
+        return redirect()->route('hr.leave-types.index')->with('success', __('hr.flash_leave_type_updated'));
     }
 
     public function export(Request $request): StreamedResponse

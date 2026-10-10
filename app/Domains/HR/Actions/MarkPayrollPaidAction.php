@@ -21,7 +21,7 @@ class MarkPayrollPaidAction
         $period = PayrollPeriod::query()->findOrFail($periodId);
 
         if (! in_array($period->status, [PayrollPeriodStatus::Approved, PayrollPeriodStatus::Paid], true)) {
-            throw ValidationException::withMessages(['payroll' => 'Approve the period before marking it paid.']);
+            throw ValidationException::withMessages(['payroll' => __('hr.error_approve_before_paid')]);
         }
 
         return DB::transaction(function () use ($period): PayrollPeriod {

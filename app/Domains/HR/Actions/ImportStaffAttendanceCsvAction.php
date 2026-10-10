@@ -8,6 +8,7 @@ use App\Domains\HR\DTOs\StaffAttendanceDTO;
 use App\Domains\HR\Enums\StaffAttendanceSource;
 use App\Domains\HR\Enums\StaffAttendanceStatus;
 use App\Domains\People\Actions\ResolveStaffProfileForUserAction;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class ImportStaffAttendanceCsvAction
@@ -19,9 +20,19 @@ class ImportStaffAttendanceCsvAction
      */
     public function execute(string $csv, ?int $markedBy = null): array
     {
+        // A refused row refuses the whole file. The rows above it were kept,
+        // and the office, told the file was refused, did not know they were.
+        return DB::transaction(fn (): array => $this->import($csv, $markedBy));
+    }
+
+    /**
+     * @return array{imported: int}
+     */
+    private function import(string $csv, ?int $markedBy): array
+    {
         $lines = preg_split('/\r\n|\r|\n/', trim($csv)) ?: [];
         if ($lines === [] || trim((string) $lines[0]) === '') {
-            throw ValidationException::withMessages(['file' => 'CSV is empty.']);
+            throw ValidationException::withMessages(['file' => __('hr.error_csv_empty')]);
         }
 
         $header = array_map(
@@ -44,7 +55,7 @@ class ImportStaffAttendanceCsvAction
             $profile = $this->resolveProfile($row);
             if ($profile === null) {
                 throw ValidationException::withMessages([
-                    'file' => 'Unknown staff on row '.($index + 2).'.',
+                    'file' => __('hr.error_csv_unknown_staff', ['row' => $index + 2]),
                 ]);
             }
 
@@ -52,14 +63,14 @@ class ImportStaffAttendanceCsvAction
             $status = StaffAttendanceStatus::tryFrom((string) ($row['status'] ?? ''));
             if ($date === '' || $status === null) {
                 throw ValidationException::withMessages([
-                    'file' => 'Invalid date or status on row '.($index + 2).'.',
+                    'file' => __('hr.error_csv_bad_row', ['row' => $index + 2]),
                 ]);
             }
 
             $year = app(ResolveAcademicYearForDateAction::class)->execute($date);
             if ($year === null) {
                 throw ValidationException::withMessages([
-                    'file' => 'No academic year covers '.$date.'.',
+                    'file' => __('hr.error_csv_no_year', ['date' => $date]),
                 ]);
             }
 
@@ -73,7 +84,8 @@ class ImportStaffAttendanceCsvAction
                 minutesLate: isset($row['minutes_late']) && $row['minutes_late'] !== ''
                     ? (int) $row['minutes_late']
                     : null,
-                remarks: $row['remarks'] !== null && $row['remarks'] !== '' ? (string) $row['remarks'] : null,
+                // A file with no remarks column was a 500 (slice HR1).
+                remarks: ($row['remarks'] ?? '') !== '' ? (string) $row['remarks'] : null,
             ));
             $imported++;
         }

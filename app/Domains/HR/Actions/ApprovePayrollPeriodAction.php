@@ -18,7 +18,7 @@ class ApprovePayrollPeriodAction
         $period = PayrollPeriod::query()->findOrFail($periodId);
 
         if ($period->status !== PayrollPeriodStatus::Review) {
-            throw ValidationException::withMessages(['payroll' => 'Only a period in review can be approved.']);
+            throw ValidationException::withMessages(['payroll' => __('hr.error_approve_review_only')]);
         }
 
         return DB::transaction(function () use ($period, $approvedBy): PayrollPeriod {

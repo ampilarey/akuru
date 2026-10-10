@@ -34,6 +34,8 @@ class ListLeaveBalancesAction
                 'staff_name' => $profile ? trim(($profile->first_name ?? '').' '.($profile->last_name ?? '')) : '',
                 'leave_type_id' => $row->leave_type_id,
                 'leave_type' => $row->leaveType?->name,
+                'leave_type_arabic' => $row->leaveType?->name_arabic,
+                'leave_type_dhivehi' => $row->leaveType?->name_dhivehi,
                 'leave_code' => $row->leaveType?->code?->value ?? $row->leaveType?->code,
                 'paid' => (bool) ($row->leaveType?->paid ?? true),
                 'academic_year_id' => $row->academic_year_id,

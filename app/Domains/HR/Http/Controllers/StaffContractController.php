@@ -9,6 +9,7 @@ use App\Domains\HR\Enums\StaffContractType;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -30,6 +31,7 @@ class StaffContractController extends Controller
                 'staff_profile_id' => $request->integer('staff_profile_id') ?: null,
                 'status' => $request->string('status')->toString() ?: null,
             ])->values(),
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -49,7 +51,7 @@ class StaffContractController extends Controller
             'status' => ['nullable', Rule::enum(StaffContractStatus::class)],
         ]));
 
-        return redirect()->route('hr.contracts.index')->with('success', 'Contract saved.');
+        return redirect()->route('hr.contracts.index')->with('success', __('hr.flash_contract_saved'));
     }
 
     public function export(Request $request): StreamedResponse

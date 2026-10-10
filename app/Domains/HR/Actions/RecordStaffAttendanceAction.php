@@ -18,7 +18,7 @@ class RecordStaffAttendanceAction implements StaffAttendanceWriterInterface
     {
         if (app(IsPayrollMonthLockedAction::class)->execute($dto->date)) {
             throw ValidationException::withMessages([
-                'date' => 'Payroll for this month is locked. Record the change next period.',
+                'date' => __('hr.error_payroll_month_locked'),
             ]);
         }
 

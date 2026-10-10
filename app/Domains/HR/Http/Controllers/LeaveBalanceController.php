@@ -11,6 +11,7 @@ use App\Domains\HR\Actions\ListLeaveTypesAction;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -37,6 +38,7 @@ class LeaveBalanceController extends Controller
                 'academic_year_id' => $yearId,
                 'staff_profile_id' => $request->integer('staff_profile_id') ?: null,
             ])->values(),
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -58,7 +60,7 @@ class LeaveBalanceController extends Controller
 
         return redirect()
             ->route('hr.leave-balances.index', ['academic_year_id' => $data['academic_year_id']])
-            ->with('success', 'Entitlement created.');
+            ->with('success', __('hr.flash_entitlement_created'));
     }
 
     public function adjust(Request $request, int $entitlement): RedirectResponse
@@ -72,7 +74,7 @@ class LeaveBalanceController extends Controller
 
         app(AdjustLeaveBalanceAction::class)->execute((int) $entitlement, (float) $data['days'], $data['reason']);
 
-        return redirect()->route('hr.leave-balances.index')->with('success', 'Balance adjusted.');
+        return redirect()->route('hr.leave-balances.index')->with('success', __('hr.flash_balance_adjusted'));
     }
 
     public function carryOver(Request $request): RedirectResponse
@@ -88,7 +90,7 @@ class LeaveBalanceController extends Controller
 
         return redirect()
             ->route('hr.leave-balances.index', ['academic_year_id' => $data['to_year_id']])
-            ->with('success', count($report).' entitlements carried over.');
+            ->with('success', trans_choice('hr.flash_entitlements_carried', count($report), ['count' => count($report)]));
     }
 
     public function export(Request $request): StreamedResponse

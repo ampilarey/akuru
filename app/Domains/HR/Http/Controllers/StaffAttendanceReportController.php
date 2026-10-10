@@ -7,6 +7,7 @@ use App\Domains\HR\Actions\ReportStaffAttendanceAction;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -31,6 +32,7 @@ class StaffAttendanceReportController extends Controller
                 ->values(),
             'late' => $report['late'],
             'absence' => $report['absence'],
+            't' => Phrases::once('hr'),
         ]);
     }
 

@@ -14,9 +14,11 @@ use App\Domains\HR\Enums\StaffAttendanceStatus;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -40,6 +42,7 @@ class StaffAttendanceController extends Controller
                 'academic_year_id' => $year['id'] ?? null,
             ])->values(),
             'statuses' => array_map(fn (StaffAttendanceStatus $status) => $status->value, StaffAttendanceStatus::cases()),
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -58,7 +61,9 @@ class StaffAttendanceController extends Controller
         ]);
 
         $year = app(ResolveAcademicYearForDateAction::class)->execute($data['date']);
-        abort_unless($year !== null, 422, 'No academic year covers this date.');
+        if ($year === null) {
+            throw ValidationException::withMessages(['date' => __('hr.error_no_year_for_date')]);
+        }
 
         app(StaffAttendanceWriterInterface::class)->record(new StaffAttendanceDTO(
             staffProfileId: (int) $data['staff_profile_id'],
@@ -75,7 +80,7 @@ class StaffAttendanceController extends Controller
 
         return redirect()
             ->route('hr.attendance.index', ['date' => $data['date']])
-            ->with('success', 'Staff attendance saved.');
+            ->with('success', __('hr.flash_attendance_saved'));
     }
 
     public function fillHolidays(Request $request): RedirectResponse
@@ -94,7 +99,7 @@ class StaffAttendanceController extends Controller
 
         return redirect()
             ->route('hr.attendance.index', array_filter(['date' => $data['date'] ?? null]))
-            ->with('success', 'Holiday attendance filled.');
+            ->with('success', __('hr.flash_holidays_filled'));
     }
 
     public function import(Request $request): RedirectResponse
@@ -110,7 +115,7 @@ class StaffAttendanceController extends Controller
 
         return redirect()
             ->route('hr.attendance.index')
-            ->with('success', $result['imported'].' attendance rows imported.');
+            ->with('success', trans_choice('hr.flash_attendance_imported', $result['imported'], ['count' => $result['imported']]));
     }
 
     public function export(Request $request): StreamedResponse

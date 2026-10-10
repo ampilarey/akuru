@@ -15,7 +15,15 @@ class SaveLeaveTypeAction
     {
         $code = LeaveTypeCode::tryFrom((string) ($data['code'] ?? ''));
         if ($code === null) {
-            throw ValidationException::withMessages(['code' => 'Invalid leave type code.']);
+            throw ValidationException::withMessages(['code' => __('hr.error_leave_code')]);
+        }
+
+        $taken = LeaveType::query()
+            ->where('code', $code->value)
+            ->when($type !== null, fn ($query) => $query->whereKeyNot($type->id))
+            ->exists();
+        if ($taken) {
+            throw ValidationException::withMessages(['code' => __('hr.error_leave_code_taken')]);
         }
 
         $payload = [

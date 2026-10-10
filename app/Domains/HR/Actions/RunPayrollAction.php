@@ -31,7 +31,7 @@ class RunPayrollAction
             );
 
             if (in_array($period->status, [PayrollPeriodStatus::Paid, PayrollPeriodStatus::Locked], true)) {
-                throw ValidationException::withMessages(['payroll' => 'This period is locked.']);
+                throw ValidationException::withMessages(['payroll' => __('hr.error_period_locked')]);
             }
 
             if ($period->status === PayrollPeriodStatus::Approved) {

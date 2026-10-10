@@ -17,7 +17,7 @@ class SaveStaffContractAction
     {
         $type = StaffContractType::tryFrom((string) ($data['contract_type'] ?? ''));
         if ($type === null) {
-            throw ValidationException::withMessages(['contract_type' => 'Invalid contract type.']);
+            throw ValidationException::withMessages(['contract_type' => __('hr.error_contract_type')]);
         }
 
         $status = StaffContractStatus::tryFrom((string) ($data['status'] ?? StaffContractStatus::Active->value))
