@@ -8,6 +8,7 @@ use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\CalendarDay;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -36,6 +37,7 @@ class CalendarDayController extends Controller
             'years' => AcademicYear::query()->orderByDesc('start_date')->get(['id', 'name', 'status', 'start_date', 'end_date']),
             'types' => array_map(fn (CalendarDayType $type) => $type->value, CalendarDayType::cases()),
             'days' => $days,
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -47,7 +49,7 @@ class CalendarDayController extends Controller
 
         return redirect()
             ->route('academics.calendar.index', $request->only(['academic_year_id']))
-            ->with('success', 'Calendar day saved.');
+            ->with('success', __('academics.flash_calendar_saved'));
     }
 
     public function update(Request $request, CalendarDay $calendarDay): RedirectResponse
@@ -58,7 +60,7 @@ class CalendarDayController extends Controller
 
         return redirect()
             ->route('academics.calendar.index', ['academic_year_id' => $calendarDay->academic_year_id])
-            ->with('success', 'Calendar day updated.');
+            ->with('success', __('academics.flash_calendar_updated'));
     }
 
     public function destroy(Request $request, CalendarDay $calendarDay): RedirectResponse
@@ -70,7 +72,7 @@ class CalendarDayController extends Controller
 
         return redirect()
             ->route('academics.calendar.index', ['academic_year_id' => $yearId])
-            ->with('success', 'Calendar day removed.');
+            ->with('success', __('academics.flash_calendar_removed'));
     }
 
     public function export(Request $request): StreamedResponse

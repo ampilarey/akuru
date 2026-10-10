@@ -4983,6 +4983,129 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qf. The school's structure and time in Dhivehi and Arabic (C21 OA2, 2026-10-10)
+
+The seventh slice of BACKLOG C21, and the second of the school office's.
+These nine screens set up the school's year:
+- the academic years with their terms, the periods, and the classes with a
+  class's roster;
+- the school calendar, the timetable and the promotion wizard;
+- the rooms and their bookings.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and hint, and the calendar's months
+  and weekdays (a browser names no month in Dhivehi);
+- eight codes printed as they are stored: a year's and a term's state
+  (*active*), a calendar day's type (*exam_day*), a room's type (*lab*), a
+  pupil's state on the roster, an assessment's state and kind
+  (*lesson_quiz*), and a promotion's outcome (*promote*);
+- a clash, which named its kind as a code and the other row by id: the
+  builder's cell read *Conflict: teacher*, its refusal *Timetable
+  conflicts: teacher#12*, a booking's *Room booking clashes: timetable#4*;
+- twenty-five saved messages and twenty-two refusals.
+
+Three things were wrong, not only English:
+- **A refused year read as a success.** Activating a year while another is
+  active, or closing one with a term still open, is refused — and the
+  refusal was flashed green, as if it had worked.
+- **The promotion wizard's refusals were a 500 page.** Confirming a
+  promotion nobody had previewed (the dry-run gate), or one that left a
+  class mapped nowhere, threw an `InvalidArgumentException`.
+- **The promotion report printed ids** in its pupil and target-class
+  columns.
+
+**The change:**
+- **The `academics` book grows by 224 phrases**, to 427. The nine pages read
+  it through `Phrases::once('academics')`.
+- **Codes are named, not printed**: the eight above, the calendar's months
+  and weekday initials, and what a slot or a booking can clash with (the
+  teacher, the room, the class, a room booking, a lesson on the timetable).
+- **What the server says is in the page's language**: the saved messages,
+  the refusals and the two clash messages (*This slot clashes with: the
+  teacher.*). That covers eight controllers, ten actions and the two clash
+  exceptions. A copied slot's override reason (*Copied from another class
+  timetable.*) is written in the language of whoever copied it.
+- **A refused year is said in red** (`error`), in the page's language. The
+  two actions still throw a `RuntimeException`, as
+  `AcademicYearBackboneTest` pins.
+- **The promotion refusals are refusals the wizard shows**:
+  `PromoteStudentsAction` throws a validation error — `promotion` for the
+  dry-run gate, `class_map` for a class with nowhere to go, naming the class
+  (*No target class is mapped for Grade 5 A.*). The move still rolls back,
+  and the dry-run gate is unchanged.
+- **The promotion report names each pupil and class.** A new
+  `DescribePromotionReportAction` looks the names up when the report is
+  shown (pupils through People's `ListStudentsByIdsAction`), so the session
+  keeps only what the move returned.
+- **A room reads by the office's name for it** in the page's language, on
+  the timetable and the bookings (both are now sent `name_arabic` and
+  `name_dhivehi`).
+- **Every field is named**, including each row's on the periods, rooms and
+  bookings lists (*Name: Period 1*), and a row's refusal is shown under it.
+- `TimetableBuilderController::index` draws each entry with its clashes in
+  one helper, so it is three lines shorter than its baseline (48 → 45,
+  recorded) although it now sends the book.
+
+What the school writes stays as written: a year's, term's, period's,
+class's, subject's and room's name, a calendar day's and a booking's title,
+and a class's level (free text, offered as *Primary* in the page's
+language). The CSVs keep their English column codes.
+
+**Tests:**
+- `AcademicsSpeaksThreeLanguagesTest` now covers the eighteen screens, the
+  thirty-nine server files and the new codes, and a sixth test serves the
+  nine new screens in Dhivehi. In it:
+  - a year that cannot be activated is refused in red, in Dhivehi, with no
+    green notice; a new year is saved in Dhivehi;
+  - a slot over a teacher's other class is refused naming *the teacher* in
+    Dhivehi, and an override with no reason is refused;
+  - a clashing booking names *a room booking*; a room is saved;
+  - a period that ends before it starts, a class that exists, a calendar day
+    on a taken date and a promotion nobody previewed are each refused in
+    Dhivehi, beside their field.
+- `PromotionRouteTest`: the two tests that expected a 500 now expect the
+  refusal. Two are new: a commit that leaves a class mapped nowhere is
+  refused naming the class, and nobody moves; and the wizard's report names
+  the pupil and both classes.
+
+The tests for the areas it touches (Academics, Localization, Architecture):
+546 passed.
+
+Whole suite locally: **2976 passed (46910 assertions)**.
+
+**Walk:** `office-language.mjs` 117/117 (OA1's 60 steps and 57 new):
+- the nine new screens read right to left under `/dv` and `/ar`, with
+  nothing left in English and every field named, for the dean;
+- closing the school year while a term is open is refused, in red, in
+  Dhivehi, and the year stays active (the walk presses it only on a year
+  with a term open);
+- a calendar day on a date that has one is refused beside the date, in
+  Dhivehi.
+
+Three changes to the walk itself. `types` and `days` are code lists on the
+calendar, rooms and timetable, but the school's own records on the absence
+reasons and the calendar's list, so they count as codes only when they are
+lists of strings. The timetable's print rules (a `<style>` inside `main`)
+were read as page text; text in `style` and `script` is skipped.
+`timetable.mjs` reads the new refusal (*clashes with: … teacher*).
+
+Other walks that open these screens, each after a fresh seed:
+- `timetable.mjs` 12/12: the office is refused a teacher in two places,
+  told *This slot clashes with: the teacher.*, overrules it with a reason,
+  and the cell wears *Conflict: the teacher*;
+- `school-day.mjs` 14/14 (the calendar's form, in English);
+- `sweep.mjs` 25/25 and `create-sweep.mjs` 6/6 (rooms, bookings and the
+  calendar among them);
+- `middle-name.mjs` 21/21 (a class's roster), `rtl.mjs` 8/8 (the years
+  page under `/dv` and `/ar`), `nav.mjs` 14/14, `admin-hub.mjs` 26/26,
+  `admin-layout.mjs` 15/15;
+- `admin.mjs` 42/43. The one failure is not this slice's: *the system
+  admin's More menu reaches the whole Institute, and not the School's
+  admissions*. Since N1 (§5nw, #663) the Institute's menu has its own
+  Admissions part (`panel_admissions`, `/admin/enrollments`), and the walk
+  still asserts the system admin's menu has no admissions. Taken next, as a
+  walk repair.
+
 ## 5qe. Three school-day walks pass on any day of the week (walk health, 2026-10-10)
 
 Found by OA1's walks (§5qd). On a Saturday `family.mjs` passed 15 of 21

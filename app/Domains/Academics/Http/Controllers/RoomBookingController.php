@@ -10,6 +10,7 @@ use App\Domains\Academics\Models\Room;
 use App\Domains\Academics\Models\RoomBooking;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -41,9 +42,10 @@ class RoomBookingController extends Controller
                 ->where('active', true)
                 ->where('bookable', true)
                 ->orderBy('name')
-                ->get(['id', 'name']),
+                ->get(['id', 'name', 'name_arabic', 'name_dhivehi']),
             'periods' => Period::query()->orderBy('order')->get(['id', 'name', 'start_time', 'end_time', 'is_break']),
             'bookings' => $bookings,
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -65,7 +67,7 @@ class RoomBookingController extends Controller
 
         return redirect()
             ->route('academics.bookings.index', $request->only(['academic_year_id']))
-            ->with('success', 'Booking created.');
+            ->with('success', __('academics.flash_booking_created'));
     }
 
     public function update(Request $request, RoomBooking $roomBooking): RedirectResponse
@@ -86,7 +88,7 @@ class RoomBookingController extends Controller
 
         return redirect()
             ->route('academics.bookings.index', ['academic_year_id' => $roomBooking->academic_year_id])
-            ->with('success', 'Booking updated.');
+            ->with('success', __('academics.flash_booking_updated'));
     }
 
     public function destroy(Request $request, RoomBooking $roomBooking): RedirectResponse
@@ -98,7 +100,7 @@ class RoomBookingController extends Controller
 
         return redirect()
             ->route('academics.bookings.index', ['academic_year_id' => $yearId])
-            ->with('success', 'Booking removed.');
+            ->with('success', __('academics.flash_booking_removed'));
     }
 
     public function export(Request $request): StreamedResponse

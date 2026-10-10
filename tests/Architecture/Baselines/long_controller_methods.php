@@ -28,7 +28,7 @@
 return [
     'app/Domains/Academics/Http/Controllers/TeacherRegisterController.php::show' => 45,
     'app/Domains/Academics/Http/Controllers/TeacherRegisterController.php::update' => 48,
-    'app/Domains/Academics/Http/Controllers/TimetableBuilderController.php::index' => 48,
+    'app/Domains/Academics/Http/Controllers/TimetableBuilderController.php::index' => 45,
     'app/Domains/Academics/Http/Controllers/TimetableBuilderController.php::persist' => 39,
     'app/Domains/Admissions/Http/Controllers/CheckoutController.php::start' => 95,
     'app/Domains/Admissions/Http/Controllers/CourseRegistrationController.php::checkoutLogin' => 41,

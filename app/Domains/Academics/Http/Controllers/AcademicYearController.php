@@ -10,6 +10,7 @@ use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\Term;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -71,6 +72,7 @@ class AcademicYearController extends Controller
                 ->orderByDesc('start_date')
                 ->get()
                 ->map(fn (AcademicYear $year) => $this->serializeYear($year)),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -88,7 +90,7 @@ class AcademicYearController extends Controller
             'is_current' => false,
         ]);
 
-        return redirect()->route('academics.years.index')->with('success', 'Academic year created.');
+        return redirect()->route('academics.years.index')->with('success', __('academics.flash_year_created'));
     }
 
     public function storeTerm(Request $request, AcademicYear $academicYear): RedirectResponse
@@ -105,7 +107,7 @@ class AcademicYearController extends Controller
             'sort_order' => (int) ($data['sort_order'] ?? 0),
         ]);
 
-        return redirect()->route('academics.years.index')->with('success', 'Term created.');
+        return redirect()->route('academics.years.index')->with('success', __('academics.flash_term_created'));
     }
 
     public function closeTerm(AcademicYear $academicYear, Term $term): RedirectResponse
@@ -113,7 +115,7 @@ class AcademicYearController extends Controller
         abort_unless($term->academic_year_id === $academicYear->id, 404);
         $term->forceFill(['status' => TermStatus::Closed])->save();
 
-        return redirect()->route('academics.years.index')->with('success', 'Term closed.');
+        return redirect()->route('academics.years.index')->with('success', __('academics.flash_term_closed'));
     }
 
     public function activate(AcademicYear $academicYear): RedirectResponse
@@ -121,10 +123,10 @@ class AcademicYearController extends Controller
         try {
             app(ActivateAcademicYearAction::class)->execute($academicYear);
         } catch (RuntimeException $exception) {
-            return redirect()->route('academics.years.index')->with('success', $exception->getMessage());
+            return redirect()->route('academics.years.index')->with('error', $exception->getMessage());
         }
 
-        return redirect()->route('academics.years.index')->with('success', 'Academic year activated.');
+        return redirect()->route('academics.years.index')->with('success', __('academics.flash_year_activated'));
     }
 
     public function close(AcademicYear $academicYear): RedirectResponse
@@ -132,10 +134,10 @@ class AcademicYearController extends Controller
         try {
             app(CloseAcademicYearAction::class)->execute($academicYear);
         } catch (RuntimeException $exception) {
-            return redirect()->route('academics.years.index')->with('success', $exception->getMessage());
+            return redirect()->route('academics.years.index')->with('error', $exception->getMessage());
         }
 
-        return redirect()->route('academics.years.index')->with('success', 'Academic year closed.');
+        return redirect()->route('academics.years.index')->with('success', __('academics.flash_year_closed'));
     }
 
     /**

@@ -53,13 +53,13 @@ class SaveRoomBookingAction
     {
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'Title is required.']);
+            throw ValidationException::withMessages(['title' => __('academics.error_title_required')]);
         }
 
         $roomId = (int) ($data['room_id'] ?? 0);
         $room = Room::query()->find($roomId);
         if ($room === null || ! $room->active || ! $room->bookable) {
-            throw ValidationException::withMessages(['room_id' => 'Choose an active bookable room.']);
+            throw ValidationException::withMessages(['room_id' => __('academics.error_room_not_bookable')]);
         }
 
         $periodId = $data['period_id'] ?? null;
@@ -72,14 +72,14 @@ class SaveRoomBookingAction
 
         if ($hasPeriod === $hasTimes) {
             throw ValidationException::withMessages([
-                'period_id' => 'Provide either a period or a start and end time, not both.',
+                'period_id' => __('academics.error_period_or_time'),
             ]);
         }
 
         if ($hasPeriod) {
             $period = Period::query()->find($periodId);
             if ($period === null) {
-                throw ValidationException::withMessages(['period_id' => 'Period not found.']);
+                throw ValidationException::withMessages(['period_id' => __('academics.error_period_missing')]);
             }
             $start = $period->start_time?->format('H:i:s');
             $end = $period->end_time?->format('H:i:s');

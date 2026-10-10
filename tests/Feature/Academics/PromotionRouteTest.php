@@ -52,7 +52,9 @@ it('refuses to commit a promotion nobody has previewed', function () {
             'target_year_id' => $seed['target']->id,
             'class_map' => [$seed['from']->id => $seed['to']->id],
         ])
-        ->assertServerError();
+        // A refusal the wizard shows, in the page's language; it was a 500
+        // page (BACKLOG C21, slice OA2).
+        ->assertSessionHasErrors(['promotion' => __('academics.error_promotion_dry_run')]);
 
     // Nothing moved.
     expect(ClassStudent::query()->where('academic_year_id', $seed['target']->id)->count())->toBe(0);
@@ -118,7 +120,54 @@ it('spends the dry run, so a second commit is refused', function () {
     // double submit cannot promote twice.
     $this->withoutLocalizationMiddleware()->actingAs($admin)
         ->post(route('academics.promotion.commit'), $payload)
-        ->assertServerError();
+        ->assertSessionHasErrors('promotion');
+});
+
+it('refuses a commit that leaves a class with nowhere to go, naming the class', function () {
+    $seed = promotionSeed();
+    $admin = promotionAdmin();
+    $payload = [
+        'source_year_id' => $seed['source']->id,
+        'target_year_id' => $seed['target']->id,
+        'class_map' => [],
+    ];
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('academics.promotion.dry-run'), $payload)->assertRedirect();
+
+    // It was a 500 page naming the class by its id; the transaction rolls
+    // back, so nobody moved.
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('academics.promotion.commit'), $payload)
+        ->assertSessionHasErrors(['class_map' => __('academics.error_promotion_unmapped', ['class' => 'Grade 5 A'])]);
+
+    expect(ClassStudent::query()->where('academic_year_id', $seed['target']->id)->count())->toBe(0)
+        ->and(ClassStudent::query()->where('student_id', $seed['student']->id)->sole()->status->value)
+        ->toBe(ClassStudentStatus::Active->value);
+});
+
+it('names each pupil and class in the report it shows', function () {
+    $seed = promotionSeed();
+    $admin = promotionAdmin();
+    $payload = [
+        'source_year_id' => $seed['source']->id,
+        'target_year_id' => $seed['target']->id,
+        'class_map' => [$seed['from']->id => $seed['to']->id],
+    ];
+
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->post(route('academics.promotion.dry-run'), $payload)->assertRedirect();
+
+    // The wizard printed the ids PromoteStudentsAction reports by.
+    $this->withoutLocalizationMiddleware()->actingAs($admin)
+        ->get(route('academics.promotion.create', ['source_year_id' => $seed['source']->id, 'target_year_id' => $seed['target']->id]))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page
+            ->where('report.outcomes.0.student_id', (int) $seed['student']->id)
+            ->where('report.outcomes.0.student_name', fn ($name) => is_string($name) && $name !== '' && $name !== (string) $seed['student']->id)
+            ->where('report.outcomes.0.source_class_name', 'Grade 5 A')
+            ->where('report.outcomes.0.target_class_name', 'Grade 6 A')
+            ->where('report.outcomes.0.outcome', 'promote'));
 });
 
 it('refuses a promotion into the same year it came from', function () {

@@ -1,11 +1,14 @@
 /**
- * Do the office's registers and attendance screens read in Dhivehi and
- * Arabic? (BACKLOG C21, slice OA1, STATUS §5qd.)
+ * Do the office's Academics screens read in Dhivehi and Arabic? (BACKLOG
+ * C21: slice OA1, the registers and attendance, STATUS §5qd; slice OA2, the
+ * school's structure and time, STATUS §5qf.)
  *
  * The seeded teacher opens today's registers, one of their registers and
  * daily attendance; the dean opens the unfilled registers, the attendance
  * reports, who is not in today, absence notes, the attendance policy and the
- * absence reasons — under /dv and /ar. The walk lists what is still in Latin
+ * absence reasons; and then the academic years, the periods, the classes and
+ * a class's roster, the school calendar, the timetable, the promotion
+ * wizard, the rooms and their bookings — under /dv and /ar. The walk lists what is still in Latin
  * letters in each page's main: every text node, placeholder, aria-label,
  * title and phone caption (`data-label`). What a page shows of its data (a
  * pupil's name, a subject, a reason the office typed, the code it was given)
@@ -24,7 +27,12 @@
  *     refused beside its box, in Dhivehi;
  *   - a family writing an absence note chooses among reasons named in
  *     Dhivehi (the five a school starts with gained Dhivehi and Arabic names),
- *     and lessons offered with their times.
+ *     and lessons offered with their times;
+ *   - the dean closes the school year while a term is open and is refused,
+ *     in red, in Dhivehi (it was flashed green, in English, as if it had
+ *     worked); nothing closes;
+ *   - the dean adds a calendar day on a date that has one and is refused
+ *     beside the date, in Dhivehi.
  *
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/office-language.mjs
@@ -46,7 +54,15 @@ const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 const CODE_KEYS = new Set([
     'i18n', 't', 'nav', 'auth', 'locale', 'locales', 'locale_urls', 'errors', 'flash', 'csvUrl', 'href',
     'status', 'statuses', 'attendanceStatuses', 'source', 'type', 'note_status', 'mode', 'attendanceMode', 'notify',
+    // OA2: a promotion's outcome, an assessment's kind, the timetable's view
+    // and a slot's day.
+    'outcome', 'assessment_type', 'view', 'day_of_week',
 ]);
+// Props that are a list of codes when they are a list of strings — a
+// calendar day's or a room's types, the timetable's days — and the school's
+// own records otherwise: the absence reasons are `types`, the calendar's
+// entries `days`.
+const CODE_LISTS = new Set(['types', 'days']);
 // The names of formats, the same in every language.
 const ALWAYS_FINE = [/https?:\/\/\S*/g, /\bCSV\b/g, /\bPDF\b/g, /[\w.+-]+@[\w-]+(\.[\w-]+)+/g];
 
@@ -61,7 +77,7 @@ const props = (page) => page.evaluate(() => JSON.parse(document.querySelector('s
 const tinker = (code) => execFileSync('php', ['artisan', 'tinker', `--execute=${code}`], { encoding: 'utf8' }).trim().split('\n').pop();
 
 function authorsWords(value, key = '', out = []) {
-    if (CODE_KEYS.has(key)) {
+    if (CODE_KEYS.has(key) || (CODE_LISTS.has(key) && Array.isArray(value) && value.every((item) => typeof item === 'string'))) {
         return out;
     }
     if (typeof value === 'string') {
@@ -111,6 +127,9 @@ const readMain = (page) => page.evaluate(() => {
     const texts = [];
     const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
     while (walker.nextNode()) {
+        // A page's own stylesheet (the timetable's print rules) is not
+        // something a reader meets.
+        if (walker.currentNode.parentElement?.closest('style, script')) continue;
         const value = walker.currentNode.nodeValue.trim();
         if (value) texts.push(value);
     }
@@ -133,6 +152,9 @@ const parent = await signIn(PARENT);
 const registerId = tinker("$u = DB::table('users')->where('email', '" + TEACHER + "')->value('id'); $t = DB::table('teachers')->where('user_id', $u)->value('id'); echo (int) DB::table('lesson_logs')->where('teacher_id', $t)->orderByDesc('date')->value('id');");
 const classId = tinker("$u = DB::table('users')->where('email', '" + TEACHER + "')->value('id'); $t = DB::table('teachers')->where('user_id', $u)->value('id'); echo (int) DB::table('lesson_logs')->where('teacher_id', $t)->orderByDesc('date')->value('classroom_id');");
 check('the teacher has a register to open', Number(registerId) > 0, `register ${registerId}`);
+// A class of the school year on screen, for its roster page.
+const rosterClassId = tinker("echo (int) DB::table('classes')->where('academic_year_id', DB::table('academic_years')->where('status', 'active')->value('id'))->orderBy('id')->value('id');");
+check('the school year has a class to open', Number(rosterClassId) > 0, `class ${rosterClassId}`);
 
 const screens = [
     ['/academics/registers/today', teacher],
@@ -144,6 +166,16 @@ const screens = [
     ['/academics/absence-notes', dean],
     ['/academics/attendance-policy', dean],
     ['/academics/absence-types', dean],
+    // OA2.
+    ['/academics/years', dean],
+    ['/academics/periods', dean],
+    ['/academics/classes', dean],
+    ...(Number(rosterClassId) > 0 ? [[`/academics/classes/${rosterClassId}`, dean]] : []),
+    ['/academics/calendar', dean],
+    ['/academics/timetable', dean],
+    ['/academics/promotion', dean],
+    ['/academics/rooms', dean],
+    ['/academics/bookings', dean],
 ];
 
 for (const locale of ['dv', 'ar']) {
@@ -205,6 +237,44 @@ check('a family chooses among reasons named in Dhivehi', options.includes('ބަ�
 // read "Period 1 (2026-–2026-)" — the first five characters of one.
 const lessons = options.filter((option) => /\(.*\)$/.test(option));
 check('and its lessons are offered with their times', lessons.length > 0 && lessons.every((option) => /\(\d{2}:\d{2}–\d{2}:\d{2}\)$/.test(option)), lessons.slice(0, 3).join(' | ') || 'no lessons');
+
+// ------------------------------------- a year that cannot close, refused in red, in Dhivehi
+
+await dean.goto(`${BASE}/dv/academics/years`, { waitUntil: 'networkidle' });
+const yearsPage = await props(dean);
+const yearsBook = yearsPage.t ?? {};
+// Pressed only on a year with a term still open, which the server refuses:
+// on any other it would close the school year.
+const openYear = (yearsPage.years || []).find((year) => year.status === 'active' && (year.terms || []).some((term) => term.status !== 'closed'));
+if (openYear) {
+    const card = dean.locator('section').filter({ has: dean.locator('h2', { hasText: openYear.name }) }).first();
+    await card.getByRole('button', { name: yearsBook.years_close, exact: true }).click();
+    await dean.waitForLoadState('networkidle');
+    const said = (await dean.getByTestId('flash-error').textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+    const green = await dean.getByTestId('flash-success').count();
+    const still = ((await props(dean)).years || []).find((year) => year.id === openYear.id)?.status;
+    check('closing the school year while a term is open is refused, in red, in Dhivehi', said === yearsBook.error_year_terms_open && green === 0 && still === 'active', `said: ${said ?? 'nothing'}; green notices: ${green}; the year is ${still}`);
+} else {
+    check('closing the school year while a term is open is refused, in red, in Dhivehi', false, 'no active year with an open term to try — re-seed first: php artisan db:seed --class=SmokeMarkerSeeder');
+}
+
+// ------------------------------------- a calendar day on a taken date, refused in Dhivehi
+
+await dean.goto(`${BASE}/dv/academics/calendar`, { waitUntil: 'networkidle' });
+const calendarPage = await props(dean);
+const calendarBook = calendarPage.t ?? {};
+const taken = (calendarPage.days || [])[0]?.date;
+if (taken) {
+    const dayForm = dean.locator('form').first();
+    await dayForm.getByLabel(calendarBook.date, { exact: true }).fill(taken);
+    await dayForm.getByLabel(calendarBook.title_en, { exact: true }).fill('SMOKE-Taken');
+    await dayForm.getByRole('button', { name: calendarBook.calendar_add, exact: true }).click();
+    await dean.waitForLoadState('networkidle');
+    const said = (await dayForm.locator('span.text-red-600').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;
+    check('a calendar day on a date that has one is refused beside the date, in Dhivehi', said === calendarBook.error_calendar_date_taken, `${taken} — said: ${said ?? 'nothing'}`);
+} else {
+    check('a calendar day on a date that has one is refused beside the date, in Dhivehi', false, 'the calendar has no day to collide with — re-seed first: php artisan db:seed --class=SmokeMarkerSeeder');
+}
 
 await browser.close();
 

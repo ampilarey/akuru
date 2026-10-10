@@ -8,7 +8,7 @@ use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\ClassStudent;
 use App\Domains\People\Actions\ChangeStudentStatusAction;
 use Illuminate\Support\Facades\DB;
-use InvalidArgumentException;
+use Illuminate\Validation\ValidationException;
 
 class PromoteStudentsAction
 {
@@ -26,7 +26,7 @@ class PromoteStudentsAction
         int $changedBy,
     ): array {
         if (! $dryRun && $this->missingDryRunConfirmation($sourceYearId, $targetYearId)) {
-            throw new InvalidArgumentException('Dry-run is required before committing a promotion.');
+            throw ValidationException::withMessages(['promotion' => __('academics.error_promotion_dry_run')]);
         }
 
         $roster = ClassStudent::query()
@@ -94,7 +94,11 @@ class PromoteStudentsAction
     {
         $targetClassId = $classMap[$row->class_id] ?? null;
         if ($targetClassId === null) {
-            throw new InvalidArgumentException("No target class mapped for class {$row->class_id}.");
+            $source = ClassRoom::query()->find($row->class_id);
+
+            throw ValidationException::withMessages(['class_map' => __('academics.error_promotion_unmapped', [
+                'class' => $source ? trim($source->name.' '.$source->section) : (string) $row->class_id,
+            ])]);
         }
 
         $target = ClassRoom::query()->findOrFail($targetClassId);

@@ -13,6 +13,7 @@ use App\Domains\People\Actions\ListClassTeacherOptionsAction;
 use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -100,6 +101,7 @@ class ClassDirectoryController extends Controller
             'years' => AcademicYear::query()->orderByDesc('start_date')->get(['id', 'name', 'status']),
             'classes' => $classes,
             'teachers' => $teachers->all(),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -124,7 +126,7 @@ class ClassDirectoryController extends Controller
             'capacity' => ['nullable', 'integer', 'min:1'],
             'class_teacher_id' => ['nullable', 'exists:users,id'],
         ], [
-            'name.unique' => 'A class with this name and section already exists for this year.',
+            'name.unique' => __('academics.error_class_exists'),
         ]);
 
         $data['school_id'] = app(ResolveDefaultSchoolIdAction::class)->execute();
@@ -134,7 +136,7 @@ class ClassDirectoryController extends Controller
 
         return redirect()
             ->route('academics.classes.index', ['academic_year_id' => $data['academic_year_id']])
-            ->with('success', 'Class created.');
+            ->with('success', __('academics.flash_class_created'));
     }
 
     public function update(Request $request, ClassRoom $classRoom): RedirectResponse
@@ -154,7 +156,7 @@ class ClassDirectoryController extends Controller
 
         return redirect()
             ->route('academics.classes.show', $classRoom)
-            ->with('success', 'Class teacher updated.');
+            ->with('success', __('academics.flash_class_teacher_updated'));
     }
 
     public function show(Request $request, ClassRoom $classRoom): Response
@@ -184,6 +186,7 @@ class ClassDirectoryController extends Controller
             'assessments' => app(ListClassroomAssessmentsAction::class)->execute($classRoom->id)->values(),
             'q' => $query,
             'candidates' => app(SearchRosterCandidatesAction::class)->execute($query),
+            't' => Phrases::once('academics'),
         ]);
     }
 
@@ -219,6 +222,6 @@ class ClassDirectoryController extends Controller
 
         return redirect()
             ->route('academics.classes.show', $classRoom)
-            ->with('success', 'Student assigned.');
+            ->with('success', __('academics.flash_student_assigned'));
     }
 }

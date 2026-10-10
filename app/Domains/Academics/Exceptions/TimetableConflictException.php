@@ -11,10 +11,11 @@ class TimetableConflictException extends RuntimeException
      */
     public function __construct(public array $conflicts)
     {
-        $summary = collect($conflicts)
-            ->map(fn (array $conflict) => $conflict['type'].'#'.$conflict['timetable_id'])
+        $list = collect($conflicts)
+            ->map(fn (array $conflict) => __('academics.conflict_'.$conflict['type']))
+            ->unique()
             ->implode(', ');
 
-        parent::__construct('Timetable conflicts: '.$summary);
+        parent::__construct(__('academics.error_timetable_conflicts', ['list' => $list]));
     }
 }

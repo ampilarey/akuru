@@ -16,7 +16,7 @@ class SaveRoomAction
         $name = trim((string) ($data['name'] ?? ''));
 
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Name is required.']);
+            throw ValidationException::withMessages(['name' => __('academics.error_name_required')]);
         }
 
         $duplicate = Room::query()
@@ -25,7 +25,7 @@ class SaveRoomAction
             ->exists();
 
         if ($duplicate) {
-            throw ValidationException::withMessages(['name' => 'A room with this name already exists.']);
+            throw ValidationException::withMessages(['name' => __('academics.error_room_name_taken')]);
         }
 
         $payload = [

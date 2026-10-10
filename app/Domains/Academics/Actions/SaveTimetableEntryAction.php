@@ -52,13 +52,13 @@ class SaveTimetableEntryAction
 
             if (! $canOverride) {
                 throw ValidationException::withMessages([
-                    'allow_conflict' => 'A conflict override permission is required.',
+                    'allow_conflict' => __('academics.error_override_permission'),
                 ]);
             }
 
             if ($reason === '') {
                 throw ValidationException::withMessages([
-                    'conflict_reason' => 'A reason is required to save over a conflict.',
+                    'conflict_reason' => __('academics.error_override_reason'),
                 ]);
             }
 
@@ -96,14 +96,14 @@ class SaveTimetableEntryAction
 
         if ($hasPeriod === $hasTimes) {
             throw ValidationException::withMessages([
-                'period_id' => 'Provide either a period or a start and end time, not both.',
+                'period_id' => __('academics.error_period_or_time'),
             ]);
         }
 
         if ($hasPeriod) {
             $period = Period::query()->find($periodId);
             if ($period === null) {
-                throw ValidationException::withMessages(['period_id' => 'Period not found.']);
+                throw ValidationException::withMessages(['period_id' => __('academics.error_period_missing')]);
             }
             $start = $period->start_time?->format('H:i:s');
             $end = $period->end_time?->format('H:i:s');

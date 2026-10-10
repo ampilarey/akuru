@@ -16,7 +16,7 @@ class ActivateAcademicYearAction
             ->exists();
 
         if ($otherActive) {
-            throw new RuntimeException('Another academic year is already active. Close it before activating this one.');
+            throw new RuntimeException(__('academics.error_year_another_active'));
         }
 
         $year->forceFill([
