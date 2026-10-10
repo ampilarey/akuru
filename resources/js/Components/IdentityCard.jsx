@@ -80,7 +80,7 @@ function DecideRow({ row, l }) {
 
     return (
         <form className="flex flex-wrap items-center gap-2" onSubmit={decide('verify')}>
-            <input className="form-input w-48 text-sm" placeholder={l.id_note_placeholder} value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} maxLength={500} data-testid={`identity-note-${row.id}`} />
+            <input className="form-input w-48 text-sm" placeholder={l.id_note_placeholder} aria-label={l.id_note_placeholder} value={form.data.note} onChange={(e) => form.setData('note', e.target.value)} maxLength={500} data-testid={`identity-note-${row.id}`} />
             <button type="submit" className="rounded bg-green-700 px-3 py-1 text-sm font-semibold text-white" disabled={form.processing} data-testid={`identity-verify-${row.id}`}>{l.id_verify}</button>
             <button type="button" onClick={decide('reject')} className="rounded border border-red-300 px-3 py-1 text-sm text-red-800" disabled={form.processing} data-testid={`identity-reject-${row.id}`}>{l.id_reject}</button>
             {form.errors.note && <span className="text-xs text-red-700">{form.errors.note}</span>}

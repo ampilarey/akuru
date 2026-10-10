@@ -22,8 +22,8 @@ trait AuthorizesVendor
             $request->session()->get(self::SESSION_VENDOR),
         );
 
-        abort_if($scope === null, 403, 'You are not a member of a shop in the Akuru Bookstore.');
-        abort_if($needsAgreement && ! $scope->agreementAccepted, 403, 'Accept the Vendor Agreement first.');
+        abort_if($scope === null, 403, __('shop.error_not_a_member'));
+        abort_if($needsAgreement && ! $scope->agreementAccepted, 403, __('shop.error_agreement_first'));
 
         return $scope;
     }

@@ -593,8 +593,8 @@ function ApplicationRow({ a, t }) {
             {/* COMMERCE_PARITY_PLAN P2: the owner's ID card; approving verifies it. */}
             {a.identity && (
                 <p className="mt-1 flex gap-3 text-sm">
-                    <a href={a.identity.front_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`application-id-front-${a.id}`}>ID front</a>
-                    {a.identity.back_url && <a href={a.identity.back_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`application-id-back-${a.id}`}>ID back</a>}
+                    <a href={a.identity.front_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`application-id-front-${a.id}`}>{t.application_id_front}</a>
+                    {a.identity.back_url && <a href={a.identity.back_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`application-id-back-${a.id}`}>{t.application_id_back}</a>}
                 </p>
             )}
             {a.status === 'pending' ? (
@@ -1203,13 +1203,13 @@ function ShopHome({ home, t }) {
                                 {o.link_kinds.map((k) => <option key={k} value={k}>{t[`home_link_${k}`] || k}</option>)}
                             </select>
                             {hero.data.link.kind && (
-                                <select className="form-input flex-1" value={hero.data.link.target} onChange={(e) => hero.setData('link', { ...hero.data.link, target: e.target.value })} data-testid="hero-link-target">
+                                <select className="form-input flex-1" value={hero.data.link.target} onChange={(e) => hero.setData('link', { ...hero.data.link, target: e.target.value })} aria-label={t.link_target} data-testid="hero-link-target">
                                     <option value="">—</option>
                                     {(targets[hero.data.link.kind] || []).map(([v, l]) => <option key={v} value={v}>{l}</option>)}
                                 </select>
                             )}
                         </div>
-                        <input type="file" accept="image/jpeg,image/png,image/webp" className="block w-full text-xs" onChange={(e) => hero.setData('image', e.target.files?.[0] || null)} data-testid="hero-image" />
+                        <input type="file" accept="image/jpeg,image/png,image/webp" className="block w-full text-xs" onChange={(e) => hero.setData('image', e.target.files?.[0] || null)} aria-label={t.field_image} data-testid="hero-image" />
                         <FormErrors errors={hero.errors} />
                         <button type="submit" className="btn-primary" disabled={hero.processing} data-testid="add-hero">{t.add_slide}</button>
                     </form>
@@ -1250,7 +1250,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {/* STATUS §5no: the office is ten tables one under another, 10,600px on a phone (ADMIN_PANEL.md §7 P5, M6); the chips the vendor portal got (§5mp) jump to each. */}
             <SectionNav t={t} items={[
                 ['listings', t.listings_title],
-                ['identity', id_l?.title || 'ID'],
+                ['identity', id_l.id_checks_title],
                 ['vendors', t.vendors],
                 ['bank-slips', t.bank_slips],
                 ['orders', t.orders],

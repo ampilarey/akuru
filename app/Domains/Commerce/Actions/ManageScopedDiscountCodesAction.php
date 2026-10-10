@@ -62,7 +62,7 @@ class ManageScopedDiscountCodesAction
     public function setStatus(string $scopeType, int $scopeId, int $codeId, string $status): void
     {
         if (! in_array($status, ['active', 'inactive'], true)) {
-            throw ValidationException::withMessages(['status' => 'Invalid status.']);
+            throw ValidationException::withMessages(['status' => __('common.error_discount_status')]);
         }
         $this->find($scopeType, $scopeId, $codeId)->update(['status' => $status]);
     }

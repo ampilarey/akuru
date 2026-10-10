@@ -165,6 +165,25 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the Bookstore's language walk (2026-10-10)
+
+### A customer's tags typed in Dhivehi were saved as one — **fixed (2026-10-10, STATUS §5qw)**
+
+The office's tags box split on the Latin comma alone, and a Dhivehi or
+Arabic keyboard types `،`. *ސްކޫލް، ހޯލްސޭލް* was saved as a single tag, so
+a filter by either word found nobody. The box now splits on both commas,
+and its hint gives its examples in the page's language.
+
+### `shop.mjs` stops on a shop's own page — **open (walk health WH3)**
+
+After "a shop in the list opens its own page" the walk clicks the page's
+*Shops* link and times out after 30 seconds: 54 of 55 steps, on `main` and
+on SH1's branch alike. Whether the link is hidden (behind a menu) or gone
+is the next walk-health slice's to find, and then to fix the page or the
+walk.
+
+---
+
 ## Found building a mushaf's pages and images (2026-10-09)
 
 ### A locked mushaf could still be changed — **fixed (2026-10-09, STATUS §5pt)**

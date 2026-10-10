@@ -1928,7 +1928,7 @@ return [
     'customer_joined' => ':date ގައި ވަދެވުނު',
     'customer_sms_on' => 'އެސްއެމްއެސް އޮފަރު ލިބޭ',
     'customer_sms_off' => 'އެސްއެމްއެސް އޮފަރެއް ނުލިބޭ',
-    'customer_tags_hint' => 'ކޮމާއިން ވަކިކޮށް، މިސާލު: school, wholesale',
+    'customer_tags_hint' => 'ކޮމާއިން ވަކިކޮށް، މިސާލު: ސްކޫލް، ހޯލްސޭލް',
     'customer_save_tags' => 'ޓެގްތައް ރައްކާކުރޭ',
     'customer_tags_saved' => 'ޓެގްތައް ރައްކާކުރެވިއްޖެ.',
     'customer_notes' => 'ނޯޓްތައް',
@@ -2019,4 +2019,10 @@ return [
     'notice_preorder_released_body' => 'އޯޑަރު :number މިހާރު ލިބެން ހުރި؛ ފިހާރައިން ތައްޔާރުކުރަމުން ދަނީ.',
     'notice_preorder_vendor_title' => 'ޕްރީ-އޯޑަރ :number ފޮނުވޭނެ',
     'notice_preorder_vendor_body' => 'އޯޑަރު :number ގެ ރިލީސް ތާރީޚް އައިސްފި. ތައްޔާރުކޮށް ފޮނުވާ.',
+
+    // SH1 (BACKLOG C21): the office's ID card links on a seller's application, and the seller portal's gate, in the page's language
+    'application_id_front' => 'އައިޑީ ކާޑުގެ ކުރިމަތި',
+    'application_id_back' => 'އައިޑީ ކާޑުގެ ފަހަތް',
+    'error_not_a_member' => 'އަކުރު ފޮތް ފިހާރައިގެ އެއްވެސް ފިހާރައެއްގެ މެމްބަރެއް ނޫން.',
+    'error_agreement_first' => 'ފުރަތަމަ ވެންޑަރ އެގްރީމެންޓް ގަބޫލުކުރައްވާ.',
 ];

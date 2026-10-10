@@ -4983,6 +4983,138 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qw. The Bookstore's last English words, and a rule for every page (C21 SH1, 2026-10-10)
+
+The twenty-third slice of BACKLOG C21, and the one CO1 found (§5qv). The
+static rule, run over every page again, found three English words on the
+Bookstore's pages:
+- the office's *ID front* and *ID back* links on a seller's application;
+- a *status* phone caption on a customer's orders.
+
+A probe of the Bookstore's pages in Dhivehi, in a browser, and the walk
+that followed found more that the rule cannot see:
+- **The chip to the identity cards read *ID* in every language.** The
+  office's jump bar asked the account book for a `title` it does not have,
+  and fell back to *ID*.
+- **A seller portal page was refused in English.** A seller who had not yet
+  accepted the Vendor Agreement, opening their orders, met *Accept the
+  Vendor Agreement first.* on a Dhivehi page. Somebody who is no shop's
+  member met *You are not a member of a shop in the Akuru Bookstore.*
+- **A customer's tags typed in Dhivehi were saved as one.** The tags box
+  split on the Latin comma alone, and a Dhivehi or Arabic keyboard types
+  `،`. *ސްކޫލް، ހޯލްސޭލް* became a single tag, and the box's hint gave
+  English examples (*school, wholesale*).
+- **Six fields were named by something other than their label.** A screen
+  reader read *https://*, *www.example.mv*, a YouTube address or *ramadan*
+  where the label around the field named it, because an `aria-label` copied
+  from the placeholder (C15 6a) wins over the label. Four are the seller's:
+  - the application's web address;
+  - the storefront's social links;
+  - a video section;
+  - the shop's own domain.
+
+  The fifth is the office's daily content theme tag. The sixth is the
+  customer's tags box, which was named by its hint.
+- **Three fields had no name at all**:
+  - the office's note on an identity check, which had only a placeholder
+    (a component the Library and lending offices share);
+  - the shop home slide's image;
+  - the page that slide links to.
+
+**The change:**
+- **The `shop` book grows by 4 phrases** in three languages: the two ID
+  card links and the seller portal's two refusals. The **`common` book
+  grows by 1**: a scoped discount code's refusal of an unknown state, the
+  last English refusal in the Commerce actions the Bookstore reaches.
+- **The chip reads the identity cards' own heading.**
+- **The tags box splits on both commas.** Its hint gives its examples in
+  the page's language, separated by that language's comma.
+- **The six fields are named by their labels**, with the example kept as
+  the placeholder. **The three are named** from the books the pages
+  already read.
+- **A new test holds every page to the rule** (`NoPageIsLeftInEnglishTest`).
+  Each slice's own test held its pages to it, and nothing held the rest. A
+  page written with English words now fails there first.
+  - Three words read the same in every language and pass: *MVR*, *SKU* and
+    *SMS*.
+  - A placeholder written as it is typed passes: an address, or a slug's
+    example.
+  - The developer's own test page (`/inertia-test`) is on no menu and is
+    left out.
+  - A second rule there refuses a field named by an example address.
+
+What stays as written:
+- the reply word *STOP* the campaigns page tells customers to send;
+- a setting's name (*BOOKSHOP_SHOP_HOST*);
+- an order's own history note (*Not paid in time.*), which the seller reads
+  on their orders, like the ledger's *Manual credit* (§5qv);
+- words that are what they are in every language: the seller portal's DNS
+  record types (*CNAME*, *A*), file formats and sizes, a brand's name
+  (*Viber*), and the storefront's CSS example.
+
+The seller portal's other pages, opened under `/dv` with the agreement
+accepted, have nothing else left in English.
+
+The server's side was read the same way, over the Bookstore's and
+Commerce's code. It found one more set of refusals in English: seven for
+the Library office's promotion campaigns:
+- a campaign with no name, or no kind;
+- a campaign that ends before it starts;
+- an unknown funder or target;
+- a campaign already ended.
+
+BACKLOG C21 lists them as its next slice, PC1.
+
+**Tests:**
+- `NoPageIsLeftInEnglishTest` (new) runs the rule over every page, and
+  refuses a field named by an example address. It also checks:
+  - the new phrases in three languages;
+  - the tags hint, with no Latin letters in Dhivehi or Arabic, and the box
+    splitting on both commas;
+  - no English left in the gate's refusals or the scoped codes';
+  - a seller portal page refused in Dhivehi, both to a seller who has not
+    accepted the agreement and to somebody who is no shop's member.
+
+  The rule, run over `main`'s copies of three of the pages it changed,
+  finds what this slice fixed, so it is not vacuous.
+
+The tests for the areas it touches: the new test and the phrase books' rules
+**6 passed**; Localization, Architecture, Bookshop, Commerce, Website,
+Routes and Nav **802 passed (35457 assertions)**.
+
+Whole suite locally, after the walk's second pass: **3037 passed (62119 assertions)**.
+
+**Walks:**
+- **`bookstore-language.mjs`** (new), 13 steps:
+  - A seller who has not accepted the agreement opens their orders, and is
+    refused in Dhivehi and in Arabic.
+  - Somebody applies to open a shop, with their ID card, on a form that
+    reads right to left with nothing left in English and every field named.
+  - The office reads the application: its ID card links in Dhivehi, and the
+    chip by the identity cards' heading. The page has nothing left in
+    English, and every field is named.
+  - The office types a customer's tags with the Dhivehi comma, and two tags
+    are saved. The orders' phone caption reads in Dhivehi.
+  - The walk's application is removed and the customer's profile put back.
+
+  Its first run passed 10 of 13. Two steps stopped at file formats and
+  sizes and *CSS*, which the walk now reads as the same in every language.
+  The third found the three fields with no name, now named.
+- The pages and components it changed: `apply.mjs` 17/17, `customers.mjs`
+  7/7, `vendor.mjs` 32/32, `vendor-mobile.mjs` 27/27, `css.mjs` 9/9,
+  `storefront-colours.mjs` 10/10 and `newsletter.mjs` 11/11.
+- The shared identity checks: `library.mjs` 31/31,
+  `library-office-language.mjs` 41/41 and `lending.mjs` 47/47.
+- The office and everywhere: `admin.mjs` 43/43 (the daily content theme
+  tag), `admin-pages.mjs` 3/3, `admin-mobile.mjs` 13/13,
+  `admin-layout.mjs` 15/15, `rtl.mjs` 8/8, `nav.mjs` 14/14, `mobile.mjs`
+  19/19, `sweep.mjs` 25/25 and `identity.mjs` 47/47.
+- **`shop.mjs` 54/55, and 54/55 on `main` too.** It stops on a shop's own
+  page, at a *Shops* link it cannot click. That happens on code this slice
+  does not touch, and before it. BACKLOG lists it as walk health WH3.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5qv. The Commerce office in Dhivehi and Arabic (C21 CO1, 2026-10-10)
 
 The twenty-second slice of BACKLOG C21, and the fifth and last of the pages
