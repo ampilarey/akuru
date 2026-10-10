@@ -10,6 +10,7 @@ use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Domains\People\Enums\SensitiveNoteCategory;
 use App\Domains\People\Models\StudentSensitiveNote;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -47,6 +48,7 @@ class SensitiveNoteController extends Controller
             'views' => $studentId > 0
                 ? app(ListSensitiveNoteViewsAction::class)->execute($studentId)
                 : collect(),
+            't' => Phrases::once('people'),
         ]);
     }
 
@@ -62,7 +64,7 @@ class SensitiveNoteController extends Controller
 
         $save->execute($data, (int) $request->user()->id);
 
-        return back()->with('success', 'Recorded. Your name is on it, and every read of this pupil is logged.');
+        return back()->with('success', __('people.flash_note_recorded'));
     }
 
     public function update(Request $request, StudentSensitiveNote $note, SaveSensitiveNoteAction $save): RedirectResponse
@@ -76,13 +78,13 @@ class SensitiveNoteController extends Controller
 
         $save->execute($data, (int) $request->user()->id, $note);
 
-        return back()->with('success', 'Updated.');
+        return back()->with('success', __('people.flash_note_updated'));
     }
 
     public function archive(Request $request, int $note, ArchiveSensitiveNoteAction $archive): RedirectResponse
     {
         $archive->execute($note, (int) $request->user()->id);
 
-        return back()->with('success', 'Archived. It stays on the record — nothing here is deleted.');
+        return back()->with('success', __('people.flash_note_archived'));
     }
 }

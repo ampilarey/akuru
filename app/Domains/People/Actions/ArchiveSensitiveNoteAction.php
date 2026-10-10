@@ -21,11 +21,11 @@ class ArchiveSensitiveNoteAction
         $note = StudentSensitiveNote::query()->find($noteId);
 
         if ($note === null) {
-            throw ValidationException::withMessages(['note' => 'That note no longer exists.']);
+            throw ValidationException::withMessages(['note' => __('people.error_note_missing')]);
         }
 
         if ($note->archived_at !== null) {
-            throw ValidationException::withMessages(['note' => 'That note is already archived.']);
+            throw ValidationException::withMessages(['note' => __('people.error_note_already_archived')]);
         }
 
         $note->update(['archived_at' => now(), 'archived_by' => $staffUserId]);

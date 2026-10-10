@@ -36,7 +36,7 @@ class ListSensitiveNoteViewsAction
 
         return $views->map(fn (SensitiveNoteView $view): array => [
             'id' => (int) $view->id,
-            'who' => $users->get((int) $view->viewed_by) ?? 'Unknown',
+            'who' => $users->get((int) $view->viewed_by) ?? __('people.sensitive_unknown'),
             'at' => $view->viewed_at?->toDateTimeString(),
         ])->values();
     }

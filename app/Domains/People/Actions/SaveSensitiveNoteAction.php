@@ -28,7 +28,7 @@ class SaveSensitiveNoteAction
 
         if ($summary === '') {
             throw ValidationException::withMessages([
-                'summary' => 'Say in one line what this is, so somebody can act on it without reading everything.',
+                'summary' => __('people.error_note_summary'),
             ]);
         }
 
@@ -45,13 +45,13 @@ class SaveSensitiveNoteAction
         if ($note !== null) {
             if ((int) $note->author_id !== $authorId) {
                 throw ValidationException::withMessages([
-                    'summary' => 'Only the person who wrote a note may change it. Add your own note instead — a disagreement on the record is worth more than a rewritten one.',
+                    'summary' => __('people.error_note_author'),
                 ]);
             }
 
             if ($note->archived_at !== null) {
                 throw ValidationException::withMessages([
-                    'summary' => 'This note is archived. Add a new one rather than reopening it.',
+                    'summary' => __('people.error_note_archived'),
                 ]);
             }
 
@@ -63,7 +63,7 @@ class SaveSensitiveNoteAction
         $studentId = (int) ($data['student_id'] ?? 0);
 
         if ($studentId <= 0) {
-            throw ValidationException::withMessages(['student_id' => 'Choose whose note this is.']);
+            throw ValidationException::withMessages(['student_id' => __('people.error_note_student')]);
         }
 
         // Rule 3: People may not read Academics' model, so the year comes
@@ -72,7 +72,7 @@ class SaveSensitiveNoteAction
 
         if ($yearId === 0) {
             throw ValidationException::withMessages([
-                'summary' => 'No academic year is active, so there is nothing to file this against.',
+                'summary' => __('people.error_note_no_year'),
             ]);
         }
 

@@ -56,7 +56,7 @@ class ListSensitiveNotesAction
             'body' => $note->body,
             'review_on' => $note->review_on?->toDateString(),
             'needs_review' => $note->review_on !== null && $note->review_on->isPast(),
-            'author' => $authors->get((int) $note->author_id) ?? 'Unknown',
+            'author' => $authors->get((int) $note->author_id) ?? __('people.sensitive_unknown'),
             'recorded_on' => $note->created_at?->toDateString(),
             'archived' => $note->archived_at !== null,
         ])->values();

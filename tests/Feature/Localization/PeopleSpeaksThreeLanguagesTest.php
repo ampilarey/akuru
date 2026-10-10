@@ -4,20 +4,27 @@ use App\Domains\Academics\Enums\BehaviorType;
 use App\Domains\People\Actions\SaveEmergencyContactAction;
 use App\Domains\People\Enums\ConsentSource;
 use App\Domains\People\Enums\ConsentType;
+use App\Domains\People\Enums\CustomFieldEntityType;
+use App\Domains\People\Enums\CustomFieldType;
+use App\Domains\People\Enums\EmploymentType;
 use App\Domains\People\Enums\GuardianConsentStatus;
 use App\Domains\People\Enums\GuardianRelationship;
 use App\Domains\People\Enums\GuardianVerificationStatus;
+use App\Domains\People\Enums\SensitiveNoteCategory;
+use App\Domains\People\Enums\StaffStatus;
 use App\Domains\People\Enums\StudentStatus;
 use App\Domains\People\Models\Consent;
 use App\Domains\People\Models\EmergencyContact;
+use App\Domains\People\Models\StaffQualification;
 use App\Domains\People\Models\Student;
+use App\Domains\People\Models\StudentSensitiveNote;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
 
 /**
  * The school office's people screens in Dhivehi and Arabic (BACKLOG C21,
- * slice PE1, STATUS §5qp).
+ * slices PE1 and PE2, STATUS §5qp and §5qq).
  *
  * The students list and a student's profile read no phrase book. Every word
  * on them was English; a pupil's status, a gender, a guardian's relationship,
@@ -34,13 +41,29 @@ use Inertia\Testing\AssertableInertia as Assert;
  * refused consent were said nowhere, and the contact form only its name's and
  * phone's; the list could not be read for a class, though the server took
  * one; and recording a consent the pupil already had said it was recorded.
+ *
+ * PE2 adds the rest of People: the staff profiles, the custom fields, the
+ * admission form preview and the sensitive records. A kind of employment, a
+ * staff status, whose record a custom field belongs to, its type and its
+ * flags, and a note's category were printed as codes or the server's
+ * English (*full_time*, *on_leave*, *admission_applications*,
+ * *multiselect*); the fields the staff and qualification forms had only a
+ * placeholder for had no name; the server's saved messages and refusals were
+ * English; a note's refused Archive was said nowhere; and the note form said
+ * only a summary's refusal, the custom field form only a key's, a type's and
+ * an English label's.
  */
 uses(RefreshDatabase::class);
 
 /** The student screens; every phrase on them is `t.key || 'English'`, from the `people` book. */
 function peopleScreens(): array
 {
-    return ['People/Students/Index', 'People/Students/Show'];
+    return [
+        'People/Students/Index', 'People/Students/Show',
+        // PE2.
+        'People/Staff/Index', 'People/Staff/Show', 'People/CustomFields/Index', 'People/CustomFields/AdmissionPreview',
+        'People/Sensitive/Index',
+    ];
 }
 
 /** Where the server writes what those screens say. */
@@ -55,6 +78,14 @@ function peopleServerFiles(): array
         'app/Domains/People/Actions/RecordGuardianLinkPolicyAction.php',
         'app/Domains/People/Actions/AttachGuardianAction.php',
         'app/Domains/People/Actions/SaveCustomFieldValuesAction.php',
+        // PE2.
+        'app/Domains/People/Http/Controllers/StaffDirectoryController.php',
+        'app/Domains/People/Http/Controllers/CustomFieldDefinitionController.php',
+        'app/Domains/People/Http/Controllers/SensitiveNoteController.php',
+        'app/Domains/People/Actions/SaveSensitiveNoteAction.php',
+        'app/Domains/People/Actions/ArchiveSensitiveNoteAction.php',
+        'app/Domains/People/Actions/ListSensitiveNotesAction.php',
+        'app/Domains/People/Actions/ListSensitiveNoteViewsAction.php',
     ];
 }
 
@@ -108,7 +139,8 @@ it('names every field the student screens post, so a refusal by Laravel’s own 
         preg_match_all("/'([a-z_]+(?:\\.\\*(?:\\.[a-z_]+)?)?)' => \\[(?=[^\\]]*'(?:required|nullable|sometimes|integer|string|array|boolean|date|numeric)')/", file_get_contents(base_path($file)), $found);
         $fields = [...$fields, ...$found[1]];
     }
-    expect($fields)->toContain('date_of_birth', 'guardian_relationship', 'admission_date', 'priority', 'consent_type', 'granted', 'verification_status');
+    expect($fields)->toContain('date_of_birth', 'guardian_relationship', 'admission_date', 'priority', 'consent_type', 'granted', 'verification_status',
+        'staff_number', 'joined_date', 'institution', 'label_en', 'show_in_admission_form', 'review_on');
 
     foreach (array_unique($fields) as $field) {
         expect(array_key_exists($field, $dhivehi))->toBeTrue("{$field} has no Dhivehi name")
@@ -130,6 +162,13 @@ it('names every code the student screens show, in all three languages', function
         'gender_female', 'gender_male',
         // A reason the system writes in a pupil's status history.
         'history_reason_created', 'history_reason_changed', 'history_reason_promotion_leave', 'history_reason_promotion_graduate',
+        // PE2: a kind of employment, a staff status, whose record a custom
+        // field is, a field's type, a note's category.
+        ...array_map(fn ($case) => 'employment_'.$case->value, EmploymentType::cases()),
+        ...array_map(fn ($case) => 'staff_status_'.$case->value, StaffStatus::cases()),
+        ...array_map(fn ($case) => 'entity_'.$case->value, CustomFieldEntityType::cases()),
+        ...array_map(fn ($case) => 'field_type_'.$case->value, CustomFieldType::cases()),
+        ...array_map(fn ($case) => 'sensitive_category_'.$case->value, SensitiveNoteCategory::cases()),
     ];
 
     foreach ($codes as $key) {
@@ -148,7 +187,8 @@ it('leaves no English in what the server says on the student screens, and says i
 
     $keys = refusalKeysIn(peopleServerFiles());
     expect($keys)->toContain('people.flash_student_created', 'people.flash_consent_unchanged', 'people.error_guardian_already_linked',
-        'people.error_contact_other_student', 'people.error_verification_status', 'people.error_field_required', 'people.student_number');
+        'people.error_contact_other_student', 'people.error_verification_status', 'people.error_field_required', 'people.student_number',
+        'people.flash_staff_created', 'people.flash_field_archived', 'people.flash_note_archived', 'people.error_note_summary', 'people.error_note_already_archived', 'people.sensitive_unknown');
     foreach ($keys as $key) {
         expect(trans($key, [], 'en'))->not->toBe($key, "{$key} has no English")
             ->and(trans($key, [], 'dv'))->toMatch('/\p{Thaana}/u', "{$key} in Dhivehi")
@@ -247,4 +287,84 @@ it('serves the student screens in Dhivehi, and says what was saved and refused i
     $this->withoutLocalizationMiddleware()->actingAs($office)
         ->put(route('people.students.custom-fields.update', $student), ['values' => [$field->id => '']])
         ->assertSessionHasErrors(['field_'.$field->id => __('people.error_field_required', ['field' => 'ލޭގެ ގްރޫޕް'], 'dv')]);
+});
+
+it('serves the staff, custom field and sensitive record screens in Dhivehi, and says what was saved and refused in Dhivehi', function () {
+    $year = makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active', 'start_date' => now()->startOfYear()->toDateString(), 'end_date' => now()->endOfYear()->toDateString()]);
+    $office = actingPeopleAdmin(['custom_fields.manage', 'sensitive.read', 'sensitive.write']);
+    $office->assignRole(\Spatie\Permission\Models\Role::findOrCreate('super_admin', 'web'));
+    app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+    $dv = peopleBook('dv');
+    $staff = makeStaffProfile();
+
+    app()->setLocale('dv');
+    foreach ([
+        [route('people.staff.index'), 'People/Staff/Index', 'staff_title'],
+        [route('people.staff.show', $staff), 'People/Staff/Show', 'staff_save_employment'],
+        [route('people.custom-fields.index'), 'People/CustomFields/Index', 'fields_title'],
+        [route('people.custom-fields.admission-preview'), 'People/CustomFields/AdmissionPreview', 'preview_title'],
+        [route('people.sensitive.index'), 'People/Sensitive/Index', 'sensitive_title'],
+    ] as [$url, $component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($office)
+            ->get($url)->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("t.{$key}", $dv[$key]));
+    }
+
+    // A qualification with no title is refused, the field named in Dhivehi;
+    // with one it is added, and removed, said in Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('people.staff.qualifications.store', $staff), ['institution' => 'MNU'])
+        ->assertSessionHasErrors('title');
+    expect(session('errors')->first('title'))->toMatch('/\p{Thaana}/u')->not->toMatch('/[A-Za-z]{3,}/');
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('people.staff.qualifications.store', $staff), ['title' => 'B.Ed', 'institution' => 'MNU', 'year' => 2019])
+        ->assertSessionHas('success', $dv['flash_qualification_added']);
+    $qualification = StaffQualification::query()->sole();
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->delete(route('people.staff.qualifications.destroy', [$staff, $qualification]))
+        ->assertSessionHas('success', $dv['flash_qualification_removed']);
+
+    // A staff status the school does not have is refused, named in Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->put(route('people.staff.update', $staff), ['user_id' => $staff->user_id, 'first_name' => $staff->first_name, 'last_name' => $staff->last_name, 'employment_type' => 'full_time', 'status' => 'retired'])
+        ->assertSessionHasErrors('status');
+    expect(session('errors')->first('status'))->toMatch('/\p{Thaana}/u');
+
+    // A custom field with no English label is refused, named in Dhivehi; one
+    // with it is created and archived, said in Dhivehi; it reads by its
+    // Dhivehi label.
+    $field = ['entity_type' => 'staff', 'key' => 'shirt_size', 'label_dv' => 'ހެދުމުގެ ސައިޒު', 'field_type' => 'select', 'options' => ['S', 'M']];
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('people.custom-fields.store'), $field)
+        ->assertSessionHasErrors('label_en');
+    expect(session('errors')->first('label_en'))->toContain(__('validation.attributes.label_en', [], 'dv'));
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('people.custom-fields.store'), [...$field, 'label_en' => 'Shirt size'])
+        ->assertSessionHas('success', $dv['flash_field_created']);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->get(route('people.custom-fields.index', ['entity_type' => 'staff']))
+        ->assertInertia(fn (Assert $page) => $page->where('definitions.0.label', 'ހެދުމުގެ ސައިޒު'));
+
+    // A note with a blank line is refused in Dhivehi; one is recorded, said
+    // in Dhivehi; archived, said; archived again, refused in Dhivehi.
+    $student = makeStudent();
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('people.sensitive.store'), ['student_id' => $student->id, 'category' => 'medical', 'summary' => ' '])
+        ->assertSessionHasErrors('summary');
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('people.sensitive.store'), ['student_id' => $student->id, 'category' => 'dietary', 'summary' => 'No peanuts'])
+        ->assertSessionHas('success', $dv['flash_note_recorded']);
+    $note = StudentSensitiveNote::query()->sole();
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('people.sensitive.archive', $note->id))
+        ->assertSessionHas('success', $dv['flash_note_archived']);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('people.sensitive.archive', $note->id))
+        ->assertSessionHasErrors(['note' => $dv['error_note_already_archived']]);
+
+    // The notes and who read them come back; the category is a code for the
+    // page to name.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->get(route('people.sensitive.index', ['student_id' => $student->id]))
+        ->assertInertia(fn (Assert $page) => $page->where('notes.0.category', 'dietary')->has('views', 1));
 });
