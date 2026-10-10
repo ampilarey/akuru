@@ -1,21 +1,27 @@
 <?php
 
+use App\Domains\HR\Enums\AppraisalStatus;
+use App\Domains\HR\Enums\JobApplicationStatus;
+use App\Domains\HR\Enums\JobPostingStatus;
 use App\Domains\HR\Enums\LeaveTypeCode;
 use App\Domains\HR\Enums\PayslipStatus;
 use App\Domains\HR\Enums\StaffAttendanceSource;
 use App\Domains\HR\Enums\StaffAttendanceStatus;
 use App\Domains\HR\Enums\StaffContractStatus;
 use App\Domains\HR\Enums\StaffContractType;
+use App\Domains\HR\Models\JobApplication;
+use App\Domains\HR\Models\JobPosting;
 use App\Domains\HR\Models\LeaveType;
 use App\Domains\HR\Models\StaffAttendance;
 use App\Domains\Media\Enums\DocumentType;
+use App\Domains\People\Enums\EmploymentType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Inertia\Testing\AssertableInertia as Assert;
 
 /**
- * The school office's HR screens in Dhivehi and Arabic (BACKLOG C21, slice
- * HR1, STATUS §5ql).
+ * The school office's HR screens in Dhivehi and Arabic (BACKLOG C21, slices
+ * HR1 and HR2, STATUS §5ql and §5qm).
  *
  * The leave types, the expiring documents, the contracts, staff attendance
  * and its reports, the leave balances, payroll and the HR settings read no
@@ -33,6 +39,13 @@ use Inertia\Testing\AssertableInertia as Assert;
  * opened a bare 422 page; it is refused under the form. A refused import
  * kept the rows above the one it refused. And an import with no remarks
  * column was a 500.
+ *
+ * HR2 adds the appraisals, CPD, lesson observations, job postings,
+ * applications and the onboarding checklists. An appraisal's, a posting's
+ * and an application's state and a posting's kind of work were printed as
+ * codes; a posting read by its English title and a subject by its English
+ * name; the server's ten saved messages and two refusals were English; and
+ * a refused Hire, checklist or tick was said nowhere.
  */
 uses(RefreshDatabase::class);
 
@@ -42,6 +55,9 @@ function hrScreens(): array
     return [
         'HR/Leave/Types', 'HR/Compliance/Index', 'HR/Contracts/Index', 'HR/Attendance/Reports',
         'HR/Attendance/Index', 'HR/Leave/Balances', 'HR/Payroll/Index', 'HR/Settings/Index',
+        // HR2.
+        'HR/Performance/Appraisals', 'HR/Performance/Cpd', 'HR/Performance/Observations',
+        'HR/Recruitment/Postings', 'HR/Recruitment/Applications', 'HR/Recruitment/Onboarding',
     ];
 }
 
@@ -69,6 +85,14 @@ function hrServerFiles(): array
         'app/Domains/HR/Actions/RunPayrollAction.php',
         'app/Domains/HR/Actions/SaveHrSettingsAction.php',
         'app/Domains/HR/Actions/SavePayrollSettingsAction.php',
+        // HR2.
+        'app/Domains/HR/Http/Controllers/AppraisalController.php',
+        'app/Domains/HR/Http/Controllers/CpdRecordController.php',
+        'app/Domains/HR/Http/Controllers/LessonObservationController.php',
+        'app/Domains/HR/Http/Controllers/JobPostingController.php',
+        'app/Domains/HR/Http/Controllers/JobApplicationController.php',
+        'app/Domains/HR/Http/Controllers/OnboardingController.php',
+        'app/Domains/HR/Actions/HireApplicantAction.php',
     ];
 }
 
@@ -112,7 +136,7 @@ it('names every field the HR screens post, so a refusal by Laravel’s own rules
         preg_match_all("/'([a-z_]+(?:\\.\\*(?:\\.[a-z_]+)?)?)' => \\[(?=[^\\]]*'(?:required|nullable|sometimes|integer|string|array|boolean|date|numeric)')/", file_get_contents(base_path($file)), $found);
         $fields = [...$fields, ...$found[1]];
     }
-    expect($fields)->toContain('staff_profile_id', 'minutes_late', 'days_per_year', 'basic_salary', 'to_year_id');
+    expect($fields)->toContain('staff_profile_id', 'minutes_late', 'days_per_year', 'basic_salary', 'to_year_id', 'hours', 'cycle_id', 'job_posting_id');
 
     foreach (array_unique($fields) as $field) {
         expect(array_key_exists($field, $dhivehi))->toBeTrue("{$field} has no Dhivehi name")
@@ -129,6 +153,12 @@ it('names every code the HR screens show, in all three languages', function () {
         ...array_map(fn ($case) => 'attendance_source_'.$case->value, StaffAttendanceSource::cases()),
         ...array_map(fn ($case) => 'payslip_status_'.$case->value, PayslipStatus::cases()),
         ...array_map(fn ($case) => 'document_type_'.$case->value, DocumentType::cases()),
+        // HR2: an appraisal's, a posting's and an application's state, and a
+        // posting's kind of work.
+        ...array_map(fn ($case) => 'appraisal_status_'.$case->value, AppraisalStatus::cases()),
+        ...array_map(fn ($case) => 'posting_status_'.$case->value, JobPostingStatus::cases()),
+        ...array_map(fn ($case) => 'application_status_'.$case->value, JobApplicationStatus::cases()),
+        ...array_map(fn ($case) => 'employment_'.$case->value, EmploymentType::cases()),
     ];
 
     foreach ($codes as $key) {
@@ -146,7 +176,8 @@ it('leaves no English in what the server says on the HR screens, and says it in 
     expect($english)->toBe([]);
 
     $keys = refusalKeysIn(hrServerFiles());
-    expect($keys)->toContain('hr.flash_attendance_imported', 'hr.flash_notices_sent', 'hr.flash_entitlements_carried', 'hr.error_csv_unknown_staff', 'hr.error_no_year_for_date', 'hr.error_leave_code_taken', 'hr.error_brackets_rise', 'hr.error_payroll_disabled');
+    expect($keys)->toContain('hr.flash_attendance_imported', 'hr.flash_notices_sent', 'hr.flash_entitlements_carried', 'hr.error_csv_unknown_staff', 'hr.error_no_year_for_date', 'hr.error_leave_code_taken', 'hr.error_brackets_rise', 'hr.error_payroll_disabled',
+        'hr.flash_cycle_opened', 'hr.flash_applicant_hired', 'hr.flash_checklist_opened', 'hr.error_hire_email');
     foreach ($keys as $key) {
         expect(trans($key, [], 'en'))->not->toBe($key, "{$key} has no English")
             ->and(trans($key, [], 'dv'))->toMatch('/\p{Thaana}/u', "{$key} in Dhivehi")
@@ -236,4 +267,50 @@ it('serves the HR screens in Dhivehi, and says what was saved and refused in Dhi
     $this->withoutLocalizationMiddleware()->actingAs($office)
         ->put(route('hr.settings.update'), ['onboarding_items' => "\n", 'offboarding_items' => 'Return laptop'])
         ->assertSessionHasErrors(['onboarding_items' => $dv['error_checklist_empty']]);
+});
+
+it('serves the appraisals, CPD, observations and recruitment screens in Dhivehi, and says what was saved and refused in Dhivehi', function () {
+    $year = makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active', 'start_date' => '2026-01-01', 'end_date' => '2026-12-31']);
+    $staff = makeStaffProfile(['staff_number' => 'STF-HR2']);
+    $office = actingPeopleAdmin(['hr.manage']);
+    $dv = hrBook('dv');
+
+    app()->setLocale('dv');
+    foreach ([
+        ['hr.appraisals.index', 'HR/Performance/Appraisals', 'appraisals_title'],
+        ['hr.cpd.index', 'HR/Performance/Cpd', 'cpd_title'],
+        ['hr.observations.index', 'HR/Performance/Observations', 'observations_title'],
+        ['hr.postings.index', 'HR/Recruitment/Postings', 'postings_title'],
+        ['hr.applications.index', 'HR/Recruitment/Applications', 'applications_title'],
+        ['hr.onboarding.index', 'HR/Recruitment/Onboarding', 'onboarding_title'],
+    ] as [$route, $component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($office)
+            ->get(route($route))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("t.{$key}", $dv[$key]));
+    }
+
+    // A cycle is opened and a CPD record saved, said in Dhivehi; hours that
+    // are no number are refused, the field named in Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('hr.appraisals.cycles.store'), ['name' => 'Term 1 review', 'academic_year_id' => $year->id, 'opens_at' => '2026-03-01', 'closes_at' => '2026-03-31'])
+        ->assertSessionHas('success', $dv['flash_cycle_opened']);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('hr.cpd.store'), ['staff_profile_id' => $staff->id, 'title' => 'Phonics', 'hours' => 'four'])
+        ->assertSessionHasErrors('hours');
+    expect(session('errors')->first('hours'))->toMatch('/\p{Thaana}/u')->not->toMatch('/[A-Za-z]/');
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('hr.cpd.store'), ['staff_profile_id' => $staff->id, 'title' => 'Phonics', 'hours' => 4])
+        ->assertSessionHas('success', $dv['flash_cpd_saved']);
+
+    // An applicant with no email is refused when hired — said nowhere on the
+    // page before — and stays an applicant.
+    $posting = JobPosting::query()->create(['title' => 'Arabic teacher', 'title_dhivehi' => 'ޢަރަބި ޓީޗަރު', 'status' => 'published', 'public' => true]);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('hr.applications.store'), ['job_posting_id' => $posting->id, 'name' => 'Aisha'])
+        ->assertSessionHas('success', $dv['flash_application_recorded']);
+    $application = JobApplication::query()->where('name', 'Aisha')->sole();
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('hr.applications.hire', $application->id))
+        ->assertSessionHasErrors(['email' => $dv['error_hire_email']]);
+    expect($application->refresh()->status->value)->toBe('received');
 });

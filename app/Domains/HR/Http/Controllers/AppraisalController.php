@@ -10,6 +10,7 @@ use App\Domains\HR\Enums\AppraisalStatus;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -31,6 +32,7 @@ class AppraisalController extends Controller
             'statuses' => array_map(fn (AppraisalStatus $status) => $status->value, AppraisalStatus::cases()),
             'cycles' => $list['cycles'],
             'rows' => $list['rows'],
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -45,7 +47,7 @@ class AppraisalController extends Controller
             'closes_at' => ['required', 'date'],
         ]));
 
-        return redirect()->route('hr.appraisals.index')->with('success', 'Appraisal cycle opened.');
+        return redirect()->route('hr.appraisals.index')->with('success', __('hr.flash_cycle_opened'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -60,7 +62,7 @@ class AppraisalController extends Controller
             'status' => ['nullable', Rule::enum(AppraisalStatus::class)],
         ]) + ['appraiser_id' => $request->user()?->id]);
 
-        return redirect()->route('hr.appraisals.index')->with('success', 'Appraisal saved.');
+        return redirect()->route('hr.appraisals.index')->with('success', __('hr.flash_appraisal_saved'));
     }
 
     public function export(Request $request): StreamedResponse

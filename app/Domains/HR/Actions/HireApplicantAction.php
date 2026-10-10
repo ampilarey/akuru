@@ -19,11 +19,11 @@ class HireApplicantAction
     {
         $application = JobApplication::query()->with('posting')->find($applicationId);
         if ($application === null) {
-            throw ValidationException::withMessages(['application' => 'Unknown application.']);
+            throw ValidationException::withMessages(['application' => __('hr.error_application_missing')]);
         }
 
         if (! $application->email) {
-            throw ValidationException::withMessages(['email' => 'An email is required to hire.']);
+            throw ValidationException::withMessages(['email' => __('hr.error_hire_email')]);
         }
 
         $parts = preg_split('/\s+/', trim($application->name), 2) ?: [$application->name];

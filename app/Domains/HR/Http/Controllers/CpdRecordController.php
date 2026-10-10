@@ -8,6 +8,7 @@ use App\Domains\HR\Actions\SummarizeCpdHoursAction;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -24,6 +25,7 @@ class CpdRecordController extends Controller
             'staff' => app(ListStaffProfilesAction::class)->execute(['status' => 'active'])->values(),
             'rows' => app(ListCpdRecordsAction::class)->execute($request->integer('staff_profile_id') ?: null)->values(),
             'summary' => app(SummarizeCpdHoursAction::class)->execute()->values(),
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -55,7 +57,7 @@ class CpdRecordController extends Controller
             'date' => ['nullable', 'date'],
         ]));
 
-        return redirect()->route('hr.cpd.index')->with('success', 'CPD record saved.');
+        return redirect()->route('hr.cpd.index')->with('success', __('hr.flash_cpd_saved'));
     }
 
     public function export(Request $request): StreamedResponse

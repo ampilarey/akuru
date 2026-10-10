@@ -4983,6 +4983,102 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qm. The appraisals, CPD, observations and recruitment in Dhivehi and Arabic (C21 HR2, 2026-10-10)
+
+The thirteenth slice of BACKLOG C21, and the second and last of HR. These
+six screens are the office's half of growing and hiring the staff:
+- the appraisal cycles and the appraisals in them;
+- a member of staff's CPD records, and the hours they add up to;
+- lesson observations;
+- the job postings;
+- the applications for them, and hiring from them;
+- the onboarding and offboarding checklists.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and hint;
+- an appraisal's, a posting's and an application's state and a posting's
+  kind of work, printed as codes (*submitted*, *full_time*);
+- a posting by its English title, though it has a place for its title in
+  three languages — and the form had no box for two of them, for its kind
+  of work or for the day it closes;
+- a subject by its English name, though the school names it in three;
+- ten saved messages and two refusals.
+
+What the office could not see:
+- **A refused Hire was said nowhere.** An applicant with no email cannot be
+  hired, and the button did nothing anyone could see. The refusal is said
+  under the applicant's row, in the page's language, and the applicant
+  stays an applicant.
+- **A refused checklist or tick was said nowhere.** Each is said where it
+  was asked for.
+- **A refused cycle was said nowhere,** and an appraisal only when its
+  cycle was the reason. Each form now says every refusal under it.
+- **An observation was always shared with the member of staff.** The form
+  sent it shared, with no box to keep it to the office. The form has the
+  box, ticked as before.
+
+**The change:**
+- **The `hr` book grows by 83 phrases** (71 for the pages, 12 for the
+  server), 296 in all. The six pages read it through `Phrases::once('hr')`.
+- **Codes are named**: an appraisal's, a posting's and an application's
+  state, and a posting's kind of work (People's employment types).
+- **A posting reads by the title the school gave it** in the page's
+  language, on the postings and on the applications; the form takes its
+  Dhivehi and Arabic titles, its kind of work and the day it closes.
+- **A subject reads by the school's name for it** in the page's language,
+  in the observation form and on the list (the subjects and the
+  observations now send its Dhivehi and Arabic names).
+- **What the server says is in the page's language**: the saved messages of
+  six controllers and the refusals of the Hire.
+- **Every field the six screens post is named** in Laravel's own refusals:
+  17 more fields in Dhivehi and Arabic.
+- **Every field is named** for a screen reader, and every empty list says
+  so.
+
+What the school writes stays as written: a member of staff's name, a
+cycle's name, an appraisal's strengths and areas, a course's title and
+provider, an observation's summary, an applicant's name and note, a
+checklist's items. The CSVs keep their English column codes.
+
+**Tests:**
+- `HrSpeaksThreeLanguagesTest` grows to the fourteen screens, 27 server
+  files and the eleven codes, and every field the HR controllers validate.
+  A new test serves the six screens in Dhivehi, and in Dhivehi:
+  - a cycle opened and a CPD record saved are said;
+  - CPD hours that are no number are refused, the field named in Dhivehi;
+  - an application recorded is said;
+  - an applicant with no email is refused when hired, and stays an
+    applicant.
+
+The tests for the areas it touches (HR, Localization, Architecture):
+**275 passed (19492 assertions)**.
+
+Whole suite locally: **2993 passed (54447 assertions)**.
+
+**Walks:**
+- **`hr-language.mjs`** 93/93 (53 before):
+  - the fourteen screens read right to left under `/dv` and `/ar`, with
+    nothing left in English and every field named;
+  - in Dhivehi, besides HR1's steps, the office:
+    - opens an appraisal cycle with no name and is refused under the form,
+      the field named in Dhivehi; no cycle is made;
+    - records CPD hours that are no number and is refused under the form,
+      the field named in Dhivehi; no record is made;
+    - records an application for `SMOKE-Vacancy` with no email and is told
+      so in Dhivehi; hiring it is refused under its row — it was said
+      nowhere — and the applicant stays an applicant.
+
+One walk changed, not for a defect in the app: **`hr.mjs`** read an
+appraisal's state as its code (*draft*, *acknowledged*). The page names it
+(*Draft*, *Acknowledged*): 27/27, nine skipped, each saying why (payroll is
+off on this host, and no lesson on the leave day).
+
+The other walks: `office-language.mjs` 203/203, `sweep.mjs` 25/25,
+`create-sweep.mjs` 6/6, `own-data.mjs` (every family saw their own records,
+and nobody else's), `admin-hub.mjs` 26/26, `admin-layout.mjs` 15/15,
+`admin.mjs` 43/43, `rtl.mjs` 8/8, `nav.mjs` 14/14, `mobile.mjs` 19/19,
+`identity.mjs` 47/47, `portal-language.mjs` 212/212, `family.mjs` 40/40.
+
 ## 5ql. The HR office's screens in Dhivehi and Arabic (C21 HR1, 2026-10-10)
 
 The twelfth slice of BACKLOG C21, and the first of HR. These eight screens

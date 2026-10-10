@@ -9,6 +9,7 @@ use App\Domains\HR\Enums\OnboardingKind;
 use App\Domains\People\Actions\ListStaffProfilesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -31,6 +32,7 @@ class OnboardingController extends Controller
                 $request->integer('staff_profile_id') ?: null,
                 $kind,
             )->values(),
+            't' => Phrases::once('hr'),
         ]);
     }
 
@@ -50,7 +52,7 @@ class OnboardingController extends Controller
 
         return redirect()
             ->route('hr.onboarding.index', ['staff_profile_id' => $data['staff_profile_id'], 'kind' => $data['kind']])
-            ->with('success', 'Checklist opened.');
+            ->with('success', __('hr.flash_checklist_opened'));
     }
 
     public function toggle(Request $request, int $item): RedirectResponse
@@ -63,7 +65,7 @@ class OnboardingController extends Controller
 
         app(ToggleOnboardingItemAction::class)->execute($item, (bool) $data['done'], $request->user()?->id);
 
-        return redirect()->route('hr.onboarding.index')->with('success', 'Checklist updated.');
+        return redirect()->route('hr.onboarding.index')->with('success', __('hr.flash_checklist_updated'));
     }
 
     public function export(Request $request): StreamedResponse
