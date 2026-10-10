@@ -33,7 +33,7 @@ class SuggestSiblingFeeAdjustmentsAction
                 'suggested_type' => FeeAdjustmentType::SiblingDiscount->value,
                 'suggested_basis' => 'percent',
                 'suggested_value' => 10,
-                'reason' => 'Shares financially-responsible guardian '.$row['guardian_name'],
+                'reason' => __('finance.suggest_sibling_reason', ['guardian' => $row['guardian_name']]),
             ])
             ->values();
     }

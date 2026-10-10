@@ -12,7 +12,7 @@ class ListFeeStructuresAction
      */
     public function execute(?int $yearId = null): Collection
     {
-        $query = FeeStructure::query()->with('items')->orderBy('name');
+        $query = FeeStructure::query()->with('items.feeItem')->orderBy('name');
         if ($yearId) {
             $query->where('academic_year_id', $yearId);
         }
@@ -32,6 +32,8 @@ class ListFeeStructuresAction
                 'due_day' => $item->due_day,
                 'is_mandatory' => $item->is_mandatory,
                 'name' => $item->feeItem?->name,
+                'name_arabic' => $item->feeItem?->name_arabic,
+                'name_dhivehi' => $item->feeItem?->name_dhivehi,
             ])->values(),
         ]);
     }

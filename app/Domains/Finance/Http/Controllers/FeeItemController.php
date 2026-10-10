@@ -9,6 +9,7 @@ use App\Domains\Finance\Enums\FeeItemType;
 use App\Domains\Finance\Models\FeeItem;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -25,6 +26,7 @@ class FeeItemController extends Controller
             'items' => app(ListFeeItemsAction::class)->execute()->values(),
             'types' => array_map(fn (FeeItemType $type) => $type->value, FeeItemType::cases()),
             'frequencies' => array_map(fn (FeeFrequency $frequency) => $frequency->value, FeeFrequency::cases()),
+            't' => Phrases::once('finance'),
         ]);
     }
 
@@ -45,7 +47,7 @@ class FeeItemController extends Controller
             'is_active' => ['sometimes', 'boolean'],
         ]));
 
-        return redirect()->route('finance.fee-items.index')->with('success', 'Fee item saved.');
+        return redirect()->route('finance.fee-items.index')->with('success', __('finance.flash_fee_item_saved'));
     }
 
     public function update(Request $request, FeeItem $feeItem): RedirectResponse
@@ -65,7 +67,7 @@ class FeeItemController extends Controller
             'is_active' => ['sometimes', 'boolean'],
         ]), $feeItem);
 
-        return redirect()->route('finance.fee-items.index')->with('success', 'Fee item updated.');
+        return redirect()->route('finance.fee-items.index')->with('success', __('finance.flash_fee_item_updated'));
     }
 
     public function export(Request $request): StreamedResponse

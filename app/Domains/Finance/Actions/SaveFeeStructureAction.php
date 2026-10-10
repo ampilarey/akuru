@@ -20,12 +20,12 @@ class SaveFeeStructureAction
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Name is required.']);
+            throw ValidationException::withMessages(['name' => __('finance.error_name_required')]);
         }
 
         $yearId = (int) ($data['academic_year_id'] ?? 0);
         if ($yearId < 1) {
-            throw ValidationException::withMessages(['academic_year_id' => 'Academic year is required.']);
+            throw ValidationException::withMessages(['academic_year_id' => __('finance.error_year_required')]);
         }
 
         $appliesTo = FeeStructureAppliesTo::from((string) ($data['applies_to'] ?? FeeStructureAppliesTo::SelectedClasses->value));
@@ -33,12 +33,12 @@ class SaveFeeStructureAction
         $classIds = $this->normalizeClassIds($data['class_ids'] ?? []);
 
         if ($appliesTo === FeeStructureAppliesTo::SelectedClasses && $classIds === []) {
-            throw ValidationException::withMessages(['class_ids' => 'Select at least one class.']);
+            throw ValidationException::withMessages(['class_ids' => __('finance.error_select_class')]);
         }
 
         $items = $this->normalizeItems($data['items'] ?? []);
         if ($items === []) {
-            throw ValidationException::withMessages(['items' => 'Add at least one fee item.']);
+            throw ValidationException::withMessages(['items' => __('finance.error_add_fee_item')]);
         }
 
         return DB::transaction(function () use ($structure, $name, $yearId, $appliesTo, $status, $classIds, $items) {
@@ -94,18 +94,18 @@ class SaveFeeStructureAction
             }
             $feeItemId = (int) ($row['fee_item_id'] ?? 0);
             if ($feeItemId < 1 || ! FeeItem::query()->whereKey($feeItemId)->exists()) {
-                throw ValidationException::withMessages(['items' => 'Each line needs a valid fee item.']);
+                throw ValidationException::withMessages(['items' => __('finance.error_line_fee_item')]);
             }
 
             $amount = $row['amount'] ?? null;
             if ($amount === null || $amount === '' || (float) $amount < 0) {
-                throw ValidationException::withMessages(['items' => 'Amount must be zero or more.']);
+                throw ValidationException::withMessages(['items' => __('finance.error_amount_not_negative')]);
             }
 
             $dueDay = $row['due_day'] ?? null;
             $dueDay = $dueDay === '' || $dueDay === null ? null : (int) $dueDay;
             if ($dueDay !== null && ($dueDay < 1 || $dueDay > 31)) {
-                throw ValidationException::withMessages(['due_day' => 'Due day must be between 1 and 31.']);
+                throw ValidationException::withMessages(['due_day' => __('finance.error_due_day')]);
             }
 
             $feeItem = FeeItem::query()->find($feeItemId);
@@ -139,7 +139,7 @@ class SaveFeeStructureAction
         foreach ($others as $other) {
             if ($this->coversSameScope($structure, $other, $covered)) {
                 throw ValidationException::withMessages([
-                    'status' => 'Only one active fee structure is allowed per class per year.',
+                    'status' => __('finance.error_one_active'),
                 ]);
             }
         }

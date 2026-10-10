@@ -29,13 +29,13 @@ class GenerateInvoicesAction
         $structure = $this->resolveStructure($data);
         $createdBy = (int) ($data['created_by'] ?? 0);
         if ($createdBy < 1) {
-            throw ValidationException::withMessages(['created_by' => 'Created by is required.']);
+            throw ValidationException::withMessages(['created_by' => __('finance.error_created_by')]);
         }
 
         $periodStart = Carbon::parse((string) ($data['period_start'] ?? now('Indian/Maldives')->toDateString()), 'Indian/Maldives')->startOfDay();
         $periodEnd = Carbon::parse((string) ($data['period_end'] ?? $periodStart->toDateString()), 'Indian/Maldives')->startOfDay();
         if ($periodEnd->lt($periodStart)) {
-            throw ValidationException::withMessages(['period_end' => 'Period end must be on or after start.']);
+            throw ValidationException::withMessages(['period_end' => __('finance.error_period_order')]);
         }
 
         $settings = app(ResolveFinanceSettingsAction::class)->execute();
@@ -87,7 +87,7 @@ class GenerateInvoicesAction
         if (! empty($data['fee_structure_id'])) {
             $structure = FeeStructure::query()->with('items.feeItem')->find((int) $data['fee_structure_id']);
             if ($structure === null) {
-                throw ValidationException::withMessages(['fee_structure_id' => 'Fee structure not found.']);
+                throw ValidationException::withMessages(['fee_structure_id' => __('finance.error_structure_missing')]);
             }
 
             return $structure;
@@ -96,7 +96,7 @@ class GenerateInvoicesAction
         $classId = (int) ($data['class_id'] ?? 0);
         $yearId = (int) ($data['academic_year_id'] ?? 0);
         if ($classId < 1 || $yearId < 1) {
-            throw ValidationException::withMessages(['fee_structure_id' => 'A structure or class + year is required.']);
+            throw ValidationException::withMessages(['fee_structure_id' => __('finance.error_structure_or_class')]);
         }
 
         $structure = FeeStructure::query()
@@ -113,7 +113,7 @@ class GenerateInvoicesAction
             });
 
         if ($structure === null) {
-            throw ValidationException::withMessages(['class_id' => 'No active fee structure covers this class.']);
+            throw ValidationException::withMessages(['class_id' => __('finance.error_no_active_structure')]);
         }
 
         return $structure;
@@ -130,7 +130,7 @@ class GenerateInvoicesAction
 
         if ($onlyClassId) {
             if (! in_array($onlyClassId, $covered, true)) {
-                throw ValidationException::withMessages(['class_id' => 'Class is not covered by this structure.']);
+                throw ValidationException::withMessages(['class_id' => __('finance.error_class_not_covered')]);
             }
 
             return [$onlyClassId];

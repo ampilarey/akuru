@@ -7,8 +7,10 @@ use App\Domains\Finance\Actions\CreatePaymentPlanAction;
 use App\Domains\Finance\Actions\ListPaymentPlansAction;
 use App\Domains\Finance\Enums\InvoiceStatus;
 use App\Domains\Finance\Models\Invoice;
+use App\Domains\People\Actions\ListStudentsByIdsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -30,7 +32,11 @@ class PaymentPlanController extends Controller
             ->whereIn('status', [InvoiceStatus::Sent->value, InvoiceStatus::Overdue->value, InvoiceStatus::Draft->value])
             ->whereColumn('paid_amount', '<', 'total_amount')
             ->orderBy('invoice_number')
-            ->get(['id', 'invoice_number', 'student_id', 'total_amount', 'paid_amount']);
+            ->get(['id', 'invoice_number', 'student_id', 'total_amount', 'paid_amount', 'notes']);
+        // An open invoice says whose it is: the office chose by number alone.
+        $names = app(ListStudentsByIdsAction::class)
+            ->execute($openInvoices->pluck('student_id')->filter()->all())
+            ->keyBy('id');
 
         return Inertia::render('Finance/PaymentPlans/Index', [
             'years' => $years->values(),
@@ -39,8 +45,10 @@ class PaymentPlanController extends Controller
             'openInvoices' => $openInvoices->map(fn (Invoice $invoice) => [
                 'id' => $invoice->id,
                 'invoice_number' => $invoice->invoice_number,
+                'student_name' => $names[$invoice->student_id]['name'] ?? $invoice->notes,
                 'balance' => number_format((float) $invoice->total_amount - (float) $invoice->paid_amount, 2, '.', ''),
             ])->values(),
+            't' => Phrases::once('finance'),
         ]);
     }
 
@@ -61,7 +69,7 @@ class PaymentPlanController extends Controller
 
         return redirect()
             ->route('finance.payment-plans.index', array_filter(['academic_year_id' => $data['academic_year_id'] ?? null]))
-            ->with('success', 'Payment plan created.');
+            ->with('success', __('finance.flash_plan_created'));
     }
 
     public function export(Request $request): StreamedResponse
