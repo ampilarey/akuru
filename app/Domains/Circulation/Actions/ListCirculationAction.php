@@ -113,8 +113,8 @@ class ListCirculationAction
             $borrower = null;
             if ($loan !== null) {
                 $borrower = $loan->student_id !== null
-                    ? ($students->get((int) $loan->student_id)['name'] ?? 'Unknown pupil')
-                    : ($staff->get((int) $loan->borrower_user_id) ?? 'Unknown staff');
+                    ? ($students->get((int) $loan->student_id)['name'] ?? __('circulation.unknown_pupil'))
+                    : ($staff->get((int) $loan->borrower_user_id) ?? __('circulation.unknown_staff'));
             }
 
             return [

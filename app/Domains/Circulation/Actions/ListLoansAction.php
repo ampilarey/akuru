@@ -83,10 +83,10 @@ class ListLoansAction
             return [
                 'id' => (int) $loan->id,
                 'accession_number' => $copy?->accession_number,
-                'title' => $copy?->title?->title ?? 'Unknown title',
+                'title' => $copy?->title?->title ?? __('circulation.unknown_title'),
                 'borrower' => $loan->student_id !== null
-                    ? ($students->get((int) $loan->student_id)['name'] ?? 'Unknown pupil')
-                    : ($staff->get((int) $loan->borrower_user_id) ?? 'Unknown staff'),
+                    ? ($students->get((int) $loan->student_id)['name'] ?? __('circulation.unknown_pupil'))
+                    : ($staff->get((int) $loan->borrower_user_id) ?? __('circulation.unknown_staff')),
                 'is_staff' => $loan->student_id === null,
                 'out_on' => $loan->out_on?->toDateString(),
                 'due_on' => $loan->due_on?->toDateString(),

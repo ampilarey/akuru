@@ -28,14 +28,14 @@ class AddBookCopiesAction
     {
         if ($howMany < 1 || $howMany > 200) {
             throw ValidationException::withMessages([
-                'how_many' => 'Add between 1 and 200 copies at a time.',
+                'how_many' => __('circulation.error_how_many'),
             ]);
         }
 
         $title = BookTitle::query()->find($titleId);
 
         if ($title === null) {
-            throw ValidationException::withMessages(['how_many' => 'That title no longer exists.']);
+            throw ValidationException::withMessages(['how_many' => __('circulation.error_title_gone')]);
         }
 
         return DB::transaction(function () use ($title, $howMany, $shelf): Collection {

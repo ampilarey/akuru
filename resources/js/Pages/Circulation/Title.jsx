@@ -1,32 +1,41 @@
-import { Link, router, useForm, usePage } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
 
-export default function Title({ title, copies = [], q = '', matches = [] }) {
+/**
+ * A title on the library desk: its copies, adding more, issuing it to a class
+ * and collecting it back. Every word is the `circulation` book's (slice LD1,
+ * STATUS §5qt), and a copy's state is named. The class issue's result — who
+ * got a book, who did not, and why — is shown by the pupils' names: the
+ * server kept it in the session and the page never received it. A refused
+ * issue or collection is said under its buttons.
+ */
+export default function Title({ title, copies = [], q = '', matches = [], bulk_result: bulkResult = null, t = {} }) {
     const [query, setQuery] = useState(q);
     const [picked, setPicked] = useState([]);
-    const bulkResult = usePage().props.bulk_result;
     const copiesForm = useForm({ how_many: 5, shelf: '' });
+    const refusals = useRowRefusals(copiesForm);
 
     const toggle = (id) =>
         setPicked((current) => (current.includes(id) ? current.filter((i) => i !== id) : [...current, id]));
 
     const bulk = (what) =>
-        router.post(`/circulation/titles/${title.id}/${what}`, { student_ids: picked }, { preserveScroll: true });
+        refusals.actOn('bulk', () => router.post(`/circulation/titles/${title.id}/${what}`, { student_ids: picked }, { preserveScroll: true }));
 
     return (
         <AppShell title={title.title}>
             <p className="mb-4 text-sm text-gray-600">
-                {[title.author, title.isbn, title.classification].filter(Boolean).join(' · ')}
-                {' · '}loan period {title.loan_days} days
+                {[title.author, title.isbn, title.classification, (t.loan_period || 'loan period :days days').replace(':days', title.loan_days)].filter(Boolean).join(' · ')}
             </p>
+            <FormErrors errors={refusals.unplaced} className="mb-4" />
 
             <div className="mb-6 flex flex-wrap gap-3">
                 <Link href={`/circulation/titles/${title.id}/labels`} className="btn-secondary text-sm">
-                    Print labels
+                    {t.print_labels || 'Print labels'}
                 </Link>
                 <Link href="/circulation" className="text-sm text-[#7C2D37] underline self-center">
-                    Back to circulation
+                    {t.back_to_desk || 'Back to circulation'}
                 </Link>
             </div>
 
@@ -35,57 +44,59 @@ export default function Title({ title, copies = [], q = '', matches = [] }) {
                 onSubmit={(e) => { e.preventDefault(); copiesForm.post(`/circulation/titles/${title.id}/copies`, { preserveScroll: true }); }}
             >
                 <label className="text-sm">
-                    <span className="mb-1 block text-gray-600">Add copies</span>
+                    <span className="mb-1 block text-gray-600">{t.add_copies || 'Add copies'}</span>
                     <input type="number" className="form-input w-24" value={copiesForm.data.how_many}
                         onChange={(e) => copiesForm.setData('how_many', e.target.value)} />
                 </label>
                 <label className="text-sm">
-                    <span className="mb-1 block text-gray-600">Shelf</span>
+                    <span className="mb-1 block text-gray-600">{t.shelf || 'Shelf'}</span>
                     <input className="form-input w-40" value={copiesForm.data.shelf}
                         onChange={(e) => copiesForm.setData('shelf', e.target.value)} />
                 </label>
-                <button className="btn-primary text-sm" disabled={copiesForm.processing}>Add</button>
-                {copiesForm.errors.how_many && <p className="text-xs text-red-600">{copiesForm.errors.how_many}</p>}
+                <button className="btn-primary text-sm" disabled={copiesForm.processing}>{t.add || 'Add'}</button>
+                <FormErrors errors={copiesForm.errors} className="basis-full" />
             </form>
 
-            <h2 className="mb-2 text-sm font-semibold">Copies ({copies.length})</h2>
+            <h2 className="mb-2 text-sm font-semibold">{(t.copies_heading || 'Copies (:count)').replace(':count', copies.length)}</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
-                            <th className="px-3 py-2 text-start">Accession</th>
-                            <th className="px-3 py-2 text-start">Status</th>
-                            <th className="px-3 py-2 text-start">With</th>
-                            <th className="px-3 py-2 text-start">Due</th>
+                            <th className="px-3 py-2 text-start">{t.col_accession || 'Accession'}</th>
+                            <th className="px-3 py-2 text-start">{t.col_status || 'Status'}</th>
+                            <th className="px-3 py-2 text-start">{t.col_with || 'With'}</th>
+                            <th className="px-3 py-2 text-start">{t.col_due || 'Due'}</th>
                         </tr>
                     </thead>
                     <tbody>
                         {copies.map((copy) => (
                             <tr key={copy.id} className="border-t">
                                 <td className="px-3 py-2 font-mono text-xs">{copy.accession_number}</td>
-                                <td className="px-3 py-2">{copy.status_label}</td>
+                                <td className="px-3 py-2">{t[`copy_status_${copy.status}`] || copy.status_label}</td>
                                 <td className="px-3 py-2 text-gray-600">{copy.borrower ?? '—'}</td>
                                 <td className={`px-3 py-2 text-xs ${copy.overdue ? 'text-[#7C2D37]' : 'text-gray-500'}`}>
-                                    {copy.due_on ?? '—'}{copy.overdue ? ' (overdue)' : ''}
+                                    {copy.due_on
+                                        ? (copy.overdue ? (t.due_overdue || ':date (overdue)').replace(':date', copy.due_on) : copy.due_on)
+                                        : '—'}
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
                 {copies.length === 0 && (
-                    <p className="px-4 py-6 text-center text-sm text-gray-500">No copies yet — add some above.</p>
+                    <p className="px-4 py-6 text-center text-sm text-gray-500">{t.copies_none || 'No copies yet — add some above.'}</p>
                 )}
             </div>
 
-            <h2 className="mb-2 text-sm font-semibold">Issue to a class</h2>
+            <h2 className="mb-2 text-sm font-semibold">{t.issue_heading || 'Issue to a class'}</h2>
             <div className="rounded-lg border bg-white p-4">
                 <p className="mb-2 text-xs text-gray-600">
-                    For textbook issue at the start of term. A pupil who already has a copy is
-                    skipped rather than stopping the rest of the class.
+                    {t.issue_hint || 'For textbook issue at the start of term. A pupil who already has a copy is skipped rather than stopping the rest of the class.'}
                 </p>
                 <input
                     className="form-input mb-3 w-full text-sm"
-                    placeholder="Search pupils by name or number"
+                    placeholder={t.search_pupils || 'Search pupils by name or number'}
+                    aria-label={t.search_pupils || 'Search pupils by name or number'}
                     value={query}
                     onChange={(e) => { setQuery(e.target.value); router.get(`/circulation/titles/${title.id}`, { q: e.target.value }, { preserveState: true, replace: true }); }}
                 />
@@ -103,30 +114,31 @@ export default function Title({ title, copies = [], q = '', matches = [] }) {
                     ))}
                 </ul>
                 <div className="flex flex-wrap gap-3">
-                    <button className="btn-primary text-sm" disabled={picked.length === 0} onClick={() => bulk('issue')}>
-                        Issue to {picked.length} pupil{picked.length === 1 ? '' : 's'}
+                    <button type="button" className="btn-primary text-sm" disabled={picked.length === 0} onClick={() => bulk('issue')}>
+                        {picked.length === 1 ? (t.issue_one || 'Issue to 1 pupil') : (t.issue_many || 'Issue to :count pupils').replace(':count', picked.length)}
                     </button>
-                    <button className="btn-secondary text-sm" disabled={picked.length === 0} onClick={() => bulk('collect')}>
-                        Collect back in
+                    <button type="button" className="btn-secondary text-sm" disabled={picked.length === 0} onClick={() => bulk('collect')}>
+                        {t.collect || 'Collect back in'}
                     </button>
                 </div>
+                <FormErrors errors={refusals.errorsFor('bulk')} className="mt-2" />
 
                 {bulkResult && (
-                    <div className="mt-4 rounded border bg-[#FBF7F2] p-3 text-xs">
-                        {bulkResult.issued && <p>{bulkResult.issued.length} issued.</p>}
-                        {bulkResult.returned && <p>{bulkResult.returned.length} taken back.</p>}
+                    <div className="mt-4 rounded border bg-[#FBF7F2] p-3 text-xs" data-testid="bulk-result">
+                        {bulkResult.issued != null && <p>{(t.result_issued || ':count issued.').replace(':count', bulkResult.issued)}</p>}
+                        {bulkResult.returned != null && <p>{(t.result_returned || ':count taken back.').replace(':count', bulkResult.returned)}</p>}
                         {bulkResult.skipped?.length > 0 && (
                             <>
-                                <p className="mt-1 font-semibold">Not issued:</p>
+                                <p className="mt-1 font-semibold">{t.result_not_issued || 'Not issued:'}</p>
                                 <ul>
-                                    {bulkResult.skipped.map((s) => (
-                                        <li key={s.student_id}>pupil #{s.student_id} — {s.reason}</li>
+                                    {bulkResult.skipped.map((skip) => (
+                                        <li key={skip.student_id}>{skip.name} — {skip.reason}</li>
                                     ))}
                                 </ul>
                             </>
                         )}
                         {bulkResult.outstanding?.length > 0 && (
-                            <p className="mt-1">Still outstanding: {bulkResult.outstanding.join(', ')}</p>
+                            <p className="mt-1">{(t.result_outstanding || 'Still outstanding: :names').replace(':names', bulkResult.outstanding.join(t.list_separator || ', '))}</p>
                         )}
                     </div>
                 )}

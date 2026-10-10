@@ -34,7 +34,7 @@ class LendCopyAction
     ): Loan {
         if (($studentId === null) === ($borrowerUserId === null)) {
             throw ValidationException::withMessages([
-                'borrower' => 'Choose exactly one borrower — a pupil or a member of staff.',
+                'borrower' => __('circulation.error_one_borrower'),
             ]);
         }
 
@@ -42,7 +42,7 @@ class LendCopyAction
 
         if ($yearId === 0) {
             throw ValidationException::withMessages([
-                'borrower' => 'No academic year is active, so there is nothing to file this loan against.',
+                'borrower' => __('circulation.error_no_year'),
             ]);
         }
 
@@ -51,15 +51,15 @@ class LendCopyAction
             $copy = BookCopy::query()->lockForUpdate()->find($copyId);
 
             if ($copy === null) {
-                throw ValidationException::withMessages(['copy' => 'No copy with that accession number.']);
+                throw ValidationException::withMessages(['copy' => __('circulation.error_copy_not_found')]);
             }
 
             if (! $copy->status->isLendable()) {
                 throw ValidationException::withMessages([
                     'copy' => match ($copy->status) {
-                        CopyStatus::OnLoan => 'That copy is already out. Take it back in first.',
-                        CopyStatus::Lost => 'That copy is marked lost.',
-                        default => 'That copy has been withdrawn from the collection.',
+                        CopyStatus::OnLoan => __('circulation.error_copy_out'),
+                        CopyStatus::Lost => __('circulation.error_copy_lost'),
+                        default => __('circulation.error_copy_withdrawn'),
                     },
                 ]);
             }

@@ -10,10 +10,11 @@ enum LoanStatus: string
 
     public function label(): string
     {
+        // In the page's language (slice LD1).
         return match ($this) {
-            self::Out => 'Out',
-            self::Returned => 'Returned',
-            self::Lost => 'Lost',
+            self::Out => __('circulation.loan_status_out'),
+            self::Returned => __('circulation.loan_status_returned'),
+            self::Lost => __('circulation.loan_status_lost'),
         };
     }
 }

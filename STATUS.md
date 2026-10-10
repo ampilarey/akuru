@@ -4983,6 +4983,119 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qt. The library desk in Dhivehi and Arabic (C21 LD1, 2026-10-10)
+
+The twentieth slice of BACKLOG C21, and the third of the pages found
+English after PE2 (§5qq). The library desk's four screens — the paper
+books' Circulation, not the Digital Library:
+- the desk (`/circulation`): lending a copy and taking one back, the titles
+  on the shelves, adding a title, what is overdue, the CSV;
+- a title: its copies, adding more, issuing it to a class and collecting it
+  back in;
+- a title's label sheet, and the borrower cards.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and hint;
+- a copy's state and a loan's, by the server's English label (*On the
+  shelf*), and an overdue line's days (*3 days over*);
+- six saved messages, thirteen refusals and the three reasons a pupil is
+  skipped in a class issue, and the names the lists fall back on for a
+  title, a pupil or a member of staff they no longer know;
+- the fields' names in Laravel's own refusals: a blank accession number
+  read *accession number ބޭނުންވޭ*.
+
+Four defects were found on the way:
+- **A scanned borrower card was refused, and said nowhere.** A card's
+  barcode is the pupil's student number; the desk's borrower box took the
+  pupil's row id, so the number a scanner typed was refused as not a
+  number — and the form said only two of its refusals, not that one. The
+  box takes the card's number, the server finds the pupil by it (People's
+  new `FindStudentByNumberAction`, exact rather than a search), and a
+  number no pupil has is refused by name. The row id is still taken.
+- **A label nobody has opened a bare 422 page.** It is refused under the
+  form, on the desk.
+- **A class issue's result never reached the page.** Who was not issued a
+  book, and why, was kept in the session and nothing passed it to the page;
+  the panel that would have shown it named a pupil by the row's id (*pupil
+  #12*) and the ones still to hand a copy back by their ids. It is passed,
+  and names each pupil.
+- **The forms said almost none of their refusals.** The lend form said a
+  copy's and a borrower's, the take-back form a copy's, the add-title form
+  a title's and the copies form a number's; a refused class issue or
+  collection was said nowhere. Each form says every refusal under it, and
+  the class issue's under its buttons.
+
+**The change:**
+- **A `circulation` book**, new, in three languages: 116 phrases (73 for
+  the pages, 43 for the server). The four pages read it through
+  `Phrases::once('circulation')`.
+- **States are named**: a copy's (on the shelf, on loan, lost, withdrawn)
+  by the page, and a copy's and a loan's label by the server in the page's
+  language.
+- **What the server says is in the page's language**: the controller's
+  saved messages — a lend says the day the copy is due back — and the
+  refusals and skip reasons of five actions, with the fields named for
+  Laravel's own refusals from the book.
+- **Every field is named** for a screen reader.
+
+What the school writes stays as written: a title, its author, ISBN and
+shelf mark, a shelf, an accession number, a pupil's name and number. The
+CSV keeps its English column codes.
+
+**Tests:**
+- `LibraryDeskSpeaksThreeLanguagesTest` (new) covers the four screens and
+  the ten server files, and checks every field the desk posts is named
+  from the book and every state of a copy and a loan in three languages.
+  It serves the desk in Dhivehi, where:
+  - a label nobody has is refused under the form, not a 422 page; a card
+    nobody has is refused by name and nothing is lent; a blank label is
+    refused by its Dhivehi name;
+  - a card's number lends to its pupil, said with the day it is due; a
+    second lend of the copy is refused, taking it back is said, and taking
+    it back again refused;
+  - a class issue with two copies for three pupils names the one skipped
+    and why, in Dhivehi; choosing nobody is refused by the field's name;
+    collecting back names who had nothing to hand in;
+  - the borrower cards and the label sheet are served.
+
+The tests for the areas it touches: the desk's own and `CirculationTest`
+**20 passed (874 assertions)**; Localization, Architecture, Portal,
+People, Exports, Routes and the Digital Library's name: **519 passed
+(27683 assertions)**.
+
+Whole suite locally: **3025 passed (60901 assertions)**.
+
+**Walks:**
+- **`library-desk-language.mjs`** (new), 35 steps. The dean opens the
+  desk, a title, its label sheet and the borrower cards under `/dv` and
+  `/ar`: right to left, nothing left in English, every field named. Then,
+  in Dhivehi, the dean:
+  - adds a title with no name, and is refused under the form, the field
+    named in Dhivehi; none is made;
+  - adds the walk's title, told in Dhivehi, and two copies, told how many;
+    each copy's state is named in Dhivehi;
+  - lends a label nobody has, and is refused under the form on the desk —
+    it was a bare 422 page; lends a copy to a card nobody has, refused by
+    name, nothing lent;
+  - lends a copy by a pupil's student number, as a scanned card types it,
+    told in Dhivehi when it is due back; takes it back, told in Dhivehi;
+  - issues the title to the pupil from its page, told in Dhivehi; issues
+    it again, and the result names the pupil and why they were skipped, in
+    Dhivehi; collects it back in, told in Dhivehi.
+
+The other walks: `nav.mjs` 14/14 and `reader.mjs` 39/39 (the desk stays
+apart from the Digital Library in name and menu), `portal-language.mjs`
+212/212 and `family.mjs` 40/40 (a family's library books, read from the
+same loans), `identity.mjs` 47/47, `sweep.mjs` 25/25, `create-sweep.mjs`
+6/6, `admin-hub.mjs` 26/26, `admin-layout.mjs` 15/15, `admin.mjs` 43/43,
+`rtl.mjs` 8/8, `mobile.mjs` 19/19 and `own-data.mjs` passed.
+
+The walk's first run failed one step of its own: it read the refusal the
+page still showed from the attempt before, not the answer to the one it
+had just made. It opens a fresh desk before each attempt.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5qs. A person's linked accounts, the sign-in codes' refusals and a teacher's schedule in Dhivehi and Arabic (C21 AC1, 2026-10-10)
 
 The nineteenth slice of BACKLOG C21, and the second of the pages found
