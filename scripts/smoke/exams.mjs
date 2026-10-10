@@ -162,6 +162,16 @@ const rowText = async (page, needle) => {
     return (await row.count()) ? (await row.innerText()).replace(/\s+/g, ' ') : '';
 };
 
+// An exam's state as the schedule's status column names it (slice EG1). The
+// row's whole text will not do: its move list holds every state, so it
+// matched whichever state was asked for.
+const STATE = { scheduled: 'Scheduled', marks_entry: 'Marks entry', review: 'In review', published: 'Published', locked: 'Locked' };
+const stateOf = async (page, needle) => {
+    const row = page.locator('tr', { hasText: needle }).first();
+
+    return (await row.count()) ? ((await row.locator('td').nth(3).textContent()) ?? '').trim() : '';
+};
+
 // ---------------------------------------------------------------- the parent
 
 // First, only to learn the child's name: every later step looks for it.
@@ -253,7 +263,7 @@ if ((await termOption.count()) && (await classOption.count())) {
 
 const scheduled = await settles(admin, 'Exam scheduled.');
 check('the exam is scheduled', scheduled, scheduled ? '' : (await text(admin)).slice(0, 200));
-check('it appears in the table as scheduled', /scheduled/i.test(await rowText(admin, EXAM)), await rowText(admin, EXAM));
+check('it appears in the table as scheduled', (await stateOf(admin, EXAM)) === STATE.scheduled, await rowText(admin, EXAM));
 
 // -------------------------------------------------- 2. through the statuses
 
@@ -263,7 +273,7 @@ async function move(status) {
     await row.locator('button:has-text("Move")').click();
     const moved = await settles(admin, 'Exam status updated.');
     const after = await rowText(admin, EXAM);
-    check(`it moves to ${status}`, moved && new RegExp(status, 'i').test(after), after || (await text(admin)).slice(0, 160));
+    check(`it moves to ${status}`, moved && (await stateOf(admin, EXAM)) === STATE[status], after || (await text(admin)).slice(0, 160));
     // The flash stays on screen; clear it so the next move's wait is honest.
     await admin.reload({ waitUntil: 'networkidle' });
 }

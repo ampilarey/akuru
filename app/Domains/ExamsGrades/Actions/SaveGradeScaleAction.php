@@ -16,7 +16,7 @@ class SaveGradeScaleAction
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'Name is required.']);
+            throw ValidationException::withMessages(['name' => __('exams.error_name_required')]);
         }
 
         $type = GradeScaleType::from((string) $data['type']);
@@ -61,7 +61,7 @@ class SaveGradeScaleAction
         }
 
         if (! is_array($bands) || $bands === []) {
-            throw ValidationException::withMessages(['bands' => 'At least one band is required.']);
+            throw ValidationException::withMessages(['bands' => __('exams.error_band_required')]);
         }
 
         $normalized = [];
@@ -72,7 +72,7 @@ class SaveGradeScaleAction
 
             $grade = trim((string) ($band['grade'] ?? $band['level'] ?? ''));
             if ($grade === '') {
-                throw ValidationException::withMessages(['bands' => 'Each band needs a grade or level.']);
+                throw ValidationException::withMessages(['bands' => __('exams.error_band_grade')]);
             }
 
             $normalized[] = [
@@ -86,7 +86,7 @@ class SaveGradeScaleAction
         }
 
         if ($normalized === []) {
-            throw ValidationException::withMessages(['bands' => 'At least one band is required.']);
+            throw ValidationException::withMessages(['bands' => __('exams.error_band_required')]);
         }
 
         return $normalized;

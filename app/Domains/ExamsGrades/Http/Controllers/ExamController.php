@@ -11,6 +11,7 @@ use App\Domains\ExamsGrades\Enums\ExamStatus;
 use App\Domains\ExamsGrades\Models\Exam;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -33,6 +34,7 @@ class ExamController extends Controller
             'ungraded' => app(ListExamsAction::class)->ungraded($exams),
             'statuses' => array_map(fn (ExamStatus $status) => $status->value, ExamStatus::cases()),
             'yearId' => $yearId,
+            't' => Phrases::once('exams'),
         ]);
     }
 
@@ -42,7 +44,7 @@ class ExamController extends Controller
 
         app(SaveExamAction::class)->execute($this->validated($request), null, $request->user()?->id);
 
-        return redirect()->route('exams.index')->with('success', 'Exam scheduled.');
+        return redirect()->route('exams.index')->with('success', __('exams.flash_exam_scheduled'));
     }
 
     public function update(Request $request, Exam $exam): RedirectResponse
@@ -51,7 +53,7 @@ class ExamController extends Controller
 
         app(SaveExamAction::class)->execute($this->validated($request), $exam, $request->user()?->id);
 
-        return redirect()->route('exams.index')->with('success', 'Exam updated.');
+        return redirect()->route('exams.index')->with('success', __('exams.flash_exam_updated'));
     }
 
     public function bulk(Request $request): RedirectResponse
@@ -60,7 +62,7 @@ class ExamController extends Controller
 
         $created = app(BulkScheduleExamsAction::class)->execute($this->validated($request), $request->user()?->id);
 
-        return redirect()->route('exams.index')->with('success', count($created).' exams scheduled.');
+        return redirect()->route('exams.index')->with('success', trans_choice('exams.flash_exams_scheduled', count($created), ['count' => count($created)]));
     }
 
     public function transition(Request $request, Exam $exam): RedirectResponse
@@ -79,7 +81,7 @@ class ExamController extends Controller
             $data['reason'] ?? null,
         );
 
-        return redirect()->route('exams.index')->with('success', 'Exam status updated.');
+        return redirect()->route('exams.index')->with('success', __('exams.flash_exam_moved'));
     }
 
     public function export(Request $request): StreamedResponse

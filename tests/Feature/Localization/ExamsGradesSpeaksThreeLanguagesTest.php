@@ -1,0 +1,199 @@
+<?php
+
+use App\Domains\Academics\Actions\AssignStudentToClassAction;
+use App\Domains\ExamsGrades\Actions\SaveExamAction;
+use App\Domains\ExamsGrades\Enums\ExamStatus;
+use App\Domains\ExamsGrades\Enums\ExamTypeCode;
+use App\Domains\ExamsGrades\Enums\GradeScaleType;
+use App\Domains\ExamsGrades\Models\Exam;
+use App\Domains\ExamsGrades\Models\ExamType;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Inertia\Testing\AssertableInertia as Assert;
+
+/**
+ * The school office's exams and grades screens in Dhivehi and Arabic
+ * (BACKLOG C21, slice EG1, STATUS §5qj).
+ *
+ * The exam schedule, an exam's marks, the gradebook, the assessment weights,
+ * the grade scales and the exam types read no phrase book. Every word on
+ * them was English; an exam's state, an exam type's code and a grade
+ * scale's kind were printed as codes (*marks_entry*, *percentage_bands*);
+ * a subject and an exam type read by their English names though the school
+ * names them in three languages; the weights screen printed ids
+ * (*year 3 / class — / subject —*) and the stored JSON; and so was
+ * everything the server said — thirteen saved messages and forty-two
+ * refusals, among them a clash (*This class already has 2 exam(s) on that
+ * date (max 2).*) and a move the exam's state does not allow (*Cannot move
+ * from scheduled to locked.*, with both states as codes).
+ */
+uses(RefreshDatabase::class);
+
+/** The exams screens in three languages; every phrase on them is `t.key || 'English'`, from the `exams` book. */
+function examsScreens(): array
+{
+    return [
+        'ExamsGrades/Exams/Index', 'ExamsGrades/Marks/Show', 'ExamsGrades/Gradebook/Index',
+        'ExamsGrades/Weights/Index', 'ExamsGrades/Scales/Index', 'ExamsGrades/Types/Index',
+    ];
+}
+
+/** Where the server writes what those screens say. */
+function examsServerFiles(): array
+{
+    return [
+        'app/Domains/ExamsGrades/Http/Controllers/ExamController.php',
+        'app/Domains/ExamsGrades/Http/Controllers/ExamMarkController.php',
+        'app/Domains/ExamsGrades/Http/Controllers/GradebookController.php',
+        'app/Domains/ExamsGrades/Http/Controllers/WeightSchemeController.php',
+        'app/Domains/ExamsGrades/Http/Controllers/GradeScaleController.php',
+        'app/Domains/ExamsGrades/Http/Controllers/ExamTypeController.php',
+        'app/Domains/ExamsGrades/Actions/SaveExamAction.php',
+        'app/Domains/ExamsGrades/Actions/BulkScheduleExamsAction.php',
+        'app/Domains/ExamsGrades/Actions/TransitionExamStatusAction.php',
+        'app/Domains/ExamsGrades/Actions/SaveExamMarkAction.php',
+        'app/Domains/ExamsGrades/Actions/ImportExamMarksAction.php',
+        'app/Domains/ExamsGrades/Actions/SaveWeightSchemeAction.php',
+        'app/Domains/ExamsGrades/Actions/SaveGradeScaleAction.php',
+        'app/Domains/ExamsGrades/Actions/SaveExamTypeAction.php',
+    ];
+}
+
+function examsBook(string $locale): array
+{
+    return require base_path("resources/lang/{$locale}/exams.php");
+}
+
+it('keys every string on the exams screens in three languages', function () {
+    [$en, $dv, $ar] = [examsBook('en'), examsBook('dv'), examsBook('ar')];
+
+    foreach (examsScreens() as $screen) {
+        $source = file_get_contents(resource_path("js/Pages/{$screen}.jsx"));
+        preg_match_all("/(?<![\\w\$.])t\\.([a-z][a-z0-9_]+) \\|\\| '((?:[^'\\\\]|\\\\.)*)'/", $source, $uses, PREG_SET_ORDER);
+        expect($uses)->not->toBeEmpty("{$screen} uses no phrases");
+
+        foreach ($uses as [, $key, $fallback]) {
+            expect(array_key_exists($key, $en))->toBeTrue("{$screen}: exams.{$key} is missing in English")
+                ->and(array_key_exists($key, $dv))->toBeTrue("{$screen}: exams.{$key} is missing in Dhivehi")
+                ->and(array_key_exists($key, $ar))->toBeTrue("{$screen}: exams.{$key} is missing in Arabic")
+                ->and($en[$key])->toBe(stripslashes($fallback), "{$screen}: exams.{$key} says something else in English than the screen")
+                ->and($dv[$key])->not->toBe($en[$key], "exams.{$key} is English in Dhivehi")
+                ->and($ar[$key])->not->toBe($en[$key], "exams.{$key} is English in Arabic");
+        }
+
+        // No bare English: a text node, a written-out placeholder, label,
+        // title or phone caption (`data-label`), and no field without a name.
+        expect(preg_match_all('/>\s*[A-Z][A-Za-z]+[^<>{}]*</', $source, $text))->toBe(0, "{$screen} has English text nodes: ".implode(' | ', $text[0] ?? []))
+            ->and(preg_match_all('/(placeholder|aria-label|title|data-label)="[A-Za-z][^"]*"/', $source, $attrs))->toBe(0, "{$screen} has English attributes: ".implode(' | ', $attrs[0] ?? []))
+            ->and(unnamedFields($source))->toBe([], "{$screen} has fields with no name");
+    }
+});
+
+it('names every code the exams screens show, in all three languages', function () {
+    $codes = [
+        ...array_map(fn ($case) => 'exam_status_'.$case->value, ExamStatus::cases()),
+        ...array_map(fn ($case) => 'exam_type_code_'.$case->value, ExamTypeCode::cases()),
+        ...array_map(fn ($case) => 'scale_type_'.$case->value, GradeScaleType::cases()),
+    ];
+
+    foreach ($codes as $key) {
+        expect(trans("exams.{$key}", [], 'en'))->not->toBe("exams.{$key}", "exams.{$key} has no English")
+            ->and(trans("exams.{$key}", [], 'dv'))->toMatch('/\p{Thaana}/u', "exams.{$key} in Dhivehi")
+            ->and(trans("exams.{$key}", [], 'ar'))->toMatch('/\p{Arabic}/u', "exams.{$key} in Arabic");
+    }
+});
+
+it('leaves no English in what the server says on the exams screens, and says it in Dhivehi and Arabic', function () {
+    $english = [];
+    foreach (examsServerFiles() as $file) {
+        $english = [...$english, ...refusalEnglishIn($file)];
+    }
+    expect($english)->toBe([]);
+
+    $keys = refusalKeysIn(examsServerFiles());
+    expect($keys)->toContain('exams.flash_exam_scheduled', 'exams.flash_exams_scheduled', 'exams.flash_marks_imported', 'exams.error_same_day', 'exams.error_cannot_move', 'exams.error_marks_above_max', 'exams.error_weights_sum', 'exams.error_band_grade', 'exams.error_type_code_exists');
+    foreach ($keys as $key) {
+        expect(trans($key, [], 'en'))->not->toBe($key, "{$key} has no English")
+            ->and(trans($key, [], 'dv'))->toMatch('/\p{Thaana}/u', "{$key} in Dhivehi")
+            ->and(trans($key, [], 'ar'))->toMatch('/\p{Arabic}/u', "{$key} in Arabic");
+    }
+    // A move the exam's state does not allow names both states in the
+    // page's language, not by their codes.
+    expect(__('exams.error_cannot_move', ['from' => __('exams.exam_status_scheduled', [], 'dv'), 'to' => __('exams.exam_status_locked', [], 'dv')], 'dv'))->not->toMatch('/[A-Za-z]{3,}/');
+});
+
+it('gives the six exam types a school starts with a Dhivehi and an Arabic name, and keeps one the office typed', function () {
+    expect(ExamType::query()->count())->toBe(count(ExamTypeCode::cases()))
+        ->and(ExamType::query()->get(['code', 'name_dhivehi', 'name_arabic'])->every(
+            fn (ExamType $type) => preg_match('/\p{Thaana}/u', (string) $type->name_dhivehi) === 1 && preg_match('/\p{Arabic}/u', (string) $type->name_arabic) === 1,
+        ))->toBeTrue();
+
+    $quiz = ExamType::query()->where('code', ExamTypeCode::Quiz)->sole();
+    $quiz->update(['name_dhivehi' => 'ކުޑަ އިމްތިޙާން']);
+    (require base_path('database/migrations/2026_10_10_000001_exam_type_names_in_dhivehi_and_arabic.php'))->up();
+
+    expect($quiz->refresh()->name_dhivehi)->toBe('ކުޑަ އިމްތިޙާން');
+});
+
+it('serves the exams screens in Dhivehi, and says what was saved and refused in Dhivehi', function () {
+    $year = makeYear(['name' => '2026-2027', 'is_current' => true, 'status' => 'active']);
+    $term = makeTerm($year);
+    $class = makeClass($year, 'Grade 6', 'A');
+    $subject = makeSubject();
+    $type = ExamType::query()->where('code', ExamTypeCode::Final)->sole();
+    $office = actingPeopleAdmin(['exams.manage']);
+    $dv = examsBook('dv');
+    $exam = app(SaveExamAction::class)->execute([
+        'academic_year_id' => $year->id, 'term_id' => $term->id, 'class_id' => $class->id,
+        'subject_id' => $subject->id, 'exam_type_id' => $type->id, 'name' => 'Term 1 Final',
+        'exam_date' => '2026-08-24', 'max_marks' => 50,
+    ]);
+
+    app()->setLocale('dv');
+    foreach ([
+        ['exams.index', [], 'ExamsGrades/Exams/Index', 'exams_title'],
+        ['exams.marks.show', [$exam->id], 'ExamsGrades/Marks/Show', 'marks_title'],
+        ['exams.gradebook.index', [], 'ExamsGrades/Gradebook/Index', 'gradebook_title'],
+        ['exams.weights.index', [], 'ExamsGrades/Weights/Index', 'weights_title'],
+        ['exams.scales.index', [], 'ExamsGrades/Scales/Index', 'scales_title'],
+        ['exams.types.index', [], 'ExamsGrades/Types/Index', 'types_title'],
+    ] as [$route, $parameters, $component, $key]) {
+        $this->withoutLocalizationMiddleware()->actingAs($office)
+            ->get(route($route, $parameters))->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component($component)->where("t.{$key}", $dv[$key]));
+    }
+
+    // Saved, in Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('exams.store'), [
+            'academic_year_id' => $year->id, 'term_id' => $term->id, 'class_id' => $class->id,
+            'subject_id' => $subject->id, 'exam_type_id' => $type->id, 'name' => 'Term 1 Quiz',
+            'exam_date' => '2026-08-25', 'max_marks' => 20,
+        ])
+        ->assertSessionHas('success', $dv['flash_exam_scheduled']);
+
+    // A move the exam's state does not allow names both states in Dhivehi;
+    // it named them by their codes, in English.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('exams.transition', $exam->id), ['status' => ExamStatus::Locked->value])
+        ->assertSessionHasErrors(['status' => __('exams.error_cannot_move', ['from' => $dv['exam_status_scheduled'], 'to' => $dv['exam_status_locked']], 'dv')]);
+
+    // A mark refused while the exam is not taking marks, in Dhivehi.
+    $pupil = makeStudent(['first_name' => 'Hawwa', 'last_name' => 'Ibrahim']);
+    app(AssignStudentToClassAction::class)->execute($class, $pupil->id);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->put(route('exams.marks.update', $exam->id), ['student_id' => $pupil->id, 'marks' => 40])
+        ->assertSessionHasErrors(['status' => $dv['error_marks_closed']]);
+
+    // Weights that do not add to 100 say what they came to; a scale's band
+    // with no grade, and an exam type code taken twice, are refused — all in
+    // Dhivehi.
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('exams.weights.store'), ['academic_year_id' => $year->id, 'weights' => [(string) $type->id => 60]])
+        ->assertSessionHasErrors(['weights' => __('exams.error_weights_sum', ['sum' => 60], 'dv')]);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('exams.scales.store'), ['name' => 'Bands', 'type' => GradeScaleType::PercentageBands->value, 'bands' => [['min' => 50, 'grade' => '']]])
+        ->assertSessionHasErrors(['bands' => $dv['error_band_grade']]);
+    $this->withoutLocalizationMiddleware()->actingAs($office)
+        ->post(route('exams.types.store'), ['name' => 'Second final', 'code' => ExamTypeCode::Final->value, 'default_weight' => 10])
+        ->assertSessionHasErrors(['code' => $dv['error_type_code_exists']]);
+});

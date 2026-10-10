@@ -1736,6 +1736,8 @@ class SmokeMarkerSeeder extends Seeder
      * here on every run — its exams, marks, status audits, term grades, report
      * cards and the documents behind them. The term row itself is kept, since
      * enrolments may reference a term with `ON DELETE RESTRICT` (ADR-037).
+     * `exams-language.mjs` schedules `SMOKE-Lang-Exam` in it from the Dhivehi
+     * schedule (slice EG1), and that exam goes the same way.
      */
     private function examCycle(AcademicYear $year): void
     {
@@ -1749,7 +1751,7 @@ class SmokeMarkerSeeder extends Seeder
                 'sort_order' => 99, 'created_at' => now(), 'updated_at' => now(),
             ]));
 
-        $examIds = DB::table('exams')->where('name', 'SMOKE-Exam')->pluck('id');
+        $examIds = DB::table('exams')->whereIn('name', ['SMOKE-Exam', 'SMOKE-Lang-Exam'])->pluck('id');
         DB::table('exam_marks')->whereIn('exam_id', $examIds)->delete();
         DB::table('exam_status_audits')->whereIn('exam_id', $examIds)->delete();
         DB::table('exams')->whereIn('id', $examIds)->delete();
