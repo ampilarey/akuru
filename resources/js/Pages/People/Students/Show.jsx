@@ -2,16 +2,17 @@ import { Link, router, useForm } from '@inertiajs/react';
 import { useMemo, useState } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 import CustomFields from '../../../Components/CustomFields';
+import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 
 const tabs = [
-    { id: 'overview', label: 'Overview' },
-    { id: 'guardians', label: 'Guardians' },
-    { id: 'emergency', label: 'Emergency contacts' },
-    { id: 'documents', label: 'Documents' },
-    { id: 'medical', label: 'Medical' },
-    { id: 'history', label: 'Status history' },
-    { id: 'consents', label: 'Consents' },
-    { id: 'behavior', label: 'Behavior' },
+    { id: 'overview', key: 'tab_overview', label: 'Overview' },
+    { id: 'guardians', key: 'tab_guardians', label: 'Guardians' },
+    { id: 'emergency', key: 'tab_emergency', label: 'Emergency contacts' },
+    { id: 'documents', key: 'tab_documents', label: 'Documents' },
+    { id: 'medical', key: 'tab_medical', label: 'Medical' },
+    { id: 'history', key: 'tab_history', label: 'Status history' },
+    { id: 'consents', key: 'tab_consents', label: 'Consents' },
+    { id: 'behavior', key: 'tab_behavior', label: 'Behavior' },
 ];
 
 /**
@@ -26,62 +27,68 @@ const tabs = [
  * scoped to the signed-in guardian's own links and nothing filters on this
  * column; making it a gate would hide every child from every parent overnight,
  * because every existing link is unverified.
+ *
+ * A refused Save or Detach is said under its row (slice PE1): it was said
+ * nowhere.
  */
-function GuardianRow({ student, guardian, consentStatuses, verificationStatuses }) {
+function GuardianRow({ student, guardian, consentStatuses, verificationStatuses, t, refusals }) {
     const [consent, setConsent] = useState(guardian.consent_status || 'unknown');
     const [verification, setVerification] = useState(guardian.verification_status || 'unverified');
     const [notes, setNotes] = useState(guardian.notes || '');
+    const rowKey = `guardian:${guardian.id}`;
 
-    const save = () => router.put(
+    const save = () => refusals.actOn(rowKey, () => router.put(
         `/people/students/${student.id}/guardians/${guardian.guardian_id ?? guardian.id}`,
         { consent_status: consent, verification_status: verification, notes },
         { preserveScroll: true },
-    );
+    ));
+    const flags = [
+        guardian.is_primary && (t.flag_primary || 'Primary'),
+        guardian.can_pickup && (t.flag_pickup || 'Collects the child'),
+        guardian.financial_responsible && (t.flag_financial || 'Pays the fees'),
+    ].filter(Boolean);
 
     return (
         <tr className="border-t align-top">
             <td className="px-3 py-2">{guardian.name}</td>
-            <td className="px-3 py-2">{guardian.relationship}</td>
-            <td className="px-3 py-2 text-xs">
-                {guardian.is_primary ? 'primary ' : ''}
-                {guardian.can_pickup ? 'pickup ' : ''}
-                {guardian.financial_responsible ? 'financial' : ''}
-            </td>
+            <td className="px-3 py-2">{t[`relationship_${guardian.relationship}`] || guardian.relationship}</td>
+            <td className="px-3 py-2 text-xs">{flags.join(t.list_separator || ', ')}</td>
             <td className="px-3 py-2">
-                <select className="form-input" value={consent} onChange={(e) => setConsent(e.target.value)} aria-label="Consent status">
+                <select className="form-input" value={consent} onChange={(e) => setConsent(e.target.value)} aria-label={t.consent_status_aria || 'Consent status'}>
                     {consentStatuses.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
+                        <option key={option.value} value={option.value}>{t[`consent_status_${option.value}`] || option.label}</option>
                     ))}
                 </select>
             </td>
             <td className="px-3 py-2">
-                <select className="form-input" value={verification} onChange={(e) => setVerification(e.target.value)} aria-label="Verification status">
+                <select className="form-input" value={verification} onChange={(e) => setVerification(e.target.value)} aria-label={t.verification_status_aria || 'Verification status'}>
                     {verificationStatuses.map((option) => (
-                        <option key={option.value} value={option.value}>{option.label}</option>
+                        <option key={option.value} value={option.value}>{t[`verification_status_${option.value}`] || option.label}</option>
                     ))}
                 </select>
                 {/* §9 pairs the status with `verified_at`, so the date is shown
                     beside it rather than hidden in the database. */}
                 {guardian.verified_at && (
-                    <p className="mt-1 text-xs text-gray-600">Checked {String(guardian.verified_at).slice(0, 10)}</p>
+                    <p className="mt-1 text-xs text-gray-600">{(t.guardian_checked_on || 'Checked :date').replace(':date', String(guardian.verified_at).slice(0, 10))}</p>
                 )}
             </td>
             <td className="px-3 py-2 text-end">
                 <input
                     className="form-input mb-2"
-                    placeholder="Notes"
+                    placeholder={t.guardian_notes || 'Notes'}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    aria-label="Guardian link notes"
+                    aria-label={t.guardian_notes_aria || 'Guardian link notes'}
                 />
-                <button type="button" className="btn-secondary" onClick={save}>Save</button>
+                <button type="button" className="btn-secondary" onClick={save}>{t.save || 'Save'}</button>
                 <button
                     type="button"
                     className="ms-3 text-red-700 hover:underline"
-                    onClick={() => router.delete(`/people/students/${student.id}/guardians/${guardian.id}`)}
+                    onClick={() => refusals.actOn(rowKey, () => router.delete(`/people/students/${student.id}/guardians/${guardian.id}`))}
                 >
-                    Detach
+                    {t.guardian_detach || 'Detach'}
                 </button>
+                <FormErrors errors={refusals.errorsFor(rowKey)} className="mt-2 text-start" />
             </td>
         </tr>
     );
@@ -107,7 +114,11 @@ export default function Show({
     schools = [],
     classes = [],
     hifzProgressUrl = null,
+    t = {},
 }) {
+    const statusName = (status) => t[`student_status_${status}`] || status;
+    const relationshipName = (relationship) => t[`relationship_${relationship}`] || relationship;
+    const consentTypeName = (type) => t[`consent_type_${type}`] || type;
     const initialValues = useMemo(() => {
         const next = {};
         customFields.forEach((field) => {
@@ -152,6 +163,7 @@ export default function Show({
         relationship: '',
         priority: 1,
     });
+    const refusals = useRowRefusals(fieldForm, editForm, guardianForm, contactForm);
 
     const saveFields = (e) => {
         e.preventDefault();
@@ -162,7 +174,7 @@ export default function Show({
     return (
         <AppShell title={[student.first_name, student.middle_name, student.last_name].filter(Boolean).join(' ')}>
             <p className="mb-4 text-sm text-gray-600">
-                {student.student_id || 'No student number'} · {student.status}
+                {student.student_id || t.no_student_number || 'No student number'} · {statusName(student.status)}
             </p>
             <div className="mb-4 flex flex-wrap gap-2">
                 {tabs.map((item) => (
@@ -171,7 +183,7 @@ export default function Show({
                         href={`/people/students/${student.id}?tab=${item.id}`}
                         className={`rounded px-3 py-1 text-sm ${tab === item.id ? 'bg-[#7C2D37] text-white' : 'bg-white border'}`}
                     >
-                        {item.label}
+                        {t[item.key] || item.label}
                     </Link>
                 ))}
                 {/* The retired Blade student record carried a Hifz progress
@@ -180,10 +192,11 @@ export default function Show({
                     and it is absent when the Qur'an module is switched off. */}
                 {hifzProgressUrl && (
                     <a href={hifzProgressUrl} className="rounded border bg-white px-3 py-1 text-sm">
-                        Qur'an progress
+                        {t.quran_progress || 'Qur’an progress'}
                     </a>
                 )}
             </div>
+            <FormErrors errors={refusals.unplaced} className="mb-4" />
 
             {tab === 'overview' && (
                 <div className="grid gap-6 md:grid-cols-2">
@@ -194,102 +207,100 @@ export default function Show({
                         }}
                         className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-2"
                     >
-                        <h2 className="md:col-span-2 font-semibold">Profile</h2>
-                        {Object.keys(editForm.errors).length > 0 && (
-                            <p className="md:col-span-2 text-sm text-red-600">{Object.values(editForm.errors).join(' ')}</p>
-                        )}
+                        <h2 className="md:col-span-2 font-semibold">{t.profile_title || 'Profile'}</h2>
+                        <FormErrors errors={editForm.errors} className="md:col-span-2" />
                         <label className="text-xs text-gray-500">
-                            First name
+                            {t.first_name || 'First name'}
                             <input className="form-input mt-1 w-full" value={editForm.data.first_name} onChange={(e) => editForm.setData('first_name', e.target.value)} />
                         </label>
                         <label className="text-xs text-gray-500">
-                            Middle name
+                            {t.middle_name || 'Middle name'}
                             <input className="form-input mt-1 w-full" value={editForm.data.middle_name} onChange={(e) => editForm.setData('middle_name', e.target.value)} />
                         </label>
                         <label className="text-xs text-gray-500">
-                            Last name
+                            {t.last_name || 'Last name'}
                             <input className="form-input mt-1 w-full" value={editForm.data.last_name} onChange={(e) => editForm.setData('last_name', e.target.value)} />
                         </label>
                         <label className="text-xs text-gray-500">
-                            Dhivehi first
+                            {t.first_name_dhivehi || 'Dhivehi first'}
                             <input className="form-input mt-1 w-full" value={editForm.data.first_name_dhivehi} onChange={(e) => editForm.setData('first_name_dhivehi', e.target.value)} />
                         </label>
                         <label className="text-xs text-gray-500">
-                            Dhivehi last
+                            {t.last_name_dhivehi || 'Dhivehi last'}
                             <input className="form-input mt-1 w-full" value={editForm.data.last_name_dhivehi} onChange={(e) => editForm.setData('last_name_dhivehi', e.target.value)} />
                         </label>
                         <label className="text-xs text-gray-500">
-                            Arabic first
+                            {t.first_name_arabic || 'Arabic first'}
                             <input className="form-input mt-1 w-full" value={editForm.data.first_name_arabic} onChange={(e) => editForm.setData('first_name_arabic', e.target.value)} />
                         </label>
                         <label className="text-xs text-gray-500">
-                            Arabic last
+                            {t.last_name_arabic || 'Arabic last'}
                             <input className="form-input mt-1 w-full" value={editForm.data.last_name_arabic} onChange={(e) => editForm.setData('last_name_arabic', e.target.value)} />
                         </label>
                         <label className="text-xs text-gray-500">
-                            Date of birth
+                            {t.date_of_birth || 'Date of birth'}
                             <input type="date" className="form-input mt-1 w-full" value={editForm.data.date_of_birth} onChange={(e) => editForm.setData('date_of_birth', e.target.value)} />
                         </label>
                         <label className="text-xs text-gray-500">
-                            Gender
+                            {t.gender || 'Gender'}
                             {/* A student registered without a gender has none on file (STATUS §5jp); the empty option says so rather than showing the first one. */}
                             <select className="form-input mt-1 w-full" value={editForm.data.gender} onChange={(e) => editForm.setData('gender', e.target.value)} data-testid="student-gender">
                                 <option value="">—</option>
-                                <option value="female">female</option>
-                                <option value="male">male</option>
+                                <option value="female">{t.gender_female || 'Female'}</option>
+                                <option value="male">{t.gender_male || 'Male'}</option>
                             </select>
                         </label>
                         <label className="text-xs text-gray-500">
-                            Student number
+                            {t.student_number || 'Student number'}
                             <input className="form-input mt-1 w-full" value={editForm.data.student_id} onChange={(e) => editForm.setData('student_id', e.target.value)} />
                         </label>
                         <label className="text-xs text-gray-500">
-                            National ID
+                            {t.col_national_id || 'National ID'}
                             <input className="form-input mt-1 w-full" value={editForm.data.national_id} onChange={(e) => editForm.setData('national_id', e.target.value)} />
                         </label>
                         <label className="text-xs text-gray-500">
-                            School
+                            {t.school || 'School'}
                             <select className="form-input mt-1 w-full" value={editForm.data.school_id} onChange={(e) => editForm.setData('school_id', e.target.value)}>
-                                <option value="">None</option>
+                                <option value="">{t.none || 'None'}</option>
                                 {schools.map((school) => (
                                     <option key={school.id} value={school.id}>{school.name}</option>
                                 ))}
                             </select>
                         </label>
                         <label className="text-xs text-gray-500">
-                            Class
+                            {t.col_class || 'Class'}
                             <select className="form-input mt-1 w-full" value={editForm.data.class_id} onChange={(e) => editForm.setData('class_id', e.target.value)}>
-                                <option value="">None</option>
+                                <option value="">{t.none || 'None'}</option>
                                 {classes.map((room) => (
                                     <option key={room.id} value={room.id}>{room.label}</option>
                                 ))}
                             </select>
                         </label>
                         <label className="text-xs text-gray-500">
-                            Admission date
+                            {t.admission_date || 'Admission date'}
                             <input type="date" className="form-input mt-1 w-full" value={editForm.data.admission_date} onChange={(e) => editForm.setData('admission_date', e.target.value)} />
                         </label>
                         <label className="text-xs text-gray-500">
-                            Status
+                            {t.status || 'Status'}
                             <select className="form-input mt-1 w-full" value={editForm.data.status} onChange={(e) => editForm.setData('status', e.target.value)}>
                                 {statuses.map((status) => (
-                                    <option key={status} value={status}>{status}</option>
+                                    <option key={status} value={status}>{statusName(status)}</option>
                                 ))}
                             </select>
                         </label>
                         <div className="md:col-span-2">
-                            <button type="submit" className="btn-primary" disabled={editForm.processing}>Save profile</button>
+                            <button type="submit" className="btn-primary" disabled={editForm.processing}>{t.save_profile || 'Save profile'}</button>
                         </div>
                     </form>
                     <form onSubmit={saveFields} className="rounded-lg border bg-white p-4">
-                        <h2 className="mb-3 font-semibold">Custom fields</h2>
+                        <h2 className="mb-3 font-semibold">{t.custom_fields || 'Custom fields'}</h2>
                         <CustomFields
                             fields={customFields}
                             values={values}
                             errors={fieldForm.errors}
                             onChange={(id, value) => setValues((current) => ({ ...current, [id]: value }))}
                         />
-                        <button type="submit" className="btn-primary mt-4" disabled={fieldForm.processing}>Save fields</button>
+                        <button type="submit" className="btn-primary mt-4" disabled={fieldForm.processing}>{t.save_fields || 'Save fields'}</button>
                     </form>
                 </div>
             )}
@@ -301,37 +312,47 @@ export default function Show({
                             e.preventDefault();
                             guardianForm.post(`/people/students/${student.id}/guardians`);
                         }}
-                        className="flex flex-wrap gap-3 rounded-lg border bg-white p-4"
+                        className="flex flex-wrap items-end gap-3 rounded-lg border bg-white p-4"
                     >
-                        <select className="form-input" value={guardianForm.data.guardian_id} onChange={(e) => guardianForm.setData('guardian_id', e.target.value)}>
-                            {availableGuardians.map((guardian) => (
-                                <option key={guardian.id} value={guardian.id}>{guardian.name}</option>
-                            ))}
-                        </select>
-                        <select className="form-input" value={guardianForm.data.relationship} onChange={(e) => guardianForm.setData('relationship', e.target.value)}>
-                            {relationships.map((rel) => (
-                                <option key={rel} value={rel}>{rel}</option>
-                            ))}
-                        </select>
-                        <label className="flex items-center gap-2 text-sm">
-                            <input type="checkbox" checked={guardianForm.data.is_primary} onChange={(e) => guardianForm.setData('is_primary', e.target.checked)} />
-                            Primary
-                        </label>
-                        <button type="submit" className="btn-primary">Attach</button>
+                        {availableGuardians.length === 0 ? (
+                            <p className="text-sm text-gray-600" data-testid="no-guardian-to-link">{t.guardians_none_to_link || 'No other guardian is on file to link.'}</p>
+                        ) : (
+                            <>
+                                <select className="form-input" aria-label={t.guardian || 'Guardian'} value={guardianForm.data.guardian_id} onChange={(e) => guardianForm.setData('guardian_id', e.target.value)}>
+                                    {availableGuardians.map((guardian) => (
+                                        <option key={guardian.id} value={guardian.id}>{guardian.name}</option>
+                                    ))}
+                                </select>
+                                <select className="form-input" aria-label={t.relationship || 'Relationship'} value={guardianForm.data.relationship} onChange={(e) => guardianForm.setData('relationship', e.target.value)}>
+                                    {relationships.map((rel) => (
+                                        <option key={rel} value={rel}>{relationshipName(rel)}</option>
+                                    ))}
+                                </select>
+                                <label className="flex items-center gap-2 text-sm">
+                                    <input type="checkbox" checked={guardianForm.data.is_primary} onChange={(e) => guardianForm.setData('is_primary', e.target.checked)} />
+                                    {t.flag_primary || 'Primary'}
+                                </label>
+                                <button type="submit" className="btn-primary" disabled={guardianForm.processing}>{t.guardian_attach || 'Attach'}</button>
+                            </>
+                        )}
+                        <FormErrors errors={guardianForm.errors} className="w-full" />
                     </form>
                     <div className="overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
-                                    <th className="px-3 py-2">Name</th>
-                                    <th className="px-3 py-2">Relationship</th>
-                                    <th className="px-3 py-2">Flags</th>
-                                    <th className="px-3 py-2">Consent</th>
-                                    <th className="px-3 py-2">Verification</th>
+                                    <th className="px-3 py-2">{t.col_name || 'Name'}</th>
+                                    <th className="px-3 py-2">{t.relationship || 'Relationship'}</th>
+                                    <th className="px-3 py-2">{t.col_responsibilities || 'Responsibilities'}</th>
+                                    <th className="px-3 py-2">{t.col_consent || 'Consent'}</th>
+                                    <th className="px-3 py-2">{t.col_verification || 'Verification'}</th>
                                     <th className="px-3 py-2"></th>
                                 </tr>
                             </thead>
                             <tbody>
+                                {guardians.length === 0 && (
+                                    <tr><td className="px-3 py-4 text-gray-500" colSpan={6}>{t.guardians_none || 'No guardian is linked to this pupil.'}</td></tr>
+                                )}
                                 {guardians.map((guardian) => (
                                     <GuardianRow
                                         key={guardian.id}
@@ -339,6 +360,8 @@ export default function Show({
                                         guardian={guardian}
                                         consentStatuses={consentStatuses}
                                         verificationStatuses={verificationStatuses}
+                                        t={t}
+                                        refusals={refusals}
                                     />
                                 ))}
                             </tbody>
@@ -350,8 +373,7 @@ export default function Show({
             {tab === 'emergency' && (
                 <section className="grid gap-4">
                     <p className="text-sm text-gray-600">
-                        Who to ring when this child is hurt or unwell. Priority 1 is called
-                        first, and these numbers appear beside an unexplained absence.
+                        {t.emergency_intro || 'Who to ring when this child is hurt or unwell. Priority 1 is called first, and these numbers appear beside an unexplained absence.'}
                     </p>
                     <form
                         onSubmit={(e) => {
@@ -364,46 +386,47 @@ export default function Show({
                         className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
                     >
                         <label className="block text-sm">
-                            <span className="mb-1 block text-gray-600">Name</span>
+                            <span className="mb-1 block text-gray-600">{t.col_name || 'Name'}</span>
                             <input className="form-input w-full" value={contactForm.data.name} onChange={(e) => contactForm.setData('name', e.target.value)} />
                             {contactForm.errors.name && <span className="text-xs text-red-600">{contactForm.errors.name}</span>}
                         </label>
                         <label className="block text-sm">
-                            <span className="mb-1 block text-gray-600">Phone</span>
+                            <span className="mb-1 block text-gray-600">{t.phone || 'Phone'}</span>
                             <input className="form-input w-full" value={contactForm.data.phone} onChange={(e) => contactForm.setData('phone', e.target.value)} />
                             {contactForm.errors.phone && <span className="text-xs text-red-600">{contactForm.errors.phone}</span>}
                         </label>
                         <label className="block text-sm">
-                            <span className="mb-1 block text-gray-600">Relationship</span>
+                            <span className="mb-1 block text-gray-600">{t.relationship || 'Relationship'}</span>
                             <input className="form-input w-full" value={contactForm.data.relationship} onChange={(e) => contactForm.setData('relationship', e.target.value)} />
                         </label>
                         <label className="block text-sm">
-                            <span className="mb-1 block text-gray-600">Priority</span>
+                            <span className="mb-1 block text-gray-600">{t.priority || 'Priority'}</span>
                             <input type="number" min="1" className="form-input w-full" value={contactForm.data.priority} onChange={(e) => contactForm.setData('priority', e.target.value)} />
                         </label>
                         <div className="flex items-end">
-                            <button type="submit" className="btn-primary" disabled={contactForm.processing}>Add contact</button>
+                            <button type="submit" className="btn-primary" disabled={contactForm.processing}>{t.contact_add || 'Add contact'}</button>
                         </div>
+                        <FormErrors errors={contactForm.errors} except={['name', 'phone']} className="md:col-span-5" />
                     </form>
                     <div className="overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">#</th>
-                                    <th className="px-3 py-2">Name</th>
-                                    <th className="px-3 py-2">Phone</th>
-                                    <th className="px-3 py-2">Relationship</th>
+                                    <th className="px-3 py-2">{t.col_name || 'Name'}</th>
+                                    <th className="px-3 py-2">{t.phone || 'Phone'}</th>
+                                    <th className="px-3 py-2">{t.relationship || 'Relationship'}</th>
                                     <th className="px-3 py-2"></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {emergencyContacts.length === 0 && (
                                     <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>
-                                        No emergency contact on file. If this child is hurt, nobody knows who to ring.
+                                        {t.contacts_none || 'No emergency contact on file. If this child is hurt, nobody knows who to ring.'}
                                     </td></tr>
                                 )}
                                 {emergencyContacts.map((contact) => (
-                                    <tr key={contact.id} className="border-t">
+                                    <tr key={contact.id} className="border-t align-top">
                                         <td className="px-3 py-2">{contact.priority}</td>
                                         <td className="px-3 py-2">{contact.name}</td>
                                         <td className="px-3 py-2">
@@ -414,10 +437,11 @@ export default function Show({
                                             <button
                                                 type="button"
                                                 className="text-red-700 hover:underline"
-                                                onClick={() => router.delete(`/people/students/${student.id}/emergency-contacts/${contact.id}`, { preserveScroll: true })}
+                                                onClick={() => refusals.actOn(`contact:${contact.id}`, () => router.delete(`/people/students/${student.id}/emergency-contacts/${contact.id}`, { preserveScroll: true }))}
                                             >
-                                                Remove
+                                                {t.remove || 'Remove'}
                                             </button>
+                                            <FormErrors errors={refusals.errorsFor(`contact:${contact.id}`)} className="mt-1 text-start" />
                                         </td>
                                     </tr>
                                 ))}
@@ -429,20 +453,22 @@ export default function Show({
 
             {tab === 'documents' && (
                 <p className="rounded border bg-white p-4 text-sm text-gray-500">
-                    {documents.length === 0 ? 'No documents uploaded yet.' : `${documents.length} document(s).`}
+                    {documents.length === 0
+                        ? (t.documents_none || 'No documents uploaded yet.')
+                        : (t.documents_count || 'Documents: :count').replace(':count', documents.length)}
                 </p>
             )}
 
             {tab === 'medical' && (
                 canViewSensitive ? (
                     <section className="rounded-lg border bg-white p-4 text-sm">
-                        <p><strong>Conditions:</strong> {student.medical?.medical_conditions || '—'}</p>
-                        <p><strong>Allergies:</strong> {student.medical?.allergies || '—'}</p>
-                        <p><strong>Doctor:</strong> {student.medical?.doctor_name || '—'} {student.medical?.doctor_phone}</p>
+                        <p><strong>{t.medical_conditions || 'Conditions'}:</strong> {student.medical?.medical_conditions || '—'}</p>
+                        <p><strong>{t.medical_allergies || 'Allergies'}:</strong> {student.medical?.allergies || '—'}</p>
+                        <p><strong>{t.medical_doctor || 'Doctor'}:</strong> {student.medical?.doctor_name || '—'} {student.medical?.doctor_phone}</p>
                     </section>
                 ) : (
                     <p className="rounded border border-red-200 bg-red-50 p-4 text-sm text-red-800">
-                        You do not have permission to view medical information.
+                        {t.medical_forbidden || 'You do not have permission to view medical information.'}
                     </p>
                 )
             )}
@@ -452,18 +478,21 @@ export default function Show({
                     <table className="min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
-                                <th className="px-3 py-2">From</th>
-                                <th className="px-3 py-2">To</th>
-                                <th className="px-3 py-2">Reason</th>
-                                <th className="px-3 py-2">Date</th>
+                                <th className="px-3 py-2">{t.history_from || 'From'}</th>
+                                <th className="px-3 py-2">{t.history_to || 'To'}</th>
+                                <th className="px-3 py-2">{t.history_reason || 'Reason'}</th>
+                                <th className="px-3 py-2">{t.col_date || 'Date'}</th>
                             </tr>
                         </thead>
                         <tbody>
+                            {statusHistory.length === 0 && (
+                                <tr><td className="px-3 py-4 text-gray-500" colSpan={4}>{t.history_none || 'No status change is recorded.'}</td></tr>
+                            )}
                             {statusHistory.map((row) => (
                                 <tr key={row.id} className="border-t">
-                                    <td className="px-3 py-2">{row.from_status}</td>
-                                    <td className="px-3 py-2">{row.to_status}</td>
-                                    <td className="px-3 py-2">{row.reason}</td>
+                                    <td className="px-3 py-2">{row.from_status ? statusName(row.from_status) : '—'}</td>
+                                    <td className="px-3 py-2">{statusName(row.to_status)}</td>
+                                    <td className="px-3 py-2">{(row.reason_key && t[row.reason_key]) || row.reason}</td>
                                     <td className="px-3 py-2">{row.effective_date}</td>
                                 </tr>
                             ))}
@@ -477,26 +506,26 @@ export default function Show({
                     <table className="min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
-                                <th className="px-3 py-2">Date</th>
-                                <th className="px-3 py-2">Type</th>
-                                <th className="px-3 py-2">Category</th>
-                                <th className="px-3 py-2">Description</th>
-                                <th className="px-3 py-2">Visible</th>
+                                <th className="px-3 py-2">{t.col_date || 'Date'}</th>
+                                <th className="px-3 py-2">{t.col_type || 'Type'}</th>
+                                <th className="px-3 py-2">{t.behavior_category || 'Category'}</th>
+                                <th className="px-3 py-2">{t.behavior_description || 'Description'}</th>
+                                <th className="px-3 py-2">{t.behavior_visible || 'Visible'}</th>
                             </tr>
                         </thead>
                         <tbody>
                             {behaviorRecords.map((row) => (
                                 <tr key={row.id} className="border-t">
                                     <td className="px-3 py-2">{row.date}</td>
-                                    <td className="px-3 py-2">{row.type}</td>
-                                    <td className="px-3 py-2">{row.category}</td>
+                                    <td className="px-3 py-2">{t[`behavior_type_${row.type}`] || row.type}</td>
+                                    <td className="px-3 py-2">{t[`behavior_category_${row.category}`] || row.category}</td>
                                     <td className="px-3 py-2">{row.description}</td>
-                                    <td className="px-3 py-2">{row.parent_visible ? 'yes' : 'no'}</td>
+                                    <td className="px-3 py-2">{row.parent_visible ? (t.yes || 'yes') : (t.no || 'no')}</td>
                                 </tr>
                             ))}
                         </tbody>
                     </table>
-                    {behaviorRecords.length === 0 && <p className="p-4 text-sm text-gray-600">No behavior records.</p>}
+                    {behaviorRecords.length === 0 && <p className="p-4 text-sm text-gray-600">{t.behavior_none || 'No behavior records.'}</p>}
                 </section>
             )}
 
@@ -506,40 +535,44 @@ export default function Show({
                         onSubmit={(e) => {
                             e.preventDefault();
                             const form = e.currentTarget;
-                            router.post(`/people/students/${student.id}/consents`, {
+                            refusals.actOn('consent', () => router.post(`/people/students/${student.id}/consents`, {
                                 consent_type: form.consent_type.value,
                                 granted: form.granted.value === '1',
-                            });
+                            }));
                         }}
                         className="flex flex-wrap gap-3 rounded-lg border bg-white p-4"
                     >
-                        <select name="consent_type" className="form-input">
+                        <select name="consent_type" className="form-input" aria-label={t.col_consent || 'Consent'}>
                             {consentTypes.map((type) => (
-                                <option key={type} value={type}>{type}</option>
+                                <option key={type} value={type}>{consentTypeName(type)}</option>
                             ))}
                         </select>
-                        <select name="granted" className="form-input">
-                            <option value="1">Grant</option>
-                            <option value="0">Revoke</option>
+                        <select name="granted" className="form-input" aria-label={t.consent_answer || 'Answer'}>
+                            <option value="1">{t.consent_grant || 'Grant'}</option>
+                            <option value="0">{t.consent_revoke || 'Revoke'}</option>
                         </select>
-                        <button type="submit" className="btn-primary">Record</button>
+                        <button type="submit" className="btn-primary">{t.consent_record || 'Record'}</button>
+                        <FormErrors errors={refusals.errorsFor('consent')} className="w-full" />
                     </form>
                     <div className="overflow-x-auto rounded-lg border bg-white">
                         <table className="min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
-                                    <th className="px-3 py-2">Type</th>
-                                    <th className="px-3 py-2">Granted</th>
-                                    <th className="px-3 py-2">Source</th>
-                                    <th className="px-3 py-2">At</th>
+                                    <th className="px-3 py-2">{t.col_type || 'Type'}</th>
+                                    <th className="px-3 py-2">{t.consent_answer || 'Answer'}</th>
+                                    <th className="px-3 py-2">{t.col_source || 'Source'}</th>
+                                    <th className="px-3 py-2">{t.col_at || 'At'}</th>
                                 </tr>
                             </thead>
                             <tbody>
+                                {consents.length === 0 && (
+                                    <tr><td className="px-3 py-4 text-gray-500" colSpan={4}>{t.consents_none || 'No consent is recorded.'}</td></tr>
+                                )}
                                 {consents.map((row) => (
-                                    <tr key={row.id} className="border-t">
-                                        <td className="px-3 py-2">{row.consent_type}</td>
-                                        <td className="px-3 py-2">{row.granted ? 'yes' : 'revoked'}</td>
-                                        <td className="px-3 py-2">{row.source}</td>
+                                    <tr key={row.id} className="border-t" data-consent-type={row.consent_type}>
+                                        <td className="px-3 py-2">{consentTypeName(row.consent_type)}</td>
+                                        <td className="px-3 py-2">{row.granted ? (t.consent_granted || 'granted') : (t.consent_revoked || 'revoked')}</td>
+                                        <td className="px-3 py-2">{t[`consent_source_${row.source}`] || row.source}</td>
                                         <td className="px-3 py-2">{row.granted_at}</td>
                                     </tr>
                                 ))}

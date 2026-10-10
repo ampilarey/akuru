@@ -10,6 +10,7 @@ use App\Domains\People\Actions\ListEmergencyContactsAction;
 use App\Domains\People\Actions\ListStudentConsentsAction;
 use App\Domains\People\Actions\ListStudentFormOptionsAction;
 use App\Domains\People\Actions\ListStudentsAction;
+use App\Domains\People\Actions\ListStudentStatusHistoryAction;
 use App\Domains\People\Actions\RecordGuardianLinkPolicyAction;
 use App\Domains\People\Actions\RemoveEmergencyContactAction;
 use App\Domains\People\Actions\SaveCustomFieldValuesAction;
@@ -26,6 +27,7 @@ use App\Domains\People\Models\ParentGuardian;
 use App\Domains\People\Models\Student;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -67,6 +69,7 @@ class StudentDirectoryController extends Controller
             // Item 13: the office's queue — pupils with a parent link that a
             // parent made on the public form and nobody has checked yet.
             'awaitingVerification' => app(ListStudentsAction::class)->countAwaitingVerification(),
+            't' => Phrases::once('people'),
         ]);
     }
 
@@ -79,7 +82,7 @@ class StudentDirectoryController extends Controller
 
         return redirect()
             ->route('people.students.show', $student)
-            ->with('success', 'Student created.');
+            ->with('success', __('people.flash_student_created'));
     }
 
     public function update(Request $request, Student $student): RedirectResponse
@@ -92,7 +95,7 @@ class StudentDirectoryController extends Controller
 
         return redirect()
             ->route('people.students.show', ['student' => $student, 'tab' => 'overview'])
-            ->with('success', 'Student updated.');
+            ->with('success', __('people.flash_student_updated'));
     }
 
     public function export(Request $request): StreamedResponse
@@ -176,19 +179,12 @@ class StudentDirectoryController extends Controller
                 // in one place rather than twice.
                 ...app(RecordGuardianLinkPolicyAction::class)->serialize($student, $guardian),
             ]),
-            'availableGuardians' => ParentGuardian::query()->orderBy('last_name')->get(['id', 'first_name', 'last_name'])
-                ->map(fn (ParentGuardian $guardian) => ['id' => $guardian->id, 'name' => $guardian->full_name]),
+            'availableGuardians' => app(ListStudentFormOptionsAction::class)->guardiansNotLinkedTo($student),
             'relationships' => $options['relationships'],
             'statuses' => $options['statuses'],
             'schools' => $options['schools'],
             'classes' => $options['classes'],
-            'statusHistory' => $student->statusHistory->map(fn ($row) => [
-                'id' => $row->id,
-                'from_status' => $row->from_status?->value,
-                'to_status' => $row->to_status?->value,
-                'reason' => $row->reason,
-                'effective_date' => $row->effective_date?->toDateString(),
-            ]),
+            'statusHistory' => app(ListStudentStatusHistoryAction::class)->execute($student),
             'consentTypes' => array_map(fn (ConsentType $type) => $type->value, ConsentType::cases()),
             'consents' => app(ListStudentConsentsAction::class)->execute((int) $student->id),
             // Loaded on this page since August and dropped before serialising:
@@ -205,6 +201,7 @@ class StudentDirectoryController extends Controller
             // it is a plain link, and it is withheld when the §52.27 flag is
             // off rather than sending somebody to a 404.
             'hifzProgressUrl' => config('quran.module_enabled') ? route('students.quran-progress', $student) : null,
+            't' => Phrases::once('people'),
         ]);
     }
 
@@ -213,7 +210,7 @@ class StudentDirectoryController extends Controller
         app(SaveEmergencyContactAction::class)
             ->execute((int) $student->id, $this->validatedContact($request));
 
-        return back()->with('success', 'Emergency contact saved.');
+        return back()->with('success', __('people.flash_contact_saved'));
     }
 
     public function updateEmergencyContact(Request $request, Student $student, EmergencyContact $contact): RedirectResponse
@@ -221,14 +218,14 @@ class StudentDirectoryController extends Controller
         app(SaveEmergencyContactAction::class)
             ->execute((int) $student->id, $this->validatedContact($request), $contact);
 
-        return back()->with('success', 'Emergency contact updated.');
+        return back()->with('success', __('people.flash_contact_updated'));
     }
 
     public function destroyEmergencyContact(Student $student, EmergencyContact $contact): RedirectResponse
     {
         app(RemoveEmergencyContactAction::class)->execute((int) $student->id, $contact);
 
-        return back()->with('success', 'Emergency contact removed.');
+        return back()->with('success', __('people.flash_contact_removed'));
     }
 
     /**
@@ -259,7 +256,7 @@ class StudentDirectoryController extends Controller
 
         return redirect()
             ->route('people.students.show', ['student' => $student, 'tab' => 'overview'])
-            ->with('success', 'Custom fields saved.');
+            ->with('success', __('people.flash_fields_saved'));
     }
 
     public function attachGuardian(Request $request, Student $student): RedirectResponse
@@ -294,7 +291,7 @@ class StudentDirectoryController extends Controller
 
         return redirect()
             ->route('people.students.show', ['student' => $student, 'tab' => 'guardians'])
-            ->with('success', 'Guardian attached.');
+            ->with('success', __('people.flash_guardian_attached'));
     }
 
     /**
@@ -323,7 +320,7 @@ class StudentDirectoryController extends Controller
 
         return redirect()
             ->route('people.students.show', ['student' => $student, 'tab' => 'guardians'])
-            ->with('success', 'Guardian record updated.');
+            ->with('success', __('people.flash_guardian_updated'));
     }
 
     public function detachGuardian(Student $student, ParentGuardian $guardian): RedirectResponse
@@ -332,7 +329,7 @@ class StudentDirectoryController extends Controller
 
         return redirect()
             ->route('people.students.show', ['student' => $student, 'tab' => 'guardians'])
-            ->with('success', 'Guardian detached.');
+            ->with('success', __('people.flash_guardian_detached'));
     }
 
     /**
@@ -378,7 +375,7 @@ class StudentDirectoryController extends Controller
             'is_primary' => ['sometimes', 'boolean'],
             'can_pickup' => ['sometimes', 'boolean'],
             'financial_responsible' => ['sometimes', 'boolean'],
-        ]);
+        ], [], ['student_id' => __('people.student_number')]);
     }
 
     private function emptyToNull(mixed $value): mixed

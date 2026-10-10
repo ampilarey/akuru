@@ -1,6 +1,14 @@
 import { useForm, Link } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
+import FormErrors from '../../../Components/FormErrors';
 
+/**
+ * The school's students. Every word is the `people` book's (slice PE1,
+ * STATUS §5qp); a pupil's status, a gender and a guardian's relationship are
+ * named rather than printed as codes. A class reads with its section — two
+ * sections of one grade read alike — and the list can be read for a class,
+ * which the server took and the screen never offered.
+ */
 export default function Index({
     students,
     filters,
@@ -10,7 +18,10 @@ export default function Index({
     guardians = [],
     relationships = [],
     awaitingVerification = 0,
+    t = {},
 }) {
+    const statusName = (status) => t[`student_status_${status}`] || status;
+    const relationshipName = (relationship) => t[`relationship_${relationship}`] || relationship;
     const form = useForm({
         search: filters.search || '',
         status: filters.status || '',
@@ -40,20 +51,32 @@ export default function Index({
         e.preventDefault();
         form.get('/people/students', { preserveState: true });
     };
+    const exportQuery = new URLSearchParams({
+        search: form.data.search || '',
+        status: form.data.status || '',
+        class_id: form.data.class_id || '',
+    }).toString();
 
     return (
-        <AppShell title="Students">
+        <AppShell title={t.students_title || 'Students'}>
             <form onSubmit={apply} className="mb-4 flex flex-wrap gap-3 rounded-lg border bg-white p-4">
                 <input
                     className="form-input min-w-56"
-                    placeholder="Search name, ID, student number"
+                    aria-label={t.students_search || 'Search name, ID, student number'}
+                    placeholder={t.students_search || 'Search name, ID, student number'}
                     value={form.data.search}
                     onChange={(e) => form.setData('search', e.target.value)}
                 />
-                <select className="form-input" value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
-                    <option value="">All statuses</option>
+                <select className="form-input" aria-label={t.status || 'Status'} value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
+                    <option value="">{t.students_all_statuses || 'All statuses'}</option>
                     {statuses.map((status) => (
-                        <option key={status} value={status}>{status}</option>
+                        <option key={status} value={status}>{statusName(status)}</option>
+                    ))}
+                </select>
+                <select className="form-input" aria-label={t.col_class || 'Class'} value={form.data.class_id} onChange={(e) => form.setData('class_id', e.target.value)} data-testid="class-filter">
+                    <option value="">{t.students_all_classes || 'All classes'}</option>
+                    {classes.map((room) => (
+                        <option key={room.id} value={room.id}>{room.label}</option>
                     ))}
                 </select>
                 <label className="flex items-center gap-2 text-sm">
@@ -62,17 +85,14 @@ export default function Index({
                         checked={Boolean(form.data.awaiting_verification)}
                         onChange={(e) => form.setData('awaiting_verification', e.target.checked ? '1' : '')}
                     />
-                    Awaiting parent verification
+                    {t.students_awaiting || 'Awaiting parent verification'}
                     {awaitingVerification > 0 && (
                         <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-900" data-testid="awaiting-verification-count">{awaitingVerification}</span>
                     )}
                 </label>
-                <button type="submit" className="btn-primary">Filter</button>
-                <a
-                    className="btn-secondary"
-                    href={`/people/students/export?search=${encodeURIComponent(form.data.search || '')}&status=${encodeURIComponent(form.data.status || '')}`}
-                >
-                    Export CSV
+                <button type="submit" className="btn-primary">{t.students_filter || 'Filter'}</button>
+                <a className="btn-secondary" href={`/people/students/export?${exportQuery}`}>
+                    {t.export_csv || 'Export CSV'}
                 </a>
             </form>
 
@@ -83,12 +103,10 @@ export default function Index({
                 }}
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
             >
-                <h2 className="md:col-span-3 font-semibold">Add student</h2>
-                {Object.keys(createForm.errors).length > 0 && (
-                    <p className="md:col-span-3 text-sm text-red-600">{Object.values(createForm.errors).join(' ')}</p>
-                )}
+                <h2 className="md:col-span-3 font-semibold">{t.students_add || 'Add student'}</h2>
+                <FormErrors errors={createForm.errors} className="md:col-span-3" />
                 <label className="text-xs text-gray-500">
-                    First name
+                    {t.first_name || 'First name'}
                     <input
                         className="form-input mt-1 w-full"
                         value={createForm.data.first_name}
@@ -96,7 +114,7 @@ export default function Index({
                     />
                 </label>
                 <label className="text-xs text-gray-500">
-                    Middle name
+                    {t.middle_name || 'Middle name'}
                     <input
                         className="form-input mt-1 w-full"
                         value={createForm.data.middle_name}
@@ -104,7 +122,7 @@ export default function Index({
                     />
                 </label>
                 <label className="text-xs text-gray-500">
-                    Last name
+                    {t.last_name || 'Last name'}
                     <input
                         className="form-input mt-1 w-full"
                         value={createForm.data.last_name}
@@ -112,7 +130,7 @@ export default function Index({
                     />
                 </label>
                 <label className="text-xs text-gray-500">
-                    Date of birth
+                    {t.date_of_birth || 'Date of birth'}
                     <input
                         type="date"
                         className="form-input mt-1 w-full"
@@ -121,54 +139,54 @@ export default function Index({
                     />
                 </label>
                 <label className="text-xs text-gray-500">
-                    Gender
+                    {t.gender || 'Gender'}
                     <select
                         className="form-input mt-1 w-full"
                         value={createForm.data.gender}
                         onChange={(e) => createForm.setData('gender', e.target.value)}
                     >
-                        <option value="">Select</option>
-                        <option value="female">female</option>
-                        <option value="male">male</option>
+                        <option value="">{t.gender_choose || 'Select'}</option>
+                        <option value="female">{t.gender_female || 'Female'}</option>
+                        <option value="male">{t.gender_male || 'Male'}</option>
                     </select>
                 </label>
                 <label className="text-xs text-gray-500">
-                    Student number (optional)
+                    {t.student_number_optional || 'Student number (optional)'}
                     <input
                         className="form-input mt-1 w-full"
-                        placeholder="Leave blank for course-only"
+                        placeholder={t.student_number_hint || 'Leave blank for course-only'}
                         value={createForm.data.student_id}
                         onChange={(e) => createForm.setData('student_id', e.target.value)}
                     />
                 </label>
                 <label className="text-xs text-gray-500">
-                    School (optional)
+                    {t.school_optional || 'School (optional)'}
                     <select
                         className="form-input mt-1 w-full"
                         value={createForm.data.school_id}
                         onChange={(e) => createForm.setData('school_id', e.target.value)}
                     >
-                        <option value="">None</option>
+                        <option value="">{t.none || 'None'}</option>
                         {schools.map((school) => (
                             <option key={school.id} value={school.id}>{school.name}</option>
                         ))}
                     </select>
                 </label>
                 <label className="text-xs text-gray-500">
-                    Class (optional)
+                    {t.class_optional || 'Class (optional)'}
                     <select
                         className="form-input mt-1 w-full"
                         value={createForm.data.class_id}
                         onChange={(e) => createForm.setData('class_id', e.target.value)}
                     >
-                        <option value="">None</option>
+                        <option value="">{t.none || 'None'}</option>
                         {classes.map((room) => (
                             <option key={room.id} value={room.id}>{room.label}</option>
                         ))}
                     </select>
                 </label>
                 <label className="text-xs text-gray-500">
-                    Admission date (optional)
+                    {t.admission_date_optional || 'Admission date (optional)'}
                     <input
                         type="date"
                         className="form-input mt-1 w-full"
@@ -177,39 +195,39 @@ export default function Index({
                     />
                 </label>
                 <label className="text-xs text-gray-500">
-                    Status
+                    {t.status || 'Status'}
                     <select
                         className="form-input mt-1 w-full"
                         value={createForm.data.status}
                         onChange={(e) => createForm.setData('status', e.target.value)}
                     >
                         {statuses.map((status) => (
-                            <option key={status} value={status}>{status}</option>
+                            <option key={status} value={status}>{statusName(status)}</option>
                         ))}
                     </select>
                 </label>
                 <label className="text-xs text-gray-500">
-                    Guardian (optional)
+                    {t.guardian_optional || 'Guardian (optional)'}
                     <select
                         className="form-input mt-1 w-full"
                         value={createForm.data.guardian_id}
                         onChange={(e) => createForm.setData('guardian_id', e.target.value)}
                     >
-                        <option value="">None</option>
+                        <option value="">{t.none || 'None'}</option>
                         {guardians.map((guardian) => (
                             <option key={guardian.id} value={guardian.id}>{guardian.name}</option>
                         ))}
                     </select>
                 </label>
                 <label className="text-xs text-gray-500">
-                    Relationship
+                    {t.relationship || 'Relationship'}
                     <select
                         className="form-input mt-1 w-full"
                         value={createForm.data.guardian_relationship}
                         onChange={(e) => createForm.setData('guardian_relationship', e.target.value)}
                     >
                         {relationships.map((rel) => (
-                            <option key={rel} value={rel}>{rel}</option>
+                            <option key={rel} value={rel}>{relationshipName(rel)}</option>
                         ))}
                     </select>
                 </label>
@@ -219,10 +237,10 @@ export default function Index({
                         checked={createForm.data.is_primary}
                         onChange={(e) => createForm.setData('is_primary', e.target.checked)}
                     />
-                    Primary guardian
+                    {t.primary_guardian || 'Primary guardian'}
                 </label>
                 <div className="md:col-span-3">
-                    <button type="submit" className="btn-primary" disabled={createForm.processing}>Add student</button>
+                    <button type="submit" className="btn-primary" disabled={createForm.processing}>{t.students_add || 'Add student'}</button>
                 </div>
             </form>
 
@@ -230,14 +248,17 @@ export default function Index({
                 <table className="min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
-                            <th className="px-3 py-2">Name</th>
-                            <th className="px-3 py-2">Number</th>
-                            <th className="px-3 py-2">National ID</th>
-                            <th className="px-3 py-2">Status</th>
-                            <th className="px-3 py-2">Class</th>
+                            <th className="px-3 py-2">{t.col_name || 'Name'}</th>
+                            <th className="px-3 py-2">{t.col_number || 'Number'}</th>
+                            <th className="px-3 py-2">{t.col_national_id || 'National ID'}</th>
+                            <th className="px-3 py-2">{t.status || 'Status'}</th>
+                            <th className="px-3 py-2">{t.col_class || 'Class'}</th>
                         </tr>
                     </thead>
                     <tbody>
+                        {students.length === 0 && (
+                            <tr><td className="px-3 py-4 text-gray-500" colSpan={5}>{t.students_none || 'No student matches.'}</td></tr>
+                        )}
                         {students.map((student) => (
                             <tr key={student.id} className="border-t">
                                 <td className="px-3 py-2">
@@ -247,8 +268,8 @@ export default function Index({
                                 </td>
                                 <td className="px-3 py-2">{student.student_id}</td>
                                 <td className="px-3 py-2">{student.national_id}</td>
-                                <td className="px-3 py-2">{student.status}</td>
-                                <td className="px-3 py-2">{student.class_name}</td>
+                                <td className="px-3 py-2">{statusName(student.status)}</td>
+                                <td className="px-3 py-2">{[student.class_name, student.class_section].filter(Boolean).join(' ')}</td>
                             </tr>
                         ))}
                     </tbody>

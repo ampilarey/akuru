@@ -13,10 +13,12 @@
  *      opens the Consents tab, and the seeded photo consent is there;
  *   2. the public achievements page shows the pupil's award with the
  *      photo on file — the seeded consent holds;
- *   3. the office grants a marketing consent: one row, yes, from admin;
- *   4. revokes it: a second row, revoked — and the first still says yes;
+ *   3. the office grants a marketing consent: one row, granted, from the
+ *      office;
+ *   4. revokes it: a second row, revoked — and the first still says granted;
  *   5. revokes it again: nothing changes, no third row (recording the same
- *      answer twice is a no-op, not a duplicate);
+ *      answer twice is a no-op, not a duplicate), and the page says so —
+ *      it said "Consent recorded." (slice PE1);
  *   6. revokes the photo consent — and the public page no longer offers the
  *      photo, though the award and the name are still there;
  *   7. grants it back, so the seeded state is what the next walk finds.
@@ -144,8 +146,9 @@ async function settles(page, needle, ms = 6000) {
 }
 
 // The consents table, newest first: one line per row, `type granted source at`.
+// A row is found by its type's code, which the page names (slice PE1).
 const consentRows = async (page, type) => {
-    const rows = page.locator('tr', { hasText: type });
+    const rows = page.locator(`tr[data-consent-type="${type}"]`);
     const out = [];
     for (let i = 0; i < (await rows.count()); i += 1) {
         out.push((await rows.nth(i).innerText()).replace(/\s+/g, ' ').trim());
@@ -160,14 +163,14 @@ const consentRows = async (page, type) => {
 // default before the click posts — the first version of this walk "revoked"
 // a consent by posting Grant again. Loaded fresh there is no flash to wait
 // for until this record has landed.
-async function record(page, type, granted) {
+async function record(page, type, granted, told = 'Consent recorded.') {
     await page.goto(`${studentUrl}?tab=consents`, { waitUntil: 'networkidle' });
     const form = page.locator('form', { has: page.locator('select[name="consent_type"]') });
     await form.locator('select[name="consent_type"]').selectOption(type);
     await form.locator('select[name="granted"]').selectOption(granted ? '1' : '0');
     await form.locator('button:has-text("Record")').click();
 
-    return settles(page, 'Consent recorded.');
+    return settles(page, told);
 }
 
 let studentUrl = '';
@@ -197,7 +200,7 @@ await admin.goto(`${studentUrl}?tab=consents`, { waitUntil: 'networkidle' });
 check('the Consents tab opens on the pupil', (await admin.innerText('body')).includes(NAME) && (await admin.locator('select[name="consent_type"]').count()) > 0, (await text(admin)).slice(0, 160));
 
 const seeded = await consentRows(admin, PHOTO);
-check('the seeded photo consent is on it, granted', seeded.some((row) => /\byes\b/.test(row)), seeded.join(' / ') || 'no photo_media_use row');
+check('the seeded photo consent is on it, granted', seeded.some((row) => /\bgranted\b/.test(row)), seeded.join(' / ') || 'no photo_media_use row');
 
 if ((await consentRows(admin, MARKETING)).length) {
     check('there is a clean marketing consent to walk', false, 'a marketing_messages row is already there — left over from an earlier run. Re-seed first: php artisan db:seed --class=SmokeMarkerSeeder');
@@ -214,15 +217,15 @@ check('and offers the photo while consent stands', (await card().count()) > 0 &&
 // 3. grant
 check('a marketing consent is granted from the screen', await record(admin, MARKETING, true), (await text(admin)).slice(0, 160));
 let rows = await consentRows(admin, MARKETING);
-check('one row: yes, from admin', rows.length === 1 && /\byes\b/.test(rows[0]) && /\badmin\b/.test(rows[0]), rows.join(' / '));
+check('one row: granted, from the office', rows.length === 1 && /\bgranted\b/.test(rows[0]) && /\bOffice\b/.test(rows[0]), rows.join(' / '));
 
 // 4. revoke — history, not an update
 check('it is revoked from the screen', await record(admin, MARKETING, false), (await text(admin)).slice(0, 160));
 rows = await consentRows(admin, MARKETING);
-check('two rows now: the newest revoked, the first still yes', rows.length === 2 && /\brevoked\b/.test(rows[0]) && /\byes\b/.test(rows[1]), rows.join(' / '));
+check('two rows now: the newest revoked, the first still granted', rows.length === 2 && /\brevoked\b/.test(rows[0]) && /\bgranted\b/.test(rows[1]), rows.join(' / '));
 
 // 5. the same answer twice is a no-op
-check('revoking again is accepted', await record(admin, MARKETING, false), (await text(admin)).slice(0, 160));
+check('revoking again is accepted, and the page says nothing changed', await record(admin, MARKETING, false, 'That answer is already on record; nothing changed.'), (await text(admin)).slice(0, 160));
 rows = await consentRows(admin, MARKETING);
 check('and adds no row', rows.length === 2, `${rows.length} rows: ${rows.join(' / ')}`);
 

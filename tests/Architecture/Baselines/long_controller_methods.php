@@ -49,7 +49,7 @@ return [
     'app/Domains/Identity/Http/Controllers/Auth/OtpLoginController.php::requestOtp' => 37,
     'app/Domains/Identity/Http/Controllers/Auth/PasswordOtpController.php::sendOtp' => 66,
     'app/Domains/Notifications/Http/Controllers/SmsApiController.php::send' => 60,
-    'app/Domains/People/Http/Controllers/StudentDirectoryController.php::show' => 72,
+    'app/Domains/People/Http/Controllers/StudentDirectoryController.php::show' => 66,
     'app/Domains/People/Http/Controllers/StudentDirectoryController.php::validatedStudent' => 40,
     'app/Domains/Portal/Http/Controllers/PortalHomeController.php::export' => 75,
     'app/Domains/Portal/Http/Controllers/PortalPerformanceController.php::export' => 37,

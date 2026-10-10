@@ -4983,6 +4983,136 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qp. The students list and a student's profile in Dhivehi and Arabic (C21 PE1, 2026-10-10)
+
+The sixteenth slice of BACKLOG C21, and the first of People. These two
+screens are where the office keeps its pupils:
+- the students list: finding a pupil, adding one, the CSV;
+- a student's profile: the details, the custom fields, the guardians, the
+  emergency contacts, the documents, the medical record, the status
+  history, the consents and the behaviour records.
+
+They read no phrase book, and were English throughout:
+- every heading, tab, column, field, button and hint;
+- a pupil's status, a gender, a guardian's relationship, a link's consent
+  and verification, a consent's type and source and a behaviour record's
+  type, printed as codes (*prospective*, *grandmother*, *photo_media_use*,
+  *sms_keyword*) or by the server's English labels (*Not asked*);
+- a guardian's responsibilities as *primary pickup financial*;
+- the reasons the system wrote in a pupil's status history (*Created via
+  student directory*, *promotion: leave*);
+- ten saved messages and thirteen refusals.
+
+Five defects were found on the way:
+- **Attaching a guardian already linked was a 500 page.** Every guardian on
+  file was offered, the pupil's own among them, and the Action threw an
+  `InvalidArgumentException`. Only the guardians not linked yet are
+  offered now, and the Action refuses a second link in the page's
+  language; with nobody left to link, the form says so.
+- **A refused attach, a refused Save or Detach on a guardian, a refused
+  contact removal and a refused consent were said nowhere.** The guardian
+  form's errors were never shown, and the rest posted with `router` and
+  showed nothing. Each is said under its form or its row; the contact form,
+  which said only a name's and a phone's refusals, says the rest under it.
+- **The list could not be read for a class**, though the server took one;
+  the screen offered no class. It has one, and the CSV reads the same
+  class.
+- **The list printed a class without its section**, so two sections of one
+  grade read alike. A class reads with its section, as the CSV does.
+- **Recording a consent the pupil already had said "Consent recorded."**
+  The Action records nothing for the same answer twice — the history is
+  kept, not repeated — so the page now says nothing changed.
+
+**The change:**
+- **A new `people` book**, 169 phrases in three languages (145 for
+  the pages, 24 for the server). The two pages read it through
+  `Phrases::once('people')`.
+- **Codes are named**: a pupil's status, a gender, a guardian's
+  relationship and responsibilities, a link's consent and verification, a
+  consent's type, answer and source, a behaviour record's type and the
+  three categories a school starts with.
+- **A reason the system wrote in a status history is named** in the page's
+  language — the directory's two and the promotion's two, on a row from any
+  day; a reason a person typed stays as typed (`ListStudentStatusHistoryAction`).
+- **What the server says is in the page's language**: the saved messages
+  and refusals of the two controllers and six actions, the custom fields'
+  among them (they name the field by its label in the page's language). The
+  student number is named so in Laravel's own refusals — *student id* is a
+  pupil everywhere else in the app.
+- **Every field the two screens post is named** in Laravel's own
+  refusals: 21 more fields in Dhivehi and Arabic.
+- **Every field is named** for a screen reader, and every table that can
+  be empty says so.
+
+What the school writes stays as written: a pupil's or a guardian's name, a
+class's, a contact's, a note, a behaviour record's description and a
+category the school typed. The note the public registration form leaves on
+a link it made stays as written too. The CSV keeps its English column codes.
+
+`StudentDirectoryController::show` moves the status history and the
+guardians on offer into Actions, and is shorter for it: 72 → 66
+lines of code in the thin-controllers baseline.
+
+**Tests:**
+- `PeopleSpeaksThreeLanguagesTest` (new) covers the two screens and their
+  eight tabs, 8 server files and the codes. It also checks every field the
+  two controllers validate has a Dhivehi and an Arabic name, and serves the
+  screens in Dhivehi, where:
+  - a student with no first name is refused, the field named in Dhivehi;
+    one with it is added, said in Dhivehi; a student number another pupil
+    has is refused, named as the student number;
+  - the list reads for a class, the class with its section;
+  - the profile's history names the reason the directory wrote;
+  - a guardian is attached and no longer offered; attached again, refused
+    in Dhivehi — it was a 500;
+  - a guardian's record for a pupil it is not linked to is refused;
+  - a contact is saved; one taken off through another pupil's page is
+    refused, and stays; a contact with a blank name is refused;
+  - a consent is recorded; the same answer again says nothing changed, and
+    adds no row;
+  - a required custom field left empty is refused by its Dhivehi label.
+
+The tests for the areas it touches (People, Localization, Architecture, the
+behaviour records and the forms that link guardians): **431 passed (23141
+assertions)**.
+
+Whole suite locally: **3004 passed (57704 assertions)**.
+
+**Walks:**
+- **`people-language.mjs`** (new) 61/61:
+  - the students list and the walks' pupil's profile on all eight tabs read
+    right to left under `/dv` and `/ar`, with nothing left in English and
+    every field named;
+  - in Dhivehi, the office:
+    - adds a student with no first name and is refused under the form, the
+      field named in Dhivehi; no student is made;
+    - reads the list for the pupil's class: the address carries the class,
+      and every row names it with its section (*Grade 5 A*);
+    - finds no guardian already linked offered to attach on the Guardians
+      tab — every guardian on file was;
+    - saves a guardian's record with a verification a stale page sends, and
+      is refused under the row in Dhivehi — a refused Save was said nowhere;
+      the link is unchanged;
+    - adds an emergency contact whose relationship runs past 255 letters,
+      and is refused under the form — only a name's and a phone's refusals
+      were said; no contact is made;
+    - grants the photo consent the pupil already has, and is told nothing
+      changed; no row is added;
+    - reads the status history of the pupil `middle-name.mjs` added from the
+      directory, its reason named in Dhivehi.
+
+One walk changed, not for a defect in the app: **`consent.mjs`** found a
+consent's row by the code the page printed (*photo_media_use*) and read
+*yes* and *admin*; the page names the type, the answer and the source, so
+the walk finds the row by its type and reads *granted* and *Office*, and on
+the same answer twice it is told nothing changed: 19/19.
+
+The other walks: `family.mjs` 40/40, `middle-name.mjs` 21/21, `signup.mjs`
+17/17, `own-data.mjs` (every family saw their own records, and nobody
+else's), `sweep.mjs` 25/25, `create-sweep.mjs` 6/6, `admin-hub.mjs` 26/26,
+`admin-layout.mjs` 15/15, `admin.mjs` 43/43, `rtl.mjs` 8/8, `nav.mjs` 14/14,
+`mobile.mjs` 19/19, `portal-language.mjs` 212/212.
+
 ## 5qo. The money coming in, in Dhivehi and Arabic (C21 FN2, 2026-10-10)
 
 The fifteenth slice of BACKLOG C21, and the second and last of Finance.

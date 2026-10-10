@@ -20,7 +20,7 @@ class StudentConsentController extends Controller
             'granted' => ['required', 'boolean'],
         ]);
 
-        app(RecordConsentAction::class)->execute(
+        $consent = app(RecordConsentAction::class)->execute(
             ConsentPersonType::Student,
             $student->id,
             $data['consent_type'],
@@ -31,6 +31,6 @@ class StudentConsentController extends Controller
 
         return redirect()
             ->route('people.students.show', ['student' => $student, 'tab' => 'consents'])
-            ->with('success', 'Consent recorded.');
+            ->with('success', $consent->wasRecentlyCreated ? __('people.flash_consent_recorded') : __('people.flash_consent_unchanged'));
     }
 }
