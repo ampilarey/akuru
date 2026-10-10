@@ -106,8 +106,11 @@ it('can write every value its status columns allow', function () {
         'recitation_practices.status' => ['needs_revision'],
 
         // A registration flow is started and abandoned; nothing marks one
-        // finished. The `resume` link (OWNER_ACTIONS item 14) reads this table.
-        'registration_flows.status' => ['completed'],
+        // finished, or failed. The `resume` link (OWNER_ACTIONS item 14) reads
+        // this table. `failed` passed until slice RG1c only because the same
+        // controller said *Payment initiation failed.* in English — the gate
+        // reads words, and that sentence moved into the `register` book.
+        'registration_flows.status' => ['completed', 'failed'],
     ];
 
     $sources = statusGateSources();

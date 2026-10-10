@@ -36,8 +36,13 @@
  *     the account: the refusal used to come after the account was claimed,
  *     with the code spent, so the next send went back to the code page.
  *
- * The planted account and the one made for the number are removed first and
- * last too.
+ * Then (slice RG1c) the account goes on to the terms and code step, read the
+ * same way before and after its code is sent: the terms ticked, the code sent
+ * and said once, the code (read from the log sender) typed, and the last page
+ * read for Dhivehi, right to left.
+ *
+ * The planted account and the one made for the number, with the enrolment
+ * and learner the last steps make, are removed first and last too.
  *
  *   node scripts/smoke/register-language.mjs
  *
@@ -182,7 +187,8 @@ const idNumber = () => `A${String(Math.floor(Math.random() * 1e6)).padStart(6, '
 const yearsAgo = (years) => { const d = new Date(); d.setFullYear(d.getFullYear() - years); return d.toISOString().slice(0, 10); };
 const LOCAL = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(BASE);
 
-const cleanUpB = () => tinker(`$ids = DB::table('user_contacts')->where('value', '${PLANTED}')->orWhere('value', 'like', '%${NEW_PHONE}')->pluck('user_id'); DB::table('user_contact_otps')->whereIn('user_contact_id', DB::table('user_contacts')->whereIn('user_id', $ids)->pluck('id'))->delete(); DB::table('registration_flows')->whereIn('user_id', $ids)->delete(); DB::table('user_contacts')->whereIn('user_id', $ids)->delete(); DB::table('users')->whereIn('id', $ids)->delete(); echo 'ok';`);
+// The walk's own number, stored with the country code; the last steps' enrolment and learner go with it (slice RG1c).
+const cleanUpB = () => tinker(`$ids = DB::table('user_contacts')->whereIn('value', ['${PLANTED}', '+960${NEW_PHONE}', '960${NEW_PHONE}', '${NEW_PHONE}'])->pluck('user_id'); $students = DB::table('students')->whereIn('user_id', $ids)->pluck('id'); DB::table('course_enrollments')->whereIn('unified_student_id', $students)->delete(); DB::table('students')->whereIn('id', $students)->delete(); DB::table('user_contact_otps')->whereIn('user_contact_id', DB::table('user_contacts')->whereIn('user_id', $ids)->pluck('id'))->delete(); DB::table('registration_flows')->whereIn('user_id', $ids)->delete(); DB::table('user_contacts')->whereIn('user_id', $ids)->delete(); DB::table('users')->whereIn('id', $ids)->delete(); echo 'ok';`);
 cleanUpB();
 tinker(`$u = \\App\\Domains\\Identity\\Models\\User::factory()->create(['name' => 'Smoke Learner', 'password' => Hash::make('smoke-pass-1'), 'force_password_change' => false]); DB::table('user_contacts')->insert(['user_id' => $u->id, 'type' => 'email', 'value' => '${PLANTED}', 'is_primary' => true, 'verified_at' => now(), 'created_at' => now(), 'updated_at' => now()]); echo 'ok';`);
 
@@ -266,6 +272,38 @@ if (code) {
     const ready = book('flash_account_ready');
     const next = flat(await fresh.locator('main').textContent());
     check('corrected and sent again, the account is made and the next step says so in Dhivehi', /\/register\/enroll\/confirm/.test(fresh.url()) && next.includes(ready), `${fresh.url().replace(BASE, '')} ${next.slice(0, 100)}`);
+
+    // ------------------------------------- the terms and code step, and the last page (slice RG1c)
+    const terms = await readMain(fresh);
+    const termsLeft = english(terms.texts, authors);
+    check('the terms and code step: right to left', terms.dir === 'rtl', `dir=${terms.dir}`);
+    check('the terms and code step: nothing left in English', termsLeft.length === 0, termsLeft.slice(0, 6).join(' | '));
+    check('the terms and code step: every field is named', terms.unnamed.length === 0, terms.unnamed.slice(0, 3).join(' | '));
+
+    await fresh.locator('#terms-check').check();
+    await Promise.all([fresh.waitForLoadState('networkidle'), fresh.getByTestId('send-enroll-code').click()]);
+    await fresh.waitForLoadState('networkidle');
+    const sentNow = book('flash_code_sent_phone');
+    const afterSend = flat(await fresh.locator('main').textContent());
+    check('the enrolment\'s code is sent, said in Dhivehi, once', afterSend.split(sentNow).length - 1 === 1, `${afterSend.split(sentNow).length - 1} times: ${afterSend.slice(0, 100)}`);
+    const step = await readMain(fresh);
+    const stepLeft = english(step.texts, authors);
+    check('the code step: nothing left in English, every field named', stepLeft.length === 0 && step.unnamed.length === 0, [...stepLeft.slice(0, 4), ...step.unnamed.slice(0, 2)].join(' | '));
+
+    // The enrolment's code: the newest this number was sent.
+    const enrolSms = tinker(`echo (string) (DB::table('sms_receipts')->where('phone', 'like', '%${NEW_PHONE}')->latest('id')->value('body') ?? '');`);
+    const enrolCode = enrolSms.match(/\b(\d{6})\b/)?.[1];
+    check('a code is sent for the enrolment', Boolean(enrolCode), enrolCode ? 'found' : `no code in “${enrolSms.slice(0, 60)}”`);
+    if (enrolCode) {
+        // Six digits send the form on their own.
+        await Promise.all([fresh.waitForURL(/\/register\/complete/, { timeout: 20000 }).catch(() => {}), fresh.locator('#otp-code').fill(enrolCode)]);
+        await fresh.waitForLoadState('networkidle');
+        const last = await readMain(fresh);
+        const lastLeft = english(last.texts, authors);
+        const lastText = flat(await fresh.locator('main').textContent());
+        check('the code enrols, and the last page says so in Dhivehi', /\/register\/complete/.test(fresh.url()) && lastText.includes(book('complete_heading')), `${fresh.url().replace(BASE, '')} ${lastText.slice(0, 100)}`);
+        check('the last page: right to left, nothing left in English', last.dir === 'rtl' && lastLeft.length === 0, `dir=${last.dir} ${lastLeft.slice(0, 6).join(' | ')}`);
+    }
 }
 
 cleanUpB();

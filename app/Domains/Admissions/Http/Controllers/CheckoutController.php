@@ -57,13 +57,13 @@ class CheckoutController extends Controller
             'student_id' => ['nullable', 'exists:students,id'],
             'enrollment_id' => ['nullable', 'exists:course_enrollments,id'],
         ], [
-            'accept_terms.required' => 'You must accept the Terms & Conditions, Refund Policy, and Privacy Policy to proceed.',
+            'accept_terms.required' => __('register.error_terms_all'),
         ]);
 
         $fee = (float) ($course->registration_fee_amount ?? 0);
         if ($fee < 0.01) {
             return redirect()->route('courses.register.show', $course)
-                ->with('error', 'This course has no registration fee. Please complete registration without payment.');
+                ->with('error', __('register.error_no_fee'));
         }
 
         $user = $request->user();
@@ -165,7 +165,7 @@ class CheckoutController extends Controller
             report($e);
 
             return redirect()->route('checkout.course.show', $course)
-                ->with('error', $e->getMessage() ?: 'Payment could not be started. Please try again.');
+                ->with('error', $e->getMessage() ?: __('register.error_payment_start'));
         }
     }
 }
