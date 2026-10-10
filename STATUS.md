@@ -4983,6 +4983,138 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qq. The staff profiles, the custom fields and the sensitive records in Dhivehi and Arabic (C21 PE2, 2026-10-10)
+
+The seventeenth slice of BACKLOG C21, and the second and last of People.
+Five more office screens:
+- the staff profiles: the list, adding a profile with its login, the CSV;
+- a member of staff's profile: the employment, the custom fields, the
+  qualifications;
+- the custom fields a school adds to a pupil's, a member of staff's or an
+  admission application's record;
+- the admission form preview;
+- the sensitive records: a pupil's health and welfare notes, and who has
+  read them.
+
+They read no phrase book, and were English throughout:
+- every heading, column, field, button and hint;
+- a kind of employment and a staff status, printed as codes (*full_time*,
+  *on_leave*);
+- whose record a custom field belongs to and its type, printed as codes
+  (*admission_applications*, *multiselect*), and its settings as *required
+  admission active*;
+- a note's category, by the server's English label;
+- the name the server wrote for an author or a reader it no longer knows
+  (*Unknown*);
+- eleven saved messages and seven refusals.
+
+Five defects were found on the way:
+- **A note's refused Archive was said nowhere.** The button posted with
+  `router` and showed nothing, so a note archived from another page
+  meanwhile looked like a button that did nothing. The refusal is said
+  under the note.
+- **The note form said only a summary's refusal.** A refused category,
+  detail, review date or pupil was said nowhere. The rest is said under the
+  form.
+- **The custom field form said only a key's, a type's and an English
+  label's refusal.** A refused Dhivehi or Arabic label or option list was
+  said nowhere. Each is said beside its field, and the rest under the form.
+- **The staff and qualification forms' fields had only a placeholder**, so a
+  screen reader named none of them. Each is named.
+- **An added qualification stayed in the form's boxes**, ready to be added
+  twice. The form clears once it is added.
+
+**The change:**
+- **The `people` book grows by 108 phrases** in three languages (90 for
+  the pages, 18 for the server), 277 in all. The five pages read it through
+  `Phrases::once('people')`.
+- **Codes are named**: a kind of employment, a staff status, whose record a
+  custom field belongs to, a field's type and its settings, and a note's
+  category.
+- **What the server says is in the page's language**: the saved messages
+  and refusals of three controllers and two actions, and the name the two
+  note lists write for an author or a reader the server no longer knows.
+- **Every field the five screens post is named** in Laravel's own
+  refusals: 17 more fields in Dhivehi and Arabic.
+- **Every field is named** for a screen reader, and every table that can
+  be empty says so.
+
+What the school writes stays as written: a member of staff's name, number,
+department and designation, a qualification, a custom field's key, labels
+and options, a pupil's name and a note. A custom field reads by its label
+in the page's language, and by its English label where the school gave no
+other. The staff CSV keeps its English column codes; the sensitive records
+still have no CSV, by decision (E19).
+
+**Tests:**
+- `PeopleSpeaksThreeLanguagesTest` grows to cover the five screens, 7 more
+  server files and their codes, and the fields the three controllers
+  validate. It serves the screens in Dhivehi, where:
+  - a qualification with no title is refused, named in Dhivehi; one with
+    it is added and removed, each said in Dhivehi;
+  - a staff status the school does not have is refused, named in Dhivehi;
+  - a custom field with no English label is refused, named in Dhivehi; one
+    with it is made, said in Dhivehi, and reads by its Dhivehi label;
+  - a note with a blank summary is refused; one is recorded, archived and
+    archived again, each said in Dhivehi;
+  - the notes and who has read them come back, a note's category as a code
+    for the page to name.
+
+The tests for the areas it touches (People, Localization, Architecture):
+**386 passed (23995 assertions)**.
+
+Whole suite locally: **3005 passed (58674 assertions)**.
+
+**Walks:**
+- **`people-language.mjs`** grows from 61 to 134 steps:
+  - the staff profiles and a profile, the custom fields for each kind of
+    record and the admission form preview read right to left under `/dv`
+    and `/ar`, with nothing left in English and every field named; so do
+    the sensitive records, with and without a pupil chosen, read as the
+    system admin (the only role the seed lets read them);
+  - in Dhivehi, the office:
+    - adds a staff profile with no first name, and is refused under the
+      form, the field named in Dhivehi; no account and no profile are made;
+    - saves an employment with a status a stale page sends, and is refused
+      under the form, named in Dhivehi; the status is unchanged;
+    - adds a qualification with no title, and is refused under its form;
+      adds one with a title and removes it, each said in Dhivehi;
+    - makes a custom field with no English label, and is refused beside the
+      field; with one it is made, said in Dhivehi, and the list names it by
+      its Dhivehi label, its type (*One choice*) and its settings in
+      Dhivehi; the admission form preview shows it by its Dhivehi label,
+      and under `/ar` by its Arabic one; archived, it leaves the list, said
+      in Dhivehi, and stays on record;
+  - in Dhivehi, the system admin:
+    - records a note with no summary, and is refused under the line; none
+      is made;
+    - records one, told in Dhivehi, its category named;
+    - archives it on a page left open while it was archived elsewhere, and
+      is refused under the note in Dhivehi — a refused Archive was said
+      nowhere; it stays archived as it was;
+    - reads the page again in Dhivehi and Arabic with the pupil found by
+      name and the archived note on it.
+
+The other walks: `sweep.mjs` 25/25, `create-sweep.mjs` 6/6, `own-data.mjs`
+passed, `admin-hub.mjs` 26/26, `admin-layout.mjs` 15/15, `admin.mjs` 43/43,
+`rtl.mjs` 8/8, `nav.mjs` 14/14, `mobile.mjs` 19/19, `hr.mjs` 27/27,
+`hr-language.mjs` 93/93 and `front-door-language.mjs` 53/53 (the public
+admission form, which shows the custom fields marked for it).
+
+**Deploy:** no migration. The standard pull command is enough.
+
+After PE2 the slices C21 named are built. Thirteen pages still read no
+phrase book, found by the static rule run over every page; BACKLOG C21
+lists them as its next slices, in this order:
+- the office's sign-up forms and their results, and the school's events
+  and an event;
+- a person's linked accounts, which every account has, and a teacher's
+  schedule;
+- the library desk's title page, borrower cards and labels, with the
+  desk's own page, which reads a book for part of it;
+- the translations and operations settings, and the OTP abuse list;
+- the Commerce office.
+
 ## 5qp. The students list and a student's profile in Dhivehi and Arabic (C21 PE1, 2026-10-10)
 
 The sixteenth slice of BACKLOG C21, and the first of People. These two

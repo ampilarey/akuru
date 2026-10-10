@@ -13,6 +13,7 @@ use App\Domains\People\Models\StaffProfile;
 use App\Domains\People\Models\StaffQualification;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -33,6 +34,7 @@ class StaffDirectoryController extends Controller
             'roles' => collect(CreateStaffAccountAction::ROLES)
                 ->mapWithKeys(fn (string $role) => [$role => \App\Support\Authorization\RoleLabels::label($role)])
                 ->all(),
+            't' => Phrases::once('people'),
         ]);
     }
 
@@ -91,6 +93,7 @@ class StaffDirectoryController extends Controller
             'statuses' => array_map(fn (StaffStatus $status) => $status->value, StaffStatus::cases()),
             // S1.2: the same engine the student profile uses, keyed `staff`.
             'customFields' => app(ListCustomFieldsAction::class)->forProfile(CustomFieldEntityType::Staff, (int) $staffProfile->id),
+            't' => Phrases::once('people'),
         ]);
     }
 
@@ -104,7 +107,7 @@ class StaffDirectoryController extends Controller
 
         return redirect()
             ->route('people.staff.show', $staffProfile)
-            ->with('success', 'Custom fields saved.');
+            ->with('success', __('people.flash_fields_saved'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -125,7 +128,7 @@ class StaffDirectoryController extends Controller
 
         return redirect()
             ->route('people.staff.show', $profile)
-            ->with('success', 'Staff profile created.');
+            ->with('success', __('people.flash_staff_created'));
     }
 
     public function update(Request $request, StaffProfile $staffProfile): RedirectResponse
@@ -138,7 +141,7 @@ class StaffDirectoryController extends Controller
 
         return redirect()
             ->route('people.staff.show', $staffProfile)
-            ->with('success', 'Staff profile updated.');
+            ->with('success', __('people.flash_staff_updated'));
     }
 
     public function storeQualification(Request $request, StaffProfile $staffProfile): RedirectResponse
@@ -154,7 +157,7 @@ class StaffDirectoryController extends Controller
 
         return redirect()
             ->route('people.staff.show', $staffProfile)
-            ->with('success', 'Qualification added.');
+            ->with('success', __('people.flash_qualification_added'));
     }
 
     public function destroyQualification(StaffProfile $staffProfile, StaffQualification $qualification): RedirectResponse
@@ -164,7 +167,7 @@ class StaffDirectoryController extends Controller
 
         return redirect()
             ->route('people.staff.show', $staffProfile)
-            ->with('success', 'Qualification removed.');
+            ->with('success', __('people.flash_qualification_removed'));
     }
 
     /**

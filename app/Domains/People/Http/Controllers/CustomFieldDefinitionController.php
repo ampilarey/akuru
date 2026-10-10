@@ -6,6 +6,7 @@ use App\Domains\People\Enums\CustomFieldEntityType;
 use App\Domains\People\Enums\CustomFieldType;
 use App\Domains\People\Models\CustomFieldDefinition;
 use App\Http\Controllers\Controller;
+use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -32,6 +33,7 @@ class CustomFieldDefinitionController extends Controller
             'entityTypes' => array_map(fn (CustomFieldEntityType $type) => $type->value, CustomFieldEntityType::cases()),
             'fieldTypes' => array_map(fn (CustomFieldType $type) => $type->value, CustomFieldType::cases()),
             'definitions' => $definitions,
+            't' => Phrases::once('people'),
         ]);
     }
 
@@ -45,7 +47,7 @@ class CustomFieldDefinitionController extends Controller
 
         return redirect()
             ->route('people.custom-fields.index', ['entity_type' => $data['entity_type']])
-            ->with('success', 'Custom field created.');
+            ->with('success', __('people.flash_field_created'));
     }
 
     public function update(Request $request, CustomFieldDefinition $definition): RedirectResponse
@@ -58,7 +60,7 @@ class CustomFieldDefinitionController extends Controller
 
         return redirect()
             ->route('people.custom-fields.index', ['entity_type' => $data['entity_type']])
-            ->with('success', 'Custom field updated.');
+            ->with('success', __('people.flash_field_updated'));
     }
 
     public function destroy(Request $request, CustomFieldDefinition $definition): RedirectResponse
@@ -70,7 +72,7 @@ class CustomFieldDefinitionController extends Controller
 
         return redirect()
             ->route('people.custom-fields.index', ['entity_type' => $entityType])
-            ->with('success', 'Custom field archived.');
+            ->with('success', __('people.flash_field_archived'));
     }
 
     public function admissionPreview(Request $request): Response
@@ -85,6 +87,7 @@ class CustomFieldDefinitionController extends Controller
 
         return Inertia::render('People/CustomFields/AdmissionPreview', [
             'fields' => $fields,
+            't' => Phrases::once('people'),
         ]);
     }
 
