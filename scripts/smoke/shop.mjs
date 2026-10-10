@@ -365,8 +365,9 @@ check('the vendor portal links to the shop\'s own page', portalLink === '/shop/f
     check('Shops lands on the list of shops, in view', (await desk.locator('#shops [data-vendor="fitrah"]').isVisible()), desk.url().replace(BASE, ''));
     await Promise.all([desk.waitForURL(/\/shop\/fitrah$/), desk.click('#shops [data-vendor="fitrah"]')]);
     check('a shop in the list opens its own page', /\/shop\/fitrah$/.test(desk.url()), desk.url().replace(BASE, ''));
-    await Promise.all([desk.waitForURL(/\/shop#shops$/), desk.click('[data-testid="shop-link-shops"]')]);
-    check('from a shop\'s page, Shops leads back to every shop', (await desk.locator('#shops').isVisible()), desk.url().replace(BASE, ''));
+    // A shop's page has its own menu (STATUS §5nh); its way back to every shop is "All of Akuru Bookstore".
+    await Promise.all([desk.waitForURL(/\/shop#shops$/), desk.click('[data-testid="vendor-menu-store"]')]);
+    check('from a shop\'s page, All of Akuru Bookstore leads back to every shop', (await desk.locator('#shops').isVisible()), desk.url().replace(BASE, ''));
     const owners = await desk.getAttribute('[data-testid="shop-link-owners"]', 'href');
     check('the shop page offers shop owners their way in', /\/vendor$/.test(owners ?? ''), owners);
 }
