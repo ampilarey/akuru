@@ -10,11 +10,12 @@
  *   1. the office adds two calendar days for next week — a sports day
  *      published to families, a staff meeting kept internal — and the
  *      family's calendar shows the first and not the second;
- *   2. the teacher marks the pupil twelve minutes late on today's register;
+ *   2. the teacher marks the pupil twelve minutes late on the school day's
+ *      register (today, or the last day the teacher has lessons on, §5qe);
  *   3. the office's who-is-not-in-today list has the pupil with the period,
  *      the lateness panel has them with one late mark and twelve minutes,
  *      and the tardies CSV downloads;
- *   4. the family's attendance page has today's row reading late.
+ *   4. the family's attendance page has the day's row reading late.
  *
  * `SmokeMarkerSeeder::schoolDayCycle()` clears the two days and the pupil's
  * marks for today before each run.
@@ -147,6 +148,30 @@ const rowText = async (page, needle) => {
 const TZ = process.env.SMOKE_TZ ?? 'Indian/Maldives';
 const isoDaysFromNow = (days) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date(Date.now() + days * 86400000));
 
+// The last day the teacher's timetable has lessons on, today first, asked of
+// their registers page rather than assumed from the calendar (STATUS §5qe).
+// The smoke school's timetable runs Monday to Friday where the Maldives'
+// week runs Sunday to Thursday, and a walk that assumed either went red two
+// days a week. A register planted with no period (`portal-language`'s
+// homework, two days back) is not a lesson, and is not the one walked.
+const pageProps = (page) => page.evaluate(() => JSON.parse(document.querySelector('script[data-page="app"]')?.textContent || '{}').props || {});
+async function lastTeachingDay(page) {
+    for (let back = 0; back < 7; back++) {
+        const day = isoDaysFromNow(-back);
+        await page.goto(`${BASE}/en/academics/registers/today?date=${day}`, { waitUntil: 'networkidle' });
+        const { registers = [], empty = null } = await pageProps(page);
+        if (registers.some((register) => register.period_name) || empty?.can_generate) {
+            return day;
+        }
+    }
+    return isoDaysFromNow(0);
+}
+// The lessons on the teacher's registers page, as the links it shows.
+async function lessonLinks(page) {
+    const lessons = new Set(((await pageProps(page)).registers || []).filter((register) => register.period_name).map((register) => String(register.id)));
+    return [...new Set((await hrefs(page)).filter((href) => lessons.has(href.match(/\/academics\/registers\/(\d+)$/)?.[1])))];
+}
+
 // ---------------------------------------------------------------- the pupil
 
 const student = await signIn(STUDENT);
@@ -202,25 +227,26 @@ check('a day that keeps the school open is not read as "No school"', sportsDay.l
 
 // -------------------------------------------------------------- the teacher
 
-// 2. a late mark on today's register
+// 2. a late mark on the school day's register
 const teacher = await signIn(TEACHER);
 check('the teacher signs in', !teacher.url().includes('/login'), teacher.url());
-await teacher.goto(`${BASE}/en/academics/registers/today`, { waitUntil: 'networkidle' });
+const DAY = await lastTeachingDay(teacher);
+await teacher.goto(`${BASE}/en/academics/registers/today?date=${DAY}`, { waitUntil: 'networkidle' });
 const generate = teacher.locator('button:has-text("Generate my registers")').first();
 if (await generate.count()) {
     await generate.click();
     await teacher.waitForTimeout(2500);
-    await teacher.goto(`${BASE}/en/academics/registers/today`, { waitUntil: 'networkidle' });
+    await teacher.goto(`${BASE}/en/academics/registers/today?date=${DAY}`, { waitUntil: 'networkidle' });
 }
 let registerUrl = null;
-for (const href of [...new Set((await hrefs(teacher)).filter((h) => /\/academics\/registers\/\d+$/.test(h)))]) {
+for (const href of await lessonLinks(teacher)) {
     await teacher.goto(new URL(href, BASE).href, { waitUntil: 'networkidle' });
     if ((await teacher.locator('tr', { hasText: NAME }).count()) > 0) {
         registerUrl = teacher.url();
         break;
     }
 }
-check('a register for today has the pupil on its roster', Boolean(registerUrl), registerUrl?.replace(BASE, '') ?? `no register today lists ${NAME}`);
+check('a register for the school day has the pupil on its roster', Boolean(registerUrl), registerUrl?.replace(BASE, '') ?? `no register on ${DAY} lists ${NAME}`);
 if (!registerUrl) {
     await finish();
 }
@@ -239,7 +265,7 @@ check('the teacher marks the pupil late and submits', await settles(teacher, 'SU
 // A pupil who came late is *in*: the list is of children not in the
 // building, and putting a late child on it would send the office ringing
 // a home whose child is sitting in class.
-const absences = await admin.goto(`${BASE}/en/academics/attendance/absences`, { waitUntil: 'networkidle' });
+const absences = await admin.goto(`${BASE}/en/academics/attendance/absences?date=${DAY}`, { waitUntil: 'networkidle' });
 const missing = await rowText(admin, NAME);
 check('who-is-not-in-today opens and does not list a pupil who came late', absences.status() === 200 && missing === '', missing || `HTTP ${absences.status()} · ${NAME} not listed`);
 
@@ -255,9 +281,9 @@ check('the tardies CSV downloads with the pupil on it', csv !== null && csv.stat
 
 // ---------------------------------------------------------------- the family
 
-// 4. today's row
+// 4. the day's row
 await parent.goto(`${BASE}/en/portal/attendance`, { waitUntil: 'networkidle' });
-const today = await rowText(parent, isoDaysFromNow(0));
-check('the family sees today\'s row reading late', /late/i.test(today), today || (await text(parent)).slice(0, 160));
+const dayRow = await rowText(parent, DAY);
+check('the family sees the day\'s row reading late', /late/i.test(dayRow), dayRow || (await text(parent)).slice(0, 160));
 
 await finish();

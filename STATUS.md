@@ -4983,6 +4983,45 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qe. Three school-day walks pass on any day of the week (walk health, 2026-10-10)
+
+Found by OA1's walks (§5qd). On a Saturday `family.mjs` passed 15 of 21
+steps, on this branch and on `main` alike. `absence.mjs` and `school-day.mjs`
+each failed the step that needs a register for today.
+
+**The causes:**
+- **The walks assumed the calendar.** `family.mjs` took the last day that
+  was neither Friday nor Saturday, the Maldives' weekend. The other two took
+  today. The smoke school's timetable runs Monday to Friday, so every Sunday
+  and every Saturday the walks asked for registers on a day with no
+  lessons.
+- **The first register on Thursday was not a lesson.** `portal-language`'s
+  seeder plants its homework on a register of the pupil's class two days
+  back, with no period and a subject the timetable does not have. On a
+  Saturday that is Thursday, the day `family.mjs` took. A register with no
+  period lists first, so the walk opened it. It offered no due date
+  (*No further lesson found…*), the pupil's homework read *No due date*, the
+  walk could not read the teacher's name from it, and it wrote to the first
+  teacher offered. The teacher it then signed in as had nothing. The walk
+  also wrote over that homework, so `portal-language` run after it could
+  not find its own (207/209).
+
+**The change**, in the three walks (no application code):
+- **They find the day instead of assuming it.** `lastTeachingDay` asks the
+  teacher's registers page for today, then each day before, until one has a
+  lesson's register or offers to generate them. The note, the marks, the
+  office's who-is-not-in list and the family's row are all for that day.
+- **They walk a lesson, not a planted register.** `lessonLinks` keeps the
+  registers that have a period.
+
+**Walks**, on a Saturday, after one seed, in this order:
+- `family.mjs` 40/40, where it stopped at 15 of 21;
+- `portal-language.mjs` 212/212, right after it;
+- `absence.mjs` 13/13;
+- `school-day.mjs` 14/14.
+
+Whole suite locally: **2973 passed (45071 assertions)**.
+
 ## 5qd. The office's registers and attendance in Dhivehi and Arabic (C21 OA1, 2026-10-09)
 
 The sixth slice of BACKLOG C21, and the first of the school office's

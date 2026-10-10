@@ -4,7 +4,8 @@
  * Three actors and a **specific order** — the ordinary one, and the one that
  * was broken:
  *
- *   1. the guardian writes an absence note for today,
+ *   1. the guardian writes an absence note for the school day (today, or
+ *      the last day the teacher has lessons on, STATUS §5qe),
  *   2. the office approves it,
  *   3. *then* a teacher fills the register and marks the child absent.
  *
@@ -122,7 +123,41 @@ async function settles(page, needle, ms = 5000) {
 // midnight, wrote the note for yesterday and read yesterday's row (§5fz).
 const TZ = process.env.SMOKE_TZ ?? 'Indian/Maldives';
 const isoDate = (date = new Date()) => new Intl.DateTimeFormat('en-CA', { timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit' }).format(date);
-const today = isoDate();
+const hrefs = async (page) => page.$$eval('a', (as) => as.map((a) => a.getAttribute('href') || ''));
+
+// The last day the teacher's timetable has lessons on, today first, asked of
+// their registers page rather than assumed from the calendar (STATUS §5qe).
+// The smoke school's timetable runs Monday to Friday where the Maldives'
+// week runs Sunday to Thursday, and a walk that assumed either went red two
+// days a week. A register planted with no period (`portal-language`'s
+// homework, two days back) is not a lesson, and is not the one walked.
+const pageProps = (page) => page.evaluate(() => JSON.parse(document.querySelector('script[data-page="app"]')?.textContent || '{}').props || {});
+async function lastTeachingDay(page) {
+    for (let back = 0; back < 7; back++) {
+        const day = isoDate(new Date(Date.now() - back * 86400000));
+        await page.goto(`${BASE}/en/academics/registers/today?date=${day}`, { waitUntil: 'networkidle' });
+        const { registers = [], empty = null } = await pageProps(page);
+        if (registers.some((register) => register.period_name) || empty?.can_generate) {
+            return day;
+        }
+    }
+    return isoDate();
+}
+// The lessons on the teacher's registers page, as the links it shows.
+async function lessonLinks(page) {
+    const lessons = new Set(((await pageProps(page)).registers || []).filter((register) => register.period_name).map((register) => String(register.id)));
+    return [...new Set((await hrefs(page)).filter((href) => lessons.has(href.match(/\/academics\/registers\/(\d+)$/)?.[1])))];
+}
+
+// The teacher, not the office. `/academics/registers/today` is keyed on the
+// signed-in user's **teacher profile**, and the admin login has none — it says
+// so plainly, which is the right answer and not a defect, but it does mean the
+// register half of this walk cannot be done by the same person who approved
+// the note. Two staff logins, as in a real school. Signed in first, to find
+// the day the note is for; the register is not generated until the note is
+// approved.
+const teacher = await signIn(TEACHER);
+const schoolDay = await lastTeachingDay(teacher);
 
 // ---------------------------------------------------------------- the family
 
@@ -145,7 +180,7 @@ if (childName !== '' && selects.length >= 2) {
     void reasonValue;
 
     await selects[1].selectOption({ index: 0 });
-    await parent.fill('input[type="date"]', today);
+    await parent.fill('input[type="date"]', schoolDay);
     await parent.fill('textarea', REASON);
     await parent.click('button:has-text("Submit note")');
 
@@ -176,13 +211,7 @@ if (await approve.count()) {
 
 // -------------------------------------------------------------- the register
 
-// The teacher, not the office. `/academics/registers/today` is keyed on the
-// signed-in user's **teacher profile**, and the admin login has none — it says
-// so plainly, which is the right answer and not a defect, but it does mean the
-// register half of this walk cannot be done by the same person who approved
-// the note. Two staff logins, as in a real school.
-const teacher = await signIn(TEACHER);
-await teacher.goto(`${BASE}/en/academics/registers/today`, { waitUntil: 'networkidle' });
+await teacher.goto(`${BASE}/en/academics/registers/today?date=${schoolDay}`, { waitUntil: 'networkidle' });
 
 // Nothing has been marked yet. This is the order that was broken: the approval
 // above ran against no attendance rows at all.
@@ -190,13 +219,12 @@ const generate = teacher.locator('button:has-text("Generate my registers")').fir
 if (await generate.count()) {
     await generate.click();
     await teacher.waitForTimeout(2500);
-    await teacher.goto(`${BASE}/en/academics/registers/today`, { waitUntil: 'networkidle' });
+    await teacher.goto(`${BASE}/en/academics/registers/today?date=${schoolDay}`, { waitUntil: 'networkidle' });
 }
 
-const registerHref = (await teacher.$$eval('a', (as) => as.map((a) => a.getAttribute('href') || '')))
-    .find((href) => /\/academics\/registers\/\d+/.test(href));
+const registerHref = (await lessonLinks(teacher))[0];
 
-check('a register for today is open', Boolean(registerHref), registerHref ?? 'no /academics/registers/N link');
+check('a register for the school day is open', Boolean(registerHref), registerHref ?? `no lesson's register on ${schoolDay}`);
 
 let markedAbsent = false;
 
@@ -247,7 +275,7 @@ if (markedAbsent) {
     await parent.goto(`${BASE}/en/portal/attendance`, { waitUntil: 'networkidle' });
     const attendance = await text(parent);
 
-    // Read the row for today, not the page. The summary line above the table
+    // Read the row for the day, not the page. The summary line above the table
     // says "Absent 0 · Excused 0", so a bare /EXCUSED/i matched the word
     // **Excused** in a counter that read zero — an earlier version of this
     // walk reported the whole loop green against a table that said "No
@@ -255,12 +283,12 @@ if (markedAbsent) {
     const rows = await parent.$$eval('tbody tr', (trs) => trs.map(
         (tr) => [...tr.querySelectorAll('td')].map((td) => td.innerText.replace(/\s+/g, ' ').trim()),
     ));
-    const todayRow = rows.find((cells) => cells[0]?.includes(today));
+    const todayRow = rows.find((cells) => cells[0]?.includes(schoolDay));
 
     check(
-        'the family has a row for today at all',
+        'the family has a row for the day at all',
         Boolean(todayRow),
-        todayRow ? todayRow.join(' | ') : `${rows.length} rows, none for today`,
+        todayRow ? todayRow.join(' | ') : `${rows.length} rows, none for ${schoolDay}`,
     );
     check(
         'and it reads excused, not absent',
