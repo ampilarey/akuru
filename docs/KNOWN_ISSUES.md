@@ -165,6 +165,18 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found by the registration language walk (2026-10-10)
+
+### The checkout's "use a code instead" never sends a code to a registered account — **open (P3, for SI1)**
+
+The checkout's code box posts to `courses.register.start`, which sends a
+contact the platform has verified back to the checkout to log in with its
+password (*Account already registered*). So the box only ever sends a code
+to an address or number nobody has verified, and a returning learner who
+has forgotten their password is told to use the password. The fix belongs
+with signing in by code (SI1): send the verified contact a login code, as
+the OTP login does. Found by `register-language.mjs` (STATUS §5qz).
+
 ## Found by the promotions language walk (2026-10-10)
 
 ### A campaign ended before it starts reads its window backwards — **open (P4)**

@@ -4983,6 +4983,103 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5qz. The course registration's first steps in Dhivehi and Arabic (C21 RG1a, 2026-10-10)
+
+The first of RG1's slices (§5qy). A visitor who opens a course's checkout
+under `/dv` or `/ar` met English everywhere:
+- the checkout page every course links to, its two tabs, every label and
+  hint, and the code login;
+- the page a closed course shows;
+- the code page.
+
+What the server said on them was English too: an ID card number missing, an
+adult under eighteen, a code sent or sent again, a wrong password, too many
+tries, a session ended, a phone number or an address not valid.
+
+Reading the pages found three defects:
+- **A closed course could be enrolled in.** Its checkout address showed the
+  old contact form, which the view was handed `closed` for and never read.
+  Nothing after it asked whether enrolment was open: `is_enrollment_open`
+  was read only by that page, and the enrolment service counts seats only.
+- **A code asked for with an email was read as a phone number.** The
+  checkout's *use a code instead* box set the contact's type from the first
+  contact box on the page (the new registration's mobile box), so an email
+  went in as `mobile` and was refused as a phone number.
+- **Most of the checkout's fields had no name.** Their labels pointed at
+  nothing and did not hold them: the contact boxes, the names, gender, date
+  of birth, the ID numbers, the email, the passwords and the login boxes.
+
+**The change:**
+- **A new `register` book**, 86 phrases in three languages, for the three
+  pages and what the server says on them. The wait after too many logins
+  counts its minutes in each language (Arabic's two, three to ten, and
+  eleven on).
+- **The three pages read the book.** Every field is named by its label (or,
+  where a radio group's legend names the box, by its own name). What is
+  typed the same in any language — an address, a number, an ID card's
+  example — is set left to right.
+- **A closed course says so.** Its checkout shows *enrolment for this course
+  is closed*, with the way to every course and to the contact page, and no
+  form. Starting a registration (the start request's validator), logging in at
+  its checkout and enrolling in it are each refused; the last, the one that
+  writes, names the course.
+- **The code box reads itself:** the type follows what is typed there.
+- **Old input printed into the page's scripts** goes through `@js`.
+
+**Found, left for later:** the checkout's *use a code instead* never sends
+a code to an account whose contact is verified: `start()` sends that
+contact back to the checkout to log in with its password (*Account already
+registered*). The box works only for an address or number the platform
+has not verified. KNOWN_ISSUES records it, for SI1.
+
+**Tests:**
+- `CourseRegistrationSpeaksThreeLanguagesTest` (new):
+  - no English of the pages' own on the three pages;
+  - every `register` key the pages, the controller and the start request
+    name, in three languages, the three books alike;
+  - none of the first steps' English left on the server, and the start
+    request's refusals in the book;
+  - every field of the checkout named, and the code box reading itself;
+  - in Dhivehi, over HTTP: the checkout of an open course, with its fee;
+    the checkout of a closed course, and of one past its deadline, with no
+    form; a closed course refused at start, at its checkout's login and at
+    enrolment, nothing written; an ID card or passport number missing, an
+    adult under eighteen, a phone number and an address not valid; a code
+    sent, the code page, a code sent again after the minute's wait; a wrong
+    password; a session ended;
+  - the wait after too many logins in each language.
+
+  Run over `main`'s copies of the pages and the server files, 7 of its 8
+  tests fail, so it is not vacuous.
+
+The registration's own tests (the flow, one code per registration, the
+resume link, the funnel, the paid checkout, the middle name, free
+enrolment notices, ID cards, the route names, the phrase books' rules):
+**90 passed (858 assertions)**.
+
+Whole suite locally: **3049 passed (62983 assertions)**. Its first run failed two architecture gates, both fixed: the existing-account line was printed as raw HTML (to make the contact bold; it is now escaped text), and the closed-course checks had made two baselined controller methods longer (the check now lives in the start request's validator, and in a one-line helper for the checkout's login).
+
+**Walks:**
+- **`register-language.mjs`** (new), 16 steps:
+  - a course's checkout under `/dv` and `/ar`, both tabs: right to left,
+    nothing left in English, every field named;
+  - in Dhivehi, a new registration with no ID card number, refused in
+    Dhivehi under the form;
+  - a code asked for with an email address nobody has, from *use a code
+    instead*: sent by email, said in Dhivehi, on a code page in Dhivehi;
+  - a closed course planted for the walk: its checkout says enrolment is
+    closed, in Dhivehi, with no form.
+
+  Its first runs found the code box's bounce for a verified account
+  (KNOWN_ISSUES) and a masked address the walk had not read as typed.
+- The registration and the public site: `register.mjs` 15/15, `signup.mjs`
+  17/17, `customer-sign-in.mjs` 9/9, `public-rtl.mjs` 90/90 and
+  `site-pages-language.mjs` 75/75; and `rtl.mjs` 8/8, `nav.mjs` 14/14,
+  `mobile.mjs` 19/19 and `sweep.mjs` 25/25. After the gate fixes,
+  `register-language.mjs` 16/16 and `register.mjs` 15/15 again.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5qy. The Library office's promotion campaigns in Dhivehi and Arabic (C21 PC1, 2026-10-10)
 
 The twenty-fourth slice of BACKLOG C21, and the one SH1 found reading the
