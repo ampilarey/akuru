@@ -4983,6 +4983,112 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rb. The course registration's last steps in Dhivehi and Arabic (C21 RG1c, 2026-10-10)
+
+The last of RG1's slices (§5qz, §5ra). With it, a learner registering under
+`/dv` or `/ar` reads every step from the checkout to the last page in the
+page's language. These were English throughout:
+- **the terms and code step**: the summary and its fees, the terms, the
+  contact the code goes to, the code box and the consent under it;
+- **the last page**: what happens next, the payment's state, the
+  enrolments with their state and payment.
+
+What the server said on them, and on the payment's way out, was English
+too:
+- a code sent or sent again; a session ended; the code's contact gone;
+- the terms not accepted; already enrolled, with the course and its state;
+- the payment gateway out of reach; no enrolment to show;
+- the payment retry's refusals (log in, not found, already confirmed,
+  could not start);
+- the course checkout's terms and its free course;
+- the enrolment's own refusals: a course fully booked, a learner not one's
+  own, an adult under eighteen, a contact not verified.
+
+Reading the pages found four defects, and the walk a fifth:
+- **The last page never said why a payment was already waiting.** The
+  message came as `info`, which neither the page nor the layout printed
+  (KNOWN_ISSUES, found in RG1b).
+- **The last page said a gateway failure twice**: the layout printed the
+  flash, and the page printed it again in its box with *Proceed to
+  payment*.
+- **The terms and code step said a code was sent twice**: the layout and
+  the page.
+- **The code box's label pointed at nothing.**
+- **The status-values gate let a flow's `failed` pass on an English
+  sentence.** `StatusValuesAreWritableTest` vouches for a status value when
+  any file that reads the table names it, and *Payment initiation failed.*
+  in the same controller named `failed` for `registration_flows`, which
+  nothing writes. Moving the sentence into the book showed it, so the
+  baseline now names `failed` with `completed`, and says why.
+
+**The change:**
+- **The `register` book grows by 60 phrases** in three languages, to 216.
+- **The two pages read the book.**
+  - The terms and the consent keep their links where the language puts
+    them, with no raw HTML.
+  - A masked contact and the code are set left to right.
+  - *Processing…* goes through `@js`.
+  - The code box asks the phone for the code it received
+    (`one-time-code`).
+- **The last page shows `info`**, and the controller pulls the error out of
+  the session, so the page's box says it once, with its button.
+- **The terms and code step leaves `success` to the layout.**
+- **The server's messages read the book.** These are the controller's
+  last-step methods, the course checkout's three, the enrolment service's
+  four and the adult request's one. A course fully booked is named in its
+  refusal.
+
+**Left as it was:**
+- The payment trust bar on a paid course's code step, and the course
+  checkout page itself, are PY1's.
+- BML's own reply, when it sends one, is passed on as it came (LT6).
+- The notices to staff are English, as C20 decided.
+
+**Tests:**
+- `CourseRegistrationLastStepsSpeakThreeLanguagesTest` (new, 11 tests):
+  - no English of the pages' own on the two pages;
+  - every `register` key the pages and the three server files name, in
+    three languages;
+  - no English in the seven controller methods behind them, or in the
+    three server files;
+  - every field named, and *Processing…* through `@js`;
+  - in Dhivehi, over HTTP:
+    - the terms and code step before the code and after it, the code sent
+      said once, and sent again after the minute's wait;
+    - every refusal of the code step: no enrolment pending, the terms not
+      accepted, the code's contact gone, a session ended;
+    - a free enrolment finished on a last page in Dhivehi;
+    - the last page saying a payment waiting and a gateway failure once
+      each, and nothing to show;
+    - someone already enrolled told so on their enrolments;
+    - the enrolment's own four refusals;
+    - the payment's refusals, and the course checkout's two.
+
+  Run over `main`'s copies of the pages and the four server files, all 11
+  of its tests fail, so it is not vacuous.
+
+The new test and the architecture gates first failed twice: once on
+the test's own call (the enrolment service's parent method takes the
+term), and once on `StatusValuesAreWritableTest`, the fifth defect above.
+
+Whole suite locally: **3073 passed (63704 assertions)**.
+
+**Walks:**
+- **`register-language.mjs`** grows to 37 steps. The account its password
+  page makes goes on to the terms and code step, read before and after its
+  code is sent: right to left, nothing in English, every field named. The
+  terms are ticked, the code is sent and said once, and the code is read
+  from the log sender and typed. The last page reads in Dhivehi, right to
+  left, with nothing in English. The enrolment and learner the steps make
+  are removed with the account. The cleanup now names the walk's own number
+  exactly: it had matched any number ending the same way. Three runs in a row passed 37/37.
+- The registration and the public site: `register.mjs` 15/15,
+  `signup.mjs` 17/17, `customer-sign-in.mjs` 9/9, `public-rtl.mjs` 90/90
+  and `site-pages-language.mjs` 75/75; and `rtl.mjs` 8/8, `nav.mjs` 14/14,
+  `mobile.mjs` 19/19 and `sweep.mjs` 25/25.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5ra. The course registration's details form and password page in Dhivehi and Arabic (C21 RG1b, 2026-10-10)
 
 The second of RG1's slices (§5qz). Past the code, a learner meets one of two
