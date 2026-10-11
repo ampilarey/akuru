@@ -76,4 +76,40 @@ return [
             'withdrawn' => 'منسحب',
         ],
     ],
+
+    // The certificates and the ID card in the document's own language (slice DOC2).
+    'award_certificate' => [
+        'title' => 'شهادة جائزة',
+        'heading' => 'شهادة إنجاز',
+        'certifies' => 'تشهد هذه الشهادة بأن',
+        'awarded' => 'قد مُنح',
+        'date' => 'التاريخ',
+    ],
+    'course_certificate' => [
+        'title' => 'شهادة الدورة',
+        'institute' => 'معهد أكورو',
+        'certificate' => 'شهادة',
+        'number' => 'رقم الشهادة',
+        'date' => 'التاريخ',
+        'grade' => 'التقدير',
+        'offering' => 'الدفعة',
+        'attendance' => 'الحضور',
+        'verify_at' => 'تحقق من الشهادة على',
+        'signature' => 'توقيع معتمد — معهد أكورو',
+        'body_course' => 'تشهد هذه الشهادة بأن <strong>{{student_name}}</strong> أتمّ {{course_name}}.',
+        'body_award' => 'تشهد هذه الشهادة بأن <strong>{{student_name}}</strong> قد مُنح هذه الشهادة.',
+    ],
+    'id_card' => [
+        'title' => 'بطاقة هوية الطالب',
+        'heading' => 'معهد أكورو — هوية الطالب',
+        'number' => 'رقم الطالب',
+        'photo' => 'الصورة',
+    ],
+    'transfer_certificate' => [
+        'title' => 'شهادة نقل',
+        'heading' => 'شهادة نقل / مغادرة',
+        'certifies' => 'تشهد هذه الشهادة بأن :name (:number) مسجّل بالحالة :status.',
+        'history' => 'سجل الحالة',
+        'no_history' => 'لا توجد تغييرات مسجّلة على الحالة.',
+    ],
 ];

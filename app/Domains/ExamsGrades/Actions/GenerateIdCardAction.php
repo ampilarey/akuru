@@ -13,8 +13,10 @@ class GenerateIdCardAction
     /**
      * @return array{html: string, document_id: int}
      */
-    public function execute(int $studentId, ?int $actorId = null): array
+    public function execute(int $studentId, ?int $actorId = null, ?string $locale = null): array
     {
+        // The document is written in the language of the page that asked for it (slice DOC2).
+        $locale = $locale ?? app()->getLocale();
         $student = DB::table('students')->where('id', $studentId)->firstOrFail();
         $number = $student->student_id ?: (string) $student->id;
         $photo = DB::table('documents')
@@ -25,8 +27,8 @@ class GenerateIdCardAction
             ->value('media_path');
 
         $html = app(DocumentRendererInterface::class)->render('id-card', [
-            'locale' => 'en',
-            'dir' => 'ltr',
+            'locale' => $locale,
+            'dir' => in_array($locale, ['dv', 'ar'], true) ? 'rtl' : 'ltr',
             'student' => [
                 'id' => $studentId,
                 'name' => PersonName::ofStudent($student),

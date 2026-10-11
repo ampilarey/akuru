@@ -76,4 +76,40 @@ return [
             'withdrawn' => 'ދޫކޮށްފައި',
         ],
     ],
+
+    // The certificates and the ID card in the document's own language (slice DOC2).
+    'award_certificate' => [
+        'title' => 'އިނާމުގެ ސެޓްފިކެޓް',
+        'heading' => 'ކާމިޔާބީގެ ސެޓްފިކެޓް',
+        'certifies' => 'މި ސެޓްފިކެޓް ހުށަހަޅަނީ',
+        'awarded' => 'އަށް، މި އިނާމު ލިބިފައިވާތީއެވެ',
+        'date' => 'ތާރީޚު',
+    ],
+    'course_certificate' => [
+        'title' => 'ކޯހުގެ ސެޓްފިކެޓް',
+        'institute' => 'އަކުރު އިންސްޓިޓިއުޓް',
+        'certificate' => 'ސެޓްފިކެޓް',
+        'number' => 'ސެޓްފިކެޓް ނަންބަރު',
+        'date' => 'ތާރީޚު',
+        'grade' => 'ގްރޭޑް',
+        'offering' => 'ކްލާސް',
+        'attendance' => 'ހާޒިރީ',
+        'verify_at' => 'ޗެކްކުރެވޭނެ ތަން',
+        'signature' => 'ހުއްދަ ލިބިފައިވާ ސޮއި — އަކުރު އިންސްޓިޓިއުޓް',
+        'body_course' => 'މިއީ <strong>{{student_name}}</strong> {{course_name}} ނިންމާފައިވާކަމުގެ ސެޓްފިކެޓެވެ.',
+        'body_award' => 'މިއީ <strong>{{student_name}}</strong> އަށް ދެވުނު ސެޓްފިކެޓެވެ.',
+    ],
+    'id_card' => [
+        'title' => 'ދަރިވަރުގެ އައިޑީ ކާޑު',
+        'heading' => 'އަކުރު އިންސްޓިޓިއުޓް — ދަރިވަރުގެ އައިޑީ',
+        'number' => 'ދަރިވަރުގެ ނަންބަރު',
+        'photo' => 'ފޮޓޯ',
+    ],
+    'transfer_certificate' => [
+        'title' => 'ބަދަލުވުމުގެ ސެޓްފިކެޓް',
+        'heading' => 'ބަދަލުވުމުގެ / ދޫކޮށްލުމުގެ ސެޓްފިކެޓް',
+        'certifies' => 'މިއީ :name (:number) ގެ ހާލަތު :status ކަމަށް ރެކޯޑުކޮށްފައިވާކަމުގެ ސެޓްފިކެޓެވެ.',
+        'history' => 'ހާލަތުގެ ތާރީޚު',
+        'no_history' => 'ހާލަތު ބަދަލުވި ރެކޯޑެއް ނެތް.',
+    ],
 ];
