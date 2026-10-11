@@ -5033,7 +5033,7 @@ English.
 - `PrayerTimesTest` and `AdminPrayerTimesScreensTest` read the refusals as
   validation errors under `broadcast`.
 
-Whole suite locally: SUITE_RESULT.
+Whole suite locally: **3136 passed (65398 assertions)**.
 
 **Walks:**
 - **`prayer-broadcast-locked.mjs`** (new, in the runner). It plants a
