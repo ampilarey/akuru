@@ -7,27 +7,27 @@ use App\Domains\PrayerTimes\Enums\PrayerBroadcastStatus;
 use App\Domains\PrayerTimes\Jobs\RunChangeOnlyPrayerReminderJob;
 use App\Domains\PrayerTimes\Jobs\SendPrayerBroadcastJob;
 use App\Domains\PrayerTimes\Models\PrayerBroadcast;
-use InvalidArgumentException;
+use Illuminate\Validation\ValidationException;
 
 class ConfirmPrayerBroadcastAction
 {
     public function execute(PrayerBroadcast $broadcast, int $confirmedBy): PrayerBroadcast
     {
         if ($broadcast->status !== PrayerBroadcastStatus::Previewed) {
-            throw new InvalidArgumentException('Broadcast must be previewed before confirm.');
+            throw ValidationException::withMessages(['broadcast' => __($broadcast->status->isOpen() ? 'admin.prayer_error_not_previewed' : 'admin.prayer_error_locked')]);
         }
 
         $snapshot = $broadcast->preview_snapshot;
         if (! is_array($snapshot) || ! array_key_exists('included_count', $snapshot)) {
-            throw new InvalidArgumentException('Broadcast must be previewed before confirm.');
+            throw ValidationException::withMessages(['broadcast' => __('admin.prayer_error_not_previewed')]);
         }
 
         if (($snapshot['needs_split'] ?? false) === true) {
-            throw new InvalidArgumentException('Range times change within the selected dates. Split into suggested blocks before sending.');
+            throw ValidationException::withMessages(['broadcast' => __('admin.prayer_needs_split')]);
         }
 
         if ((int) ($snapshot['included_count'] ?? 0) < 1) {
-            throw new InvalidArgumentException('No consented recipients to send.');
+            throw ValidationException::withMessages(['broadcast' => __('admin.prayer_error_no_recipients')]);
         }
 
         $date = ($broadcast->date_from ?? now())->toDateString();

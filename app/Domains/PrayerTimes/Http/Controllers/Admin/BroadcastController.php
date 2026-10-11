@@ -110,11 +110,7 @@ class BroadcastController extends Controller
     public function confirm(Request $request, PrayerBroadcast $broadcast): RedirectResponse
     {
         abort_unless(auth()->user()?->can('prayer.manage'), 403);
-        try {
-            app(ConfirmPrayerBroadcastAction::class)->execute($broadcast, (int) $request->user()->id);
-        } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['confirm' => $e->getMessage()]);
-        }
+        app(ConfirmPrayerBroadcastAction::class)->execute($broadcast, (int) $request->user()->id);
 
         return back()->with('success', trans('admin.prayer_flash_queued'));
     }

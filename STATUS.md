@@ -4983,6 +4983,70 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rl. A sent prayer broadcast is locked, and its refusals are in Dhivehi and Arabic (C21 PB1, 2026-10-11)
+
+Next after the offices' last refusals (OF1, §5rk), which left the prayer
+broadcast's refusals for this slice. Reading them first found worse than
+English.
+
+**The defects:**
+- **A sent broadcast could be sent again.** Save and Preview took a
+  broadcast in any state:
+  - saving a completed one made it a draft again;
+  - previewing it deleted its recipients, the record of who was sent what,
+    and made new pending ones;
+  - Confirm then sent the same SMS a second time, at the office's cost.
+
+  The edit page offered Save and Preview on every broadcast.
+- Previewing a cancelled broadcast was a 500 page: the controller caught
+  nothing the preview threw.
+- The four refusals were English on every page: not previewed, a range that
+  must be split, nobody consented, cancelled.
+
+**The change:**
+- **Only a draft or a previewed broadcast is open**
+  (`PrayerBroadcastStatus::isOpen()`). Save, Preview and Confirm refuse any
+  other: *This broadcast has been queued or sent, so it can no longer be
+  changed. To send again, make a new broadcast.*
+- **The edit page says so for a broadcast that is not open.** It offers no
+  Preview and no Confirm, and its Save is off.
+- **Each refusal is a validation error in the `admin` book**, in the
+  page's language, shown at the top of the form. A range to split reads the
+  page's own `prayer_needs_split`.
+
+**Left as it was:**
+- The SMS text itself (`BuildPrayerSmsMessageAction`) is the message the
+  office sends, already written per language and editable as a template.
+- Nothing cancels a broadcast yet, as before.
+
+**Tests:**
+- `PrayerBroadcastLockedTest` (new, 3 tests):
+  - no English refusal left in the three actions, every phrase in three
+    languages;
+  - a completed broadcast refused by Save, Preview and Confirm in Dhivehi,
+    with one SMS sent, its status still completed and its sent recipient
+    row the same row;
+  - Preview and Save from an Arabic page refused in Arabic, and the page's
+    lock.
+
+  Run over `main`'s files, all 3 fail.
+- `PrayerTimesTest` and `AdminPrayerTimesScreensTest` read the refusals as
+  validation errors under `broadcast`.
+
+Whole suite locally: SUITE_RESULT.
+
+**Walks:**
+- **`prayer-broadcast-locked.mjs`** (new, in the runner). It plants a
+  completed broadcast and a draft and never confirms, so nothing is sent:
+  - under `/dv` the completed one says it is locked, in Dhivehi, with no
+    Preview or Confirm and its Save off;
+  - under `/ar` the draft is not locked and still previews.
+
+  7/7. Run over `main`'s files and build, it passes 4 of 7.
+
+**Deploy:** no migration. The built assets are in the commit. The standard
+pull command is enough.
+
 ## 5rk. The offices' last English refusals in Dhivehi and Arabic (C21 OF1, 2026-10-11)
 
 Next after the certificates (DOC2, §5rj). PC1's refusal rule, run again over

@@ -24,6 +24,7 @@ use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Validation\ValidationException;
 
 uses(RefreshDatabase::class);
 
@@ -214,7 +215,7 @@ it('excludes contacts without prayer_reminders consent and honors STOP', functio
     expect($stopped->preview_snapshot['included_count'])->toBe(0);
 
     expect(fn () => app(ConfirmPrayerBroadcastAction::class)->execute($stopped, $admin->id))
-        ->toThrow(InvalidArgumentException::class, 'No consented recipients');
+        ->toThrow(ValidationException::class, 'agreed to prayer reminders');
 });
 
 it('sends only through the fake SMS inbox and never the gateway', function () {
@@ -261,7 +262,7 @@ it('cannot queue a draft without a preview snapshot', function () {
     ]);
     expect($broadcast->status)->toBe(PrayerBroadcastStatus::Draft)
         ->and(fn () => app(ConfirmPrayerBroadcastAction::class)->execute($broadcast, $ctx['admin']->id))
-        ->toThrow(InvalidArgumentException::class, 'previewed');
+        ->toThrow(ValidationException::class, 'Preview the broadcast');
 });
 
 it('blocks a changing range until it is split', function () {
@@ -276,7 +277,7 @@ it('blocks a changing range until it is split', function () {
     $previewed = app(PreviewPrayerBroadcastAction::class)->execute($broadcast);
     expect($previewed->preview_snapshot['needs_split'])->toBeTrue();
     expect(fn () => app(ConfirmPrayerBroadcastAction::class)->execute($previewed, $ctx['admin']->id))
-        ->toThrow(InvalidArgumentException::class, 'Split');
+        ->toThrow(ValidationException::class, 'Split');
 });
 
 it('serves admin island CSV and public homepage widget from the contract', function () {

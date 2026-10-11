@@ -811,6 +811,10 @@ return [
     'prayer_flash_draft_saved' => 'ޑްރާފްޓް ސޭވްކުރެވިއްޖެ.',
     'prayer_flash_preview_ready' => 'ޕްރިވިއު ތައްޔާރު. ސްނެޕްޝޮޓް ބައްލަވާފައި ކޮންފަރމްކުރައްވާ.',
     'prayer_flash_queued' => 'ބްރޯޑްކާސްޓް ކިއުކުރެވިއްޖެ.',
+    // A queued or sent broadcast is locked, and its refusals (slice PB1).
+    'prayer_error_not_previewed' => 'ކޮންފަރމްކުރުމުގެ ކުރިން ބްރޯޑްކާސްޓް ޕްރިވިއުކޮށްލައްވާ.',
+    'prayer_error_no_recipients' => 'މި ބްރޯޑްކާސްޓްގައި ނަމާދު ވަގުތުގެ ހަނދާންކޮށްދިނުމަށް އެއްބަސްވެފައިވާ އެއްވެސް މީހަކު ނެތީމަ، މިއީ ފޮނުވާނެ މީހަކު ނެތް ބްރޯޑްކާސްޓެކެވެ.',
+    'prayer_error_locked' => 'މި ބްރޯޑްކާސްޓް ކިއުކުރެވިފައި ނުވަތަ ފޮނުވިފައިވާތީ، މިހާރު މިއަށް ބަދަލެއް ނުގެނެވޭނެ. އަލުން ފޮނުވުމަށް އާ ބްރޯޑްކާސްޓެއް ހައްދަވާ.',
     // The two full dashboards: today's numbers (C9 slice 13, STATUS §5jo).
     'numbers_title' => 'ސުޕަރ އެޑްމިން ޑޭޝްބޯޑް',
     'numbers_ah' => 'ހ.',

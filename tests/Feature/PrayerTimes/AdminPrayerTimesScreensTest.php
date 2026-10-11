@@ -105,7 +105,7 @@ it('drafts, previews and refuses to confirm a broadcast with nobody consented, a
             ->where('broadcast.snapshot.included_count', 0)->where('broadcast.snapshot.excluded_count', 1)->where('broadcast.snapshot.needs_split', false)
             ->where('broadcast.snapshot.messages.dv', fn ($message) => is_string($message) && $message !== ''));
     $this->withoutLocalizationMiddleware()->actingAs($office)->from(route('admin.prayer-times.broadcasts.edit', $broadcast))
-        ->post(route('admin.prayer-times.broadcasts.confirm', $broadcast))->assertSessionHasErrors('confirm');
+        ->post(route('admin.prayer-times.broadcasts.confirm', $broadcast))->assertSessionHasErrors('broadcast');
     expect($broadcast->fresh()->status->value)->toBe('previewed');
 
     // The list, filtered.

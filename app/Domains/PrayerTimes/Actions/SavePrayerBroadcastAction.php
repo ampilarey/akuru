@@ -6,6 +6,7 @@ use App\Domains\PrayerTimes\Enums\PrayerBroadcastLanguage;
 use App\Domains\PrayerTimes\Enums\PrayerBroadcastMode;
 use App\Domains\PrayerTimes\Enums\PrayerBroadcastStatus;
 use App\Domains\PrayerTimes\Models\PrayerBroadcast;
+use Illuminate\Validation\ValidationException;
 
 class SavePrayerBroadcastAction
 {
@@ -14,6 +15,10 @@ class SavePrayerBroadcastAction
      */
     public function execute(array $data, ?PrayerBroadcast $broadcast, int $userId): PrayerBroadcast
     {
+        if ($broadcast !== null && ! $broadcast->status->isOpen()) {
+            throw ValidationException::withMessages(['broadcast' => __('admin.prayer_error_locked')]);
+        }
+
         $mode = PrayerBroadcastMode::from((string) ($data['mode'] ?? 'daily'));
         $payload = [
             'mode' => $mode,

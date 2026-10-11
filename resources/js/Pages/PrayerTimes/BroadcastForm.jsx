@@ -34,13 +34,16 @@ function BroadcastFormBody({ broadcast = null, islands = [], groups = [], modes 
     };
     const set = (name) => (e) => form.setData(name, e.target.value);
     const label = (name, text) => <label className="mb-1 block text-sm font-medium text-gray-700" htmlFor={`broadcast-${name}`}>{text}</label>;
-    const canConfirm = snapshot !== null && snapshot.included_count > 0 && !snapshot.needs_split;
+    // A queued or sent broadcast is its own send record (PB1, STATUS §5rl).
+    const locked = editing && !['draft', 'previewed'].includes(broadcast.status);
+    const canConfirm = !locked && snapshot !== null && snapshot.included_count > 0 && !snapshot.needs_split;
 
     return (
         <AppShell title={editing ? (t.prayer_broadcast_title || 'Broadcast :id').replace(':id', broadcast.id) : (t.prayer_broadcast_new_title || 'New broadcast')}>
             <p className="mb-4 text-sm"><Link href="/admin/prayer-times/broadcasts" className="text-gray-500 underline" data-testid="broadcast-back">{t.prayer_back_broadcasts || '← Prayer broadcasts'}</Link></p>
             {firstError && <p className="mb-4 rounded bg-red-50 p-3 text-sm text-red-700" data-testid="prayer-error">✗ {firstError}</p>}
             {editing && <p className="mb-4 text-sm text-gray-600">{t.prayer_col_status || 'Status'}: <span className="font-semibold" data-testid="broadcast-status">{t[`prayer_status_${broadcast.status}`] || broadcast.status}</span></p>}
+            {locked && <p className="mb-4 rounded bg-amber-50 p-3 text-sm text-amber-900" data-testid="broadcast-locked">{t.prayer_error_locked}</p>}
 
             <form onSubmit={submit} action={editing ? `/admin/prayer-times/broadcasts/${broadcast.id}` : '/admin/prayer-times/broadcasts'} method="post" className="max-w-3xl space-y-4 rounded-lg border bg-white p-6" data-testid="broadcast-form">
                 <div>
@@ -78,16 +81,18 @@ function BroadcastFormBody({ broadcast = null, islands = [], groups = [], modes 
                     <textarea id="broadcast-recipient_refs" name="recipient_refs" rows="3" className="form-input w-full font-mono text-xs" dir="ltr" value={form.data.recipient_refs} onChange={set('recipient_refs')} />
                 </div>
                 <div className="flex items-center gap-3">
-                    <button type="submit" className="btn-primary" disabled={form.processing} data-testid="broadcast-save">{t.prayer_save_draft || 'Save draft'}</button>
+                    <button type="submit" className="btn-primary" disabled={form.processing || locked} data-testid="broadcast-save">{t.prayer_save_draft || 'Save draft'}</button>
                     <Link href="/admin/prayer-times/broadcasts" className="text-sm text-gray-500 underline">{t.prayer_back || 'Back'}</Link>
                 </div>
             </form>
 
             {editing && (
                 <div className="mt-6 max-w-3xl space-y-4">
-                    <form action={`/admin/prayer-times/broadcasts/${broadcast.id}/preview`} method="post" onSubmit={(e) => { e.preventDefault(); router.post(`/admin/prayer-times/broadcasts/${broadcast.id}/preview`, {}, { preserveScroll: true }); }}>
-                        <button type="submit" className="btn-secondary" data-testid="broadcast-preview">{t.prayer_preview || 'Preview'}</button>
-                    </form>
+                    {!locked && (
+                        <form action={`/admin/prayer-times/broadcasts/${broadcast.id}/preview`} method="post" onSubmit={(e) => { e.preventDefault(); router.post(`/admin/prayer-times/broadcasts/${broadcast.id}/preview`, {}, { preserveScroll: true }); }}>
+                            <button type="submit" className="btn-secondary" data-testid="broadcast-preview">{t.prayer_preview || 'Preview'}</button>
+                        </form>
+                    )}
                     {snapshot && (
                         <div className="space-y-2 rounded-lg border bg-white p-4 text-sm" data-testid="broadcast-snapshot">
                             <p>
@@ -107,9 +112,9 @@ function BroadcastFormBody({ broadcast = null, islands = [], groups = [], modes 
                                     <pre className="whitespace-pre-wrap" dir={locale === 'en' ? 'ltr' : 'rtl'}>{snapshot.messages[locale]}</pre>
                                 </div>
                             ))}
-                            <form action={`/admin/prayer-times/broadcasts/${broadcast.id}/confirm`} method="post" onSubmit={(e) => { e.preventDefault(); router.post(`/admin/prayer-times/broadcasts/${broadcast.id}/confirm`, {}, { preserveScroll: true }); }}>
+                            {!locked && <form action={`/admin/prayer-times/broadcasts/${broadcast.id}/confirm`} method="post" onSubmit={(e) => { e.preventDefault(); router.post(`/admin/prayer-times/broadcasts/${broadcast.id}/confirm`, {}, { preserveScroll: true }); }}>
                                 <button type="submit" className="btn-primary" disabled={!canConfirm} data-testid="broadcast-confirm">{t.prayer_confirm || 'Confirm & queue'}</button>
-                            </form>
+                            </form>}
                         </div>
                     )}
                 </div>
