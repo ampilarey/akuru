@@ -94,4 +94,7 @@ return [
     'flash_code_if_registered' => 'If an account exists, we have sent it a verification code.',
     'flash_code_verified' => 'The code is verified. Please set your new password.',
     'flash_password_reset' => 'Your password was reset. You can sign in now.',
+
+    // The offices' last English refusals (slice OF1).
+    'error_account_inactive' => 'Your account is inactive. Please contact the office.',
 ];

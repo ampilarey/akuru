@@ -23,7 +23,7 @@ class ApproveStaffLeaveAction
     {
         $type = LeaveType::query()->find((int) $data['leave_type_id']);
         if ($type === null) {
-            throw ValidationException::withMessages(['leave_type_id' => 'Unknown leave type.']);
+            throw ValidationException::withMessages(['leave_type_id' => __('hr.leave_error_unknown_type')]);
         }
 
         app(AssertLeaveDocumentAction::class)->execute((int) $type->id, isset($data['document_id']) ? (int) $data['document_id'] : null);
@@ -33,19 +33,19 @@ class ApproveStaffLeaveAction
         $halfDay = (bool) ($data['half_day'] ?? false);
         $days = app(CountLeaveDaysAction::class)->execute($from, $to, $halfDay);
         if ($days <= 0) {
-            throw ValidationException::withMessages(['from_date' => 'Leave dates are invalid.']);
+            throw ValidationException::withMessages(['from_date' => __('hr.leave_error_dates')]);
         }
 
         $year = app(ResolveAcademicYearForDateAction::class)->execute($from);
         if ($year === null) {
-            throw ValidationException::withMessages(['from_date' => 'No academic year covers this leave.']);
+            throw ValidationException::withMessages(['from_date' => __('hr.leave_error_no_year')]);
         }
 
         $lock = app(IsPayrollMonthLockedAction::class);
         for ($cursor = Carbon::parse($from, 'Indian/Maldives')->startOfDay(); $cursor->lte(Carbon::parse($to, 'Indian/Maldives')->startOfDay()); $cursor->addDay()) {
             if ($lock->execute($cursor->toDateString())) {
                 throw ValidationException::withMessages([
-                    'from_date' => 'Payroll for '.$cursor->format('Y-m').' is locked. Record the change next period.',
+                    'from_date' => __('hr.leave_error_payroll_locked', ['month' => $cursor->copy()->locale(app()->getLocale())->translatedFormat('F Y')]),
                 ]);
             }
         }
@@ -61,7 +61,7 @@ class ApproveStaffLeaveAction
                 $balance = app(LeaveBalanceCalculator::class)->execute($entitlement->id);
                 if ($balance < $days) {
                     throw ValidationException::withMessages([
-                        'leave_type_id' => 'Insufficient leave balance ('.$balance.' remaining, '.$days.' requested).',
+                        'leave_type_id' => __('hr.leave_error_balance', ['balance' => $balance, 'days' => $days]),
                     ]);
                 }
             }

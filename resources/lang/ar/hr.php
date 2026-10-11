@@ -308,4 +308,12 @@ return [
     'flash_checklist_updated' => 'حُدِّثت قائمة التحقق.',
     'error_application_missing' => 'طلب غير معروف.',
     'error_hire_email' => 'يلزم بريد إلكتروني للتوظيف.',
+
+    // The offices' last English refusals (slice OF1).
+    'leave_error_document' => 'تحتاج إجازة :type إلى مستند داعم (ملف PDF أو صورة الشهادة).',
+    'leave_error_unknown_type' => 'اختر نوع إجازة من القائمة.',
+    'leave_error_dates' => 'تواريخ الإجازة غير صحيحة.',
+    'leave_error_no_year' => 'لا توجد سنة دراسية تشمل هذه الإجازة.',
+    'leave_error_payroll_locked' => 'رواتب :month مقفلة. سجّل التغيير في الفترة التالية.',
+    'leave_error_balance' => 'رصيد الإجازة غير كافٍ: المتبقي :balance يومًا، والمطلوب :days.',
 ];

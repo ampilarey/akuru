@@ -37,7 +37,7 @@ class RaiseAdHocInvoiceAction
     ): Invoice {
         if ($amount <= 0) {
             throw ValidationException::withMessages([
-                'amount' => 'An invoice needs an amount above zero.',
+                'amount' => __('finance.invoice_error_amount'),
             ]);
         }
 

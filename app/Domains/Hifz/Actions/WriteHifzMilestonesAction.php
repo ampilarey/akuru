@@ -40,7 +40,7 @@ class WriteHifzMilestonesAction implements HalaqaMilestoneWriter
         $milestone = HifzMilestone::query()->findOrFail($milestoneId);
         if (($milestone->status?->value ?? $milestone->status) !== 'pending') {
             throw ValidationException::withMessages([
-                'status' => 'Only pending milestones can be supervisor-reviewed.',
+                'status' => __('admin.hifz_error_review_pending'),
             ]);
         }
 
@@ -62,7 +62,7 @@ class WriteHifzMilestonesAction implements HalaqaMilestoneWriter
         $status = $milestone->status?->value ?? $milestone->status;
         if (! in_array($status, ['pending', 'supervisor_reviewed'], true)) {
             throw ValidationException::withMessages([
-                'status' => 'Milestone has already been decided.',
+                'status' => __('admin.hifz_error_already_decided'),
             ]);
         }
 

@@ -1104,4 +1104,15 @@ return [
     // A teacher's schedule (slice AC1).
     'schedule_title' => 'جدول المعلّم',
     'schedule_none' => 'لم تُسند إليك أي جلسات بعد.',
+
+    // The offices' last English refusals (slice OF1).
+    'delete_error_has_records' => 'لهذه الدورة :records. يجب الاحتفاظ بسجلات طلابها، لذا لا يمكن حذفها.',
+    'delete_dependent_course_enrollments' => ':count تسجيلات',
+    'delete_dependent_attendance_records' => ':count سجلات حضور',
+    'delete_dependent_activity_attempts' => ':count محاولات أنشطة',
+    'delete_dependent_assessment_attempts' => ':count محاولات تقييم',
+    'delete_dependent_student_lesson_progress' => ':count سجلات تقدّم',
+    'delete_dependent_issued_certificates' => ':count شهادات صادرة',
+    'delete_dependent_payment_items' => ':count سجلات دفع',
+    'delete_dependent_course_offerings' => ':count دفعات',
 ];

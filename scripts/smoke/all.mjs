@@ -153,6 +153,7 @@ const WALKS = [
     { name: 'substitutions-language', writes: true, asks: 'Do the substitution requests and teacher absences work and read in Dhivehi — a change saved, a lesson taken, a substitute assigned, an absence recorded?' },
     { name: 'upload-language', writes: true, asks: 'Is an upload refused in the page\'s language — a PDF given to an image block on the course outline, in Dhivehi and Arabic — and an image still taken?' },
     { name: 'documents-language-cards', writes: true, asks: 'Are the student ID card and the transfer certificate written in the language of the page that asks — Dhivehi, Arabic, and still English under /en?' },
+    { name: 'offices-language', writes: true, asks: 'Does the feature walk-through refuse a broken mark without a note in Dhivehi and Arabic, recording nothing, and still record a working one?' },
     { name: 'public-rtl', writes: false, asks: 'Does the website read right to left in Dhivehi and Arabic, on a desk and on a phone?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
     { name: 'course-screens-language', writes: true, asks: 'Do the screens teachers build courses on — and the Qur\'an screens, a learner\'s among them — read in Dhivehi and Arabic, with a name on every field?' },

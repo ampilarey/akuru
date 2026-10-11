@@ -1501,4 +1501,11 @@ return [
     'funnel_decision_payment' => 'Iterate payment / fee copy — registrations are not completing payment.',
     'funnel_decision_whatsapp' => 'WhatsApp is the stronger path — keep the sticky WhatsApp CTA and iterate enroll later.',
     'funnel_decision_keep' => 'Keep iterating W1 content from this funnel — no stage is clearly stuck.',
+
+    // The offices' last English refusals (slice OF1).
+    'feature_test_error_unknown' => 'That feature is not on the list.',
+    'feature_test_error_status' => 'Choose works, broken or blocked.',
+    'feature_test_error_comment' => 'Say what is broken or what it is waiting for.',
+    'hifz_error_review_pending' => 'Only a pending milestone can be reviewed by a supervisor.',
+    'hifz_error_already_decided' => 'This milestone has already been decided.',
 ];

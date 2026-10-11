@@ -308,4 +308,12 @@ return [
     'flash_checklist_updated' => 'Checklist updated.',
     'error_application_missing' => 'Unknown application.',
     'error_hire_email' => 'An email is required to hire.',
+
+    // The offices' last English refusals (slice OF1).
+    'leave_error_document' => ':type leave needs a supporting document (a PDF or a photo of the certificate).',
+    'leave_error_unknown_type' => 'Choose a leave type from the list.',
+    'leave_error_dates' => 'The leave dates are not valid.',
+    'leave_error_no_year' => 'No academic year covers this leave.',
+    'leave_error_payroll_locked' => 'Payroll for :month is locked. Record the change next period.',
+    'leave_error_balance' => 'Not enough leave left: :balance days remaining, :days requested.',
 ];

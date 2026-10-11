@@ -286,4 +286,9 @@ return [
     'error_refund_unconfirmed' => 'لا يُسترد إلا الدفع المؤكَّد.',
     'error_refund_exceeds' => 'يتجاوز الاسترداد المتبقي القابل للاسترداد (:refundable).',
     'error_refund_no_account' => 'لا حساب للدافع في هذه الدفعة لإضافة المبلغ إليه.',
+
+    // The offices' last English refusals (slice OF1).
+    'invoice_error_amount' => 'تحتاج الفاتورة إلى مبلغ أكبر من صفر.',
+    'payment_error_method' => 'اختر طريقة الدفع من القائمة.',
+    'payment_error_wallet_method' => 'تُسجَّل :method في دفتر المحفظة، لا يدويًا.',
 ];

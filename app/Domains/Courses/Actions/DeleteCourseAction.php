@@ -89,11 +89,14 @@ class DeleteCourseAction
         if ($counts !== []) {
             $parts = [];
             foreach ($counts as $table => $count) {
-                $parts[] = $count.' '.(self::DEPENDENTS[$table] ?? $table);
+                $parts[] = trans()->has('teach.delete_dependent_'.$table)
+                    ? __('teach.delete_dependent_'.$table, ['count' => $count])
+                    : $count.' '.(self::DEPENDENTS[$table] ?? $table);
             }
 
             throw ValidationException::withMessages([
-                'course' => 'This course has '.implode(', ', $parts).'. Historical student data must remain intact (SPEC §29).',
+                // SPEC §29: historical student data must remain intact.
+                'course' => __('teach.delete_error_has_records', ['records' => implode(in_array(app()->getLocale(), ['dv', 'ar'], true) ? '، ' : ', ', $parts)]),
             ]);
         }
 

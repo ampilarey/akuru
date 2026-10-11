@@ -94,4 +94,7 @@ return [
     'flash_code_if_registered' => 'އެކައުންޓެއް އޮތްނަމަ، އެ އެކައުންޓަށް ވެރިފިކޭޝަން ކޯޑެއް ފޮނުވިން.',
     'flash_code_verified' => 'ކޯޑު ކަށަވަރުވެއްޖެ. އާ ޕާސްވޯޑެއް ހައްދަވާ.',
     'flash_password_reset' => 'ތިބާގެ ޕާސްވޯޑް ބަދަލުވެއްޖެ. މިހާރު ލޮގިން ވެވޭނެ.',
+
+    // The offices' last English refusals (slice OF1).
+    'error_account_inactive' => 'ތިބާގެ އެކައުންޓް ހަރަކާތެއް ނުކުރޭ. އޮފީހާ ގުޅުއްވާ.',
 ];

@@ -42,7 +42,7 @@ class RecordManualPaymentAction
     ): Payment {
         $amount = round($amount, 2);
         if ($amount <= 0) {
-            throw ValidationException::withMessages(['amount' => 'Amount must be positive.']);
+            throw ValidationException::withMessages(['amount' => __('common.payment_error_amount')]);
         }
 
         // The method arrives as a string, not as the enum: callers live in
@@ -52,7 +52,7 @@ class RecordManualPaymentAction
         $resolved = PaymentMethod::tryFrom($method);
         if ($resolved === null) {
             throw ValidationException::withMessages([
-                'payment_method' => 'Unknown payment method.',
+                'payment_method' => __('finance.payment_error_method'),
             ]);
         }
 
@@ -61,7 +61,7 @@ class RecordManualPaymentAction
         // would create a second record of the same money (rule 11).
         if (! in_array($resolved, PaymentMethod::manualCases(), true)) {
             throw ValidationException::withMessages([
-                'payment_method' => $resolved->label().' is recorded by the wallet ledger, not by hand.',
+                'payment_method' => __('finance.payment_error_wallet_method', ['method' => $resolved->label()]),
             ]);
         }
 

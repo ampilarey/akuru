@@ -144,7 +144,7 @@ class PhoneSignInAction
     private function active(?User $user): User
     {
         if ($user === null || ! $user->is_active) {
-            throw ValidationException::withMessages(['code' => 'Your account is inactive. Please contact support.']);
+            throw ValidationException::withMessages(['code' => __('signin.error_account_inactive')]);
         }
 
         return $user;

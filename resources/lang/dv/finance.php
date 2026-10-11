@@ -286,4 +286,9 @@ return [
     'error_refund_unconfirmed' => 'ރިފަންޑްކުރެވޭނީ ކަށަވަރުކުރެވިފައިވާ ދެއްކުމެއް އެކަނި.',
     'error_refund_exceeds' => 'ރިފަންޑް ކުރެވޭނެ ބާކީ (:refundable) އަށްވުރެ ރިފަންޑް ގިނަ.',
     'error_refund_no_account' => 'މި ދެއްކުމުގައި ފައިސާ ވައްދާނެ ދެއްކި ފަރާތުގެ އެކައުންޓެއް ނެތް.',
+
+    // The offices' last English refusals (slice OF1).
+    'invoice_error_amount' => 'އިންވޮއިސްއަކަށް ސުމަށްވުރެ ބޮޑު އަދަދެއް ބޭނުންވޭ.',
+    'payment_error_method' => 'ފައިސާ ދެއްކި ގޮތް ލިސްޓުން ހޮއްވަވާ.',
+    'payment_error_wallet_method' => ':method ރެކޯޑުކުރެވެނީ ވޯލެޓްގެ ލެޖަރުން، އަތުން ނޫން.',
 ];

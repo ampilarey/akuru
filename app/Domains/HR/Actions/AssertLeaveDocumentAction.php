@@ -24,7 +24,7 @@ class AssertLeaveDocumentAction
 
         if ($documentId === null || $documentId < 1) {
             throw ValidationException::withMessages([
-                'document' => $type->name.' leave needs a supporting document (a PDF or a photo of the certificate).',
+                'document' => __('hr.leave_error_document', ['type' => $type->name]),
             ]);
         }
     }
