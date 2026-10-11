@@ -811,6 +811,10 @@ return [
     'prayer_flash_draft_saved' => 'تم حفظ المسودة.',
     'prayer_flash_preview_ready' => 'المعاينة جاهزة. راجع اللقطة ثم أكّد.',
     'prayer_flash_queued' => 'أُدرج البث في الانتظار.',
+    // A queued or sent broadcast is locked, and its refusals (slice PB1).
+    'prayer_error_not_previewed' => 'عاين البث قبل أن تؤكده.',
+    'prayer_error_no_recipients' => 'لا أحد في هذا البث وافق على تذكيرات الصلاة، فلا يوجد من يُرسل إليه.',
+    'prayer_error_locked' => 'أُدرج هذا البث في الانتظار أو أُرسل، فلم يعد بالإمكان تغييره. لإرساله مرة أخرى، أنشئ بثًا جديدًا.',
     // The two full dashboards: today's numbers (C9 slice 13, STATUS §5jo).
     'numbers_title' => 'لوحة المشرف العام',
     'numbers_ah' => 'هـ',

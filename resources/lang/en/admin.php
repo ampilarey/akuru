@@ -813,6 +813,10 @@ return [
     'prayer_flash_draft_saved' => 'Draft saved.',
     'prayer_flash_preview_ready' => 'Preview ready. Review the snapshot then confirm.',
     'prayer_flash_queued' => 'Broadcast queued.',
+    // A queued or sent broadcast is locked, and its refusals (slice PB1).
+    'prayer_error_not_previewed' => 'Preview the broadcast before you confirm it.',
+    'prayer_error_no_recipients' => 'No one on this broadcast has agreed to prayer reminders, so there is nobody to send it to.',
+    'prayer_error_locked' => 'This broadcast has been queued or sent, so it can no longer be changed. To send again, make a new broadcast.',
     // The two full dashboards: today's numbers (C9 slice 13, STATUS §5jo).
     'numbers_title' => 'Super Admin Dashboard',
     'numbers_ah' => 'AH',

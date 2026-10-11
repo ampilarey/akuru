@@ -7,14 +7,14 @@ use App\Domains\PrayerTimes\Enums\PrayerBroadcastStatus;
 use App\Domains\PrayerTimes\Models\PrayerBroadcast;
 use App\Domains\PrayerTimes\Models\PrayerBroadcastRecipient;
 use App\Domains\Settings\Actions\GetSettingAction;
-use InvalidArgumentException;
+use Illuminate\Validation\ValidationException;
 
 class PreviewPrayerBroadcastAction
 {
     public function execute(PrayerBroadcast $broadcast): PrayerBroadcast
     {
-        if ($broadcast->status === PrayerBroadcastStatus::Cancelled) {
-            throw new InvalidArgumentException('Cancelled broadcasts cannot be previewed.');
+        if (! $broadcast->status->isOpen()) {
+            throw ValidationException::withMessages(['broadcast' => __('admin.prayer_error_locked')]);
         }
 
         $islandId = (int) $broadcast->island_id;
