@@ -1498,4 +1498,11 @@ return [
     'funnel_decision_payment' => 'حسّن نص الدفع والرسوم — التسجيلات لا تكمل الدفع.',
     'funnel_decision_whatsapp' => 'واتساب هو المسار الأقوى — أبقِ زر واتساب الثابت وحسّن التسجيل لاحقًا.',
     'funnel_decision_keep' => 'واصل تحسين محتوى W1 من هذا المسار — لا توجد مرحلة متوقفة بوضوح.',
+
+    // The offices' last English refusals (slice OF1).
+    'feature_test_error_unknown' => 'هذه الميزة ليست في القائمة.',
+    'feature_test_error_status' => 'اختر: يعمل، معطّل، أو متوقف.',
+    'feature_test_error_comment' => 'اذكر ما المعطّل أو ما الذي ينتظره.',
+    'hifz_error_review_pending' => 'لا يراجع المشرف إلا مرحلة قيد الانتظار.',
+    'hifz_error_already_decided' => 'تم البت في هذه المرحلة بالفعل.',
 ];

@@ -94,4 +94,7 @@ return [
     'flash_code_if_registered' => 'إن كان هناك حساب، فقد أرسلنا إليه رمز تحقق.',
     'flash_code_verified' => 'تم التحقق من الرمز. يرجى تعيين كلمة المرور الجديدة.',
     'flash_password_reset' => 'أُعيد تعيين كلمة المرور. يمكنك تسجيل الدخول الآن.',
+
+    // The offices' last English refusals (slice OF1).
+    'error_account_inactive' => 'حسابك غير نشط. يُرجى التواصل مع المكتب.',
 ];

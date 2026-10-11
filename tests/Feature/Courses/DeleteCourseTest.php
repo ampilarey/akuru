@@ -142,7 +142,7 @@ it('names every dependent when asked to refuse rather than archive', function ()
         // The message has to say what is in the way, or an admin is left
         // guessing why the button did nothing.
         expect($e->errors()['course'][0])->toContain('1 enrolments')
-            ->and($e->errors()['course'][0])->toContain('§29');
+            ->and($e->errors()['course'][0])->toContain('must be kept');
     }
 
     expect(Course::withTrashed()->whereKey($course->id)->exists())->toBeTrue();

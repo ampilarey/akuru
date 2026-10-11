@@ -1104,4 +1104,15 @@ return [
     // A teacher's schedule (slice AC1).
     'schedule_title' => 'ޓީޗަރުގެ ޝެޑިއުލް',
     'schedule_none' => 'އަދި ތިބާއަށް އެއްވެސް ސެޝަނެއް ހަވާލުކޮށްފައެއް ނެތް.',
+
+    // The offices' last English refusals (slice OF1).
+    'delete_error_has_records' => 'މި ކޯހުގައި :records އެބައޮތް. ދަރިވަރުންގެ ރެކޯޑުތައް ރައްކާކުރަން ޖެހޭތީ، މި ކޯސް ފޮހެލެވޭކަށް ނެތް.',
+    'delete_dependent_course_enrollments' => ':count ވަނުން',
+    'delete_dependent_attendance_records' => ':count ހާޒިރީގެ ރެކޯޑު',
+    'delete_dependent_activity_attempts' => ':count އެކްޓިވިޓީ މަސައްކަތް',
+    'delete_dependent_assessment_attempts' => ':count އެސެސްމަންޓް މަސައްކަތް',
+    'delete_dependent_student_lesson_progress' => ':count ދަރިވަރުންގެ ފިލާވަޅުތަކުގެ ކުރިއެރުމުގެ ރެކޯޑު',
+    'delete_dependent_issued_certificates' => ':count ދޫކުރި ސެޓްފިކެޓް',
+    'delete_dependent_payment_items' => ':count ފައިސާ ދެއްކުމުގެ ރެކޯޑު',
+    'delete_dependent_course_offerings' => ':count ކްލާސް',
 ];

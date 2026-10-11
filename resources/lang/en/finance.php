@@ -286,4 +286,9 @@ return [
     'error_refund_unconfirmed' => 'Only confirmed payments can be refunded.',
     'error_refund_exceeds' => 'Refund exceeds the refundable remainder (:refundable).',
     'error_refund_no_account' => 'This payment has no payer account to credit.',
+
+    // The offices' last English refusals (slice OF1).
+    'invoice_error_amount' => 'An invoice needs an amount above zero.',
+    'payment_error_method' => 'Choose how it was paid from the list.',
+    'payment_error_wallet_method' => ':method is recorded by the wallet ledger, not by hand.',
 ];

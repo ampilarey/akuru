@@ -15,14 +15,14 @@ class RecordFeatureTestAction
     public function execute(string $itemKey, string $status, ?string $comment, int $userId): FeatureTestNote
     {
         if (! in_array($itemKey, ListFeatureWalkthroughAction::itemKeys(), true)) {
-            throw ValidationException::withMessages(['item' => 'Unknown feature.']);
+            throw ValidationException::withMessages(['item' => __('admin.feature_test_error_unknown')]);
         }
         if (! in_array($status, FeatureTestNote::STATUSES, true)) {
-            throw ValidationException::withMessages(['status' => 'Choose works, broken or blocked.']);
+            throw ValidationException::withMessages(['status' => __('admin.feature_test_error_status')]);
         }
         $comment = trim((string) $comment);
         if ($status !== 'works' && $comment === '') {
-            throw ValidationException::withMessages(['comment' => 'Say what is broken or what it is waiting for.']);
+            throw ValidationException::withMessages(['comment' => __('admin.feature_test_error_comment')]);
         }
 
         return FeatureTestNote::query()->create([

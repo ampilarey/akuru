@@ -1104,4 +1104,15 @@ return [
     // A teacher's schedule (slice AC1).
     'schedule_title' => 'Teacher schedule',
     'schedule_none' => 'No sessions assigned to you yet.',
+
+    // The offices' last English refusals (slice OF1).
+    'delete_error_has_records' => 'This course has :records. Its students\' records must be kept, so it cannot be deleted.',
+    'delete_dependent_course_enrollments' => ':count enrolments',
+    'delete_dependent_attendance_records' => ':count attendance records',
+    'delete_dependent_activity_attempts' => ':count activity attempts',
+    'delete_dependent_assessment_attempts' => ':count assessment attempts',
+    'delete_dependent_student_lesson_progress' => ':count lesson progress records',
+    'delete_dependent_issued_certificates' => ':count issued certificates',
+    'delete_dependent_payment_items' => ':count payment records',
+    'delete_dependent_course_offerings' => ':count offerings',
 ];

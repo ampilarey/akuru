@@ -4983,6 +4983,69 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rk. The offices' last English refusals in Dhivehi and Arabic (C21 OF1, 2026-10-11)
+
+Next after the certificates (DOC2, §5rj). PC1's refusal rule, run again over
+the offices' actions, still found English that a person meets:
+- deleting a course that has records named each dependent by its table
+  (*1 enrolments*) and quoted the spec (*SPEC §29*);
+- signing in by phone to an inactive account;
+- the feature walk-through's three refusals;
+- staff leave: a missing supporting document, an unknown type, bad dates, no
+  academic year, a locked payroll month (printed as `2026-09`) and too little
+  balance;
+- an ad-hoc invoice of zero;
+- a manual payment's unknown method and a wallet method entered by hand;
+- a Hifz milestone reviewed twice or out of turn.
+
+**The change:**
+- Each refusal reads a phrase in the book of the office that says it:
+  `teach` (the course delete, with one phrase per kind of record),
+  `signin`, `admin` (feature tests, Hifz milestones), `hr` (leave) and
+  `finance` (invoices, payments). 24 phrases, each in English, Dhivehi and
+  Arabic, keeping its placeholders.
+- A locked payroll month is named by its month's name in the page's
+  language. A course's dependents are listed with the Arabic comma in
+  Dhivehi and Arabic.
+- The course delete no longer quotes the spec to the office; it says the
+  students' records must be kept.
+
+**Left as it was:**
+- A writer application's notification text stays English, as C20 decided
+  for the Library's notices; its stored note is data.
+- `HandleStaffLeaveApprovalAction` and `HandleTeacherLeaveApprovalAction`
+  refuse a payload no form builds: a developer's invariant.
+- `QuranProgressController` is old Blade, among the screens that may be
+  retired rather than translated.
+- A report card's download says nothing of its own: nothing to translate.
+- **The prayer-time broadcast's five refusals** are still English
+  (`ConfirmPrayerBroadcastAction`, `PreviewPrayerBroadcastAction`). Next
+  slice, PB1.
+
+**Tests:**
+- `OfficesLastEnglishTest` (new, 3 tests):
+  - no English refusal left in the eight actions, every phrase in three
+    languages with its placeholders;
+  - a feature test, a manual payment and a leave refused in Dhivehi;
+  - a course with an enrolment refused in Arabic, naming the enrolment in
+    Arabic, without the table's English or the spec.
+
+  Run over `main`'s files, all 3 fail.
+- `DeleteCourseTest` reads *must be kept* where it read *§29*.
+
+Whole suite locally: **3132 passed, 1 failed (65364 assertions)**. The
+failure, a Dhivehi *progress records* phrase the shared-translation rule
+found identical to an older one for a different sentence, was then made
+specific (*lesson progress records*) and its files rerun: 5 passed.
+
+**Walks:**
+- **`offices-language.mjs`** (new, in the runner). The system admin marks
+  the first feature broken with no note under `/dv` and `/ar` and is told so
+  in the page's language; nothing is recorded; a working mark then is. The
+  walk removes its marks. 9/9. Run over `main`'s files, it passes 5 of 9.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5rj. The certificates and the student ID card in Dhivehi and Arabic (C21 DOC2, 2026-10-11)
 
 Next after an upload refused (MD1, §5ri), and DOC1's sequel (§5pz). Four

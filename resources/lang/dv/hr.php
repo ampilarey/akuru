@@ -308,4 +308,12 @@ return [
     'flash_checklist_updated' => 'ޗެކްލިސްޓު އަޕްޑޭޓްކުރެވިއްޖެ.',
     'error_application_missing' => 'ހުށަހެޅުން ނުފެނުނު.',
     'error_hire_email' => 'ވަޒީފާ ދިނުމަށް އީމެއިލެއް ބޭނުންވޭ.',
+
+    // The offices' last English refusals (slice OF1).
+    'leave_error_document' => ':type ޗުއްޓީއަށް ސާބިތުކުރާ ލިޔުމެއް ބޭނުންވޭ (PDF އެއް ނުވަތަ ސެޓްފިކެޓުގެ ފޮޓޯއެއް).',
+    'leave_error_unknown_type' => 'ލިސްޓުން ޗުއްޓީގެ ބާވަތެއް ހޮއްވަވާ.',
+    'leave_error_dates' => 'ޗުއްޓީގެ ތާރީޚުތައް ރަނގަޅެއް ނޫން.',
+    'leave_error_no_year' => 'މި ޗުއްޓީ ހިމެނޭ ތަޢުލީމީ އަހަރެއް ނެތް.',
+    'leave_error_payroll_locked' => ':month ގެ މުސާރަ ބަންދުކޮށްފައި. ބަދަލު ރެކޯޑުކުރައްވާ ދެން އަންނަ މުއްދަތުގައި.',
+    'leave_error_balance' => 'ޗުއްޓީ ފުދޭވަރަށް ނެތް: ބާކީ :balance ދުވަސް، އެދިފައިވަނީ :days ދުވަސް.',
 ];
