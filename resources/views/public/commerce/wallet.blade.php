@@ -23,9 +23,7 @@
         · <a href="{{ route('public.library.index') }}" class="hover:underline">{{ __('public.Digital Library') }}</a>
         · <a href="{{ route('public.page.show', 'wallet-terms') }}" class="hover:underline">{{ __('public.Wallet Terms') }}</a>
     </p>
-    @if(session('success'))
-        <p class="mb-4 rounded bg-green-50 p-3 text-green-800">{{ session('success') }}</p>
-    @endif
+    {{-- The layout says the thanks once; this page said it a second time (slice FL1). --}}
     @error('code')
         <p class="mb-4 rounded bg-red-50 p-3 text-red-700">{{ $message }}</p>
     @enderror

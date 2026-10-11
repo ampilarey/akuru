@@ -25,9 +25,7 @@
             @endforeach
         </nav>
     </div>
-    @if(session('success'))
-        <p class="mb-4 rounded bg-green-50 p-3 text-green-800" data-testid="flash-success">{{ session('success') }}</p>
-    @endif
+    {{-- The layout says the thanks once; this page said it a second time (slice FL1). --}}
     @if($errors->any())
         <div class="mb-4 rounded bg-red-50 p-3 text-sm text-red-800" data-testid="lending-errors">@foreach($errors->all() as $e)<p>{{ $e }}</p>@endforeach</div>
     @endif

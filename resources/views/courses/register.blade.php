@@ -21,9 +21,7 @@
             @else
             <p class="text-gray-600 mb-6">{{ __('register.contact_intro') }}</p>
 
-            @if(session('success'))
-                <div class="mb-4 p-3 bg-green-100 text-green-800 rounded">{{ session('success') }}</div>
-            @endif
+            {{-- The layout says the thanks once; this page said it a second time (slice FL1). --}}
             @if($errors->any())
                 <div class="mb-4 p-3 bg-red-100 text-red-800 rounded">
                     {{ $errors->first() }}

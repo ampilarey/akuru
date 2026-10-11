@@ -13,9 +13,7 @@
         <h1 class="text-2xl font-bold text-brandMaroon-900" data-testid="wishlist-heading">{{ __('shop.wishlist_title') }}</h1>
         @if(count($cards) > 0)<a href="{{ route('public.shop.wishlist.export') }}" class="btn-secondary">{{ __('shop.export_csv') }}</a>@endif
     </div>
-    @if(session('success'))
-        <p class="mb-4 rounded bg-green-50 p-3 text-green-800" data-testid="flash-success">{{ session('success') }}</p>
-    @endif
+    {{-- The layout says the thanks once; this page said it a second time (slice FL1). --}}
     @if(count($cards) === 0)
         <p class="rounded border bg-white p-6 text-gray-600" data-testid="wishlist-empty">{{ __('shop.wishlist_empty') }} <a href="{{ route('public.shop.index') }}" class="text-brandMaroon-700 underline">{{ __('shop.bar_shop') }}</a></p>
     @else

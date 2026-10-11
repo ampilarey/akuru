@@ -14,9 +14,7 @@
     <h1 class="text-3xl font-bold text-brandMaroon-900 mb-2">{{ __('public.Give the gift of reading') }}</h1>
     <p class="text-gray-600 mb-8">{{ __('public.A gift card becomes wallet money the moment it is redeemed, to spend on any book, article or research paper in the library. The code is sent to the person you name as soon as the bank confirms your payment.') }}</p>
 
-    @if(session('error'))
-        <p class="mb-4 rounded bg-red-50 p-3 text-red-700">{{ session('error') }}</p>
-    @endif
+    {{-- The layout says the refusal once; this page said it a second time (slice FL1). --}}
     @if($errors->any())
         <div class="mb-4 rounded bg-red-50 p-3 text-red-700">
             @foreach($errors->all() as $error)
