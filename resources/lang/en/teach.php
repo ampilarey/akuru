@@ -1111,7 +1111,7 @@ return [
     'delete_dependent_attendance_records' => ':count attendance records',
     'delete_dependent_activity_attempts' => ':count activity attempts',
     'delete_dependent_assessment_attempts' => ':count assessment attempts',
-    'delete_dependent_student_lesson_progress' => ':count progress records',
+    'delete_dependent_student_lesson_progress' => ':count lesson progress records',
     'delete_dependent_issued_certificates' => ':count issued certificates',
     'delete_dependent_payment_items' => ':count payment records',
     'delete_dependent_course_offerings' => ':count offerings',

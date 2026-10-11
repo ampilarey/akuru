@@ -5033,7 +5033,10 @@ the offices' actions, still found English that a person meets:
   Run over `main`'s files, all 3 fail.
 - `DeleteCourseTest` reads *must be kept* where it read *§29*.
 
-Whole suite locally: SUITE_RESULT.
+Whole suite locally: **3132 passed, 1 failed (65364 assertions)**. The
+failure, a Dhivehi *progress records* phrase the shared-translation rule
+found identical to an older one for a different sentence, was then made
+specific (*lesson progress records*) and its files rerun: 5 passed.
 
 **Walks:**
 - **`offices-language.mjs`** (new, in the runner). The system admin marks

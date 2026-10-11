@@ -1111,7 +1111,7 @@ return [
     'delete_dependent_attendance_records' => ':count ހާޒިރީގެ ރެކޯޑު',
     'delete_dependent_activity_attempts' => ':count އެކްޓިވިޓީ މަސައްކަތް',
     'delete_dependent_assessment_attempts' => ':count އެސެސްމަންޓް މަސައްކަތް',
-    'delete_dependent_student_lesson_progress' => ':count ކުރިއެރުމުގެ ރެކޯޑު',
+    'delete_dependent_student_lesson_progress' => ':count ދަރިވަރުންގެ ފިލާވަޅުތަކުގެ ކުރިއެރުމުގެ ރެކޯޑު',
     'delete_dependent_issued_certificates' => ':count ދޫކުރި ސެޓްފިކެޓް',
     'delete_dependent_payment_items' => ':count ފައިސާ ދެއްކުމުގެ ރެކޯޑު',
     'delete_dependent_course_offerings' => ':count ކްލާސް',
