@@ -186,6 +186,22 @@ record names (`PasswordResetFlowsKeepTheirOwnAccountTest`,
 `password-reset.mjs`). Found reading `PasswordOtpController` and
 `OtpPasswordResetController` for SI1.
 
+## Found making the substitution requests work (2026-10-11)
+
+### Nothing closes or cancels a substitution request — **open (P4)**
+
+A request is opened, and an assignment marks it *assigned*. Removing the
+assignment opens it again (`SubstitutionAssignment::boot`). No path sets
+*closed* or *cancelled*, though the list filters by both, so a lesson that
+was covered stays *assigned*, and one that is no longer needed stays open
+until it is deleted. `StatusValuesAreWritableTest` baselines both values
+(TS1, STATUS §5rh).
+
+### A teacher's absence cannot be removed from its page — **open (P4)**
+
+`absences.destroy` exists and says *The absence is removed*, but no page
+has a button for it.
+
 ## Found translating the website's forms (2026-10-11)
 
 ### The Bookstore's, the wallet's and lending's pages said their thanks twice — **fixed (FL1, STATUS §5rg)**

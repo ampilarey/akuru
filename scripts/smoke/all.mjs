@@ -150,6 +150,7 @@ const WALKS = [
     { name: 'payment-language', writes: true, asks: 'Do the payment pages read in Dhivehi and Arabic — the checkout, back from the bank, a receipt, a lost reference — and does each payment go back to what it was for?' },
     { name: 'website-language', writes: true, asks: "Do the website's forms and its office say their messages in Dhivehi, and once — a waiting list, the contact form, an event, the reminders' subscription, the daily content, news and the funnel?" },
     { name: 'flash-once', writes: true, asks: 'Does each Bookstore page say its thanks once — the cart, and the wishlist from a product\'s page — in the layout\'s flash?' },
+    { name: 'substitutions-language', writes: true, asks: 'Do the substitution requests and teacher absences work and read in Dhivehi — a change saved, a lesson taken, a substitute assigned, an absence recorded?' },
     { name: 'public-rtl', writes: false, asks: 'Does the website read right to left in Dhivehi and Arabic, on a desk and on a phone?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
     { name: 'course-screens-language', writes: true, asks: 'Do the screens teachers build courses on — and the Qur\'an screens, a learner\'s among them — read in Dhivehi and Arabic, with a name on every field?' },

@@ -41,7 +41,7 @@ class SubstitutionRequestController extends Controller
         }
 
         // Filter by teacher (for teacher view)
-        if (auth()->user()->hasRole('teacher') && ! auth()->user()->hasAnyRole(['admin', 'headmaster', 'supervisor'])) {
+        if (auth()->user()->hasRole('teacher') && ! $this->canAssign()) {
             // Teachers can only see requests they can substitute for or are assigned to
             $teacher = auth()->user()->teacher;
             if ($teacher) {
@@ -90,15 +90,15 @@ class SubstitutionRequestController extends Controller
 
         return redirect()
             ->route('substitutions.requests.index')
-            ->with('success', 'Substitution request created successfully.');
+            ->with('success', __('substitutions.flash_created'));
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(SubstitutionRequest $request): View
+    public function show(SubstitutionRequest $substitutionRequest): View
     {
-        $request->load([
+        $request = $substitutionRequest->load([
             'absentTeacher.user',
             'subject',
             'classroom',
@@ -107,17 +107,20 @@ class SubstitutionRequestController extends Controller
             'assignment.assignedBy',
         ]);
 
-        return view('substitutions.requests.show', compact('request'));
+        $teachers = $this->canAssign() ? Teacher::with('user')->orderBy('first_name')->get() : collect();
+
+        return view('substitutions.requests.show', compact('request', 'teachers'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(SubstitutionRequest $request): View
+    public function edit(SubstitutionRequest $substitutionRequest): View
     {
+        $request = $substitutionRequest;
         // Only allow editing if status is 'open'
         if ($request->status !== 'open') {
-            abort(403, 'Cannot edit assigned or closed requests.');
+            abort(403, __('substitutions.error_not_open_edit'));
         }
 
         $teachers = Teacher::with('user')->get();
@@ -137,7 +140,7 @@ class SubstitutionRequestController extends Controller
         if ($substitutionRequest->status !== 'open') {
             return redirect()
                 ->route('substitutions.requests.index')
-                ->with('error', 'Cannot update assigned or closed requests.');
+                ->with('error', __('substitutions.error_not_open_edit'));
         }
 
         $validated = $request->validate([
@@ -153,26 +156,27 @@ class SubstitutionRequestController extends Controller
 
         return redirect()
             ->route('substitutions.requests.show', $substitutionRequest)
-            ->with('success', 'Substitution request updated successfully.');
+            ->with('success', __('substitutions.flash_updated'));
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(SubstitutionRequest $request): RedirectResponse
+    public function destroy(SubstitutionRequest $substitutionRequest): RedirectResponse
     {
+        $request = $substitutionRequest;
         // Only allow deletion if status is 'open'
         if ($request->status !== 'open') {
             return redirect()
                 ->route('substitutions.requests.index')
-                ->with('error', 'Cannot delete assigned or closed requests.');
+                ->with('error', __('substitutions.error_not_open_delete'));
         }
 
         $request->delete();
 
         return redirect()
             ->route('substitutions.requests.index')
-            ->with('success', 'Substitution request deleted successfully.');
+            ->with('success', __('substitutions.flash_deleted'));
     }
 
     /**
@@ -182,21 +186,21 @@ class SubstitutionRequestController extends Controller
     {
         // Check if user is a teacher
         if (! auth()->user()->hasRole('teacher')) {
-            abort(403, 'Only teachers can take substitution requests.');
+            abort(403, __('substitutions.error_only_teachers_take'));
         }
 
         // Check if request can be taken
         if (! $substitutionRequest->canBeTaken()) {
             return redirect()
                 ->route('substitutions.requests.index')
-                ->with('error', 'This substitution request cannot be taken.');
+                ->with('error', __('substitutions.error_cannot_take'));
         }
 
         $teacher = auth()->user()->teacher;
         if (! $teacher) {
             return redirect()
                 ->route('substitutions.requests.index')
-                ->with('error', 'Teacher profile not found.');
+                ->with('error', __('substitutions.error_no_teacher_profile'));
         }
 
         // Create the assignment
@@ -212,7 +216,7 @@ class SubstitutionRequestController extends Controller
 
         return redirect()
             ->route('substitutions.requests.index')
-            ->with('success', 'Substitution request taken successfully.');
+            ->with('success', __('substitutions.flash_taken'));
     }
 
     /**
@@ -221,8 +225,8 @@ class SubstitutionRequestController extends Controller
     public function assign(Request $request, SubstitutionRequest $substitutionRequest): RedirectResponse
     {
         // Check permissions
-        if (! auth()->user()->hasAnyRole(['admin', 'headmaster', 'supervisor'])) {
-            abort(403, 'Insufficient permissions to assign substitutions.');
+        if (! $this->canAssign()) {
+            abort(403, __('substitutions.error_cannot_assign_role'));
         }
 
         $validated = $request->validate([
@@ -234,7 +238,7 @@ class SubstitutionRequestController extends Controller
         if ($substitutionRequest->status !== 'open') {
             return redirect()
                 ->route('substitutions.requests.index')
-                ->with('error', 'This substitution request is not available for assignment.');
+                ->with('error', __('substitutions.error_not_open_assign'));
         }
 
         // Create the assignment
@@ -249,8 +253,8 @@ class SubstitutionRequestController extends Controller
         app(NotifySubstituteAssignedAction::class)->execute($assignment);
 
         return redirect()
-            ->route('substitutions.requests.index')
-            ->with('success', 'Substitution request assigned successfully.');
+            ->route('substitutions.requests.show', $substitutionRequest)
+            ->with('success', __('substitutions.flash_assigned'));
     }
 
     public function absencesIndex(): View
@@ -287,7 +291,7 @@ class SubstitutionRequestController extends Controller
 
         return redirect()
             ->route('absences.index')
-            ->with('success', 'Teacher absence recorded.');
+            ->with('success', __('substitutions.flash_absence_recorded'));
     }
 
     public function absencesEdit(TeacherAbsence $absence): View
@@ -312,7 +316,7 @@ class SubstitutionRequestController extends Controller
 
         return redirect()
             ->route('absences.index')
-            ->with('success', 'Teacher absence updated.');
+            ->with('success', __('substitutions.flash_absence_updated'));
     }
 
     public function absencesDestroy(TeacherAbsence $absence): RedirectResponse
@@ -321,6 +325,12 @@ class SubstitutionRequestController extends Controller
 
         return redirect()
             ->route('absences.index')
-            ->with('success', 'Teacher absence removed.');
+            ->with('success', __('substitutions.flash_absence_removed'));
+    }
+
+    /** The office: who may assign a substitute, and who sees every request. */
+    private function canAssign(): bool
+    {
+        return (bool) auth()->user()?->hasAnyRole(['super_admin', 'admin', 'headmaster', 'supervisor']);
     }
 }

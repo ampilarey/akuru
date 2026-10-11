@@ -98,6 +98,12 @@ it('can write every value its status columns allow', function () {
         // An invoice can be drafted, issued and paid. It cannot be cancelled.
         'invoices.status' => ['cancelled'],
 
+        // A substitution request is opened, and an assignment marks it
+        // assigned (its removal opens it again). Nothing closes or cancels
+        // one; the list only filters by them. Hidden until TS1 by the list
+        // page naming the model in a `@can` nobody's policy answered.
+        'substitution_requests.status' => ['closed', 'cancelled'],
+
         // Course engine: a quiz cannot be closed or archived, and an attempt
         // never reaches `graded`.
         'quizzes.status' => ['closed', 'archived'],
