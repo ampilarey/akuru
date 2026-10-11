@@ -164,8 +164,12 @@ class CheckoutController extends Controller
         } catch (\Throwable $e) {
             report($e);
 
+            // The exception's own text went to the page: an HTTP client's
+            // "cURL error 28 …" or the gateway's raw reply, in English, and
+            // nothing a family could act on. It is reported to the log; the
+            // page says the payment did not start, in its language (slice PY1).
             return redirect()->route('checkout.course.show', $course)
-                ->with('error', $e->getMessage() ?: __('register.error_payment_start'));
+                ->with('error', __('register.error_payment_start'));
         }
     }
 }

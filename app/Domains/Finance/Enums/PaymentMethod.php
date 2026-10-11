@@ -36,16 +36,20 @@ enum PaymentMethod: string
 
     case Other = 'other';
 
+    /**
+     * In the page's language (slice PY1): the receipt names the method, and
+     * so does the office's one-enrolment page when it records money by hand.
+     */
     public function label(): string
     {
         return match ($this) {
-            self::Cash => 'Cash',
-            self::BankTransfer => 'Bank transfer',
-            self::Cheque => 'Cheque',
-            self::Card => 'Card',
-            self::Wallet => 'Wallet',
-            self::GiftCard => 'Gift card',
-            self::Other => 'Other',
+            self::Cash => __('payments.method_cash'),
+            self::BankTransfer => __('payments.method_bank_transfer'),
+            self::Cheque => __('payments.method_cheque'),
+            self::Card => __('payments.method_card'),
+            self::Wallet => __('payments.method_wallet'),
+            self::GiftCard => __('payments.method_gift_card'),
+            self::Other => __('payments.method_other'),
         };
     }
 

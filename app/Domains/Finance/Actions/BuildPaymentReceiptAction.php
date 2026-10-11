@@ -46,10 +46,12 @@ class BuildPaymentReceiptAction
     {
         $payment->loadMissing(['user', 'student', 'items.course', 'items.enrollment', 'course']);
 
+        // The receipt's words are the page's language's (slice PY1); a course's
+        // title is the one the office gave it.
         $lines = [];
         foreach ($payment->items as $item) {
             $lines[] = [
-                'description' => (string) ($item->course?->title ?? 'Course enrollment'),
+                'description' => (string) ($item->course?->title ?? __('payments.line_course')),
                 'student' => $item->enrollment?->student?->full_name ?? $payment->student?->full_name,
                 'amount' => (float) ($item->amount ?? $payment->amount),
             ];
@@ -59,7 +61,7 @@ class BuildPaymentReceiptAction
             // An engine payment carries no items. §38's `course_id` is what
             // makes this a real description instead of a blank row.
             $lines[] = [
-                'description' => (string) ($payment->course?->title ?? 'Course enrollment'),
+                'description' => (string) ($payment->course?->title ?? __('payments.line_course')),
                 'student' => $payment->student?->full_name,
                 'amount' => (float) $payment->amount,
             ];
@@ -67,7 +69,7 @@ class BuildPaymentReceiptAction
 
         return [
             'lines' => $lines,
-            'gateway' => $payment->provider === 'manual' ? 'Recorded at the institute' : 'BML Connect',
+            'gateway' => $payment->provider === 'manual' ? __('payments.gateway_manual') : __('payments.gateway_bml'),
             'method' => $payment->payment_method?->label(),
             'total' => (float) $payment->amount,
             'currency' => (string) ($payment->currency ?: 'MVR'),
