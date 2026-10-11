@@ -22,6 +22,8 @@
         }
         .auth-btn:hover { opacity:.9;transform:translateY(-1px); }
         .auth-error { color:#DC2626;font-size:.78rem;margin-top:.25rem; }
+        /* An arrow points back the way the page reads, as on the public site (slice SI1). */
+        [dir="rtl"] .rtl-flip { display:inline-block;transform:scaleX(-1); }
     </style>
 </head>
 <body style="min-height:100vh;display:flex;background:#F8F5F2">
@@ -38,21 +40,21 @@
             <a href="{{ url('/') }}"><x-akuru-logo size="h-14" variant="on-dark" /></a>
         </div>
         <h1 style="font-size:2rem;font-weight:800;color:white;line-height:1.2;margin-bottom:.75rem">
-            Welcome to<br>Akuru Institute
+            {{ __('public.Welcome to Akuru Institute') }}
         </h1>
         <p style="color:rgba(255,255,255,.65);font-size:.95rem;line-height:1.65;max-width:20rem">
-            Quality Islamic education for all ages — Quran, Arabic Language, and Islamic Studies in the Maldives.
+            {{ __('signin.tagline') }}
         </p>
 
         <div style="margin-top:2.5rem;display:flex;flex-direction:column;gap:1rem">
             @foreach([
-                ['M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944','Qualified instructors'],
-                ['M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z','Flexible schedules'],
-                ['M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7','All ages welcome'],
+                ['M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944', __('signin.feature_instructors')],
+                ['M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', __('signin.feature_schedules')],
+                ['M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7', __('signin.feature_ages')],
             ] as [$icon, $label])
             <div style="display:flex;align-items:center;gap:.75rem">
                 <div style="width:2rem;height:2rem;border-radius:.5rem;background:rgba(201,162,39,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-                    <svg width="14" height="14" fill="none" stroke="#C9A227" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon }}"/></svg>
+                    <svg width="14" height="14" fill="none" stroke="#C9A227" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $icon }}"/></svg>
                 </div>
                 <span style="color:rgba(255,255,255,.75);font-size:.875rem">{{ $label }}</span>
             </div>
@@ -63,7 +65,7 @@
     {{-- bottom quote --}}
     <div style="position:relative;border-top:1px solid rgba(255,255,255,.1);padding-top:1.5rem">
         <p style="color:rgba(255,255,255,.5);font-size:.78rem;font-style:italic">
-            "Seek knowledge from the cradle to the grave."
+            “{{ __('signin.quote') }}”
         </p>
     </div>
 </div>
@@ -74,19 +76,20 @@
     {{-- Mobile logo (only shown on small screens) --}}
     <div class="lg:hidden" style="text-align:center;margin-bottom:2rem">
         <a href="{{ url('/') }}"><x-akuru-logo size="h-14" /></a>
-        <p style="margin-top:.5rem;color:#6B7280;font-size:.85rem">Akuru Institute</p>
+        <p style="margin-top:.5rem;color:#6B7280;font-size:.85rem">{{ __('public.Akuru Institute') }}</p>
     </div>
 
-    <div style="width:100%;max-width:26rem">
+    {{-- The page's own part, for assistive technology and the language walks (slice SI1). --}}
+    <main style="width:100%;max-width:26rem">
         {{-- gold top accent --}}
         <div style="height:3px;border-radius:9999px;background:linear-gradient(90deg,#A8861F,#C9A227,#E8BC3C);margin-bottom:2rem"></div>
 
         {{ $slot }}
 
         <p style="text-align:center;margin-top:2rem;font-size:.75rem;color:#9CA3AF">
-            © {{ date('Y') }} Akuru Institute. All rights reserved.
+            © {{ date('Y') }} {{ __('public.Akuru Institute') }}. {{ __('site.rights_reserved') }}
         </p>
-    </div>
+    </main>
 </div>
 
 </body>

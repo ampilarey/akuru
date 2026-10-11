@@ -335,6 +335,9 @@ return [
         'contact_type' => 'ގުޅޭނެ ގޮތް',
         'contact_value' => 'ފޯނު ނަންބަރު ނުވަތަ އީމެއިލް',
         'login_contact' => 'ފޯނު ނަންބަރު ނުވަތަ އީމެއިލް',
+        // The sign-in and password reset pages (slice SI1)
+        'identifier' => 'އީމެއިލް، ފޯނު ނުވަތަ އައިޑީ ކާޑު',
+        'contact' => 'މޯބައިލް ނަންބަރު ނުވަތަ އީމެއިލް',
         'child_password' => 'ދަރިފުޅުގެ ޕާސްވޯޑް',
         'terms_accepted' => 'ޝަރުޠުތައް',
         'course_ids' => 'ކޯސްތައް',

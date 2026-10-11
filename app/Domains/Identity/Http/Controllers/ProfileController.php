@@ -56,7 +56,7 @@ class ProfileController extends Controller
         // a 500, and so the session survives the refusal.
         if ($user->hasRole('super_admin')) {
             return Redirect::route('profile.edit')
-                ->with('error', __('Super admin accounts cannot be deleted. Remove the super_admin role first, and only while another super admin exists.'));
+                ->with('error', __('account.error_delete_super_admin_self'));
         }
 
         Auth::logout();

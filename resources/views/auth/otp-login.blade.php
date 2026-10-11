@@ -1,36 +1,40 @@
 <x-guest-layout>
 
     @if(session('success'))
-    <div style="margin-bottom:1rem;padding:.75rem 1rem;background:#ECFDF5;border:1px solid #6EE7B7;border-radius:.5rem;font-size:.85rem;color:#065F46">
+    <div role="status" style="margin-bottom:1rem;padding:.75rem 1rem;background:#ECFDF5;border:1px solid #6EE7B7;border-radius:.5rem;font-size:.85rem;color:#065F46">
         {{ session('success') }}
     </div>
     @endif
 
     <div style="margin-bottom:1.75rem">
         <div style="display:inline-flex;align-items:center;gap:.5rem;background:rgba(124,45,55,.08);border:1px solid rgba(124,45,55,.2);color:#7C2D37;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;padding:.25rem .75rem;border-radius:9999px;margin-bottom:.875rem">
-            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944"/></svg>
-            Admin Access
+            <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944"/></svg>
+            {{ __('signin.admin_access') }}
         </div>
-        <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0 0 .25rem">Admin Login</h2>
-        <p style="font-size:.85rem;color:#6B7280;margin:0">Enter your email or phone — we'll send a one-time code.</p>
+        <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0 0 .25rem">{{ __('signin.admin_title') }}</h2>
+        <p style="font-size:.85rem;color:#6B7280;margin:0">{{ __('signin.admin_intro') }}</p>
     </div>
 
     <form method="POST" action="{{ route('otp.request') }}" style="display:flex;flex-direction:column;gap:1.125rem">
         @csrf
 
         <div>
-            <label class="auth-label" for="identifier">Email or Phone Number</label>
-            <input id="identifier" class="auth-input" type="text" name="identifier"
-                   value="{{ old('identifier') }}" required autofocus
-                   placeholder="admin@akuru.edu.mv  ·  7972434">
+            <label class="auth-label" for="identifier">{{ __('signin.email_or_phone') }}</label>
+            <input id="identifier" class="auth-input" type="text" name="identifier" dir="ltr"
+                   value="{{ old('identifier') }}" required autofocus autocomplete="username"
+                   placeholder="admin@akuru.edu.mv  ·  7000000">
             @error('identifier')
-            <p class="auth-error">{{ $message }}</p>
+            <p class="auth-error" role="alert">{{ $message }}</p>
             @enderror
-            <p style="font-size:.75rem;color:#9CA3AF;margin-top:.375rem">For Maldives numbers, enter the 7-digit number without country code.</p>
+            {{-- A code the code service refused to send (too many, too soon, not sent) comes back on `contact`; this page said it nowhere (slice SI1). --}}
+            @error('contact')
+            <p class="auth-error" role="alert" data-testid="otp-login-refused">{{ $message }}</p>
+            @enderror
+            <p style="font-size:.75rem;color:#9CA3AF;margin-top:.375rem">{{ __('signin.maldives_hint') }}</p>
         </div>
 
         <button type="submit" class="auth-btn">
-            Send OTP Code
+            {{ __('signin.send_code') }}
         </button>
     </form>
 
@@ -38,7 +42,7 @@
         <a href="{{ route('login') }}"
            style="font-size:.85rem;color:#6B7280;text-decoration:none"
            onmouseover="this.style.color='#7C2D37'" onmouseout="this.style.color='#6B7280'">
-            ← Back to regular login
+            <span class="rtl-flip" aria-hidden="true">←</span> {{ __('signin.back_to_password') }}
         </a>
     </div>
 

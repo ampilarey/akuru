@@ -49,18 +49,18 @@ class OtpLoginController extends Controller
             ->first();
 
         if (! $contact || ! $contact->user) {
-            return back()->withErrors(['identifier' => 'No account found with this email or phone number.'])->withInput();
+            return back()->withErrors(['identifier' => __('signin.error_no_account')])->withInput();
         }
 
         $user = $contact->user;
 
         if (! $user->is_active) {
-            return back()->withErrors(['identifier' => 'Your account is inactive. Please contact support.'])->withInput();
+            return back()->withErrors(['identifier' => __('signin.error_inactive')])->withInput();
         }
 
         // Only admin and super_admin may use OTP login
         if (! $user->hasAnyRole(['admin', 'super_admin'])) {
-            return back()->withErrors(['identifier' => 'OTP login is only available for admin accounts. Please use the password login.'])->withInput();
+            return back()->withErrors(['identifier' => __('signin.error_admin_only')])->withInput();
         }
 
         try {
@@ -75,7 +75,7 @@ class OtpLoginController extends Controller
         ]);
 
         return redirect()->route('otp.verify.form')
-            ->with('success', 'OTP sent to your '.($type === 'mobile' ? 'phone' : 'email').'. Please enter the 6-digit code.');
+            ->with('success', __($type === 'mobile' ? 'signin.flash_code_sent_phone' : 'signin.flash_code_sent_email'));
     }
 
     /**
@@ -85,7 +85,7 @@ class OtpLoginController extends Controller
     {
         if (! session('otp_login_contact_id')) {
             return redirect()->route('otp.login.form')
-                ->withErrors(['identifier' => 'Please enter your email or phone number first.']);
+                ->withErrors(['identifier' => __('signin.error_identifier_first')]);
         }
 
         // C16 slice N3: the screen counts the resend wait down and holds the
@@ -110,14 +110,14 @@ class OtpLoginController extends Controller
 
         if (! $contactId) {
             return redirect()->route('otp.login.form')
-                ->withErrors(['identifier' => 'Session expired. Please try again.']);
+                ->withErrors(['identifier' => __('signin.error_session_expired')]);
         }
 
         $contact = UserContact::with('user')->find($contactId);
 
         if (! $contact || ! $contact->user) {
             return redirect()->route('otp.login.form')
-                ->withErrors(['identifier' => 'Account not found. Please try again.']);
+                ->withErrors(['identifier' => __('signin.error_account_not_found')]);
         }
 
         try {
@@ -153,14 +153,14 @@ class OtpLoginController extends Controller
 
         if (! $contactId) {
             return redirect()->route('otp.login.form')
-                ->withErrors(['identifier' => 'Session expired. Please try again.']);
+                ->withErrors(['identifier' => __('signin.error_session_expired')]);
         }
 
         $contact = UserContact::find($contactId);
 
         if (! $contact) {
             return redirect()->route('otp.login.form')
-                ->withErrors(['identifier' => 'Account not found.']);
+                ->withErrors(['identifier' => __('signin.error_account_not_found')]);
         }
 
         try {
@@ -169,6 +169,6 @@ class OtpLoginController extends Controller
             return back()->withErrors($e->errors());
         }
 
-        return back()->with('success', 'New OTP sent.');
+        return back()->with('success', __('signin.flash_new_code'));
     }
 }

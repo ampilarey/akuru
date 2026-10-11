@@ -186,6 +186,19 @@ record names (`PasswordResetFlowsKeepTheirOwnAccountTest`,
 `password-reset.mjs`). Found reading `PasswordOtpController` and
 `OtpPasswordResetController` for SI1.
 
+## Found translating the sign-in pages (2026-10-11)
+
+### A code's SMS says it lasts 10 minutes, whatever its real life — **open (P4)**
+
+Both SMS senders word every code the same: *Valid for 10 minutes*
+(`LogSmsSender::sendOtp`, `SmsGatewayService::sendOtp`). That is true only of
+a new registration's code. A code that confirms a contact lasts 5 minutes,
+and a sign-in, reset or enrolment code lasts 15 (`Otp::createForContact`).
+So a person told 10 minutes can find the code gone at 6. The SMS is a
+notification, English as C20 decided, so SI1 left its words alone. The fix
+is to pass the code's minutes to the sender. Found writing the admins'
+sign-in page, which says 15 (STATUS §5rd).
+
 ## Found by the registration language walk (2026-10-10)
 
 ### The last page never says a payment is already waiting — **fixed (2026-10-10, STATUS §5rb)**
@@ -199,7 +212,7 @@ message is in the `register` book since RG1b, and the last page shows it
 since RG1c (STATUS §5rb). Found reading the details form's handlers
 (STATUS §5ra).
 
-### The checkout's "use a code instead" never sends a code to a registered account — **open (P3, for SI1)**
+### The checkout's "use a code instead" never sends a code to a registered account — **fixed (2026-10-11, STATUS §5rd)**
 
 The checkout's code box posts to `courses.register.start`, which sends a
 contact the platform has verified back to the checkout to log in with its
@@ -208,6 +221,15 @@ to an address or number nobody has verified, and a returning learner who
 has forgotten their password is told to use the password. The fix belongs
 with signing in by code (SI1): send the verified contact a login code, as
 the OTP login does. Found by `register-language.mjs` (STATUS §5qz).
+
+**Fixed, narrower than proposed.** P1's rule is that an account with a
+password signs in with it, and a code is for *Forgot your password?*. A
+code for every verified account would have broken that rule. The defect
+was the account made by a code (by the phone sign-in or the guest
+checkout), which has no password to log in with. The box now sends that
+account a code, then the password page. An account with a password is
+still sent to log in, with *Forgot your password?* beside the box
+(`SigningInSpeaksThreeLanguagesTest`, `signin-language.mjs`).
 
 ## Found by the promotions language walk (2026-10-10)
 

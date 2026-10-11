@@ -201,3 +201,19 @@ it("still resets a child's password with the code sent to the parent's phone", f
     expect(Hash::check('Brand-new-pass-2026', $child->fresh()->password))->toBeTrue()
         ->and(keepsItsPassword($parent))->toBeTrue();
 });
+
+it('sends no reset code to a contact nobody verified, on the pages the sign-in links to', function () {
+    // Slice SI1: an email typed at registration is stored unverified, and could
+    // be anyone's; whoever held it could reset the account.
+    $sms = resetSms();
+    $user = User::factory()->create(['password' => Hash::make('old-password')]);
+    UserContact::create(['user_id' => $user->id, 'type' => 'mobile', 'value' => '+9607000061', 'is_primary' => false, 'verified_at' => null]);
+    $web = $this->withoutLocalizationMiddleware();
+
+    $web->post('/password/otp/send', ['contact' => '7000061'])->assertRedirect(route('password.otp.verify.form'));
+
+    expect($sms->codeFor('+9607000061'))->toBeNull()
+        ->and(session('password_otp_reset.contact_id'))->toBeNull();
+    $web->post('/password/otp/verify', ['code' => '123456'])->assertRedirect(route('password.otp.request'));
+    expect(keepsItsPassword($user))->toBeTrue();
+});

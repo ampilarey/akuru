@@ -15,7 +15,7 @@
             <div>
                 <label class="auth-label" for="phone">{{ __('account.guest_phone') }}</label>
                 <input id="phone" class="auth-input" type="text" name="phone" value="{{ old('phone') }}" required autofocus
-                       inputmode="tel" autocomplete="tel" dir="ltr" placeholder="7XXXXXX" data-testid="phone-number">
+                       inputmode="tel" autocomplete="tel" dir="ltr" placeholder="7000000" data-testid="phone-number">
                 @error('phone')<p class="auth-error" role="alert" data-testid="phone-error">{{ $message }}</p>@enderror
                 @error('contact_value')<p class="auth-error" role="alert">{{ $message }}</p>@enderror
                 @error('contact')<p class="auth-error" role="alert">{{ $message }}</p>@enderror

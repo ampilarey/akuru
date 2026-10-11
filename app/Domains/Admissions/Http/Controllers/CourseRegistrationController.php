@@ -156,13 +156,17 @@ class CourseRegistrationController extends PublicRegistrationController
 
         $normalized = $this->normalizer->normalize($type, $value);
 
-        // If this contact already exists + verified → ask the user to log in
+        // If this contact already exists + verified → ask the user to log in.
+        // An account with no password of its own yet (made by a code, as the
+        // phone sign-in makes one) has none to log in with: the code box sends
+        // it a code instead, as the phone sign-in does (slice SI1). The new
+        // registration's form still goes back, as the contact is taken.
         $existing = \App\Domains\Identity\Models\UserContact::where('type', $type)
             ->where('value', $normalized)
             ->whereNotNull('verified_at')
             ->first();
 
-        if ($existing) {
+        if ($existing && ($request->filled('first_name') || ! $existing->user?->force_password_change)) {
             $course = \App\Domains\Courses\Models\Course::find($request->input('course_id'));
 
             return redirect()

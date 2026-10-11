@@ -335,6 +335,9 @@ return [
         'contact_type' => 'طريقة التواصل',
         'contact_value' => 'رقم الهاتف أو البريد الإلكتروني',
         'login_contact' => 'رقم الهاتف أو البريد الإلكتروني',
+        // The sign-in and password reset pages (slice SI1)
+        'identifier' => 'البريد الإلكتروني أو الهاتف أو بطاقة الهوية',
+        'contact' => 'رقم الجوال أو البريد الإلكتروني',
         'child_password' => 'كلمة مرور الطفل',
         'terms_accepted' => 'الشروط',
         'course_ids' => 'الدورات',

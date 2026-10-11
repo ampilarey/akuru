@@ -4983,6 +4983,163 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rd. Signing in and resetting a password in Dhivehi and Arabic (C21 SI1, 2026-10-11)
+
+Next after the registration (RG1, §5qz to §5rb). A person signing in under
+`/dv` or `/ar`, or resetting a password by code, now reads every step in
+the page's language. These were English throughout:
+- the sign-in pages' layout: its welcome, the three lines beside it, the
+  quote and the copyright;
+- signing in, and the admins' sign-in by code with its code page;
+- both password reset flows: the forgot-password pages, which take an ID
+  card number, and the pages the sign-in page's *Forgot your password?*
+  opens;
+- confirming a password, verifying an email address and registering with
+  an email.
+
+The pages called `__('English sentence')` with no such phrase in any
+book, so they printed English in every language. The source rule could
+not see it, because it skips `{{ }}`.
+
+What the server said on them was English too:
+- a wrong password and too many tries: Laravel's own lines, which it ships
+  in English alone;
+- an inactive account;
+- a code sent, sent again or verified;
+- a session ended, and an account not found;
+- a password reset;
+- the verified-contact gate's two refusals, and an account that may not be
+  removed (one's own, or a super admin's).
+
+Reading the pages found seven defects. PW1 (§5rc), the password reset
+takeover, was found the same way and shipped first.
+- **The checkout's *use a code instead* sent an account made by a code
+  back to log in with a password it did not have** (KNOWN_ISSUES). An
+  account the phone sign-in or the guest checkout made has no password of
+  its own until it sets one. The box now sends it a code, as the phone
+  sign-in does, and then the password page.
+
+  An account with a password still signs in with it, and a code is for
+  *Forgot your password?*: that is P1's rule. The entry's own proposed fix,
+  a code for every verified account, would have broken it.
+- **The two reset pages on the public layout said a code sent twice**:
+  once in the layout, once on the page.
+- **The admins' sign-in by code said nowhere that a code was refused**
+  (too many, too soon, not sent). The code service says it on `contact`,
+  and the two pages showed only `identifier` and `code`.
+- **A child could not reset a password from the sign-in page.** Its
+  *Forgot your password?* opens the pages that take a phone number or an
+  email. Only the forgot-password page takes an ID card number, which a
+  child signs in with, and nothing linked to it. The reset page now says
+  where to go with an ID card number.
+- **The reset pages the sign-in links to sent a code to a contact nobody
+  had verified**: an email typed at registration, for instance. Whoever
+  held that address could reset the account. They now send to a verified
+  contact only, as the forgot-password page always did.
+- **The forgot-password page said whether an ID card number was a
+  child's.** It answered *A verification code was sent to your parent's
+  registered mobile* for a child with a parent's verified phone, and *If an
+  account exists, we have sent a verification code* for any other number.
+  So a stranger could tell which numbers are registered children's. It now
+  says the second for every number. The page already tells students that
+  their code goes to the parent's mobile.
+- **Every sign-in page assumed left to right.** The eye button sat at the
+  right of the password field. An arrow pointed back the wrong way, and the
+  contact a code went to read backwards. The eye button and the admin sign-in's
+  fields had no name.
+
+**The change:**
+- **A `signin` phrase book** in three languages, 74 phrases.
+  **Laravel's sign-in lines are now in Dhivehi and Arabic** (`auth.php`),
+  as slice CT6b-1 gave its validation lines.
+- **The pages read the book.**
+  - The contact a code went to is set left to right, where the language
+    puts it.
+  - The eye button sits at the field's end in either direction, and is
+    named.
+  - Arrows point back the way the page reads.
+  - Every field is named, and the code boxes ask the phone for the code.
+- **The server's messages read the book.** These are the three code
+  controllers', the login request's and the verified-contact gate's. The
+  `account` book takes the three refusals to remove an account.
+- **The sign-in and reset fields are named in Laravel's refusals**
+  (`identifier`, `contact`).
+- **Four unused views and two unrouted controllers are gone.** The views
+  are `auth/verify`, and `auth/passwords/confirm`, `email` and `reset`; the
+  controllers are Breeze's `PasswordResetLinkController` and
+  `NewPasswordController`. The Blade baseline shrinks to 183. Its header
+  had said 196 while it listed 187.
+
+**Left as it was:**
+- The emails and SMS that carry the codes are notifications, English as
+  C20 decided. The SMS says a code lasts 10 minutes, whatever its real life
+  (KNOWN_ISSUES).
+- The phone sign-in page (P1) read the `account` book already. Only its
+  placeholder changed, to digits.
+
+**Tests:**
+- `SigningInSpeaksThreeLanguagesTest` (new, 12 tests):
+  - no English of the pages' own, and no `__('English sentence')`, on the
+    fourteen pages and their layout;
+  - every `signin` and `account` key the pages and the seven server files
+    name, in three languages;
+  - no English on the server;
+  - Laravel's sign-in lines and the two fields' names in Dhivehi and Arabic;
+  - every field named, and what is typed the same in any language set left
+    to right;
+  - in Dhivehi, over HTTP:
+    - the sign-in page and its layout, and its three refusals (a wrong
+      password, an inactive account, too many tries);
+    - the admins' sign-in by code, from its refusals to the code signing
+      in, a refused new code said on the page;
+    - an ended session and a missing account;
+    - both reset flows end to end, a child's through the parent's phone,
+      the code sent said once;
+    - the verified-contact gate and an account not to be removed;
+    - the checkout's code box for an account made by a code, and for one
+      with a password.
+
+  Run over `main`'s copies of the pages and server files, all 12 fail, so
+  the test is not vacuous.
+- `RegistrationFunnelNeedsTheCodeTest` pinned that a verified contact
+  never enters the code funnel. That was load-bearing before the funnel
+  asked for the code. It now pins the two cases: an account with a password
+  is sent to log in; one made by a code is sent a code, and claims nothing
+  without it.
+- `PasswordResetFlowsKeepTheirOwnAccountTest` gains an unverified contact
+  sent no code.
+
+Whole suite locally: **3094 passed (64242 assertions)**.
+
+**Walks:**
+- **`signin-language.mjs`** (new, in the runner):
+  - under `/dv` and `/ar`, the sign-in page, the admins' sign-in, the
+    forgot-password page, the reset page and the phone sign-in, read whole
+    (the layout's brand panel too): right to left, nothing in English, every
+    field named;
+  - then in Dhivehi:
+    - a wrong password refused under the field;
+    - a password reset from *Forgot your password?* to signing in with the
+      new one;
+    - an admin's sign-in by code, a new code asked for at once refused on
+      the page;
+    - the checkout's code box for an account made by a code, to the
+      password page.
+
+  Three runs in a row passed 51/51. Run over `main`'s pages and server
+  files, it passes 27 of 51:
+  - every page under `/dv` and `/ar` has English left;
+  - the wrong password, the code sent and the reset are said in English;
+  - the admins' code page sets the number as typed, and says a refused new
+    code nowhere;
+  - the checkout sends the account made by a code back to log in.
+- `password-reset.mjs` 11/11, `customer-sign-in.mjs` 9/9, `two-factor.mjs`
+  19/19, `register-language.mjs` 37/37, `register.mjs` 15/15, `signup.mjs`
+  17/17, `logout.mjs` 8/8, `identity.mjs` 47/47, `public-rtl.mjs` 90/90,
+  `rtl.mjs` 8/8, `nav.mjs` 14/14, `mobile.mjs` 19/19 and `sweep.mjs` 25/25.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5rc. A password reset code resets only the account it was sent for (PW1, 2026-10-11)
 
 Found reading the sign-in pages for SI1: **anyone could reset another

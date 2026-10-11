@@ -68,7 +68,7 @@ class LoginRequest extends FormRequest
 
         if (! $user->is_active) {
             RateLimiter::hit($this->throttleKey());
-            throw ValidationException::withMessages(['identifier' => 'Your account is inactive. Please contact support.']);
+            throw ValidationException::withMessages(['identifier' => __('signin.error_inactive')]);
         }
 
         RateLimiter::clear($this->throttleKey());

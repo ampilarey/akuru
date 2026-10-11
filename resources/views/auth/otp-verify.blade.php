@@ -20,42 +20,44 @@
         <button type="submit" class="auth-btn" data-testid="two-factor-submit">{{ __('security.challenge_button') }}</button>
     </form>
     <div style="margin-top:1.25rem">
-        <a href="{{ route('login') }}" style="font-size:.82rem;color:#6B7280;text-decoration:none">← {{ __('security.challenge_back') }}</a>
+        <a href="{{ route('login') }}" style="font-size:.82rem;color:#6B7280;text-decoration:none"><span class="rtl-flip" aria-hidden="true">←</span> {{ __('security.challenge_back') }}</a>
     </div>
 @else
 
     @if(session('success'))
-    <div style="margin-bottom:1rem;padding:.75rem 1rem;background:#ECFDF5;border:1px solid #6EE7B7;border-radius:.5rem;font-size:.85rem;color:#065F46">
+    <div role="status" style="margin-bottom:1rem;padding:.75rem 1rem;background:#ECFDF5;border:1px solid #6EE7B7;border-radius:.5rem;font-size:.85rem;color:#065F46" data-testid="otp-sent">
         {{ session('success') }}
     </div>
     @endif
 
     <div style="margin-bottom:1.75rem">
-        <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0 0 .375rem">Enter OTP Code</h2>
-        <p style="font-size:.85rem;color:#6B7280;margin:0">
-            We sent a 6-digit code to
-            <strong style="color:#374151">{{ session('otp_login_identifier', 'your contact') }}</strong>
-        </p>
+        <h2 style="font-size:1.5rem;font-weight:800;color:#111827;margin:0 0 .375rem">{{ __('signin.code_title') }}</h2>
+        {{-- The contact where the language puts it, set left to right (slice SI1). --}}
+        <p style="font-size:.85rem;color:#6B7280;margin:0">@foreach(preg_split('/(:contact)/', __('signin.code_sent_to'), -1, PREG_SPLIT_DELIM_CAPTURE) as $part)@if($part === ':contact' && session('otp_login_identifier'))<strong style="color:#374151" dir="ltr">{{ session('otp_login_identifier') }}</strong>@elseif($part === ':contact')<strong style="color:#374151">{{ __('signin.your_contact') }}</strong>@else{{ $part }}@endif{{ '' }}@endforeach</p>
     </div>
 
     <form method="POST" action="{{ route('otp.verify') }}" style="display:flex;flex-direction:column;gap:1.25rem">
         @csrf
 
         <div>
-            <label class="auth-label" for="code">6-Digit Code</label>
-            <input id="code" class="auth-input" type="text" name="code"
+            <label class="auth-label" for="code">{{ __('signin.code_label') }}</label>
+            <input id="code" class="auth-input" type="text" name="code" dir="ltr"
                    required autofocus maxlength="6" pattern="[0-9]{6}"
                    inputmode="numeric" autocomplete="one-time-code"
                    placeholder="0  0  0  0  0  0"
                    style="text-align:center;font-size:1.75rem;font-weight:700;letter-spacing:.5em;padding:.75rem">
             @error('code')
-            <p class="auth-error">{{ $message }}</p>
+            <p class="auth-error" role="alert">{{ $message }}</p>
             @enderror
-            <p style="font-size:.75rem;color:#9CA3AF;margin-top:.375rem;text-align:center">Code expires in 15 minutes. Auto-submits when 6 digits are entered.</p>
+            {{-- A new code the code service refused to send comes back on `contact`; this page said it nowhere (slice SI1). --}}
+            @error('contact')
+            <p class="auth-error" role="alert" data-testid="otp-resend-refused">{{ $message }}</p>
+            @enderror
+            <p style="font-size:.75rem;color:#9CA3AF;margin-top:.375rem;text-align:center">{{ __('signin.code_hint', ['minutes' => 15]) }}</p>
         </div>
 
         <button type="submit" class="auth-btn">
-            Verify &amp; Sign In
+            {{ __('signin.verify_sign_in') }}
         </button>
     </form>
 
@@ -63,7 +65,7 @@
         <a href="{{ route('otp.login.form') }}"
            style="font-size:.82rem;color:#6B7280;text-decoration:none"
            onmouseover="this.style.color='#374151'" onmouseout="this.style.color='#6B7280'">
-            ← Use different account
+            <span class="rtl-flip" aria-hidden="true">←</span> {{ __('signin.other_account') }}
         </a>
         {{-- C16 slice N3: the resend wait counts down here and the button is held until it ends. --}}
         <form method="POST" action="{{ route('otp.resend') }}" style="display:inline" data-testid="otp-resend-form">
