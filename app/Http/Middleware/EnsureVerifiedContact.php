@@ -12,11 +12,11 @@ class EnsureVerifiedContact
     {
         $user = $request->user();
         if (! $user) {
-            return redirect()->route('login')->with('error', 'Please log in to continue.');
+            return redirect()->route('login')->with('error', __('signin.error_sign_in_first'));
         }
         if (! $user->hasVerifiedContact()) {
             return redirect()->route('public.courses.index')
-                ->with('error', 'Please verify your contact before continuing.');
+                ->with('error', __('signin.error_verify_contact'));
         }
 
         return $next($request);

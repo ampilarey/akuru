@@ -13,17 +13,18 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 196 (a document template, not a screen — see the documents block;
-// the five public bookshop views of BOOKSHOP_PLAN B1b, the five customer
-// pages of B2, the two storefront partials of B4, the sections, menu and
-// vendor page of B5 and the customer's wishlist of B7 — see the public
-// block; B8's bookstore notice email — see the emails block; B9c's
-// newsletter unsubscribe page, reached from a shop's own mailings; and B9d's
-// two "My quotes" pages, siblings of My orders; B11's shop-closed notice;
-// the Library's public offers page of LIBRARY_PLAN B4, a sibling of the
-// Blade shelf and author page it links from; C17 slice R2's ID-card scan
-// block, a partial included by the two public registration pages, not a
-// screen of its own).
+// Count: 183 (corrected by SI1, which retired four unrouted password views:
+// the header said 196 while the list held 187). It counts a document
+// template, not a screen — see the documents block; the five public bookshop
+// views of BOOKSHOP_PLAN B1b, the five customer pages of B2, the two
+// storefront partials of B4, the sections, menu and vendor page of B5 and the
+// customer's wishlist of B7 — see the public block; B8's bookstore notice
+// email — see the emails block; B9c's newsletter unsubscribe page, reached
+// from a shop's own mailings; and B9d's two "My quotes" pages, siblings of My
+// orders; B11's shop-closed notice; the Library's public offers page of
+// LIBRARY_PLAN B4, a sibling of the Blade shelf and author page it links
+// from; C17 slice R2's ID-card scan block, a partial included by the two
+// public registration pages, not a screen of its own).
 
 return [
     // (root) — 4
@@ -38,7 +39,7 @@ return [
     'analytics/dashboard.blade.php',
     'analytics/reports.blade.php',
 
-    // auth — 16
+    // auth — 13
     'auth/confirm-password.blade.php',
     'auth/forgot-password.blade.php',
     'auth/login.blade.php',
@@ -47,17 +48,13 @@ return [
     // COMMERCE_PARITY_PLAN P1: the customer's phone sign-in — pre-auth, a sibling
     // of the login and OTP pages in the guest layout, which is Blade.
     'auth/phone-sign-in.blade.php',
-    'auth/passwords/confirm.blade.php',
-    'auth/passwords/email.blade.php',
     'auth/passwords/otp-request.blade.php',
     'auth/passwords/otp-reset.blade.php',
     'auth/passwords/otp-verify.blade.php',
-    'auth/passwords/reset.blade.php',
     'auth/register.blade.php',
     'auth/reset-password.blade.php',
     'auth/verify-email.blade.php',
     'auth/verify-reset-otp.blade.php',
-    'auth/verify.blade.php',
 
     // checkout — 1
     'checkout/course.blade.php',

@@ -189,4 +189,9 @@ return [
     'error_too_many_attempts' => 'Too many attempts. Please try again in :wait.',
     'error_otp_expired_start_again' => 'Verification code has expired. Please start again.',
     'error_otp_failed_start_again' => 'Too many failed attempts. Please start the registration again.',
+
+    // Removing an account (slice SI1): the office's list of users, and one's own profile.
+    'error_delete_own' => 'You cannot delete your own account.',
+    'error_delete_super_admin' => 'Super admin accounts cannot be deleted.',
+    'error_delete_super_admin_self' => 'Super admin accounts cannot be deleted. Remove the super admin role first, and only while another super admin exists.',
 ];

@@ -187,4 +187,9 @@ return [
     'error_too_many_attempts' => 'محاولات كثيرة جدًا. يرجى المحاولة مجددًا بعد :wait.',
     'error_otp_expired_start_again' => 'انتهت صلاحية رمز التحقق. يرجى البدء من جديد.',
     'error_otp_failed_start_again' => 'محاولات فاشلة كثيرة جدًا. يرجى بدء التسجيل من جديد.',
+
+    // Removing an account (slice SI1): the office's list of users, and one's own profile.
+    'error_delete_own' => 'لا يمكنك حذف حسابك أنت.',
+    'error_delete_super_admin' => 'لا يمكن حذف حسابات المشرف العام.',
+    'error_delete_super_admin_self' => 'لا يمكن حذف حسابات المشرف العام. أزل دور المشرف العام أولًا، ولا يكون ذلك إلا بوجود مشرف عام آخر.',
 ];

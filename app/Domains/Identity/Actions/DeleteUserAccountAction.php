@@ -134,13 +134,13 @@ class DeleteUserAccountAction
     {
         if ($actorId !== null && (int) $user->id === $actorId) {
             throw ValidationException::withMessages([
-                'user' => 'You cannot delete your own account.',
+                'user' => __('account.error_delete_own'),
             ]);
         }
 
         if ($user->hasRole('super_admin')) {
             throw ValidationException::withMessages([
-                'user' => 'Super admin accounts cannot be deleted.',
+                'user' => __('account.error_delete_super_admin'),
             ]);
         }
     }

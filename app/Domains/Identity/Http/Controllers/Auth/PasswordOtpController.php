@@ -62,7 +62,6 @@ class PasswordOtpController extends Controller
 
             if ($targetUser) {
                 $studentProfile = $targetUser->student;
-                $isChild = false;
                 $resetContact = null;
 
                 if ($studentProfile) {
@@ -72,7 +71,6 @@ class PasswordOtpController extends Controller
                             ->where('type', 'mobile')
                             ->whereNotNull('verified_at')
                             ->first();
-                        $isChild = (bool) $resetContact;
                     }
                 }
 
@@ -88,25 +86,25 @@ class PasswordOtpController extends Controller
                     try {
                         $this->otpService->send($resetContact, 'password_reset');
                     } catch (ValidationException $e) {
-                        return back()->withErrors(['identifier' => $e->errors()['contact'][0] ?? 'Too many requests.'])->withInput();
+                        return back()->withErrors(['identifier' => $e->errors()['contact'][0] ?? __('signin.error_too_many')])->withInput();
                     }
                 }
 
                 // Store both the contact for OTP and the actual user whose password to reset
                 session([self::STATE => ['contact_id' => $resetContact?->id, 'user_id' => $targetUser->id, 'verified_contact_id' => null]]);
 
-                $msg = $isChild
-                    ? 'A verification code has been sent to your parent\'s registered mobile.'
-                    : 'If an account exists, we have sent a verification code.';
-
-                return redirect()->route('password.reset.verify')->with('status', $msg);
+                // One answer for every number. Telling a child's apart (the code
+                // went to the parent's mobile) told a stranger which ID card
+                // numbers are registered children's; the page tells students
+                // where their code goes (slice SI1).
+                return redirect()->route('password.reset.verify')->with('status', __('signin.flash_code_if_registered'));
             }
 
             // No user found — silent (security best practice)
             session([self::STATE => ['contact_id' => null, 'user_id' => null, 'verified_contact_id' => null]]);
 
             return redirect()->route('password.reset.verify')
-                ->with('status', 'If an account exists, we have sent a verification code.');
+                ->with('status', __('signin.flash_code_if_registered'));
         }
 
         // ── Email or Mobile lookup via user_contacts ──────────────────────────
@@ -121,7 +119,7 @@ class PasswordOtpController extends Controller
             try {
                 $this->otpService->send($contact, 'password_reset');
             } catch (ValidationException $e) {
-                return back()->withErrors(['identifier' => $e->errors()['contact'][0] ?? 'Too many requests.'])->withInput();
+                return back()->withErrors(['identifier' => $e->errors()['contact'][0] ?? __('signin.error_too_many')])->withInput();
             }
         }
 
@@ -129,7 +127,7 @@ class PasswordOtpController extends Controller
         session([self::STATE => ['contact_id' => $contact?->id, 'user_id' => null, 'verified_contact_id' => null]]);
 
         return redirect()->route('password.reset.verify')
-            ->with('status', 'If an account exists with that contact, we have sent a verification code.');
+            ->with('status', __('signin.flash_code_if_registered'));
     }
 
     public function showVerifyForm(): View
@@ -142,13 +140,13 @@ class PasswordOtpController extends Controller
         $contactId = session(self::STATE.'.contact_id');
         $contact = $contactId ? UserContact::find($contactId) : null;
         if (! $contact) {
-            return back()->withErrors(['code' => 'Invalid or expired verification code.']);
+            return back()->withErrors(['code' => __('account.error_otp_invalid_or_expired')]);
         }
 
         try {
             $this->otpService->verify($contact, 'password_reset', $request->input('code'));
         } catch (ValidationException $e) {
-            return back()->withErrors(['code' => $e->errors()['code'][0] ?? 'Invalid verification code.']);
+            return back()->withErrors(['code' => $e->errors()['code'][0] ?? __('account.error_otp_invalid')]);
         }
 
         // The proof belongs to this contact, and is read back against it.
@@ -171,7 +169,7 @@ class PasswordOtpController extends Controller
         $state = $this->provedState();
 
         if (! $state) {
-            return redirect()->route('password.request')->withErrors(['identifier' => 'Session expired.']);
+            return redirect()->route('password.request')->withErrors(['identifier' => __('signin.error_session_expired')]);
         }
 
         // Resolve which user's password to reset: a child's directly, anyone
@@ -179,14 +177,14 @@ class PasswordOtpController extends Controller
         $user = $state['user_id'] ? User::find($state['user_id']) : UserContact::find($state['contact_id'])?->user;
 
         if (! $user) {
-            return redirect()->route('password.request')->withErrors(['identifier' => 'Account not found.']);
+            return redirect()->route('password.request')->withErrors(['identifier' => __('signin.error_account_not_found')]);
         }
 
         $user->update(['password' => Hash::make($request->input('password'))]);
 
         session()->forget(self::STATE);
 
-        return redirect()->route('login')->with('status', 'Password reset successfully. You can now log in.');
+        return redirect()->route('login')->with('status', __('signin.flash_password_reset'));
     }
 
     /**

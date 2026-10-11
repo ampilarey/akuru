@@ -24,9 +24,12 @@ uses(RefreshDatabase::class);
  *
  * ## Scope, established by running it rather than by reading
  *
- * - An account whose contact is **already verified** is safe: `start`
- *   short-circuits it to the checkout login screen and never writes the
- *   session keys. That is pinned below, because it is load-bearing.
+ * - An account whose contact is **already verified** and that has a password
+ *   of its own is short-circuited by `start` to the checkout login screen,
+ *   which never writes the session keys. One made by a code, with no password
+ *   of its own, is sent a code since slice SI1, as the phone sign-in sends
+ *   one — safe because every reader of the session keys asks for the code
+ *   first. Both are pinned below.
  * - An account whose contact is **not yet verified** was fully claimable.
  *   That is every account created by `AccountResolverService`
  *   (`verified_at => null`) before its owner first signs in — which at go-live
@@ -162,16 +165,32 @@ it('does not let one verification authorise a second password write', function (
     expect(Hash::check('first-choice-99', $owner->fresh()->password))->toBeTrue();
 });
 
-it('never reaches the funnel at all for an account whose contact is verified', function () {
+it('never reaches the funnel at all for an account with a password of its own, contact verified', function () {
     funnelSms();
-    funnelAccount(contactVerified: true);
+    funnelAccount(contactVerified: true)->forceFill(['force_password_change' => false])->save();
 
     startFunnelAs();
 
-    // `start` short-circuits a verified contact to the checkout login screen
-    // without writing the session keys. This is the reason the defect above
-    // was not worse than it was, so it is pinned rather than assumed.
+    // `start` short-circuits a verified contact with a password to the
+    // checkout login screen without writing the session keys: it signs in
+    // with its password, and a code is for "Forgot your password?".
     expect(session('pending_user_id'))->toBeNull();
+});
+
+it('asks an account made by a code, contact verified, for its code, and claims nothing without it', function () {
+    // Slice SI1: an account made by a code has no password to log in with,
+    // so the checkout's code box sends it a code, as the phone sign-in does.
+    // Writing `pending_user_id` at the send is safe only because every reader
+    // of it asks for the code first (`otpWasVerifiedFor`) — pinned here.
+    $log = funnelSms();
+    $owner = funnelAccount(contactVerified: true);
+
+    startFunnelAs();
+
+    expect((int) session('pending_user_id'))->toBe((int) $owner->id)
+        ->and($log->sent)->toHaveCount(1);
+    postSetPassword()->assertRedirect(route('courses.register.otp'));
+    expect(Hash::check('victims-own-password', $owner->fresh()->password))->toBeTrue();
 });
 
 it('does not show the set-password screen before the code is entered', function () {

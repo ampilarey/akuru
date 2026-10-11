@@ -1,40 +1,33 @@
 @extends('public.layouts.public')
 
-@section('title', 'Enter verification code')
+@section('title', __('signin.enter_code_title'))
 
 @section('content')
 <section class="py-12">
     <div class="container mx-auto px-4 max-w-md">
         <div class="card p-8">
-            <h1 class="text-xl font-bold text-brandMaroon-900 mb-1">Enter verification code</h1>
-            <p class="text-gray-600 text-sm mb-6">
-                We sent a 6-digit code to
-                <strong>{{ $contactValue }}</strong>.
-                Enter it below.
-            </p>
+            <h1 class="text-xl font-bold text-brandMaroon-900 mb-1">{{ __('signin.enter_code_title') }}</h1>
+            {{-- The contact where the language puts it, set left to right (slice SI1). --}}
+            <p class="text-gray-600 text-sm mb-6">@foreach(preg_split('/(:contact)/', __('signin.code_sent_enter'), -1, PREG_SPLIT_DELIM_CAPTURE) as $part)@if($part === ':contact')<strong dir="ltr">{{ $contactValue }}</strong>@else{{ $part }}@endif{{ '' }}@endforeach</p>
 
-            @if(session('status') || session('success'))
-                <div class="mb-4 p-3 bg-green-100 text-green-800 rounded text-sm">
-                    {{ session('status') ?? session('success') }}
-                </div>
-            @endif
+            {{-- A saved message is the layout's to say; it said it twice (slice SI1). --}}
             @if($errors->any())
-                <div class="mb-4 p-3 bg-red-100 text-red-800 rounded text-sm">{{ $errors->first() }}</div>
+                <div class="mb-4 p-3 bg-red-100 text-red-800 rounded text-sm" role="alert" data-testid="reset-error">{{ $errors->first() }}</div>
             @endif
 
             <form method="POST" action="{{ route('password.otp.verify') }}">
                 @csrf
                 <div class="mb-6">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                        Verification code <span class="text-red-500">*</span>
+                    <label for="code" class="block text-sm font-medium text-gray-700 mb-1">
+                        {{ __('signin.verification_code') }} <span class="text-red-500" aria-hidden="true">*</span>
                     </label>
-                    <input id="code" type="text" name="code" required autofocus
-                           maxlength="6" pattern="[0-9]{6}" inputmode="numeric"
+                    <input id="code" type="text" name="code" required autofocus dir="ltr"
+                           maxlength="6" pattern="[0-9]{6}" inputmode="numeric" autocomplete="one-time-code"
                            placeholder="000000"
                            class="w-full text-center text-2xl tracking-[0.5em] font-mono rounded-md border-gray-300 shadow-sm focus:border-brandMaroon-500 focus:ring-brandMaroon-500">
                 </div>
 
-                <button type="submit" class="btn-primary w-full py-3">Verify code</button>
+                <button type="submit" class="btn-primary w-full py-3">{{ __('signin.verify_code') }}</button>
             </form>
 
             <div class="flex justify-between text-sm text-gray-500 mt-5">
@@ -49,7 +42,7 @@
                         {{ ($retryAfter ?? 0) > 0 ? __('security.otp_resend_in', ['time' => gmdate('i:s', (int) $retryAfter)]) : __('security.otp_resend') }}
                     </button>
                 </form>
-                <a href="{{ route('password.otp.request') }}" class="hover:underline">Use different number</a>
+                <a href="{{ route('password.otp.request') }}" class="hover:underline">{{ __('signin.other_number') }}</a>
             </div>
         </div>
     </div>

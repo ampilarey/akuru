@@ -46,9 +46,13 @@ class OtpPasswordResetController extends Controller
         $type = str_contains($raw, '@') ? 'email' : 'mobile';
         $normalized = $this->normalizer->normalize($type, $raw);
 
-        // Intentionally do NOT reveal whether the account exists.
+        // Intentionally do NOT reveal whether the account exists. Only a
+        // contact somebody proved: an email typed at registration and never
+        // verified could be anyone's, and its holder would reset the account
+        // (slice SI1), as the forgot-password page has always refused.
         $contact = UserContact::where('type', $type)
             ->where('value', $normalized)
+            ->whereNotNull('verified_at')
             ->first();
 
         if ($contact) {
@@ -63,7 +67,7 @@ class OtpPasswordResetController extends Controller
         session([self::STATE => ['type' => $type, 'value' => $normalized, 'contact_id' => $contact?->id, 'verified_contact_id' => null]]);
 
         return redirect()->route('password.otp.verify.form')
-            ->with('success', 'If that contact is registered, a verification code has been sent.');
+            ->with('success', __('signin.flash_code_if_registered'));
     }
 
     /** Step 2 – show OTP input form */
@@ -92,7 +96,7 @@ class OtpPasswordResetController extends Controller
         $contact = $this->stateContact();
         if (! $contact) {
             return redirect()->route('password.otp.request')
-                ->withErrors(['contact' => 'Session expired. Please try again.']);
+                ->withErrors(['contact' => __('signin.error_session_expired')]);
         }
 
         try {
@@ -105,7 +109,7 @@ class OtpPasswordResetController extends Controller
         session()->put(self::STATE.'.verified_contact_id', $contact->id);
 
         return redirect()->route('password.otp.reset.form')
-            ->with('success', 'Code verified. Please set your new password.');
+            ->with('success', __('signin.flash_code_verified'));
     }
 
     /** Step 3 – show new-password form */
@@ -128,7 +132,7 @@ class OtpPasswordResetController extends Controller
         $contact = $this->provedContact();
         if (! $contact) {
             return redirect()->route('password.otp.request')
-                ->withErrors(['contact' => 'Session expired. Please try again.']);
+                ->withErrors(['contact' => __('signin.error_session_expired')]);
         }
 
         $user = $contact->user;
@@ -137,7 +141,7 @@ class OtpPasswordResetController extends Controller
             session()->forget(self::STATE);
 
             return redirect()->route('password.otp.request')
-                ->withErrors(['contact' => 'Account not found.']);
+                ->withErrors(['contact' => __('signin.error_account_not_found')]);
         }
 
         $user->update(['password' => Hash::make($request->input('password'))]);
@@ -147,7 +151,7 @@ class OtpPasswordResetController extends Controller
         Log::info('Password reset via OTP', ['user_id' => $user->id]);
 
         return redirect()->route('login')
-            ->with('status', 'Password reset successfully. You can now log in.');
+            ->with('status', __('signin.flash_password_reset'));
     }
 
     /** Resend OTP */
@@ -164,7 +168,7 @@ class OtpPasswordResetController extends Controller
             return back()->withErrors($e->errors());
         }
 
-        return back()->with('success', 'A new code has been sent.');
+        return back()->with('success', __('signin.flash_new_code'));
     }
 
     /** The contact the reset in progress sent its code to. */
