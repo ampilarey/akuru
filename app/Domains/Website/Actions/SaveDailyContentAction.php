@@ -17,7 +17,7 @@ class SaveDailyContentAction
     {
         $type = DailyContentType::tryFrom((string) ($data['content_type'] ?? ''));
         if ($type === null) {
-            throw ValidationException::withMessages(['content_type' => 'Choose ayah, hadith, saying, or reminder.']);
+            throw ValidationException::withMessages(['content_type' => __('admin.daily_error_type')]);
         }
 
         $status = DailyContentStatus::tryFrom((string) ($data['status'] ?? DailyContentStatus::Draft->value))
@@ -25,13 +25,13 @@ class SaveDailyContentAction
 
         if (in_array($status, [DailyContentStatus::Scheduled, DailyContentStatus::Published], true)) {
             throw ValidationException::withMessages([
-                'status' => 'Scheduled and published rows must go through scholarly approval.',
+                'status' => __('admin.daily_error_status'),
             ]);
         }
 
         $publishDate = (string) ($data['publish_date'] ?? '');
         if ($publishDate === '') {
-            throw ValidationException::withMessages(['publish_date' => 'A publish date is required.']);
+            throw ValidationException::withMessages(['publish_date' => __('admin.daily_error_date')]);
         }
 
         $duplicate = DailyContent::query()
@@ -41,7 +41,7 @@ class SaveDailyContentAction
             ->exists();
         if ($duplicate) {
             throw ValidationException::withMessages([
-                'publish_date' => 'That type is already used on this date.',
+                'publish_date' => __('admin.daily_error_date_taken'),
             ]);
         }
 
@@ -71,7 +71,7 @@ class SaveDailyContentAction
             );
             if ($ayah === null) {
                 throw ValidationException::withMessages([
-                    'ayah_number' => 'That ayah is not in the active mushaf.',
+                    'ayah_number' => __('admin.daily_error_ayah_missing'),
                 ]);
             }
             $payload['quran_ayah_id'] = (int) $ayah['id'];

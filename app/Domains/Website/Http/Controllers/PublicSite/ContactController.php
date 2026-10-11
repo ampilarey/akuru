@@ -28,7 +28,7 @@ class ContactController extends Controller
         if (RateLimiter::tooManyAttempts($rateLimitKey, 5)) {
             $seconds = RateLimiter::availableIn($rateLimitKey);
 
-            return back()->withErrors(['message' => "Too many messages. Please wait {$seconds} seconds before trying again."]);
+            return back()->withErrors(['message' => __('public.Too many messages. Please wait :seconds seconds before trying again.', ['seconds' => $seconds])]);
         }
         RateLimiter::hit($rateLimitKey, 600);
 

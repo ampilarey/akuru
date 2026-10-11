@@ -140,7 +140,7 @@ it('rejects syllabus capture when the course has no public file', function () {
             'name' => 'Too Early',
             'mobile' => '7900001',
         ])
-        ->assertSessionHasErrors('course');
+        ->assertSessionHas('error', __('public.A syllabus is not available for this course.'));
 
     expect(Lead::query()->count())->toBe(0);
 });

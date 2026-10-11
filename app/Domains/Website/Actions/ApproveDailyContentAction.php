@@ -13,12 +13,12 @@ class ApproveDailyContentAction
     public function execute(DailyContent $row, int $approverId, DailyContentStatus $status = DailyContentStatus::Scheduled): DailyContent
     {
         if (! in_array($status, [DailyContentStatus::Scheduled, DailyContentStatus::Published], true)) {
-            throw ValidationException::withMessages(['status' => 'Approval can only schedule or publish.']);
+            throw ValidationException::withMessages(['status' => __('admin.daily_error_approve_status')]);
         }
 
         if ($row->created_by === $approverId) {
             throw ValidationException::withMessages([
-                'approved_by' => 'Maker–checker: the creator cannot approve this item.',
+                'approved_by' => __('admin.daily_error_own_item'),
             ]);
         }
 
@@ -41,7 +41,7 @@ class ApproveDailyContentAction
         $type = $row->content_type instanceof DailyContentType ? $row->content_type : DailyContentType::tryFrom((string) $row->content_type);
 
         if ($type === DailyContentType::Ayah && ! $row->quran_ayah_id) {
-            throw ValidationException::withMessages(['quran_ayah_id' => 'An ayah item needs a Quran ayah.']);
+            throw ValidationException::withMessages(['quran_ayah_id' => __('admin.daily_error_needs_ayah')]);
         }
 
         if ($type === DailyContentType::Hadith) {
@@ -53,7 +53,7 @@ class ApproveDailyContentAction
             }
             if ($missing !== []) {
                 throw ValidationException::withMessages([
-                    'hadith_collection' => 'Hadith cannot be published without collection, number, grading, and grading source.',
+                    'hadith_collection' => __('admin.daily_error_hadith_incomplete'),
                 ]);
             }
         }
@@ -61,7 +61,7 @@ class ApproveDailyContentAction
         if (in_array($type, [DailyContentType::Saying, DailyContentType::Reminder], true)) {
             if (trim((string) $row->text_en) === '' || trim((string) $row->text_dv) === '' || trim((string) $row->attribution) === '') {
                 throw ValidationException::withMessages([
-                    'text_en' => 'Sayings and reminders need English, Dhivehi, and attribution before they can be published.',
+                    'text_en' => __('admin.daily_error_text_incomplete'),
                 ]);
             }
         }

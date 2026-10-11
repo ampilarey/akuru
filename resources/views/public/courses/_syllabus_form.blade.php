@@ -1,9 +1,9 @@
 @php
     $cta = $cta ?? ['whatsapp_url' => null, 'syllabus' => null];
 @endphp
+{{-- The layout says the syllabus's thanks and its refusals, once (slice WB1). --}}
 <div id="course-syllabus" class="space-y-2 text-sm">
     @if(session('syllabus_url'))
-        <p class="text-sm text-green-700">{{ session('success') ?? __('public.Syllabus is ready.') }}</p>
         <a href="{{ session('syllabus_url') }}" target="_blank" rel="noopener" class="btn-primary w-full text-center block">
             {{ __('public.Download syllabus') }}
         </a>
@@ -16,9 +16,6 @@
             <input class="form-input w-full" type="text" name="name" required maxlength="255" placeholder="{{ __('public.Name') }}" aria-label="{{ __('public.Name') }}" value="{{ old('name') }}">
             <input class="form-input w-full" type="text" name="mobile" required maxlength="30" placeholder="{{ __('public.Mobile') }}" aria-label="{{ __('public.Mobile') }}" value="{{ old('mobile') }}">
             <input class="form-input w-full" type="email" name="email" maxlength="255" placeholder="{{ __('public.Email (optional)') }}" aria-label="{{ __('public.Email (optional)') }}" value="{{ old('email') }}">
-            @error('course')
-                <p class="text-red-600">{{ $message }}</p>
-            @enderror
             <button type="submit" class="btn-secondary w-full">{{ __('public.Get full syllabus') }}</button>
         </form>
     @endif

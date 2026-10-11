@@ -95,22 +95,22 @@ class ComposeCourseFunnelReportAction
         $syllabus = (int) ($counts['syllabus_download'] ?? 0);
 
         if ($views === 0 && $clicks === 0 && $started === 0 && $paid === 0 && $whatsapp === 0 && $syllabus === 0) {
-            return 'Not enough data yet — keep collecting.';
+            return __('admin.funnel_decision_no_data');
         }
         if ($views >= 20 && $clicks / max($views, 1) < 0.05) {
-            return 'Iterate W1 content (hero, urgency, outcomes, sticky CTA) — few enroll clicks per view.';
+            return __('admin.funnel_decision_content');
         }
         if ($clicks >= 10 && $started / max($clicks, 1) < 0.5) {
-            return 'Iterate checkout first step — clicks are not becoming registrations.';
+            return __('admin.funnel_decision_checkout');
         }
         if ($started >= 10 && $paid / max($started, 1) < 0.3) {
-            return 'Iterate payment / fee copy — registrations are not completing payment.';
+            return __('admin.funnel_decision_payment');
         }
         if ($whatsapp > $clicks && $whatsapp >= 5) {
-            return 'WhatsApp is the stronger path — keep the sticky WhatsApp CTA and iterate enroll later.';
+            return __('admin.funnel_decision_whatsapp');
         }
 
-        return 'Keep iterating W1 content from this funnel — no stage is clearly stuck.';
+        return __('admin.funnel_decision_keep');
     }
 
     private function ratio(int $num, int $den): ?float

@@ -4983,6 +4983,111 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rf. The website's forms and its office in Dhivehi and Arabic (C21 WB1, 2026-10-11)
+
+Next after the payment pages (PY1, §5re). The website's pages already read
+their books (LT4, LT5, C9). What the server said on them was English:
+- the waiting list's refusal;
+- the daily reminders' subscription's three refusals;
+- the contact form's limit (*Too many messages. Please wait 600 seconds…*);
+- in the office, the daily content's twelve refusals, from the
+  maker–checker rule to a hadith without its grading;
+- the news screens' five refusals;
+- the funnel report's six decisions.
+
+An event registration's ten messages, which BACKLOG listed here, were
+already translated by LT5b.
+
+Reading the forms found that most of them said their message twice, or
+not at all:
+- **The waiting list said its thanks three times.** The form sits twice on
+  a full course's page, and each copy printed the thanks under the
+  layout's. Its refusal sat under a form the page no longer shows once the
+  course is not full, so it was said nowhere: a visitor whose page was
+  loaded while the course was full, and who sent it after a seat opened,
+  was told nothing.
+- **The syllabus form** said its thanks twice, its own and the layout's. It
+  printed only the course's refusal, under a form that is gone once the
+  syllabus is, and not the fields' at all.
+- **The contact form, an event's registration and the reminders'
+  subscription** each said their thanks twice. The event page said its
+  refusal twice as well.
+
+All of these now say it once, through the layout's flash. The syllabus and
+the waiting list turn their refusals into that flash, the first of them,
+in the page's language.
+
+**The change:**
+- The `admin` book gained 23 phrases: the daily content's and news's
+  refusals and the funnel's decisions. The `public` book gained 5: the
+  waiting list's refusal, the subscription's three and the contact form's
+  limit. *Syllabus is ready.* is gone, as no page says it now.
+- Eight Website actions read the books: approving, saving and batching
+  daily content, the subscription, a news post and a news category, the
+  waiting list, and the funnel's `decide()`.
+- The contact controller reads the book for its limit.
+- The course controller turns the waiting list's and the syllabus's
+  refusals into the layout's `error`.
+- Four views and a partial stop printing the layout's flash a second time:
+  - the waiting-list and syllabus partials;
+  - the contact page;
+  - an event's page;
+  - the subscription page.
+
+**Left as it was:**
+- The waiting list's inquiry type keeps its English description. It is
+  stored for the office's list, not said to anybody.
+- An empty news body is refused by the form's own rule first, in Laravel's
+  Dhivehi. The action's own sentence answers a body that is only markup.
+- **The Bookstore's, the wallet's and lending's pages say their thanks
+  twice too.** These are the cart, a product, the saved list, the wallet and
+  *My lending*, through the same layout. They are other domains' pages and
+  their walks read the page's own copy, so they are their own slice: FL1
+  (KNOWN_ISSUES).
+
+**Tests:**
+- `WebsiteFormsAndOfficeSpeakThreeLanguagesTest` (new, 7 tests):
+  - no English on the twelve server files;
+  - every key they name in three languages;
+  - over HTTP, in Dhivehi:
+    - a waiting list refused once, on the page the course now shows;
+    - each form's thanks said once: the syllabus, the contact form, an
+      event and the subscription;
+    - the syllabus refused, and the contact form's limit;
+    - the subscription's refusals;
+  - the office's daily content and news refusals, through the actions;
+  - the funnel's decisions in Dhivehi and Arabic.
+
+  Run over `main`'s files, all 7 fail, so the test is not vacuous.
+- `CourseConversionTest`, `CourseLeadCaptureTest` and
+  `PublicCoursePagesSpeakThreeLanguagesTest` read the waiting list's and the
+  syllabus's refusals from the flash.
+
+Whole suite locally: **3114 passed (64834 assertions)**.
+
+**Walks:**
+- **`website-language.mjs`** (new, in the runner):
+  - a visitor joins a full course's waiting list under `/dv` and is thanked
+    once. A seat opens before a page loaded while it was full is sent, and
+    the refusal is said once, in Dhivehi, on the page without the list;
+  - the contact form and an event's registration each thank once;
+  - a planted learner's subscription with no type is refused once, and one
+    saved is said once;
+  - the office's batch of no days and a reminder approved with no Dhivehi
+    text are refused in Dhivehi, and so is news with no body;
+  - the funnel's decision for the planted course reads in Dhivehi.
+
+  Three runs in a row passed 13/13. Run over `main`'s files, it passes 4 of 13:
+  - the waiting list's thanks is said three times, and its refusal nowhere;
+  - the contact form's, an event's and the subscription's thanks are said
+    twice, and the subscription's refusal is English;
+  - the office's refusals and the funnel's decision are English.
+- `site-pages-language.mjs` 75/75, `course-pages-language.mjs` 19/19,
+  `events.mjs` 6/6, `news.mjs` 6/6, `daily-certificate-language.mjs` 30/30,
+  `front-door-language.mjs` 53/53 and `public-rtl.mjs` 90/90.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5re. The payment pages in Dhivehi and Arabic (C21 PY1, 2026-10-11)
 
 Next after signing in (SI1, §5rd). A family who pays under `/dv` or `/ar`

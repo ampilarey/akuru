@@ -186,6 +186,25 @@ record names (`PasswordResetFlowsKeepTheirOwnAccountTest`,
 `password-reset.mjs`). Found reading `PasswordOtpController` and
 `OtpPasswordResetController` for SI1.
 
+## Found translating the website's forms (2026-10-11)
+
+### The Bookstore's, the wallet's and lending's pages say their thanks twice — **open (P4), next: FL1**
+
+The public layout prints the `error`, `success` and `status` flashes on
+every public page (§5dr). Five pages print `session('success')` again
+inside their own content, so the visitor reads the same sentence twice:
+- `shop/cart`;
+- `shop/product`;
+- `shop/wishlist`;
+- `commerce/wallet`;
+- `lending/mine`.
+
+WB1 fixed the website's own forms the same way: the waiting list, the
+syllabus, the contact form, an event and the subscription. These five are
+the Bookstore's, Commerce's and lending's pages. Their walks read the
+page's own copy (`data-testid="flash-success"`), so they move to the
+layout's in a slice of their own.
+
 ## Found translating the payment pages (2026-10-11)
 
 ### The registration's last page says the office approves every enrolment — **open (P4)**

@@ -18,7 +18,7 @@ class JoinCourseWaitlistAction
         $signals = app(ComposeCourseConversionSignalsAction::class)->execute($courseId);
         if ($signals === null || $signals['seats_tone'] !== 'full') {
             throw ValidationException::withMessages([
-                'course' => 'Waiting list is only open when the course is full.',
+                'course' => __('public.Waiting list is only open when the course is full.'),
             ]);
         }
 

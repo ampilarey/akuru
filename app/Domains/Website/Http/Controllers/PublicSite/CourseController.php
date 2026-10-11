@@ -180,18 +180,23 @@ class CourseController extends Controller
             return back()->with('success', __('public.Syllabus is on its way.'));
         }
 
+        // The form printed only the course's refusal, under a form the page no
+        // longer shows once the syllabus is gone, and not the fields' at all:
+        // the layout says it, once (slice WB1).
         $cta = app(ComposeCoursePageCtaAction::class)->execute((int) $course->id);
         if (($cta['syllabus']['url'] ?? null) === null) {
-            throw ValidationException::withMessages([
-                'course' => __('public.A syllabus is not available for this course.'),
-            ]);
+            return back()->withInput()->with('error', __('public.A syllabus is not available for this course.'));
         }
 
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'mobile' => ['required', 'string', 'max:30'],
-            'email' => ['nullable', 'email', 'max:255'],
-        ]);
+        try {
+            $data = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'mobile' => ['required', 'string', 'max:30'],
+                'email' => ['nullable', 'email', 'max:255'],
+            ]);
+        } catch (ValidationException $e) {
+            return back()->withInput()->with('error', collect($e->errors())->flatten()->first());
+        }
 
         app(CaptureCourseLeadAction::class)->execute((int) $course->id, LeadSource::Syllabus, $data);
 
@@ -206,18 +211,25 @@ class CourseController extends Controller
             return back()->with('success', __('public.Thanks — we will contact you if a seat opens.'));
         }
 
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:30'],
-            'email' => ['nullable', 'email', 'max:255'],
-        ]);
+        // The form sits twice on the course page and goes once the course is
+        // no longer full, so a refusal under it was said twice or nowhere: the
+        // layout says it, once (slice WB1).
+        try {
+            $data = $request->validate([
+                'name' => ['required', 'string', 'max:255'],
+                'phone' => ['required', 'string', 'max:30'],
+                'email' => ['nullable', 'email', 'max:255'],
+            ]);
 
-        app(JoinCourseWaitlistAction::class)->execute((int) $course->id, [
-            ...$data,
-            'message' => 'Waiting list for '.$course->title,
-            'ip' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-        ]);
+            app(JoinCourseWaitlistAction::class)->execute((int) $course->id, [
+                ...$data,
+                'message' => 'Waiting list for '.$course->title,
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+        } catch (ValidationException $e) {
+            return back()->withInput()->with('error', collect($e->errors())->flatten()->first());
+        }
 
         return back()->with('success', __('public.You are on the waiting list. We will contact you if a seat opens.'));
     }
