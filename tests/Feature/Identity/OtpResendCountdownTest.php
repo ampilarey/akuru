@@ -83,11 +83,11 @@ it('hands the verify screen the wait and holds the Resend button, in both OTP fl
     // The password-reset flow, the same way.
     RateLimiter::clear('otp:send:'.$contact->id.':password_reset');
     RateLimiter::clear('otp:cooldown:'.$contact->id.':password_reset');
-    $this->withoutLocalizationMiddleware()->withSession(['password_reset_contact_value' => $contact->value, 'password_reset_contact_id' => $contact->id])
+    $this->withoutLocalizationMiddleware()->withSession(['password_otp_reset' => ['type' => 'mobile', 'value' => $contact->value, 'contact_id' => $contact->id, 'verified_contact_id' => null]])
         ->get(route('password.otp.verify.form'))->assertOk()
         ->assertSee('data-retry-after="0"', false);
     $service->send($contact, 'password_reset');
-    $this->withoutLocalizationMiddleware()->withSession(['password_reset_contact_value' => $contact->value, 'password_reset_contact_id' => $contact->id])
+    $this->withoutLocalizationMiddleware()->withSession(['password_otp_reset' => ['type' => 'mobile', 'value' => $contact->value, 'contact_id' => $contact->id, 'verified_contact_id' => null]])
         ->get(route('password.otp.verify.form'))->assertOk()
         ->assertSee('aria-disabled="true"', false)
         ->assertSee('Resend code in 0', false);

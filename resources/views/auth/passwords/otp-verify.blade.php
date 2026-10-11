@@ -9,7 +9,7 @@
             <h1 class="text-xl font-bold text-brandMaroon-900 mb-1">Enter verification code</h1>
             <p class="text-gray-600 text-sm mb-6">
                 We sent a 6-digit code to
-                <strong>{{ session('password_reset_contact_value') }}</strong>.
+                <strong>{{ $contactValue }}</strong>.
                 Enter it below.
             </p>
 

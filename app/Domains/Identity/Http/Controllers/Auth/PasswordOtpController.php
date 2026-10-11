@@ -17,6 +17,16 @@ use Illuminate\View\View;
 
 class PasswordOtpController extends Controller
 {
+    /**
+     * The reset in progress, one record: the contact the code went to, the
+     * account it resets (a child's, when the code went to a parent) and the
+     * contact whose code was proved. Asking again replaces the whole record,
+     * so a code proved for one contact never carries over to another; and the
+     * other reset pages keep their own record (STATUS §5rc). Both used to share
+     * loose keys, and a code proved for one's own number reset any account.
+     */
+    private const STATE = 'password_reset';
+
     public function __construct(
         protected OtpService $otpService,
         protected ContactNormalizer $normalizer
@@ -83,11 +93,7 @@ class PasswordOtpController extends Controller
                 }
 
                 // Store both the contact for OTP and the actual user whose password to reset
-                session([
-                    'password_reset_identifier' => $identifier,
-                    'password_reset_contact_id' => $resetContact?->id,
-                    'password_reset_user_id' => $targetUser->id,
-                ]);
+                session([self::STATE => ['contact_id' => $resetContact?->id, 'user_id' => $targetUser->id, 'verified_contact_id' => null]]);
 
                 $msg = $isChild
                     ? 'A verification code has been sent to your parent\'s registered mobile.'
@@ -97,7 +103,7 @@ class PasswordOtpController extends Controller
             }
 
             // No user found — silent (security best practice)
-            session(['password_reset_identifier' => $identifier, 'password_reset_contact_id' => null, 'password_reset_user_id' => null]);
+            session([self::STATE => ['contact_id' => null, 'user_id' => null, 'verified_contact_id' => null]]);
 
             return redirect()->route('password.reset.verify')
                 ->with('status', 'If an account exists, we have sent a verification code.');
@@ -119,11 +125,8 @@ class PasswordOtpController extends Controller
             }
         }
 
-        session([
-            'password_reset_identifier' => $identifier,
-            'password_reset_contact_id' => $contact?->id,
-            'password_reset_user_id' => null, // will be resolved from contact
-        ]);
+        // The account is resolved from the contact.
+        session([self::STATE => ['contact_id' => $contact?->id, 'user_id' => null, 'verified_contact_id' => null]]);
 
         return redirect()->route('password.reset.verify')
             ->with('status', 'If an account exists with that contact, we have sent a verification code.');
@@ -136,12 +139,8 @@ class PasswordOtpController extends Controller
 
     public function verifyOtp(VerifyResetOtpRequest $request): RedirectResponse
     {
-        $contactId = session('password_reset_contact_id');
-        if (! $contactId) {
-            return back()->withErrors(['code' => 'Invalid or expired verification code.']);
-        }
-
-        $contact = UserContact::find($contactId);
+        $contactId = session(self::STATE.'.contact_id');
+        $contact = $contactId ? UserContact::find($contactId) : null;
         if (! $contact) {
             return back()->withErrors(['code' => 'Invalid or expired verification code.']);
         }
@@ -152,14 +151,15 @@ class PasswordOtpController extends Controller
             return back()->withErrors(['code' => $e->errors()['code'][0] ?? 'Invalid verification code.']);
         }
 
-        session(['password_reset_verified' => true]);
+        // The proof belongs to this contact, and is read back against it.
+        session()->put(self::STATE.'.verified_contact_id', $contact->id);
 
         return redirect()->route('password.reset');
     }
 
     public function showResetForm(): View|RedirectResponse
     {
-        if (! session('password_reset_verified') || ! session('password_reset_contact_id')) {
+        if (! $this->provedState()) {
             return redirect()->route('password.request');
         }
 
@@ -168,25 +168,15 @@ class PasswordOtpController extends Controller
 
     public function resetPassword(ResetPasswordRequest $request): RedirectResponse
     {
-        $contactId = session('password_reset_contact_id');
-        $verified = session('password_reset_verified');
-        $userId = session('password_reset_user_id');
+        $state = $this->provedState();
 
-        if (! $verified) {
+        if (! $state) {
             return redirect()->route('password.request')->withErrors(['identifier' => 'Session expired.']);
         }
 
-        // Resolve which user's password to reset
-        if ($userId) {
-            // Child account: reset the child's password directly
-            $user = User::find($userId);
-        } elseif ($contactId) {
-            // Normal account: resolve via contact
-            $contact = UserContact::find($contactId);
-            $user = $contact?->user;
-        } else {
-            $user = null;
-        }
+        // Resolve which user's password to reset: a child's directly, anyone
+        // else's through the contact whose code was proved.
+        $user = $state['user_id'] ? User::find($state['user_id']) : UserContact::find($state['contact_id'])?->user;
 
         if (! $user) {
             return redirect()->route('password.request')->withErrors(['identifier' => 'Account not found.']);
@@ -194,8 +184,23 @@ class PasswordOtpController extends Controller
 
         $user->update(['password' => Hash::make($request->input('password'))]);
 
-        session()->forget(['password_reset_contact_id', 'password_reset_verified', 'password_reset_identifier', 'password_reset_user_id']);
+        session()->forget(self::STATE);
 
         return redirect()->route('login')->with('status', 'Password reset successfully. You can now log in.');
+    }
+
+    /**
+     * The reset in progress, only once a code was proved for the contact it
+     * names.
+     *
+     * @return array{contact_id: int, user_id: ?int, verified_contact_id: int}|null
+     */
+    private function provedState(): ?array
+    {
+        $state = session(self::STATE);
+
+        return is_array($state) && ! empty($state['contact_id']) && ($state['verified_contact_id'] ?? null) === $state['contact_id']
+            ? $state
+            : null;
     }
 }

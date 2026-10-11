@@ -4983,6 +4983,81 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rc. A password reset code resets only the account it was sent for (PW1, 2026-10-11)
+
+Found reading the sign-in pages for SI1: **anyone could reset another
+person's password**, on either of the two public reset flows. Both kept a
+reset's progress in loose session keys, and *verified* was a flag of its
+own, not tied to the contact whose code was proved.
+
+- **On either flow, with only a number or an email.** A person asked for a
+  code for their own number and typed it. Then they asked again, for
+  someone else's number or email. The new request swapped the contact and
+  left the flag set, so the new password went to the other account.
+- **Across the two flows, with only an ID card number.** The forgot-password
+  page (`/forgot-password`) keeps the account to reset when it finds one by
+  an ID card number: a child's, whose code goes to a parent's phone. The
+  pages the login's *Forgot password?* opens (`/password/otp/*`) wrote the
+  same contact key and left that account in place. So one's own code, typed
+  on the forgot-password page's code step, reset the account the ID card
+  number named. An ID card number is printed on the card, and short.
+
+Nothing would have told: the reset logs only the account it reset, and the
+person whose password changed would find out at their next sign-in.
+
+**The fix:**
+- **Each flow keeps one session record of its own.** It holds the contact
+  the code went to, the account it resets (a child's, on the forgot-password
+  page) and the contact whose code was proved.
+- **Every request writes the whole record**, so asking again clears the
+  proof.
+- **The new password page and its save read the proof back** against the
+  contact the record names.
+- **The two flows' records are separate**, so neither sees the other's.
+
+The registration's password page already worked this way: its proof names
+one account (`otp_verified_user_id`).
+
+**Tests:**
+- `PasswordResetFlowsKeepTheirOwnAccountTest` (new, 7 tests):
+  - the four ways in, each leaving the other account's password as it was
+    and sending the person back to start:
+    - a proved code, then another number, on either flow;
+    - an ID card number on one flow and a code on the other;
+    - a code proved on one flow, then the number swapped by the other;
+  - and the three ways that should work still do:
+    - by phone, on the pages the login links to;
+    - by email, on the forgot-password page;
+    - a child's password, with the code sent to the parent's phone.
+
+  Run over `main`'s two controllers, the four ways in fail (the other
+  account's password was changed), so the test is not vacuous.
+- Four tests that set or read the old session keys now use the records.
+
+Whole suite locally: **3080 passed (63750 assertions)**.
+
+**Walk:** `password-reset.mjs` (new, in the runner) plants five accounts
+with numbers of their own, each with its own password:
+- the first resets its password from the login page's *Forgot password?*
+  and signs in with the new one;
+- the second proves its own code, then asks for the third's number, and the
+  new password page sends it back to start. The third still signs in with
+  its own password;
+- the fourth's ID card number is asked for on the forgot-password page, then
+  the fifth's own number on the other pages. The fifth's code, typed on the
+  forgot-password page's code step, does not open the new password page,
+  and the fourth still signs in with its own password.
+
+Three runs in a row passed 11/11. Run over `main`'s two controllers, it
+fails four of its eleven steps: both new password pages open, and the
+third and fourth accounts no longer sign in with their own passwords. The
+walk reads codes from the log sender, so it runs on a local server only,
+and skips elsewhere. `customer-sign-in.mjs` 9/9 and `two-factor.mjs` 19/19
+still pass.
+
+**Deploy:** no migration. A reset in progress when the pull lands has to
+start again, because its old keys are no longer read.
+
 ## 5rb. The course registration's last steps in Dhivehi and Arabic (C21 RG1c, 2026-10-10)
 
 The last of RG1's slices (§5qz, §5ra). With it, a learner registering under

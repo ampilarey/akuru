@@ -13,6 +13,15 @@ use Illuminate\Validation\ValidationException;
 
 class OtpPasswordResetController extends Controller
 {
+    /**
+     * The reset in progress, one record: the contact typed, the contact found
+     * for it and the contact whose code was proved. Asking again replaces the
+     * whole record, so a code proved for one's own number never resets the
+     * account of a number asked for after it; and the forgot-password pages
+     * keep their own record (STATUS §5rc).
+     */
+    private const STATE = 'password_otp_reset';
+
     public function __construct(
         protected OtpService $otpService,
         protected ContactNormalizer $normalizer,
@@ -51,11 +60,7 @@ class OtpPasswordResetController extends Controller
         }
 
         // Generic message always shown
-        session([
-            'password_reset_contact_type' => $type,
-            'password_reset_contact_value' => $normalized,
-            'password_reset_contact_id' => $contact?->id,
-        ]);
+        session([self::STATE => ['type' => $type, 'value' => $normalized, 'contact_id' => $contact?->id, 'verified_contact_id' => null]]);
 
         return redirect()->route('password.otp.verify.form')
             ->with('success', 'If that contact is registered, a verification code has been sent.');
@@ -64,14 +69,15 @@ class OtpPasswordResetController extends Controller
     /** Step 2 – show OTP input form */
     public function showVerifyForm()
     {
-        if (! session('password_reset_contact_value')) {
+        if (! session(self::STATE.'.value')) {
             return redirect()->route('password.otp.request');
         }
 
         // C16 slice N3: the resend wait, counted down on the screen.
-        $contact = session('password_reset_contact_id') ? UserContact::find(session('password_reset_contact_id')) : null;
+        $contact = $this->stateContact();
 
         return view('auth.passwords.otp-verify', [
+            'contactValue' => session(self::STATE.'.value'),
             'retryAfter' => $contact ? $this->otpService->retryAfterSeconds($contact, 'password_reset') : 0,
         ]);
     }
@@ -83,13 +89,7 @@ class OtpPasswordResetController extends Controller
             'code' => ['required', 'string', 'size:6'],
         ]);
 
-        $contactId = session('password_reset_contact_id');
-        if (! $contactId) {
-            return redirect()->route('password.otp.request')
-                ->withErrors(['contact' => 'Session expired. Please try again.']);
-        }
-
-        $contact = UserContact::find($contactId);
+        $contact = $this->stateContact();
         if (! $contact) {
             return redirect()->route('password.otp.request')
                 ->withErrors(['contact' => 'Session expired. Please try again.']);
@@ -101,7 +101,8 @@ class OtpPasswordResetController extends Controller
             return back()->withErrors($e->errors());
         }
 
-        session(['password_reset_otp_verified' => true]);
+        // The proof belongs to this contact, and is read back against it.
+        session()->put(self::STATE.'.verified_contact_id', $contact->id);
 
         return redirect()->route('password.otp.reset.form')
             ->with('success', 'Code verified. Please set your new password.');
@@ -110,7 +111,7 @@ class OtpPasswordResetController extends Controller
     /** Step 3 – show new-password form */
     public function showResetForm()
     {
-        if (! session('password_reset_otp_verified') || ! session('password_reset_contact_id')) {
+        if (! $this->provedContact()) {
             return redirect()->route('password.otp.request');
         }
 
@@ -124,16 +125,16 @@ class OtpPasswordResetController extends Controller
             'password' => ['required', 'string', 'min:8', 'confirmed'],
         ]);
 
-        if (! session('password_reset_otp_verified') || ! session('password_reset_contact_id')) {
+        $contact = $this->provedContact();
+        if (! $contact) {
             return redirect()->route('password.otp.request')
                 ->withErrors(['contact' => 'Session expired. Please try again.']);
         }
 
-        $contact = UserContact::find(session('password_reset_contact_id'));
-        $user = $contact?->user;
+        $user = $contact->user;
 
         if (! $user) {
-            session()->forget(['password_reset_otp_verified', 'password_reset_contact_id', 'password_reset_contact_value', 'password_reset_contact_type']);
+            session()->forget(self::STATE);
 
             return redirect()->route('password.otp.request')
                 ->withErrors(['contact' => 'Account not found.']);
@@ -141,7 +142,7 @@ class OtpPasswordResetController extends Controller
 
         $user->update(['password' => Hash::make($request->input('password'))]);
 
-        session()->forget(['password_reset_otp_verified', 'password_reset_contact_id', 'password_reset_contact_value', 'password_reset_contact_type']);
+        session()->forget(self::STATE);
 
         Log::info('Password reset via OTP', ['user_id' => $user->id]);
 
@@ -152,13 +153,7 @@ class OtpPasswordResetController extends Controller
     /** Resend OTP */
     public function resendOtp(Request $request)
     {
-        $contactId = session('password_reset_contact_id');
-
-        if (! $contactId) {
-            return redirect()->route('password.otp.request');
-        }
-
-        $contact = UserContact::find($contactId);
+        $contact = $this->stateContact();
         if (! $contact) {
             return redirect()->route('password.otp.request');
         }
@@ -170,5 +165,21 @@ class OtpPasswordResetController extends Controller
         }
 
         return back()->with('success', 'A new code has been sent.');
+    }
+
+    /** The contact the reset in progress sent its code to. */
+    private function stateContact(): ?UserContact
+    {
+        $contactId = session(self::STATE.'.contact_id');
+
+        return $contactId ? UserContact::find($contactId) : null;
+    }
+
+    /** That contact, only once its code was proved. */
+    private function provedContact(): ?UserContact
+    {
+        $contactId = session(self::STATE.'.contact_id');
+
+        return $contactId && session(self::STATE.'.verified_contact_id') === $contactId ? UserContact::find($contactId) : null;
     }
 }

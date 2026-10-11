@@ -44,8 +44,6 @@ class PasswordResetTest extends TestCase
 
     public function test_reset_password_shows_reset_form_after_verify(): void
     {
-        session(['password_reset_verified' => true, 'password_reset_contact_id' => 1]);
-
         $user = User::factory()->create();
         $contact = UserContact::create([
             'user_id' => $user->id,
@@ -54,7 +52,7 @@ class PasswordResetTest extends TestCase
             'is_primary' => true,
             'verified_at' => now(),
         ]);
-        session(['password_reset_contact_id' => $contact->id]);
+        session(['password_reset' => ['contact_id' => $contact->id, 'user_id' => null, 'verified_contact_id' => $contact->id]]);
 
         $response = $this->followingRedirects()->get(route('password.reset'));
 
