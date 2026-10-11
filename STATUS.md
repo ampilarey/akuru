@@ -4983,6 +4983,92 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rj. The certificates and the student ID card in Dhivehi and Arabic (C21 DOC2, 2026-10-11)
+
+Next after an upload refused (MD1, §5ri), and DOC1's sequel (§5pz). Four
+documents the office issues were written in English whatever page asked for
+them:
+- the award certificate;
+- the course certificate;
+- the student ID card;
+- the transfer certificate.
+
+Each action passed `'locale' => 'en'` to the renderer.
+
+What else they printed:
+- A student's status was its code (*transferred*).
+- A date was `2026-08-01`.
+- A course certificate carried its template's English name. The office names
+  each template in Dhivehi and Arabic too (`name_dv`, `name_ar`, CT3).
+- A course certificate with no body of its own said *This certifies that…*
+  in English.
+
+**The change:**
+- **The `documents` book gained four sections**:
+  - `award_certificate`;
+  - `course_certificate`, with the two default bodies and the institute's
+    name;
+  - `id_card`;
+  - `transfer_certificate`.
+
+  The templates read them in the document's own locale, as the report card
+  and the transcript do.
+- **Each action writes the document in the language of the page that asked
+  for it**: `GenerateIdCardAction`, `GenerateTransferCertificateAction`,
+  `IssueStudentAwardsAction` and `IssueCertificateAction`. Each takes an
+  optional locale, which defaults to the request's. Dhivehi and Arabic are
+  set right to left.
+- **A status is named by the transcript's word for it.** A date is written
+  with its month's name, in the document's language. A certificate number
+  and the check's address are set left to right.
+- **A course certificate takes its template's name in its own language**,
+  falling back to the English.
+
+**Left as it was:**
+- What the office wrote stays as written: a template's body, an award's title
+  and description, a status change's reason.
+- A stored document's title stays English (*Certificate — …*). It is the
+  office's list label, not printed on the document.
+- A document already issued keeps the language it was written in.
+
+**Tests:**
+- `CertificatesSpeakThreeLanguagesTest` (new, 4 tests):
+  - no English of their own on the four templates, every phrase in Dhivehi
+    and Arabic, and no action still passing `'locale' => 'en'`;
+  - the ID card and the transfer certificate in Dhivehi, with the status
+    named and July by its Dhivehi name. The office's ID card route opened
+    from a Dhivehi page writes it in Dhivehi;
+  - a stored award certificate in Arabic, its date in August by its Arabic
+    name;
+  - a downloaded course certificate in Dhivehi under its Dhivehi name, with
+    no English left.
+
+  Run over `main`'s files, all 4 fail.
+- `AwardsDocumentsTest` reads the transfer certificate's status as
+  *Transferred*, its English name.
+- The soft-delete baseline names `IssueCertificateAction`'s offering read
+  at its new line.
+
+Whole suite locally: **3128 passed (65261 assertions)**. The two failures,
+the baseline's moved line and a Dhivehi phrase the phrase-length rule
+found too short for *This certifies that*, were then fixed and their files
+rerun: 7 passed.
+
+**Walks:**
+- **`documents-language-cards.mjs`** (new, in the runner). The system admin
+  opens the smoke seed's first student's documents:
+  - their ID card under `/dv`;
+  - their transfer certificate under `/ar`, with the status named;
+  - the ID card under `/en`, still English.
+
+  Each is right to left where it should be and in its language. The walk
+  removes the copies it stored.
+
+  Three runs in a row passed 8/8. Run over `main`'s files, it passes 2 of 8.
+- `documents-language.mjs` 11/11, `exams-language.mjs` 78/78.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5ri. An upload refused, in Dhivehi and Arabic (C21 MD1, 2026-10-11)
 
 Next after the substitution requests (TS1, §5rh). Every upload form stores

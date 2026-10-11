@@ -27,7 +27,7 @@ return [
     'app/Domains/Courses/Actions/ListIssuedCertificatesAction.php:31' => 'The admin list of issued certificates. Same reason: the row is a record of something that happened, and it has to keep naming it.',
     'app/Domains/Courses/Actions/ListIssuedCertificatesAction.php:34' => 'As above, for the offering title.',
     'app/Domains/Courses/Actions/ListIssuedCertificatesAction.php:37' => 'As above, for the template name.',
-    'app/Domains/Courses/Actions/IssueCertificateAction.php:84' => 'The offering title stamped onto a certificate at the moment of issue.',
+    'app/Domains/Courses/Actions/IssueCertificateAction.php:86' => 'The offering title stamped onto a certificate at the moment of issue.',
     'app/Domains/Courses/Actions/BuildEnrollmentReportRowsAction.php:34' => 'Offering titles for an enrolment report. An enrolment on a retired offering still belongs in the report, under the name it had.',
 
     // --- Deliberately about deleted things ---------------------------------

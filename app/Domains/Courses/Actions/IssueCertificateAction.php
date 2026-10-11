@@ -19,8 +19,10 @@ class IssueCertificateAction
     /**
      * @param  array<string, mixed>  $data
      */
-    public function execute(array $data, ?int $actorId = null): IssuedCertificate
+    public function execute(array $data, ?int $actorId = null, ?string $locale = null): IssuedCertificate
     {
+        // The document is written in the language of the page that asked for it (slice DOC2).
+        $locale = $locale ?? app()->getLocale();
         $template = CertificateTemplate::query()
             ->where('active', true)
             ->findOrFail((int) ($data['certificate_template_id'] ?? 0));
@@ -102,9 +104,12 @@ class IssueCertificateAction
             'completion_date' => $completionDate,
             'grade' => $grade,
             'certificate_number' => $number,
-            'institute' => 'Akuru Institute',
+            'institute' => __('documents.course_certificate.institute', [], $locale),
             'kind' => $template->kind->value,
-            'template_name' => $template->name,
+            // The office names a template in each language (CT3); the certificate printed only the English.
+            'template_name' => (string) (match ($locale) {
+                'dv' => $template->name_dv, 'ar' => $template->name_ar, default => null
+            } ?: $template->name),
             'attendance_percent' => $attendance !== null ? (string) $attendance : '',
         ];
 
@@ -127,10 +132,10 @@ class IssueCertificateAction
         ]);
 
         $html = app(DocumentRendererInterface::class)->render('course-certificate', [
-            'locale' => 'en',
-            'dir' => 'ltr',
+            'locale' => $locale,
+            'dir' => in_array($locale, ['dv', 'ar'], true) ? 'rtl' : 'ltr',
             'face' => $face,
-            'body_html' => $this->filledBody($template->body_html, $face),
+            'body_html' => $this->filledBody($template->body_html, $face, $locale),
             'qr' => app(StudentNumberQr::class)->svg($verifyUrl),
             'verify_url' => $verifyUrl,
         ]);
@@ -152,13 +157,13 @@ class IssueCertificateAction
     /**
      * @param  array<string, mixed>  $face
      */
-    private function filledBody(?string $body, array $face): string
+    private function filledBody(?string $body, array $face, string $locale): string
     {
         $text = $body;
         if ($text === null || trim($text) === '') {
             $text = filled($face['course_name'] ?? null)
-                ? '<p>This certifies that <strong>{{student_name}}</strong> completed {{course_name}}.</p>'
-                : '<p>This certifies that <strong>{{student_name}}</strong> was awarded this certificate.</p>';
+                ? '<p>'.__('documents.course_certificate.body_course', [], $locale).'</p>'
+                : '<p>'.__('documents.course_certificate.body_award', [], $locale).'</p>';
         }
         foreach ($face as $key => $value) {
             $text = str_replace('{{'.$key.'}}', e((string) ($value ?? '')), $text);

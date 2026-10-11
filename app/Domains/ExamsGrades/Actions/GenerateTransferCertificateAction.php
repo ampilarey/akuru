@@ -12,8 +12,10 @@ class GenerateTransferCertificateAction
     /**
      * @return array{html: string, document_id: int}
      */
-    public function execute(int $studentId, ?int $actorId = null): array
+    public function execute(int $studentId, ?int $actorId = null, ?string $locale = null): array
     {
+        // The document is written in the language of the page that asked for it (slice DOC2).
+        $locale = $locale ?? app()->getLocale();
         $student = DB::table('students')->where('id', $studentId)->firstOrFail();
         $history = DB::table('student_status_history')
             ->where('student_id', $studentId)
@@ -28,8 +30,8 @@ class GenerateTransferCertificateAction
             ->all();
 
         $html = app(DocumentRendererInterface::class)->render('transfer-certificate', [
-            'locale' => 'en',
-            'dir' => 'ltr',
+            'locale' => $locale,
+            'dir' => in_array($locale, ['dv', 'ar'], true) ? 'rtl' : 'ltr',
             'student' => [
                 'id' => $studentId,
                 'name' => PersonName::ofStudent($student),

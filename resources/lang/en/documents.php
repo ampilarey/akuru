@@ -74,4 +74,40 @@ return [
             'withdrawn' => 'Withdrawn',
         ],
     ],
+
+    // The certificates and the ID card in the document's own language (slice DOC2).
+    'award_certificate' => [
+        'title' => 'Award certificate',
+        'heading' => 'Certificate of achievement',
+        'certifies' => 'This certifies that',
+        'awarded' => 'has been awarded',
+        'date' => 'Date',
+    ],
+    'course_certificate' => [
+        'title' => 'Course certificate',
+        'institute' => 'Akuru Institute',
+        'certificate' => 'Certificate',
+        'number' => 'Certificate number',
+        'date' => 'Date',
+        'grade' => 'Grade',
+        'offering' => 'Offering',
+        'attendance' => 'Attendance',
+        'verify_at' => 'Verify at',
+        'signature' => 'Authorized signature — Akuru Institute',
+        'body_course' => 'This certifies that <strong>{{student_name}}</strong> completed {{course_name}}.',
+        'body_award' => 'This certifies that <strong>{{student_name}}</strong> was awarded this certificate.',
+    ],
+    'id_card' => [
+        'title' => 'Student ID card',
+        'heading' => 'Akuru Institute — Student ID',
+        'number' => 'Student number',
+        'photo' => 'Photo',
+    ],
+    'transfer_certificate' => [
+        'title' => 'Transfer certificate',
+        'heading' => 'Transfer / leaving certificate',
+        'certifies' => 'This is to certify that :name (:number) is recorded with status :status.',
+        'history' => 'Status history',
+        'no_history' => 'No status changes recorded.',
+    ],
 ];

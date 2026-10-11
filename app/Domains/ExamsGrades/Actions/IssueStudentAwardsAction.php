@@ -17,8 +17,10 @@ class IssueStudentAwardsAction
      * @param  array<string, mixed>  $data
      * @return Collection<int, StudentAward>
      */
-    public function execute(array $data, ?int $actorId = null): Collection
+    public function execute(array $data, ?int $actorId = null, ?string $locale = null): Collection
     {
+        // The document is written in the language of the page that asked for it (slice DOC2).
+        $locale = $locale ?? app()->getLocale();
         $award = Award::query()->where('active', true)->findOrFail((int) $data['award_id']);
         $studentIds = array_values(array_unique(array_filter(array_map(
             fn ($id) => (int) $id,
@@ -49,8 +51,8 @@ class IssueStudentAwardsAction
 
             $student = DB::table('students')->where('id', $studentId)->first();
             $html = app(DocumentRendererInterface::class)->render('award-certificate', [
-                'locale' => 'en',
-                'dir' => 'ltr',
+                'locale' => $locale,
+                'dir' => in_array($locale, ['dv', 'ar'], true) ? 'rtl' : 'ltr',
                 'award' => [
                     'title' => $award->title,
                     'description' => $award->description,

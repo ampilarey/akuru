@@ -79,7 +79,7 @@ it('renders an id card with the student number qr and a transfer certificate fro
 
     $transfer = app(GenerateTransferCertificateAction::class)->execute($student->id, $admin->id);
     expect($transfer['html'])->toContain('Transfer / leaving certificate')
-        ->and($transfer['html'])->toContain('transferred')
+        ->and($transfer['html'])->toContain('Transferred')
         ->and($transfer['html'])->toContain('Moved island');
 
     $this->withoutLocalizationMiddleware()
