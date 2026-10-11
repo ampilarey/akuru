@@ -407,4 +407,9 @@ return [
     'campaign_error_target' => 'ކެމްޕެއިނެއްގައި ":type" ނުހިމެނޭނެ.',
     'campaign_error_target_id' => 'ކެމްޕެއިނުގައި ހިމެނޭ ކޮންމެ ބައެއް، ލިޔުންތެރިއެއް ނުވަތަ ލިޔުމެއް ލިސްޓުން ހޮވާ.',
     'campaign_error_already_ended' => 'މި ކެމްޕެއިން ވަނީ ކުރިން ނިމިފައި.',
+
+    // An upload refused, said by the Media actions every upload form shares (slice MD1).
+    'upload_error_type' => 'މިތަނަށް އެ ބާވަތުގެ ފައިލެއް އަޕްލޯޑެއް ނުކުރެވޭނެ.',
+    'upload_error_size' => 'އެ ފައިލު :size MB އަށްވުރެ ބޮޑު.',
+    'upload_error_document_type' => 'PDF، JPEG ނުވަތަ PNG ފައިލެއް އަޕްލޯޑްކުރައްވާ.',
 ];

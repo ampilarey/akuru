@@ -32,7 +32,7 @@ class StorePrivateMediaAction
         $mime = (string) ($file->getMimeType() ?: $file->getClientMimeType());
         if ($allowedMimes !== [] && ! in_array($mime, $allowedMimes, true)) {
             throw ValidationException::withMessages([
-                'file' => 'File type '.$mime.' is not allowed for this block.',
+                'file' => __('common.upload_error_type'),
             ]);
         }
 
@@ -43,7 +43,7 @@ class StorePrivateMediaAction
         $size = (int) ($file->getSize() ?: 0);
         if ($maxBytes !== null && $size > $maxBytes) {
             throw ValidationException::withMessages([
-                'file' => 'That file is larger than '.(int) round($maxBytes / 1048576).' MB.',
+                'file' => __('common.upload_error_size', ['size' => (int) round($maxBytes / 1048576)]),
             ]);
         }
 

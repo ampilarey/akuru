@@ -414,4 +414,9 @@ return [
     'campaign_error_target' => 'A campaign cannot cover ":type".',
     'campaign_error_target_id' => 'Pick each category, writer or item the campaign covers from the list.',
     'campaign_error_already_ended' => 'This campaign has already ended.',
+
+    // An upload refused, said by the Media actions every upload form shares (slice MD1).
+    'upload_error_type' => 'That kind of file cannot be uploaded here.',
+    'upload_error_size' => 'That file is larger than :size MB.',
+    'upload_error_document_type' => 'Upload a PDF, JPEG or PNG.',
 ];
