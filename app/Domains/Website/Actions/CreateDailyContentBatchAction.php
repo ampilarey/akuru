@@ -21,7 +21,7 @@ class CreateDailyContentBatchAction
         $start = (string) ($data['publish_date'] ?? '');
         $days = (int) ($data['days'] ?? 0);
         if ($start === '' || $days < 1 || $days > 40) {
-            throw ValidationException::withMessages(['days' => 'Theme batches cover 1–40 consecutive days.']);
+            throw ValidationException::withMessages(['days' => __('admin.daily_error_batch_days')]);
         }
 
         $cursor = Carbon::parse($start)->timezone(config('app.timezone'))->startOfDay();
@@ -37,7 +37,7 @@ class CreateDailyContentBatchAction
             ->exists();
         if ($clash) {
             throw ValidationException::withMessages([
-                'publish_date' => 'A reminder already exists on one of those dates.',
+                'publish_date' => __('admin.daily_error_batch_taken'),
             ]);
         }
 

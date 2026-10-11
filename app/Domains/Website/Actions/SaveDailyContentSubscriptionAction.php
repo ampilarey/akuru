@@ -21,7 +21,7 @@ class SaveDailyContentSubscriptionAction
     {
         $channel = DailySubscriptionChannel::tryFrom((string) ($data['channel'] ?? ''));
         if ($channel === null) {
-            throw ValidationException::withMessages(['channel' => 'Choose SMS, email, or push.']);
+            throw ValidationException::withMessages(['channel' => __('public.Choose SMS, email, or push.')]);
         }
 
         $language = DailySubscriptionLanguage::tryFrom((string) ($data['language'] ?? 'en'))
@@ -29,7 +29,7 @@ class SaveDailyContentSubscriptionAction
 
         $types = $this->normalizeTypes($data['content_types'] ?? []);
         if ($types === []) {
-            throw ValidationException::withMessages(['content_types' => 'Choose at least one content type.']);
+            throw ValidationException::withMessages(['content_types' => __('public.Choose at least one content type.')]);
         }
 
         $sendTime = $this->normalizeSendTime((string) ($data['send_time'] ?? '06:00'));
@@ -91,6 +91,6 @@ class SaveDailyContentSubscriptionAction
             return $raw;
         }
 
-        throw ValidationException::withMessages(['send_time' => 'Send time must be HH:MM.']);
+        throw ValidationException::withMessages(['send_time' => __('public.Send time must be HH:MM.')]);
     }
 }

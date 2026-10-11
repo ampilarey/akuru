@@ -602,7 +602,6 @@ return [
     ':count seat left|:count seats left' => ':count seat left|:count seats left',
     'Limited seats' => 'Limited seats',
     'Full — join waiting list' => 'Full — join waiting list',
-    'Syllabus is ready.' => 'Syllabus is ready.',
     'Download syllabus' => 'Download syllabus',
     'Get full syllabus' => 'Get full syllabus',
     'Leave your name and mobile. We’ll send the PDF link.' => 'Leave your name and mobile. We’ll send the PDF link.',
@@ -759,4 +758,11 @@ return [
     'wallet_source_loyalty_reward' => 'loyalty reward',
     'wallet_source_referral' => 'referral',
     'Gift card code' => 'Gift card code',
+
+    // The waiting list's and the daily reminders' refusals (slice WB1).
+    'Waiting list is only open when the course is full.' => 'Waiting list is only open when the course is full.',
+    'Choose SMS, email, or push.' => 'Choose SMS, email, or push.',
+    'Choose at least one content type.' => 'Choose at least one content type.',
+    'Send time must be HH:MM.' => 'Send time must be HH:MM.',
+    'Too many messages. Please wait :seconds seconds before trying again.' => 'Too many messages. Please wait :seconds seconds before trying again.',
 ];

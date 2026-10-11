@@ -48,11 +48,7 @@
                         {{ __('public.Send us a Message') }}
                     </h2>
                     
-                    @if(session('success'))
-                        <div class="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
-                            {{ session('success') }}
-                        </div>
-                    @endif
+                    {{-- The layout says the message's thanks, once (slice WB1). --}}
 
                     <form method="POST" action="{{ route('public.contact.store') }}" class="space-y-6">
                         @csrf

@@ -9,9 +9,7 @@
     <h1 style="font-size:clamp(1.6rem,3vw,2.25rem);font-weight:800;color:#3D1219;margin:.35rem 0 1rem">{{ __('public.Subscribe') }}</h1>
     <p style="color:#4B5563;margin:0 0 1.5rem">{{ __('public.Opt-in only. One message per channel per day. SMS is a short link, not the full Arabic. Reply STOP to leave SMS.') }}</p>
 
-    @if(session('success'))
-      <p style="background:#ECFDF5;color:#065F46;padding:.75rem 1rem;border-radius:.5rem;margin-bottom:1rem">{{ session('success') }}</p>
-    @endif
+    {{-- The layout says the saved, paused and resumed thanks; this page said them a second time (slice WB1). --}}
     @if($errors->any())
       <p style="background:#FEE2E2;color:#991B1B;padding:.75rem 1rem;border-radius:.5rem;margin-bottom:1rem">{{ $errors->first() }}</p>
     @endif

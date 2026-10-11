@@ -134,7 +134,8 @@ it('accepts a waiting-list interest form only when the course is full', function
             'name' => 'Too Early',
             'phone' => '7900001',
         ])
-        ->assertSessionHasErrors('course');
+        // Said once by the layout (slice WB1): the form sits twice on a full course's page, and not at all on this one.
+        ->assertSessionHas('error', __('public.Waiting list is only open when the course is full.'));
 
     $this->withoutLocalizationMiddleware()
         ->get(route('public.courses.show', $full))

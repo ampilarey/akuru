@@ -504,7 +504,6 @@ return [
     ':count seat left|:count seats left' => ':count ޖާގަ ބާކީ',
     'Limited seats' => 'ޖާގަ މަދު',
     'Full — join waiting list' => 'ފުރިއްޖެ — އިންތިޒާރު ލިސްޓަށް ވަދެވަޑައިގަންނަވާ',
-    'Syllabus is ready.' => 'ސިލަބަސް ތައްޔާރު.',
     'Download syllabus' => 'ސިލަބަސް ޑައުންލޯޑް ކުރައްވާ',
     'Get full syllabus' => 'ފުރިހަމަ ސިލަބަސް ހޯއްދަވާ',
     'Leave your name and mobile. We’ll send the PDF link.' => 'ނަމާއި މޯބައިލް ނަމްބަރު ދޫކޮށްލައްވާ. PDF ލިންކް ފޮނުވާނަން.',
@@ -714,4 +713,11 @@ return [
     'wallet_source_loyalty_reward' => 'ލޯޔަލްޓީ އިނާމު',
     'wallet_source_referral' => 'ރެފަރަލް',
     'Gift card code' => 'ގިފްޓް ކާޑުގެ ކޯޑު',
+
+    // The waiting list's and the daily reminders' refusals (slice WB1).
+    'Waiting list is only open when the course is full.' => 'އިންތިޒާރު ލިސްޓް ހުޅުވިފައިވަނީ ކޯސް ފުރިފައިވާއިރު އެކަނި.',
+    'Choose SMS, email, or push.' => 'އެސްއެމްއެސް، އީމެއިލް ނުވަތަ ޕުޝް ހޮވާ.',
+    'Choose at least one content type.' => 'މަދުވެގެން ކޮންޓެންޓްގެ އެއް ބާވަތް ހޮވާ.',
+    'Send time must be HH:MM.' => 'ފޮނުވާ ގަޑި HH:MM ގޮތަށް ލިޔުއްވާ.',
+    'Too many messages. Please wait :seconds seconds before trying again.' => 'މެސެޖު ގިނަވެއްޖެ. އަލުން ފޮނުއްވުމުގެ ކުރިން :seconds ސިކުންތު މަޑުކުރައްވާ.',
 ];

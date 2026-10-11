@@ -32,11 +32,11 @@ class SaveNewsPostAction
     {
         $title = trim((string) ($data['title'] ?? ''));
         if ($title === '') {
-            throw ValidationException::withMessages(['title' => 'A news item needs a title.']);
+            throw ValidationException::withMessages(['title' => __('admin.news_error_title')]);
         }
         $body = app(HtmlSanitizer::class)->clean((string) ($data['body'] ?? ''), HtmlSanitizer::PROFILE_CMS);
         if (trim(strip_tags($body)) === '') {
-            throw ValidationException::withMessages(['body' => 'Write the news before saving it.']);
+            throw ValidationException::withMessages(['body' => __('admin.news_error_body')]);
         }
 
         $slug = Str::slug(trim((string) ($data['slug'] ?? '')) ?: $title);
@@ -45,7 +45,7 @@ class SaveNewsPostAction
         }
         $taken = Post::query()->where('slug', $slug)->when($post, fn ($q) => $q->whereKeyNot($post->id))->exists();
         if ($taken) {
-            throw ValidationException::withMessages(['slug' => 'Another post already uses that address. Choose a different slug.']);
+            throw ValidationException::withMessages(['slug' => __('admin.news_error_slug')]);
         }
 
         $summary = trim((string) ($data['summary'] ?? ''));

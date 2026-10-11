@@ -20,11 +20,11 @@ class SaveNewsCategoryAction
     {
         $name = trim((string) ($data['name'] ?? ''));
         if ($name === '') {
-            throw ValidationException::withMessages(['name' => 'A category needs a name.']);
+            throw ValidationException::withMessages(['name' => __('admin.news_error_category_name')]);
         }
         $slug = Str::slug(trim((string) ($data['slug'] ?? '')) ?: $name) ?: 'category-'.Str::lower(Str::random(5));
         if (PostCategory::query()->where('slug', $slug)->when($category, fn ($q) => $q->whereKeyNot($category->id))->exists()) {
-            throw ValidationException::withMessages(['slug' => 'Another category already uses that address.']);
+            throw ValidationException::withMessages(['slug' => __('admin.news_error_category_slug')]);
         }
 
         $payload = [

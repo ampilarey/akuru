@@ -504,7 +504,6 @@ return [
     ':count seat left|:count seats left' => 'المقاعد المتبقية: :count',
     'Limited seats' => 'مقاعد محدودة',
     'Full — join waiting list' => 'ممتلئة — انضم إلى قائمة الانتظار',
-    'Syllabus is ready.' => 'المنهج جاهز.',
     'Download syllabus' => 'حمّل المنهج',
     'Get full syllabus' => 'احصل على المنهج الكامل',
     'Leave your name and mobile. We’ll send the PDF link.' => 'اترك اسمك ورقم جوالك وسنرسل لك رابط ملف PDF.',
@@ -714,4 +713,11 @@ return [
     'wallet_source_loyalty_reward' => 'مكافأة الولاء',
     'wallet_source_referral' => 'إحالة',
     'Gift card code' => 'رمز بطاقة الهدية',
+
+    // The waiting list's and the daily reminders' refusals (slice WB1).
+    'Waiting list is only open when the course is full.' => 'لا تُفتح قائمة الانتظار إلا عندما تمتلئ الدورة.',
+    'Choose SMS, email, or push.' => 'اختر رسالة نصية أو بريدًا إلكترونيًا أو إشعارًا.',
+    'Choose at least one content type.' => 'اختر نوعًا واحدًا من المحتوى على الأقل.',
+    'Send time must be HH:MM.' => 'يجب أن يكون وقت الإرسال بصيغة HH:MM.',
+    'Too many messages. Please wait :seconds seconds before trying again.' => 'رسائل كثيرة. يُرجى الانتظار :seconds ثانية قبل المحاولة مرة أخرى.',
 ];

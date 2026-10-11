@@ -196,5 +196,5 @@ it('refuses a syllabus the course does not have in the page\'s language', functi
     $this->withHeader('Referer', url('/ar/courses/'.$course->slug))
         ->post(route('public.courses.syllabus', $course), ['name' => 'LT5a Reader', 'mobile' => '7770006'])
         ->assertRedirect()
-        ->assertSessionHasErrors(['course' => coursePageBook('ar')['A syllabus is not available for this course.']]);
+        ->assertSessionHas('error', coursePageBook('ar')['A syllabus is not available for this course.']);
 });
