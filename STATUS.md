@@ -4983,6 +4983,58 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ri. An upload refused, in Dhivehi and Arabic (C21 MD1, 2026-10-11)
+
+Next after the substitution requests (TS1, §5rh). Every upload form stores
+its file through one of three Media actions, and each says why it refused
+one:
+- the kind of file: `StorePrivateMediaAction`, `StorePublicMediaAction`;
+- its size: `StorePrivateMediaAction`, `StoreUploadedDocumentAction`;
+- a document that is not a PDF, JPEG or PNG: `StoreUploadedDocumentAction`.
+
+All three said it in English on every page. The kind of file was told as
+its MIME type: *File type application/pdf is not allowed for this block.*
+The words *for this block* appeared even on forms that have no blocks.
+
+Most forms' own rules refuse a wrong file first, in Laravel's Dhivehi
+(CT6b-1). The actions' refusals are the backstop. A person meets them
+where a form's rule is wider than the action's, as on the course outline:
+the outline takes any file up to the largest block's limit, and the block's
+type then decides which kinds it takes.
+
+**The change:**
+- The `common` book gained three phrases: *That kind of file cannot be
+  uploaded here.*, *That file is larger than :size MB.*, and *Upload a PDF,
+  JPEG or PNG.*
+- The three actions read them, and no longer name the MIME type.
+- The size is the action's own limit.
+
+**Left as it was:** *Directory is not allowed.* is a caller's mistake,
+thrown as an `InvalidArgumentException` before any file is stored, and no
+page names a directory.
+
+**Tests:**
+- `UploadRefusalsSpeakThreeLanguagesTest` (new, 3 tests):
+  - no English on the three actions, and the phrases in three languages;
+  - each action's refusal in Dhivehi, without the MIME type;
+  - the outline's image block given a PDF, over HTTP in Arabic.
+
+  Run over `main`'s files, all 3 fail.
+
+Whole suite locally: **3126 passed (65180 assertions)**.
+
+**Walks:**
+- **`upload-language.mjs`** (new, in the runner). The smoke seed's head
+  teacher opens a planted course's outline under `/dv` and `/ar`. They give
+  an image block a PDF and are told under the form, in the page's language
+  and without the MIME type. An image is then taken.
+
+  Three runs in a row passed 8/8. Run over `main`'s files it passes 4 of 8:
+  both refusals are English and name `application/pdf`.
+- `author.mjs` 24/24, `course-screens-language.mjs` 422/422.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5rh. The substitution requests and teacher absences, working and in Dhivehi and Arabic (C21 TS1, 2026-10-11)
 
 Next after the one-flash fix (FL1, §5rg). These are the menu's

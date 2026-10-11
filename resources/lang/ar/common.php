@@ -407,4 +407,9 @@ return [
     'campaign_error_target' => 'لا يمكن أن تشمل الحملة ":type".',
     'campaign_error_target_id' => 'اختر من القائمة كل تصنيف أو كاتب أو عنصر تشمله الحملة.',
     'campaign_error_already_ended' => 'هذه الحملة انتهت من قبل.',
+
+    // An upload refused, said by the Media actions every upload form shares (slice MD1).
+    'upload_error_type' => 'لا يمكن رفع هذا النوع من الملفات هنا.',
+    'upload_error_size' => 'هذا الملف أكبر من :size ميغابايت.',
+    'upload_error_document_type' => 'ارفع ملف PDF أو JPEG أو PNG.',
 ];

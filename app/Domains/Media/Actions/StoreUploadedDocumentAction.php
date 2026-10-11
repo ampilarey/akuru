@@ -37,10 +37,10 @@ class StoreUploadedDocumentAction
     ): array {
         $mime = (string) ($file->getMimeType() ?: $file->getClientMimeType());
         if (! in_array($mime, self::ALLOWED, true)) {
-            throw ValidationException::withMessages(['document' => 'A PDF, JPEG or PNG.']);
+            throw ValidationException::withMessages(['document' => __('common.upload_error_document_type')]);
         }
         if ((int) $file->getSize() > self::MAX_BYTES) {
-            throw ValidationException::withMessages(['document' => 'That file is larger than 5 MB.']);
+            throw ValidationException::withMessages(['document' => __('common.upload_error_size', ['size' => (int) round(self::MAX_BYTES / 1048576)])]);
         }
 
         $extension = strtolower((string) ($file->guessExtension() ?: $file->getClientOriginalExtension()));

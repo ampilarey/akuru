@@ -40,7 +40,7 @@ class StorePublicMediaAction
         $allowed = $allowedMimes === [] ? self::DEFAULT_MIMES : $allowedMimes;
         if (! in_array($mime, $allowed, true)) {
             throw ValidationException::withMessages([
-                'file' => 'File type '.$mime.' is not allowed for public media.',
+                'file' => __('common.upload_error_type'),
             ]);
         }
 
