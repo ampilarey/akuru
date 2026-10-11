@@ -114,8 +114,8 @@ it('gives a child their own login on their student record', function () {
 
     $this->withoutLocalizationMiddleware()
         ->post('/forgot-password', ['identifier' => 'A333444'])
-        ->assertSessionHas('password_reset_user_id', $child->user_id)
-        ->assertSessionHas('password_reset_contact_id', $parentMobile->id);
+        ->assertSessionHas('password_reset.user_id', $child->user_id)
+        ->assertSessionHas('password_reset.contact_id', $parentMobile->id);
 });
 
 it('enrols a pupil on an offering without a legacy registration row', function () {

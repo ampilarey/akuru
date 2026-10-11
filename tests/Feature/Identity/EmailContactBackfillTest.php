@@ -128,7 +128,7 @@ it('lets a backfilled account be found by the reset flow', function () {
         ->post(route('password.otp.send'), ['contact' => 'teacher@example.com'])
         ->assertRedirect(route('password.otp.verify.form'));
 
-    expect(session('password_reset_contact_id'))->not->toBeNull()
-        ->and((int) UserContact::query()->findOrFail(session('password_reset_contact_id'))->user_id)
+    expect(session('password_otp_reset.contact_id'))->not->toBeNull()
+        ->and((int) UserContact::query()->findOrFail(session('password_otp_reset.contact_id'))->user_id)
         ->toBe((int) $user->id);
 });

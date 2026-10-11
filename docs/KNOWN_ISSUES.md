@@ -165,6 +165,27 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found reading the sign-in pages (2026-10-11)
+
+### Anyone could reset another person's password — **fixed (2026-10-11, STATUS §5rc)**
+
+Both public reset flows kept a reset's progress in loose session keys, and
+*verified* was a flag of its own, not tied to the contact whose code was
+proved:
+- on either flow, a code proved for one's own number, then a new request
+  for someone else's number or email, sent the new password to the other
+  account;
+- the forgot-password page's account, found by an ID card number, stayed in
+  the session while the pages the login links to swapped the contact under
+  it.
+
+So a number, an email or an ID card number was enough to take an account.
+Each flow now keeps one record of its own, written whole by every request,
+and the new password is saved only once the code proved is the one the
+record names (`PasswordResetFlowsKeepTheirOwnAccountTest`,
+`password-reset.mjs`). Found reading `PasswordOtpController` and
+`OtpPasswordResetController` for SI1.
+
 ## Found by the registration language walk (2026-10-10)
 
 ### The last page never says a payment is already waiting — **fixed (2026-10-10, STATUS §5rb)**

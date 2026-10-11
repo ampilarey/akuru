@@ -145,6 +145,7 @@ const WALKS = [
     { name: 'events', writes: true, asks: 'Do the events and the gallery open from their own lists, and can a visitor register?' },
     { name: 'identity', writes: false, asks: 'Does each person see only their own workspace — a vendor their shop, a parent their children, nobody the rest?' },
     { name: 'two-factor', writes: true, asks: 'Can a person turn on two-step sign-in, and does a password alone then stop at the code?' },
+    { name: 'password-reset', writes: true, asks: 'Does a password reset code reset only the account it was sent for — on both reset flows, and across them?' },
     { name: 'public-rtl', writes: false, asks: 'Does the website read right to left in Dhivehi and Arabic, on a desk and on a phone?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
     { name: 'course-screens-language', writes: true, asks: 'Do the screens teachers build courses on — and the Qur\'an screens, a learner\'s among them — read in Dhivehi and Arabic, with a name on every field?' },
