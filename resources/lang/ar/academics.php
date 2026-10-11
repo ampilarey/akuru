@@ -953,4 +953,8 @@ return [
     'error_event_location' => 'المكان مطلوب.',
     'error_event_start' => 'تاريخ البدء مطلوب.',
     'error_event_slug' => 'توجد فعالية بهذا المعرّف بالفعل.',
+
+    // The registers' last two refusals (slice TS1).
+    'register_error_own_registers' => 'لا يمكنك تعديل إلا سجلاتك.',
+    'register_error_excused_by_note' => 'يُعذر الغياب بقبول ملاحظة ولي الأمر، لا بوضع علامة معذور هنا.',
 ];

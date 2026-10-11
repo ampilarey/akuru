@@ -4983,6 +4983,111 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rh. The substitution requests and teacher absences, working and in Dhivehi and Arabic (C21 TS1, 2026-10-11)
+
+Next after the one-flash fix (FL1, §5rg). These are the menu's
+*Substitutions*: seven Blade pages on the old app layout, where a teacher
+asks for cover for a lesson, another teacher takes it, or the office assigns
+one. Every word on them was English, and so was everything the server said
+there: sixteen messages, and the registers' last two refusals.
+
+Reading them found that the pages barely worked:
+- **No open request could be taken, changed or assigned.** The resource
+  route named its parameter `{request}`. Update, Take and Assign named their
+  model `$substitutionRequest`, so Laravel handed each of them an empty
+  request. Take answered *This substitution request cannot be taken*, and a
+  save answered *Cannot update assigned or closed requests*, for every open
+  request.
+- **New request showed to nobody.** The button asked a policy for
+  `SubstitutionRequest`, and nobody had written one. A request could only be
+  made by typing its address.
+- **Assign had a route and no form.** It also left out the system admin,
+  whom the routes let in.
+- **What the requests' pages were told was said nowhere.** The app layout
+  prints no flash, and neither did the pages.
+- **The absences list printed no heading and no Record button.** Both sat
+  in sections the layout never yields. Nothing linked to the list either.
+
+**The change:**
+- **A `substitutions` phrase book** in three languages, 89 phrases. The
+  seven pages read it:
+  - a request's state and an absence's state are named;
+  - dates use the page's language (the month by its Dhivehi or Arabic
+    name);
+  - a period's times are set left to right;
+  - every field is named.
+- **The controller reads the book**, for its sixteen messages and its 403
+  pages.
+- **The route's parameter is `{substitutionRequest}`**, so Update, Take and
+  Assign get the request they were sent. After Assign, the office lands back
+  on the request.
+- **Doors:**
+  - New request is offered to everyone the pages let in, as the routes allow;
+  - the list links to the absences, and the absences back to it;
+  - the request's page carries the office's Assign form, which leaves out the
+    absent teacher.
+- **The requests' list and a request's page say their flash.** The
+  absences list prints its heading and Record button in its content.
+- **The registers' last two refusals** (*You can only change your own
+  registers*, and *An absence is excused by approving the guardian's note*)
+  read the `academics` book.
+
+**Left as it was:**
+- Nothing closes or cancels a request. An assignment marks it assigned, and
+  removing the assignment opens it again; the list only filters by *closed*
+  and *cancelled*. `StatusValuesAreWritableTest` had counted both as
+  written, because the list page named the model in its `@can`. It now
+  baselines them, with that reason.
+- An absence has a delete route and no button.
+- The substitution notice a teacher receives is written in English, the
+  decision C20 records for every notification.
+
+**Tests:**
+- `SubstitutionsSpeakThreeLanguagesTest` (new, 7 tests). It checks:
+  - no English of the pages' own on the eight views, and every field named;
+  - no English on the server, and every key in three languages;
+  - over HTTP, in Dhivehi:
+    - a teacher takes an open lesson and is told so on the list. Taking it
+      again is refused, said once;
+    - the office changes a request and is told so on its page, which offers
+      Assign. Assigning works, and an assigned request's edit page is refused
+      in Dhivehi;
+    - New request and the absences are offered to a teacher and to the
+      office, right to left;
+    - an absence is recorded, said once, with its state and month in
+      Dhivehi;
+  - a request's page in Arabic, with its date.
+
+  Run over `main`'s files, all 7 fail, so the test is not vacuous.
+- `StatusValuesAreWritableTest` baselines the two statuses nothing writes.
+- `AdminLayoutTest` reads the route-made tab title from the analytics
+  dashboard, since the substitution requests list now names itself.
+
+Whole suite locally: **3122 passed (65157 assertions)**, with
+`AdminLayoutTest`'s fixture then moved and rerun: 3 passed.
+
+**Walks:**
+- **`substitutions-language.mjs`** (new, in the runner). Under `/dv`, with
+  two planted open requests:
+  - the office reads the list right to left, in Dhivehi, with New request
+    and the absences offered;
+  - the office changes the first request and is told so once;
+  - the smoke seed's teacher takes it from the list;
+  - the office assigns the second from its page;
+  - the office records an absence from the list's Record button.
+
+  Three runs in a row passed 15/15. Run over `main`'s files, it passes 5 of 15:
+  - the list is English;
+  - New request and the absences are not offered;
+  - a change, a Take and an Assign each fail;
+  - the absences list has no heading or Record button, and nothing it says
+    is in Dhivehi.
+- `admin-layout.mjs` 15/15 (its tab title now reads *Substitution
+  requests*), `admin-hub.mjs` 26/26, `hr.mjs` 27/27, `office-language.mjs`
+  237/237, `rtl.mjs` 8/8 and `nav.mjs` 14/14.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5rg. Each Bookstore page says its thanks once (FL1, 2026-10-11)
 
 Found by WB1 (§5rf). The public layout says a page's `error`, `success`

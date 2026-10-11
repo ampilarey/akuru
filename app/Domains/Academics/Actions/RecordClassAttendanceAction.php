@@ -93,7 +93,7 @@ class RecordClassAttendanceAction implements AttendanceWriterInterface
         }
 
         throw ValidationException::withMessages([
-            'attendance' => 'An absence is excused by approving the guardian\'s note, not by marking it excused here.',
+            'attendance' => __('academics.register_error_excused_by_note'),
         ]);
     }
 

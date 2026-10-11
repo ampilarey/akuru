@@ -103,7 +103,7 @@ check('and nothing overflows the phone sideways', !overflow);
 const desk = await signIn(SUPER, { width: 1400, height: 950 });
 // The substitution requests list is the system admin's Blade-shell fixture: every /admin/* screen and both dashboards are Inertia since C9 slices 12–13.
 await desk.goto(`${BASE}/en/substitutions/requests`, { waitUntil: 'networkidle' });
-check('the tab is titled after the screen', (await desk.title()).startsWith('Substitutions Requests - '), await desk.title());
+check('the tab is titled after the screen', (await desk.title()).startsWith('Substitution requests - '), await desk.title());
 const more = desk.locator('button[aria-controls="nav-more-menu"]');
 check('the More menu starts closed', (await more.getAttribute('aria-expanded')) === 'false' && !(await desk.locator('#nav-more-menu').isVisible()));
 await more.click();

@@ -953,4 +953,8 @@ return [
     'error_event_location' => 'ތަން ބޭނުންވޭ.',
     'error_event_start' => 'ފެށޭ ތާރީޚު ބޭނުންވޭ.',
     'error_event_slug' => 'މި ސްލަގް ވަނީ ކުރިން އެހެން ހަރަކާތަކަށް ދީފައި.',
+
+    // The registers' last two refusals (slice TS1).
+    'register_error_own_registers' => 'ބަދަލުކުރެވޭނީ ތިބާގެ އަމިއްލަ ރަޖިސްޓަރުތައް އެކަނި.',
+    'register_error_excused_by_note' => 'ހާޒިރުނުވުމެއް ޢުޒުރުވެރިކަމަށް ބަލައިގަނެވޭނީ ބެލެނިވެރިޔާގެ ނޯޓު ބަލައިގަތުމުން، މިތާ ޢުޒުރުވެރިކަމަށް ޖެހުމުން ނޫން.',
 ];

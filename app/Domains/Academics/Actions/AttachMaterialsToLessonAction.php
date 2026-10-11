@@ -39,7 +39,7 @@ class AttachMaterialsToLessonAction
             $teacherId = app(ResolveTeacherIdForUserAction::class)->execute($actorUserId);
             if ($teacherId === null || (int) $log->teacher_id !== $teacherId) {
                 throw ValidationException::withMessages([
-                    'materials' => 'You can only change your own registers.',
+                    'materials' => __('academics.register_error_own_registers'),
                 ]);
             }
         }

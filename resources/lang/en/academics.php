@@ -952,4 +952,8 @@ return [
     'error_event_location' => 'Location is required.',
     'error_event_start' => 'Start date is required.',
     'error_event_slug' => 'An event with this slug already exists.',
+
+    // The registers' last two refusals (slice TS1).
+    'register_error_own_registers' => 'You can only change your own registers.',
+    'register_error_excused_by_note' => 'An absence is excused by approving the guardian\'s note, not by marking it excused here.',
 ];

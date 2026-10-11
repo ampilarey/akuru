@@ -577,9 +577,14 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('substitutions/absences/{absence}/edit', [SubstitutionRequestController::class, 'absencesEdit'])->name('absences.edit');
         Route::put('substitutions/absences/{absence}', [SubstitutionRequestController::class, 'absencesUpdate'])->name('absences.update');
         Route::delete('substitutions/absences/{absence}', [SubstitutionRequestController::class, 'absencesDestroy'])->name('absences.destroy');
-        Route::resource('substitutions/requests', SubstitutionRequestController::class)->names('substitutions.requests');
-        Route::post('substitutions/requests/{request}/take', [SubstitutionRequestController::class, 'take'])->name('substitutions.requests.take');
-        Route::post('substitutions/requests/{request}/assign', [SubstitutionRequestController::class, 'assign'])->name('substitutions.requests.assign');
+        // `{substitutionRequest}`, the name every method's model takes: under
+        // the resource's default `{request}`, update, take and assign were
+        // handed an empty request, so none of them ever worked (slice TS1).
+        Route::resource('substitutions/requests', SubstitutionRequestController::class)
+            ->parameters(['requests' => 'substitutionRequest'])
+            ->names('substitutions.requests');
+        Route::post('substitutions/requests/{substitutionRequest}/take', [SubstitutionRequestController::class, 'take'])->name('substitutions.requests.take');
+        Route::post('substitutions/requests/{substitutionRequest}/assign', [SubstitutionRequestController::class, 'assign'])->name('substitutions.requests.assign');
     });
 
     // The workspace homes (STATUS §5id): `/admin` is the Institute's, `/school`
