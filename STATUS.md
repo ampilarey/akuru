@@ -4983,6 +4983,55 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rg. Each Bookstore page says its thanks once (FL1, 2026-10-11)
+
+Found by WB1 (§5rf). The public layout says a page's `error`, `success`
+and `status` flash on every public page (§5dr). Eight pages printed one
+too, so the visitor read the same sentence twice:
+- the cart, a product's page and the wishlist (the Bookstore);
+- the wallet and the gift cards (Commerce; the gift cards printed the
+  refusal);
+- *My lending*;
+- the registration's first page and its checkout (Admissions).
+
+**The change:**
+- The eight pages leave the flash to the layout.
+- The layout's flash carries the test id the walks read
+  (`flash-success`, `flash-error`, `flash-status`). The walks that read
+  the page's own copy (`checkout.mjs` among them) read the layout's now,
+  unchanged.
+
+The guest and app layouts print no flash, so the sign-in pages and the old
+Blade screens that print their own are said once already.
+
+**Tests:**
+- `PublicLayoutSaysEachFlashOnceTest` (new, 2 tests):
+  - no public page or partial prints a flash of its own (a source rule over
+    every view under `public/`, `courses/` and `components/public/`, and
+    every view on the public layout);
+  - a cart's thanks said once over HTTP, in the layout's flash.
+
+  Run over `main`'s views, both fail.
+
+Whole suite locally: **3116 passed (64841 assertions)**.
+
+**Walks:**
+- **`flash-once.mjs`** (new, in the runner). A planted learner signs in
+  under `/dv`. Adding the smoke seed's tracing book thanks them once, in
+  Dhivehi, in the layout's flash. Saving it to the wishlist from its page,
+  and taking it off again, is each said once.
+
+  Three runs in a row passed 5/5. Run over `main`'s views, it passes 2 of
+  5: each thanks is said twice.
+- `checkout.mjs` 49/49, `preorder.mjs` 7/7, `quotes.mjs` 13/13,
+  `polish.mjs` 32/32, `newsletter.mjs` 11/11, `wallet-refusal.mjs` 8/8,
+  `lending.mjs` 47/47, `gift.mjs` 17/17, `library-public-language.mjs`
+  81/81, `bookstore-language.mjs` 13/13, `saved-in-language.mjs` 12/12,
+  `shop.mjs` 80/80, `register-language.mjs` 37/37, `payment-language.mjs`
+  36/36, `website-language.mjs` 13/13 and `public-rtl.mjs` 90/90.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5rf. The website's forms and its office in Dhivehi and Arabic (C21 WB1, 2026-10-11)
 
 Next after the payment pages (PY1, §5re). The website's pages already read

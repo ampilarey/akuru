@@ -188,22 +188,19 @@ record names (`PasswordResetFlowsKeepTheirOwnAccountTest`,
 
 ## Found translating the website's forms (2026-10-11)
 
-### The Bookstore's, the wallet's and lending's pages say their thanks twice — **open (P4), next: FL1**
+### The Bookstore's, the wallet's and lending's pages said their thanks twice — **fixed (FL1, STATUS §5rg)**
 
 The public layout prints the `error`, `success` and `status` flashes on
-every public page (§5dr). Five pages print `session('success')` again
-inside their own content, so the visitor reads the same sentence twice:
-- `shop/cart`;
-- `shop/product`;
-- `shop/wishlist`;
-- `commerce/wallet`;
-- `lending/mine`.
+every public page (§5dr). Eight pages printed one again inside their own
+content, so the visitor read the same sentence twice:
+- the cart, a product and the wishlist;
+- the wallet and the gift cards;
+- *My lending*;
+- the registration's first page and its checkout.
 
-WB1 fixed the website's own forms the same way: the waiting list, the
-syllabus, the contact form, an event and the subscription. These five are
-the Bookstore's, Commerce's and lending's pages. Their walks read the
-page's own copy (`data-testid="flash-success"`), so they move to the
-layout's in a slice of their own.
+They now leave it to the layout, whose copy carries the walks' test id
+(`flash-success`). A source rule holds every public view to it
+(`PublicLayoutSaysEachFlashOnceTest`, `flash-once.mjs`).
 
 ## Found translating the payment pages (2026-10-11)
 

@@ -64,9 +64,7 @@
         </div>
 
         <div>
-            @if(session('success'))
-                <p class="mb-3 rounded bg-green-50 p-2 text-sm text-green-800" data-testid="flash-success">{{ session('success') }}</p>
-            @endif
+            {{-- The layout says the thanks once; this page said it a second time (slice FL1). --}}
             @error('compare')<p class="mb-3 rounded bg-amber-50 p-2 text-sm text-amber-900" data-testid="compare-error">{{ $message }} <a href="{{ route('public.shop.compare') }}" class="underline">{{ __('shop.compare_now') }}</a></p>@enderror
             @if(count($product['badges']) > 0)
                 <p class="mb-2 flex flex-wrap gap-1" data-testid="product-badges">

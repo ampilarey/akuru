@@ -13,9 +13,7 @@
     </nav>
     <h1 class="mb-6 text-3xl font-bold text-brandMaroon-900" data-testid="cart-heading">{{ __('shop.cart_title') }}</h1>
 
-    @if(session('success'))
-        <p class="mb-3 rounded bg-green-50 p-2 text-sm text-green-800" data-testid="flash-success">{{ session('success') }}</p>
-    @endif
+    {{-- The layout says the thanks once; this page said it a second time (slice FL1). --}}
     @if(session('warning'))
         {{-- §5lc: a book list's items that could not go in, by name. --}}
         <p class="mb-3 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-900" dir="auto" data-testid="flash-warning">{{ session('warning') }}</p>

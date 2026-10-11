@@ -165,7 +165,7 @@
         --}}
         @foreach (['error' => 'red', 'success' => 'green', 'status' => 'blue'] as $key => $tone)
             @if (session($key))
-                <div role="alert"
+                <div role="alert" data-testid="flash-{{ $key }}"
                      class="mx-auto mt-4 max-w-3xl rounded border border-{{ $tone }}-200 bg-{{ $tone }}-50 px-4 py-3 text-sm text-{{ $tone }}-800">
                     {{ session($key) }}
                 </div>
