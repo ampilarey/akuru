@@ -4983,6 +4983,152 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5re. The payment pages in Dhivehi and Arabic (C21 PY1, 2026-10-11)
+
+Next after signing in (SI1, §5rd). A family who pays under `/dv` or `/ar`
+now reads every payment page in the page's language. These were English
+throughout:
+- the page back from the bank;
+- a payment's receipt;
+- the page for a return that lost its reference;
+- the course checkout;
+- the bank's required lines (card brands, the outlet's country, the
+  currency, the security statement, keeping a receipt). These sit on the
+  page back from the bank and on the registration's code step for a paid
+  course, which RG1 had left to this slice.
+
+What the server said on them was English too: the old payment start's three
+refusals, a receipt refused, the receipt's own lines (*Course enrollment*,
+*Recorded at the institute*, *BML Connect*) and the names of the payment
+methods. The office's one-enrolment page reads those names too, when it
+records money taken by hand.
+
+**The bank's return lands outside the localised routes**, so that no
+language redirect drops its query string. It ran in the default language,
+so even a translated page would have come back in English to a family who
+paid from a Dhivehi one. It now speaks the language the session remembers
+from the site's own pages, or else the browser's, as the certificate check
+does.
+
+Reading the pages found six more defects:
+- **The page back from the bank said "Your registration has been
+  confirmed" for every payment.** That included a family's school fee, and
+  a course whose office still approves the enrolment after it is paid. It
+  now says the bank confirmed the payment, which is what it knows.
+- **Its Continue sent everyone to the registration's last page.** Only a
+  registration's own payment has the session that page reads. A family
+  paying a fee from the portal (PAY1), or a learner buying from the learner
+  catalogue, was sent on from there to the course list with *no
+  enrolment found*. Continue now goes back to what the payment was for:
+  - a fee, to the family's invoices;
+  - a registration, to its last page;
+  - any other course payment, to *My enrolments*, which lists it with its
+    receipt.
+- **It offered a password to nobody.** It asked whether the account had
+  none, and every account has one: an account made by a code has a random
+  password and `force_password_change`. It now asks that.
+- **A payment the bank turned down** waited a minute of *Please wait*, then
+  said *If your payment was completed…*. The page now says at once that the
+  payment did not go through, from the server or from its next check.
+- **The course checkout said a refusal twice** (the layout prints `error`
+  already), **printed its form's refusals as escaped markup** (`<li>…</li>`
+  as text), **and showed the exception's own text** when the payment could
+  not start: an HTTP client's *cURL error*, the gateway's raw reply, or
+  *Payment gateway not configured.* It now says *the payment could not be
+  started* once, in the page's language, and reports the exception to the
+  log, as the newer payment start always did.
+- **The receipt's title lost its number** whenever `local_id` was empty:
+  `.` binds tighter than `??`. Its date was English (*11 Oct 2026*), and its
+  time was marked *(MVT)*.
+
+**The change:**
+- **A `payments` phrase book** in three languages, 69 phrases. The policy
+  names, the address, *Phone* and *Email* are the `public` book's, as the
+  footer says them. *My enrolments* is the menu's word, and the refusals the
+  registration already says are the `register` book's.
+- **The pages read the book.**
+  - Each link and value sits where the language puts it in its sentence: the
+    agreement's three policies, *your enrolments*, the email address to
+    write to, the outlet's country and the currency.
+  - A reference, a transaction id, a phone number and the web address are
+    set left to right.
+  - The receipt's month is named in the page's language, and its time is
+    said as the Maldives'.
+  - The back arrow points the way the page reads.
+- **The receipt's words come from the book** (`BuildPaymentReceiptAction`),
+  and so do the payment methods' names (`PaymentMethod::label()`).
+- **`Payment::didNotGoThrough()`**: failed, cancelled or expired. The page
+  back from the bank reads it.
+
+**Left as it was:**
+- The status poll still answers for any payment's number. That is the
+  accepted decision its route baseline records: status, confirmed and
+  `paid_at` only.
+- The registration's last page tells every family that the office reviews
+  the enrolment and approves it in a day or two. A course that needs no
+  approval is active as soon as it is paid (KNOWN_ISSUES).
+- BML's own pages are the bank's.
+
+**Tests:**
+- `PaymentPagesSpeakThreeLanguagesTest` (new, 13 tests):
+  - no English of the pages' own on the five views; every `payments` key
+    they and the five server files name in three languages, with its
+    placeholders kept;
+  - no English on the server;
+  - the checkout's field named, and codes set left to right;
+  - over HTTP:
+    - back from the bank in the remembered Dhivehi and in the browser's
+      Arabic, with the bank's lines;
+    - Continue for a fee, a registration and any other course payment;
+    - the password offered to an account made by a code, and to no other;
+    - a payment turned down said at once, and one still pending checked;
+    - a lost reference in Dhivehi, its link inside its sentence;
+    - a receipt for cash in Dhivehi, with its month, its time, how it was
+      paid and where, and the title keeping its number;
+    - the office's method names in Dhivehi;
+    - the course checkout in Dhivehi: a refusal as a list item, a payment
+      that cannot start said once without the exception's text;
+    - the old payment start's refusals in Dhivehi.
+
+  Run over `main`'s pages and server files, all 13 fail, so the test is not
+  vacuous.
+- `PaymentReceiptAccessTest` reads the receipt's heading from the book: its
+  capitals are the stylesheet's now.
+- `StatusValuesAreWritableTest` reads words. A `'cancelled'` beside
+  `portal.invoices` in the controller made it think `invoices.status →
+  cancelled` was written, so the status check lives on the payment model.
+
+Whole suite locally: **3107 passed (64660 assertions)**.
+
+**Walks:**
+- **`payment-language.mjs`** (new, in the runner). A planted learner signs
+  in, and the walk reads:
+  - the course checkout under `/dv` and `/ar`: right to left, nothing in
+    English, its field named, the agreement's three links inside its
+    sentence. Under `/dv`, the terms unticked are refused as a list item,
+    and a payment that cannot start is said once, without the exception's
+    text;
+  - back from the bank in the language last read, Dhivehi and then Arabic:
+    the payment received, the bank's lines in that language, and Continue
+    landing on `/ar/my-enrollments`. Then, in Dhivehi, a payment turned down
+    is said at once, and one still pending turns to received on the page
+    when the bank's answer lands;
+  - a receipt for cash in Dhivehi, the month by its Dhivehi name;
+  - a lost reference, its link inside its sentence.
+
+  Three runs in a row passed 36/36. Run over `main`'s pages and server files,
+  it passes 14 of 36:
+  - every page has English left, and the pages back from the bank are left
+    to right;
+  - the terms' refusal is escaped markup;
+  - the failure is said as *Payment gateway not configured*;
+  - Continue lands on the course list.
+- `register-language.mjs` 37/37, `pay-buttons.mjs` 6/6, `money.mjs` 21/21,
+  `customer-sign-in.mjs` 9/9, `public-rtl.mjs` 90/90, `rtl.mjs` 8/8,
+  `nav.mjs` 14/14, `mobile.mjs` 19/19 and `sweep.mjs` 25/25.
+
+**Deploy:** no migration. The standard pull command is enough.
+
 ## 5rd. Signing in and resetting a password in Dhivehi and Arabic (C21 SI1, 2026-10-11)
 
 Next after the registration (RG1, §5qz to §5rb). A person signing in under

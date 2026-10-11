@@ -1,16 +1,13 @@
 @extends('public.layouts.public')
 
-@section('title', 'Payment Reference Missing')
+@section('title', __('payments.missing_title'))
 
 @section('content')
 <div class="max-w-lg mx-auto py-16 px-4 text-center">
-    <h1 class="text-2xl font-bold text-gray-800 mb-4">Payment Reference Not Found</h1>
-    <p class="text-gray-600 mb-6">
-        We could not find a payment reference for your return.
-        This may happen if your browser did not pass the reference in the URL.
-    </p>
+    <h1 class="text-2xl font-bold text-gray-800 mb-4">{{ __('payments.missing_title') }}</h1>
+    <p class="text-gray-600 mb-6">{{ __('payments.missing_intro') }}</p>
     @if (!empty($ref))
-        <p class="text-sm text-gray-500 mb-6">Reference: <code>{{ $ref }}</code></p>
+        <p class="text-sm text-gray-500 mb-6">{{ __('payments.reference') }}: <code dir="ltr">{{ $ref }}</code></p>
     @endif
     {{--
         This used to offer "resume your registration", linking to
@@ -27,17 +24,13 @@
         and asks nothing of them.
     --}}
     <p class="text-gray-600 mb-4">
-        <strong>If you completed the payment, it will still be confirmed.</strong>
-        The bank notifies us directly, and your enrolment is activated when it does —
-        this page only means the reference did not come back in your browser.
+        <strong>{{ __('payments.missing_paid') }}</strong>
+        {{ __('payments.missing_paid_hint') }}
     </p>
-    <p class="text-gray-600 mb-8">
-        Check <a href="{{ route('my.enrollments') }}" class="text-blue-600 underline">your enrolments</a>
-        in a few minutes. If the course has not appeared, contact us with the reference above
-        and we will find the payment.
-    </p>
+    {{-- The link sits where each language puts it in the sentence (slice PY1). --}}
+    <p class="text-gray-600 mb-8">@foreach(preg_split('/(:enrollments)/', __('payments.missing_check'), -1, PREG_SPLIT_DELIM_CAPTURE) as $part)@if($part === ':enrollments')<a href="{{ route('my.enrollments') }}" class="text-blue-600 underline">{{ __('payments.your_enrollments') }}</a>@else{{ $part }}@endif{{ '' }}@endforeach</p>
     <a href="{{ route('public.courses.index') }}" class="inline-block bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700">
-        Back to Courses
+        {{ __('register.back_to_courses') }}
     </a>
 </div>
 @endsection

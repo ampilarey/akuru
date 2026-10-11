@@ -40,12 +40,12 @@ class PaymentController extends Controller
     {
         $ref = $request->input('merchant_reference') ?? session('pending_payment_ref');
         if (! $ref) {
-            return redirect()->route('public.courses.index')->with('error', 'Invalid payment reference.');
+            return redirect()->route('public.courses.index')->with('error', __('payments.error_reference'));
         }
 
         $payment = \App\Domains\Finance\Models\Payment::where('merchant_reference', $ref)->first();
         if (! $payment) {
-            return redirect()->route('public.courses.index')->with('error', 'Payment not found.');
+            return redirect()->route('public.courses.index')->with('error', __('register.error_payment_missing'));
         }
 
         $result = $this->paymentService->initiatePayment($payment, [
@@ -59,7 +59,7 @@ class PaymentController extends Controller
         }
 
         return redirect()->route('courses.register.complete')
-            ->with('error', $result->error ?? 'Payment initiation failed.');
+            ->with('error', $result->error ?? __('register.error_payment_start'));
     }
 
     /** Redirect return handler. BML appends ?transactionId=...&state=...&signature=...; display-only — finalization goes through PaymentService (P4.2: one confirmation path). */
@@ -77,7 +77,7 @@ class PaymentController extends Controller
             $payment = $this->paymentService->finalizeByReference($payment->merchant_reference) ?? $payment;
         }
 
-        return view('payments.processing', ['payment' => $payment]);
+        return $this->processing($payment);
     }
 
     /**
@@ -88,6 +88,8 @@ class PaymentController extends Controller
      */
     public function return(Request $request)
     {
+        $this->speakTheRememberedLanguage($request);
+
         // Accept ref from URL first (BML appends it), fall back to session for older flows
         $ref = $request->query('ref') ?? session('pending_payment_ref');
 
@@ -126,7 +128,7 @@ class PaymentController extends Controller
         // Finalize server-side (idempotent); ignores return URL state entirely
         $payment = $this->paymentService->finalizeByReference($ref) ?? $payment;
 
-        return view('payments.processing', ['payment' => $payment]);
+        return $this->processing($payment);
     }
 
     public function callback(Request $request)
@@ -134,5 +136,51 @@ class PaymentController extends Controller
         $this->paymentService->handleCallback($request);
 
         return response('OK', 200);
+    }
+
+    /**
+     * The page back from the bank (slice PY1). A payment the bank turned down
+     * is said at once, where the page used to wait a minute and then say
+     * "If your payment was completed…".
+     */
+    private function processing(Payment $payment): View
+    {
+        return view('payments.processing', [
+            'payment' => $payment,
+            'notPaid' => $payment->didNotGoThrough(),
+            'nextHref' => $this->nextHref($payment),
+        ]);
+    }
+
+    /**
+     * Back to what the payment was for. Every payment was sent on to the
+     * registration's last page, which only a registration's own payment has
+     * the session for: a family paying a fee, or a learner who bought a
+     * course from the learner catalogue, was sent from there to the course
+     * list with an error (slice PY1).
+     */
+    private function nextHref(Payment $payment): string
+    {
+        return match (true) {
+            $payment->getRawOriginal('payable_type') === 'invoice' => route('portal.invoices'),
+            session()->has('pending_payment_ref') || session()->has('enrollments') => route('courses.register.complete'),
+            default => route('my.enrollments'),
+        };
+    }
+
+    /**
+     * The bank's return lands outside the localised routes, so that no locale
+     * redirect drops its query string; it ran in the default language, and a
+     * family who paid from a Dhivehi page came back to English. It speaks
+     * the language the session remembers from the site's own pages, or the
+     * browser's, as the certificate check does (slice PY1).
+     */
+    private function speakTheRememberedLanguage(Request $request): void
+    {
+        $supported = array_keys((array) config('laravellocalization.supportedLocales', []));
+        $remembered = $request->hasSession() ? $request->session()->get('locale') : null;
+        $locale = in_array($remembered, $supported, true) ? $remembered : $request->getPreferredLanguage($supported);
+
+        app()->setLocale($locale ?? config('app.locale'));
     }
 }

@@ -1,32 +1,38 @@
 @extends('public.layouts.public')
 
-@section('title', 'Checkout – ' . $course->title)
+@section('title', __('payments.checkout_title', ['course' => $course->title]))
 
 @section('content')
+{{--
+    The course checkout (slice PY1). English throughout before this slice; it
+    also said a refusal twice (the layout prints `error` already) and printed
+    the form's refusals as escaped markup, `<li>…</li>` on the page.
+--}}
 <section class="py-12">
     <div class="container mx-auto px-4 max-w-2xl">
-        <h1 class="text-2xl font-bold text-brandMaroon-900 mb-6">Checkout – {{ $course->title }}</h1>
+        <h1 class="text-2xl font-bold text-brandMaroon-900 mb-6">{{ __('payments.checkout_title', ['course' => $course->title]) }}</h1>
 
-        @if(session('error'))
-            <div class="mb-4 p-3 bg-red-100 text-red-800 rounded">{{ session('error') }}</div>
-        @endif
         @if($errors->any())
-            <div class="mb-4 p-3 bg-red-100 text-red-800 rounded">
-                <ul class="list-disc list-inside">{{ implode('', $errors->all('<li>:message</li>')) }}</ul>
+            <div class="mb-4 p-3 bg-red-100 text-red-800 rounded" role="alert" data-testid="checkout-errors">
+                <ul class="list-disc list-inside">
+                    @foreach($errors->all() as $message)
+                        <li>{{ $message }}</li>
+                    @endforeach
+                </ul>
             </div>
         @endif
 
         {{-- Compliance: description of goods/services --}}
         <div class="card p-6 mb-6">
-            <h2 class="font-semibold text-brandMaroon-700 mb-2">Course registration</h2>
+            <h2 class="font-semibold text-brandMaroon-700 mb-2">{{ __('payments.course_registration') }}</h2>
             <p class="text-gray-600 text-sm mb-4">{{ $course->short_desc ?? $course->title }}</p>
-            <p class="text-lg font-semibold">Registration fee: {{ number_format($fee, 2) }} {{ $currency }}</p>
-            <p class="text-sm text-gray-500 mt-1">Merchant outlet country: {{ $merchant_outlet_country }}</p>
+            <p class="text-lg font-semibold">{{ __('payments.fee', ['amount' => number_format($fee, 2).' '.$currency]) }}</p>
+            <p class="text-sm text-gray-500 mt-1">{{ __('payments.outlet_country', ['country' => __('payments.maldives')]) }}</p>
         </div>
 
         {{-- Compliance: All card brand marks in full colour and equal prominence (Req 1) --}}
         <div class="border border-gray-200 rounded-lg p-4 mb-6 bg-gray-50">
-            <p class="text-center text-sm text-gray-600 mb-3">We accept</p>
+            <p class="text-center text-sm text-gray-600 mb-3">{{ __('payments.we_accept') }}</p>
             <div class="flex flex-wrap items-center justify-center gap-6">
                 {{-- Visa brand mark (full colour) --}}
                 <div class="flex items-center justify-center h-10" aria-hidden="true">
@@ -43,7 +49,7 @@
                         <path d="M12 4.5a6 6 0 0 1 0 7 6 6 0 0 1 0-7" fill="#FF5F00"/>
                     </svg>
                 </div>
-                <span class="text-sm text-gray-600">Other card brands as accepted by Bank of Maldives</span>
+                <span class="text-sm text-gray-600">{{ __('payments.other_cards') }}</span>
             </div>
         </div>
 
@@ -52,38 +58,43 @@
 
             {{-- Compliance: terms and policies before checkout --}}
             <div class="mb-6 space-y-3 text-sm">
-                <p>Before completing your purchase, please read:</p>
+                <p>{{ __('payments.read_first') }}</p>
                 <ul class="list-disc list-inside text-gray-600">
-                    <li><a href="{{ route('public.terms') }}" class="text-brandMaroon-600 hover:underline" target="_blank" rel="noopener">Terms &amp; Conditions</a></li>
-                    <li><a href="{{ route('public.refunds') }}" class="text-brandMaroon-600 hover:underline" target="_blank" rel="noopener">Refund &amp; Cancellation Policy</a></li>
-                    <li><a href="{{ route('public.privacy') }}" class="text-brandMaroon-600 hover:underline" target="_blank" rel="noopener">Privacy Policy</a></li>
+                    <li><a href="{{ route('public.terms') }}" class="text-brandMaroon-600 hover:underline" target="_blank" rel="noopener">{{ __('public.Terms of Service') }}</a></li>
+                    <li><a href="{{ route('public.refunds') }}" class="text-brandMaroon-600 hover:underline" target="_blank" rel="noopener">{{ __('public.Refund Policy') }}</a></li>
+                    <li><a href="{{ route('public.privacy') }}" class="text-brandMaroon-600 hover:underline" target="_blank" rel="noopener">{{ __('public.Privacy Policy') }}</a></li>
                 </ul>
-                <p class="text-gray-600">No import/export or custom duties apply to our services.</p>
+                <p class="text-gray-600">{{ __('payments.no_duties') }}</p>
             </div>
 
-            {{-- Required acceptance checkbox --}}
+            {{-- Required acceptance checkbox; each policy's link sits where the language puts it. --}}
+            @php($policyLinks = [
+                ':terms' => [route('public.terms'), __('public.Terms of Service')],
+                ':refunds' => [route('public.refunds'), __('public.Refund Policy')],
+                ':privacy' => [route('public.privacy'), __('public.Privacy Policy')],
+            ])
             <div class="mb-6">
-                <label class="inline-flex items-start gap-2 cursor-pointer">
-                    <input type="checkbox" name="accept_terms" value="1" required
+                <label for="accept_terms" class="inline-flex items-start gap-2 cursor-pointer">
+                    <input type="checkbox" id="accept_terms" name="accept_terms" value="1" required
                         class="rounded border-gray-300 text-brandMaroon-600 focus:ring-brandMaroon-500 mt-0.5"
                         {{ old('accept_terms') ? 'checked' : '' }}>
-                    <span class="text-gray-700">I agree to the <a href="{{ route('public.terms') }}" class="text-brandMaroon-600 hover:underline">Terms &amp; Conditions</a>, <a href="{{ route('public.refunds') }}" class="text-brandMaroon-600 hover:underline">Refund Policy</a>, and <a href="{{ route('public.privacy') }}" class="text-brandMaroon-600 hover:underline">Privacy Policy</a>.</span>
+                    <span class="text-gray-700">@foreach(preg_split('/(:terms|:refunds|:privacy)/', __('payments.agree'), -1, PREG_SPLIT_DELIM_CAPTURE) as $part)@if(isset($policyLinks[$part]))<a href="{{ $policyLinks[$part][0] }}" class="text-brandMaroon-600 hover:underline">{{ $policyLinks[$part][1] }}</a>@else{{ $part }}@endif{{ '' }}@endforeach</span>
                 </label>
             </div>
 
-            <p class="text-xs text-gray-500 mb-4">Payment is processed securely by Bank of Maldives. We do not store your card details.</p>
+            <p class="text-xs text-gray-500 mb-4">{{ __('payments.secure') }}</p>
 
             <button type="submit" class="w-full bg-brandMaroon-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-brandMaroon-700">
-                Pay {{ number_format($fee, 2) }} {{ $currency }}
+                {{ __('payments.pay', ['amount' => number_format($fee, 2).' '.$currency]) }}
             </button>
         </form>
 
         {{-- Corporate / contact info (compliance) --}}
         <div class="mt-8 text-sm text-gray-600">
-            <p><strong>Akuru Institute</strong></p>
-            <p>M. Guldhastha Aage, Muniya Magu, Malé 20026, Maldives</p>
-            <p>Tel: +960 797 2434</p>
-            <p>Email: info@akuru.edu.mv</p>
+            <p><strong>{{ __('public.Akuru Institute') }}</strong></p>
+            <p>{{ __('public.address') }}</p>
+            <p>{{ __('public.Phone') }}: <span dir="ltr">{{ $siteSettings['phone'] ?? '+960 797 2434' }}</span></p>
+            <p>{{ __('public.Email') }}: <span dir="ltr">{{ $siteSettings['email'] ?? 'info@akuru.edu.mv' }}</span></p>
         </div>
     </div>
 </section>

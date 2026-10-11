@@ -186,6 +186,26 @@ record names (`PasswordResetFlowsKeepTheirOwnAccountTest`,
 `password-reset.mjs`). Found reading `PasswordOtpController` and
 `OtpPasswordResetController` for SI1.
 
+## Found translating the payment pages (2026-10-11)
+
+### The registration's last page says the office approves every enrolment — **open (P4)**
+
+The last page's *What happens next?* tells every family four things. The
+office reviews the enrolment and its payment, and an SMS follows once it is
+approved. The enrolment is then active, and approval usually takes one or two
+working days (`register.next_*`, `courses/register-complete.blade.php`). Its
+payment check says the same when the payment lands: *Your enrollment now
+waits for the office to approve it* (`register.payment_received`).
+
+That is true only of a course with `requires_admin_approval`. A course
+without it is active as soon as the bank confirms the payment
+(`ActivatePaidEnrollmentAction`). So a family on such a course is told to
+wait for an approval that will never come. The fix is to say the next steps
+by the course's own setting.
+
+Found writing the page back from the bank, which no longer says a
+registration is confirmed (STATUS §5re).
+
 ## Found translating the sign-in pages (2026-10-11)
 
 ### A code's SMS says it lasts 10 minutes, whatever its real life — **open (P4)**

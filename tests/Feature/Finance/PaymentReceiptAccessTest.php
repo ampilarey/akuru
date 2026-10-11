@@ -64,7 +64,9 @@ it('lets the payer read their own receipt', function () {
         ->withoutLocalizationMiddleware()
         ->get("/payments/{$payment->id}/receipt")
         ->assertOk()
-        ->assertSee('RECEIPT', false);
+        // The heading's capitals are the stylesheet's since slice PY1; the word is the book's.
+        ->assertSee(__('payments.receipt'))
+        ->assertSee(__('payments.receipt_confirmed'));
 });
 
 it('refuses a stranger', function () {

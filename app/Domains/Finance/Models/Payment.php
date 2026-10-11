@@ -137,6 +137,15 @@ class Payment extends Model
         return in_array($this->status, ['confirmed', 'paid'], true);
     }
 
+    /**
+     * The bank turned it down, or it ran out: nothing more will happen to it.
+     * The page back from the bank says so at once (slice PY1).
+     */
+    public function didNotGoThrough(): bool
+    {
+        return in_array($this->status, ['failed', 'cancelled', 'expired'], true);
+    }
+
     public function isPaid(): bool
     {
         return $this->status === 'paid' || $this->status === 'confirmed';

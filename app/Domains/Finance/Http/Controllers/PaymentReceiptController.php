@@ -46,7 +46,7 @@ class PaymentReceiptController extends Controller
         }
 
         if (! app(BuildPaymentReceiptAction::class)->isReceiptable($payment)) {
-            abort(404, 'Receipt not available for this payment.');
+            abort(404, __('payments.error_no_receipt'));
         }
 
         return view('payments.receipt', [
