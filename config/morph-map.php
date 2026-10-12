@@ -342,4 +342,7 @@ return [
     'print_paper_option' => \App\Domains\Bookshop\Models\PrintPaperOption::class,
     'print_finishing_option' => \App\Domains\Bookshop\Models\PrintFinishingOption::class,
     'print_subject_set' => \App\Domains\Bookshop\Models\PrintSubjectSet::class,
+    // NAME_TAGS_PLAN NT2 (STATUS §5rp): templates and the office's artwork.
+    'print_template' => \App\Domains\Bookshop\Models\PrintTemplate::class,
+    'print_image' => \App\Domains\Bookshop\Models\PrintImage::class,
 ];

@@ -113,3 +113,27 @@ function nt0SampleHtml(?string $watermark = null): string
 {
     return app(\App\Support\Contracts\DocumentRendererInterface::class)->render('print-sheet', nt0SampleSheet(PrintFontFaces::forFile(), $watermark));
 }
+
+/** The Bookstore manager who runs the print desk (NT1). */
+function printOffice(): \App\Domains\Identity\Models\User
+{
+    \Spatie\Permission\Models\Role::findOrCreate('super_admin', 'web');
+    \Spatie\Permission\Models\Permission::findOrCreate('bookshop.manage', 'web');
+    $office = \App\Domains\Identity\Models\User::factory()->create();
+    $office->assignRole('super_admin');
+    $office->givePermissionTo('bookshop.manage');
+
+    return $office;
+}
+
+function printWeb()
+{
+    return test()->withoutLocalizationMiddleware();
+}
+
+/** Pretend this host can print: the two Chrome contracts answer with fakes. */
+function printHostCanPrint(): void
+{
+    app()->instance(PdfConverterInterface::class, nt0FakePdf());
+    app()->instance(PageImageInterface::class, nt0FakePageImage());
+}

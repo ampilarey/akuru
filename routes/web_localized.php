@@ -958,6 +958,16 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('print/finishing/{finishing?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'finishing'])->name('admin.bookshop.print.finishing')->whereNumber('finishing');
         Route::post('print/layouts/{layout?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'layout'])->name('admin.bookshop.print.layout')->whereNumber('layout');
         Route::post('print/subject-sets/{set?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'subjectSet'])->name('admin.bookshop.print.subject-set')->whereNumber('set');
+        // NAME_TAGS_PLAN NT2: the templates and the designer in template mode.
+        Route::get('print/templates', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'index'])->name('admin.bookshop.print.templates');
+        Route::get('print/templates/export', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'export'])->name('admin.bookshop.print.templates.export');
+        Route::get('print/templates/new', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'designer'])->name('admin.bookshop.print.templates.create');
+        Route::get('print/templates/{template}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'designer'])->name('admin.bookshop.print.templates.edit')->whereNumber('template');
+        Route::get('print/templates/{template}/sheet', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'sheet'])->name('admin.bookshop.print.templates.sheet')->whereNumber('template');
+        Route::post('print/templates/check', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'check'])->name('admin.bookshop.print.templates.check');
+        Route::post('print/templates/images', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'uploadImages'])->name('admin.bookshop.print.templates.images');
+        Route::post('print/templates/{template?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'save'])->name('admin.bookshop.print.templates.save')->whereNumber('template');
+        Route::post('print/templates/{template}/status', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'status'])->name('admin.bookshop.print.templates.status')->whereNumber('template');
         Route::post('credit/{account}/payments', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'payment'])->name('admin.bookshop.credit.payment')->whereNumber('account');
         Route::get('credit/{account}/statement', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'statement'])->name('admin.bookshop.credit.statement')->whereNumber('account');
         // COMMERCE_PARITY_PLAN P4: listings awaiting the office's approval.
