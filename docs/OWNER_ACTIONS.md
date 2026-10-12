@@ -7,7 +7,8 @@ top-five list, which is why it has been easy to lose: **the same blocker was
 written in three places and finished in none.**
 
 Written 2026-09-14. The agent-buildable backlog is empty; what follows is the
-whole of the remaining go-live path.
+whole of the remaining go-live path. **`docs/WHATS_LEFT.md`** (2026-10-12)
+indexes this file with everything else that is left.
 
 **How to use this:** work Part 1 top to bottom — each item unblocks the next.
 Part 2 can be decided in any order, including "not yet". Record each outcome in
@@ -510,6 +511,34 @@ a payout until you verify.
 - [ ] You open `/admin/bookshop` → **Identity cards**, look at both sides, and
       press **Verified** (or **Reject** with a note saying what to fix)
 - [ ] The same for any writer approved before today, on `/admin/library`
+
+### 26. The print desk for name tags (NAME_TAGS_PLAN §14, 2026-10-12)
+
+Name tags and print products are built (NT0–NT7, STATUS §5rn–§5rx) and
+**off**. The Bookstore shows no print product until the desk is switched on,
+and the desk prints through the same headless Chrome as item 22.
+
+- [ ] Chrome or Chromium on the host, named in `DOCUMENTS_CHROME_PATH`
+      (item 22), then `php artisan config:cache`
+- [ ] On `/admin/bookshop/print`, type the real price list: the papers,
+      colour and black-and-white prices per sheet, the finishing, the
+      quantity tiers, the smallest order, the lead days
+- [ ] Look at the five Akuru templates; add or change any in the designer
+- [ ] Switch the desk on, order one sheet yourself, approve its proof, pay,
+      and print it from the queue
+
+"Not yet" is a legible answer; nothing shows to customers while it is off.
+
+### 27. Ghostscript for PDF uploads of artwork (NAME_TAGS_PLAN D14)
+
+A customer may upload a PNG or JPEG design today. A **PDF** upload is
+offered only where Ghostscript is on the host, because each page must be
+checked and drawn before the proof.
+
+- [ ] `which gs` on the host; if none, ask the host whether it can be installed
+- [ ] `DOCUMENTS_GS_PATH=/that/path` in production's `.env`, then `php artisan config:cache`
+
+"Not yet" is a legible answer: PNG and JPEG uploads work without it.
 
 ## Parked items and later ideas
 
