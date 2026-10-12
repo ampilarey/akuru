@@ -337,4 +337,9 @@ return [
     'writer_earning' => \App\Domains\Library\Models\WriterEarning::class,
     'writer_payout' => \App\Domains\Library\Models\WriterPayout::class,
     'writer_profile' => \App\Domains\Library\Models\WriterProfile::class,
+    // NAME_TAGS_PLAN NT1 (STATUS §5ro): the print desk's lists.
+    'print_layout' => \App\Domains\Bookshop\Models\PrintLayout::class,
+    'print_paper_option' => \App\Domains\Bookshop\Models\PrintPaperOption::class,
+    'print_finishing_option' => \App\Domains\Bookshop\Models\PrintFinishingOption::class,
+    'print_subject_set' => \App\Domains\Bookshop\Models\PrintSubjectSet::class,
 ];

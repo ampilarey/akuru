@@ -40,6 +40,10 @@ class RecordVendorEarningAction
         }
 
         $vendor = $order->vendor;
+        // NAME_TAGS_PLAN §4.1: Akuru's own sales are Akuru's whole; no earning, no payout.
+        if ($vendor->isAkuru()) {
+            return null;
+        }
         $gross = round((float) $order->subtotal, 2);
         $discount = round((float) $order->discount, 2);
         $funding = $discount > 0 ? $this->funding((int) $order->bookshop_checkout_id) : null;

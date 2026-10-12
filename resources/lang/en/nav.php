@@ -146,6 +146,7 @@ return [
     'my_wallet' => 'My wallet',
     'bookshop' => 'Akuru Bookstore',
     'akuru_fulfilment' => 'Akuru fulfilment',
+    'print_desk' => 'Print desk',
     'complaints' => 'Problems reported',
     'sms_campaigns' => 'SMS offers',
     'shop_customers' => 'Customers',

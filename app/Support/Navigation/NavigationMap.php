@@ -110,6 +110,7 @@ final class NavigationMap
             'bookshop_manager' => [
                 ['key' => 'bookshop', 'href' => '/admin/bookshop'],
                 ['key' => 'akuru_fulfilment', 'href' => '/admin/bookshop/akuru'],
+                ['key' => 'print_desk', 'href' => '/admin/bookshop/print'],
                 ['key' => 'complaints', 'href' => '/admin/bookshop/complaints'],
                 ['key' => 'sms_campaigns', 'href' => '/admin/bookshop/campaigns'],
                 ['key' => 'shop_customers', 'href' => '/admin/bookshop/customers'],
@@ -453,6 +454,8 @@ final class NavigationMap
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
                 // COMMERCE_PARITY_PLAN P6a: the orders Akuru packs, and its charges.
                 ['key' => 'akuru_fulfilment', 'href' => '/admin/bookshop/akuru', 'can' => ['bookshop.manage']],
+                // NAME_TAGS_PLAN NT1: the print desk's settings and lists.
+                ['key' => 'print_desk', 'href' => '/admin/bookshop/print', 'can' => ['bookshop.manage']],
                 // COMMERCE_PARITY_PLAN P7a: the problems customers report on orders.
                 ['key' => 'complaints', 'href' => '/admin/bookshop/complaints', 'can' => ['bookshop.manage']],
                 // COMMERCE_PARITY_PLAN P7b: SMS offers to customers who asked for them.

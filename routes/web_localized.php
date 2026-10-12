@@ -950,6 +950,14 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('credit/export', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'export'])->name('admin.bookshop.credit.export');
         Route::post('credit', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'open'])->name('admin.bookshop.credit.open');
         Route::post('credit/{account}', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'update'])->name('admin.bookshop.credit.update')->whereNumber('account');
+        // NAME_TAGS_PLAN NT1: the print desk's settings and lists.
+        Route::get('print', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'index'])->name('admin.bookshop.print');
+        Route::get('print/export', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'export'])->name('admin.bookshop.print.export');
+        Route::post('print/settings', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'settings'])->name('admin.bookshop.print.settings');
+        Route::post('print/papers/{paper?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'paper'])->name('admin.bookshop.print.paper')->whereNumber('paper');
+        Route::post('print/finishing/{finishing?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'finishing'])->name('admin.bookshop.print.finishing')->whereNumber('finishing');
+        Route::post('print/layouts/{layout?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'layout'])->name('admin.bookshop.print.layout')->whereNumber('layout');
+        Route::post('print/subject-sets/{set?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'subjectSet'])->name('admin.bookshop.print.subject-set')->whereNumber('set');
         Route::post('credit/{account}/payments', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'payment'])->name('admin.bookshop.credit.payment')->whereNumber('account');
         Route::get('credit/{account}/statement', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'statement'])->name('admin.bookshop.credit.statement')->whereNumber('account');
         // COMMERCE_PARITY_PLAN P4: listings awaiting the office's approval.
