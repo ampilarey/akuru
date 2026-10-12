@@ -4983,6 +4983,68 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rw. The office picks the pupil, the teacher and the account by name (C22 BH1, 2026-10-12)
+
+BACKLOG C22. Four forms asked for a typed id, so whoever filled one had to
+look the number up on another screen first, and a wrong number filed the
+record against somebody else.
+
+**Built:**
+- **`PersonPicker`** (`resources/js/Components/PersonPicker.jsx`), shared by
+  three forms. Typing two or more letters asks the page's own controller
+  for matches on a partial reload (`only`), so each form keeps its own gate.
+  A match is chosen with a button and named under the box. A form reset
+  clears the choice.
+- **The behaviour form** (`/academics/behavior`) and **the fee adjustment
+  form** (`/finance/adjustments`) find the pupil by name, student number or
+  ID card through People's `SearchRosterCandidatesAction`, the search the
+  gate console and the pupils' work already use. Each match shows the
+  student number and class. A pupil with the same name, birth date and ID
+  card as another is marked, so the office checks the number.
+- **The plan form** (`/academics/plans`) offers the teachers by name in a
+  list (`ListTeacherRowOptionsAction`, new, keyed on `teachers.id`, which is
+  what a plan stores). A teacher who has left is not offered unless already
+  chosen. As before, only the office chooses a teacher; a teacher's own
+  plans are theirs.
+- **The wallet hand credit** (`/admin/commerce`) finds the account by name,
+  email, mobile or ID card number through Identity's `SearchAccountsAction`
+  (new). Commerce calls it rather than reading `users` (rule 3). Each match
+  shows the email and mobile.
+- The `Student id`, `Teacher id` and `User ID` phrases are replaced by
+  *Student*, *Teacher* and *Account*, with the search hints, in English,
+  Dhivehi and Arabic.
+
+**Tests:** `PickPeopleByNameTest` (new, 5):
+- the behaviour form's matches, including a twin marked, one letter
+  finding nobody, and the record filed against the pupil chosen;
+- the adjustment form's matches, and the behaviour permission not opening
+  the finance search;
+- the plan form's teachers, with a leaver left out unless already chosen;
+- the account search by name, email and mobile, and on the Commerce office;
+- no typed id left on the four forms.
+
+The Architecture, Localization, Commerce and behaviour groups rerun green
+(410).
+
+Whole suite locally: **RESULT**.
+
+**Walk:** `pick-by-name.mjs` (new, in the runner) 8/8:
+- under `/dv` the behaviour form asks for the student in Dhivehi; three
+  letters of a seeded pupil's name list matches, and choosing one names
+  them;
+- the compliment recorded is filed against that pupil, and is removed
+  after;
+- the plan form lists the teachers by name;
+- the fee adjustment form finds the pupil;
+- the wallet credit finds the walk's student account by email and names it.
+
+Nothing is credited, because a credit is append-only (rule 12).
+
+**Deploy:** no migration. The built assets are in the commit. The standard
+pull command.
+
+**C22 is built.** With it the parked list is done.
+
 ## 5rv. A code's SMS says its real minutes; the last page says the course's real next steps (KNOWN_ISSUES P4 ×2, 2026-10-12)
 
 Two parked P4s, both places that told people the wrong thing.
