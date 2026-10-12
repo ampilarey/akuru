@@ -4983,6 +4983,125 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rp. Print templates and the designer in template mode (C23 NT2, 2026-10-12)
+
+The third slice of `docs/NAME_TAGS_PLAN.md`, after NT1 (§5ro): the
+designs a customer will start from, and the office's tool for making
+them — the same designer the customer gets in NT6, in its fullest mode.
+
+**Built:**
+- **The design model** (plan §5.1, `PrintDesign`): millimetres on the
+  tag; up to 60 elements of five kinds — text, picture, box, circle,
+  line — each with a position, size, rotation and a lock; a background
+  colour; a palette of up to eight colour schemes whose `{primary}` and
+  `{secondary}` an element's colour may name; a text's font from the
+  NT0 table, its size in points, weight, colour, alignment, direction,
+  and the field it fills (`{name}`, `{class}`, `{school}`, `{subject}`,
+  `{year}` or the office's own key). `validate()` normalises a design
+  or refuses it in the page's language, naming the element: a tag out
+  of range, too many elements, an unknown kind, an element off the tag,
+  a font not offered, a colour that is neither six hex digits nor a
+  token, a picture with no media, a field key with odd characters. The
+  fields list is derived from the texts, with *required* kept per key.
+- **The renderer** (plan §5.2, `RenderPrintSheetAction`): a design on a
+  layout, one tag per row, as many A4 sheets as the rows need, through
+  the one document renderer (ADR-012) and NT0's sheet. A token becomes
+  the scheme's colour; a `{field}` becomes the row's value, or nothing;
+  a picture becomes a `data:` URI in the print file (Chrome fetches
+  nothing) or its URL in the browser's preview; a picture that is not
+  public media is left out, never fetched. `count()` says tags and
+  sheets.
+- **Data**: `print_templates` (title ×3, kind name_tag/subject_tag/both,
+  default layout, the design, status draft/active/retired, who made it,
+  uses) and `print_images` (Akuru's artwork as public media, with alt
+  text, at most 120). Morph aliases (ADR-005). Five templates ship
+  **active** on the 2 × 4 layout — *Plain*, *Maroon band*, *School
+  crest*, *Playful*, *Subject strip* — text and shapes only, so no
+  artwork file to licence; Thaana and Arabic titles.
+- **The office pages** (`bookshop.manage`, a *Templates* link on the
+  print desk): the list at `/admin/bookshop/print/templates`, each
+  template **drawn in the browser from its design** with the sample
+  fields, with its kind, layout, fields, state and uses, a sample sheet,
+  *Make active* / *Back to draft* / *Retire*, a CSV; and the designer at
+  `/templates/new` and `/templates/{id}`.
+- **The designer** (plan §7.1, `Components/Print/`): an SVG canvas in
+  millimetres at a zoom that fits the column; tap selects, drag moves
+  with snapping to the tag's edges and centre and to other elements,
+  eight handles resize, arrows nudge (Shift further), Delete removes,
+  Ctrl+Z / Ctrl+Y and the buttons undo and redo (a history of
+  snapshots; a drag is one step); a toolbar that adds each kind; the
+  properties of the selected element (position, size, rotation, text,
+  font with its scripts, size, weight, colour as own / primary /
+  secondary / none, alignment, direction, field, fit, fill, outline,
+  radius, lock, duplicate, remove); the layers with forward and
+  backward; the background; the colour schemes (switch, edit, add); the
+  fields on the tag with *required*. Marking a text as a field puts its
+  token in the text, so the tag prints the value and never the label.
+  *Check* validates an unsaved design and says the fields; *Save* posts
+  the design as JSON and comes back to the template. Phone: the canvas
+  fits the width and the panels stack below. React 19 and pointer
+  events, no drawing library. Thumbnails are drawn by the same
+  component — **no preview image is stored** (the plan's
+  `preview_media_path` and "preview image rendered on save" are
+  dropped; corrected in the plan).
+- **The picture library**: the office uploads JPEG/PNG/WebP (at most 12
+  a time, a shared alt text) as public media under `print-images`, and
+  places any of them on a template. A PDF is refused; the 121st picture
+  is refused in the page's language.
+- **Rule 3**: `RenderPrintSheetAction` reads media through a new Media
+  action, `ReadPublicMediaAction` (bytes and MIME of a public file,
+  the same gate as `ResolvePublicMediaUrlAction`), not Media's model.
+- **Refusals, in the page's language:** every validator refusal above;
+  a template of an unlisted kind; a status not draft, active or
+  retired; *active* on a template with no field (nothing on it would be
+  the customer's); a design that did not arrive. Phrases in the `print`
+  book, EN/DV/AR.
+
+**Tests:** `PrintTemplatesTest` (new, 6): the five shipped templates,
+each with a field, on the 2 × 4 layout, listed for the office only, and
+the designer's props; the validator's refusals in Dhivehi one by one and
+a sound design normalised (a size clamped, a weight the font lacks
+replaced, a duplicate id renamed, a token upper-cased and kept, a locked
+flag kept, fields derived with *required* carried); a template saved
+from the designer in Arabic, refused for bad JSON, kind and colour,
+changed, refused *active* without a field, moved active and retired and
+still there, no delete route, the designer's check answering JSON; every
+shipped template rendered on 2 × 4 with eight rows — Thaana, Arabic and
+Latin names — one tag per cell, no token left, the scheme's colour
+resolved, 25 rows making four sheets, an unfilled row still drawing the
+shapes, the sample sheet served as HTML to the office only; the picture
+library uploaded, listed, embedded as `data:` in the file and as a URL in
+the browser, a private file left out, a PDF refused, the cap. The NT1
+helpers moved to `tests/Support/PrintTestHelpers.php`. Architecture
+tests green.
+
+Whole suite locally: **3152 passed (66220 assertions), 3 failed** on the first run — all this slice's: the Dhivehi for *Title in Dhivehi/Arabic* repeated *Name in Dhivehi/Arabic* (reworded), and the templates list had no entry in the navigation map (now a child of the print desk, with `nav.print_templates` ×3). The three files rerun green afterwards with the print, nav, hub and architecture tests (140 passed)..
+
+**Walk:** `print-templates.mjs` (new, in the runner): under `/dv` the
+system admin opens the templates list right to left, sees the five
+shipped designs drawn with the Dhivehi sample name, opens the designer,
+picks the 2 × 4 layout, adds a box and a text, marks the text as the
+name field and types a Thaana label around it, sees the sample name on
+the tag, drags the text down the tag and sees its millimetres change,
+undoes it, saves, is returned to the draft, sees the sample sheet draw
+eight tags with the sample name and no token, makes it active and
+retires it — said in Dhivehi each time — and the template still exists.
+13/13. A screenshot of the designer read: the canvas, the properties,
+the palette and the fields all in Dhivehi, the tag left to right inside.
+
+**Found on the way:** the two failures above; and the first draft let a field's text keep a label
+with no token, so a tag would have printed the label rather than the
+name; the designer now writes the token in when a field is chosen, and
+the walk's step that caught it stays.
+
+**Deploy:** one additive migration (two tables, five templates). The
+built assets are in the commit. The standard pull command runs it.
+Nothing shows to customers yet (NT3); the production host still needs
+its Chrome (plan §14).
+
+**Next:** NT3 — the customer configures a job from a template, pays by
+the sheet, approves a watermarked proof.
+
 ## 5ro. The print desk's office: papers, finishing, layouts, subject sets, settings, the Akuru vendor (C23 NT1, 2026-10-12)
 
 The second slice of `docs/NAME_TAGS_PLAN.md`, after NT0 (§5rn): what the

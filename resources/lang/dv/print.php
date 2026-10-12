@@ -127,8 +127,8 @@ return [
     // The designer
     'designer_new' => 'އާ ޓެމްޕްލޭޓް',
     'designer_edit' => 'ޓެމްޕްލޭޓް ބަދަލުކުރޭ',
-    'title_in_dv' => 'ނަން ދިވެހިން',
-    'title_in_ar' => 'ނަން ޢަރަބިން',
+    'title_in_dv' => 'ސުރުޚީ ދިވެހިން',
+    'title_in_ar' => 'ސުރުޚީ ޢަރަބިން',
     'tag_size' => 'ޓެގްގެ ސައިޒް (mm)',
     'add_text' => 'ލިޔުން',
     'add_image' => 'ފޮޓޯ',
