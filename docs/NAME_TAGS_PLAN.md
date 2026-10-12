@@ -230,7 +230,7 @@ the Bookstore office home (`Bookshop/Admin.jsx`) and a row in
 ### 4.1 The Akuru vendor
 
 Print products belong to a vendor of **kind `akuru`**: the Institute
-itself. Created by migration (slug `akuru`, code `AKU`, `fulfilment =
+itself. Made on first use by `PrintDesk::ensure()` (slug `akuru`, code `AKU`, `fulfilment =
 'akuru'`, `delivery_by = 'akuru'`, `status = active`), not deletable,
 never paid out — `RecordVendorEarningAction` (B6, `Actions/Money`) records
 no earning for kind `akuru`, so the whole price
@@ -567,6 +567,8 @@ commits, STATUS and the walks.
   slices after it.
 
 ### NT1 — Papers, finishing, layouts, subject sets, settings, the Akuru vendor (office)
+
+> **Built 2026-10-12 (STATUS §5ro).** One change from the plan: the Akuru vendor, the Print category and the draft product are made by `PrintDesk::ensure()` the first time the office opens the desk, not by the migration — a seeded shop sat in every Bookstore list. The `print` phrase book arrived here.
 
 - Migrations for the five office tables + settings keys; the `akuru`
   vendor kind and its row; the *Print* product category and the first
