@@ -4983,6 +4983,76 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rn. The print path works on this host (C23 NT0, 2026-10-12)
+
+The first slice of `docs/NAME_TAGS_PLAN.md` (§5rm), and the one that
+decides the rest: can the renderer the documents already use print a
+name tag — Thaana with fili, Arabic, Latin, a logo — from a design laid
+out in millimetres, with fonts it loads from disk, as a PDF to print and a
+picture to proof? It can.
+
+**Built:**
+- **The print fonts** (plan §5.4): `config/print.php` names twelve faces
+  — Faruma and Noto Sans Thaana for Thaana; Amiri and Cairo for Arabic;
+  Figtree, Poppins, Nunito, Fredoka, Baloo 2, Lora, Merriweather and
+  Pacifico for Latin — each with the scripts it can set and the weights it
+  has. Eleven are copied out of their `@fontsource` packages into
+  `public/fonts/print` beside their SIL OFL licences by
+  `scripts/fonts/copy-print-fonts.mjs` and committed, like Faruma; eight
+  packages were added to `package.json`. MV Boli is not offered (licence).
+- **`PrintFontFaces`** (`App\Support\Services`): the same `@font-face`
+  rules for the browser (`/fonts/print/…`) and for a page Chrome opens
+  from disk (`file:///…/public/fonts/print/…`), so a tag previews and
+  prints in the same face.
+- **`PageImageInterface`** and **`ChromePageImage`** (plan §5.2): the
+  proof picture, by the same headless Chrome and the same
+  `DOCUMENTS_CHROME_PATH` as the PDF converter, with its tmp-dir and
+  script-stripping discipline; bound in `AppServiceProvider`, disabled
+  where there is no Chrome.
+- **`documents/print-sheet.blade.php`**: one A4 sheet, tags placed at
+  their layout cells in millimetres, elements (text, image, rect,
+  ellipse, line) placed in millimetres on the tag, `dir="auto"` on every
+  text so a Thaana name reads right to left inside a Latin design, crop
+  marks, images as `data:` URIs, and a diagonal watermark for the proof.
+  It is a document template, not a screen (the Blade baseline says so);
+  its one raw render is the font CSS we build ourselves.
+
+**What the real Chrome showed** (`PrintPathTest`'s last test, run here
+with Playwright's Chromium; the PDF and PNG looked at):
+- A `file://` page loads fonts by `file://` path: the PDF embeds
+  `NotoSansThaana-Bold`, `Faruma`, `Amiri-Bold`, `Cairo-Regular`,
+  `FredokaLight-Bold` and `Poppins-Regular` by name, and the picture shows
+  the Thaana name with its fili, the Arabic joined, the Latin in Fredoka.
+- **Faruma has no digits**: the *3* in a Faruma line fell back to a
+  system serif. NT2's designer must set digits in a face that has them
+  (Noto Sans Thaana does) or warn — noted in the plan (§5.4).
+- The watermark first overran the page edge at 72 px; 48 px fits the
+  diagonal.
+- One PDF, one page, 40 KB; the proof PNG 794 × 1123.
+
+**Tests:** `PrintPathTest` (new, 5): every font file and licence present
+and the Thaana faces exactly Faruma and Noto Sans Thaana; the two
+`@font-face` sets agree (22 rules); the sample sheet's HTML has its
+millimetre boxes, directions, `data:` image, watermark and crop marks and
+fetches nothing over a network; the page image is disabled without a
+Chrome and the two fakes (`nt0FakePdf`, `nt0FakePageImage`, in
+`tests/Support/PrintTestHelpers.php`) stand in; and the real-Chrome test,
+skipped where there is none (CI). The Blade-screen and raw-render
+baselines gained the sheet with their reasons.
+
+Whole suite locally: **3141 passed (65518 assertions)**.
+
+**Walk:** none — NT0 has no screen (plan §11). The rendered proof was
+opened and read: three tags, each in its own script and face.
+
+**For the owner (plan §14, risk R1):** this proves the path on a host
+that has a Chrome. Production needs one at `DOCUMENTS_CHROME_PATH` before
+any name tag can be proofed or printed; the service switch (NT1) stays
+off until then.
+
+**Deploy:** no migration; eight npm packages added but the font files are
+committed, so the standard pull command is enough.
+
 ## 5rm. Name tags and print products in the Bookstore — planned (C23, 2026-10-12)
 
 The owner asked (2026-10-11) for name tags in the Bookstore: the customer

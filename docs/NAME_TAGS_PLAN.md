@@ -374,7 +374,7 @@ written to disk and opened as a file, so relative URLs do not resolve —
 | Latin | Figtree (shipped), Poppins, Nunito, Fredoka, Baloo 2, Lora, Merriweather, Pacifico | all SIL OFL 1.1, added through `@fontsource/*` like the three already in `package.json` |
 | Arabic | Amiri, Cairo (shipped) | SIL OFL 1.1 |
 
-*MV Boli* is Microsoft's and is **not** offered. Fonts are declared once
+*MV Boli* is Microsoft's and is **not** offered. *Faruma* has no digits, so a tag's numbers are set in Noto Sans Thaana or the design's Latin face (NT0 finding). Fonts are declared once
 in `config/print.php` (`fonts.<id> => [family, file, scripts]`) and read
 by the designer, the renderer and the test that checks every file and
 licence is present.
@@ -549,6 +549,8 @@ touched + no files outside its scope. Names are the ones to use in
 commits, STATUS and the walks.
 
 ### NT0 — The print path works on this host (half a day)
+
+> **Built 2026-10-12 (STATUS §5rn).** Chrome loads the fonts by `file://` path and embeds them by name; Thaana with fili, Arabic and Latin all render. Found: Faruma has no digits (set digits in Noto Sans Thaana or a Latin face — NT2); the proof watermark fits at 48 px. The production host still needs a Chrome (§14).
 
 - `PageImageInterface` + `ChromePageImage`; `config/print.php` with the
   font table; the OFL fonts added through `@fontsource` and copied to
