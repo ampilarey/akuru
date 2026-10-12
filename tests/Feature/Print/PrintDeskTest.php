@@ -148,8 +148,10 @@ it('pairs a subject set\'s three lists line by line, and refuses lists of differ
     printWeb()->actingAs($office)->from(route('admin.bookshop.print'))->post(route('admin.bookshop.print.subject-set'), $set)
         ->assertSessionHasErrors(['subjects_en' => __('print.error_subjects_count', ['en' => 2, 'dv' => 2, 'ar' => 3])]);
     printWeb()->actingAs($office)->post(route('admin.bookshop.print.subject-set'), ['subjects_ar' => "الديفيهية\nالإنجليزية"] + $set)->assertSessionHasNoErrors();
-    expect(PrintSubjectSet::query()->where('label', 'Grade 4')->first()->subjects)->toBe([
-        ['en' => 'Dhivehi', 'dv' => 'ދިވެހި', 'ar' => 'الديفيهية'], ['en' => 'English', 'dv' => 'އިނގިރޭސި', 'ar' => 'الإنجليزية'],
+    // MySQL 8 stores a JSON object's keys in its own order; compare the values, not the order.
+    $subjects = PrintSubjectSet::query()->where('label', 'Grade 4')->first()->subjects;
+    expect(array_map(fn (array $s) => [$s['en'], $s['dv'], $s['ar']], $subjects))->toBe([
+        ['Dhivehi', 'ދިވެހި', 'الديفيهية'], ['English', 'އިނގިރޭސި', 'الإنجليزية'],
     ]);
 });
 
