@@ -1,6 +1,7 @@
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
+import PersonPicker from '../../Components/PersonPicker';
 
 // An amount in rufiyaa, said in the page's language; any other currency by its code.
 function money(t, amount, currency = 'MVR') {
@@ -38,7 +39,7 @@ function GiftCardForm({ t, actOn }) {
     );
 }
 
-function CreditForm({ t, actOn }) {
+function CreditForm({ t, actOn, matches }) {
     const form = useForm({ user_id: '', amount: '', description: '' });
 
     return (
@@ -51,7 +52,18 @@ function CreditForm({ t, actOn }) {
                 }}
                 className="grid gap-2 md:grid-cols-4"
             >
-                <input className="form-input" type="number" placeholder={t.commerce_user_id || 'User ID'} aria-label={t.commerce_user_id || 'User ID'} value={form.data.user_id} onChange={(e) => form.setData('user_id', e.target.value)} />
+                {/* BH1 (BACKLOG C22): the account by name, email or mobile, not a typed id. */}
+                <PersonPicker
+                    label={t.commerce_account || 'Account'}
+                    placeholder={t.commerce_account_search || 'Search by name, email or mobile'}
+                    param="account_q"
+                    prop="account_matches"
+                    matches={matches}
+                    value={form.data.user_id}
+                    onChoose={(id) => form.setData('user_id', id)}
+                    describe={(m) => [m.email, m.mobile].filter(Boolean).join(' · ')}
+                    testId="credit-account"
+                />
                 <input className="form-input" type="number" step="0.01" min="0.01" placeholder={t.commerce_amount_mvr || 'Amount (MVR)'} aria-label={t.commerce_amount_mvr || 'Amount (MVR)'} value={form.data.amount} onChange={(e) => form.setData('amount', e.target.value)} />
                 <input className="form-input" placeholder={t.commerce_reason || 'Reason'} aria-label={t.commerce_reason || 'Reason'} value={form.data.description} onChange={(e) => form.setData('description', e.target.value)} />
                 <button type="submit" className="btn-primary" disabled={form.processing}>{t.commerce_credit || 'Credit'}</button>
@@ -129,7 +141,7 @@ function LiabilityPanel({ liability, t }) {
     );
 }
 
-export default function Admin({ gift_cards, gift_card_orders = [], discount_codes, liability, t = {} }) {
+export default function Admin({ gift_cards, gift_card_orders = [], discount_codes, liability, account_matches = [], t = {} }) {
     // CO1: a refused Deactivate is said under its card; each form says its own.
     const refusals = useRowRefusals();
     // How the bought code went out — email, SMS, or both — and to whom (masked).
@@ -142,7 +154,7 @@ export default function Admin({ gift_cards, gift_card_orders = [], discount_code
             <FormErrors errors={refusals.unplaced} className="mb-4" />
             <LiabilityPanel liability={liability} t={t} />
             <GiftCardForm t={t} actOn={refusals.actOn} />
-            <CreditForm t={t} actOn={refusals.actOn} />
+            <CreditForm t={t} actOn={refusals.actOn} matches={account_matches} />
             <DiscountForm t={t} actOn={refusals.actOn} />
 
             {/* §7.7 gift card usage, §41 admin "gift card purchase": what people

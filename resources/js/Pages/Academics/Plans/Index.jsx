@@ -11,7 +11,7 @@ function Field({ label, error, children }) {
     );
 }
 
-export default function Index({ plans, teacherId, canManage, years, classes, subjects, statuses, t = {} }) {
+export default function Index({ plans, teacherId, canManage, years, classes, subjects, statuses, teachers = [], t = {} }) {
     const form = useForm({
         title: '',
         teacher_id: teacherId || '',
@@ -55,8 +55,12 @@ export default function Index({ plans, teacherId, canManage, years, classes, sub
                     </select>
                 </Field>
                 {canManage && (
-                    <Field label={t.plans_teacher_id || 'Teacher id'} error={form.errors.teacher_id}>
-                        <input className="form-input w-full" aria-label={t.plans_teacher_id || 'Teacher id'} value={form.data.teacher_id} onChange={(e) => form.setData('teacher_id', e.target.value)} />
+                    // BH1 (BACKLOG C22): the teacher by name, not a typed id.
+                    <Field label={t.plans_teacher || 'Teacher'} error={form.errors.teacher_id}>
+                        <select className="form-input w-full" aria-label={t.plans_teacher || 'Teacher'} value={form.data.teacher_id} onChange={(e) => form.setData('teacher_id', e.target.value)} data-testid="plan-teacher">
+                            <option value="">—</option>
+                            {teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.name}</option>)}
+                        </select>
                     </Field>
                 )}
                 <Field label={t.status || 'Status'} error={form.errors.status}>
