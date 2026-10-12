@@ -4983,6 +4983,90 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rs. Customers upload their own artwork, checked before the proof (C23 NT5, 2026-10-12)
+
+The sixth slice of `docs/NAME_TAGS_PLAN.md`, after NT4 (§5rr): a print job
+from the customer's own file instead of a template.
+
+**Built:**
+- **Data** (plan §8): on `print_jobs`, `upload_document_id` (the file, a
+  private document of the new type `print_upload`, named in the HR phrase
+  book), `upload_kind` (`tag` — one tag's artwork repeated on the layout —
+  or `sheet` — a whole A4 page already laid out), `upload_meta` (what was
+  read from the file), `declared_at` and `warnings_accepted_at`.
+- **The door** offers *Upload your design* beside Akuru's templates; it
+  starts an upload job for a signed-in customer (the file is kept privately
+  on the account), and a guest is sent to sign in.
+- **The upload** (`UploadPrintDesignAction`): PNG or JPEG, up to the desk's
+  *largest upload*; anything else is refused in the page's language. A new
+  file sends a proofed job back to draft.
+- **Preflight** (`PrintUpload`, plan §5.5), worked out from the file and the
+  job's options and again whenever they change: the resolution of the
+  picture fitted into the printed box — warned under 300 dpi, refused
+  under 150; a whole-sheet upload refused unless it has A4's upright shape
+  (±2%); a colour picture on a black-and-white job and see-through parts
+  warned. GD and the file's own bytes, no SDK.
+- **Before the proof** (risk R4): a refusal stops it; *I have the right to
+  print this* must be ticked, and any warnings accepted — both recorded on
+  the job when the proof is made, and asked again on a copy.
+- **The proof** goes through the same renderer as a template job: the
+  artwork as a `data:` URI filling each tag of the layout (or the whole
+  page), one print PDF and watermarked sheet pictures. Approval, the
+  basket, checkout and the print queue are NT3–NT4's, unchanged.
+- **PDF** (plan §5.6): a new Support contract `PdfRasterizerInterface`,
+  bound to Ghostscript (`GhostscriptPdfRasterizer`, as a command, in safe
+  mode, tmp files removed) where `DOCUMENTS_GS_PATH` names one, disabled
+  elsewhere. With it, a PDF is taken as whole sheets, one per page (the
+  sheets follow the pages; a mismatch is refused), its pages pictured by
+  Ghostscript and watermarked by Chrome, and the PDF itself is the print
+  file. Without it the form says PNG or JPEG only and a PDF is refused.
+- **Pages** (Inertia, EN/DV/AR, right to left): the upload job's own page
+  `Shop/PrintUploadJob` — what the file is, its pixels and resolution, the
+  refusals and warnings, the layout (for a tag), paper, colour, finishing,
+  sheets, the server's price, the two ticks, the proof sheets, approval and
+  the basket. *My designs* lists an upload job with a plain label in place
+  of a drawing.
+
+**Not verified here:** Ghostscript is not installed in this container, so
+the PDF path is tested with a fake rasteriser only. On a host with `gs`, the
+page count reads through `runpdfbegin`/`pdfpagecount` with
+`--permit-file-read` for the one file; a host without that
+(Ghostscript's new PDF interpreter) would refuse PDFs as unreadable rather
+than misprint them.
+
+**Tests:** `PrintUploadsTest` (new, 7): the upload job for a signed-in
+customer only, its own page, someone else's 404; 300 dpi passes, 200 warned
+(in words), 100 refused and the proof refused with it; an A4 sheet passes, a
+square refused; transparency warned, colour on black and white warned when
+the colour is switched, the kind switched re-checked; text and an oversize
+file refused; no file, no declaration, warnings not accepted — each refused
+— then the proof (two sheets, a PDF print file), approval, the basket and a
+copy that must be declared again; a PDF refused without the rasteriser and,
+with a fake, taken as three sheets, the page mismatch and *one tag* refused,
+the PDF itself as the print file; the resolution of a picture fitted inside
+its box, and colour and transparency read from a PNG. Architecture tests
+green (the new routes and the new private-document reader declared with
+their reasons).
+
+Whole suite locally: **3182 passed (67162 assertions)**, none failed.
+
+**Walk:** `print-upload.mjs` (new, in the runner, with
+`DOCUMENTS_CHROME_PATH` set): under `/dv` the customer finds *Upload your
+design* on the door in Dhivehi, opens an upload job right to left, uploads a
+72-dpi picture — refused as too small in Dhivehi, the proof button disabled
+— a 200-dpi one — warned it may print soft — and a 300-dpi one that passes;
+the server prices two sheets at MVR 9.00; the proof is refused in Dhivehi
+until *I have the right to print this* is ticked; then Chrome draws two
+watermarked sheets with the artwork on all eight tags and the design reads
+*Proof ready*. 10/10. `print-design` 18/18 rerun. A screenshot read.
+
+**Deploy:** one additive migration (`2026_10_12_000005_nt5_print_uploads`).
+The built assets are in the commit. The standard pull command runs it. PDF
+uploads need Ghostscript at `DOCUMENTS_GS_PATH` (owner item, plan §14);
+without it customers upload PNG or JPEG.
+
+**Next:** NT6 — the free-form designer for customers.
+
 ## 5rr. An approved design is bought, and the print desk prints it (C23 NT4, 2026-10-12)
 
 The fifth slice of `docs/NAME_TAGS_PLAN.md`, after NT3 (§5rq): from an

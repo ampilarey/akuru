@@ -9,9 +9,12 @@ use App\Domains\Bookshop\Models\PrintTemplate;
 use App\Domains\Bookshop\Support\PrintDesign;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintJobEntry;
+use App\Domains\Bookshop\Support\PrintUpload;
+use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Domains\Media\Actions\StoreGeneratedDocumentAction;
 use App\Support\Contracts\PageImageInterface;
 use App\Support\Contracts\PdfConverterInterface;
+use App\Support\Contracts\PdfRasterizerInterface;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -43,11 +46,17 @@ class ProofPrintJobAction
         private readonly PageImageInterface $image,
     ) {}
 
-    public function proof(PrintJob $job, int $userId, string $locale): PrintJob
+    /**
+     * @param  array{declared?: bool, accept_warnings?: bool}  $confirm  NT5: an upload's declaration and its warnings accepted
+     */
+    public function proof(PrintJob $job, int $userId, string $locale, array $confirm = []): PrintJob
     {
         $this->save->open($job);
         if (! $this->pdf->enabled() || ! $this->image->enabled()) {
             throw ValidationException::withMessages(['job' => __('print.error_proof_unavailable')]);
+        }
+        if ($job->isUpload()) {
+            return $this->proofUpload($job, $userId, $locale, $confirm);
         }
         $layout = PrintLayout::query()->find($job->print_layout_id);
         if ($layout === null) {
@@ -75,6 +84,85 @@ class ProofPrintJobAction
             'proof_document_ids' => $proofIds, 'print_document_id' => $printId,
             'status' => PrintJobStatus::Proofed, 'proofed_at' => now(),
             'user_id' => $job->user_id ?? $userId,
+        ])->save();
+
+        return $job;
+    }
+
+    /**
+     * NT5 (plan §3.4, §5.5, §5.6, risk R4): the customer's own artwork. The
+     * declaration must be given and the preflight's warnings accepted; a
+     * refusal stops it. An image is laid out like a design — one tag's
+     * artwork on every cell, or the whole sheet — and rendered as any job is;
+     * a PDF *is* the print file, its pages pictured by the rasteriser and
+     * watermarked by the same Chrome.
+     *
+     * @param  array{declared?: bool, accept_warnings?: bool}  $confirm
+     */
+    private function proofUpload(PrintJob $job, int $userId, string $locale, array $confirm): PrintJob
+    {
+        if ($job->upload_document_id === null || $job->upload_meta === null) {
+            throw ValidationException::withMessages(['file' => __('print.upload_error_none')]);
+        }
+        $this->save->price($job, $locale);
+        $preflight = (array) $job->preflight;
+        if (($preflight['refusals'] ?? []) !== []) {
+            $first = $preflight['refusals'][0];
+            throw ValidationException::withMessages(['file' => __((string) $first['key'], (array) ($first['vars'] ?? []))]);
+        }
+        if (empty($confirm['declared'])) {
+            throw ValidationException::withMessages(['declared' => __('print.upload_error_declaration')]);
+        }
+        if (($preflight['warnings'] ?? []) !== [] && empty($confirm['accept_warnings'])) {
+            throw ValidationException::withMessages(['accept_warnings' => __('print.upload_error_accept_warnings')]);
+        }
+
+        $bytes = (string) app(ReadGeneratedDocumentAction::class)->execute((int) $job->upload_document_id)['contents'];
+        $meta = (array) $job->upload_meta;
+        $watermark = PrintDesk::settings()['watermark'];
+        $options = ['lang' => $locale, 'title' => (string) $job->name, 'grayscale' => ! $job->colour];
+        [$w, $h] = [(int) config('print.proof.width_px', 794), (int) config('print.proof.height_px', 1123)];
+        $sheetLayout = PrintUpload::sheetLayout();
+        $page = PrintUpload::design(PrintLayout::PAGE_W, PrintLayout::PAGE_H);
+
+        if (($meta['type'] ?? null) === 'pdf') {
+            $raster = app(PdfRasterizerInterface::class);
+            if (! $raster->enabled()) {
+                throw ValidationException::withMessages(['file' => __('print.upload_error_type')]);
+            }
+            $file = $bytes;
+            $pictures = [];
+            for ($i = 1; $i <= min((int) $meta['pages'], self::MAX_PROOF_SHEETS); $i++) {
+                $png = 'data:image/png;base64,'.base64_encode($raster->toPng($bytes, $i, 96));
+                $pictures[] = $this->render->execute($page, $sheetLayout, [[]], $options + ['upload' => $png, 'watermark' => $watermark, 'crop_marks' => false])[0];
+            }
+        } else {
+            $src = 'data:image/'.($meta['type'] === 'png' ? 'png' : 'jpeg').';base64,'.base64_encode($bytes);
+            if ($job->upload_kind === 'sheet') {
+                [$layout, $design, $rows] = [$sheetLayout, $page, array_fill(0, max(1, (int) $job->sheets), [])];
+            } else {
+                $layout = PrintLayout::query()->find($job->print_layout_id);
+                if ($layout === null) {
+                    throw ValidationException::withMessages(['layout_id' => __('print.error_job_layout')]);
+                }
+                [$design, $rows] = [PrintUpload::design((float) $layout->tag_w_mm, (float) $layout->tag_h_mm), array_fill(0, max(1, (int) $job->sheets) * max(1, $layout->tagsPerSheet()), [])];
+            }
+            $options += ['upload' => $src, 'crop_marks' => $job->upload_kind === 'sheet' ? false : ($layout->sheet_code === null)];
+            $file = $this->pdf->fromHtml($this->render->document($design, $layout, $rows, $options));
+            $pictures = array_slice($this->render->execute($design, $layout, $rows, $options + ['watermark' => $watermark]), 0, self::MAX_PROOF_SHEETS);
+        }
+
+        $store = app(StoreGeneratedDocumentAction::class);
+        $proofIds = [];
+        foreach ($pictures as $i => $html) {
+            $proofIds[] = $store->execute('print_job', $job->id, 'print_proof', 'Proof sheet '.($i + 1), $this->image->fromHtml($html, $w, $h), 'png', $userId, 's'.($i + 1))->id;
+        }
+        $printId = $store->execute('print_job', $job->id, 'print_file', 'Print file', $file, 'pdf', $userId)->id;
+
+        $job->forceFill([
+            'proof_document_ids' => $proofIds, 'print_document_id' => $printId,
+            'status' => PrintJobStatus::Proofed, 'proofed_at' => now(),
+            'declared_at' => now(), 'warnings_accepted_at' => ($preflight['warnings'] ?? []) !== [] ? now() : null,
         ])->save();
 
         return $job;

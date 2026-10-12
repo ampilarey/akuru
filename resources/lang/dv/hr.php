@@ -133,6 +133,7 @@ return [
     'document_type_payslip' => 'ޕޭސްލިޕް',
     'document_type_print_proof' => 'ނަން ޓެގްގެ ޕްރޫފް',
     'document_type_print_file' => 'ނަން ޓެގްގެ ޕްރިންޓް ފައިލް',
+    'document_type_print_upload' => 'ކަސްޓަމަރު އަޕްލޯޑްކުރި ނަން ޓެގުގެ ޑިޒައިން',
     'document_type_other' => 'އެހެނިހެން',
     'payroll_title' => 'މުސާރަ',
     'payroll_disabled' => 'ދެ ދައުރެއް އެއްގޮތްވަންދެން މުސާރަ ހިސާބުކުރުން ހުއްޓާލެވިފައި.',

@@ -133,6 +133,7 @@ return [
     'document_type_payslip' => 'قسيمة الراتب',
     'document_type_print_proof' => 'بروفة بطاقات الأسماء',
     'document_type_print_file' => 'ملف طباعة بطاقات الأسماء',
+    'document_type_print_upload' => 'تصميم بطاقات الأسماء الذي رفعه العميل',
     'document_type_other' => 'أخرى',
     'payroll_title' => 'الرواتب',
     'payroll_disabled' => 'الرواتب متوقفة حتى تتطابق دورتان متوازيتان.',

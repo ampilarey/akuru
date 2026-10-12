@@ -20,6 +20,7 @@ class PrintJob extends Model
         'user_id', 'cart_id', 'product_id', 'print_template_id', 'print_layout_id', 'print_paper_option_id', 'colour', 'finishing',
         'sheets', 'entry', 'print_subject_set_id', 'design', 'source', 'preflight', 'price_per_sheet', 'price_total', 'price_breakdown',
         'approved_price_snapshot', 'proof_document_ids', 'print_document_id', 'status', 'name', 'academic_year_id',
+        'upload_document_id', 'upload_kind', 'upload_meta', 'declared_at', 'warnings_accepted_at',
         'proofed_at', 'approved_at', 'ordered_at', 'printing_at', 'finished_at', 'cancelled_at', 'printed_by', 'finished_by',
     ];
 
@@ -31,7 +32,14 @@ class PrintJob extends Model
             'approved_price_snapshot' => 'array', 'proof_document_ids' => 'array', 'status' => PrintJobStatus::class,
             'proofed_at' => 'datetime', 'approved_at' => 'datetime', 'ordered_at' => 'datetime', 'printing_at' => 'datetime',
             'finished_at' => 'datetime', 'cancelled_at' => 'datetime',
+            'upload_meta' => 'array', 'declared_at' => 'datetime', 'warnings_accepted_at' => 'datetime',
         ];
+    }
+
+    /** NT5: a job made from the customer's own artwork rather than a template. */
+    public function isUpload(): bool
+    {
+        return $this->source === 'upload';
     }
 
     public function template(): BelongsTo

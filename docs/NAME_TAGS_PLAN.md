@@ -680,6 +680,14 @@ commits, STATUS and the walks.
   Walk `print-upload.mjs`: a 72-dpi image is warned in Dhivehi, a 300-dpi
   one proofs.
 
+> **Built 2026-10-12 (STATUS §5rs).** As planned, with these choices: an
+> upload needs an account (the file is kept privately on it); a sheet
+> upload off A4's shape is refused, not warned; the declaration and the
+> warnings accepted are recorded when the proof is made and asked again on
+> a copy; a PDF is always whole sheets, its pages setting the sheets. The
+> Ghostscript rasteriser is tested here only through a fake — this
+> container has no `gs`.
+
 ### NT6 — The free-form designer for customers, and *Open in the designer*
 
 - Field mode's component gains the full toolbar for customers; start from

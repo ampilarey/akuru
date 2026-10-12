@@ -139,6 +139,8 @@ return [
     'shop/print/jobs' => 'ShopPrintController@start — starts a job on the caller\'s own account, or a guest\'s own basket (ResolvesCart); the template must be active; throttled; 404 while the service is off unless bookshop.manage.',
     'shop/print/jobs/{job}' => 'ShopPrintController@save / @destroy — READ: job() 404s unless the job is the caller\'s (or rides on the guest\'s own basket); throttled.',
     'shop/print/jobs/{job}/approve' => 'ShopPrintController@approve — auth; READ: job() 404s unless the job is the signed-in caller\'s own.',
+    'shop/print/uploads' => 'ShopPrintController@startUpload (NT5) — auth; starts an upload job on the caller\'s own account only; throttled; 404 while the service is off unless bookshop.manage.',
+    'shop/print/jobs/{job}/upload' => 'ShopPrintController@upload (NT5) — auth; READ: job() 404s unless the job is the signed-in caller\'s own; the file is checked (type, size) and stored privately on that job; throttled.',
     'shop/print/jobs/{job}/cart' => 'ShopPrintController@addToCart (NT4) — auth; READ: job() 404s unless the job is the signed-in caller\'s own; AddPrintJobToCartAction refuses one not approved, not held or already ordered; throttled.',
     'shop/print/jobs/{job}/copy' => 'ShopPrintController@copy — READ: job() 404s unless the job is the caller\'s own; the copy is written to the caller.',
     'shop/print/jobs/{job}/name' => 'ShopPrintController@rename — auth; READ: job() 404s unless the job is the signed-in caller\'s own.',

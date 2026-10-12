@@ -15,6 +15,7 @@ use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintJobEntry;
 use App\Domains\Bookshop\Support\PrintLine;
 use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
+use App\Support\Contracts\PdfRasterizerInterface;
 use App\Support\Services\PrintFontFaces;
 use Illuminate\Support\Facades\URL;
 
@@ -90,6 +91,21 @@ class PresentPrintJobAction
             'lapsed' => $job->status === PrintJobStatus::Approved && ! PrintLine::held($job),
             'order' => $this->order($job),
             'warnings' => $warnings,
+            // NT5: a job from the customer's own artwork — what was read from it, and what stops it.
+            'source' => (string) $job->source,
+            'upload' => $job->isUpload() ? [
+                'has_file' => $job->upload_document_id !== null,
+                'kind' => $job->upload_kind,
+                'type' => $job->upload_meta['type'] ?? null,
+                'w' => $job->upload_meta['w'] ?? null,
+                'h' => $job->upload_meta['h'] ?? null,
+                'pages' => $job->upload_meta['pages'] ?? null,
+                'dpi' => $job->preflight['dpi'] ?? null,
+                'refusals' => array_map(fn ($r) => __((string) $r['key'], (array) ($r['vars'] ?? [])), (array) ($job->preflight['refusals'] ?? [])),
+                'declared_at' => $job->declared_at?->toIso8601String(),
+                'pdf' => app(PdfRasterizerInterface::class)->enabled(),
+                'max_mb' => (int) round(PrintDesk::settings()['max_upload_kb'] / 1024),
+            ] : null,
             'proof_images' => $this->proofLinks($job),
             'more_sheets' => max(0, (int) $job->sheets - count((array) $job->proof_document_ids)),
             'proofed_at' => $job->proofed_at?->toIso8601String(),
@@ -129,7 +145,7 @@ class PresentPrintJobAction
     {
         return PrintJob::query()->with('template')->where('user_id', $userId)->latest('updated_at')->limit(200)->get()
             ->map(fn (PrintJob $j) => [
-                'id' => $j->id, 'name' => $j->name, 'status' => $j->status->value, 'template' => $j->template?->titleIn($locale),
+                'id' => $j->id, 'name' => $j->name, 'status' => $j->status->value, 'template' => $j->template?->titleIn($locale), 'source' => (string) $j->source,
                 'design' => $j->design, 'entry' => $j->entry, 'sheets' => (int) $j->sheets, 'total' => (float) $j->price_total,
                 'updated_at' => $j->updated_at?->toIso8601String(),
                 'removable' => ! in_array($j->status, [PrintJobStatus::Ordered, PrintJobStatus::Printing, PrintJobStatus::Finished], true),

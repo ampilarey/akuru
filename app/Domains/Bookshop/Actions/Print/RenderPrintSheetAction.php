@@ -18,12 +18,15 @@ use App\Support\Services\PrintFontFaces;
  */
 class RenderPrintSheetAction
 {
+    /** NT5: the customer's own artwork, as a `data:` URI, for an element marked `upload`. */
+    private ?string $upload = null;
+
     public function __construct(private readonly DocumentRendererInterface $renderer, private readonly ReadPublicMediaAction $read, private readonly ResolvePublicMediaUrlAction $url) {}
 
     /**
      * @param  array<string, mixed>  $design  a validated design (PrintDesign::validate)
      * @param  list<array<string, string>>  $rows  one per tag: field key => value
-     * @param  array{watermark?: ?string, crop_marks?: bool, lang?: string, title?: string, browser?: bool, grayscale?: bool}  $options
+     * @param  array{watermark?: ?string, crop_marks?: bool, lang?: string, title?: string, browser?: bool, grayscale?: bool, upload?: string}  $options
      * @return list<string> one HTML document per sheet
      */
     public function execute(array $design, PrintLayout $layout, array $rows, array $options = []): array
@@ -47,6 +50,7 @@ class RenderPrintSheetAction
     /** @return list<list<array<string, mixed>>> each sheet's tags, placed on the layout */
     private function sheets(array $design, PrintLayout $layout, array $rows, array $options): array
     {
+        $this->upload = isset($options['upload']) && is_string($options['upload']) ? $options['upload'] : null;
         $perSheet = max(1, $layout->tagsPerSheet());
         $sheets = [];
         $images = [];
@@ -120,7 +124,7 @@ class RenderPrintSheetAction
                     ];
                     break;
                 case 'image':
-                    $src = $this->image((int) $el['media'], $images, $browser);
+                    $src = ! empty($el['upload']) ? $this->upload : $this->image((int) $el['media'], $images, $browser);
                     if ($src === null) {
                         continue 2;
                     }
