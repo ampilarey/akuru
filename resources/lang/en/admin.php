@@ -44,6 +44,7 @@ return [
     'desc_library_office' => 'The Digital Library office: writers, submissions, publishing, earnings and payouts.',
     'desc_bookshop' => 'The Akuru Bookstore office: shops, applications, orders, refunds, money and the catalogue.',
     'desc_akuru_fulfilment' => 'Orders Akuru packs and ships, and the handling charges.',
+    'desc_print_desk' => 'Papers, finishing, layouts and subject sets the print desk works from, and its switch.',
     'desc_complaints' => 'Problems customers report on orders.',
     'desc_sms_campaigns' => 'SMS offers to customers who asked for them.',
     'desc_shop_customers' => 'Customers, with the office\'s tags and notes.',

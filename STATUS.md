@@ -4983,6 +4983,85 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ro. The print desk's office: papers, finishing, layouts, subject sets, settings, the Akuru vendor (C23 NT1, 2026-10-12)
+
+The second slice of `docs/NAME_TAGS_PLAN.md`, after NT0 (§5rn): what the
+desk prices and prints from, and who sells it, before a customer designs
+anything (NT3).
+
+**Built:**
+- **Data** (plan §8): `print_layouts`, `print_paper_options`,
+  `print_finishing_options`, `print_subject_sets` — catalogues, not
+  events, so no academic year (rule 10) — with morph aliases (ADR-005).
+  Seeded: the five standard A4 grids (2×4, 2×5, 3×4, the L7160 3×7 and
+  L7159 3×8 label sheets), four papers and four finishings **with names
+  and no prices, inactive** (decision D2: the office prices them), and a
+  subject set for Grades 1–3 in three languages.
+- **The Akuru vendor** (plan §4.1): `vendors.kind = 'akuru'` — *Akuru
+  Print*, `/shop/akuru`, fulfilment and delivery by Akuru, a *Collect
+  from Akuru* method. `Vendor::isAkuru()`; `RecordVendorEarningAction`
+  records no earning on its orders, so nothing is ever paid out: Akuru's
+  sales are Akuru's whole.
+- **The product**: a *Print* category and *Name tags — A4*
+  (`name-tags-a4`, not stock-tracked, priced by the job) as a **draft**;
+  the service switch puts it on sale and takes it off.
+- **Made on first use, not by the migration** (`PrintDesk::ensure()`,
+  idempotent): the first time the office opens the print desk or saves
+  its settings. The plan said "by migration"; a seeded Akuru shop sat in
+  every Bookstore list and failed 25 tests that assume a Bookstore starts
+  with no vendor, and a deployment that never opens the desk should have
+  no Akuru shop either. The plan is corrected.
+- **Settings** (plan §4.6, `PrintDesk`): on/off, lead time, minimum
+  sheets, quantity tiers, cash on delivery for print (off), the proof
+  watermark, the longest list, the largest upload — the office's values
+  over `config/print.php`'s `desk` defaults. **The switch is refused**
+  while this host has no Chrome for documents, and then while no paper is
+  priced and active, each in the page's language.
+- **The office page** `/admin/bookshop/print` (`Bookshop/Print.jsx`,
+  `bookshop.manage`, in the Bookstore workspace's menu as *Print desk*):
+  the settings, then the four lists, each a table with phone cards, a CSV
+  and one form that adds a row or, after *Edit*, changes it. Nothing
+  deletes: a paper, a finishing or a layout is retired, and there is no
+  route that removes one. A new `print` phrase book, EN/DV/AR.
+- **Refusals, in the page's language:** an active paper or finishing at
+  no price; a paper of an unlisted kind; a tag under 10 mm; a grid that
+  does not fit A4, told with its footprint; a subject set with no English
+  line or lists of different lengths, told with the three counts.
+
+**Tests:** `PrintDeskTest` (new, 8): the seeds; the office opens for the
+manager only with every list and the reason the service is off; the
+switch refused without a Chrome, then without a priced paper, then
+turning the product on and off; a paper priced, refused active at zero in
+Dhivehi, retired not deleted and no delete route; a layout kept only when
+it fits, with the footprint named in Arabic; a subject set paired line by
+line; no earning on the Akuru vendor's order and still one on a shop's;
+every CSV, every `print.*` phrase in three languages, no English refusal
+in `Actions/Print`. Architecture tests green.
+
+Whole suite locally: **3149 passed (65825 assertions)** (the second run; the first, before the vendor moved out of the migration, had 26 failures, all of them the seeded Akuru shop in lists other tests assume empty, plus the hub and workspace menus and one order-dependent certificate test).
+
+**Walk:** `print-office.mjs` (new, in the runner): under `/dv` the system
+admin opens the desk right to left, sees the product off sale, adds a
+paper with a Dhivehi name and a colour price and sees it listed active,
+has a subject set with uneven lists refused in Dhivehi and then saved,
+and tries the switch — on this server, with no Chrome configured for
+documents, it is refused in Dhivehi and the product stays off sale (where
+a Chrome is configured the walk turns the service on, sees the product
+on sale, and turns it off again). 8/8. Desktop and phone screenshots
+read: the phone view stacks the tables into labelled cards.
+
+**Found on the way:** `npm install` of NT0's font packages had removed
+the ad-hoc `playwright` package the walks import (it is not in
+`package.json`); reinstalled with `--no-save`. The Institute home's
+Bookstore cluster and the hub and workspace tests name the new door;
+`CourseCertificateTest`'s manual-certificate test failed once in the
+whole run and passes alone (order-dependent; not this slice's).
+
+**Deploy:** one additive migration (four tables, the vendor, the category
+and the draft product). The built assets are in the commit. The standard
+pull command runs it. Nothing shows to customers until the office turns
+the service on, which it cannot until the host has a Chrome (plan §14).
+
 ## 5rn. The print path works on this host (C23 NT0, 2026-10-12)
 
 The first slice of `docs/NAME_TAGS_PLAN.md` (§5rm), and the one that

@@ -107,6 +107,22 @@ return [
         ],
     ],
 
+    /*
+     * The print desk's knobs (plan §4.6, NT1): the office moves them on
+     * /admin/bookshop/print (settings `bookshop_print_*`); these are the
+     * deploy's defaults. Off until the host can print and a paper is priced.
+     */
+    'desk' => [
+        'enabled' => false,
+        'lead_days' => 2,
+        'min_sheets' => 1,
+        'tiers' => [['sheets' => 10, 'percent' => 5], ['sheets' => 50, 'percent' => 10]],
+        'cash_allowed' => false,
+        'watermark' => 'PROOF — Akuru Bookstore',
+        'max_rows' => 500,
+        'max_upload_kb' => 10240,
+    ],
+
     // The proof the customer sees (plan §5.2): a raster at screen resolution,
     // never the print file. A4 at 96 dpi.
     'proof' => [

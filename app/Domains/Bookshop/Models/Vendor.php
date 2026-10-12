@@ -111,6 +111,12 @@ class Vendor extends Model
         return ($this->kind ?? 'shop') === 'personal';
     }
 
+    /** NAME_TAGS_PLAN §4.1: the Institute's own print desk — never paid out. */
+    public function isAkuru(): bool
+    {
+        return ($this->kind ?? 'shop') === 'akuru';
+    }
+
     public function hasBadge(string $badge): bool
     {
         return in_array($badge, (array) ($this->badges ?? []), true);

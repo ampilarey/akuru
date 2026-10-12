@@ -35,7 +35,7 @@ class ComposeWorkspaceHomeAction
             'learning' => ['prayer_times', 'pronunciation_office'],
         ],
         'panel_money' => [
-            'bookstore' => ['bookshop', 'akuru_fulfilment', 'complaints', 'sms_campaigns', 'shop_customers', 'shop_credit'],
+            'bookstore' => ['bookshop', 'akuru_fulfilment', 'print_desk', 'complaints', 'sms_campaigns', 'shop_customers', 'shop_credit'],
         ],
         // System settings and the translations moved to the Settings part
         // in the navigation re-audit (ADMIN_PANEL.md §8), so the platform
