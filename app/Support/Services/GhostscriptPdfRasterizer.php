@@ -15,6 +15,8 @@ use Symfony\Component\Process\Process;
  */
 class GhostscriptPdfRasterizer implements PdfRasterizerInterface
 {
+    private ?string $version = null;
+
     public function __construct(private readonly ?string $gsPath, private readonly int $timeoutSeconds = 60) {}
 
     public function enabled(): bool
@@ -24,7 +26,8 @@ class GhostscriptPdfRasterizer implements PdfRasterizerInterface
 
     public function pages(string $pdf): int
     {
-        $out = $this->run($pdf, fn (string $in) => ['-q', '-dNODISPLAY', '-dSAFER', '--permit-file-read='.$in, '-dNOPAUSE', '-dBATCH', '-c', '('.$in.') (r) file runpdfbegin pdfpagecount = quit']);
+        $version = $this->version();
+        $out = $this->run($pdf, fn (string $in) => ['-q', '-dNODISPLAY', '-dSAFER', ...self::readPermission($version, $in), '-dNOPAUSE', '-dBATCH', '-c', '('.$in.') (r) file runpdfbegin pdfpagecount = quit']);
 
         return max(0, (int) trim($out));
     }
@@ -44,6 +47,36 @@ class GhostscriptPdfRasterizer implements PdfRasterizerInterface
         } finally {
             @unlink($png);
         }
+    }
+
+    /**
+     * `--permit-file-read` arrived with Ghostscript 9.50, when safe mode began
+     * to refuse reading files; an older one (a shared host had 9.27,
+     * 2026-10-12) does not know the switch and fails on it, and its safe mode
+     * never stopped a read. So the switch is passed only where it exists.
+     *
+     * @return list<string>
+     */
+    public static function readPermission(string $version, string $in): array
+    {
+        return version_compare($version, '9.50', '>=') ? ['--permit-file-read='.$in] : [];
+    }
+
+    /** The host's Ghostscript version, asked once (`gs --version`); a newer one is assumed if it will not say. */
+    private function version(): string
+    {
+        if ($this->version === null) {
+            if (! $this->enabled()) {
+                return '99';
+            }
+            $process = new Process([(string) $this->gsPath, '--version']);
+            $process->setTimeout(10);
+            $process->run();
+            $said = trim($process->getOutput());
+            $this->version = preg_match('/^\d+(\.\d+)+$/', $said) === 1 ? $said : '99';
+        }
+
+        return $this->version;
     }
 
     /** @param  \Closure(string): list<string>  $args */

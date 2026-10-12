@@ -4983,6 +4983,37 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ry. PDF uploads work with an older Ghostscript (NAME_TAGS_PLAN D14, 2026-10-12)
+
+Found setting up the production host: `which gs` gave `/bin/gs`, version
+**9.27** (2019). To count an uploaded PDF's pages, the rasterizer (NT5,
+§5rs) passed `--permit-file-read`, a switch that arrived in Ghostscript
+9.50, when safe mode began to refuse reading files. An older Ghostscript
+fails on it, so on that host every PDF upload would have been refused at
+its page count. PNG and JPEG uploads never touched it.
+
+**Fixed:**
+- `GhostscriptPdfRasterizer` asks the host's version once (`gs --version`).
+- It passes `--permit-file-read` only from 9.50 on. Before 9.50, safe mode
+  never stopped a read, so nothing is opened up by leaving it out.
+- A Ghostscript that will not say its version is taken as a new one.
+
+**Tests:** `GhostscriptOnOlderHostsTest` (new, 2):
+- the switch for 9.26 and 9.27 (none) and for 9.50, 9.56.1 and 10.02.1
+  (passed);
+- through the real Ghostscript where one is installed (10.02.1 here), a
+  two-page PDF counted as 2 and its second page drawn as a PNG.
+
+9.27 itself could not be had on this machine. The owner's run on the host,
+of the page count with and without the switch, is the check for it.
+
+Whole suite locally: **RESULT**.
+
+**Walk:** none — no screen changed.
+
+**Deploy:** no migration. The standard pull command. On the host:
+`DOCUMENTS_GS_PATH=/bin/gs` is in `.env` (set 2026-10-12).
+
 ## 5rx. Print drafts nobody ordered are cleaned up after 30 days (NAME_TAGS_PLAN §7.2, D13, 2026-10-12)
 
 Found checking the name tags plan against the code after NT7: §7.2 and
