@@ -77,4 +77,25 @@ class PrintFontFaces
 
         return implode("\n", $rules);
     }
+
+    /** The faces every script falls back to: a Latin, a Thaana and an Arabic face the desk ships. */
+    public const FALLBACKS = ['figtree', 'noto-sans-thaana', 'cairo'];
+
+    /**
+     * A font-family list for a text set in `$id`: the chosen face first, then a
+     * face for each script it may lack (NT3: the Thaana face has no Latin, so a
+     * Latin name fell to the browser's serif), then sans-serif.
+     */
+    public static function stack(string $id): string
+    {
+        $fonts = (array) config('print.fonts', []);
+        $families = [];
+        foreach (array_merge([$id], self::FALLBACKS) as $font) {
+            if (isset($fonts[$font]) && ! in_array($fonts[$font]['family'], $families, true)) {
+                $families[] = (string) $fonts[$font]['family'];
+            }
+        }
+
+        return implode(', ', array_map(fn (string $f) => "'".str_replace("'", '', $f)."'", $families)).', sans-serif';
+    }
 }

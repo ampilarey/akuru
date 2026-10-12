@@ -345,4 +345,5 @@ return [
     // NAME_TAGS_PLAN NT2 (STATUS §5rp): templates and the office's artwork.
     'print_template' => \App\Domains\Bookshop\Models\PrintTemplate::class,
     'print_image' => \App\Domains\Bookshop\Models\PrintImage::class,
+    'print_job' => \App\Domains\Bookshop\Models\PrintJob::class,
 ];

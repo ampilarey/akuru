@@ -139,6 +139,12 @@
                     <p class="font-semibold">{{ __('shop.back_on', ['date' => $product['vendor']['holiday']['back_on']]) }}</p>
                     @if($product['vendor']['holiday']['notice'])<p dir="auto">{{ $product['vendor']['holiday']['notice'] }}</p>@endif
                 </div>
+            @elseif($product['slug'] === \App\Domains\Bookshop\Support\PrintDesk::PRODUCT_SLUG)
+                {{-- NAME_TAGS_PLAN NT3: printed to order — designed, proofed and approved first. --}}
+                <div class="mt-6 rounded-lg bg-brandBeige-50 p-4" data-testid="print-door-link">
+                    <p class="mb-3 text-sm text-gray-700">{{ __('print.door_intro') }}</p>
+                    <a href="{{ route('public.shop.print') }}" class="btn-primary">{{ __('print.design_your_tags') }}</a>
+                </div>
             @elseif($buyable)
                 <form method="POST" action="{{ route('public.shop.cart.add') }}" class="mt-6 flex flex-wrap items-end gap-3 rounded-lg bg-brandBeige-50 p-4" data-testid="add-to-cart-form">
                     @csrf

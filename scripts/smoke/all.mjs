@@ -157,6 +157,7 @@ const WALKS = [
     { name: 'prayer-broadcast-locked', writes: true, asks: 'Is a sent prayer broadcast locked — no Preview, no Confirm, Save off — and said so in Dhivehi, while a draft can still be previewed?' },
     { name: 'print-office', writes: true, asks: 'Can the Bookstore manager price a paper, keep a subject set and try the print desk\'s switch, in Dhivehi?' },
     { name: 'print-templates', writes: true, asks: 'Can the Bookstore manager make a name-tag template in the designer — a Thaana name field, dragged, saved, a sample sheet, active, retired — in Dhivehi?' },
+    { name: 'print-design', writes: true, asks: 'Can a customer make name tags from a template — a Thaana name, glossy colour, two sheets, the server\'s price — see a watermarked proof, approve it, and find it locked, in Dhivehi?' },
     { name: 'public-rtl', writes: false, asks: 'Does the website read right to left in Dhivehi and Arabic, on a desk and on a phone?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
     { name: 'course-screens-language', writes: true, asks: 'Do the screens teachers build courses on — and the Qur\'an screens, a learner\'s among them — read in Dhivehi and Arabic, with a name on every field?' },

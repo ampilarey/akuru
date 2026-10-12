@@ -134,4 +134,12 @@ return [
     'my-lending/books/{book}/{action}' => 'MyLendingController@bookStatus — L2: READ: ManageLendingBooksAction::setStatus looks the book up under the caller\'s own lender_id, so another lender\'s id is a 404.',
     'my-lending/loans/{loan}/rate' => 'MyLendingController@rate — L2: READ: RateLendingAction::rate is a 404 unless the signed-in user is the loan\'s borrower or its lender, and refuses a second rating.',
     'lending/{slug}/request' => 'LendingController@request — a signed-in person\'s own request; LendingLoanAction::request writes it under the signed-in user id and refuses the lender\'s own book.',
+    // NAME_TAGS_PLAN NT3: a customer's own print jobs. READ: ShopPrintController::job() finds the job and
+    // aborts 404 unless it is the signed-in caller's (user_id) or, for a guest, rides on the caller's own basket (ResolvesCart).
+    'shop/print/jobs' => 'ShopPrintController@start — starts a job on the caller\'s own account, or a guest\'s own basket (ResolvesCart); the template must be active; throttled; 404 while the service is off unless bookshop.manage.',
+    'shop/print/jobs/{job}' => 'ShopPrintController@save / @destroy — READ: job() 404s unless the job is the caller\'s (or rides on the guest\'s own basket); throttled.',
+    'shop/print/jobs/{job}/approve' => 'ShopPrintController@approve — auth; READ: job() 404s unless the job is the signed-in caller\'s own.',
+    'shop/print/jobs/{job}/copy' => 'ShopPrintController@copy — READ: job() 404s unless the job is the caller\'s own; the copy is written to the caller.',
+    'shop/print/jobs/{job}/name' => 'ShopPrintController@rename — auth; READ: job() 404s unless the job is the signed-in caller\'s own.',
+    'shop/print/jobs/{job}/proof' => 'ShopPrintController@proof — auth; READ: job() 404s unless the job is the signed-in caller\'s own; throttled (it renders).',
 ];

@@ -153,6 +153,12 @@ it('pins every caller that can read a generated document', function () {
         // **The one that used to take the id from the query string.** Now
         // reads `certificate_document_id` off the bound StudentAward.
         'app/Domains/ExamsGrades/Http/Controllers/AwardController.php',
+        // NAME_TAGS_PLAN NT3: a print job's print file, read off the job's own
+        // `print_document_id` — under bookshop.manage only (jobFile).
+        'app/Domains/Bookshop/Http/Controllers/AdminPrintController.php',
+        // NT3: a proof sheet, read off the caller's own job's `proof_document_ids`
+        // by position, behind a signed link minutes long; never the print file.
+        'app/Domains/Bookshop/Http/Controllers/ShopPrintController.php',
     ];
 
     $callers = [];

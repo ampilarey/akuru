@@ -1,0 +1,139 @@
+<?php
+
+namespace App\Domains\Bookshop\Actions\Print;
+
+use App\Domains\Bookshop\Enums\PrintJobStatus;
+use App\Domains\Bookshop\Models\PrintFinishingOption;
+use App\Domains\Bookshop\Models\PrintJob;
+use App\Domains\Bookshop\Models\PrintLayout;
+use App\Domains\Bookshop\Models\PrintPaperOption;
+use App\Domains\Bookshop\Models\PrintSubjectSet;
+use App\Domains\Bookshop\Models\PrintTemplate;
+use App\Domains\Bookshop\Support\PrintDesign;
+use App\Domains\Bookshop\Support\PrintDesk;
+use App\Domains\Bookshop\Support\PrintJobEntry;
+use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
+use App\Support\Services\PrintFontFaces;
+use Illuminate\Support\Facades\URL;
+
+/**
+ * NAME_TAGS_PLAN §3 (NT3): what the customer's pages show — the door's
+ * gallery, one job with everything its page needs to choose from, and
+ * *My designs*. Proof pictures are reached only by signed links that last
+ * minutes (decision D6); the print file has no customer link at all.
+ */
+class PresentPrintJobAction
+{
+    /** Minutes a proof picture's link works for. */
+    public const PROOF_LINK_MINUTES = 15;
+
+    /** @return list<array<string, mixed>> the active templates, for the door */
+    public function gallery(string $locale): array
+    {
+        return PrintTemplate::query()->with('layout')->where('status', 'active')->orderBy('sort_order')->orderBy('id')->get()
+            ->map(fn (PrintTemplate $t) => [
+                'id' => $t->id, 'title' => $t->titleIn($locale), 'kind' => $t->kind, 'design' => $t->design,
+                'fields' => PrintDesign::fieldKeys((array) $t->design), 'layout' => $t->layout?->name,
+            ])->values()->all();
+    }
+
+    /** @return array<string, mixed> one job, with what its page offers */
+    public function job(PrintJob $job, string $locale): array
+    {
+        $design = (array) $job->design;
+        $warnings = [];
+        foreach ((array) ($job->preflight['warnings'] ?? []) as $w) {
+            $vars = (array) ($w['vars'] ?? []);
+            if (isset($vars['field'])) {
+                $vars['field'] = __('print.field_'.$vars['field']) === 'print.field_'.$vars['field'] ? (string) $vars['field'] : __('print.field_'.$vars['field']);
+            }
+            $warnings[] = __((string) $w['key'], $vars);
+        }
+        $layout = PrintLayout::query()->find($job->print_layout_id);
+
+        return [
+            'id' => $job->id,
+            'name' => $job->name,
+            'status' => $job->status->value,
+            'open' => $job->isOpen(),
+            'template' => $job->template?->titleIn($locale),
+            'design' => $design,
+            'fields' => array_map(fn (array $f) => ['key' => $f['key'], 'required' => (bool) $f['required'], 'label' => $this->fieldLabel($f['key'])], (array) ($design['fields'] ?? [])),
+            'schemes' => (array) ($design['palette']['schemes'] ?? []),
+            'scheme' => $design['palette']['scheme'] ?? null,
+            'font' => PrintDesign::fieldFont($design),
+            'entry' => $job->entry,
+            'layout_id' => $job->print_layout_id,
+            'paper_id' => $job->print_paper_option_id,
+            'colour' => (bool) $job->colour,
+            'finishing' => array_map('intval', (array) $job->finishing),
+            'sheets' => (int) $job->sheets,
+            'tags' => $layout === null ? 0 : count(PrintJobEntry::rows((array) $job->entry, $layout, (int) $job->sheets)),
+            'per_sheet_tags' => $layout?->tagsPerSheet() ?? 0,
+            'price' => $job->price_breakdown,
+            'held' => $job->approved_price_snapshot,
+            'warnings' => $warnings,
+            'proof_images' => $this->proofLinks($job),
+            'more_sheets' => max(0, (int) $job->sheets - count((array) $job->proof_document_ids)),
+            'proofed_at' => $job->proofed_at?->toIso8601String(),
+            'approved_at' => $job->approved_at?->toIso8601String(),
+        ];
+    }
+
+    /** @return array<string, mixed> the lists a job's page chooses from */
+    public function choices(string $locale, array $design): array
+    {
+        $media = [];
+        foreach ((array) ($design['elements'] ?? []) as $el) {
+            if (($el['type'] ?? null) === 'image' && ! empty($el['media'])) {
+                $media[(int) $el['media']] = app(ResolvePublicMediaUrlAction::class)->execute((int) $el['media']);
+            }
+        }
+        $settings = PrintDesk::settings();
+
+        return [
+            'layouts' => PrintLayout::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get()
+                ->map(fn (PrintLayout $l) => ['id' => $l->id, 'name' => $l->name, 'tags' => $l->tagsPerSheet(), 'tag_w_mm' => $l->tag_w_mm, 'tag_h_mm' => $l->tag_h_mm])->values()->all(),
+            'papers' => PrintPaperOption::query()->where('is_active', true)->where(fn ($q) => $q->where('price_bw', '>', 0)->orWhere('price_colour', '>', 0))->orderBy('sort_order')->orderBy('id')->get()
+                ->map(fn (PrintPaperOption $p) => ['id' => $p->id, 'name' => $p->nameIn($locale), 'gsm' => $p->gsm, 'price_bw' => (float) $p->price_bw, 'price_colour' => (float) $p->price_colour])->values()->all(),
+            'finishing_options' => PrintFinishingOption::query()->where('is_active', true)->where('price', '>', 0)->orderBy('sort_order')->orderBy('id')->get()
+                ->map(fn (PrintFinishingOption $f) => ['id' => $f->id, 'name' => $f->nameIn($locale), 'price' => (float) $f->price, 'cuts_sheet' => (bool) $f->cuts_sheet])->values()->all(),
+            'subject_sets' => PrintSubjectSet::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get()
+                ->map(fn (PrintSubjectSet $s) => ['id' => $s->id, 'label' => $s->labelIn($locale), 'subjects' => $s->subjects])->values()->all(),
+            'fonts' => PrintFontFaces::faces(),
+            'font_css' => PrintFontFaces::forBrowser(),
+            'images' => array_filter($media),
+            'settings' => ['min_sheets' => $settings['min_sheets'], 'max_rows' => $settings['max_rows'], 'lead_days' => $settings['lead_days'], 'tiers' => $settings['tiers']],
+        ];
+    }
+
+    /** @return list<array<string, mixed>> the customer's designs, newest first */
+    public function mine(int $userId, string $locale): array
+    {
+        return PrintJob::query()->with('template')->where('user_id', $userId)->latest('updated_at')->limit(200)->get()
+            ->map(fn (PrintJob $j) => [
+                'id' => $j->id, 'name' => $j->name, 'status' => $j->status->value, 'template' => $j->template?->titleIn($locale),
+                'design' => $j->design, 'entry' => $j->entry, 'sheets' => (int) $j->sheets, 'total' => (float) $j->price_total,
+                'updated_at' => $j->updated_at?->toIso8601String(),
+                'removable' => ! in_array($j->status, [PrintJobStatus::Ordered, PrintJobStatus::Printing, PrintJobStatus::Finished], true),
+            ])->values()->all();
+    }
+
+    /** @return list<string> */
+    private function proofLinks(PrintJob $job): array
+    {
+        $links = [];
+        foreach (array_values((array) $job->proof_document_ids) as $i => $id) {
+            $links[] = URL::temporarySignedRoute('public.shop.print.proof', now()->addMinutes(self::PROOF_LINK_MINUTES), ['job' => $job->id, 'sheet' => $i + 1]);
+        }
+
+        return $links;
+    }
+
+    private function fieldLabel(string $key): string
+    {
+        $label = __('print.field_'.$key);
+
+        return $label === 'print.field_'.$key ? $key : (string) $label;
+    }
+}

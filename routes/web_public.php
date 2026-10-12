@@ -85,6 +85,14 @@ Route::get('shop/c/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopControll
 // `throttle:N,1` keys on the user alone, so every such route shares one
 // counter, and ten cart adds in a minute used to get the checkout a 429
 // (found by the B3 walk, 2026-09-26).
+// NAME_TAGS_PLAN NT3: name tags made to order. Designing is open to guests
+// (their job rides on their basket); the proof, its approval and My designs need
+// an account. While the service is off only the Bookstore office may open these.
+Route::get('shop/print/name-tags', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'door'])->name('public.shop.print');
+Route::post('shop/print/jobs', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'start'])->name('public.shop.print.start')->middleware('throttle:20,1,shop-print-start');
+Route::get('shop/print/jobs/{job}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'show'])->name('public.shop.print.job')->whereNumber('job');
+Route::post('shop/print/jobs/{job}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'save'])->name('public.shop.print.save')->whereNumber('job')->middleware('throttle:120,1,shop-print-save');
+Route::post('shop/print/jobs/{job}/copy', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'copy'])->name('public.shop.print.copy')->whereNumber('job')->middleware('throttle:20,1,shop-print-copy');
 Route::get('shop/cart', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'index'])->name('public.shop.cart');
 Route::post('shop/cart', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'add'])->name('public.shop.cart.add')->middleware('throttle:60,1,shop-cart');
 // §5lc: a school's whole book list, in one tap.
@@ -99,6 +107,12 @@ Route::middleware(['auth', 'customer_password'])->group(function () {
     Route::get('shop/checkout/{number}', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'status'])->name('public.shop.checkout.status');
     Route::post('shop/checkout/{number}/slip', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'uploadSlip'])->name('public.shop.checkout.slip')->middleware('throttle:10,1,shop-slip');
     Route::get('shop/slips/{slip}', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'slip'])->name('public.shop.slip')->whereNumber('slip');
+    Route::post('shop/print/jobs/{job}/proof', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'proof'])->name('public.shop.print.proof.make')->whereNumber('job')->middleware('throttle:10,1,shop-print-proof');
+    Route::post('shop/print/jobs/{job}/approve', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'approve'])->name('public.shop.print.approve')->whereNumber('job')->middleware('throttle:20,1,shop-print-approve');
+    Route::post('shop/print/jobs/{job}/name', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'rename'])->name('public.shop.print.rename')->whereNumber('job')->middleware('throttle:30,1,shop-print-rename');
+    Route::delete('shop/print/jobs/{job}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'destroy'])->name('public.shop.print.destroy')->whereNumber('job')->middleware('throttle:30,1,shop-print-remove');
+    Route::get('shop/print/proof/{job}/{sheet}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'proofImage'])->name('public.shop.print.proof')->whereNumber('job')->whereNumber('sheet')->middleware(['signed', 'throttle:240,1,shop-print-proof-image']);
+    Route::get('my-designs', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'designs'])->name('public.shop.print.designs');
     Route::get('my-orders', [\App\Domains\Bookshop\Http\Controllers\MyOrdersController::class, 'index'])->name('public.shop.orders');
     // COMMERCE_PARITY_PLAN P8c: a school's own credit statement.
     Route::get('my-orders/credit-statement', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'mine'])->name('public.shop.credit.statement');

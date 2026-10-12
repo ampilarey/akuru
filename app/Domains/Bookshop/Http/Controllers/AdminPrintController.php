@@ -9,14 +9,17 @@ use App\Domains\Bookshop\Actions\Print\SavePrintPaperAction;
 use App\Domains\Bookshop\Actions\Print\SavePrintSettingsAction;
 use App\Domains\Bookshop\Actions\Print\SavePrintSubjectSetAction;
 use App\Domains\Bookshop\Models\PrintFinishingOption;
+use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintLayout;
 use App\Domains\Bookshop\Models\PrintPaperOption;
 use App\Domains\Bookshop\Models\PrintSubjectSet;
+use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -115,5 +118,23 @@ class AdminPrintController extends Controller
             }
             fclose($out);
         }, 'bookstore-print-'.str_replace('_', '-', $list).'.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /**
+     * NAME_TAGS_PLAN §3.7, decision D6 (NT3): a job's print-ready PDF — the
+     * office's alone. No customer route returns it.
+     */
+    public function jobFile(Request $request, int $job): HttpResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $row = PrintJob::query()->withTrashed()->findOrFail($job);
+        abort_if($row->print_document_id === null, 404);
+        $doc = app(ReadGeneratedDocumentAction::class)->execute((int) $row->print_document_id);
+
+        return response($doc['contents'], 200, [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'attachment; filename="print-job-'.$row->id.'.pdf"',
+            'Cache-Control' => 'private, no-store, max-age=0',
+        ]);
     }
 }

@@ -16,5 +16,8 @@ enum DocumentType: string
     case TransferCertificate = 'transfer_certificate';
     case Receipt = 'receipt';
     case Payslip = 'payslip';
+    // NAME_TAGS_PLAN §5.2 (NT3): a print job's watermarked proof sheet, and its print-ready PDF.
+    case PrintProof = 'print_proof';
+    case PrintFile = 'print_file';
     case Other = 'other';
 }

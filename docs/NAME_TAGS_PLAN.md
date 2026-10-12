@@ -631,6 +631,18 @@ commits, STATUS and the walks.
   confirm no download button and that fetching the PDF route as the
   customer is 403.
 
+> **Built 2026-10-12 (STATUS §5rq).** As planned, with these choices and
+> finds: the customer's pages are Inertia in the shell (rule: no new
+> Blade), open to guests, whose job rides on their basket and follows it
+> to the account; the entry is stored as typed (`entry`) and expanded only
+> by the renderer; a layout of another tag size scales the design
+> (`PrintDesign::fit`); proof pictures are capped at 30 sheets. Two
+> defects found by looking at a real proof: Chrome's new headless mode
+> drew the page about 90 px short (fixed by a taller window and a GD crop
+> in `ChromePageImage`), and a Latin name on a Thaana face fell to a serif
+> (fixed by a per-script font stack, `PrintFontFaces::stack`). The cart
+> refuses the print product added bare.
+
 ### NT4 — Cart, checkout, the queue, production and notices
 
 - `cart_items.print_job_id`, `order_items.print_job_id`; the cart and

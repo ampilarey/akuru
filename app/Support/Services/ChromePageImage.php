@@ -16,6 +16,9 @@ use Symfony\Component\Process\Process;
  */
 class ChromePageImage implements PageImageInterface
 {
+    /** Pixels added to the window's height so the whole page is inside the viewport. */
+    public const EXTRA_HEIGHT = 240;
+
     public function __construct(private readonly ?string $chromePath, private readonly int $timeoutSeconds = 60) {}
 
     public function enabled(): bool
@@ -49,7 +52,10 @@ class ChromePageImage implements PageImageInterface
                 '--disable-extensions',
                 '--hide-scrollbars',
                 '--force-device-scale-factor=1',
-                '--window-size='.max(1, $widthPx).','.max(1, $heightPx),
+                // New headless Chrome lays the page out in a viewport shorter than
+                // the window (the bottom ~90 px of an A4 picture came out blank,
+                // NT3's walk): shoot a taller window, then crop to the page.
+                '--window-size='.max(1, $widthPx).','.(max(1, $heightPx) + self::EXTRA_HEIGHT),
                 '--user-data-dir='.$dir.'/profile-'.$name,
                 '--screenshot='.$out,
                 'file://'.$in,
@@ -62,7 +68,7 @@ class ChromePageImage implements PageImageInterface
                 throw new RuntimeException('Chrome did not produce an image: '.Str::limit(trim($process->getErrorOutput()), 300));
             }
 
-            return $bytes;
+            return self::crop($bytes, $widthPx, $heightPx);
         } finally {
             @unlink($in);
             @unlink($out);
@@ -70,5 +76,32 @@ class ChromePageImage implements PageImageInterface
                 (new Filesystem)->deleteDirectory($dir.'/profile-'.$name);
             }
         }
+    }
+
+    /** The picture cut to the page's own size, from its top left; as it came where GD cannot. */
+    public static function crop(string $png, int $widthPx, int $heightPx): string
+    {
+        if (! function_exists('imagecreatefromstring')) {
+            return $png;
+        }
+        $image = @imagecreatefromstring($png);
+        if ($image === false) {
+            return $png;
+        }
+        if (imagesx($image) === $widthPx && imagesy($image) === $heightPx) {
+            imagedestroy($image);
+
+            return $png;
+        }
+        $cut = imagecrop($image, ['x' => 0, 'y' => 0, 'width' => min($widthPx, imagesx($image)), 'height' => min($heightPx, imagesy($image))]);
+        imagedestroy($image);
+        if ($cut === false) {
+            return $png;
+        }
+        ob_start();
+        imagepng($cut);
+        imagedestroy($cut);
+
+        return (string) ob_get_clean();
     }
 }

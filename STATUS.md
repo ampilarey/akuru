@@ -4983,6 +4983,124 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rq. Customers make name tags from a template and approve a proof (C23 NT3, 2026-10-12)
+
+The fourth slice of `docs/NAME_TAGS_PLAN.md`, after NT2 (§5rp): the
+customer's side, up to an approved, locked, priced job. The cart and the
+print queue are NT4.
+
+**Built:**
+- **Data** (plan §8): `print_jobs` — the job's own copy of the design, what
+  the customer typed (`entry`: one row repeated, a list, a subject set and
+  the language its subjects print in), layout, paper, colour, finishing,
+  sheets, the price and its breakdown, the price held at approval, the
+  proof's sheet pictures and the print file (private documents), status
+  and its timestamps, `academic_year_id` (rule 10, through Academics'
+  year action), soft deletes. Morph alias `print_job`. Two document types,
+  `print_proof` and `print_file` (named in the HR phrase book, which names
+  every type). Statuses are a string enum, `PrintJobStatus`.
+- **The price** (`QuotePrintJobAction`, plan §3.6) is the server's only:
+  paper by colour, plus each finishing, times sheets, less the largest
+  quantity tier reached; GST named inside the total (Bookstore decision 4);
+  the cart's unit price is the total over the sheets (decision D15).
+  Refused in the page's language: no paper, a paper not printed in the
+  chosen colour, an unknown finishing, fewer sheets than the minimum.
+- **What the tags say** (`PrintJobEntry`, plan §3.5): *one child, every
+  tag the same* for as many sheets as asked; *a list*, pasted (tab or
+  comma, in the design's field order) or from a CSV file, as many sheets as
+  it needs; a grade's *subject set*, ticked, added to, crossed with the
+  names, printed in English, Dhivehi or Arabic as chosen — refused on a
+  design with no subject field. Warnings, not refusals: empty lines left
+  out, lines missing a required field, a value likely too long for its
+  box. At most the desk's *most names in one list*.
+- **The look**: the template's colour schemes and the font of the field
+  texts; a layout of another tag size scales the design to it
+  (`PrintDesign::fit`), from the template so switching back loses nothing.
+- **The proof** (`ProofPrintJobAction`, plan §3.7, decision D6): one
+  render, two outputs — the print file, every sheet in one PDF with no
+  watermark (black and white printed grey), and a 96-dpi picture of each
+  sheet with the desk's watermark, at most 30. Refused where the host
+  cannot print. A change to a proofed job sends it back to draft.
+- **Approval** locks the job: the price is worked out again and held for
+  seven days (decision D11), the template's *uses* counts it, and every
+  later change — save, proof, approve — is refused (`print.error_locked`)
+  in the page's language. *Change it* makes a draft copy.
+- **Who may see a job**: its owner; a guest's job rides on their basket
+  and follows it to the account when they sign in (the cart merge hands it
+  over). Anyone else gets 404. While the service is off, only
+  `bookshop.manage` opens these pages, to try them before switching on.
+- **Never downloaded** (decision D6): proof pictures come by signed links
+  that last 15 minutes, to the job's owner only, `no-store`, by position
+  in the job's own proof list — never the print file. The print file has
+  no customer route; the office's is `admin.bookshop.print.jobs.file`
+  under `bookshop.manage`.
+- **Pages** (Inertia, in the shell, EN/DV/AR, right to left under /dv and
+  /ar): the door `/shop/print/name-tags` (Akuru's designs drawn with
+  sample names, filtered by kind), a job's page (preview of each tag,
+  fields or list or subjects, colour schemes and font, layout, paper,
+  colour, finishing, sheets, the server's price and the warnings, autosave
+  every change, *Make the proof*, the proof sheets, *Approve*, the lock),
+  and *My designs* `/my-designs` (drawn, renamed, copied, removed while no
+  order holds one). The product page of *Name tags — A4* sends customers
+  to the door instead of a plain *Add to cart*, and the cart refuses the
+  print product added bare (it would have been free).
+
+**Found on the way, fixed:**
+- **The proof picture lost the bottom of the page.** New headless Chrome
+  lays the page out in a viewport about 90 px shorter than its window, so
+  the last row of tags on an A4 proof came out cut. `ChromePageImage` now
+  shoots a taller window and crops the picture to the page with GD.
+- **A Latin name printed in a serif.** The shipped Noto Sans Thaana file
+  has only Thaana glyphs, so a Latin name on the *Plain* template fell to
+  the browser's default serif. Every text is now set in a stack — the
+  chosen face, then Figtree (Latin), Noto Sans Thaana and Cairo (Arabic),
+  then sans-serif — on the sheet and in the browser preview alike
+  (`PrintFontFaces::stack`).
+- A shop could have been named `print` (the whole suite caught it); the word is now reserved.
+- `StoreGeneratedDocumentAction` named files by the second, so a proof's
+  sheets written in one second overwrote each other; it takes a suffix.
+
+**Tests:** `PrintJobsTest` (new, 13): the price table (paper × colour ×
+finishing × tiers) and its refusals in Dhivehi; the door off and on, the
+office's preview, a guest's job, autosave and its price, the proof refused
+to a guest, the job following the guest to the account, someone else's
+404; 25 names making 4 sheets, empty lines and long names warned, a
+subject set's tags, the subject refused on a name design, a smaller label
+fitting the design, too many lines and nothing typed refused; the proof's
+PDF (one, grey, no watermark) and pictures (watermarked, 794 × 1123),
+signed links working for the owner only and expiring, a picture refused
+without its signature, no sheet beyond the pictures, the print file 403 to
+the customer and a PDF to the office; approval, the held price untouched
+by a later price change, every change refused in Arabic, the copy; the
+proof refused where the host cannot print; the bare product refused in the
+cart; My designs, rename, remove and its refusal once ordered; the crop
+and the font stack. Architecture tests green (the new readers and public
+routes declared with their reasons).
+
+Whole suite locally: **3167 passed (66701 assertions), 1 failed** — this slice's: `ShopDealsTest` found that a shop could have been named `print` and collided with `/shop/print/…`; `print` is now a reserved shop address, and that test and the print tests rerun green (38 passed).
+
+**Walk:** `print-design.mjs` (new, in the runner, run with
+`DOCUMENTS_CHROME_PATH` set so Chrome really renders): the walk prices the
+glossy paper and switches the service on, then under `/dv` the customer
+opens the door right to left, sees Akuru's designs drawn with the Dhivehi
+sample name, opens one as a draft, types a Thaana name, chooses glossy,
+colour and two sheets, sees the server's MVR 9.00 in Dhivehi, makes the
+proof and sees two sheet pictures drawn by Chrome through signed,
+expiring links, finds nothing to download, is refused the print file and
+an unsigned picture, approves, finds the fields disabled and a change sent
+anyway refused in Dhivehi, and sees the design approved in *My designs*.
+The desk is put back. 18/18. `print-templates` 13/13 and `print-office`
+7/7 rerun. A screenshot of the proof page and a real Chrome sheet with a
+Latin, a Thaana and an Arabic name read.
+
+**Deploy:** one additive migration (`print_jobs`). The built assets are in
+the commit. The standard pull command runs it. Nothing shows to customers
+until the office switches the service on, which needs the host's Chrome
+(plan §14).
+
+**Next:** NT4 — the approved job into the cart and checkout, the print
+queue, production steps and notices.
+
 ## 5rp. Print templates and the designer in template mode (C23 NT2, 2026-10-12)
 
 The third slice of `docs/NAME_TAGS_PLAN.md`, after NT1 (§5ro): the
