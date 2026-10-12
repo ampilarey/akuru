@@ -5017,7 +5017,7 @@ guest's abandoned design, and its proof images, stayed for good.
 
 The Architecture and Print groups rerun green (131).
 
-Whole suite locally: **RESULT**.
+Whole suite locally: **3201 passed** (67439 assertions).
 
 **Walk:** none — a scheduled command, no screen (as NT0).
 
