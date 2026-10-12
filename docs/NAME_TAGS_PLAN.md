@@ -661,6 +661,15 @@ commits, STATUS and the walks.
   the Bookstore walks already use, the manager prints and finishes it,
   the customer's order reads *ready* in Arabic.
 
+> **Built 2026-10-12 (STATUS §5rr).** As planned, with these choices: the
+> basket's sheets are locked rather than repriced and un-approved (an
+> approved job is locked everywhere; a change is a copy, approved anew); a
+> print line cannot be saved for later; the line's total is the approved
+> total exactly; the queue is its own screen `Bookshop/PrintQueue.jsx`
+> under the print desk; the queue reads the customer from the order's
+> address snapshot (rule 3); *ready*, *dispatched* and *delivered* are
+> refused while a job on the order is unfinished.
+
 ### NT5 — Upload your design, with preflight
 
 - PNG/JPEG upload (private), tag or sheet, preflight (§5.5), the

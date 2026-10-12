@@ -2030,4 +2030,8 @@ return [
     'application_id_back' => 'ID back',
     'error_not_a_member' => 'You are not a member of a shop in the Akuru Bookstore.',
     'error_agreement_first' => 'Accept the Vendor Agreement first.',
+    'event_print_printing' => 'Printing started',
+    'event_print_finished' => 'Printing finished',
+    'event_print_reprint' => 'Reprinted at no charge',
+    'event_print_problem' => 'The print desk found a problem and will contact you',
 ];

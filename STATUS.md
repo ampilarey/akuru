@@ -4983,6 +4983,108 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rr. An approved design is bought, and the print desk prints it (C23 NT4, 2026-10-12)
+
+The fifth slice of `docs/NAME_TAGS_PLAN.md`, after NT3 (§5rq): from an
+approved, locked design to a paid order the print desk works through to
+*ready*.
+
+**Built:**
+- **Data** (plan §8): `cart_items.print_job_id` and `order_items.print_job_id`
+  (nullable, null on delete), and `print_job_reprints` (the job, the reason,
+  who, when). Morph alias `print_job_reprint`.
+- **Into the basket** (`AddPrintJobToCartAction`, plan §3.8): *Add to
+  basket* on an approved design's page puts one line in the owner's basket —
+  the print product, quantity = the job's sheets. Adding it again finds the
+  same line. Refused, in the page's language: someone else's design (404), a
+  design not approved, a held price that has lapsed, the service off, a
+  design already in an order still alive.
+- **Its price** (`PrintLine`, decisions D11 and D15): the line's total is the
+  total approved with the proof, exactly; the unit is that over the sheets.
+  Never the product's price, never today's price list.
+- **Checkout** (plan §3.8): a basket with printing in it is offered *Collect
+  from Akuru Institute* and *Akuru courier* only, each *printed and ready in
+  N working days* from the desk's lead time. Each line is checked again
+  under a lock — approved, held, the same sheets, not already ordered — and
+  the order line copies the job and its price. Cash on delivery is refused
+  for printing while the desk's *cash for print* is off (decision D10,
+  default off); when on, Akuru's two deliveries take cash.
+- **Rule 12**: a job becomes the desk's (*ordered*) only when its order is
+  paid — the bank's webhook, the wallet, a confirmed slip — through
+  `MarkCheckoutPaidAction`, or placed for cash where the desk allows it. A
+  card checkout back from the bank but unconfirmed puts nothing on the
+  queue. An order cancelled cancels its jobs not yet printing.
+- **The queue** `/admin/bookshop/print/queue` (`bookshop.manage`, Inertia,
+  EN/DV/AR, phone cards, CSV; under *Print desk* in the menu and linked from
+  the desk): the jobs on paid orders, oldest first, with the order, the
+  customer and number from the order, the delivery, sheets, paper, colour,
+  finishing, total and the due date (working days, Friday and Saturday off).
+  The print file downloads from the card. Four steps
+  (`PrintProductionAction`), each an order event the customer's *My orders*
+  reads: **Start printing** (the order moves to processing), **Mark
+  finished** (a collection order moves to *ready* once every job on it is
+  finished, and the existing *ready to collect* notice goes out), **Reprint**
+  (a reason, recorded, back to printing, no charge), **Report a problem** (a
+  note, the order *needs attention*).
+- **The order can't run ahead of the press**: *ready*, *dispatched* or
+  *delivered* is refused while a job on the order is not finished.
+- **The customer's side**: the basket shows the design (a link to it), its
+  sheets as approved and the date the price is held to; no quantity change,
+  no *Save for later*. *My orders* links each print line to its design with
+  the job's state, and lists the print steps. The design's page says which
+  order it is in, or that its held price lapsed.
+
+**Decided on the way** (the plan left them open or said otherwise):
+- **The sheets in the basket are locked.** The plan said a quantity change
+  would reprice and un-approve the job; an approved job is locked
+  everywhere else (NT3), so the basket refuses the change and points to
+  *make a copy*, which is approved anew. One rule for one locked thing.
+- **No *Save for later* for a print line**: its price is held for seven
+  days, not kept indefinitely.
+- **The queue's customer and number come from the order's own address
+  snapshot**, as the Akuru fulfilment list reads them — the Bookstore never
+  reads Identity's users (rule 3).
+
+**Found on the way, fixed:**
+- *Add to basket* from the design's page (Inertia) landed the cart (Blade)
+  inside a sandboxed modal; the walk caught it. A request from the app now
+  gets a full visit (`Inertia::location`).
+
+**Tests:** `PrintOrdersTest` (new, 7): the basket takes an approved design
+once at its held price and refuses someone else's, a draft, a quantity
+change and *Save for later*, and lets it go; the checkout offers Akuru's two
+deliveries only with the lead time, refuses another, and the order line
+copies the job's price; a card payment queues the job only on the webhook,
+once; cash refused for print by default, a lapsed price refused in the
+basket and at checkout; the queue office-only, its rows, due date and CSV,
+*ready* refused while printing is unfinished, finish-before-start refused,
+start → processing, finish → ready, a reprint with its reason and no
+refund, a problem → needs attention, the events on *My orders*, the four
+event names in all three languages; a cancelled order cancels its job; the
+working-day due date. `PrintJobsTest` and the Bookshop, Architecture and
+Localization groups rerun green.
+
+Whole suite locally: **3175 passed (66951 assertions)**, none failed.
+
+**Walk:** `print-order.mjs` (new, in the runner, with
+`DOCUMENTS_CHROME_PATH` set so Chrome really proofs): the walk makes the
+customer an approved design and tops up their wallet (the Bookstore walks'
+payment path); the customer adds it to the basket, sees two sheets at MVR
+9.00, the sheets read-only and no *Save for later*, is offered collect from
+Akuru and Akuru courier only with the lead time, collects and pays from the
+wallet; the office opens the queue, sees the job ordered with its due date,
+downloads `print-job-N.pdf`, starts and finishes it; under `/ar` the
+customer's order reads *ready to collect* with the print steps in Arabic and
+a link to the design; the print file is refused to the customer. 15/15.
+`print-design` 18/18 rerun.
+
+**Deploy:** one additive migration (`2026_10_12_000004_nt4_print_orders`).
+The built assets are in the commit. The standard pull command runs it.
+Nothing shows to customers until the office switches the service on, which
+needs the host's Chrome (plan §14).
+
+**Next:** NT5 — upload your own design, with preflight.
+
 ## 5rq. Customers make name tags from a template and approve a proof (C23 NT3, 2026-10-12)
 
 The fourth slice of `docs/NAME_TAGS_PLAN.md`, after NT2 (§5rp): the

@@ -457,6 +457,8 @@ final class NavigationMap
                 // NAME_TAGS_PLAN NT1: the print desk's settings and lists; NT2: its templates, opened from the desk.
                 ['key' => 'print_desk', 'href' => '/admin/bookshop/print', 'can' => ['bookshop.manage'], 'children' => [
                     ['key' => 'print_templates', 'href' => '/admin/bookshop/print/templates'],
+                    // NT4: the queue of paid jobs the desk prints.
+                    ['key' => 'print_queue', 'href' => '/admin/bookshop/print/queue'],
                 ]],
                 // COMMERCE_PARITY_PLAN P7a: the problems customers report on orders.
                 ['key' => 'complaints', 'href' => '/admin/bookshop/complaints', 'can' => ['bookshop.manage']],

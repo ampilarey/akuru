@@ -148,6 +148,7 @@ return [
     'akuru_fulfilment' => 'އަކުރުން ތައްޔާރުކުރުން',
     'print_desk' => 'ޕްރިންޓް ޑެސްކް',
     'print_templates' => 'ޕްރިންޓް ޓެމްޕްލޭޓްތައް',
+    'print_queue' => 'ޕްރިންޓް ކިއު',
     'complaints' => 'ރިޕޯޓުކުރެވުނު މައްސަލަތައް',
     'sms_campaigns' => 'އެސްއެމްއެސް އޮފަރުތައް',
     'shop_customers' => 'ކަސްޓަމަރުން',

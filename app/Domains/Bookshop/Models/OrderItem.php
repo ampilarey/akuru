@@ -11,7 +11,7 @@ class OrderItem extends Model
 {
     protected $fillable = [
         'order_id', 'product_id', 'product_variant_id', 'title', 'variant_name', 'sku',
-        'unit_price', 'quantity', 'line_total', 'tax_class', 'tax_amount', 'quote_item_id',
+        'unit_price', 'quantity', 'line_total', 'tax_class', 'tax_amount', 'quote_item_id', 'print_job_id',
     ];
 
     protected function casts(): array
@@ -27,6 +27,12 @@ class OrderItem extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    /** NAME_TAGS_PLAN NT4: the print job this line made, if it is a print line. */
+    public function printJob(): BelongsTo
+    {
+        return $this->belongsTo(PrintJob::class);
     }
 
     /** The product it was, if it still exists (§5ld "Buy again"). */

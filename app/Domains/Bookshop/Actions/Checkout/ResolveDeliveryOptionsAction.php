@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Enums\DeliveryKind;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Models\VendorDeliveryMethod;
 use App\Domains\Bookshop\Support\AkuruFulfilment;
+use App\Domains\Bookshop\Support\PrintDesk;
 
 /**
  * How a vendor can get this basket to the customer, with the fee for this
@@ -20,7 +21,7 @@ class ResolveDeliveryOptionsAction
     /**
      * @return list<array{key: string, kind: string, name: string, fee: string, free: bool, carrier_paid: bool, handling_days: int, minimum_order: ?string, offered: bool, note: ?string}>
      */
-    public function execute(Vendor $vendor, float $vendorSubtotal): array
+    public function execute(Vendor $vendor, float $vendorSubtotal, bool $print = false): array
     {
         $methods = $vendor->deliveryMethods()->where('is_active', true)->get();
         $rows = $methods->isNotEmpty()
@@ -48,6 +49,9 @@ class ResolveDeliveryOptionsAction
             ], (array) config('bookshop.delivery_template', []), array_keys((array) config('bookshop.delivery_template', [])));
 
         $rows = $this->akuru($vendor, $rows);
+        if ($print) {
+            $rows = $this->print($rows);
+        }
 
         // B7 (§6.5 "spend MVR X, get free delivery"): the shop-wide threshold
         // frees every charged method, unless the method's own is lower —
@@ -107,6 +111,36 @@ class ResolveDeliveryOptionsAction
         }
 
         return $rows;
+    }
+
+    /**
+     * NAME_TAGS_PLAN §3.8 (NT4): a basket with printing in it is collected
+     * from Akuru or brought by Akuru's courier — nothing else — and is ready
+     * in the print desk's lead time, not the shop's handling days.
+     *
+     * @param  list<array<string, mixed>>  $rows
+     * @return list<array<string, mixed>>
+     */
+    private function print(array $rows): array
+    {
+        $lead = max(1, PrintDesk::settings()['lead_days']);
+        $kept = array_values(array_filter($rows, fn (array $r) => in_array($r['kind'], [DeliveryKind::AkuruCourier->value, DeliveryKind::CollectAkuru->value], true)));
+        if (! collect($kept)->contains('kind', DeliveryKind::CollectAkuru->value)) {
+            $kept[] = [
+                'key' => 'akuru-collect', 'kind' => DeliveryKind::CollectAkuru->value, 'name' => (string) __('shop.akuru_collect_name'),
+                'fee' => 0.0, 'free_over' => null, 'minimum_order' => null, 'carrier_paid' => false, 'handling_days' => 1, 'note' => null,
+            ];
+        }
+        if (! collect($kept)->contains('kind', DeliveryKind::AkuruCourier->value)) {
+            $fees = AkuruFulfilment::settings();
+            array_unshift($kept, [
+                'key' => 'akuru', 'kind' => DeliveryKind::AkuruCourier->value, 'name' => (string) __('shop.akuru_courier_name'),
+                'fee' => $fees['delivery_fee'], 'free_over' => $fees['delivery_free_over'], 'minimum_order' => null,
+                'carrier_paid' => false, 'handling_days' => 1, 'note' => (string) __('shop.akuru_courier_note'),
+            ]);
+        }
+
+        return array_map(fn (array $r) => ['handling_days' => $lead, 'note' => (string) __('print.ready_in_days', ['days' => $lead])] + $r, $kept);
     }
 
     private function name(VendorDeliveryMethod $m): string

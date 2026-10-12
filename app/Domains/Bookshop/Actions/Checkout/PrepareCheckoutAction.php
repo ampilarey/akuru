@@ -26,7 +26,7 @@ class PrepareCheckoutAction
         $vendors = Vendor::query()->whereIn('slug', array_column(array_column($basket['groups'], 'vendor'), 'slug'))->get()->keyBy('slug');
         foreach ($basket['groups'] as &$group) {
             $vendor = $vendors->get($group['vendor']['slug']);
-            $group['delivery_options'] = $vendor === null ? [] : app(ResolveDeliveryOptionsAction::class)->execute($vendor, (float) $group['subtotal']);
+            $group['delivery_options'] = $vendor === null ? [] : app(ResolveDeliveryOptionsAction::class)->execute($vendor, (float) $group['subtotal'], collect($group['lines'])->contains(fn (array $l) => ($l['print'] ?? null) !== null));
         }
         unset($group);
 

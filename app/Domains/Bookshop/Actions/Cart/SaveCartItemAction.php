@@ -68,6 +68,14 @@ class SaveCartItemAction
 
             return null;
         }
+        // NAME_TAGS_PLAN NT4: a print line's sheets are its approved design's; a different count is a new proof.
+        if ($item->print_job_id !== null) {
+            if ($quantity !== (int) $item->quantity) {
+                throw ValidationException::withMessages(['quantity' => __('print.error_cart_quantity')]);
+            }
+
+            return $item;
+        }
         // B9d: a quote prices a quantity; change it and it is no longer the quote.
         // Once the quote has lapsed the line is an ordinary one again.
         if ($item->quote_item_id !== null && ! ($item->quoteItem()->with('quote')->first()?->quote?->priceHolds() ?? false)) {
@@ -88,6 +96,10 @@ class SaveCartItemAction
     public function saveForLater(Cart $cart, int $itemId): CartItem
     {
         $item = CartItem::query()->where('cart_id', $cart->id)->whereNull('saved_at')->findOrFail($itemId);
+        // A print line's price is held for days, not kept for later: it stays in the basket or goes.
+        if ($item->print_job_id !== null) {
+            throw ValidationException::withMessages(['product' => __('print.error_cart_save_later')]);
+        }
         $item->update(['saved_at' => now()]);
 
         return $item;

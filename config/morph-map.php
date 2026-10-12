@@ -346,4 +346,5 @@ return [
     'print_template' => \App\Domains\Bookshop\Models\PrintTemplate::class,
     'print_image' => \App\Domains\Bookshop\Models\PrintImage::class,
     'print_job' => \App\Domains\Bookshop\Models\PrintJob::class,
+    'print_job_reprint' => \App\Domains\Bookshop\Models\PrintJobReprint::class,
 ];

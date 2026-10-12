@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
 use App\Domains\Bookshop\Actions\Money\RecordVendorEarningAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Actions\Orders\CheckoutReceiptAction;
+use App\Domains\Bookshop\Actions\Print\PrintProductionAction;
 use App\Domains\Bookshop\Enums\CheckoutStatus;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Models\BookshopCheckout;
@@ -56,6 +57,8 @@ class MarkCheckoutPaidAction
                 $order->paid_at = now();
                 $order->save();
                 OrderEvent::query()->create(['order_id' => $order->id, 'type' => 'paid', 'actor_user_id' => $actorUserId, 'created_at' => now(), 'meta' => ['how' => $how]]);
+                // NAME_TAGS_PLAN NT4 (rule 12): printing starts only now, with the money in.
+                app(PrintProductionAction::class)->markOrdered($order);
                 // B6: what the vendor earned on it, from this moment.
                 app(RecordVendorEarningAction::class)->execute($order);
                 if ($short !== []) {

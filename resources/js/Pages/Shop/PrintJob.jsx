@@ -114,6 +114,7 @@ export default function PrintJob(props) {
     const proof = async () => { setBusy(true); await flush(); router.post(`${base}/proof`, {}, { preserveScroll: true, onFinish: () => setBusy(false) }); };
     const approve = () => { setBusy(true); router.post(`${base}/approve`, {}, { preserveScroll: true, onFinish: () => setBusy(false) }); };
     const copy = () => router.post(`${base}/copy`);
+    const addToCart = () => { setBusy(true); router.post(`${base}/cart`, {}, { onFinish: () => setBusy(false) }); };
 
     return (
         <AppShell title={job.name || t.job_title}>
@@ -130,7 +131,12 @@ export default function PrintJob(props) {
                 <div className="mb-4 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-900" data-testid="print-job-locked">
                     <p className="font-medium">{t.locked_heading}</p>
                     <p>{fill(t.locked_body, { date: job.held?.held_until ? new Date(job.held.held_until).toLocaleDateString(locale) : '' })}</p>
-                    <button type="button" className="btn-secondary mt-2 text-sm" onClick={copy} data-testid="print-job-copy">{t.change_copy}</button>
+                    {job.order && <p className="mt-1" data-testid="print-job-order">{fill(t.job_in_order, { number: job.order.number })} <a href={`/${locale}/my-orders/${job.order.number}`} className="underline">{t.job_see_order}</a></p>}
+                    {job.lapsed && <p className="mt-1 text-amber-900" data-testid="print-job-lapsed">{t.job_price_lapsed}</p>}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                        {job.buyable && signedIn && <button type="button" className="btn-primary text-sm" onClick={addToCart} disabled={busy} data-testid="print-add-to-cart">{t.add_to_cart}</button>}
+                        <button type="button" className="btn-secondary text-sm" onClick={copy} data-testid="print-job-copy">{t.change_copy}</button>
+                    </div>
                 </div>
             )}
 
