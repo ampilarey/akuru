@@ -12,13 +12,9 @@ use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Models\VendorEarning;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Identity\Models\User;
-use App\Support\Contracts\PageImageInterface;
-use App\Support\Contracts\PdfConverterInterface;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 use Inertia\Testing\AssertableInertia as Assert;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
 
 /**
  * The print desk's office (NAME_TAGS_PLAN §4, §11 NT1, STATUS §5ro): the
@@ -26,29 +22,6 @@ use Spatie\Permission\Models\Role;
  * settings, and the Akuru vendor its products belong to.
  */
 uses(RefreshDatabase::class);
-
-function printOffice(): User
-{
-    Role::findOrCreate('super_admin', 'web');
-    Permission::findOrCreate('bookshop.manage', 'web');
-    $office = User::factory()->create();
-    $office->assignRole('super_admin');
-    $office->givePermissionTo('bookshop.manage');
-
-    return $office;
-}
-
-function printWeb()
-{
-    return test()->withoutLocalizationMiddleware();
-}
-
-/** Pretend this host can print: the two Chrome contracts answer with fakes. */
-function printHostCanPrint(): void
-{
-    app()->instance(PdfConverterInterface::class, nt0FakePdf());
-    app()->instance(PageImageInterface::class, nt0FakePageImage());
-}
 
 it('makes the Akuru vendor, the Print category and a draft product once, and seeds the layouts and unpriced papers', function () {
     expect(PrintDesk::vendor())->toBeNull();
@@ -186,8 +159,8 @@ it('exports each list as CSV and names its refusals in three languages, none Eng
         expect(refusalEnglishIn(str_replace(base_path().'/', '', $file)))->toBe([], basename($file));
     }
     foreach (array_keys(require base_path('resources/lang/en/print.php')) as $key) {
-        expect((require base_path('resources/lang/dv/print.php'))[$key] ?? '')->toMatch('/\p{Thaana}|CSV|KB|gsm/u', $key)
-            ->and((require base_path('resources/lang/ar/print.php'))[$key] ?? '')->toMatch('/\p{Arabic}|CSV/u', $key);
+        expect((require base_path('resources/lang/dv/print.php'))[$key] ?? '')->toMatch('/\p{Thaana}|CSV|KB|gsm|^[0-9]+$/u', $key)
+            ->and((require base_path('resources/lang/ar/print.php'))[$key] ?? '')->toMatch('/\p{Arabic}|CSV|^[0-9]+$/u', $key);
     }
     expect(fn () => app(SavePrintSettingsAction::class)->execute(['enabled' => true, 'lead_days' => 1, 'min_sheets' => 1]))->toThrow(ValidationException::class);
 });

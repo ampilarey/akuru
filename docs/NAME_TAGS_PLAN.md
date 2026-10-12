@@ -457,7 +457,8 @@ cart command's sibling, `print:prune-drafts`.
 | `print_paper_options` | papers and their two prices | `name, name_dv, name_ar, gsm, kind, price_bw, price_colour, active, sort_order` |
 | `print_finishing_options` | finishing and price per sheet | `name ×3, price, cuts_sheet, active, sort_order` |
 | `print_subject_sets` | a grade's subjects | `label ×3, subjects (json: [{en,dv,ar}]), active, sort_order` |
-| `print_templates` | designs the office offers | `title ×3, kind (name_tag, subject_tag, both), print_layout_id, design (json), preview_media_path, status (draft, active, retired), created_by, uses_count` |
+| `print_templates` | designs the office offers | `title ×3, kind (name_tag, subject_tag, both), print_layout_id, design (json), status (draft, active, retired), created_by, uses_count, sort_order` (no preview image: drawn from the design, NT2) |
+| `print_images` | Akuru's artwork for templates | `media_file_id (public media), alt, sort_order, uploaded_by` (NT2) |
 | `print_jobs` | a customer's configured job | `user_id (nullable until the cart has an owner), cart_id (nullable), print_product_id → products, print_template_id (nullable), print_layout_id, print_paper_option_id, colour (bool), finishing (json ids + snapshot of names and prices), sheets, mode (same, list), list (json rows), subject_set_id (nullable), design (json), source (template, freeform, upload), upload_media_path, preflight (json), price_per_sheet, price_breakdown (json), proof_document_id, print_document_id, status, the timestamps in §6.1, approved_price_snapshot (json), academic_year_id (rule 10, nullable, the current year at creation), name (the customer's label for *My designs*), deleted_at` |
 | `print_job_reprints` | append-only | `print_job_id, reason, by_user_id, created_at` |
 | `cart_items.print_job_id` | the line's job | nullable FK, additive |
@@ -599,6 +600,17 @@ commits, STATUS and the walks.
   element is not changed by field input. Walk `print-templates.mjs`: the
   office makes a template with a Thaana text, saves, sees its preview,
   retires it.
+
+> **Built 2026-10-12 (STATUS §5rp).** As planned, with two corrections:
+> **no preview image is stored** — the list and the designer draw a
+> template from its design in the browser (`Components/Print/TagCanvas`),
+> and the office opens a sample sheet from the server; the
+> `preview_media_path` column in §8 is dropped. Pictures for templates
+> are **public** media in a small library (`print_images`, at most 120),
+> not private: they are Akuru's artwork, placed on designs customers see.
+> Media is read through a new `ReadPublicMediaAction` (rule 3). The
+> designer writes a field's token into its text when the field is
+> chosen, so a tag prints the value and never the label.
 
 ### NT3 — The customer configures from a template and approves a proof
 
