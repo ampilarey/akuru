@@ -8,8 +8,10 @@
 >
 > The owner's decisions (2026-10-12) are in **§13**. Everything else here
 > is the default an implementer takes unless the owner says otherwise.
-> **Nothing here is built yet.** This document is the whole brief for the
-> agent that builds it; it should not need to ask.
+> **Built, 2026-10-12:** all eight slices NT0–NT7 (STATUS §5rn–§5ru), and
+> the draft clean-up of §7.2 (STATUS §5rx). What stays is the owner's (§14)
+> and the *Later, on request* list at the end of §11. The plan below is
+> kept as it was written, with a *Built* note under each slice.
 
 This plan is written against the code as it stands on `main` at
 `a526ad1` (STATUS §5rl). Every name below — action, table, route, phrase
@@ -448,6 +450,13 @@ A job draft is saved to the server on every change (debounced), so a
 closed tab loses nothing and a guest's draft follows the cart. Drafts
 older than 30 days with no order are pruned by the existing abandoned-
 cart command's sibling, `print:prune-drafts`.
+
+> **Built 2026-10-12 (STATUS §5rx)**, after the eight slices: it was in
+> this section and D13 but in no slice. `print:prune-drafts`, daily at
+> 03:25 Maldives time, removes a job still `draft` or `proofed` 30 days
+> after its last change that no cart line and no order line names, with its
+> proof sheets, print file and uploaded artwork. An approved design is
+> kept for *My designs*; its price is taken again at approval.
 
 ## 8. Data (all additive; morph aliases in the same slice, ADR-005)
 

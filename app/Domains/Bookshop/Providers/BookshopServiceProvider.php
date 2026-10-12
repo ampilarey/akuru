@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Console\ExpireCheckoutsCommand;
 use App\Domains\Bookshop\Console\GrantBookshopManagerCommand;
 use App\Domains\Bookshop\Console\IssueCommissionInvoicesCommand;
 use App\Domains\Bookshop\Console\MatureEarningsCommand;
+use App\Domains\Bookshop\Console\PrunePrintDraftsCommand;
 use App\Domains\Bookshop\Console\ReleasePreordersCommand;
 use App\Domains\Bookshop\Console\RemindAbandonedCartsCommand;
 use App\Domains\Bookshop\Console\SyncProductSearchIndexCommand;
@@ -34,7 +35,7 @@ class BookshopServiceProvider extends ServiceProvider
         Event::listen(PaymentConfirmed::class, MarkCheckoutPaidOnPaymentConfirmed::class);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([ExpireCheckoutsCommand::class, MatureEarningsCommand::class, IssueCommissionInvoicesCommand::class, RemindAbandonedCartsCommand::class, SyncProductSearchIndexCommand::class, GrantBookshopManagerCommand::class, AwardRewardsCommand::class, ReleasePreordersCommand::class]);
+            $this->commands([ExpireCheckoutsCommand::class, MatureEarningsCommand::class, IssueCommissionInvoicesCommand::class, RemindAbandonedCartsCommand::class, SyncProductSearchIndexCommand::class, GrantBookshopManagerCommand::class, AwardRewardsCommand::class, ReleasePreordersCommand::class, PrunePrintDraftsCommand::class]);
         }
     }
 }

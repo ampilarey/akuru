@@ -13,4 +13,6 @@ interface MediaStorageInterface
     public function get(string $disk, string $path): string;
 
     public function url(string $disk, string $path): string;
+
+    public function delete(string $disk, string $path): bool;
 }
