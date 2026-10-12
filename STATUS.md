@@ -5007,7 +5007,7 @@ its page count. PNG and JPEG uploads never touched it.
 9.27 itself could not be had on this machine. The owner's run on the host,
 of the page count with and without the switch, is the check for it.
 
-Whole suite locally: **RESULT**.
+Whole suite locally: **3203 passed** (67446 assertions).
 
 **Walk:** none — no screen changed.
 
