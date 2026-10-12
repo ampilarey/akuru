@@ -12,11 +12,11 @@ use Illuminate\Support\Facades\Schema;
  * Akuru vendor the print products belong to.
  *
  *  - The four tables are catalogues, not events: no academic year (rule 10).
- *  - `vendors.kind` gains the value `akuru` (the column is U1's): the
- *    Institute itself, selling what its own desk makes, never paid out.
- *  - The *Print* category and the first product, *Name tags — A4*, are
- *    created as a draft: the office's switch (`bookshop_print_enabled`)
- *    makes it active, and only where the host can print (plan §4.6).
+ *  - The Akuru vendor (`vendors.kind = 'akuru'`, the column is U1's), the
+ *    *Print* category and the draft product *Name tags — A4* are not
+ *    seeded here: `PrintDesk::ensure()` makes them the first time the
+ *    office opens the print desk, so a Bookstore with no print desk has
+ *    no Akuru shop in its lists.
  *  - Seeds carry names, not prices (decision D2): every paper and finishing
  *    starts inactive at 0.00 and the office prices and activates them.
  *
@@ -115,33 +115,6 @@ return new class extends Migration
             DB::table('print_subject_sets')->insert(['label' => $en, 'label_dv' => $dv, 'label_ar' => $ar, 'subjects' => $subjects, 'is_active' => true, 'sort_order' => $order, 'created_at' => $now, 'updated_at' => $now]);
         }
 
-        // The Akuru vendor: the Institute's own print desk (plan §4.1).
-        $vendorId = DB::table('vendors')->where('kind', 'akuru')->value('id');
-        if ($vendorId === null) {
-            $slug = DB::table('vendors')->where('slug', 'akuru')->exists() ? 'akuru-print' : 'akuru';
-            $code = DB::table('vendors')->where('code', 'AKU')->exists() ? 'AKP' : 'AKU';
-            $vendorId = DB::table('vendors')->insertGetId([
-                'name' => 'Akuru Print', 'slug' => $slug, 'code' => $code, 'tagline' => 'Name tags and print, made by Akuru',
-                'status' => 'active', 'kind' => 'akuru', 'fulfilment' => 'akuru', 'delivery_by' => 'akuru', 'commission_rate' => 0,
-                'created_at' => $now, 'updated_at' => $now,
-            ]);
-            DB::table('vendor_delivery_methods')->insert([
-                ['vendor_id' => $vendorId, 'kind' => 'collect_akuru', 'name' => 'Collect from Akuru Institute', 'fee' => 0, 'handling_days' => 2, 'is_active' => true, 'sort_order' => 1, 'created_at' => $now, 'updated_at' => $now],
-            ]);
-        }
-        $categoryId = DB::table('product_categories')->where('slug', 'print')->value('id')
-            ?? DB::table('product_categories')->insertGetId(['slug' => 'print', 'name' => 'Print', 'name_dv' => 'ޕްރިންޓް', 'name_ar' => 'طباعة', 'sort_order' => 20, 'is_active' => true, 'created_at' => $now, 'updated_at' => $now]);
-        if (! DB::table('products')->where('slug', 'name-tags-a4')->exists()) {
-            DB::table('products')->insert([
-                'vendor_id' => $vendorId, 'product_category_id' => $categoryId, 'slug' => 'name-tags-a4',
-                'title' => 'Name tags — A4', 'title_dv' => 'ނަން ޓެގް — A4', 'title_ar' => 'بطاقات أسماء — A4',
-                'summary' => 'Name tags and subject tags, designed by you, printed by Akuru.',
-                'summary_dv' => 'ތިބާ ފަރުމާކޮށް އަކުރުން ޕްރިންޓްކުރާ ނަން ޓެގާއި މާއްދާ ޓެގް.',
-                'summary_ar' => 'بطاقات أسماء ومواد، تصمّمها أنت وتطبعها أكورو.',
-                'price' => 0, 'currency' => 'MVR', 'tax_class' => 'standard', 'track_stock' => false, 'stock' => 0,
-                'status' => 'draft', 'visibility' => 'shop', 'created_at' => $now, 'updated_at' => $now,
-            ]);
-        }
     }
 
     public function down(): void

@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\PrintLayout;
 use App\Domains\Bookshop\Models\PrintPaperOption;
 use App\Domains\Bookshop\Models\PrintSubjectSet;
+use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Models\VendorEarning;
 use App\Domains\Bookshop\Support\PrintDesk;
@@ -49,9 +50,12 @@ function printHostCanPrint(): void
     app()->instance(PageImageInterface::class, nt0FakePageImage());
 }
 
-it('seeds the Akuru vendor, the Print category, a draft product, the layouts and unpriced papers', function () {
+it('makes the Akuru vendor, the Print category and a draft product once, and seeds the layouts and unpriced papers', function () {
+    expect(PrintDesk::vendor())->toBeNull();
+    PrintDesk::ensure();
+    PrintDesk::ensure();
     $vendor = PrintDesk::vendor();
-    expect($vendor)->not->toBeNull()
+    expect(Vendor::query()->where('kind', 'akuru')->count())->toBe(1)->and(Product::query()->count())->toBe(1)
         ->and($vendor->isAkuru())->toBeTrue()
         ->and($vendor->fulfilment)->toBe('akuru')
         ->and($vendor->deliveryMethods()->where('kind', 'collect_akuru')->exists())->toBeTrue();
@@ -150,7 +154,7 @@ it('pairs a subject set\'s three lists line by line, and refuses lists of differ
 });
 
 it('records no earning on an order of the Akuru vendor: its sales are Akuru\'s whole', function () {
-    $vendor = PrintDesk::vendor();
+    [$vendor] = PrintDesk::ensure();
     $customer = User::factory()->create();
     $checkout = BookshopCheckout::query()->create(['number' => 'CHK-NT1', 'user_id' => $customer->id, 'status' => 'paid', 'payment_method' => 'wallet', 'subtotal' => 220, 'total' => 220, 'currency' => 'MVR', 'address_snapshot' => [], 'paid_at' => now()]);
     $order = Order::query()->create([

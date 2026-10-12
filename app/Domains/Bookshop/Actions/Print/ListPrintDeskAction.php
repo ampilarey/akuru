@@ -14,8 +14,8 @@ class ListPrintDeskAction
     /** @return array<string, mixed> */
     public function execute(): array
     {
+        [, $product] = PrintDesk::ensure();
         $why = PrintDesk::cannotEnableBecause();
-        $product = PrintDesk::product();
 
         return [
             'settings' => PrintDesk::settings(),

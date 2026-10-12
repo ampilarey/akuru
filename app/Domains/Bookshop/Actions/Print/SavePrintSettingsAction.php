@@ -41,11 +41,9 @@ class SavePrintSettingsAction
             $set->execute(PrintDesk::SETTINGS[$field], $value, $type, 'bookshop', 'Bookstore: print desk '.str_replace('_', ' ', $field));
         }
 
-        $product = PrintDesk::product();
-        if ($product !== null) {
-            $product->status = $enabled ? ProductStatus::Active : ProductStatus::Draft;
-            $product->save();
-        }
+        [, $product] = PrintDesk::ensure();
+        $product->status = $enabled ? ProductStatus::Active : ProductStatus::Draft;
+        $product->save();
 
         return PrintDesk::settings();
     }

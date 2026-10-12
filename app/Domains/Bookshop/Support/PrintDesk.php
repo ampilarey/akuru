@@ -4,7 +4,9 @@ namespace App\Domains\Bookshop\Support;
 
 use App\Domains\Bookshop\Models\PrintPaperOption;
 use App\Domains\Bookshop\Models\Product;
+use App\Domains\Bookshop\Models\ProductCategory;
 use App\Domains\Bookshop\Models\Vendor;
+use App\Domains\Bookshop\Models\VendorDeliveryMethod;
 use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
 use App\Support\Contracts\PageImageInterface;
 use App\Support\Contracts\PdfConverterInterface;
@@ -90,6 +92,40 @@ final class PrintDesk
     public static function vendor(): ?Vendor
     {
         return Vendor::query()->where('kind', 'akuru')->first();
+    }
+
+    /**
+     * The Akuru vendor (plan §4.1), the *Print* category and the draft
+     * product *Name tags — A4*, made once, the first time the office opens
+     * the print desk. Idempotent; a Bookstore that never opens it has no
+     * Akuru shop in its lists.
+     *
+     * @return array{0: Vendor, 1: Product}
+     */
+    public static function ensure(): array
+    {
+        $vendor = self::vendor();
+        if ($vendor === null) {
+            $vendor = Vendor::query()->create([
+                'name' => 'Akuru Print',
+                'slug' => Vendor::query()->where('slug', 'akuru')->exists() ? 'akuru-print' : 'akuru',
+                'code' => Vendor::query()->where('code', 'AKU')->exists() ? 'AKP' : 'AKU',
+                'tagline' => 'Name tags and print, made by Akuru',
+                'status' => 'active', 'kind' => 'akuru', 'fulfilment' => 'akuru', 'delivery_by' => 'akuru', 'commission_rate' => 0,
+            ]);
+            VendorDeliveryMethod::query()->create(['vendor_id' => $vendor->id, 'kind' => 'collect_akuru', 'name' => 'Collect from Akuru Institute', 'fee' => 0, 'handling_days' => 2, 'is_active' => true, 'sort_order' => 1]);
+        }
+        $category = ProductCategory::query()->firstOrCreate(['slug' => 'print'], ['name' => 'Print', 'name_dv' => 'ޕްރިންޓް', 'name_ar' => 'طباعة', 'sort_order' => 20, 'is_active' => true]);
+        $product = self::product() ?? Product::query()->create([
+            'vendor_id' => $vendor->id, 'product_category_id' => $category->id, 'slug' => self::PRODUCT_SLUG,
+            'title' => 'Name tags — A4', 'title_dv' => 'ނަން ޓެގް — A4', 'title_ar' => 'بطاقات أسماء — A4',
+            'summary' => 'Name tags and subject tags, designed by you, printed by Akuru.',
+            'summary_dv' => 'ތިބާ ފަރުމާކޮށް އަކުރުން ޕްރިންޓްކުރާ ނަން ޓެގާއި މާއްދާ ޓެގް.',
+            'summary_ar' => 'بطاقات أسماء ومواد، تصمّمها أنت وتطبعها أكورو.',
+            'price' => 0, 'currency' => 'MVR', 'tax_class' => 'standard', 'track_stock' => false, 'stock' => 0, 'status' => 'draft', 'visibility' => 'shop',
+        ]);
+
+        return [$vendor, $product];
     }
 
     public static function product(): ?Product
