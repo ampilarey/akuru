@@ -1,10 +1,13 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import axios from 'axios';
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 import TagCanvas from '../../Components/Print/TagCanvas';
-import { normaliseDesign } from '../../Components/Print/design';
+import { normaliseDesign, withFields } from '../../Components/Print/design';
+
+// NT6: the free-form designer is the Bookstore's largest piece; it loads only on a free-form design (risk R5).
+const Designer = lazy(() => import('../../Components/Print/Designer'));
 
 /**
  * NAME_TAGS_PLAN §3.2–3.7 (NT3): one job, from a template, in field mode.
@@ -15,6 +18,7 @@ import { normaliseDesign } from '../../Components/Print/design';
  * *Make the proof* draws the sheets with PROOF across them; *Approve* locks
  * the job. An approved job is changed by making a copy.
  */
+const job0IsFreeform = (job) => job?.source === 'freeform';
 const fill = (s, vars) => Object.entries(vars).reduce((out, [k, v]) => out.split(`:${k}`).join(String(v ?? '')), s || '');
 const money = (n) => (Number(n) || 0).toFixed(2);
 const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -31,7 +35,8 @@ function parseList(text, keys) {
 }
 
 export default function PrintJob(props) {
-    const { t = {}, job: initial, layouts = [], papers = [], finishing_options: finishingOptions = [], subject_sets: subjectSets = [], fonts = {}, font_css: fontCss = '', images = {}, settings = {}, signed_in: signedIn = false } = props;
+    const { t = {}, job: initial, layouts = [], papers = [], finishing_options: finishingOptions = [], subject_sets: subjectSets = [], fonts = {}, font_css: fontCss = '', images = {}, settings = {}, signed_in: signedIn = false, designer = null } = props;
+    const freeform = job0IsFreeform(initial);
     const { errors = {}, locale = 'en' } = usePage().props;
     const [job, setJob] = useState(initial);
     useEffect(() => setJob(initial), [initial]);
@@ -57,7 +62,12 @@ export default function PrintJob(props) {
         if (Object.keys(body).length === 0) return inflight.current;
         setState('saving');
         inflight.current = axios.post(base, body, { headers: { 'X-CSRF-TOKEN': csrf(), Accept: 'application/json' } })
-            .then((res) => { setJob(res.data.job); setProblem(null); setState('saved'); })
+            .then((res) => {
+                // A free-form design keeps the drawing on screen (the customer may be mid-drag); the rest is the server's.
+                setJob((prev) => (prev.source === 'freeform' ? { ...res.data.job, design: prev.design } : res.data.job));
+                setProblem(null);
+                setState('saved');
+            })
             .catch((err) => {
                 const errs = err?.response?.data?.errors;
                 setProblem(errs ? Object.values(errs).flat().join(' ') : (err?.response?.data?.message || String(err)));
@@ -115,6 +125,9 @@ export default function PrintJob(props) {
     const approve = () => { setBusy(true); router.post(`${base}/approve`, {}, { preserveScroll: true, onFinish: () => setBusy(false) }); };
     const copy = () => router.post(`${base}/copy`);
     const addToCart = () => { setBusy(true); router.post(`${base}/cart`, {}, { onFinish: () => setBusy(false) }); };
+    const openDesigner = () => { setBusy(true); flush().then(() => router.post(`${base}/designer`, {}, { onFinish: () => setBusy(false) })); };
+    // NT6: every change in the designer is the design, saved whole; the server validates it.
+    const designChanged = (next) => change({ design: withFields(next) }, { design: next });
 
     return (
         <AppShell title={job.name || t.job_title}>
@@ -142,8 +155,17 @@ export default function PrintJob(props) {
 
             <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
                 <div className="space-y-4">
+                    {freeform && open && designer ? (
+                        <section className="rounded-lg border bg-white p-4" data-testid="print-job-designer">
+                            <h2 className="mb-2 font-semibold">{t.freeform_heading}</h2>
+                            <Suspense fallback={<p className="text-sm text-gray-600">{t.saving}</p>}>
+                                <Designer design={design} onChange={designChanged} fonts={fonts} images={designer.images} fieldKeys={designer.field_keys} maxElements={designer.max_elements} sample={{ ...designer.sample, ...shown }} t={t} />
+                            </Suspense>
+                        </section>
+                    ) : null}
                     <section className="rounded-lg border bg-white p-4" data-testid="print-job-preview">
                         <h2 className="mb-2 font-semibold">{t.preview_heading}</h2>
+                        {open && !freeform && <button type="button" className="mb-2 text-sm text-blue-700 underline" onClick={openDesigner} disabled={busy} data-testid="print-open-designer">{t.open_in_designer}</button>}
                         <div className="flex justify-center overflow-hidden rounded bg-gray-100 p-3" dir="ltr" style={job.colour ? undefined : { filter: 'grayscale(100%)' }}>
                             <TagCanvas design={design} fonts={fonts} images={images} row={shown} scale={Math.min(5, 340 / design.tag.w)} testId="print-job-tag" />
                         </div>

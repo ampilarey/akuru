@@ -60,6 +60,25 @@ class ShopPrintController extends Controller
         return redirect()->route('public.shop.print.job', $job->id);
     }
 
+    /** NT6: a blank design for the free-form designer (open to guests, as templates are). */
+    public function startFreeform(Request $request): RedirectResponse
+    {
+        $this->available($request);
+        $cart = $request->user() === null ? $this->cart($request, create: true) : null;
+        $job = app(SavePrintJobAction::class)->startFreeform($request->user()?->id, $cart?->id, app()->getLocale());
+
+        return redirect()->route('public.shop.print.job', $job->id);
+    }
+
+    /** NT6: *Open in the designer* — this template job becomes the customer's own free-form design. */
+    public function openDesigner(Request $request, int $job): RedirectResponse
+    {
+        $this->available($request);
+        app(SavePrintJobAction::class)->toFreeform($this->job($request, $job), app()->getLocale());
+
+        return redirect()->route('public.shop.print.job', $job)->with('success', __('print.flash_freeform'));
+    }
+
     /** NT5: a new job for the customer's own artwork (signed in: the file is kept privately on the account). */
     public function startUpload(Request $request): RedirectResponse
     {
@@ -96,6 +115,9 @@ class ShopPrintController extends Controller
             't' => Phrases::once('print'),
             'job' => $present->job($row, app()->getLocale()),
             ...$present->choices(app()->getLocale(), (array) $row->design),
+            // NT6: the designer's library, field names and limits, for a free-form design.
+            'designer' => $row->source === 'freeform' ? collect(app(\App\Domains\Bookshop\Actions\Print\ListPrintTemplatesAction::class)->designerProps())
+                ->only(['images', 'field_keys', 'max_elements'])->all() + ['sample' => \App\Domains\Bookshop\Actions\Print\ListPrintTemplatesAction::sampleRow(app()->getLocale())] : null,
             'signed_in' => $request->user() !== null,
         ]);
     }
@@ -109,7 +131,7 @@ class ShopPrintController extends Controller
             'layout_id' => 'sometimes|nullable|integer', 'paper_id' => 'sometimes|nullable|integer', 'colour' => 'sometimes|boolean',
             'finishing' => 'sometimes|array|max:20', 'finishing.*' => 'integer', 'sheets' => 'sometimes|integer|min:1|max:500',
             'entry' => 'sometimes|array', 'scheme' => 'sometimes|nullable|string|max:40', 'font' => 'sometimes|nullable|string|max:40',
-            'name' => 'sometimes|nullable|string|max:120', 'upload_kind' => 'sometimes|string|in:tag,sheet',
+            'name' => 'sometimes|nullable|string|max:120', 'upload_kind' => 'sometimes|string|in:tag,sheet', 'design' => 'sometimes|array',
         ]);
         $saved = app(SavePrintJobAction::class)->update($row, $data, app()->getLocale());
 

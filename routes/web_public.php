@@ -92,6 +92,9 @@ Route::get('shop/print/name-tags', [\App\Domains\Bookshop\Http\Controllers\ShopP
 Route::post('shop/print/jobs', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'start'])->name('public.shop.print.start')->middleware('throttle:20,1,shop-print-start');
 Route::get('shop/print/jobs/{job}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'show'])->name('public.shop.print.job')->whereNumber('job');
 Route::post('shop/print/jobs/{job}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'save'])->name('public.shop.print.save')->whereNumber('job')->middleware('throttle:120,1,shop-print-save');
+// NT6: the free-form designer — a blank design, and a template job opened in it.
+Route::post('shop/print/freeform', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'startFreeform'])->name('public.shop.print.freeform')->middleware('throttle:20,1,shop-print-freeform');
+Route::post('shop/print/jobs/{job}/designer', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'openDesigner'])->name('public.shop.print.designer')->whereNumber('job')->middleware('throttle:20,1,shop-print-designer');
 Route::post('shop/print/jobs/{job}/copy', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'copy'])->name('public.shop.print.copy')->whereNumber('job')->middleware('throttle:20,1,shop-print-copy');
 Route::get('shop/cart', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'index'])->name('public.shop.cart');
 Route::post('shop/cart', [\App\Domains\Bookshop\Http\Controllers\ShopCartController::class, 'add'])->name('public.shop.cart.add')->middleware('throttle:60,1,shop-cart');

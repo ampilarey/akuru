@@ -215,7 +215,7 @@ function Properties({ el, design, fonts, images, fieldKeys, patch, remove, dupli
                 <Num label={t.position_y} value={el.y} onChange={(y) => set({ y })} testId="prop-y" />
                 <Num label={t.width_mm} value={el.w} onChange={(w) => set({ w })} min={0.5} testId="prop-w" />
                 <Num label={t.height_mm} value={el.h} onChange={(h) => set({ h })} min={0.5} testId="prop-h" />
-                <Num label={t.rotation} value={el.rotate} onChange={(rotate) => set({ rotate: Math.max(-360, Math.min(360, rotate)) })} step={1} min={-360} max={360} />
+                <Num label={t.rotation} value={el.rotate} onChange={(rotate) => set({ rotate: Math.max(-360, Math.min(360, rotate)) })} step={1} min={-360} max={360} testId="prop-rotate" />
 
                 {el.type === 'text' && (
                     <>

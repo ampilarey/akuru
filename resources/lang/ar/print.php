@@ -428,4 +428,13 @@ return [
     'upload_door_button' => 'ارفع تصميمك',
     'upload_door_sign_in' => 'سجّل الدخول للرفع',
     'upload_thumb' => 'عملك الفني الخاص',
+    'freeform_job_name' => 'بطاقاتي المصممة',
+    'freeform_error_upload' => 'لا يمكن فتح تصميم من ملفك الخاص في المصمم.',
+    'freeform_error_not_freeform' => 'افتح هذا التصميم في المصمم لتغيير رسمه.',
+    'flash_freeform' => 'تصميمك مفتوح في المصمم. يمكن الآن تحريك كل ما فيه وتغييره.',
+    'freeform_heading' => 'صمّمها',
+    'open_in_designer' => 'افتح في المصمم لتحريك أي شيء وتغييره',
+    'freeform_door_heading' => 'صمّم بطاقتك من الصفر',
+    'freeform_door_body' => 'أضف نصوصًا وأشكالًا وصورًا من مكتبة أكورو؛ والأسماء من قائمتك.',
+    'freeform_door_button' => 'ابدأ التصميم',
 ];

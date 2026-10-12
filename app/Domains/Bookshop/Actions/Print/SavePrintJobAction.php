@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Actions\Print;
 
 use App\Domains\Academics\Actions\ResolveAcademicYearForDateAction;
 use App\Domains\Bookshop\Enums\PrintJobStatus;
+use App\Domains\Bookshop\Models\PrintImage;
 use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintLayout;
 use App\Domains\Bookshop\Models\PrintPaperOption;
@@ -64,6 +65,74 @@ class SavePrintJobAction
     }
 
     /**
+     * NT6 (plan §3.3): a blank design for the free-form designer — the
+     * desk's first layout and priced paper, one text that prints the name,
+     * so a list of names works from the start.
+     */
+    public function startFreeform(?int $userId, ?int $cartId, string $locale): PrintJob
+    {
+        $layout = PrintLayout::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->first();
+        if ($layout === null) {
+            throw ValidationException::withMessages(['template' => __('print.error_job_layout')]);
+        }
+        $paper = PrintPaperOption::query()->where('is_active', true)->where('price_colour', '>', 0)->orderBy('sort_order')->orderBy('id')->first()
+            ?? PrintPaperOption::query()->where('is_active', true)->where('price_bw', '>', 0)->orderBy('sort_order')->orderBy('id')->first();
+        $year = app(ResolveAcademicYearForDateAction::class)->execute();
+        $w = (float) $layout->tag_w_mm;
+        $h = (float) $layout->tag_h_mm;
+        $font = (string) array_key_first((array) config('print.fonts', []));
+
+        $job = PrintJob::query()->create([
+            'user_id' => $userId,
+            'cart_id' => $userId === null ? $cartId : null,
+            'product_id' => PrintDesk::product()?->id,
+            'print_layout_id' => $layout->id,
+            'print_paper_option_id' => $paper?->id,
+            'colour' => $paper === null || (float) $paper->price_colour > 0,
+            'finishing' => [],
+            'sheets' => PrintDesk::settings()['min_sheets'],
+            'entry' => ['mode' => 'same', 'row' => [], 'list' => [], 'subjects' => ['set_id' => null, 'items' => [], 'language' => $locale === 'en' ? 'en' : $locale]],
+            'design' => PrintDesign::validate([
+                'tag' => ['w' => $w, 'h' => $h],
+                'background' => ['color' => '#FFFFFF'],
+                'elements' => [['id' => 'name', 'type' => 'text', 'x' => round($w * 0.05, 2), 'y' => round($h * 0.35, 2), 'w' => round($w * 0.9, 2), 'h' => round($h * 0.3, 2),
+                    'text' => '{name}', 'field' => 'name', 'font' => $font, 'size' => 18, 'weight' => 700, 'color' => '{primary}', 'align' => 'center', 'dir' => 'auto']],
+                'palette' => ['scheme' => 'maroon', 'schemes' => ['maroon' => ['primary' => '#7A1F2B', 'secondary' => '#E9D8B4']]],
+                'fields' => [['key' => 'name', 'required' => true]],
+            ]),
+            'source' => 'freeform',
+            'status' => PrintJobStatus::Draft,
+            'name' => __('print.freeform_job_name', [], $locale),
+            'academic_year_id' => $year === null ? null : (int) $year['id'],
+        ]);
+        $this->price($job, $locale, quietly: true);
+
+        return $job;
+    }
+
+    /**
+     * NT6: *Open in the designer* — a template job becomes the customer's
+     * free-form design. The job's design is already its own copy; what the
+     * template locked is unlocked here, and the template is untouched.
+     */
+    public function toFreeform(PrintJob $job, string $locale): PrintJob
+    {
+        $this->open($job);
+        if ($job->isUpload()) {
+            throw ValidationException::withMessages(['job' => __('print.freeform_error_upload')]);
+        }
+        $design = (array) $job->design;
+        $design['elements'] = array_map(fn (array $el) => array_merge($el, ['locked' => false]), (array) ($design['elements'] ?? []));
+        $job->forceFill(['design' => $design, 'source' => 'freeform']);
+        if ($job->status === PrintJobStatus::Proofed) {
+            $job->forceFill(['status' => PrintJobStatus::Draft, 'proof_document_ids' => null, 'print_document_id' => null, 'proofed_at' => null]);
+        }
+        $this->price($job, $locale);
+
+        return $job;
+    }
+
+    /**
      * NT5: a new draft for the customer's own artwork — the desk's first
      * layout and priced paper, no file yet. The upload comes next
      * (`UploadPrintDesignAction`).
@@ -119,14 +188,31 @@ class SavePrintJobAction
                 // NT5: the artwork fills the new tag.
                 $job->design = PrintUpload::design((float) $layout->tag_w_mm, (float) $layout->tag_h_mm);
             } else {
-                // From the template when there is one, so a layout switched back and forth loses nothing to rounding.
-                $base = $job->template !== null ? (array) $job->template->design : (array) $job->design;
+                // From the template when there is one, so a layout switched back and forth loses nothing to rounding;
+                // a free-form design (NT6) is the customer's own and scales from itself.
+                $base = $job->template !== null && $job->source === 'template' ? (array) $job->template->design : (array) $job->design;
                 $scheme = $job->design['palette']['scheme'] ?? null;
                 $font = PrintDesign::fieldFont((array) $job->design);
                 $job->design = PrintDesign::withFieldFont(PrintDesign::withScheme(PrintDesign::fit($base, $layout->tag_w_mm, $layout->tag_h_mm), $scheme), $font);
             }
             $job->print_layout_id = $layout->id;
             $job->setRelation('layout', $layout);
+        }
+        if (array_key_exists('design', $data) && is_array($data['design'])) {
+            // NT6: the free-form designer sends the whole design; the server's validator decides what is kept.
+            if ($job->source !== 'freeform') {
+                throw ValidationException::withMessages(['design' => __('print.freeform_error_not_freeform')]);
+            }
+            $design = PrintDesign::validate($data['design']);
+            $library = PrintImage::query()->pluck('media_file_id')->map(fn ($id) => (int) $id)->all();
+            foreach ($design['elements'] as $el) {
+                if ($el['type'] === 'image' && ! in_array((int) $el['media'], $library, true)) {
+                    throw ValidationException::withMessages(['design' => __('print.error_design_image', ['n' => $el['id']])]);
+                }
+            }
+            $layout = $job->layout ?? PrintLayout::query()->find($job->print_layout_id);
+            // The tag is the layout's: a design drawn at another size is scaled to it.
+            $job->design = $layout === null ? $design : PrintDesign::fit($design, (float) $layout->tag_w_mm, (float) $layout->tag_h_mm);
         }
         if (array_key_exists('scheme', $data)) {
             $job->design = PrintDesign::withScheme((array) $job->design, is_string($data['scheme']) ? $data['scheme'] : null);

@@ -18,6 +18,7 @@ export default function PrintDoor({ t = {}, templates = [], fonts = {}, font_css
     const shown = useMemo(() => templates.filter((tpl) => kind === 'all' || tpl.kind === kind || tpl.kind === 'both'), [templates, kind]);
     const start = (id) => { setBusy(id); router.post(`/${locale}/shop/print/jobs`, { template: id }, { onFinish: () => setBusy(null) }); };
     // NT5: the customer's own artwork (an account keeps the file privately).
+    const startFreeform = () => { setBusy('freeform'); router.post(`/${locale}/shop/print/freeform`, {}, { onFinish: () => setBusy(null) }); };
     const startUpload = () => { setBusy('upload'); router.post(`/${locale}/shop/print/uploads`, {}, { onFinish: () => setBusy(null) }); };
 
     return (
@@ -34,6 +35,13 @@ export default function PrintDoor({ t = {}, templates = [], fonts = {}, font_css
                 ))}
                 {signedIn && <Link href={`/${locale}/my-designs`} className="ms-auto underline" data-testid="print-door-designs">{t.my_designs_title}</Link>}
             </div>
+            <section className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-dashed bg-white p-3" data-testid="print-door-freeform">
+                <div className="min-w-0 flex-1">
+                    <h2 className="font-semibold">{t.freeform_door_heading}</h2>
+                    <p className="text-sm text-gray-600">{t.freeform_door_body}</p>
+                </div>
+                <button type="button" className="btn-secondary" disabled={busy !== null} onClick={startFreeform} data-testid="print-door-freeform-start">{t.freeform_door_button}</button>
+            </section>
             <section className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-dashed bg-white p-3" data-testid="print-door-upload">
                 <div className="min-w-0 flex-1">
                     <h2 className="font-semibold">{t.upload_door_heading}</h2>

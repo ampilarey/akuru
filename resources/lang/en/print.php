@@ -438,4 +438,13 @@ return [
     'upload_door_button' => 'Upload your design',
     'upload_door_sign_in' => 'Sign in to upload',
     'upload_thumb' => 'Your own artwork',
+    'freeform_job_name' => 'My designed tags',
+    'freeform_error_upload' => 'A design from your own file cannot be opened in the designer.',
+    'freeform_error_not_freeform' => 'Open this design in the designer to change its drawing.',
+    'flash_freeform' => 'Your design is open in the designer. Everything on it can now be moved and changed.',
+    'freeform_heading' => 'Design it',
+    'open_in_designer' => 'Open in the designer to move and change anything',
+    'freeform_door_heading' => 'Design your own from a blank tag',
+    'freeform_door_body' => 'Add text, shapes and pictures from Akuru\'s library; names come from your list.',
+    'freeform_door_button' => 'Start designing',
 ];
