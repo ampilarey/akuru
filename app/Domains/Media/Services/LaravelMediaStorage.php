@@ -31,4 +31,9 @@ class LaravelMediaStorage implements MediaStorageInterface
     {
         return Storage::disk($disk)->url($path);
     }
+
+    public function delete(string $disk, string $path): bool
+    {
+        return Storage::disk($disk)->delete($path);
+    }
 }

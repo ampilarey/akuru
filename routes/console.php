@@ -24,6 +24,8 @@ Schedule::command('bookshop:award-rewards')->dailyAt('03:15')->timezone('Indian/
 Schedule::command('bookshop:issue-commission-invoices')->monthlyOn(1, '03:20')->timezone('Indian/Maldives');
 // BOOKSHOP_PLAN B9c: one reminder for a signed-in customer's cart left for a day.
 Schedule::command('bookshop:remind-abandoned-carts')->hourly();
+// NAME_TAGS_PLAN §7.2 (D13): print drafts nobody ordered in 30 days go, with their proof files.
+Schedule::command('print:prune-drafts')->dailyAt('03:25')->timezone('Indian/Maldives');
 // COMMERCE_PARITY_PLAN P8d: buyers and shops told when a pre-order's release date comes.
 Schedule::command('bookshop:release-preorders')->dailyAt('07:05')->timezone('Indian/Maldives');
 // B11 (LIBRARY_PLAN §41): the continue-reading nudge, once a day, in-app.

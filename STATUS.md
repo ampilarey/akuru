@@ -4983,6 +4983,48 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rx. Print drafts nobody ordered are cleaned up after 30 days (NAME_TAGS_PLAN §7.2, D13, 2026-10-12)
+
+Found checking the name tags plan against the code after NT7: §7.2 and
+decision D13 say drafts older than 30 days with no order are pruned by
+`print:prune-drafts`, but no slice named it, so it was never built. Every
+guest's abandoned design, and its proof images, stayed for good.
+
+**Built:**
+- `print:prune-drafts` (`PrunePrintDraftsCommand`, with `--dry-run`), on
+  the schedule daily at 03:25 Maldives time, beside the Bookstore's other
+  nightly commands.
+- `PrunePrintDraftsAction` removes a job that meets all of these:
+  - still `draft` or `proofed`;
+  - unchanged for 30 days;
+  - named by no cart line and no order line.
+
+  Its proof sheets, print file and uploaded artwork go with it. An
+  approved design stays, because it is on *My designs* to be ordered and
+  its price is taken again at approval.
+- Media's `DeleteDocumentsOfAction` (new) removes the documents of one
+  owner, named by its morph alias and id, files and rows. Bookshop calls it
+  rather than reading `documents` (rule 3).
+- `MediaStorageInterface` gains `delete()`.
+
+**Tests:** `PrintDraftsArePrunedTest` (new, 2):
+- of six jobs, only the old draft and the old unapproved proof go, with
+  the proof's file and row;
+- the recent draft, the old approved design and the old draft on a cart
+  line stay, and another job's document is untouched;
+- the dry run counts without removing;
+- the command is on the schedule.
+
+The Architecture and Print groups rerun green (131).
+
+Whole suite locally: **3201 passed** (67439 assertions).
+
+**Walk:** none — a scheduled command, no screen (as NT0).
+
+**Deploy:** no migration. The standard pull command. The scheduler
+already runs every minute on the host (`akuru:scheduler-heartbeat`), so
+the command needs nothing more.
+
 ## 5rw. The office picks the pupil, the teacher and the account by name (C22 BH1, 2026-10-12)
 
 BACKLOG C22. Four forms asked for a typed id, so whoever filled one had to
