@@ -120,7 +120,7 @@ function Element({ el, design, fonts, images, row, interactive, selected, hs, st
                     <div
                         xmlns="http://www.w3.org/1999/xhtml"
                         dir={el.dir || 'auto'}
-                        style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: justify, textAlign, fontFamily: `'${family}'`, fontSize: `${round((el.size || 12) * PT_TO_MM, 3)}px`, fontWeight: el.weight || 400, color: resolveColour(el.color, design) || '#111111', lineHeight: 1.15, whiteSpace: 'pre-wrap', overflow: 'hidden', boxSizing: 'border-box' }}
+                        style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: justify, textAlign, fontFamily: `'${family}', 'Figtree', 'Noto Sans Thaana', 'Cairo', sans-serif`, fontSize: `${round((el.size || 12) * PT_TO_MM, 3)}px`, fontWeight: el.weight || 400, color: resolveColour(el.color, design) || '#111111', lineHeight: 1.15, whiteSpace: 'pre-wrap', overflow: 'hidden', boxSizing: 'border-box' }}
                     >
                         {fillText(el, row)}
                     </div>

@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Actions\Cart;
 
 use App\Domains\Bookshop\Models\Cart;
 use App\Domains\Bookshop\Models\CartItem;
+use App\Domains\Bookshop\Models\PrintJob;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -45,6 +46,8 @@ class ResolveCartAction
     private function merge(Cart $guest, ?Cart $own, int $userId): Cart
     {
         return DB::transaction(function () use ($guest, $own, $userId) {
+            // NAME_TAGS_PLAN NT3: a guest's print designs follow the basket to the account.
+            PrintJob::query()->where('cart_id', $guest->id)->whereNull('user_id')->update(['user_id' => $userId, 'cart_id' => null]);
             if ($own === null) {
                 $guest->update(['user_id' => $userId, 'session_token' => null]);
 

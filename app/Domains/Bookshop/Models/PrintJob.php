@@ -1,0 +1,61 @@
+<?php
+
+namespace App\Domains\Bookshop\Models;
+
+use App\Domains\Bookshop\Enums\PrintJobStatus;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+/**
+ * NAME_TAGS_PLAN §6, §8 (NT3): a customer's configured print job — its own
+ * copy of the design, what it prints (`entry`), what it is printed on, its
+ * price, its proof and its state. Locked once approved.
+ */
+class PrintJob extends Model
+{
+    use SoftDeletes;
+
+    protected $fillable = [
+        'user_id', 'cart_id', 'product_id', 'print_template_id', 'print_layout_id', 'print_paper_option_id', 'colour', 'finishing',
+        'sheets', 'entry', 'print_subject_set_id', 'design', 'source', 'preflight', 'price_per_sheet', 'price_total', 'price_breakdown',
+        'approved_price_snapshot', 'proof_document_ids', 'print_document_id', 'status', 'name', 'academic_year_id',
+        'proofed_at', 'approved_at', 'ordered_at', 'printing_at', 'finished_at', 'cancelled_at', 'printed_by', 'finished_by',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'colour' => 'boolean', 'finishing' => 'array', 'sheets' => 'integer', 'entry' => 'array', 'design' => 'array',
+            'preflight' => 'array', 'price_per_sheet' => 'decimal:2', 'price_total' => 'decimal:2', 'price_breakdown' => 'array',
+            'approved_price_snapshot' => 'array', 'proof_document_ids' => 'array', 'status' => PrintJobStatus::class,
+            'proofed_at' => 'datetime', 'approved_at' => 'datetime', 'ordered_at' => 'datetime', 'printing_at' => 'datetime',
+            'finished_at' => 'datetime', 'cancelled_at' => 'datetime',
+        ];
+    }
+
+    public function template(): BelongsTo
+    {
+        return $this->belongsTo(PrintTemplate::class, 'print_template_id');
+    }
+
+    public function layout(): BelongsTo
+    {
+        return $this->belongsTo(PrintLayout::class, 'print_layout_id');
+    }
+
+    public function paper(): BelongsTo
+    {
+        return $this->belongsTo(PrintPaperOption::class, 'print_paper_option_id');
+    }
+
+    public function subjectSet(): BelongsTo
+    {
+        return $this->belongsTo(PrintSubjectSet::class, 'print_subject_set_id');
+    }
+
+    public function isOpen(): bool
+    {
+        return $this->status instanceof PrintJobStatus && $this->status->isOpen();
+    }
+}

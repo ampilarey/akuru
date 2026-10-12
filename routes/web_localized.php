@@ -968,6 +968,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('print/templates/images', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'uploadImages'])->name('admin.bookshop.print.templates.images');
         Route::post('print/templates/{template?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'save'])->name('admin.bookshop.print.templates.save')->whereNumber('template');
         Route::post('print/templates/{template}/status', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'status'])->name('admin.bookshop.print.templates.status')->whereNumber('template');
+        // NT3: a job's print-ready PDF, the office's only (decision D6).
+        Route::get('print/jobs/{job}/file', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'jobFile'])->name('admin.bookshop.print.jobs.file')->whereNumber('job');
         Route::post('credit/{account}/payments', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'payment'])->name('admin.bookshop.credit.payment')->whereNumber('account');
         Route::get('credit/{account}/statement', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'statement'])->name('admin.bookshop.credit.statement')->whereNumber('account');
         // COMMERCE_PARITY_PLAN P4: listings awaiting the office's approval.

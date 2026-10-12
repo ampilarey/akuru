@@ -147,6 +147,90 @@ final class PrintDesign
         return $design;
     }
 
+    /**
+     * The design scaled to another tag size (NT3): a template drawn on 95 × 60
+     * printed on a 63.5 × 38.1 label. Positions and sizes scale on their own
+     * axis; a text's point size and an outline scale by the smaller factor,
+     * so nothing grows out of its box.
+     *
+     * @param  array<string, mixed>  $design  a validated design
+     * @return array<string, mixed>
+     */
+    public static function fit(array $design, float $w, float $h): array
+    {
+        $fromW = (float) ($design['tag']['w'] ?? $w);
+        $fromH = (float) ($design['tag']['h'] ?? $h);
+        if ($fromW <= 0 || $fromH <= 0 || (abs($fromW - $w) < 0.01 && abs($fromH - $h) < 0.01)) {
+            return $design;
+        }
+        $sx = $w / $fromW;
+        $sy = $h / $fromH;
+        $s = min($sx, $sy);
+        $design['tag'] = ['w' => round($w, 2), 'h' => round($h, 2)];
+        foreach ($design['elements'] as $i => $el) {
+            $el['x'] = round($el['x'] * $sx, 2);
+            $el['y'] = round($el['y'] * $sy, 2);
+            $el['w'] = max(0.5, round($el['w'] * $sx, 2));
+            $el['h'] = max(0.5, round($el['h'] * $sy, 2));
+            if (isset($el['size'])) {
+                $el['size'] = max(4, (int) round($el['size'] * $s));
+            }
+            foreach (['stroke_mm', 'radius'] as $key) {
+                if (isset($el[$key])) {
+                    $el[$key] = round($el[$key] * $s, 2);
+                }
+            }
+            $design['elements'][$i] = $el;
+        }
+
+        return $design;
+    }
+
+    /** The customer's choice of colour scheme, where the design offers it (NT3 field mode). */
+    public static function withScheme(array $design, ?string $scheme): array
+    {
+        if ($scheme !== null && isset($design['palette']['schemes'][$scheme])) {
+            $design['palette']['scheme'] = $scheme;
+        }
+
+        return $design;
+    }
+
+    /**
+     * The customer's choice of font for the texts they fill (NT3 field mode):
+     * only the field texts change, and only to a font the desk offers; the
+     * weight falls back to one the font has.
+     */
+    public static function withFieldFont(array $design, ?string $font): array
+    {
+        $fonts = (array) config('print.fonts', []);
+        if ($font === null || ! isset($fonts[$font])) {
+            return $design;
+        }
+        $weights = array_map('intval', array_keys((array) $fonts[$font]['files']));
+        foreach ($design['elements'] as $i => $el) {
+            if (($el['type'] ?? null) === 'text' && ! empty($el['field'])) {
+                $el['font'] = $font;
+                $el['weight'] = in_array((int) ($el['weight'] ?? 400), $weights, true) ? (int) $el['weight'] : (in_array(700, $weights, true) && (int) ($el['weight'] ?? 400) >= 700 ? 700 : $weights[0]);
+                $design['elements'][$i] = $el;
+            }
+        }
+
+        return $design;
+    }
+
+    /** The font the field texts are set in now, or null when there is none. */
+    public static function fieldFont(array $design): ?string
+    {
+        foreach ((array) ($design['elements'] ?? []) as $el) {
+            if (($el['type'] ?? null) === 'text' && ! empty($el['field'])) {
+                return (string) $el['font'];
+            }
+        }
+
+        return null;
+    }
+
     /** The keys the design asks the customer for, in the order they appear. */
     public static function fieldKeys(array $design): array
     {

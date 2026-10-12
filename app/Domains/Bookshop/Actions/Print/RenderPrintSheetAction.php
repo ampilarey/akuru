@@ -23,10 +23,29 @@ class RenderPrintSheetAction
     /**
      * @param  array<string, mixed>  $design  a validated design (PrintDesign::validate)
      * @param  list<array<string, string>>  $rows  one per tag: field key => value
-     * @param  array{watermark?: ?string, crop_marks?: bool, lang?: string, title?: string, browser?: bool}  $options
+     * @param  array{watermark?: ?string, crop_marks?: bool, lang?: string, title?: string, browser?: bool, grayscale?: bool}  $options
      * @return list<string> one HTML document per sheet
      */
     public function execute(array $design, PrintLayout $layout, array $rows, array $options = []): array
+    {
+        return array_map(fn (array $tags) => $this->render([$tags], $layout, $options), $this->sheets($design, $layout, $rows, $options));
+    }
+
+    /**
+     * Every sheet in one HTML document, a page each — the print file Chrome
+     * turns into one PDF (NT3).
+     *
+     * @param  array<string, mixed>  $design
+     * @param  list<array<string, string>>  $rows
+     * @param  array{watermark?: ?string, crop_marks?: bool, lang?: string, title?: string, browser?: bool, grayscale?: bool}  $options
+     */
+    public function document(array $design, PrintLayout $layout, array $rows, array $options = []): string
+    {
+        return $this->render($this->sheets($design, $layout, $rows, $options), $layout, $options);
+    }
+
+    /** @return list<list<array<string, mixed>>> each sheet's tags, placed on the layout */
+    private function sheets(array $design, PrintLayout $layout, array $rows, array $options): array
     {
         $perSheet = max(1, $layout->tagsPerSheet());
         $sheets = [];
@@ -45,18 +64,26 @@ class RenderPrintSheetAction
                     'elements' => $this->elements($design, $row, $images, (bool) ($options['browser'] ?? false)),
                 ];
             }
-            $sheets[] = $this->renderer->render('print-sheet', [
-                'title' => (string) ($options['title'] ?? 'Print sheet'),
-                'lang' => (string) ($options['lang'] ?? 'en'),
-                'fontCss' => ! empty($options['browser']) ? PrintFontFaces::forBrowser() : PrintFontFaces::forFile(),
-                'page' => ['w' => PrintLayout::PAGE_W, 'h' => PrintLayout::PAGE_H],
-                'cropMarks' => (bool) ($options['crop_marks'] ?? ($layout->sheet_code === null)),
-                'watermark' => $options['watermark'] ?? null,
-                'tags' => $tags,
-            ]);
+            $sheets[] = $tags;
         }
 
         return $sheets;
+    }
+
+    /** @param  list<list<array<string, mixed>>>  $sheets */
+    private function render(array $sheets, PrintLayout $layout, array $options): string
+    {
+        return $this->renderer->render('print-sheet', [
+            'title' => (string) ($options['title'] ?? 'Print sheet'),
+            'lang' => (string) ($options['lang'] ?? 'en'),
+            'fontCss' => ! empty($options['browser']) ? PrintFontFaces::forBrowser() : PrintFontFaces::forFile(),
+            'page' => ['w' => PrintLayout::PAGE_W, 'h' => PrintLayout::PAGE_H],
+            'cropMarks' => (bool) ($options['crop_marks'] ?? ($layout->sheet_code === null)),
+            'watermark' => $options['watermark'] ?? null,
+            'grayscale' => (bool) ($options['grayscale'] ?? false),
+            'tags' => $sheets[0] ?? [],
+            'sheets' => $sheets,
+        ]);
     }
 
     /** How many tags a list makes, and how many sheets. @return array{tags: int, sheets: int} */
@@ -84,6 +111,7 @@ class RenderPrintSheetAction
                     $item += [
                         'text' => $text,
                         'family' => (string) (config('print.fonts.'.$el['font'].'.family') ?? 'sans-serif'),
+                        'stack' => PrintFontFaces::stack((string) $el['font']),
                         'size' => (int) $el['size'],
                         'weight' => (int) ($el['weight'] ?? 400),
                         'color' => $this->colour($el['color'] ?? '#111111', $design),

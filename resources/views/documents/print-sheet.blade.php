@@ -11,6 +11,8 @@
     $fontCss   string   the @font-face rules
     $page      array    {w, h} mm (A4: 210 × 297)
     $tags      list     [{x, y, w, h, background, elements: [{type, x, y, w, h, ...}]}]
+    $sheets    ?list    several sheets' tags in one document (the print PDF, NT3); else [$tags]
+    $grayscale bool     a black-and-white job: the sheet is printed in grey (NT3)
     $cropMarks bool     draw marks in the gutters
     $watermark ?string  diagonal text across the sheet (the customer's proof)
 --}}
@@ -23,7 +25,9 @@
         {!! $fontCss !!}
         @page { size: {{ $page['w'] }}mm {{ $page['h'] }}mm; margin: 0; }
         html, body { margin: 0; padding: 0; background: #FFFFFF; }
-        .sheet { position: relative; width: {{ $page['w'] }}mm; height: {{ $page['h'] }}mm; overflow: hidden; page-break-after: always; }
+        .sheet { position: relative; width: {{ $page['w'] }}mm; height: {{ $page['h'] }}mm; overflow: hidden; page-break-after: always; break-after: page; }
+        .sheet:last-child { page-break-after: auto; break-after: auto; }
+        .sheet.grey { filter: grayscale(100%); }
         .tag { position: absolute; overflow: hidden; box-sizing: border-box; }
         .el { position: absolute; box-sizing: border-box; display: flex; align-items: center; }
         .el.text { white-space: pre-wrap; line-height: 1.15; }
@@ -38,8 +42,9 @@
     </style>
 </head>
 <body>
-<div class="sheet">
-    @foreach ($tags as $tag)
+@foreach (($sheets ?? null) ?: [$tags] as $sheetTags)
+<div class="sheet{{ ! empty($grayscale) ? ' grey' : '' }}">
+    @foreach ($sheetTags as $tag)
         <div class="tag" style="left: {{ $tag['x'] }}mm; top: {{ $tag['y'] }}mm; width: {{ $tag['w'] }}mm; height: {{ $tag['h'] }}mm; background: {{ $tag['background'] ?? '#FFFFFF' }};">
             @foreach ($tag['elements'] as $el)
                 @php
@@ -47,7 +52,7 @@
                     $rotate = empty($el['rotate']) ? '' : sprintf(' transform: rotate(%sdeg);', $el['rotate']);
                 @endphp
                 @if ($el['type'] === 'text')
-                    <div class="el text {{ $el['align'] ?? 'center' }}" dir="{{ $el['dir'] ?? 'auto' }}" style="{{ $box }}{{ $rotate }} font-family: '{{ $el['family'] }}'; font-size: {{ $el['size'] }}pt; font-weight: {{ $el['weight'] ?? 400 }}; color: {{ $el['color'] ?? '#111111' }};">{{ $el['text'] }}</div>
+                    <div class="el text {{ $el['align'] ?? 'center' }}" dir="{{ $el['dir'] ?? 'auto' }}" style="{{ $box }}{{ $rotate }} font-family: @isset($el['stack']){{ $el['stack'] }}@else'{{ $el['family'] }}'@endisset; font-size: {{ $el['size'] }}pt; font-weight: {{ $el['weight'] ?? 400 }}; color: {{ $el['color'] ?? '#111111' }};">{{ $el['text'] }}</div>
                 @elseif ($el['type'] === 'image')
                     <div class="el" style="{{ $box }}{{ $rotate }}"><img class="{{ ($el['fit'] ?? 'contain') === 'cover' ? 'cover' : '' }}" src="{{ $el['src'] }}" alt=""></div>
                 @elseif ($el['type'] === 'rect')
@@ -70,5 +75,6 @@
         <div class="watermark"><span>{{ $watermark }}</span></div>
     @endif
 </div>
+@endforeach
 </body>
 </html>
