@@ -52,10 +52,10 @@ class ShopPrintController extends Controller
     public function start(Request $request): RedirectResponse
     {
         $this->available($request);
-        $data = $request->validate(['template' => 'required|integer']);
+        $data = $request->validate(['template' => 'required|integer', 'grade' => 'nullable|string|max:40']);
         $template = PrintTemplate::query()->findOrFail((int) $data['template']);
         $cart = $request->user() === null ? $this->cart($request, create: true) : null;
-        $job = app(SavePrintJobAction::class)->start($template, $request->user()?->id, $cart?->id, app()->getLocale());
+        $job = app(SavePrintJobAction::class)->start($template, $request->user()?->id, $cart?->id, app()->getLocale(), $data['grade'] ?? null);
 
         return redirect()->route('public.shop.print.job', $job->id);
     }
@@ -173,7 +173,8 @@ class ShopPrintController extends Controller
         $cart = $request->user() === null ? $this->cart($request, create: true) : null;
         $copy = app(SavePrintJobAction::class)->copy($this->job($request, $job), $request->user()?->id, $cart?->id, app()->getLocale());
 
-        return redirect()->route('public.shop.print.job', $copy->id)->with('success', __('print.flash_copied'));
+        // NT7: *Order again* is a copy too — at today's price, to be proofed and approved again.
+        return redirect()->route('public.shop.print.job', $copy->id)->with('success', __($request->boolean('again') ? 'print.flash_order_again' : 'print.flash_copied'));
     }
 
     public function rename(Request $request, int $job): RedirectResponse

@@ -243,6 +243,7 @@
                 </form>
             @endif
         </div>
+        @include('public.shop._print-upsell', ['upsell' => \App\Domains\Bookshop\Support\PrintUpsell::card($bookList['grade'] ?? null)])
     </div>
 </section>
 @endif

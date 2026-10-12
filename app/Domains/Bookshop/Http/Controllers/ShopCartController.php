@@ -54,7 +54,9 @@ class ShopCartController extends Controller
         abort_if($bookList === null, 404);
 
         $result = $actions->execute($this->cart($request, create: true), $bookList);
-        $flash = redirect()->route('public.shop.cart')->with('success', __('shop.book_list_added_flash', ['count' => $result['added']]));
+        $flash = redirect()->route('public.shop.cart')->with('success', __('shop.book_list_added_flash', ['count' => $result['added']]))
+            // NT7: the cart offers this child's name tags next.
+            ->with('print_upsell', (string) ($bookList->grade ?? ''));
 
         return $result['skipped'] === [] ? $flash : $flash->with('warning', __('shop.book_list_skipped_flash', ['titles' => implode(', ', $result['skipped'])]));
     }

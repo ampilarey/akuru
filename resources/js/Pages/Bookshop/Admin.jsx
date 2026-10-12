@@ -887,6 +887,36 @@ function Funnels({ insights, t }) {
     );
 }
 
+/** NAME_TAGS_PLAN NT7: print sales by paper and month — the print lines of paid orders. */
+function PrintSales({ rows, t }) {
+    return (
+        <section id="print-sales" className="mt-8 scroll-mt-14" data-testid="office-print-sales">
+            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+                <h2 className="text-lg font-semibold">{t.print_sales_heading}</h2>
+                <a href="/admin/bookshop/insights/print-sales/export" className="btn-secondary" data-testid="export-print-sales">{t.export_csv}</a>
+            </div>
+            {rows.length === 0 ? <p className="text-sm text-gray-600" data-testid="print-sales-empty">{t.print_sales_none}</p> : (
+                <div className="overflow-x-auto rounded border bg-white">
+                    <table className="table-stack w-full text-sm">
+                        <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.print_sales_month}</th><th className="p-2 text-start">{t.print_sales_paper}</th><th className="p-2 text-end">{t.print_sales_jobs}</th><th className="p-2 text-end">{t.print_sales_sheets}</th><th className="p-2 text-end">{t.insights_sales}</th></tr></thead>
+                        <tbody>
+                            {rows.map((r) => (
+                                <tr key={`${r.month}-${r.paper}`} className="border-t" data-testid={`print-sales-${r.month}`}>
+                                    <td className="p-2" data-label={t.print_sales_month}>{r.month}</td>
+                                    <td className="p-2" dir="auto" data-label={t.print_sales_paper}>{r.paper}</td>
+                                    <td className="p-2 text-end" data-label={t.print_sales_jobs}>{r.jobs}</td>
+                                    <td className="p-2 text-end" data-label={t.print_sales_sheets}>{r.sheets}</td>
+                                    <td className="p-2 text-end" data-label={t.insights_sales}>{r.revenue}</td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
+            )}
+        </section>
+    );
+}
+
 /** B9d: bulk quotes across shops — a request nobody answers is seen here. */
 function Quotes({ quotes, t }) {
     const statuses = ['requested', 'quoted', 'accepted', 'ordered', 'declined', 'withdrawn'];
@@ -1289,6 +1319,7 @@ export default function Admin({ t, vendors, catalogue, slips = [], orders = [], 
             {!applications.some((a) => a.status === 'pending') && <Applications applications={applications} open={applications_open} t={t} />}
             {quotes && <Quotes quotes={quotes} t={t} />}
             {insights && <Funnels insights={insights} t={t} />}
+            {insights?.print_sales && <PrintSales rows={insights.print_sales} t={t} />}
             {hosts && <Hosts hosts={hosts} t={t} />}
             {custom_css && <CustomCssReviews rows={custom_css} t={t} />}
             {themes && <ThemeGalleryOffice themes={themes} t={t} />}

@@ -2034,4 +2034,10 @@ return [
     'event_print_finished' => 'Printing finished',
     'event_print_reprint' => 'Reprinted at no charge',
     'event_print_problem' => 'The print desk found a problem and will contact you',
+    'print_sales_heading' => 'Print sales by paper and month',
+    'print_sales_none' => 'No print orders paid in the last twelve months.',
+    'print_sales_month' => 'Month',
+    'print_sales_paper' => 'Paper',
+    'print_sales_jobs' => 'Jobs',
+    'print_sales_sheets' => 'Sheets',
 ];

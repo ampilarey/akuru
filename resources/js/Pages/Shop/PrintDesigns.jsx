@@ -37,7 +37,10 @@ function Row({ d, t, fonts, locale }) {
                 <div className="mt-2 flex flex-wrap gap-3 text-sm">
                     <Link href={base} className="text-blue-700 underline" data-testid={`print-design-open-${d.id}`}>{t.open}</Link>
                     {!editing && <button type="button" className="underline" onClick={() => setEditing(true)}>{t.rename}</button>}
-                    <button type="button" className="underline" onClick={() => router.post(`${base}/copy`)}>{t.make_copy}</button>
+                    {['approved', 'ordered', 'printing', 'finished'].includes(d.status)
+                        // NT7: a copy at today's price, to proof and approve again.
+                        ? <button type="button" className="font-medium text-blue-700 underline" onClick={() => router.post(`${base}/copy`, { again: 1 })} data-testid={`print-design-again-${d.id}`}>{t.order_again}</button>
+                        : <button type="button" className="underline" onClick={() => router.post(`${base}/copy`)}>{t.make_copy}</button>}
                     {d.removable && <button type="button" className="text-red-700 underline" onClick={() => { if (window.confirm(t.remove_confirm)) router.delete(base, { preserveScroll: true }); }} data-testid={`print-design-remove-${d.id}`}>{t.remove_design}</button>}
                 </div>
             </div>

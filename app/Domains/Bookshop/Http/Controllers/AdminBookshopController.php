@@ -38,6 +38,7 @@ use App\Domains\Bookshop\Actions\ShopOpenAction;
 use App\Domains\Bookshop\Actions\UpdateVendorAction;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Support\InsightsReport;
+use App\Domains\Bookshop\Support\PrintSalesReport;
 use App\Domains\Bookshop\Support\SectionTypes;
 use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Http\Controllers\Controller;
@@ -82,7 +83,7 @@ class AdminBookshopController extends Controller
             'themes' => app(DecideStorefrontThemeAction::class)->list(),
             'team' => ['members' => app(ManageBookshopTeamAction::class)->list(), 'can_manage' => (bool) $request->user()?->hasRole('super_admin'), 'added' => $request->session()->get('team_added')],
             'hosts' => ['shops' => app(DecideVendorHostAction::class)->list(), 'shop_host' => config('bookshop.hosts.shop_host'), 'check' => $request->session()->get('host_check')],
-            'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges'))],
+            'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges')), 'print_sales' => PrintSalesReport::byPaperAndMonth(PrintSalesReport::MONTHS, app()->getLocale())],
             'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
             'rewards' => app(LoyaltyRewardsAction::class)->report() + ['max_percent' => (float) config('bookshop.loyalty.max_percent')],
             'referrals' => app(ReferralCreditAction::class)->report() + ['max_amount' => (float) config('bookshop.referrals.max_amount')],
@@ -644,6 +645,22 @@ class AdminBookshopController extends Controller
     }
 
     /** B9e: every shop's funnel side by side. */
+    /** NT7: print sales by paper and month, as CSV. */
+    public function exportPrintSales(Request $request): StreamedResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $rows = PrintSalesReport::byPaperAndMonth(PrintSalesReport::MONTHS, app()->getLocale());
+
+        return response()->streamDownload(function () use ($rows): void {
+            $out = fopen('php://output', 'w');
+            Csv::put($out, ['month', 'paper', 'jobs', 'sheets', 'revenue']);
+            foreach ($rows as $r) {
+                Csv::put($out, [$r['month'], $r['paper'], $r['jobs'], $r['sheets'], $r['revenue']]);
+            }
+            fclose($out);
+        }, 'bookstore-print-sales.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
     public function exportInsights(Request $request): StreamedResponse
     {
         abort_unless($request->user()?->can('bookshop.manage'), 403);

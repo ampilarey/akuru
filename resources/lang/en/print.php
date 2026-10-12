@@ -447,4 +447,10 @@ return [
     'freeform_door_heading' => 'Design your own from a blank tag',
     'freeform_door_body' => 'Add text, shapes and pictures from Akuru\'s library; names come from your list.',
     'freeform_door_button' => 'Start designing',
+    'upsell_heading' => 'Name tags and subject tags for this child',
+    'upsell_body' => 'Choose a design, type the name, and we print them with the books.',
+    'upsell_body_grade' => 'The :grade subjects are filled in; type the name and we print them with the books.',
+    'upsell_button' => 'Add name tags',
+    'order_again' => 'Order again',
+    'flash_order_again' => 'A copy at today\'s price is ready. Check it, make the proof and approve it to order again.',
 ];

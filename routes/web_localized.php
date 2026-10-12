@@ -1002,6 +1002,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('hosts/{vendor}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'decideHost'])->name('admin.bookshop.hosts.decide')->whereNumber('vendor');
         // B9e: every shop's funnel.
         Route::get('insights/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportInsights'])->name('admin.bookshop.insights.export');
+        // NT7: print sales by paper and month.
+        Route::get('insights/print-sales/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportPrintSales'])->name('admin.bookshop.insights.print-sales.export');
         // B9d: bulk quotes across every shop.
         Route::get('quotes/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportQuotes'])->name('admin.bookshop.quotes.export');
         // B3: card refunds, returned through BML and recorded.

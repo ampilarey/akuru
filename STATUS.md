@@ -4983,6 +4983,61 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ru. Name tags beside the book list, *Order again*, print sales (C23 NT7, 2026-10-12)
+
+The last slice of `docs/NAME_TAGS_PLAN.md`, after NT6 (§5rt). With it the
+plan's eight slices are built.
+
+**Built:**
+- **The book-list card** (plan §3.9, `PrintUpsell`): on a school's book list
+  and on the cart after *Add all to cart*, *Name tags and subject tags for
+  this child*, saying the grade's subjects are filled in. It shows only
+  while the print desk is on and its product is for sale. *Add name tags*
+  starts the first active design that prints subjects, with the grade's
+  subject set chosen and its subjects ticked (`SavePrintJobAction::start`
+  with the grade; `subjectSetFor` matches the set's label in any of its
+  three languages, exactly or containing the grade). A grade no set names
+  starts the design without subjects.
+- **Order again** on *My designs* for an approved, ordered, printing or
+  finished design, and under a print line on *My orders*: a draft copy
+  (`print.flash_order_again`), priced at today's price, to proof and
+  approve again — the approved design and its held price untouched.
+- **Print sales by paper and month** on the Bookstore office
+  (`PrintSalesReport`, `/admin/bookshop`, phone cards) and as CSV
+  (`/admin/bookshop/insights/print-sales/export`, `bookshop.manage`): the print
+  lines of paid orders not cancelled, by the month they were paid
+  (Maldives time) and the paper — jobs, sheets, what they came to — for the
+  last twelve months, newest first.
+
+**Tests:** `PrintUpsellTest` (new, 4): the card on a book list only while
+the desk sells, and on the cart after *Add all* (the session carries the
+grade); the card's start choosing the grade's set and its subjects, an
+unknown grade choosing none, a Dhivehi label matched; *Order again* a new
+draft at today's price (4.00 a sheet after a change from 3.00) with the
+name kept and the approved price held; print sales counting the two paid
+orders and not the cancelled or unpaid, on the office page and in the CSV,
+refused to a customer.
+
+Whole suite locally: **3191 passed (67302 assertions)**, none failed; the first run found four of this slice's own — the CSV route named like a page (the menu tests read it as one, so it is `…/print-sales/export`), the card's partial not declared among the public Blade views, and the office controller's `index` one line longer (the sales ride in the `insights` prop instead).
+
+**Walk:** `print-upsell.mjs` (new, in the runner): the walk makes a Grade 3
+book list and puts it back after; under `/dv` the list shows the card in
+Dhivehi, *Add name tags* opens a design with Grade 3's set chosen and its
+subjects ticked, *Add all* shows the card on the cart; *My designs* offers
+*Order again* in Dhivehi on an approved design and it opens a new draft
+with the today's-price message; the office sees *Print sales by paper and
+month* and its CSV downloads. 7/7.
+
+**Deploy:** no migration. The built assets are in the commit. The standard
+pull command.
+
+**C23 is built.** What stays the owner's (plan §14): Chrome on the host at
+`DOCUMENTS_CHROME_PATH` before the print desk can be switched on, and
+Ghostscript at `DOCUMENTS_GS_PATH` for PDF uploads.
+
+**Next:** the parked items — the code SMS's minutes, the registration's
+last page by the course's approval setting, BH1 (C22).
+
 ## 5rt. Customers design name tags freely (C23 NT6, 2026-10-12)
 
 The seventh slice of `docs/NAME_TAGS_PLAN.md`, after NT5 (§5rs): the

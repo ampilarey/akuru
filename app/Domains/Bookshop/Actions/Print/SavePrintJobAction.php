@@ -8,6 +8,7 @@ use App\Domains\Bookshop\Models\PrintImage;
 use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintLayout;
 use App\Domains\Bookshop\Models\PrintPaperOption;
+use App\Domains\Bookshop\Models\PrintSubjectSet;
 use App\Domains\Bookshop\Models\PrintTemplate;
 use App\Domains\Bookshop\Support\PrintDesign;
 use App\Domains\Bookshop\Support\PrintDesk;
@@ -28,7 +29,7 @@ class SavePrintJobAction
     public function __construct(private readonly QuotePrintJobAction $quote) {}
 
     /** A new draft from an active template, with the desk's first priced paper and its minimum sheets. */
-    public function start(PrintTemplate $template, ?int $userId, ?int $cartId, string $locale): PrintJob
+    public function start(PrintTemplate $template, ?int $userId, ?int $cartId, string $locale, ?string $grade = null): PrintJob
     {
         if ($template->status !== 'active') {
             throw ValidationException::withMessages(['template' => __('print.error_job_template')]);
@@ -59,9 +60,30 @@ class SavePrintJobAction
             'name' => $template->titleIn($locale),
             'academic_year_id' => $year === null ? null : (int) $year['id'],
         ]);
+        // NT7: from a school's book list, the grade's subject set is chosen already.
+        $set = $grade === null ? null : self::subjectSetFor($grade);
+        if ($set !== null && in_array('subject', PrintDesign::fieldKeys((array) $job->design), true)) {
+            $entry = (array) $job->entry;
+            $entry['subjects'] = ['set_id' => $set->id, 'items' => (array) $set->subjects, 'language' => $entry['subjects']['language'] ?? 'en'];
+            $job->forceFill(['entry' => $entry, 'print_subject_set_id' => $set->id]);
+        }
         $this->price($job, $locale, quietly: true);
 
         return $job;
+    }
+
+    /** NT7: the active subject set a book list's grade names (its label in any language, or a label containing it). */
+    public static function subjectSetFor(string $grade): ?PrintSubjectSet
+    {
+        $grade = mb_strtolower(trim($grade));
+        if ($grade === '') {
+            return null;
+        }
+        $sets = PrintSubjectSet::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+        $labels = fn (PrintSubjectSet $s) => array_filter(array_map(fn ($l) => mb_strtolower(trim((string) $l)), [$s->label, $s->label_dv, $s->label_ar]));
+
+        return $sets->first(fn (PrintSubjectSet $s) => in_array($grade, $labels($s), true))
+            ?? $sets->first(fn (PrintSubjectSet $s) => collect($labels($s))->contains(fn ($l) => str_contains($l, $grade)));
     }
 
     /**
