@@ -518,6 +518,15 @@ U1 puts a condition on products and lets a person sell their own books as a
 team — L2 (STATUS §5mt) the daily reminders, ratings, pause and the
 office's moderation, and L3 (STATUS §5mv) books given away free to keep. `used` and `lending` are reserved shop addresses.
 
+## 15c. Name tags and print products (2026-10-12)
+
+Planned in their own document, `docs/NAME_TAGS_PLAN.md`: Akuru's print
+desk sells made-to-order name tags and subject tags through this
+Bookstore — a vendor of kind `akuru`, a configurator and designer, a
+proof the customer approves but never downloads, the print file rendered
+through ADR-012's Chrome path, and a queue inside Akuru fulfilment.
+Slices NT0–NT7; not started.
+
 ## 16. After the build: features from the iruali comparison (2026-09-29)
 
 The owner asked which features of the `iruali` marketplace could be added

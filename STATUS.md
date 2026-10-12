@@ -4983,6 +4983,42 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rm. Name tags and print products in the Bookstore — planned (C23, 2026-10-12)
+
+The owner asked (2026-10-11) for name tags in the Bookstore: the customer
+designs their own or picks a design or uploads one, chooses tags per A4,
+paper, colour, sheets and a set of subject tags, adds to the cart, pays,
+collects or is delivered to. Asked to think first, not build; then
+answered the plan's questions (2026-10-12): Akuru prints; prices, lead
+time and finishing are set in the admin; Akuru makes the first templates
+and the office can add; a choice of fonts; a proof is mandatory and the
+customer never downloads it; PDF is rendered; the free-form designer is
+wanted too.
+
+**Written:** `docs/NAME_TAGS_PLAN.md` — what it reuses in the Bookstore
+(read from the code: `SaveCartItemAction`, `StartBookshopCheckoutAction`,
+`AkuruFulfilmentAction`, the `documents` table, `DocumentRendererInterface`,
+`PdfConverterInterface` and `ChromePdfConverter`, `StorePrivateMediaAction`,
+the `storefront.fonts` decision); the customer and office features; one
+design model in millimetres for templates, free designs and uploads; one
+render (Blade `print-sheet`) with three outputs (browser preview, Chrome
+PDF print file, watermarked PNG proof through a new `PageImageInterface`);
+states and the lock an approved job gets; data (seven tables, two
+additive columns, two document types, the `akuru` vendor kind); seven
+risks with what each slice does about them — first that the production
+host may have no Chrome; the architecture rules it keeps; eight slices
+NT0–NT7 with their tests and walks; the decisions table (D1–D8 the
+owner's, D9–D16 defaults); and the four operator items.
+
+Pointers: BACKLOG C23; CLAUDE.md's document map; `docs/BOOKSHOP_PLAN.md`
+§15c.
+
+**Not started.** NT0 — a half-day proof that Chrome prints a Thaana name
+from a `file://` page with the self-hosted fonts — is the first slice and
+decides the render path before anything else is built.
+
+**Deploy:** docs only.
+
 ## 5rl. A sent prayer broadcast is locked, and its refusals are in Dhivehi and Arabic (C21 PB1, 2026-10-11)
 
 Next after the offices' last refusals (OF1, §5rk), which left the prayer

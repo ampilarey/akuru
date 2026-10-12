@@ -17,6 +17,7 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 | `docs/SIGN_IN_PLAN.md` | sign-in and workspaces as the EduPage account model: the 2026-09-28 audit (twelve findings with their code), the target, seven decisions with defaults, slices ID1–ID5 |
 | `docs/RESEARCH_ARTICLES_PLAN.md` | research and articles move into the Digital Library, peer review becomes mandatory, a news editor: the 2026-09-29 audit (F1–F12 with their code), the owner's three decisions, slices R1–R5 |
 | `docs/COMMERCE_PARITY_PLAN.md` | customers, sellers and fulfilment the Bake & Grill way: the 2026-09-30 audit (F1–F13 with their code), the owner's seven decisions, slices P1–P8 (phone sign-in, seller and learner ID cards, listing approval, purchase notices, Akuru fulfilment and drivers, complaints and campaigns) |
+| `docs/NAME_TAGS_PLAN.md` | name tags and print products in the Bookstore: the owner's eight decisions (2026-10-12), the design model, the render path (HTML → Chrome PDF and watermarked proof), data, risks, slices NT0–NT7 |
 | `docs/PHASE_0_CHECKLIST.md`, `docs/S1_SPEC.md`, `docs/S2_SPEC.md`, `docs/S3_SPEC.md`, `docs/W1_SPEC.md` | per-phase build specs |
 | `STATUS.md` | what is done, in progress, next — UPDATE AFTER EVERY SLICE |
 | `docs/adr/` | architecture decision records |
