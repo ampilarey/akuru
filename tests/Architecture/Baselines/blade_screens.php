@@ -232,6 +232,8 @@ return [
     // vendor and office screens Inertia). Two pages and three partials.
     'public/shop/_bottom-bar.blade.php',
     'public/shop/_card.blade.php',
+    // NAME_TAGS_PLAN NT7: the name-tag card, a partial of the public shop's book list and cart (both Blade already).
+    'public/shop/_print-upsell.blade.php',
     'public/shop/_stock.blade.php',
     'public/shop/index.blade.php',
     'public/shop/product.blade.php',

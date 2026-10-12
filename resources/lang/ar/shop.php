@@ -2029,4 +2029,10 @@ return [
     'event_print_finished' => 'انتهت الطباعة',
     'event_print_reprint' => 'أعيدت الطباعة دون تكلفة',
     'event_print_problem' => 'وجد مكتب الطباعة مشكلة وسيتواصل معك',
+    'print_sales_heading' => 'مبيعات الطباعة حسب الورق والشهر',
+    'print_sales_none' => 'لا طلبات طباعة مدفوعة في الأشهر الاثني عشر الماضية.',
+    'print_sales_month' => 'الشهر',
+    'print_sales_paper' => 'نوع الورق',
+    'print_sales_jobs' => 'المهام',
+    'print_sales_sheets' => 'الأوراق المطبوعة',
 ];

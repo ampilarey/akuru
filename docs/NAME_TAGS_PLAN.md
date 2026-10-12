@@ -714,6 +714,13 @@ commits, STATUS and the walks.
   paper and month* on the Bookstore insights page; CSV.
 - Tests and walk `print-upsell.mjs`.
 
+> **Built 2026-10-12 (STATUS §5ru).** As planned, with these choices: the
+> card starts the first active design that prints subjects, with the
+> grade's subject set matched by its label in any language; *Order again*
+> is the copy NT3 already made, priced at today's price and saying so; the
+> sales report counts paid orders not cancelled, by the month paid, for the
+> last twelve months. **With NT7 the plan's eight slices are built.**
+
 **Later, on request (not in these slices):** other sheet sizes and
 products (A3, cards, stickers by the roll, photo prints); vendors other
 than Akuru printing; school bulk orders through quotes and credit (the

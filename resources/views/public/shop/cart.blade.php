@@ -14,6 +14,10 @@
     <h1 class="mb-6 text-3xl font-bold text-brandMaroon-900" data-testid="cart-heading">{{ __('shop.cart_title') }}</h1>
 
     {{-- The layout says the thanks once; this page said it a second time (slice FL1). --}}
+    {{-- NT7: after a whole book list went into the cart, the child's name tags too. --}}
+    @if(session()->has('print_upsell'))
+        @include('public.shop._print-upsell', ['upsell' => \App\Domains\Bookshop\Support\PrintUpsell::card(session('print_upsell') ?: null)])
+    @endif
     @if(session('warning'))
         {{-- §5lc: a book list's items that could not go in, by name. --}}
         <p class="mb-3 rounded border border-amber-300 bg-amber-50 p-2 text-sm text-amber-900" dir="auto" data-testid="flash-warning">{{ session('warning') }}</p>
