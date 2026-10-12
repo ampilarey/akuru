@@ -33,9 +33,10 @@ interface SmsSenderInterface
 
     /**
      * A one-time code, composed here rather than by each caller so the wording
-     * and the `type` are the same on every driver.
+     * and the `type` are the same on every driver. `$minutes` is how long this
+     * code lives, said in the SMS (a contact's code 5, a sign-in's 15).
      *
      * @return array<string, mixed>
      */
-    public function sendOtp(string $phoneNumber, string $otp): array;
+    public function sendOtp(string $phoneNumber, string $otp, int $minutes = 10): array;
 }

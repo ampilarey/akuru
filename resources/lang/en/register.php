@@ -242,4 +242,7 @@ return [
     'error_no_fee' => 'This course has no registration fee. Please register without paying.',
     'error_not_your_learner' => 'You cannot enroll this learner.',
     'error_full' => '":course" is fully booked. No seats are left.',
+    'next_bank' => 'The bank confirms your payment.',
+    'next_active_now' => 'Your enrollment is active as soon as it does; there is no approval to wait for.',
+    'payment_received_active' => 'The bank has received your payment. Your enrollment is active.',
 ];

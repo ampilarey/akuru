@@ -4983,6 +4983,45 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rv. A code's SMS says its real minutes; the last page says the course's real next steps (KNOWN_ISSUES P4 ×2, 2026-10-12)
+
+Two parked P4s, both places that told people the wrong thing.
+
+**Fixed:**
+- **The code's minutes.** Both SMS senders said *Valid for 10 minutes* for
+  every code. `SmsSenderInterface::sendOtp` now takes the code's minutes,
+  and `OtpService::dispatchCode` passes them: 5 for a code that confirms a
+  contact, 15 for sign-in, reset and enrolment codes, and 10 for a new
+  registration's. `LogSmsSender` and `SmsGatewayService` write
+  *Valid for {minutes} minutes*. The tests' SMS fakes follow the new
+  signature.
+- **The registration's last page.** *What happens next?* used to tell every
+  family that the office approves the enrolment and that it takes one or
+  two working days. That is now said only when one of the enrolled courses
+  has `requires_admin_approval`. Without approval the page says the
+  enrolment is active once the bank confirms the payment
+  (`register.next_bank`, `register.next_active_now`), and it leaves out the
+  waiting time. The payment check's *received* line follows the same
+  setting (`register.payment_received_active`). The new phrases are in
+  English, Dhivehi and Arabic.
+
+**Tests:** `CodeMinutesAndNextStepsTest` (new, 3):
+- a contact code is sent with 5 minutes and a sign-in code with 15;
+- both senders' words carry the minutes;
+- the last page gives each course's own next steps;
+- the phrases are in Thaana and Arabic script.
+
+Whole suite locally: **3194 passed** (67334 assertions).
+
+**Walk:** `register.mjs` 15/15. It enrols on the free smoke course and
+reaches the last page with no errors, but it does not read the next steps.
+Their wording by the approval setting is held by the feature test.
+
+**Deploy:** no migration. The standard pull command.
+
+**Next:** BH1 (C22). It picks a person by name instead of a typed id on the
+behaviour, plan, fee adjustment and wallet forms.
+
 ## 5ru. Name tags beside the book list, *Order again*, print sales (C23 NT7, 2026-10-12)
 
 The last slice of `docs/NAME_TAGS_PLAN.md`, after NT6 (§5rt). With it the

@@ -70,11 +70,11 @@ class LogSmsSender implements SmsSenderInterface
      *
      * @return array<string, mixed>
      */
-    public function sendOtp(string $phoneNumber, string $otp): array
+    public function sendOtp(string $phoneNumber, string $otp, int $minutes = 10): array
     {
         return $this->sendSms(
             $phoneNumber,
-            "Your Akuru Institute verification code is: {$otp}. Valid for 10 minutes. Do not share this code.",
+            "Your Akuru Institute verification code is: {$otp}. Valid for {$minutes} minutes. Do not share this code.",
             ['type' => 'otp', 'sender_id' => 'AKURU'],
         );
     }

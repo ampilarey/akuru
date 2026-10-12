@@ -31,7 +31,7 @@ it('approving an absence note excuses matching absent rows via the writer', func
             return ['success' => true];
         }
 
-        public function sendOtp(string $phoneNumber, string $otp): array
+        public function sendOtp(string $phoneNumber, string $otp, int $minutes = 10): array
         {
             return $this->sendSms($phoneNumber, "Code: {$otp}", ['type' => 'otp']);
         }
