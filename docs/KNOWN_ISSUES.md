@@ -220,7 +220,7 @@ They now leave it to the layout, whose copy carries the walks' test id
 
 ## Found translating the payment pages (2026-10-11)
 
-### The registration's last page says the office approves every enrolment — **open (P4)**
+### The registration's last page says the office approves every enrolment — **fixed (2026-10-12, STATUS §5rv)**
 
 The last page's *What happens next?* tells every family four things. The
 office reviews the enrolment and its payment, and an SMS follows once it is
@@ -238,9 +238,15 @@ by the course's own setting.
 Found writing the page back from the bank, which no longer says a
 registration is confirmed (STATUS §5re).
 
+**Fixed:** the page now gives the next steps by the course's own setting. Without
+approval it says the enrolment is active once the bank confirms the payment, and
+it leaves out the approval and the time it takes. The payment check's line
+follows the same setting (`register.next_bank`, `next_active_now`,
+`payment_received_active`; `CodeMinutesAndNextStepsTest`).
+
 ## Found translating the sign-in pages (2026-10-11)
 
-### A code's SMS says it lasts 10 minutes, whatever its real life — **open (P4)**
+### A code's SMS says it lasts 10 minutes, whatever its real life — **fixed (2026-10-12, STATUS §5rv)**
 
 Both SMS senders word every code the same: *Valid for 10 minutes*
 (`LogSmsSender::sendOtp`, `SmsGatewayService::sendOtp`). That is true only of
@@ -250,6 +256,10 @@ So a person told 10 minutes can find the code gone at 6. The SMS is a
 notification, English as C20 decided, so SI1 left its words alone. The fix
 is to pass the code's minutes to the sender. Found writing the admins'
 sign-in page, which says 15 (STATUS §5rd).
+
+**Fixed:** `SmsSenderInterface::sendOtp` now takes the code's minutes, and
+`OtpService` passes them: 5 to confirm a contact, 15 for the others, and 10 for a
+new registration (`CodeMinutesAndNextStepsTest`).
 
 ## Found by the registration language walk (2026-10-10)
 

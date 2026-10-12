@@ -32,7 +32,7 @@ function libraryNoticeSms(): object
             return ['success' => true, 'driver' => 'log'];
         }
 
-        public function sendOtp(string $phoneNumber, string $otp): array
+        public function sendOtp(string $phoneNumber, string $otp, int $minutes = 10): array
         {
             return ['success' => true, 'driver' => 'log'];
         }

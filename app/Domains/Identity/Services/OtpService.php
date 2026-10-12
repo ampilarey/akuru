@@ -215,7 +215,8 @@ class OtpService
             if (! str_starts_with($phone, '+')) {
                 $phone = $this->normalizer->normalizePhone($phone);
             }
-            $result = $this->smsGateway->sendOtp($phone, $code);
+            // The SMS says the code's own life, as the email does (KNOWN_ISSUES: it said 10 for every code).
+            $result = $this->smsGateway->sendOtp($phone, $code, $minutes);
             if (! ($result['success'] ?? false)) {
                 throw new \RuntimeException('SMS gateway failed');
             }
@@ -296,7 +297,7 @@ class OtpService
                 $phone = str_starts_with($normalizedValue, '+')
                     ? $normalizedValue
                     : $this->normalizer->normalizePhone($normalizedValue);
-                $result = $this->smsGateway->sendOtp($phone, $code);
+                $result = $this->smsGateway->sendOtp($phone, $code, 10);
                 if (! ($result['success'] ?? false)) {
                     throw new \RuntimeException('SMS gateway failed');
                 }

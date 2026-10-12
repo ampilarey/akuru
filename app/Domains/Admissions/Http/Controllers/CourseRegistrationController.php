@@ -1144,8 +1144,12 @@ class CourseRegistrationController extends PublicRegistrationController
 
         $this->clearPendingSession();
 
+        $enrollments = collect($enrollments)->filter()->unique('id')->values();
+
         return view('courses.register-complete', [
-            'enrollments' => collect($enrollments)->unique('id')->values(),
+            'enrollments' => $enrollments,
+            // KNOWN_ISSUES: what happens next is the course's own — an office approval only where the course asks for one.
+            'needsApproval' => Course::query()->whereIn('id', $enrollments->pluck('course_id'))->where('requires_admin_approval', true)->exists(),
             'paymentRef' => $paymentRef,
             'paymentIdForStatus' => $paymentIdForStatus,
             // Pulled, not read: the page says it with its button, and the layout would say it again (slice RG1c).

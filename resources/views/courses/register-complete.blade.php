@@ -22,12 +22,20 @@
             {{-- What happens next --}}
             <div style="background:#FFFBF0;border:1px solid #FDE68A;border-radius:.625rem;padding:1rem 1.25rem;margin-bottom:1.25rem">
                 <p style="font-size:.8rem;font-weight:700;color:#92400E;margin:0 0 .5rem;text-transform:uppercase;letter-spacing:.05em">{{ __('register.next_title') }}</p>
-                <ol style="margin:0;padding-inline-start:1.25rem;font-size:.85rem;color:#374151;line-height:1.9">
+                {{-- The office approves only a course that asks for it; any other is active once the bank confirms the payment (ActivatePaidEnrollmentAction). --}}
+                <ol style="margin:0;padding-inline-start:1.25rem;font-size:.85rem;color:#374151;line-height:1.9" data-testid="next-steps" data-approval="{{ $needsApproval ? 'yes' : 'no' }}">
+                    @if($needsApproval)
                     <li>{{ __('register.next_review') }}</li>
                     <li>{{ __('register.next_sms') }}</li>
                     <li>{{ __('register.next_active') }}</li>
+                    @else
+                    <li>{{ __('register.next_bank') }}</li>
+                    <li>{{ __('register.next_active_now') }}</li>
+                    @endif
                 </ol>
+                @if($needsApproval)
                 <p style="font-size:.78rem;color:#92400E;margin:.75rem 0 0"><span aria-hidden="true">⏱</span> {{ __('register.next_time') }}</p>
+                @endif
             </div>
 
             {{-- Message when payment gateway could not be reached after OTP. Taken out of the session by the controller, so the layout does not say it a second time (slice RG1c). --}}
@@ -82,7 +90,7 @@
                     <span class="text-sm text-amber-800">{{ __('register.checking_payment') }}</span>
                 </div>
                 <div x-show="!loading && confirmed" x-cloak class="p-4 bg-green-50 border border-green-200 rounded">
-                    <p class="text-green-800 font-semibold text-sm"><span aria-hidden="true">✓</span> {{ __('register.payment_received') }}</p>
+                    <p class="text-green-800 font-semibold text-sm" data-testid="payment-received"><span aria-hidden="true">✓</span> {{ __($needsApproval ? 'register.payment_received' : 'register.payment_received_active') }}</p>
                 </div>
                 <div x-show="timedOut && !confirmed" x-cloak class="p-4 bg-amber-50 border border-amber-200 rounded">
                     <p class="text-amber-800 font-medium text-sm mb-2">{{ __('register.checking_slow') }}</p>
