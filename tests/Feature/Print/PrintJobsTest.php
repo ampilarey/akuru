@@ -155,7 +155,8 @@ it('makes as many sheets as the list or the subject set needs, and fits the desi
     $label = PrintLayout::query()->where('sheet_code', 'L7160')->firstOrFail();
     $save(['layout_id' => $label->id, 'entry' => ['mode' => 'same', 'row' => ['name' => 'Ali']]])->assertOk()->assertJsonPath('job.per_sheet_tags', 21);
     $design = $job->fresh()->design;
-    expect($design['tag'])->toBe(['w' => $label->tag_w_mm, 'h' => $label->tag_h_mm])
+    // MySQL 8 keeps a JSON object's keys in its own order: compare the values.
+    expect($design['tag']['w'])->toBe($label->tag_w_mm)->and($design['tag']['h'])->toBe($label->tag_h_mm)
         ->and(collect($design['elements'])->every(fn ($el) => $label->tag_w_mm + 0.05 >= $el['x'] + $el['w'] && $label->tag_h_mm + 0.05 >= $el['y'] + $el['h']))->toBeTrue();
 
     // Too many lines, and nothing typed, are refused.
