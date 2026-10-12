@@ -12,6 +12,7 @@ use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\CoursePlan;
 use App\Domains\Academics\Models\Subject;
+use App\Domains\People\Actions\ListTeacherRowOptionsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Inertia\Phrases;
@@ -89,6 +90,8 @@ class CoursePlanController extends Controller
             'classes' => ClassRoom::query()->orderBy('name')->get(['id', 'name', 'section', 'academic_year_id']),
             'subjects' => Subject::query()->orderBy('name')->get(['id', 'name', 'code']),
             'statuses' => array_map(fn (CoursePlanStatus $status) => $status->value, CoursePlanStatus::cases()),
+            // BH1 (BACKLOG C22): the office chooses the teacher by name.
+            'teachers' => $canManage ? app(ListTeacherRowOptionsAction::class)->execute([$teacherId])->all() : [],
             't' => Phrases::once('academics'),
         ]);
     }

@@ -1,7 +1,8 @@
 import { router, useForm } from '@inertiajs/react';
+import PersonPicker from '../../../Components/PersonPicker';
 import AppShell from '../../../Layouts/AppShell';
 
-export default function Index({ yearId, years, types, categories, records, canManage, t = {} }) {
+export default function Index({ yearId, years, types, categories, records, canManage, pupil_matches = [], t = {} }) {
     const form = useForm({
         student_id: '',
         academic_year_id: yearId || years[0]?.id || '',
@@ -36,11 +37,20 @@ export default function Index({ yearId, years, types, categories, records, canMa
                 }}
                 className="mb-6 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
             >
-                <label className="block text-sm">
-                    <span className="mb-1 block text-gray-600">{t.behavior_student_id || 'Student id'}</span>
-                    <input className="form-input w-full" aria-label={t.behavior_student_id || 'Student id'} value={form.data.student_id} onChange={(e) => form.setData('student_id', e.target.value)} />
-                    {form.errors.student_id && <span className="text-xs text-red-600">{form.errors.student_id}</span>}
-                </label>
+                {/* BH1 (BACKLOG C22): the pupil by name, not a typed id. */}
+                <PersonPicker
+                    label={t.behavior_student || 'Student'}
+                    placeholder={t.work_search || 'Search by name or student number'}
+                    param="pupil_q"
+                    prop="pupil_matches"
+                    matches={pupil_matches}
+                    value={form.data.student_id}
+                    onChoose={(id) => form.setData('student_id', id)}
+                    error={form.errors.student_id}
+                    sameName={t.same_name_check || 'same name as another pupil — check the number'}
+                    describe={(m) => [m.student_number, m.current_class].filter(Boolean).join(' · ')}
+                    testId="behavior-pupil"
+                />
                 <label className="block text-sm">
                     <span className="mb-1 block text-gray-600">{t.type || 'Type'}</span>
                     <select className="form-input w-full" aria-label={t.type || 'Type'} value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>

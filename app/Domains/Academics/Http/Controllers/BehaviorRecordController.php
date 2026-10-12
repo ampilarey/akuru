@@ -7,6 +7,7 @@ use App\Domains\Academics\Actions\SaveBehaviorRecordAction;
 use App\Domains\Academics\Enums\BehaviorType;
 use App\Domains\Academics\Models\AcademicYear;
 use App\Domains\Academics\Models\BehaviorRecord;
+use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Inertia\Phrases;
@@ -33,6 +34,8 @@ class BehaviorRecordController extends Controller
             'categories' => $lister->categories(),
             'records' => $lister->execute(['academic_year_id' => $yearId]),
             'canManage' => (bool) $request->user()?->can('behavior.manage'),
+            // BH1 (BACKLOG C22): the pupil found by name, on a partial reload.
+            'pupil_matches' => fn () => app(SearchRosterCandidatesAction::class)->execute((string) $request->query('pupil_q', ''), 12),
             't' => Phrases::once('academics'),
         ]);
     }

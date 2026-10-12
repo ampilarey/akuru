@@ -532,7 +532,7 @@ return [
 
     // Teaching plans.
     'plans_title' => 'ކިޔަވައިދިނުމުގެ ޕްލޭންތައް',
-    'plans_teacher_id' => 'ޓީޗަރުގެ އައިޑީ',
+    'plans_teacher' => 'ޓީޗަރު',
     'plans_create' => 'ޕްލޭން ހަދާ',
     'plans_taught' => 'ކިޔަވައިދީފި',
     'plans_new_topic' => 'އައު މައުޟޫޢު',
@@ -605,7 +605,7 @@ return [
 
     // Behaviour records.
     'behavior_title' => 'ސުލޫކުގެ ރެކޯޑުތައް',
-    'behavior_student_id' => 'ދަރިވަރުގެ އައިޑީ',
+    'behavior_student' => 'ދަރިވަރު',
     'behavior_category' => 'ގިންސު',
     'behavior_description' => 'ތަފްޞީލު',
     'behavior_parent_visible' => 'ބެލެނިވެރިންނަށް ފެންނާނެ',

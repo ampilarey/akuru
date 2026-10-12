@@ -532,7 +532,7 @@ return [
 
     // Teaching plans.
     'plans_title' => 'خطط التدريس',
-    'plans_teacher_id' => 'رقم المعلم',
+    'plans_teacher' => 'المعلم',
     'plans_create' => 'إنشاء خطة',
     'plans_taught' => 'دُرِّس',
     'plans_new_topic' => 'موضوع جديد',
@@ -605,7 +605,7 @@ return [
 
     // Behaviour records.
     'behavior_title' => 'سجلات السلوك',
-    'behavior_student_id' => 'رقم الطالب',
+    'behavior_student' => 'الطالب',
     'behavior_category' => 'الفئة',
     'behavior_description' => 'الوصف',
     'behavior_parent_visible' => 'ظاهر لولي الأمر',

@@ -1,6 +1,7 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
+import PersonPicker from '../../../Components/PersonPicker';
 
 /**
  * A year's school-fee adjustments: sibling discounts, scholarships, waivers.
@@ -11,7 +12,7 @@ import FormErrors from '../../../Components/FormErrors';
  * came off nothing. A refused adjustment is said under the form; only its
  * value's refusals were.
  */
-export default function Index({ years, yearId, studentId, adjustments, suggestions, types, bases, appliesTo, statuses, itemTypes = [], t = {} }) {
+export default function Index({ years, yearId, studentId, adjustments, suggestions, types, bases, appliesTo, statuses, itemTypes = [], pupil_matches = [], t = {} }) {
     const typeName = (type) => t[`adjustment_type_${type}`] || type;
     const basisName = (basis) => t[`basis_${basis}`] || basis;
     const appliesName = (value) => t[`adjustment_applies_${value}`] || value;
@@ -63,7 +64,19 @@ export default function Index({ years, yearId, studentId, adjustments, suggestio
                 }}
                 className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
             >
-                <input className="form-input" inputMode="numeric" aria-label={t.adjustments_student_id || 'Student id'} placeholder={t.adjustments_student_id || 'Student id'} value={form.data.student_id} onChange={(e) => form.setData('student_id', e.target.value)} />
+                {/* BH1 (BACKLOG C22): the pupil by name, not a typed id. */}
+                <PersonPicker
+                    label={t.adjustments_student || 'Student'}
+                    placeholder={t.adjustments_search || 'Search by name or student number'}
+                    param="pupil_q"
+                    prop="pupil_matches"
+                    matches={pupil_matches}
+                    value={form.data.student_id}
+                    onChoose={(id) => form.setData('student_id', id)}
+                    sameName={t.adjustments_same_name || 'same name as another pupil — check the number'}
+                    describe={(m) => [m.student_number, m.current_class].filter(Boolean).join(' · ')}
+                    testId="adjustment-pupil"
+                />
                 <select className="form-input" aria-label={t.adjustments_type || 'Kind of adjustment'} value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
                     {types.map((type) => <option key={type} value={type}>{typeName(type)}</option>)}
                 </select>

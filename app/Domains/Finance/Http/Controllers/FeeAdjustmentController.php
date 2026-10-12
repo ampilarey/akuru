@@ -11,6 +11,7 @@ use App\Domains\Finance\Enums\FeeAdjustmentBasis;
 use App\Domains\Finance\Enums\FeeAdjustmentStatus;
 use App\Domains\Finance\Enums\FeeAdjustmentType;
 use App\Domains\Finance\Enums\FeeItemType;
+use App\Domains\People\Actions\SearchRosterCandidatesAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Inertia\Phrases;
@@ -43,6 +44,8 @@ class FeeAdjustmentController extends Controller
             'appliesTo' => array_map(fn (FeeAdjustmentAppliesTo $value) => $value->value, FeeAdjustmentAppliesTo::cases()),
             'statuses' => array_map(fn (FeeAdjustmentStatus $status) => $status->value, FeeAdjustmentStatus::cases()),
             'itemTypes' => array_map(fn (FeeItemType $type) => $type->value, FeeItemType::cases()),
+            // BH1 (BACKLOG C22): the pupil found by name, on a partial reload.
+            'pupil_matches' => fn () => app(SearchRosterCandidatesAction::class)->execute((string) $request->query('pupil_q', ''), 12),
             't' => Phrases::once('finance'),
         ]);
     }

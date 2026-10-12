@@ -10,6 +10,7 @@ use App\Domains\Commerce\Actions\ListGiftCardsAction;
 use App\Domains\Commerce\Actions\ResolveStoredValueLiabilityAction;
 use App\Domains\Commerce\Actions\SaveDiscountCodeAction;
 use App\Domains\Commerce\Models\DiscountCode;
+use App\Domains\Identity\Actions\SearchAccountsAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Inertia\Phrases;
@@ -49,6 +50,9 @@ class AdminCommerceController extends Controller
                     'per_user_limit' => $code->per_user_limit,
                     'status' => $code->status,
                 ])->values()->all(),
+            // BH1 (BACKLOG C22): the account a hand credit goes to, found by
+            // name, email or mobile on a partial reload.
+            'account_matches' => fn () => app(SearchAccountsAction::class)->execute((string) $request->query('account_q', '')),
             // CO1: the page's words, in the page's language.
             't' => Phrases::once('admin'),
         ]);
