@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Actions\Checkout;
 
 use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
+use App\Domains\Bookshop\Actions\Print\AddPrintJobToCartAction;
 use App\Domains\Bookshop\Actions\ShopCreditAction;
 use App\Domains\Bookshop\Actions\ShopSmsCampaignAction;
 use App\Domains\Bookshop\Enums\CheckoutPaymentMethod;
@@ -15,12 +16,14 @@ use App\Domains\Bookshop\Models\CustomerAddress;
 use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\OrderEvent;
 use App\Domains\Bookshop\Models\OrderItem;
+use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\StockReservation;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Support\AkuruFulfilment;
 use App\Domains\Bookshop\Support\CartPrice;
 use App\Domains\Bookshop\Support\OrderNumbers;
+use App\Domains\Bookshop\Support\PrintLine;
 use App\Domains\Bookshop\Support\Stock;
 use App\Domains\Bookshop\Support\Tax;
 use App\Domains\Commerce\Actions\DebitWalletAction;
@@ -86,6 +89,21 @@ class StartBookshopCheckoutAction
                         ? __('shop.error_sold_out', ['title' => $product->title])
                         : __('shop.error_only_n_left', ['count' => $available, 'title' => $product->title])]);
                 }
+                // NAME_TAGS_PLAN NT4: a print line is its approved job, at the price held with it — checked again here.
+                if ($item->print_job_id !== null) {
+                    $job = PrintJob::withTrashed()->whereKey($item->print_job_id)->lockForUpdate()->first();
+                    $why = PrintLine::blocker($job, (int) $item->quantity, $userId)
+                        ?? (AddPrintJobToCartAction::inOpenOrder((int) $item->print_job_id) ? 'print.error_cart_already_ordered' : null);
+                    if ($why !== null) {
+                        throw ValidationException::withMessages(['cart' => __($why)]);
+                    }
+                    $lines[] = [
+                        'product' => $product, 'variant' => null, 'quantity' => (int) $item->quantity, 'quote_item_id' => null,
+                        'unit' => PrintLine::unit($job), 'total' => PrintLine::total($job), 'print_job_id' => (int) $job->id,
+                    ];
+
+                    continue;
+                }
                 // B9d: the quoted price while the quote holds, else the list price.
                 $unit = CartPrice::unit($item, $product, $variant);
                 $lines[] = [
@@ -127,7 +145,7 @@ class StartBookshopCheckoutAction
             $chosen = [];
             foreach ($byVendor as $vendorId => $vendorLines) {
                 $vendor = $vendorLines->first()['product']->vendor;
-                $options = app(ResolveDeliveryOptionsAction::class)->execute($vendor, (float) $vendorLines->sum('total'));
+                $options = app(ResolveDeliveryOptionsAction::class)->execute($vendor, (float) $vendorLines->sum('total'), $vendorLines->contains(fn (array $l) => ($l['print_job_id'] ?? null) !== null));
                 $key = (string) (($data['delivery'] ?? [])[$vendor->slug] ?? '');
                 $option = collect($options)->firstWhere('key', $key);
                 if ($option === null || ! $option['offered']) {
@@ -150,7 +168,7 @@ class StartBookshopCheckoutAction
                 foreach ($byVendor as $vendorId => $vendorLines) {
                     $vendor = $vendorLines->first()['product']->vendor;
                     $orderTotal = round($vendorLines->sum('total') - ($shares[$vendorId] ?? 0.0) + (float) $chosen[$vendorId]['fee'], 2);
-                    $blocker = app(CashOnDeliveryAction::class)->blocker($vendor, (string) $chosen[$vendorId]['kind'], $orderTotal);
+                    $blocker = app(CashOnDeliveryAction::class)->blocker($vendor, (string) $chosen[$vendorId]['kind'], $orderTotal, $vendorLines->contains(fn (array $l) => ($l['print_job_id'] ?? null) !== null));
                     if ($blocker !== null) {
                         throw ValidationException::withMessages(['payment_method' => $blocker]);
                     }
@@ -232,6 +250,7 @@ class StartBookshopCheckoutAction
                         'tax_class' => $l['product']->tax_class->value,
                         'tax_amount' => $lineTax,
                         'quote_item_id' => $l['quote_item_id'] ?? null,
+                        'print_job_id' => $l['print_job_id'] ?? null,
                     ]);
                     if ($l['product']->track_stock) {
                         StockReservation::query()->create([

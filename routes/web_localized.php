@@ -969,6 +969,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('print/templates/{template?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'save'])->name('admin.bookshop.print.templates.save')->whereNumber('template');
         Route::post('print/templates/{template}/status', [\App\Domains\Bookshop\Http\Controllers\AdminPrintTemplateController::class, 'status'])->name('admin.bookshop.print.templates.status')->whereNumber('template');
         // NT3: a job's print-ready PDF, the office's only (decision D6).
+        // NT4: the queue — paid jobs, printed, finished, reprinted or flagged.
+        Route::get('print/queue', [\App\Domains\Bookshop\Http\Controllers\AdminPrintQueueController::class, 'index'])->name('admin.bookshop.print.queue');
+        Route::get('print/queue/export', [\App\Domains\Bookshop\Http\Controllers\AdminPrintQueueController::class, 'export'])->name('admin.bookshop.print.queue.export');
+        Route::post('print/jobs/{job}/{step}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintQueueController::class, 'step'])->name('admin.bookshop.print.jobs.step')->whereNumber('job')->whereIn('step', ['start', 'finish', 'reprint', 'problem']);
         Route::get('print/jobs/{job}/file', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'jobFile'])->name('admin.bookshop.print.jobs.file')->whereNumber('job');
         Route::post('credit/{account}/payments', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'payment'])->name('admin.bookshop.credit.payment')->whereNumber('account');
         Route::get('credit/{account}/statement', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'statement'])->name('admin.bookshop.credit.statement')->whereNumber('account');

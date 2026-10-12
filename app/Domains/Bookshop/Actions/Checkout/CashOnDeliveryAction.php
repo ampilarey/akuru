@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Actions\Checkout;
 use App\Domains\Bookshop\Actions\Insights\RecordShopEventAction;
 use App\Domains\Bookshop\Actions\Money\RecordVendorEarningAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
+use App\Domains\Bookshop\Actions\Print\PrintProductionAction;
 use App\Domains\Bookshop\Enums\CheckoutPaymentMethod;
 use App\Domains\Bookshop\Enums\CheckoutStatus;
 use App\Domains\Bookshop\Enums\OrderStatus;
@@ -13,6 +14,7 @@ use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\OrderEvent;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Models\VendorEarning;
+use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Commerce\Actions\RecordDiscountRedemptionAction;
 use App\Domains\Settings\Actions\SetSettingAction;
 use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
@@ -70,8 +72,13 @@ class CashOnDeliveryAction
         return $any;
     }
 
-    /** Why this shop's order cannot be paid in cash, or null when it can. */
-    public function blocker(Vendor $vendor, string $deliveryKind, float $orderTotal): ?string
+    /**
+     * Why this shop's order cannot be paid in cash, or null when it can.
+     * An order with printing in it (NAME_TAGS_PLAN D10) takes cash only where
+     * the print desk allows it — off by default — and then for Akuru's own
+     * two deliveries, since Akuru hands it over.
+     */
+    public function blocker(Vendor $vendor, string $deliveryKind, float $orderTotal, bool $print = false): ?string
     {
         if (! $this->isOn()) {
             return __('shop.error_cod_off');
@@ -79,7 +86,10 @@ class CashOnDeliveryAction
         if (! $vendor->cod_enabled) {
             return __('shop.error_cod_vendor', ['vendor' => $vendor->name]);
         }
-        if (! in_array($deliveryKind, (array) config('bookshop.cod.delivery_kinds'), true)) {
+        if ($print && ! PrintDesk::settings()['cash_allowed']) {
+            return __('print.error_cod_print');
+        }
+        if (! $print && ! in_array($deliveryKind, (array) config('bookshop.cod.delivery_kinds'), true)) {
             return __('shop.error_cod_delivery', ['vendor' => $vendor->name]);
         }
         if ($vendor->cod_max !== null && $orderTotal > (float) $vendor->cod_max) {
@@ -105,6 +115,8 @@ class CashOnDeliveryAction
                 /** @var Order $order */
                 $short = app(MarkCheckoutPaidAction::class)->takeStock($order);
                 $order->update(['status' => ($short === [] ? OrderStatus::CashDue : OrderStatus::NeedsAttention)->value]);
+                // NAME_TAGS_PLAN NT4: a cash order the print desk accepted is the desk's now.
+                app(PrintProductionAction::class)->markOrdered($order);
                 if ($short !== []) {
                     OrderEvent::query()->create(['order_id' => $order->id, 'type' => 'needs_attention', 'created_at' => now(), 'note' => 'Stock ran out before the order was placed: '.implode(', ', $short)]);
                 }

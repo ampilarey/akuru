@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Http\Controllers;
 
+use App\Domains\Bookshop\Actions\Print\AddPrintJobToCartAction;
 use App\Domains\Bookshop\Actions\Print\PresentPrintJobAction;
 use App\Domains\Bookshop\Actions\Print\ProofPrintJobAction;
 use App\Domains\Bookshop\Actions\Print\SavePrintJobAction;
@@ -106,6 +107,18 @@ class ShopPrintController extends Controller
         app(ProofPrintJobAction::class)->approve($this->job($request, $job), app()->getLocale());
 
         return back()->with('success', __('print.flash_approved'));
+    }
+
+    /** NT4: the approved design into the basket, at the price held with its proof. */
+    public function addToCart(Request $request, int $job): RedirectResponse|\Symfony\Component\HttpFoundation\Response
+    {
+        $this->available($request);
+        $row = $this->job($request, $job);
+        app(AddPrintJobToCartAction::class)->execute($this->cart($request, create: true), $row, (int) $request->user()->id);
+        session()->flash('success', __('print.flash_added_to_cart'));
+
+        // The basket is a page of its own, outside the app: a full visit, not one inside it.
+        return $request->header('X-Inertia') ? Inertia::location(route('public.shop.cart')) : redirect()->route('public.shop.cart');
     }
 
     public function copy(Request $request, int $job): RedirectResponse

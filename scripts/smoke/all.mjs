@@ -158,6 +158,7 @@ const WALKS = [
     { name: 'print-office', writes: true, asks: 'Can the Bookstore manager price a paper, keep a subject set and try the print desk\'s switch, in Dhivehi?' },
     { name: 'print-templates', writes: true, asks: 'Can the Bookstore manager make a name-tag template in the designer — a Thaana name field, dragged, saved, a sample sheet, active, retired — in Dhivehi?' },
     { name: 'print-design', writes: true, asks: 'Can a customer make name tags from a template — a Thaana name, glossy colour, two sheets, the server\'s price — see a watermarked proof, approve it, and find it locked, in Dhivehi?' },
+    { name: 'print-order', writes: true, asks: 'Can a customer buy an approved name-tag design — sheets locked, Akuru\'s two deliveries, the wallet — and can the office print and finish it from the queue until the order reads ready, in Arabic?' },
     { name: 'public-rtl', writes: false, asks: 'Does the website read right to left in Dhivehi and Arabic, on a desk and on a phone?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
     { name: 'course-screens-language', writes: true, asks: 'Do the screens teachers build courses on — and the Qur\'an screens, a learner\'s among them — read in Dhivehi and Arabic, with a name on every field?' },

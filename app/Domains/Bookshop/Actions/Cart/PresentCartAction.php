@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Models\Cart;
 use App\Domains\Bookshop\Models\CartItem;
 use App\Domains\Bookshop\Support\CartPrice;
+use App\Domains\Bookshop\Support\PrintLine;
 use App\Domains\Bookshop\Support\SalePrice;
 use App\Domains\Bookshop\Support\ShopPresenter;
 use App\Domains\Bookshop\Support\Stock;
@@ -49,8 +50,25 @@ class PresentCartAction
             $listPrice = (float) ($variant?->price ?? $product->price);
             $unitPrice = CartPrice::unit($item, $product, $variant);
             $lineTotal = round($unitPrice * $item->quantity, 2);
+            // NAME_TAGS_PLAN NT4: a print line is its approved design, at the price held with it.
+            $print = null;
+            if ($item->print_job_id !== null) {
+                $job = PrintLine::job($item);
+                $blocker = PrintLine::blocker($job, (int) $item->quantity, $cart->user_id !== null ? (int) $cart->user_id : null)
+                    ?? (in_array($product->id, $forSale, true) ? null : 'print.error_cart_service_off');
+                $unitPrice = $job !== null ? PrintLine::unit($job) : 0.0;
+                $lineTotal = $job !== null ? PrintLine::total($job) : 0.0;
+                $listPrice = $unitPrice;
+                $print = ['job_id' => $item->print_job_id, 'name' => $job?->name, 'held_until' => $job !== null ? PrintLine::heldUntil($job)?->toDateString() : null, 'problem' => $blocker === null ? null : __($blocker)];
+                if ($blocker !== null) {
+                    $sellable = false;
+                    $problems[] = __($blocker);
+                }
+            }
 
-            if (! $sellable) {
+            if ($print !== null) {
+                // Its own problem is said above; the product checks below do not apply to a job.
+            } elseif (! $sellable) {
                 $problems[] = __('shop.error_not_for_sale_named', ['title' => $product->title]);
             } elseif ($product->vendor->onHoliday()) {
                 $sellable = false;
@@ -87,6 +105,7 @@ class PresentCartAction
                 'preorder_release' => Stock::preorder($product) ? $product->preorder_release_on->toDateString() : null,
                 'quoted' => $quoted !== null,
                 'quote_lapsed' => $item->quote_item_id !== null && $quoted === null,
+                'print' => $print,
             ];
             $groups[$vendorId]['subtotal'] += $lineTotal;
             $subtotal += $lineTotal;

@@ -11,6 +11,7 @@ use App\Domains\Bookshop\Models\OrderEvent;
 use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\OrderRefund;
 use App\Domains\Bookshop\Models\OrderReturn;
+use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\ProductReview;
 use App\Domains\Bookshop\Support\OrderView;
 use App\Domains\Bookshop\Support\ShopPresenter;
@@ -74,6 +75,11 @@ class PresentOrderAction
                 'line_total' => (string) $i->line_total,
                 'tax_class' => $i->tax_class->value,
                 'tax_amount' => (string) $i->tax_amount,
+                // NAME_TAGS_PLAN NT4: a print line opens its design, with where the desk has got to.
+                'print' => $i->print_job_id === null ? null : [
+                    'job_id' => (int) $i->print_job_id,
+                    'status' => PrintJob::withTrashed()->whereKey($i->print_job_id)->first()?->status->value,
+                ],
             ])->values()->all(),
             'events' => $order->events->map(fn (OrderEvent $e) => [
                 'type' => $e->type,

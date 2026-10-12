@@ -8,6 +8,7 @@ use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Actions\Orders\CancelOrderAction;
 use App\Domains\Bookshop\Actions\Orders\RefundOrderAction;
 use App\Domains\Bookshop\Actions\Orders\SendOrderMessageAction;
+use App\Domains\Bookshop\Actions\Print\PrintProductionAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Enums\ReturnStatus;
 use App\Domains\Bookshop\Models\Order;
@@ -42,6 +43,10 @@ class FulfilVendorOrderAction
             }
             if (! in_array($to, OrderView::nextSteps($order), true)) {
                 throw ValidationException::withMessages(['status' => __('shop.error_step')]);
+            }
+            // NAME_TAGS_PLAN NT4: an order with printing in it is not ready, nor sent, before every job is finished.
+            if (in_array($to, ['ready', 'dispatched', 'delivered'], true) && PrintProductionAction::unfinished($order)) {
+                throw ValidationException::withMessages(['status' => __('print.error_order_jobs_unfinished')]);
             }
             $cod = app(CashOnDeliveryAction::class);
             $collectCash = $to === 'delivered' && $cod->awaitingCash($order);

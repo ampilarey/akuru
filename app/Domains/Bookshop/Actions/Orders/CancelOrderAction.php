@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Actions\Orders;
 
 use App\Domains\Bookshop\Actions\Money\ReverseVendorEarningAction;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
+use App\Domains\Bookshop\Actions\Print\PrintProductionAction;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\OrderEvent;
@@ -51,6 +52,8 @@ class CancelOrderAction
                 Restock::item($item, (int) $item->quantity, 'cancel', $actorUserId);
             }
 
+            // NAME_TAGS_PLAN NT4: its print jobs not yet on the press go with it.
+            app(PrintProductionAction::class)->cancelWith($locked);
             app(RefundOrderAction::class)->request($locked, (float) $locked->total, 'Cancelled: '.$reason, $actorUserId);
             // B6: a free order raises no refund, but its earning still goes.
             app(ReverseVendorEarningAction::class)->cancel($locked);

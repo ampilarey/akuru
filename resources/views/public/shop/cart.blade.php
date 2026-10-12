@@ -60,15 +60,21 @@
                                 @if($line['made_to_order'])<span class="block text-xs text-gray-500">{{ __('shop.made_to_order_note') }}</span>@endif
                                 @if($line['preorder_release'] ?? null)<span class="block text-xs font-medium text-amber-800" data-testid="cart-preorder">{{ __('shop.preorder_note', ['date' => $line['preorder_release']]) }}</span>@endif
                                 @if($line['short'])<span class="block text-xs text-amber-800">{{ __('shop.stock_short', ['count' => $line['available']]) }}</span>@endif
+                                {{-- NAME_TAGS_PLAN NT4: a print line is its approved design, its sheets and its held price. --}}
+                                @if($line['print'] ?? null)
+                                    <a href="{{ route('public.shop.print.job', $line['print']['job_id']) }}" class="block text-sm text-brandMaroon-700 underline" dir="auto" data-testid="cart-print-design">{{ $line['print']['name'] ?: __('print.cart_design_link') }}</a>
+                                    <span class="block text-xs text-gray-600" data-testid="cart-print-sheets">{{ __('print.cart_sheets_note', ['sheets' => $line['quantity']]) }}@if($line['print']['held_until']) · {{ __('print.cart_held_until', ['date' => $line['print']['held_until']]) }}@endif</span>
+                                    @if($line['print']['problem'])<span class="block text-xs font-medium text-amber-800" data-testid="cart-print-problem">{{ $line['print']['problem'] }}</span>@endif
+                                @endif
                             </div>
                             <form method="POST" action="{{ route('public.shop.cart.update', $line['id']) }}" class="flex items-center gap-2">
                                 @csrf
                                 <label class="sr-only" for="qty-{{ $line['id'] }}">{{ __('shop.quantity') }}</label>
-                                <input id="qty-{{ $line['id'] }}" type="number" name="quantity" min="0" max="{{ config('bookshop.checkout.max_quantity_per_line', 50) }}" value="{{ $line['quantity'] }}" class="form-input w-20" data-testid="cart-qty" @if($line['quoted'] ?? false) readonly @endif>
-                                @unless($line['quoted'] ?? false)<button type="submit" class="btn-secondary text-sm">{{ __('shop.update') }}</button>@endunless
+                                <input id="qty-{{ $line['id'] }}" type="number" name="quantity" min="0" max="{{ config('bookshop.checkout.max_quantity_per_line', 50) }}" value="{{ $line['quantity'] }}" class="form-input w-20" data-testid="cart-qty" @if(($line['quoted'] ?? false) || ($line['print'] ?? null)) readonly @endif>
+                                @unless(($line['quoted'] ?? false) || ($line['print'] ?? null))<button type="submit" class="btn-secondary text-sm">{{ __('shop.update') }}</button>@endunless
                                 <button type="submit" name="quantity" value="0" class="text-sm text-red-700 underline" data-testid="cart-remove">{{ __('shop.remove') }}</button>
                                 {{-- §5lf: set it aside instead of removing it. --}}
-                                <button type="submit" formaction="{{ route('public.shop.cart.save', $line['id']) }}" class="text-sm text-brandMaroon-700 underline" data-testid="cart-save-later">{{ __('shop.save_for_later') }}</button>
+                                @unless($line['print'] ?? null)<button type="submit" formaction="{{ route('public.shop.cart.save', $line['id']) }}" class="text-sm text-brandMaroon-700 underline" data-testid="cart-save-later">{{ __('shop.save_for_later') }}</button>@endunless
                             </form>
                             <div class="w-28 text-end font-semibold" data-testid="cart-line-total">{{ $cart['currency'] }} {{ $line['line_total'] }}</div>
                         </li>

@@ -148,6 +148,7 @@ return [
     'akuru_fulfilment' => 'Akuru fulfilment',
     'print_desk' => 'Print desk',
     'print_templates' => 'Print templates',
+    'print_queue' => 'Print queue',
     'complaints' => 'Problems reported',
     'sms_campaigns' => 'SMS offers',
     'shop_customers' => 'Customers',

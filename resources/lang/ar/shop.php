@@ -2025,4 +2025,8 @@ return [
     'application_id_back' => 'ظهر بطاقة الهوية',
     'error_not_a_member' => 'لستَ عضوًا في أي متجر في مكتبة أكورو.',
     'error_agreement_first' => 'وافق على اتفاقية البائع أولًا.',
+    'event_print_printing' => 'بدأت الطباعة',
+    'event_print_finished' => 'انتهت الطباعة',
+    'event_print_reprint' => 'أعيدت الطباعة دون تكلفة',
+    'event_print_problem' => 'وجد مكتب الطباعة مشكلة وسيتواصل معك',
 ];

@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Actions\Print;
 
 use App\Domains\Bookshop\Enums\PrintJobStatus;
+use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\PrintFinishingOption;
 use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintLayout;
@@ -12,6 +13,7 @@ use App\Domains\Bookshop\Models\PrintTemplate;
 use App\Domains\Bookshop\Support\PrintDesign;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintJobEntry;
+use App\Domains\Bookshop\Support\PrintLine;
 use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
 use App\Support\Services\PrintFontFaces;
 use Illuminate\Support\Facades\URL;
@@ -38,6 +40,17 @@ class PresentPrintJobAction
     }
 
     /** @return array<string, mixed> one job, with what its page offers */
+    /** @return array{number: string, status: string}|null */
+    private function order(PrintJob $job): ?array
+    {
+        $line = OrderItem::query()->where('print_job_id', $job->id)->with('order:id,number,status')->latest('id')->first();
+        if ($line?->order === null) {
+            return null;
+        }
+
+        return ['number' => (string) $line->order->number, 'status' => $line->order->status instanceof \BackedEnum ? $line->order->status->value : (string) $line->order->status];
+    }
+
     public function job(PrintJob $job, string $locale): array
     {
         $design = (array) $job->design;
@@ -72,6 +85,10 @@ class PresentPrintJobAction
             'per_sheet_tags' => $layout?->tagsPerSheet() ?? 0,
             'price' => $job->price_breakdown,
             'held' => $job->approved_price_snapshot,
+            // NT4: where it stands with the basket and the order.
+            'buyable' => PrintLine::blocker($job, (int) $job->sheets) === null && ! AddPrintJobToCartAction::inOpenOrder((int) $job->id),
+            'lapsed' => $job->status === PrintJobStatus::Approved && ! PrintLine::held($job),
+            'order' => $this->order($job),
             'warnings' => $warnings,
             'proof_images' => $this->proofLinks($job),
             'more_sheets' => max(0, (int) $job->sheets - count((array) $job->proof_document_ids)),
