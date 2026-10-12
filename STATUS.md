@@ -3,7 +3,7 @@
 **Verified against:** `main` after PR **#402** (`ee558c8`).
 **USABLE column** cites `docs/PILOT_REHEARSAL.md` (Rounds 1–3) and staging notes in the [archive](docs/STATUS_ARCHIVE.md). It is **not** inferred from code or tests.
 **History:** per-slice append log → [`docs/STATUS_ARCHIVE.md`](docs/STATUS_ARCHIVE.md). Recent work is in the §5 sections below, newest first.
-**Defects:** [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md). **What only a person can do:** [`docs/OWNER_ACTIONS.md`](docs/OWNER_ACTIONS.md), [`docs/OPERATOR_CHECKLIST.md`](docs/OPERATOR_CHECKLIST.md).
+**Everything left, in one list:** [`docs/WHATS_LEFT.md`](docs/WHATS_LEFT.md). **Defects:** [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md). **What only a person can do:** [`docs/OWNER_ACTIONS.md`](docs/OWNER_ACTIONS.md), [`docs/OPERATOR_CHECKLIST.md`](docs/OPERATOR_CHECKLIST.md).
 
 ## 1. Honest summary
 
