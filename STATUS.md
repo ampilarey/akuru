@@ -5026,7 +5026,7 @@ record against somebody else.
 The Architecture, Localization, Commerce and behaviour groups rerun green
 (410).
 
-Whole suite locally: **RESULT**.
+Whole suite locally: **3199 passed** (67426 assertions).
 
 **Walk:** `pick-by-name.mjs` (new, in the runner) 8/8:
 - under `/dv` the behaviour form asks for the student in Dhivehi; three
