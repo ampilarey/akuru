@@ -17,6 +17,8 @@ export default function PrintDoor({ t = {}, templates = [], fonts = {}, font_css
     const [busy, setBusy] = useState(null);
     const shown = useMemo(() => templates.filter((tpl) => kind === 'all' || tpl.kind === kind || tpl.kind === 'both'), [templates, kind]);
     const start = (id) => { setBusy(id); router.post(`/${locale}/shop/print/jobs`, { template: id }, { onFinish: () => setBusy(null) }); };
+    // NT5: the customer's own artwork (an account keeps the file privately).
+    const startUpload = () => { setBusy('upload'); router.post(`/${locale}/shop/print/uploads`, {}, { onFinish: () => setBusy(null) }); };
 
     return (
         <AppShell title={t.door_title}>
@@ -32,6 +34,15 @@ export default function PrintDoor({ t = {}, templates = [], fonts = {}, font_css
                 ))}
                 {signedIn && <Link href={`/${locale}/my-designs`} className="ms-auto underline" data-testid="print-door-designs">{t.my_designs_title}</Link>}
             </div>
+            <section className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-dashed bg-white p-3" data-testid="print-door-upload">
+                <div className="min-w-0 flex-1">
+                    <h2 className="font-semibold">{t.upload_door_heading}</h2>
+                    <p className="text-sm text-gray-600">{t.upload_door_body}</p>
+                </div>
+                {signedIn
+                    ? <button type="button" className="btn-secondary" disabled={busy !== null} onClick={startUpload} data-testid="print-door-upload-start">{t.upload_door_button}</button>
+                    : <a href={`/${locale}/login`} className="btn-secondary" data-testid="print-door-upload-sign-in">{t.upload_door_sign_in}</a>}
+            </section>
             {shown.length === 0 ? <p className="text-sm text-gray-600">{t.templates_none}</p> : (
                 <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="print-door-gallery">
                     {shown.map((tpl) => {

@@ -133,6 +133,7 @@ return [
     'document_type_payslip' => 'Payslip',
     'document_type_print_proof' => 'Name-tag proof',
     'document_type_print_file' => 'Name-tag print file',
+    'document_type_print_upload' => 'Name-tag artwork uploaded by the customer',
     'document_type_other' => 'Other',
     'payroll_title' => 'Payroll',
     'payroll_disabled' => 'Payroll is disabled until two parallel cycles match.',

@@ -19,5 +19,7 @@ enum DocumentType: string
     // NAME_TAGS_PLAN §5.2 (NT3): a print job's watermarked proof sheet, and its print-ready PDF.
     case PrintProof = 'print_proof';
     case PrintFile = 'print_file';
+    // NT5: the customer's own artwork for a print job — private, read only to proof and print it.
+    case PrintUpload = 'print_upload';
     case Other = 'other';
 }

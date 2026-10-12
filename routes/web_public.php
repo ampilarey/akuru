@@ -109,6 +109,9 @@ Route::middleware(['auth', 'customer_password'])->group(function () {
     Route::get('shop/slips/{slip}', [\App\Domains\Bookshop\Http\Controllers\CheckoutController::class, 'slip'])->name('public.shop.slip')->whereNumber('slip');
     Route::post('shop/print/jobs/{job}/proof', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'proof'])->name('public.shop.print.proof.make')->whereNumber('job')->middleware('throttle:10,1,shop-print-proof');
     Route::post('shop/print/jobs/{job}/approve', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'approve'])->name('public.shop.print.approve')->whereNumber('job')->middleware('throttle:20,1,shop-print-approve');
+    // NT5: the customer's own artwork.
+    Route::post('shop/print/uploads', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'startUpload'])->name('public.shop.print.upload.start')->middleware('throttle:20,1,shop-print-upload-start');
+    Route::post('shop/print/jobs/{job}/upload', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'upload'])->name('public.shop.print.upload')->whereNumber('job')->middleware('throttle:20,1,shop-print-upload');
     Route::post('shop/print/jobs/{job}/cart', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'addToCart'])->name('public.shop.print.cart')->whereNumber('job')->middleware('throttle:20,1,shop-print-cart');
     Route::post('shop/print/jobs/{job}/name', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'rename'])->name('public.shop.print.rename')->whereNumber('job')->middleware('throttle:30,1,shop-print-rename');
     Route::delete('shop/print/jobs/{job}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'destroy'])->name('public.shop.print.destroy')->whereNumber('job')->middleware('throttle:30,1,shop-print-remove');

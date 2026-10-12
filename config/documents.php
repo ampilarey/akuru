@@ -9,5 +9,7 @@ return [
     'pdf' => [
         'chrome_path' => env('DOCUMENTS_CHROME_PATH'),
         'timeout' => (int) env('DOCUMENTS_PDF_TIMEOUT', 60),
+        // NAME_TAGS_PLAN §5.6 (NT5): Ghostscript, to proof a customer's PDF. Unset, uploads take PNG and JPEG only.
+        'gs_path' => env('DOCUMENTS_GS_PATH'),
     ],
 ];

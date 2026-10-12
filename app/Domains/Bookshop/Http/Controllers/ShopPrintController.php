@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\Print\AddPrintJobToCartAction;
 use App\Domains\Bookshop\Actions\Print\PresentPrintJobAction;
 use App\Domains\Bookshop\Actions\Print\ProofPrintJobAction;
 use App\Domains\Bookshop\Actions\Print\SavePrintJobAction;
+use App\Domains\Bookshop\Actions\Print\UploadPrintDesignAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\ResolvesCart;
 use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintTemplate;
@@ -59,6 +60,27 @@ class ShopPrintController extends Controller
         return redirect()->route('public.shop.print.job', $job->id);
     }
 
+    /** NT5: a new job for the customer's own artwork (signed in: the file is kept privately on the account). */
+    public function startUpload(Request $request): RedirectResponse
+    {
+        $this->available($request);
+        $job = app(SavePrintJobAction::class)->startUpload((int) $request->user()->id, app()->getLocale());
+
+        return redirect()->route('public.shop.print.job', $job->id);
+    }
+
+    /** NT5: the artwork onto the job, read and preflighted. */
+    public function upload(Request $request, int $job): RedirectResponse
+    {
+        $this->available($request);
+        $row = $this->job($request, $job);
+        $maxKb = PrintDesk::settings()['max_upload_kb'];
+        $data = $request->validate(['file' => 'required|file|max:'.$maxKb, 'upload_kind' => 'required|string|in:tag,sheet']);
+        app(UploadPrintDesignAction::class)->execute($row, $data['file'], $data['upload_kind'], (int) $request->user()->id, app()->getLocale());
+
+        return back()->with('success', __('print.flash_uploaded'));
+    }
+
     public function show(Request $request, int $job): Response
     {
         $this->available($request);
@@ -69,7 +91,8 @@ class ShopPrintController extends Controller
         }
         $present = app(PresentPrintJobAction::class);
 
-        return Inertia::render('Shop/PrintJob', [
+        // NT5: a job from the customer's own artwork has its own page.
+        return Inertia::render($row->isUpload() ? 'Shop/PrintUploadJob' : 'Shop/PrintJob', [
             't' => Phrases::once('print'),
             'job' => $present->job($row, app()->getLocale()),
             ...$present->choices(app()->getLocale(), (array) $row->design),
@@ -86,7 +109,7 @@ class ShopPrintController extends Controller
             'layout_id' => 'sometimes|nullable|integer', 'paper_id' => 'sometimes|nullable|integer', 'colour' => 'sometimes|boolean',
             'finishing' => 'sometimes|array|max:20', 'finishing.*' => 'integer', 'sheets' => 'sometimes|integer|min:1|max:500',
             'entry' => 'sometimes|array', 'scheme' => 'sometimes|nullable|string|max:40', 'font' => 'sometimes|nullable|string|max:40',
-            'name' => 'sometimes|nullable|string|max:120',
+            'name' => 'sometimes|nullable|string|max:120', 'upload_kind' => 'sometimes|string|in:tag,sheet',
         ]);
         $saved = app(SavePrintJobAction::class)->update($row, $data, app()->getLocale());
 
@@ -96,7 +119,8 @@ class ShopPrintController extends Controller
     public function proof(Request $request, int $job): RedirectResponse
     {
         $this->available($request);
-        app(ProofPrintJobAction::class)->proof($this->job($request, $job), (int) $request->user()->id, app()->getLocale());
+        $confirm = ['declared' => $request->boolean('declared'), 'accept_warnings' => $request->boolean('accept_warnings')];
+        app(ProofPrintJobAction::class)->proof($this->job($request, $job), (int) $request->user()->id, app()->getLocale(), $confirm);
 
         return back()->with('success', __('print.flash_proofed'));
     }

@@ -6,8 +6,10 @@ use App\Domains\Settings\Models\Setting;
 use App\Support\Contracts\DocumentRendererInterface;
 use App\Support\Contracts\PageImageInterface;
 use App\Support\Contracts\PdfConverterInterface;
+use App\Support\Contracts\PdfRasterizerInterface;
 use App\Support\Services\ChromePageImage;
 use App\Support\Services\ChromePdfConverter;
+use App\Support\Services\GhostscriptPdfRasterizer;
 use App\Support\Services\HtmlDocumentRenderer;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schema;
@@ -30,6 +32,11 @@ class AppServiceProvider extends ServiceProvider
         // NAME_TAGS_PLAN §5.2 (NT0): the proof picture, by the same Chrome.
         $this->app->singleton(PageImageInterface::class, fn () => new ChromePageImage(
             config('documents.pdf.chrome_path'),
+            (int) config('documents.pdf.timeout', 60),
+        ));
+        // NAME_TAGS_PLAN §5.6 (NT5): a customer's PDF proofed by Ghostscript where one is configured.
+        $this->app->singleton(PdfRasterizerInterface::class, fn () => new GhostscriptPdfRasterizer(
+            config('documents.pdf.gs_path'),
             (int) config('documents.pdf.timeout', 60),
         ));
     }

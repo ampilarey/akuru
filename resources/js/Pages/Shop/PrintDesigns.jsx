@@ -22,7 +22,9 @@ function Row({ d, t, fonts, locale }) {
     return (
         <li className="flex flex-col gap-3 rounded-lg border bg-white p-3 sm:flex-row sm:items-center" data-testid={`print-design-${d.id}`} data-status={d.status}>
             <div className="flex justify-center rounded bg-gray-50 p-2" dir="ltr">
-                <TagCanvas design={design} fonts={fonts} row={row} scale={Math.min(1.8, 150 / design.tag.w)} testId={`print-design-thumb-${d.id}`} />
+                {d.source === 'upload'
+                    ? <span className="flex h-24 w-32 items-center justify-center text-center text-xs text-gray-600" data-testid={`print-design-thumb-${d.id}`}>{t.upload_thumb}</span>
+                    : <TagCanvas design={design} fonts={fonts} row={row} scale={Math.min(1.8, 150 / design.tag.w)} testId={`print-design-thumb-${d.id}`} />}
             </div>
             <div className="min-w-0 flex-1">
                 {editing ? (

@@ -159,6 +159,9 @@ it('pins every caller that can read a generated document', function () {
         // NT3: a proof sheet, read off the caller's own job's `proof_document_ids`
         // by position, behind a signed link minutes long; never the print file.
         'app/Domains/Bookshop/Http/Controllers/ShopPrintController.php',
+        // NT5: the customer's artwork, read off the job's own `upload_document_id`
+        // only to proof it — the caller already holds the job (job() 404s otherwise).
+        'app/Domains/Bookshop/Actions/Print/ProofPrintJobAction.php',
     ];
 
     $callers = [];

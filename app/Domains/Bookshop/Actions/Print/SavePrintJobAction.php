@@ -11,6 +11,7 @@ use App\Domains\Bookshop\Models\PrintTemplate;
 use App\Domains\Bookshop\Support\PrintDesign;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintJobEntry;
+use App\Domains\Bookshop\Support\PrintUpload;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -63,6 +64,42 @@ class SavePrintJobAction
     }
 
     /**
+     * NT5: a new draft for the customer's own artwork — the desk's first
+     * layout and priced paper, no file yet. The upload comes next
+     * (`UploadPrintDesignAction`).
+     */
+    public function startUpload(int $userId, string $locale): PrintJob
+    {
+        $layout = PrintLayout::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->first();
+        if ($layout === null) {
+            throw ValidationException::withMessages(['template' => __('print.error_job_layout')]);
+        }
+        $paper = PrintPaperOption::query()->where('is_active', true)->where('price_colour', '>', 0)->orderBy('sort_order')->orderBy('id')->first()
+            ?? PrintPaperOption::query()->where('is_active', true)->where('price_bw', '>', 0)->orderBy('sort_order')->orderBy('id')->first();
+        $year = app(ResolveAcademicYearForDateAction::class)->execute();
+
+        $job = PrintJob::query()->create([
+            'user_id' => $userId,
+            'product_id' => PrintDesk::product()?->id,
+            'print_layout_id' => $layout->id,
+            'print_paper_option_id' => $paper?->id,
+            'colour' => $paper === null || (float) $paper->price_colour > 0,
+            'finishing' => [],
+            'sheets' => PrintDesk::settings()['min_sheets'],
+            'entry' => ['mode' => 'same', 'row' => [], 'list' => [], 'subjects' => ['set_id' => null, 'items' => [], 'language' => 'en']],
+            'design' => PrintUpload::design((float) $layout->tag_w_mm, (float) $layout->tag_h_mm),
+            'source' => 'upload',
+            'upload_kind' => 'tag',
+            'status' => PrintJobStatus::Draft,
+            'name' => __('print.upload_job_name', [], $locale),
+            'academic_year_id' => $year === null ? null : (int) $year['id'],
+        ]);
+        $this->price($job, $locale, quietly: true);
+
+        return $job;
+    }
+
+    /**
      * Save what the customer changed. Returns the job with its price and
      * warnings; refuses an approved job and anything that cannot print.
      *
@@ -78,11 +115,16 @@ class SavePrintJobAction
             if ($layout === null) {
                 throw ValidationException::withMessages(['layout_id' => __('print.error_job_layout')]);
             }
-            // From the template when there is one, so a layout switched back and forth loses nothing to rounding.
-            $base = $job->template !== null ? (array) $job->template->design : (array) $job->design;
-            $scheme = $job->design['palette']['scheme'] ?? null;
-            $font = PrintDesign::fieldFont((array) $job->design);
-            $job->design = PrintDesign::withFieldFont(PrintDesign::withScheme(PrintDesign::fit($base, $layout->tag_w_mm, $layout->tag_h_mm), $scheme), $font);
+            if ($job->isUpload()) {
+                // NT5: the artwork fills the new tag.
+                $job->design = PrintUpload::design((float) $layout->tag_w_mm, (float) $layout->tag_h_mm);
+            } else {
+                // From the template when there is one, so a layout switched back and forth loses nothing to rounding.
+                $base = $job->template !== null ? (array) $job->template->design : (array) $job->design;
+                $scheme = $job->design['palette']['scheme'] ?? null;
+                $font = PrintDesign::fieldFont((array) $job->design);
+                $job->design = PrintDesign::withFieldFont(PrintDesign::withScheme(PrintDesign::fit($base, $layout->tag_w_mm, $layout->tag_h_mm), $scheme), $font);
+            }
             $job->print_layout_id = $layout->id;
             $job->setRelation('layout', $layout);
         }
@@ -115,6 +157,12 @@ class SavePrintJobAction
             $job->entry = PrintJobEntry::normalise($data['entry'], PrintDesign::fieldKeys((array) $job->design), $settings['max_rows']);
             $job->print_subject_set_id = $job->entry['subjects']['set_id'] ?? null;
         }
+        if (array_key_exists('upload_kind', $data) && $job->isUpload()) {
+            if (! in_array($data['upload_kind'], PrintUpload::KINDS, true)) {
+                throw ValidationException::withMessages(['upload_kind' => __('print.upload_error_kind')]);
+            }
+            $job->upload_kind = $data['upload_kind'];
+        }
         if (array_key_exists('name', $data) && is_string($data['name']) && trim($data['name']) !== '') {
             $job->name = mb_substr(trim($data['name']), 0, 120);
         }
@@ -133,7 +181,7 @@ class SavePrintJobAction
     /** A new draft carrying everything the job had — how an approved job is changed. */
     public function copy(PrintJob $job, ?int $userId, ?int $cartId, string $locale): PrintJob
     {
-        $copy = $job->replicate(['proof_document_ids', 'print_document_id', 'approved_price_snapshot', 'proofed_at', 'approved_at', 'ordered_at', 'printing_at', 'finished_at', 'cancelled_at', 'printed_by', 'finished_by']);
+        $copy = $job->replicate(['proof_document_ids', 'print_document_id', 'approved_price_snapshot', 'declared_at', 'warnings_accepted_at', 'proofed_at', 'approved_at', 'ordered_at', 'printing_at', 'finished_at', 'cancelled_at', 'printed_by', 'finished_by']);
         $copy->fill([
             'user_id' => $userId, 'cart_id' => $userId === null ? $cartId : null, 'status' => PrintJobStatus::Draft,
             'name' => mb_substr(__('print.copy_of', ['name' => (string) $job->name], $locale), 0, 120),
@@ -196,7 +244,11 @@ class SavePrintJobAction
             $job->price_per_sheet = 0;
             $job->price_total = 0;
         }
-        $job->preflight = ['warnings' => PrintJobEntry::warnings($entry, (array) $job->design)];
+        $job->preflight = $job->isUpload()
+            // NT5: the artwork's preflight, worked out again for the options as they are now.
+            ? ($job->upload_meta === null ? ['dpi' => null, 'warnings' => [], 'refusals' => []]
+                : PrintUpload::preflight((array) $job->upload_meta, (string) $job->upload_kind, $layout, (bool) $job->colour, (int) $job->sheets))
+            : ['warnings' => PrintJobEntry::warnings($entry, (array) $job->design)];
         $job->save();
 
         return $job;
