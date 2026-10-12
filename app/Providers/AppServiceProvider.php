@@ -4,7 +4,9 @@ namespace App\Providers;
 
 use App\Domains\Settings\Models\Setting;
 use App\Support\Contracts\DocumentRendererInterface;
+use App\Support\Contracts\PageImageInterface;
 use App\Support\Contracts\PdfConverterInterface;
+use App\Support\Services\ChromePageImage;
 use App\Support\Services\ChromePdfConverter;
 use App\Support\Services\HtmlDocumentRenderer;
 use Illuminate\Support\Facades\Cache;
@@ -22,6 +24,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->singleton(DocumentRendererInterface::class, HtmlDocumentRenderer::class);
         // ADR-012 (amended, STATUS §5lr): PDF only where a Chrome is configured; disabled elsewhere.
         $this->app->singleton(PdfConverterInterface::class, fn () => new ChromePdfConverter(
+            config('documents.pdf.chrome_path'),
+            (int) config('documents.pdf.timeout', 60),
+        ));
+        // NAME_TAGS_PLAN §5.2 (NT0): the proof picture, by the same Chrome.
+        $this->app->singleton(PageImageInterface::class, fn () => new ChromePageImage(
             config('documents.pdf.chrome_path'),
             (int) config('documents.pdf.timeout', 60),
         ));

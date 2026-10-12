@@ -13,7 +13,7 @@
 // expected direction, and the test asks you to update the count below when you
 // do.
 //
-// Count: 183 (corrected by SI1, which retired four unrouted password views:
+// Count: 184 (NT0 added the print sheet, a document template; 183 after SI1, which retired four unrouted password views:
 // the header said 196 while the list held 187). It counts a document
 // template, not a screen — see the documents block; the five public bookshop
 // views of BOOKSHOP_PLAN B1b, the five customer pages of B2, the two
@@ -90,7 +90,7 @@ return [
     'courses/register-set-password.blade.php',
     'courses/register.blade.php',
 
-    // documents — 8
+    // documents — 9
     //
     // Not screens: these are what `DocumentRendererInterface` renders (rule
     // 11, one document renderer) — a receipt a parent downloads, a payslip a
@@ -105,6 +105,9 @@ return [
     'documents/finance/receipt.blade.php',
     'documents/id-card.blade.php',
     'documents/payslip.blade.php',
+    // NAME_TAGS_PLAN §5.2 (NT0): the A4 sheet of tags the Bookstore's print desk
+    // prints and proofs — a document, rendered through the one renderer.
+    'documents/print-sheet.blade.php',
     'documents/report-card.blade.php',
     'documents/transcript.blade.php',
     'documents/transfer-certificate.blade.php',
