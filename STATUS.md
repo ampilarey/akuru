@@ -4983,6 +4983,68 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rt. Customers design name tags freely (C23 NT6, 2026-10-12)
+
+The seventh slice of `docs/NAME_TAGS_PLAN.md`, after NT5 (§5rs): the
+designer the office draws templates with (NT2), now the customer's too.
+
+**Built:**
+- **Design your own** on the door starts a blank design (guests too, as
+  with templates; the proof still needs an account): the desk's first
+  layout and priced paper, and one text that prints `{name}`, so a list of
+  names works from the start. `source = freeform`.
+- **Open in the designer** on a template job's page turns that job into
+  the customer's own free-form design. The job's design was already its own
+  copy (NT3); what the template locked is unlocked in it, and the template
+  is untouched. An upload job cannot be opened in the designer; an approved
+  one stays locked (a change is a copy, as before).
+- **The designer** on the job's page: text, pictures from Akuru's library,
+  rectangles, ellipses and lines; drag, resize, rotate, snapping to the
+  tag's edges and centre, arrow-key nudges, undo and redo (60 steps),
+  layers, colour schemes, fields — the office's component (NT2), unchanged
+  but for a test id. Beside it, as for any job: the names (one, a list or
+  subjects), the options, the server's price, the proof, approval and the
+  basket.
+- **Saved whole, validated by the server**: each change sends the design;
+  `PrintDesign::validate` keeps what it accepts and refuses the rest (an
+  unknown font, too many elements, a picture outside Akuru's library), and
+  a drawing of another size is scaled to the layout's tag. A template job's
+  drawing is refused until it is opened in the designer. On screen the
+  drawing stays as drawn while the reply updates the rest, so a save never
+  jumps an element mid-drag.
+- **A layout change** scales a free-form design from itself, not from the
+  template it may have come from.
+- **Its own chunk** (risk R5): the job page loads the designer with
+  `React.lazy` only for a free-form design; the build's manifest shows it
+  as a dynamic entry of the job page, not one of its imports.
+
+**Tests:** `PrintFreeformTest` (new, 5): a blank design for a guest whose
+`{name}` takes a list of three (three tags, one sheet) and the designer's
+props on its page; the whole drawing saved — a 15° text and a rectangle —
+an unknown font and an outside picture refused and nothing kept, a larger
+drawing scaled to the tag, and the proof; a template job opened in the
+designer — its copy unlocked, the template still locked, someone else
+refused, the drawing refused before opening, a layout change scaling the
+customer's own drawing; an approved design locked and an upload kept out;
+the lazy chunk read from the build manifest. The print and Architecture
+groups rerun green.
+
+Whole suite locally: **3187 passed (67237 assertions)**, none failed.
+
+**Walk:** `print-freeform.mjs` (new, in the runner, with
+`DOCUMENTS_CHROME_PATH` set): under `/ar` the door offers *Design your own*
+right to left in Arabic; the designer loads on the new design; the customer
+adds a rectangle and a text, types Arabic and turns it 12°; the server has
+both, and a reload shows them; a name typed and the glossy paper chosen
+price one sheet at MVR 4.50; Chrome draws the proof with the turned Arabic
+on every tag; the design reads *Proof ready* in Arabic; the templates are
+untouched. 9/9. A screenshot read.
+
+**Deploy:** no migration. The built assets are in the commit. The standard
+pull command.
+
+**Next:** NT7 — the book-list card, *Order again*, and print insights.
+
 ## 5rs. Customers upload their own artwork, checked before the proof (C23 NT5, 2026-10-12)
 
 The sixth slice of `docs/NAME_TAGS_PLAN.md`, after NT4 (§5rr): a print job

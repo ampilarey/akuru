@@ -160,6 +160,7 @@ const WALKS = [
     { name: 'print-design', writes: true, asks: 'Can a customer make name tags from a template — a Thaana name, glossy colour, two sheets, the server\'s price — see a watermarked proof, approve it, and find it locked, in Dhivehi?' },
     { name: 'print-order', writes: true, asks: 'Can a customer buy an approved name-tag design — sheets locked, Akuru\'s two deliveries, the wallet — and can the office print and finish it from the queue until the order reads ready, in Arabic?' },
     { name: 'print-upload', writes: true, asks: 'Can a customer upload their own name-tag artwork — a 72-dpi picture refused and a 200-dpi one warned in Dhivehi, a 300-dpi one passing — and, with the declaration ticked, see Chrome\'s proof?' },
+    { name: 'print-freeform', writes: true, asks: 'Can a customer design name tags freely in Arabic — a text and a rectangle drawn, Arabic typed, turned 12°, kept on reload — and see Chrome\'s proof of it?' },
     { name: 'public-rtl', writes: false, asks: 'Does the website read right to left in Dhivehi and Arabic, on a desk and on a phone?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
     { name: 'course-screens-language', writes: true, asks: 'Do the screens teachers build courses on — and the Qur\'an screens, a learner\'s among them — read in Dhivehi and Arabic, with a name on every field?' },

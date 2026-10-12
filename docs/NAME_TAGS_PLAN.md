@@ -699,6 +699,14 @@ commits, STATUS and the walks.
   customer draws a text and a rectangle under `/ar`, rotates, saves,
   proofs.
 
+> **Built 2026-10-12 (STATUS §5rt).** As planned, with these choices: the
+> designer lives on the job's own page, loaded lazily only for a free-form
+> design (no second page to keep in step); *Open in the designer* turns the
+> template job itself into the customer's design, since it already held its
+> own copy; the server validates every save and accepts pictures from
+> Akuru's library only (a customer's own picture is NT5's upload); a blank
+> design starts with a `{name}` text so a list works at once.
+
 ### NT7 — The book list upsell, *Order again*, insights
 
 - The card on a school book list and after *Add all*; *Order again*
