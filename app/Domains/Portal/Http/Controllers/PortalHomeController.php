@@ -3,6 +3,7 @@
 namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Portal\Actions\ComposePortalHomeAction;
+use App\Domains\Portal\Actions\ResolvePortalHouseholdAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Inertia\Phrases;
@@ -31,8 +32,10 @@ class PortalHomeController extends Controller
             return redirect()->route('dashboard');
         }
 
+        $audience = app(ResolvePortalHouseholdAction::class)->audience($user);
+
         return Inertia::render('Portal/Home', [
-            ...app(ComposePortalHomeAction::class)->execute((int) $user->id, $user->isParent(), $user->getRoleNames()->all()),
+            ...app(ComposePortalHomeAction::class)->execute((int) $user->id, $user->isParent(), $user->getRoleNames()->all(), $audience),
             't' => Phrases::once('portal'),
         ]);
     }
@@ -41,7 +44,12 @@ class PortalHomeController extends Controller
     {
         $user = $request->user();
         abort_unless($user !== null, 403);
-        $payload = app(ComposePortalHomeAction::class)->execute((int) $user->id, $user->isParent(), $user->getRoleNames()->all());
+        $payload = app(ComposePortalHomeAction::class)->execute(
+            (int) $user->id,
+            $user->isParent(),
+            $user->getRoleNames()->all(),
+            app(ResolvePortalHouseholdAction::class)->audience($user),
+        );
 
         return response()->streamDownload(function () use ($payload): void {
             $out = fopen('php://output', 'w');

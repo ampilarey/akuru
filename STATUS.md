@@ -4983,6 +4983,18 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sa. A parent who is also a student sees their own record in Learn (2026-10-13)
+
+Family and Learn both opened `/portal/home`, and that page listed the
+children whenever there were any. Switching to Learn still hid that
+person's own attendance, homework and fees.
+
+The active workspace now chooses who the page is about. Family stays
+the children. Learn is the person's own record, and the attendance,
+homework, fees and exam pages follow the same choice.
+
+The signed-in walk was not run here: this machine has no PHP or MySQL.
+
 ## 5rz. The production host can print: Chrome and Ghostscript set up (owner, 2026-10-13)
 
 Recorded as gate evidence for OWNER_ACTIONS items 22, 26 and 27. Code

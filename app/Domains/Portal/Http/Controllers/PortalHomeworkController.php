@@ -4,11 +4,10 @@ namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Academics\Actions\ListHomeworkForStudentAction;
 use App\Domains\Academics\Actions\TickHomeworkAction;
-use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
+use App\Domains\Portal\Actions\ResolvePortalHouseholdAction;
 use App\Http\Controllers\Controller;
 use App\Support\Inertia\Phrases;
-use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -69,30 +68,9 @@ class PortalHomeworkController extends Controller
      */
     private function people(Request $request): array
     {
-        $userId = $this->userId($request);
-        $people = [];
+        $household = app(ResolvePortalHouseholdAction::class);
 
-        $self = app(ResolveStudentForUserAction::class)->execute($userId);
-        if ($self !== null) {
-            $people[] = [
-                'id' => (int) $self['id'],
-                'name' => PersonName::ofStudent($self),
-                'relationship' => 'self',
-            ];
-        }
-
-        foreach (app(ListGuardianChildrenAction::class)->executeForGuardianUserId($userId) as $child) {
-            if (collect($people)->contains(fn (array $person): bool => $person['id'] === (int) $child->id)) {
-                continue;
-            }
-            $people[] = [
-                'id' => (int) $child->id,
-                'name' => PersonName::ofStudent($child),
-                'relationship' => (string) ($child->relationship ?? 'child'),
-            ];
-        }
-
-        return $people;
+        return $household->people($this->userId($request), $household->audience($request->user()));
     }
 
     private function userId(Request $request): int

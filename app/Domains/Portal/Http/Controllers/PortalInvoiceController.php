@@ -4,10 +4,9 @@ namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Finance\Actions\ListPortalInvoicesAction;
 use App\Domains\Finance\Actions\PayPortalInvoiceAction;
-use App\Domains\People\Actions\ListGuardianChildrenAction;
+use App\Domains\Portal\Actions\ResolvePortalHouseholdAction;
 use App\Http\Controllers\Controller;
 use App\Support\Inertia\Phrases;
-use App\Support\PersonName;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -19,8 +18,8 @@ class PortalInvoiceController extends Controller
     {
         abort_unless($request->user() !== null, 403);
 
-        $children = app(ListGuardianChildrenAction::class)->executeForGuardianUserId((int) $request->user()->id);
-        $childIds = $children->pluck('id')->all();
+        $people = $this->people($request);
+        $childIds = array_column($people, 'id');
         $requested = $request->integer('student_id') ?: null;
         if ($requested && ! in_array($requested, $childIds, true)) {
             abort(403);
@@ -28,10 +27,10 @@ class PortalInvoiceController extends Controller
         $studentId = $requested ?: ($childIds[0] ?? null);
 
         return Inertia::render('Portal/Invoices', [
-            'children' => $children->map(fn ($child) => [
-                'id' => $child->id,
-                'name' => PersonName::ofStudent($child),
-            ])->values(),
+            'children' => array_map(fn (array $person): array => [
+                'id' => $person['id'],
+                'name' => $person['name'],
+            ], $people),
             'studentId' => $studentId,
             'invoices' => $studentId
                 ? app(ListPortalInvoicesAction::class)->execute([$studentId])->values()
@@ -44,11 +43,7 @@ class PortalInvoiceController extends Controller
     {
         abort_unless($request->user() !== null, 403);
 
-        $childIds = app(ListGuardianChildrenAction::class)
-            ->executeForGuardianUserId((int) $request->user()->id)
-            ->pluck('id')
-            ->map(fn ($id) => (int) $id)
-            ->all();
+        $childIds = array_column($this->people($request), 'id');
 
         $mode = $request->validate(['mode' => ['nullable', 'in:full,installment']])['mode'] ?? 'full';
         $result = app(PayPortalInvoiceAction::class)->execute($invoice, (int) $request->user()->id, $childIds, $mode);
@@ -59,5 +54,15 @@ class PortalInvoiceController extends Controller
 
         return redirect()->route('portal.invoices')
             ->with('error', $result['error'] ?? __('portal.error_payment_failed'));
+    }
+
+    /**
+     * @return list<array{id: int, name: string, relationship: string}>
+     */
+    private function people(Request $request): array
+    {
+        $household = app(ResolvePortalHouseholdAction::class);
+
+        return $household->people((int) $request->user()->id, $household->audience($request->user()));
     }
 }
