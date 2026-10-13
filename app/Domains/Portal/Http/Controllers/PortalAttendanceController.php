@@ -4,10 +4,9 @@ namespace App\Domains\Portal\Http\Controllers;
 
 use App\Domains\Academics\Actions\ListClassAttendanceAction;
 use App\Domains\Notifications\Actions\ResolveAttendanceNotificationStateAction;
-use App\Domains\People\Actions\ListGuardianChildrenAction;
+use App\Domains\Portal\Actions\ResolvePortalHouseholdAction;
 use App\Http\Controllers\Controller;
 use App\Support\Inertia\Phrases;
-use App\Support\PersonName;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Inertia\Inertia;
@@ -19,8 +18,9 @@ class PortalAttendanceController extends Controller
     {
         abort_unless($request->user() !== null, 403);
 
-        $children = app(ListGuardianChildrenAction::class)->executeForGuardianUserId((int) $request->user()->id);
-        $childIds = $children->pluck('id')->all();
+        $household = app(ResolvePortalHouseholdAction::class);
+        $people = $household->people((int) $request->user()->id, $household->audience($request->user()));
+        $childIds = array_column($people, 'id');
         $requested = $request->integer('student_id') ?: null;
 
         if ($requested && ! in_array($requested, $childIds, true)) {
@@ -30,10 +30,10 @@ class PortalAttendanceController extends Controller
         $studentId = $requested ?: ($childIds[0] ?? null);
 
         return Inertia::render('Portal/Attendance', [
-            'children' => $children->map(fn ($child) => [
-                'id' => $child->id,
-                'name' => PersonName::ofStudent($child),
-            ])->values(),
+            'children' => array_map(fn (array $person): array => [
+                'id' => $person['id'],
+                'name' => $person['name'],
+            ], $people),
             'studentId' => $studentId,
             'rows' => $studentId ? $this->rows($studentId) : collect(),
             'summary' => $studentId

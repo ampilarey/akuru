@@ -11,12 +11,17 @@ use Illuminate\Support\Facades\DB;
 class ListPublishedExamsForGuardianAction
 {
     /**
+     * @param  list<int>|null  $allowedStudentIds  when the portal has already chosen who this page is about. Null keeps the guardian's children.
      * @return Collection<int, array<string, mixed>>
      */
-    public function execute(int $guardianUserId, ?int $studentId = null): Collection
+    public function execute(int $guardianUserId, ?int $studentId = null, ?array $allowedStudentIds = null): Collection
     {
-        $children = app(ListGuardianChildrenAction::class)->executeForGuardianUserId($guardianUserId);
-        $childIds = $children->pluck('id')->map(fn ($id) => (int) $id)->all();
+        if ($allowedStudentIds !== null) {
+            $childIds = array_values(array_map(fn ($id): int => (int) $id, $allowedStudentIds));
+        } else {
+            $children = app(ListGuardianChildrenAction::class)->executeForGuardianUserId($guardianUserId);
+            $childIds = $children->pluck('id')->map(fn ($id) => (int) $id)->all();
+        }
 
         if ($studentId !== null && ! in_array($studentId, $childIds, true)) {
             return collect();

@@ -24,6 +24,7 @@ use App\Domains\Hifz\Models\HifzProgram;
 use App\Domains\Identity\Models\User;
 use App\Domains\People\Actions\AttachGuardianAction;
 use App\Domains\People\Enums\GuardianRelationship;
+use App\Domains\People\Models\ParentGuardian;
 use App\Domains\Portal\Actions\ComposePortalHomeAction;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
@@ -162,6 +163,102 @@ it('composes parent home from attendance, exams, invoices, courses, and hifz con
             ->where('title', 'Student Dashboard')
             ->where('students.0.relationship', 'self')
             ->where('students.0.name', 'Layla Hassan')
+        );
+});
+
+it('shows a parent who is also a student their own record when they switch to Learn', function () {
+    Role::findOrCreate('parent', 'web');
+    Role::findOrCreate('student', 'web');
+
+    $user = User::factory()->create();
+    $user->assignRole('parent');
+    $user->assignRole('student');
+
+    makeStudent(['user_id' => $user->id, 'first_name' => 'Aminath', 'last_name' => 'Naeem']);
+    $child = makeStudent(['first_name' => 'Layla', 'last_name' => 'Naeem']);
+    $guardian = ParentGuardian::query()->create([
+        'user_id' => $user->id,
+        'first_name' => 'Aminath',
+        'last_name' => 'Naeem',
+        'phone' => '7820288',
+        'email' => $user->email,
+        'address' => 'Malé',
+        'relationship' => 'mother',
+    ]);
+    app(AttachGuardianAction::class)->execute($child, $guardian, GuardianRelationship::Mother, true);
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('portal.home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('title', 'Parent Dashboard')
+            ->has('students', 1)
+            ->where('students.0.name', 'Layla Naeem')
+            ->where('auth.workspace', 'family')
+        );
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('portal.attendance'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('children', 1)
+            ->where('children.0.name', 'Layla Naeem')
+        );
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('portal.homework'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('students', 1)
+            ->where('students.0.name', 'Layla Naeem')
+        );
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->post(route('workspace.switch', 'learn'))
+        ->assertRedirect(route('portal.home'));
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('portal.home'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->where('title', 'Student Dashboard')
+            ->has('students', 1)
+            ->where('students.0.relationship', 'self')
+            ->where('students.0.name', 'Aminath Naeem')
+            ->where('auth.workspace', 'learn')
+        );
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('portal.attendance'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('children', 1)
+            ->where('children.0.name', 'Aminath Naeem')
+        );
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('portal.invoices'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('children', 1)
+            ->where('children.0.name', 'Aminath Naeem')
+        );
+
+    $this->withoutLocalizationMiddleware()
+        ->actingAs($user)
+        ->get(route('portal.homework'))
+        ->assertOk()
+        ->assertInertia(fn (Assert $page) => $page
+            ->has('students', 1)
+            ->where('students.0.relationship', 'self')
+            ->where('students.0.name', 'Aminath Naeem')
         );
 });
 

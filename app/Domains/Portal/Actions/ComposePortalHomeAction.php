@@ -24,9 +24,11 @@ class ComposePortalHomeAction
      *                                   controller passes them in.
      * @return array{title: string, students: list<array<string, mixed>>, csvUrl: string, tiles: list<array<string, mixed>>, nextSchoolDay: ?array<string, mixed>, sections: list<array{key: string, label: string, href: ?string}>}
      */
-    public function execute(int $userId, bool $isParent = false, array $roleNames = []): array
+    public function execute(int $userId, bool $isParent = false, array $roleNames = [], ?string $audience = null): array
     {
-        $people = $this->people($userId);
+        $people = $audience === null
+            ? $this->people($userId)
+            : app(ResolvePortalHouseholdAction::class)->people($userId, $audience);
         $ids = array_map(fn (array $person): int => $person['id'], $people);
         $performance = collect(app(ListStudentPerformanceReportAction::class)->execute($userId)['students'] ?? [])
             ->keyBy('id');
@@ -65,7 +67,9 @@ class ComposePortalHomeAction
         $hasChildren = collect($people)->contains(fn (array $person): bool => $person['relationship'] !== 'self');
 
         return [
-            'title' => ($isParent || $hasChildren) ? __('portal.home_title_parent') : __('portal.home_title_student'),
+            'title' => $audience === 'self'
+                ? __('portal.home_title_student')
+                : (($isParent || $hasChildren) ? __('portal.home_title_parent') : __('portal.home_title_student')),
             'students' => $students,
             'csvUrl' => '/portal/home/export',
             // E1: tiles carry live status, not just navigation. Every count is
@@ -299,10 +303,9 @@ class ComposePortalHomeAction
             $unique[] = $person;
         }
 
-        // A parent's home is their children. Their own learning, when they
-        // have some, is *My learning*'s (docs/SIGN_IN_PLAN.md ID2a) — the
-        // owner: "when he is in parent, he sees all his children". A pupil,
-        // who has no children, keeps their own record here.
+        // Callers that do not name a workspace keep the old rule: children
+        // when there are any, otherwise the person's own record. The home
+        // itself names `self` or `children` from the active workspace.
         $children = array_values(array_filter($unique, fn (array $person): bool => $person['relationship'] !== 'self'));
 
         return $children !== [] ? $children : $unique;
