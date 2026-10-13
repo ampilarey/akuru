@@ -37,12 +37,12 @@ closes or adds a line.
 | O6 | **The Vendor Agreement**, then invite Fitrah. | OWNER_ACTIONS 18 |
 | O7 | **Bookstore rewards** — the numbers, and when to switch them on. | OWNER_ACTIONS 20 |
 | O8 | **Referral credit** — the amounts, and when to switch it on. | OWNER_ACTIONS 21 |
-| O9 | **Chrome on the host** (`DOCUMENTS_CHROME_PATH`) — PDF report cards, and the print desk. | OWNER_ACTIONS 22, 26 |
+| O9 | ~~**Chrome on the host**~~ — **done 2026-10-13**: a home-folder Chrome behind a launcher, PDF report cards available. | OWNER_ACTIONS 22 |
 | O10 | The office's own **email and phone for purchase notices**. | OWNER_ACTIONS 23 |
 | O11 | **SMS live** on production, then rotate the exposed partial SMS key. | OWNER_ACTIONS 24 |
 | O12 | **Verify Fitrah's ID card**, and any writer approved before P2. | OWNER_ACTIONS 25 |
-| O13 | **The print desk**: Chrome (O9), the real price list, papers and finishing, then switch it on. | OWNER_ACTIONS 26, NAME_TAGS_PLAN §14 |
-| O14 | **Ghostscript** (`DOCUMENTS_GS_PATH`) if PDF uploads of artwork are wanted. | OWNER_ACTIONS 27, NAME_TAGS_PLAN D14 |
+| O13 | **The print desk**: Chrome is in place; enter the real price list, papers and finishing, then switch it on and place one test order. | OWNER_ACTIONS 26, NAME_TAGS_PLAN §14 |
+| O14 | ~~**Ghostscript**~~ — **done 2026-10-12**: `/bin/gs` (9.27). | OWNER_ACTIONS 27 |
 | O15 | **`/en/catalog/courses` answered 404** on production (2026-10-03), not reproduced. Check for a leftover `bootstrap/cache/routes-v7.php` on the host. | KNOWN_ISSUES |
 
 ## 3. Decisions and reviews only the owner can give

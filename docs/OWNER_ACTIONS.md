@@ -434,7 +434,7 @@ Referral credit is built and **off** (STATUS §5ln). Once it is on:
 Only friends who come after that moment count. Like rewards (item 20), it
 is wallet credit Akuru funds. "Not yet" is a legible answer.
 
-### 22. PDF report cards — point the server at Chrome (kept for later, 2026-09-29)
+### 22. PDF report cards — point the server at Chrome — **done 2026-10-13 (STATUS §5rz)**
 
 Report cards can download as PDF (STATUS §5lr). The PDF is printed by headless
 Chrome from the stored HTML, which keeps Thaana and Arabic right to left. It is
@@ -448,6 +448,33 @@ show **Open to print**, as before, and nothing breaks.
 - [ ] Open a published report card on `/exams/report-cards`: **PDF** is there, and it downloads
 
 "Not yet" is a legible answer: report cards stay HTML.
+
+**Done 2026-10-13 (STATUS §5rz).** The host (`sg-s2`, shared cPanel,
+CloudLinux) has no system Chrome and no root, so Chrome lives in the
+account's home folder. The setup, to repeat if the account ever moves:
+
+1. Node from cPanel's own builds:
+   `export PATH=/opt/alt/alt-nodejs20/root/usr/bin:$PATH`
+2. `cd $HOME && npx --yes @puppeteer/browsers install chrome-headless-shell@stable --path $HOME/chrome`
+   (155.0.8059.39 on 2026-10-13).
+3. Four system libraries were missing (`ldd <chrome> | grep "not found"`):
+   `libatk-bridge-2.0.so.0`, `libatspi.so.0`, `libgbm.so.1` and then
+   `libwayland-server.so.0`. They came from AlmaLinux 8 AppStream
+   (`at-spi2-atk-2.26.2-1.el8`, `at-spi2-core-2.28.0-1.el8`,
+   `mesa-libgbm-23.1.4-4.el8_10.alma.1`, `libwayland-server-1.21.0-1.el8`).
+   They were unpacked into `~/chrome/libs` by a small Python RPM unpacker,
+   `~/chrome/rpmx.py`, because the host has no `rpm2cpio`.
+4. `~/chrome/chrome-run`, a launcher that sets
+   `LD_LIBRARY_PATH=/home/akuruedu/chrome/libs` and runs Chrome. **`.env`
+   points at the launcher, not at Chrome itself:**
+   `DOCUMENTS_CHROME_PATH=/home/akuruedu/chrome/chrome-run`.
+5. Checked: `php artisan tinker` made a PDF (4090 bytes, with Thaana) and
+   a PNG (1805 bytes) through the app's own converters. Chrome's `dbus` and
+   `drm` warnings on a server without a desktop are harmless; the app
+   judges success by the file Chrome writes.
+
+If the host later installs Chromium system-wide, point
+`DOCUMENTS_CHROME_PATH` at it and delete `~/chrome`.
 
 ### 23. Library and Bookstore notices by email and SMS (updated 2026-09-30, COMMERCE_PARITY_PLAN P5)
 
@@ -512,14 +539,14 @@ a payout until you verify.
       press **Verified** (or **Reject** with a note saying what to fix)
 - [ ] The same for any writer approved before today, on `/admin/library`
 
-### 26. The print desk for name tags (NAME_TAGS_PLAN §14, 2026-10-12)
+### 26. The print desk for name tags (NAME_TAGS_PLAN §14, 2026-10-12) — **Chrome done 2026-10-13; prices and the switch remain**
 
 Name tags and print products are built (NT0–NT7, STATUS §5rn–§5rx) and
 **off**. The Bookstore shows no print product until the desk is switched on,
 and the desk prints through the same headless Chrome as item 22.
 
-- [ ] Chrome or Chromium on the host, named in `DOCUMENTS_CHROME_PATH`
-      (item 22), then `php artisan config:cache`
+- [x] Chrome or Chromium on the host, named in `DOCUMENTS_CHROME_PATH`
+      (item 22) — **done 2026-10-13**, the home-folder launcher
 - [ ] On `/admin/bookshop/print`, type the real price list: the papers,
       colour and black-and-white prices per sheet, the finishing, the
       quantity tiers, the smallest order, the lead days
@@ -529,14 +556,15 @@ and the desk prints through the same headless Chrome as item 22.
 
 "Not yet" is a legible answer; nothing shows to customers while it is off.
 
-### 27. Ghostscript for PDF uploads of artwork (NAME_TAGS_PLAN D14)
+### 27. Ghostscript for PDF uploads of artwork (NAME_TAGS_PLAN D14) — **done 2026-10-12**
 
 A customer may upload a PNG or JPEG design today. A **PDF** upload is
 offered only where Ghostscript is on the host, because each page must be
 checked and drawn before the proof.
 
-- [ ] `which gs` on the host; if none, ask the host whether it can be installed
-- [ ] `DOCUMENTS_GS_PATH=/that/path` in production's `.env`, then `php artisan config:cache`
+- [x] `which gs` gave `/bin/gs`, Ghostscript **9.27** (2019)
+- [x] `DOCUMENTS_GS_PATH=/bin/gs` in production's `.env` (2026-10-12). 9.27 predates
+      `--permit-file-read`; the app leaves that switch out before 9.50 (#771, STATUS §5ry)
 
 "Not yet" is a legible answer: PNG and JPEG uploads work without it.
 
