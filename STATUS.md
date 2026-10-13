@@ -4983,6 +4983,31 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5rz. The production host can print: Chrome and Ghostscript set up (owner, 2026-10-13)
+
+Recorded as gate evidence for OWNER_ACTIONS items 22, 26 and 27. Code
+changes: none here; the Ghostscript fix it needed is §5ry (#771).
+
+- **Ghostscript.** The host has `/bin/gs`, version 9.27.
+  `DOCUMENTS_GS_PATH=/bin/gs` was set on 2026-10-12.
+- **Chrome.** The host has no system Chrome and the account has no root.
+  `chrome-headless-shell` 155.0.8059.39 is in `~/chrome`, installed with
+  cPanel's Node 20.
+  - Four missing libraries came from AlmaLinux 8 packages and were
+    unpacked into `~/chrome/libs`.
+  - A launcher, `~/chrome/chrome-run`, sets `LD_LIBRARY_PATH`;
+    `DOCUMENTS_CHROME_PATH` points at it.
+  - The full steps are in OWNER_ACTIONS item 22.
+- **Checked on the host, through the app's own converters**
+  (`php artisan tinker`):
+  - a PDF with Thaana text, 4090 bytes;
+  - a proof-size PNG, 1805 bytes.
+- Production pulled to the latest `main` the same day.
+
+**Left for the owner (item 26):** the real print prices on
+`/admin/bookshop/print`, the switch, and one test order. Not yet checked:
+a published report card offering **PDF** on `/exams/report-cards`.
+
 ## 5ry. PDF uploads work with an older Ghostscript (NAME_TAGS_PLAN D14, 2026-10-12)
 
 Found setting up the production host: `which gs` gave `/bin/gs`, version
