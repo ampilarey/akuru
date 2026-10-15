@@ -114,12 +114,18 @@ it('counts BML ready to confirm payments with its API key alone, as BML signs wi
     }
 });
 
-it('carries the application info and the quick links that exist', function () {
+it('carries the application info and the analytics links, which have no other door', function () {
     settingsPage([])->assertOk()->assertInertia(fn (Assert $page) => $page
         ->where('settings.php_version', PHP_VERSION)
         ->has('settings.laravel_version')
         ->has('configuration_cached')
-        ->has('links', fn (Assert $links) => $links->each(fn (Assert $link) => $link->hasAll(['key', 'href']))));
+        ->has('links', 2)
+        ->where('links.0', ['key' => 'analytics.index', 'href' => '/analytics'])
+        ->where('links.1', ['key' => 'analytics.reports', 'href' => '/analytics/reports']));
+
+    expect(__('admin.system_settings_sms_note'))->toBe('Dhiraagu username and password, or SMS_GATEWAY_API_KEY.')
+        ->and(__('admin.system_settings_sms_note', [], 'dv'))->not->toBe('Dhiraagu username and password, or SMS_GATEWAY_API_KEY.')
+        ->and(__('admin.system_settings_sms_note', [], 'ar'))->not->toBe('Dhiraagu username and password, or SMS_GATEWAY_API_KEY.');
 });
 
 it('falls back to the config default for tardies per absence', function () {

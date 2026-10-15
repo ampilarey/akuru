@@ -134,10 +134,29 @@ it('keeps the shared categories and brands and lists vendors with their owner an
     expect($csv)->toContain('Fitrah')->toContain('owner@example.test')->toContain('10.00');
 });
 
+it('opens the bookstore switches on their own page, and links there from the office', function () {
+    $office = bookshopOffice();
+
+    $this->withoutLocalizationMiddleware()->actingAs($office)->get(route('admin.bookshop.settings'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Bookshop/Settings')
+            ->has('notices')
+            ->where('cod_on', true)
+            ->has('rewards')
+            ->has('referrals')
+            ->where('shop_open.open', true)
+            ->where('t.settings_heading', 'Bookstore settings'));
+
+    $this->withoutLocalizationMiddleware()->actingAs($office)->get(route('admin.bookshop.index'))
+        ->assertOk()
+        ->assertInertia(fn ($page) => $page->component('Bookshop/Admin')->missing('rewards')->missing('cod_on')->missing('shop_open'));
+});
+
 it('refuses the office screens to anyone without bookshop.manage', function () {
     $stranger = User::factory()->create();
 
     $this->withoutLocalizationMiddleware()->actingAs($stranger)->get(route('admin.bookshop.index'))->assertForbidden();
+    $this->withoutLocalizationMiddleware()->actingAs($stranger)->get(route('admin.bookshop.settings'))->assertForbidden();
     $this->withoutLocalizationMiddleware()->actingAs($stranger)->post(route('admin.bookshop.vendors.store'), [
         'name' => 'Sneaky', 'owner_name' => 'X', 'owner_email' => 'x@example.test',
     ])->assertForbidden();

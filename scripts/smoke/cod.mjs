@@ -127,7 +127,7 @@ check('Fitrah takes cash on delivery, up to MVR 1000', (await vendor.locator('[d
 // ------------------------------------------------------------ 1b. the office turns rewards on (STATUS §5lm)
 
 const office = await signIn(ADMIN);
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/settings`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="office-rewards"]');
 check('rewards start off', (await inner(office, '[data-testid="rewards-state"]')).startsWith('Off'), await inner(office, '[data-testid="rewards-state"]'));
 await office.fill('[data-testid="rewards-percent"]', '2');
@@ -227,7 +227,7 @@ check('the earning shows MVR 270.00 cash taken and MVR −24.00 owed to Akuru', 
 
 // ------------------------------------------------------------ 5. the office turns it off
 
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/settings`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="office-cod"]');
 await office.click('[data-testid="toggle-cod"]');
 await settle(office, '[data-testid="flash-success"]');

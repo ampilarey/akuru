@@ -166,8 +166,8 @@ class BuildNavigationAction
      */
     private function routeFor(string $href, array $routes, string $locale): ?RouteInstance
     {
-        // An anchor (`/admin/bookshop#settings`) names a section of a page;
-        // the route, and its gate, are the page's.
+        // An anchor or a query names a place on a page; the route, and its
+        // gate, are the path.
         $path = ltrim(NavigationMap::path($href), '/');
 
         // Under LaravelLocalization a request's routes carry the locale as a

@@ -405,9 +405,9 @@ phone bar now read the same way: **Website & content · Admissions ·
 Shops & money · Settings · System**. *Settings* is new and is the answer
 to the owner's "different setting like bookstore, library": one part
 with every product's settings screen — System settings, Library
-settings, Bookstore settings, Translations — so a setting is one tap
+settings, Bookstore settings, Print desk, Translations — so a setting is one tap
 from the home and from the Settings tab, whichever product it belongs
-to. System settings and Translations moved there from *System*, which
+to. Bookstore settings is its own page (`/admin/bookshop/settings`, §5sb). Print desk stays under Shops as well. System settings and Translations moved there from *System*, which
 is now Manage users and the two go-live screens. The phone bar is six
 tabs (Home · Website · Shops · Settings · System · Alerts); Admissions
 is a card on the home, not a tab, because six is what a 390 px phone
@@ -422,12 +422,13 @@ no-stale-entries rule and lost the ten entries that were stale (the
 CMS's inner screens had been "opened from the hub" since they were
 children in the map).
 
-**Anchors in the map.** `/admin/bookshop#settings` is the first href
-with an anchor. `NavigationMap::path()` gives the route behind an href,
-`BuildNavigationAction` gates on that, and `app.jsx` carries the anchor
-across the locale redirect every unlocalised link is answered with (Inertia
-drops an anchor when the response's address is not the one asked for)
-and scrolls to the section once the page has drawn.
+**Anchors in the map.** `NavigationMap::path()` still strips an anchor or a
+query so a route can be matched, and `app.jsx` still carries an anchor
+across the locale redirect. The Bookstore settings link no longer uses one:
+those switches are `/admin/bookshop/settings`, and the Settings list is
+System settings, Library settings, Bookstore settings, Print desk,
+Translations. Print desk stays under Shops as well. School billing, staff
+and attendance stay on the School workspace (ADR-040).
 
 **Walked**: `admin-hub.mjs` 26/26 (five parts, twenty-one sections, the
 Settings part's four), `admin-mobile.mjs` 13/13 (six tabs on all 50

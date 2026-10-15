@@ -236,19 +236,17 @@ const settingsSheet = await page.evaluate(() => {
     const el = document.querySelector('[data-testid="shell-tab-sheet"]');
     return el ? { title: document.getElementById('shell-tab-sheet-title')?.textContent, links: [...el.querySelectorAll('a')].map((a) => a.getAttribute('href')) } : null;
 });
-const settingsWanted = ['/admin/settings', '/admin/library/settings', '/admin/bookshop#settings', '/admin/translations'];
-check('Settings opens a sheet with the system, Library, Bookstore and translation settings', !!settingsSheet && settingsSheet.title === 'Settings' && settingsWanted.every((w) => settingsSheet.links.some((h) => h.endsWith(w))), settingsSheet ? settingsSheet.links.join(', ') : 'no sheet');
-await Promise.all([page.waitForURL(/\/admin\/bookshop/, { timeout: 20000 }).catch(() => {}), page.click('[data-testid="shell-tab-sheet"] a[href$="/admin/bookshop#settings"]')]);
+const settingsWanted = ['/admin/settings', '/admin/library/settings', '/admin/bookshop/settings', '/admin/bookshop/print', '/admin/translations'];
+check('Settings opens a sheet with the system, Library, Bookstore, print desk and translation settings', !!settingsSheet && settingsSheet.title === 'Settings' && settingsWanted.every((w) => settingsSheet.links.some((h) => h.endsWith(w))), settingsSheet ? settingsSheet.links.join(', ') : 'no sheet');
+await Promise.all([page.waitForURL(/\/admin\/bookshop\/settings/, { timeout: 20000 }).catch(() => {}), page.click('[data-testid="shell-tab-sheet"] a[href$="/admin/bookshop/settings"]')]);
 await page.waitForLoadState('networkidle');
-await page.waitForTimeout(600);
-const bookshopSettings = await page.evaluate(() => {
-    const el = document.getElementById('settings');
-    if (!el) return { present: false };
-    const r = el.getBoundingClientRect();
-    const vh = Math.min(window.innerHeight, window.screen.height);
-    return { present: true, top: Math.round(r.top), inView: r.top >= -2 && r.top < vh, heading: document.getElementById('office-settings-title')?.textContent, hash: location.hash };
-});
-check('Bookstore settings opens the office scrolled to its Settings section', bookshopSettings.present && bookshopSettings.inView && bookshopSettings.heading === 'Bookstore settings', JSON.stringify(bookshopSettings));
+const bookshopSettings = await page.evaluate(() => ({
+    present: !!document.querySelector('[data-testid="bookshop-settings"]'),
+    heading: document.querySelector('h1')?.textContent || '',
+    cod: !!document.querySelector('[data-testid="office-cod"]'),
+    path: location.pathname,
+}));
+check('Bookstore settings opens its own page', bookshopSettings.present && bookshopSettings.cod && bookshopSettings.path.endsWith('/admin/bookshop/settings'), JSON.stringify(bookshopSettings));
 check('and no screen raised a page, console or server error', problems.length === 0, problems.slice(0, 3).join(' | '));
 
 await finish();
