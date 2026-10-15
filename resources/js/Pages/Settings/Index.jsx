@@ -2,10 +2,9 @@ import { router } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 /**
- * System Settings (docs/ADMIN_PANEL.md; C9 slice 1, STATUS §5jb): the
- * application's configuration in one glance, whether SMS and BML are really
- * set up, the cache utility, and the quick links. Every string is a key in
- * the admin tranche, so the screen reads in Dhivehi and Arabic too.
+ * System Settings: whether mail, SMS and payments are set up, the cache
+ * utility, and the analytics screens (their only door). Server details sit
+ * in one closed line. Secrets stay in the environment file.
  */
 function Card({ icon, label, value, note, tone = 'text-gray-900', testId }) {
     return (
@@ -20,8 +19,8 @@ function Card({ icon, label, value, note, tone = 'text-gray-900', testId }) {
     );
 }
 
-export default function Index({ settings, sms_configured, bml_configured, bml_webhook_ready, configuration_cached, links = [], t = {} }) {
-        const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—');
+export default function Index({ settings, sms_configured, bml_configured, configuration_cached, links = [], t = {} }) {
+    const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—');
     const configured = (on) => (on ? t.system_settings_configured || 'Configured' : t.system_settings_not_configured || 'Not configured');
     const tone = (on) => (on ? 'text-green-800' : 'text-amber-800');
     const info = [
@@ -35,32 +34,30 @@ export default function Index({ settings, sms_configured, bml_configured, bml_we
 
     return (
         <AppShell title={t.system_settings_title || 'System Settings'}>
-            <p className="mb-4 text-sm text-gray-600">{t.system_settings_intro || 'Application configuration overview and utilities.'}</p>
+            <p className="mb-4 text-sm text-gray-600">{t.system_settings_intro || 'Whether mail, text messages, payments and the cache are set up.'}</p>
             <div className="mb-6 grid gap-3 md:grid-cols-2 lg:grid-cols-4" data-testid="integration-status">
                 <Card icon="📩" label={t.system_settings_mail || 'Mail driver'} value={cap(settings.mail_mailer)} note={settings.mail_from} />
-                <Card icon={sms_configured ? '✅' : '⚠️'} label={t.system_settings_sms || 'SMS gateway'} value={configured(sms_configured)} tone={tone(sms_configured)} note={t.system_settings_sms_note || 'Check .env SMS_GATEWAY_API_KEY'} testId="sms-status" />
+                <Card icon={sms_configured ? '✅' : '⚠️'} label={t.system_settings_sms || 'SMS gateway'} value={configured(sms_configured)} tone={tone(sms_configured)} note={t.system_settings_sms_note || 'Dhiraagu username and password, or SMS_GATEWAY_API_KEY.'} testId="sms-status" />
                 <Card
                     icon={bml_configured ? '✅' : '⚠️'}
                     label={t.system_settings_bml || 'BML payment'}
                     value={configured(bml_configured)}
                     tone={tone(bml_configured)}
-                    note={bml_configured && !bml_webhook_ready
-                        ? `⚠️ ${t.system_settings_bml_no_webhook || 'No webhook secret — payments will not confirm.'} ${t.system_settings_bml_webhook_note || 'Set .env BML_WEBHOOK_SECRET'}`
-                        : t.system_settings_bml_note || 'Check .env BML_API_KEY'}
+                    note={t.system_settings_bml_note || 'Check .env BML_API_KEY'}
                     testId="bml-status"
                 />
                 <Card icon="🗄️" label={t.system_settings_cache || 'Cache / session'} value={`${cap(settings.cache_driver)} / ${cap(settings.session_driver)}`} note={`${t.system_settings_queue || 'Queue'}: ${cap(settings.queue_connection)}`} />
             </div>
 
-            <div className="mb-6 overflow-hidden rounded-lg border bg-white" data-testid="application-info">
-                <h2 className="border-b px-4 py-3 text-sm font-semibold">{t.system_settings_application_info || 'Application info'}</h2>
+            <details className="mb-6 rounded-lg border bg-white" data-testid="application-info">
+                <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">{t.system_settings_about || 'About this server'}</summary>
                 {info.map(([label, value]) => (
                     <div key={label} className="flex justify-between gap-4 border-t px-4 py-2 text-sm">
                         <span className="text-gray-500">{label}</span>
                         <span className="font-medium">{value}</span>
                     </div>
                 ))}
-            </div>
+            </details>
 
             <div className="mb-6 rounded-lg border bg-white" data-testid="cache-management">
                 <h2 className="border-b px-4 py-3 text-sm font-semibold">{t.system_settings_cache_management || 'Cache management'}</h2>

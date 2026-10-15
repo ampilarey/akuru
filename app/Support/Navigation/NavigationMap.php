@@ -471,13 +471,15 @@ final class NavigationMap
                 // LENDING_AND_USED_BOOKS_PLAN L1: lenders, their ID cards, the loans (D6: the Bookstore team).
                 ['key' => 'lending_office', 'href' => '/admin/lending', 'can' => ['bookshop.manage']],
             ]],
-            // Every product's settings in one part (ADMIN_PANEL.md §8). The
-            // Bookstore's are a section of its office page: the href carries
-            // the anchor, the route gate is the page's.
+            // Every product's settings in one part (ADMIN_PANEL.md §8).
+            // Order: health, library, bookstore, print desk, translations.
+            // Print desk stays under Shops as well; this is a second way in.
+            // School screens stay on the School workspace (ADR-040).
             ['key' => 'panel_settings', 'items' => [
                 ['key' => 'system_settings', 'href' => '/admin/settings'],
                 ['key' => 'library_settings', 'href' => '/admin/library/settings'],
-                ['key' => 'bookshop_settings', 'href' => '/admin/bookshop#settings', 'can' => ['bookshop.manage']],
+                ['key' => 'bookshop_settings', 'href' => '/admin/bookshop/settings', 'can' => ['bookshop.manage']],
+                ['key' => 'print_desk', 'href' => '/admin/bookshop/print', 'can' => ['bookshop.manage']],
                 ['key' => 'translations', 'href' => '/admin/translations'],
             ]],
             ['key' => 'panel_system', 'items' => [
@@ -491,8 +493,7 @@ final class NavigationMap
     /**
      * Every href the map names, once — for the test that checks each one is
      * a real GET route, so the menu can never carry a dead link. An href may
-     * carry an anchor (`/admin/bookshop#settings`): `path()` is the route's
-     * part of it.
+     * carry an anchor or a query: `path()` is the route's part of it.
      *
      * @return list<string>
      */
@@ -518,7 +519,7 @@ final class NavigationMap
 
     /**
      * The path of an href without its anchor or query: what a route is
-     * matched on. `/admin/bookshop#settings` is the `/admin/bookshop` route.
+     * matched on.
      */
     public static function path(string $href): string
     {

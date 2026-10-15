@@ -48,8 +48,7 @@ function hrefsIn(array $nav): array
 it('names only real GET routes, so the menu cannot carry a dead link', function () {
     $routes = Route::getRoutes()->getRoutesByMethod()['GET'];
 
-    // An href may carry an anchor (`/admin/bookshop#settings`, ADMIN_PANEL.md
-    // §8): the route is the page's.
+    // An href may carry an anchor or a query. The route is the path.
     foreach (NavigationMap::hrefs() as $href) {
         expect(isset($routes[ltrim(NavigationMap::path($href), '/')]))->toBeTrue("no GET route for {$href}");
     }
@@ -105,11 +104,20 @@ it('lists each screen once per workspace and gives a guest nothing', function ()
     foreach (['institute', 'school'] as $workspace) {
         $nav = app(BuildNavigationAction::class)->execute($user, 'en', $workspace);
         // A screen may sit in the bar and in its group; never twice in the groups.
+        // Print desk is the one exception (STATUS §5sb): Shops keeps the office,
+        // and Settings adds a second door to the same page.
         $groupHrefs = [];
         foreach ($nav['groups'] as $group) {
             $groupHrefs = [...$groupHrefs, ...array_column($group['items'], 'href')];
         }
-        expect($groupHrefs)->toBe(array_values(array_unique($groupHrefs)), $workspace);
+        $counts = array_count_values($groupHrefs);
+        $repeated = array_keys(array_filter($counts, fn (int $n) => $n > 1));
+        if ($workspace === 'institute') {
+            expect($repeated)->toBe(['/admin/bookshop/print'], $workspace)
+                ->and($counts['/admin/bookshop/print'])->toBe(2);
+        } else {
+            expect($repeated)->toBe([], $workspace);
+        }
         $all = [...$all, ...hrefsIn($nav)];
     }
 

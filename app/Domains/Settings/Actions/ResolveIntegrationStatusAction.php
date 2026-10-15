@@ -22,17 +22,14 @@ use Illuminate\Support\Facades\Route;
 class ResolveIntegrationStatusAction
 {
     /**
-     * The screen's quick links, by the route that must exist for each.
+     * Analytics has no other door. Users, enrolments, courses and the
+     * website already sit in the Institute menu.
      *
      * @var array<string, string>
      */
     private const LINKS = [
-        'admin.users.index' => '/admin/users',
-        'admin.enrollments.index' => '/admin/enrollments',
-        'admin.courses.index' => '/admin/courses',
         'analytics.index' => '/analytics',
         'analytics.reports' => '/analytics/reports',
-        'admin.pages.index' => '/admin/public-site/pages',
     ];
 
     /**

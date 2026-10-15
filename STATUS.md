@@ -4983,6 +4983,33 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sb. Institute settings: a health page, bookstore settings of their own (2026-10-15)
+
+The Institute Settings list was four unlike jobs, and Bookstore settings
+was the bottom of the office page. School screens stay on the School
+workspace (ADR-040).
+
+- System settings is the health page. Mail, SMS, payments and the cache
+  stay. Server details sit in a closed "About this server" line. The
+  analytics links stay, because they have no other door. Users,
+  enrolments, courses and website pages are already in the Institute
+  menu. The SMS hint names the Dhiraagu username and password. The BML
+  card no longer warns about a webhook secret: a configured API key is
+  enough to confirm a payment.
+- Bookstore settings is `/admin/bookshop/settings`. Notices, cash on
+  delivery, rewards, referrals and open or closed still save on their
+  own routes. The office page links there.
+- Library settings is three blocks on the same form: Money, Publishing,
+  Notices.
+- The Settings list, in order: System settings, Library settings,
+  Bookstore settings, Print desk, Translations. Print desk stays under
+  Shops as well. It is the one screen with two doors in the groups.
+
+Signed in as the system admin and walked the Institute home, System
+settings, Library settings, Bookstore settings, the office link, and
+Print desk. Pest covered the navigation, bookstore, library settings,
+and integration-status tests.
+
 ## 5sa. A parent who is also a student sees their own record in Learn (2026-10-13)
 
 Family and Learn both opened `/portal/home`, and that page listed the

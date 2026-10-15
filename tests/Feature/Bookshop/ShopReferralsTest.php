@@ -187,12 +187,12 @@ it('keeps a friend\'s referral on the checkout they actually paid, after an unpa
 
 it('keeps the office\'s numbers in bounds, and its screens to the office', function () {
     $office = referralOffice();
-    referralVisit($office)->get(route('admin.bookshop.index'))->assertInertia(fn ($page) => $page->where('referrals.settings.on', false));
+    referralVisit($office)->get(route('admin.bookshop.settings'))->assertInertia(fn ($page) => $page->where('referrals.settings.on', false));
     referralVisit($office)->post(route('admin.bookshop.referrals'), ['on' => 1, 'referrer_amount' => 0, 'friend_amount' => 900, 'min_order' => -1])
         ->assertSessionHasErrors(['referrer_amount', 'friend_amount', 'min_order']);
     referralVisit($office)->post(route('admin.bookshop.referrals'), ['on' => 1, 'referrer_amount' => 25, 'friend_amount' => 20, 'min_order' => 100])
         ->assertSessionHas('success', __('shop.referrals_on_flash'));
-    referralVisit($office)->get(route('admin.bookshop.index'))->assertInertia(fn ($page) => $page->where('referrals.settings.on', true)->where('referrals.settings.friend_amount', 20));
+    referralVisit($office)->get(route('admin.bookshop.settings'))->assertInertia(fn ($page) => $page->where('referrals.settings.on', true)->where('referrals.settings.friend_amount', 20));
     expect(referralVisit($office)->get(route('admin.bookshop.referrals.export'))->assertOk()->streamedContent())
         ->toContain('date,checkout,referrer_id,friend_id,status,goods_paid,referrer_credit,friend_credit,currency');
 

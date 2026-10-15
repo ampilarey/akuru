@@ -904,6 +904,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     });
     Route::prefix('admin/bookshop')->middleware(['role:super_admin|bookshop_manager', 'can:bookshop.manage'])->group(function () {
         Route::get('/', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'index'])->name('admin.bookshop.index');
+        Route::get('settings', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'settings'])->name('admin.bookshop.settings');
         Route::get('vendors/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportVendors'])->name('admin.bookshop.vendors.export');
         Route::post('vendors', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'storeVendor'])->name('admin.bookshop.vendors.store');
         Route::put('vendors/{vendor}', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'updateVendor'])->name('admin.bookshop.vendors.update')->whereNumber('vendor');

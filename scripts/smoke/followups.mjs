@@ -209,6 +209,7 @@ check('and its CSV carries it too', csv.status() === 200 && csvHead.includes('sa
 
 // ------------------------------------------------------------ 7. closed, then open again
 
+await office.goto(`${BASE}/en/admin/bookshop/settings`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="office-shop-open"]');
 check('the office sees the bookstore open', (await inner(office, '[data-testid="shop-open-state"]')).includes('open'));
 await office.fill('[data-testid="shop-closed-message"]', NOTICE);

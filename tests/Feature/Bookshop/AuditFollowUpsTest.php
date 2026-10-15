@@ -124,7 +124,7 @@ it('lets the office close the whole bookstore: visitors see the notice, customer
     // The shop's portal and the office see the shop as usual.
     followAs($owner)->get(route('vendor.index'))->assertOk();
     followAs($office)->get(route('public.shop.index'))->assertOk();
-    followAs($office)->get(route('admin.bookshop.index'))->assertInertia(fn ($page) => $page->where('shop_open.open', false)->where('shop_open.message', 'Back after Eid, insha Allah.'));
+    followAs($office)->get(route('admin.bookshop.settings'))->assertInertia(fn ($page) => $page->where('shop_open.open', false)->where('shop_open.message', 'Back after Eid, insha Allah.'));
 
     followAs($office)->post(route('admin.bookshop.open'), ['open' => 1])->assertSessionHasNoErrors();
     followAs()->get(route('public.shop.index'))->assertOk()->assertDontSee('data-testid="shop-closed"', false);

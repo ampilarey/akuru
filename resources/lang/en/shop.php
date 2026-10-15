@@ -1577,6 +1577,7 @@ return [
     'office_shop_open_hint' => 'Closing the bookstore shows visitors a notice on every shop page instead of the shops. Customers can still open their own orders, quotes and wishlist; the office and the shops keep working as usual.',
     // ADMIN_PANEL.md §8: the office's settings under one heading, reached from the Institute's Settings part.
     'settings_heading' => 'Bookstore settings',
+    'settings_back' => 'Back to the bookstore office',
     'settings_hint' => 'Notices, cash on delivery, rewards, referrals, and whether the bookstore is open. The shops\' own settings are each shop\'s, in its portal.',
     'shop_is_open' => 'The bookstore is open',
     'shop_is_closed' => 'The bookstore is closed',

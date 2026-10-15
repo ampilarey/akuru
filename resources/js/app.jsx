@@ -3,8 +3,6 @@ import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
 import { registerPushDevice } from './Platform';
 
-// A link with an anchor (`/admin/bookshop#settings`: the Institute's Settings
-// part opens the Bookstore office at its settings section, ADMIN_PANEL.md §8).
 // Inertia keeps an anchor only when the response's address is the one asked
 // for, and every link in the shell is unlocalised and answered by a redirect
 // to its `/en/…` address — so the anchor was dropped and the page opened at

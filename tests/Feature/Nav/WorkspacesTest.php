@@ -82,7 +82,7 @@ it('builds the bar and the More menu for the active workspace only', function ()
         // Admissions and a Settings part since the navigation re-audit (ADMIN_PANEL.md §8).
         ->and(array_column($nav['groups'], 'key'))->toBe(['panel_website', 'panel_admissions', 'panel_money', 'panel_settings', 'panel_system', 'me']);
     $hrefs = navHrefs($nav);
-    expect($hrefs)->toContain('/admin/public-site/pages', '/admin/instructors', '/admin/prayer-times/islands', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/users', '/admin/settings', '/admin/translations', '/admin/enrollments', '/admin/library/settings', '/admin/bookshop#settings', '/account/set-password')
+    expect($hrefs)->toContain('/admin/public-site/pages', '/admin/instructors', '/admin/prayer-times/islands', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/users', '/admin/settings', '/admin/translations', '/admin/enrollments', '/admin/library/settings', '/admin/bookshop/settings', '/admin/bookshop/print', '/account/set-password')
         ->not->toContain('/academics/years', '/hr/payroll', '/exams/schedule');
 
     $admin = workspaceUser(['admin'], SCHOOL_PERMISSIONS);
@@ -203,8 +203,9 @@ it('composes the Institute and the School homes from the workspace’s own menu'
             ->where('parts.0.sections.2.key', 'prayer_times')->has('parts.0.sections.2.children', 4)
             ->where('parts.1.key', 'panel_admissions')->has('parts.1.sections', 1)
             ->where('parts.2.key', 'panel_money')->has('parts.2.sections', 10)->has('parts.2.sections.1.children', 4)
-            ->where('parts.3.key', 'panel_settings')->where('parts.3.label', 'Settings')->has('parts.3.sections', 4)
-            ->where('parts.3.sections.2.key', 'bookshop_settings')->where('parts.3.sections.2.href', '/admin/bookshop#settings')
+            ->where('parts.3.key', 'panel_settings')->where('parts.3.label', 'Settings')->has('parts.3.sections', 5)
+            ->where('parts.3.sections.2.key', 'bookshop_settings')->where('parts.3.sections.2.href', '/admin/bookshop/settings')
+            ->where('parts.3.sections.3.key', 'print_desk')->where('parts.3.sections.3.href', '/admin/bookshop/print')
             ->where('parts.4.key', 'panel_system')->has('parts.4.sections', 3)->where('parts.4.sections.0.key', 'manage_users')
             ->has('today.tiles', 2)->where('today.tiles.0.key', 'new_accounts')->where('today.tiles.1.key', 'paid_today')
             ->where('today.more.href', '/dashboard/numbers'));

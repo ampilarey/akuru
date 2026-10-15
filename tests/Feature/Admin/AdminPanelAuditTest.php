@@ -92,7 +92,7 @@ it('offers the admin panel in the Inertia More menu by workspace, Blade screens 
     $nav = app(BuildNavigationAction::class)->execute($super, 'en');
     expect(array_column($nav['groups'], 'key'))->toBe(['panel_website', 'panel_admissions', 'panel_money', 'panel_settings', 'panel_system', 'me']);
     $items = collect($nav['groups'])->flatMap(fn ($group) => $group['items'])->keyBy('href');
-    expect($items->keys()->all())->toContain('/admin/instructors', '/admin/public-site/pages', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/prayer-times/islands', '/admin/pronunciation', '/admin/translations', '/admin/operations', '/admin/users', '/admin/settings', '/admin/enrollments', '/admin/library/settings', '/admin/bookshop#settings');
+    expect($items->keys()->all())->toContain('/admin/instructors', '/admin/public-site/pages', '/admin/commerce', '/admin/library', '/admin/bookshop', '/admin/prayer-times/islands', '/admin/pronunciation', '/admin/translations', '/admin/operations', '/admin/users', '/admin/settings', '/admin/enrollments', '/admin/library/settings', '/admin/bookshop/settings', '/admin/bookshop/print');
     // C9 slice 12: every admin screen is Inertia, so nothing in the panel is
     // marked for a full page load any more. (The Personal group's Library and
     // Bookstore pages are Blade and carry `hard` since SIGN_IN_PLAN ID1; they

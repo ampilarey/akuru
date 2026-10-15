@@ -59,7 +59,7 @@ it('is off until the office turns it on, and pays nothing for the past', functio
 
     expect(app(LoyaltyRewardsAction::class)->settings()['on'])->toBeFalse()
         ->and(app(LoyaltyRewardsAction::class)->awardDue())->toBe(0);
-    rewardsAs($office)->get(route('admin.bookshop.index'))
+    rewardsAs($office)->get(route('admin.bookshop.settings'))
         ->assertInertia(fn ($page) => $page->where('rewards.settings.on', false)->where('rewards.paid_count', 0));
     rewardsAs($buyer)->get(route('public.shop.orders.show', $old->number))->assertOk()->assertDontSee('data-testid="order-reward"', false);
 
@@ -104,7 +104,7 @@ it('pays a share of the goods into the wallet once the return window passes, onc
 
     rewardsAs($buyer)->get(route('public.shop.orders.show', $due->number))
         ->assertSee('data-reward="paid"', false)->assertSee(__('shop.reward_paid', ['amount' => 'MVR 5.00']));
-    rewardsAs($office)->get(route('admin.bookshop.index'))
+    rewardsAs($office)->get(route('admin.bookshop.settings'))
         ->assertInertia(fn ($page) => $page->where('rewards.paid_count', 2)->where('rewards.paid_total', '15.00')->has('rewards.latest', 2));
     $csv = rewardsAs($office)->get(route('admin.bookshop.rewards.export'))->assertOk()->streamedContent();
     expect($csv)->toContain('date,order,customer_id,goods_paid,percent,reward,currency')->toContain($due->number.','.$buyer->id.',250.00,2.00,5.00,MVR');

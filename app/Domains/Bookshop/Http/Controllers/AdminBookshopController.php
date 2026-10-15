@@ -74,7 +74,6 @@ class AdminBookshopController extends Controller
             'questions' => app(ModerateQuestionAction::class)->list(),
             'home' => app(ManageShopHomeAction::class)->list(),
             'low_stock' => app(ListLowStockAction::class)->execute(500),
-            'notices' => NotifyBookshopUserAction::officeSwitches() + NotifyBookshopUserAction::officeContact(),
             'order_statuses' => array_map(fn (OrderStatus $s) => $s->value, OrderStatus::cases()),
             'applications' => app(DecideVendorApplicationAction::class)->list(),
             'applications_open' => app(ApplyToSellAction::class)->isOpen(),
@@ -84,10 +83,6 @@ class AdminBookshopController extends Controller
             'team' => ['members' => app(ManageBookshopTeamAction::class)->list(), 'can_manage' => (bool) $request->user()?->hasRole('super_admin'), 'added' => $request->session()->get('team_added')],
             'hosts' => ['shops' => app(DecideVendorHostAction::class)->list(), 'shop_host' => config('bookshop.hosts.shop_host'), 'check' => $request->session()->get('host_check')],
             'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges')), 'print_sales' => PrintSalesReport::byPaperAndMonth(PrintSalesReport::MONTHS, app()->getLocale())],
-            'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
-            'rewards' => app(LoyaltyRewardsAction::class)->report() + ['max_percent' => (float) config('bookshop.loyalty.max_percent')],
-            'referrals' => app(ReferralCreditAction::class)->report() + ['max_amount' => (float) config('bookshop.referrals.max_amount')],
-            'shop_open' => ['open' => app(ShopOpenAction::class)->isOpen(), 'message' => app(ShopOpenAction::class)->message()],
             'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
             'agreement_url' => route('public.page.show', 'vendor-agreement'),
             'sign_in_url' => route('login'),
@@ -96,6 +91,24 @@ class AdminBookshopController extends Controller
             // …and P4's listings awaiting approval, oldest first.
             'identity_checks' => app(IdentityVerificationAction::class)->list('vendor'), 'listings' => app(ListingApprovalAction::class)->queue(),
             'id_l' => trans('account'),
+        ]);
+    }
+
+    /**
+     * Notices, cash on delivery, rewards, referrals, and whether the
+     * bookstore is open. Each save still posts to its own route.
+     */
+    public function settings(Request $request): Response
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+
+        return Inertia::render('Bookshop/Settings', [
+            't' => Phrases::once('shop'),
+            'notices' => NotifyBookshopUserAction::officeSwitches() + NotifyBookshopUserAction::officeContact(),
+            'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
+            'rewards' => app(LoyaltyRewardsAction::class)->report() + ['max_percent' => (float) config('bookshop.loyalty.max_percent')],
+            'referrals' => app(ReferralCreditAction::class)->report() + ['max_amount' => (float) config('bookshop.referrals.max_amount')],
+            'shop_open' => ['open' => app(ShopOpenAction::class)->isOpen(), 'message' => app(ShopOpenAction::class)->message()],
         ]);
     }
 
