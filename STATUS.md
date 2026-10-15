@@ -1054,6 +1054,25 @@ migration; no Hifz behaviour change outside it.
   native speaker. Remaining hardcoded-English admin JSX stays the
   recorded long tail (§5n).
 
+## 5sa. The Institute's Settings: a plan, not built (SETTINGS_PLAN, 2026-10-15)
+
+An outside recommendation to simplify the system admin's Settings area was
+checked against the code at the owner's request. Planned in
+`docs/SETTINGS_PLAN.md` as one slice, **ST1**, waiting for the owner's go;
+nothing is built. BACKLOG C24.
+
+What the check found, beyond the recommendation:
+- **Its *School rules* group conflicts with ADR-040.** The system admin's
+  menus show nothing of the school, and `WorkspacesTest` holds that rule.
+  The group is left out.
+- **The System Settings quick links are the only way into `/analytics`.**
+  The plan moves analytics to the System tab instead of losing it.
+- **The phone tab's sheet cannot show a heading without a link.** The plan
+  orders the items rather than grouping them.
+- **The print desk was missing** from the proposed Settings tab.
+- **The BML card's webhook warning is stale and can no longer show;** the
+  SMS hint names a key production does not use.
+
 ## 5r. Public-site discoverability links
 
 - **Links (this PR):** the Knowledge Library was ORPHANED on the public
