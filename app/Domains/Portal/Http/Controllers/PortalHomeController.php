@@ -44,12 +44,7 @@ class PortalHomeController extends Controller
     {
         $user = $request->user();
         abort_unless($user !== null, 403);
-        $payload = app(ComposePortalHomeAction::class)->execute(
-            (int) $user->id,
-            $user->isParent(),
-            $user->getRoleNames()->all(),
-            app(ResolvePortalHouseholdAction::class)->audience($user),
-        );
+        $payload = app(ComposePortalHomeAction::class)->execute((int) $user->id, $user->isParent(), $user->getRoleNames()->all(), app(ResolvePortalHouseholdAction::class)->audience($user));
 
         return response()->streamDownload(function () use ($payload): void {
             $out = fopen('php://output', 'w');
