@@ -4983,6 +4983,26 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sc. Main green again (2026-10-16)
+
+Main had failed CI since #773 (2026-10-13). #773 and #775 were both merged
+over a red `quality` check: branch protection is off (OWNER_ACTIONS 6) and
+the read-back of ADR-027 was skipped. Staging auto-pulled both.
+
+**Fixed:**
+- `PortalHomeController::export` had grown from 75 to 80 lines, past its
+  long-method baseline (#773 spread one call over five lines). The call is
+  on one line again.
+- `AdminBookshopController::index` shrank to 32 lines when #775 moved the
+  Bookstore settings to their own page. That is under the 36-line rule, so
+  its baseline entry is stale and goes. `ThinControllersTest` asks for
+  that; the failure was hidden behind the first.
+
+**Tests:** the Architecture suite (74) and `PortalHomeTest` pass. Whole
+suite locally: **3205 passed** (67609 assertions).
+
+**Deploy:** no migration. The standard pull command.
+
 ## 5sb. Institute settings: a health page, bookstore settings of their own (2026-10-15)
 
 The Institute Settings list was four unlike jobs, and Bookstore settings
