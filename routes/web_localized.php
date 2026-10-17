@@ -201,6 +201,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/my-blog/posts', [\App\Domains\Library\Http\Controllers\BlogPostController::class, 'store'])->name('my-blog.posts.store')->middleware('throttle:60,60,blog-post');
     Route::post('/my-blog/posts/{post}', [\App\Domains\Library\Http\Controllers\BlogPostController::class, 'update'])->name('my-blog.posts.update')->whereNumber('post')->middleware('throttle:60,60,blog-post');
     Route::post('/my-blog/posts/{post}/submit', [\App\Domains\Library\Http\Controllers\BlogPostController::class, 'submit'])->name('my-blog.posts.submit')->whereNumber('post')->middleware('throttle:20,60,blog-post-submit');
+    // BL5: the writer's comments switch.
+    Route::post('/my-blog/comments', [\App\Domains\Library\Http\Controllers\StudentBlogController::class, 'comments'])->name('my-blog.comments')->middleware('throttle:20,60,blog-comments-switch');
     // BL3a: the page designer — a draft, sent to the office.
     Route::get('/my-blog/design', [\App\Domains\Library\Http\Controllers\BlogDesignController::class, 'index'])->name('my-blog.design');
     Route::post('/my-blog/design', [\App\Domains\Library\Http\Controllers\BlogDesignController::class, 'save'])->name('my-blog.design.save')->middleware('throttle:60,60,blog-design');
@@ -852,6 +854,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('blog-requests/export', [\App\Domains\Library\Http\Controllers\AdminBlogRequestController::class, 'export'])->name('admin.library.blog-requests.export');
         Route::post('blog-requests/{blogRequest}/decide', [\App\Domains\Library\Http\Controllers\AdminBlogRequestController::class, 'decide'])->name('admin.library.blog-requests.decide')->whereNumber('blogRequest');
         // BLOG_PLAN BL3a: blog page changes, checked before they show.
+        // BLOG_PLAN BL5: comments, checked before they show.
+        Route::get('comments', [\App\Domains\Library\Http\Controllers\AdminBlogCommentController::class, 'index'])->name('admin.library.comments');
+        Route::get('comments/export', [\App\Domains\Library\Http\Controllers\AdminBlogCommentController::class, 'export'])->name('admin.library.comments.export');
+        Route::post('comments/{comment}/decide', [\App\Domains\Library\Http\Controllers\AdminBlogCommentController::class, 'decide'])->name('admin.library.comments.decide')->whereNumber('comment');
         Route::get('blog-pages', [\App\Domains\Library\Http\Controllers\AdminBlogPageController::class, 'index'])->name('admin.library.blog-pages');
         Route::get('blog-pages/export', [\App\Domains\Library\Http\Controllers\AdminBlogPageController::class, 'export'])->name('admin.library.blog-pages.export');
         Route::get('blog-pages/{profile}/image/{kind}', [\App\Domains\Library\Http\Controllers\AdminBlogPageController::class, 'image'])->name('admin.library.blog-pages.image')->whereNumber('profile')->where('kind', 'banner|photo');

@@ -202,6 +202,31 @@ export default function MyBlog({ state, blog = null, request = null, posts = [],
 
             {(state === 'blog' || state === 'writer') && <Posts t={t} posts={posts} series={series} />}
 
+            {(state === 'blog' || state === 'writer') && blog && (
+                <section className="mt-6 max-w-3xl rounded-lg border bg-white p-4" data-testid="blog-comments">
+                    {/* BL5: the writer's switch, forced off under 13; the comments, read only — the office decides. */}
+                    <h2 className="text-lg font-semibold">{t.comments_heading || 'Comments'}</h2>
+                    {blog.under_13 ? (
+                        <p className="text-sm text-gray-700" data-testid="blog-comments-young">{t.comments_closed_young || 'Comments are off on this blog: its writer is under 13.'}</p>
+                    ) : (
+                        <label className="mt-1 flex items-center gap-2 text-sm">
+                            <input type="checkbox" checked={blog.comments_enabled} onChange={(e) => router.post('/my-blog/comments', { enabled: e.target.checked }, { preserveScroll: true })} data-testid="blog-comments-switch" />
+                            {t.comments_switch || 'Readers may comment on my posts (the office checks every comment first)'}
+                        </label>
+                    )}
+                    {(blog.comments || []).length > 0 && (
+                        <ul className="mt-3 grid gap-2 text-sm">
+                            {blog.comments.map((c, i) => (
+                                <li key={i} className="rounded border p-2">
+                                    <p className="text-xs text-gray-500">{c.post} · {c.at} · {t[`comment_status_${c.status}`] || c.status}</p>
+                                    <p className="whitespace-pre-line">{c.body}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
+            )}
+
             {state === 'request' && request && (
                 <section className="mb-6 max-w-xl rounded-lg border bg-white p-4" data-testid="blog-request">
                     <h2 className="text-lg font-semibold">{t.request_heading || 'Your request'}</h2>

@@ -167,6 +167,7 @@ const WALKS = [
     { name: 'blog-posts', writes: true, asks: 'Can a student write a two-part series in Dhivehi, their class teacher approve part 1 and send part 2 back with a note, and the office publish part 1 — readable under /ar, with part 2 not public and posts off the book shelf?' },
     { name: 'blog-design', writes: true, asks: 'Can a blogger design their page in Dhivehi — a theme, an accent checked for contrast, a tagline, the sections in their order — and does readers\' page change only once the office approves?' },
     { name: 'blog-follow', writes: true, asks: 'Can a reader follow a blog in Dhivehi, hear of its next post when the office publishes it, read it in the blog\'s RSS feed, and stop following from My Library?' },
+    { name: 'blog-comments', writes: true, asks: 'Is a blog comment checked by the office before it shows, can the writer reply (checked too), does a report take it down, and is an under-13\'s blog closed to comments?' },
     { name: 'public-rtl', writes: false, asks: 'Does the website read right to left in Dhivehi and Arabic, on a desk and on a phone?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
     { name: 'course-screens-language', writes: true, asks: 'Do the screens teachers build courses on — and the Qur\'an screens, a learner\'s among them — read in Dhivehi and Arabic, with a name on every field?' },

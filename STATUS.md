@@ -4983,6 +4983,53 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sl. Comments on blog posts, every one checked (BLOG_PLAN BL5, 2026-10-18)
+
+**Built:**
+- **Comments** (`library_comments`, migration
+  `2026_10_18_000004_bl5_blog_comments`, morph alias `library_comment`):
+  - a signed-in reader comments on a published post — plain text, tags
+    stripped, up to 1,000 characters; a guest is sent to sign in;
+  - every comment waits as `pending`; nothing shows before the office
+    publishes it;
+  - the blog's owner replies to a published comment, and the reply waits
+    too; nobody else replies;
+  - readers see a commenter's first name and initial, never the full name;
+    the owner's replies carry the pen name.
+- **Report:** a signed-in reader reports a published comment; it leaves the
+  page at once (`reported`) and goes back to the office.
+- **The office** (`/admin/library/comments`, *Blog comments* under the
+  Library office): waiting and reported first, any status by filter; publish,
+  refuse (a note needed, which the commenter reads) or hide; a CSV.
+- **Closed blogs:** `writer_profiles.comments_enabled`, the writer's switch
+  on *My blog* (at once — it is not a page change); an under-13's blog, or one
+  whose writer's age the record cannot tell, takes no comments whatever the
+  switch says (D13). *My blog* lists the comments on the writer's posts, read
+  only.
+- The two public routes are declared in their baseline.
+- **Language:** 38 `blog` phrases and `nav.blog_comments`, in EN/DV/AR.
+
+**Tests:** `BlogCommentsTest` (new, 4):
+- a guest sent to sign in; a comment hidden until published, its tags
+  stripped, the office seeing the full name and readers the first name and
+  initial; only the owner replies, and the reply waits too;
+- a report takes a published comment off the page and back to the office;
+  refusing needs a note; the CSV; the list behind its gate;
+- an 11-year-old's post has no box and refuses a comment even with the switch
+  on; a 15-year-old's takes one until the writer switches comments off; the
+  writer reads them on My blog;
+- the menu item and the phrases in Thaana and Arabic script.
+
+`WorkspacesTest` and `AdminHubTest` name the new Library office item.
+
+Whole suite locally: **3243 passed** (68473 assertions).
+
+**Walk:** `blog-comments.mjs` (new, in the runner), 8/8: under `/dv` a reader
+comments, and it does not show; the office publishes it and it shows with the
+first name and initial; the writer replies, and the reply shows once
+published; another reader reports it, and it leaves the page and waits as
+reported; an 11-year-old's post has no comment box and says why.
+
 ## 5sk. Readers follow a blog, hear of new posts, and read its feed (BLOG_PLAN BL4, 2026-10-18)
 
 **Built:**
