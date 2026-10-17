@@ -22,6 +22,12 @@ use Illuminate\Validation\ValidationException;
  * A series is theirs, named on the form (new or existing); the post goes
  * last in it. The *own work* tick is the copyright declaration, which the
  * submission needs.
+ *
+ * BL2c (D3): a **published** post may be edited, but the edit is kept beside
+ * the live text (`pending_title`, `pending_body`) and checked as a new post
+ * is; readers see the live post until the office approves the change. Only
+ * the pin changes at once — it is the writer's page, not the text. An edit
+ * already sent cannot be changed until it is decided.
  */
 class SaveBlogPostAction
 {
@@ -40,6 +46,9 @@ class SaveBlogPostAction
             $item = LibraryItem::query()->findOrFail($itemId);
             if ((int) $item->writer_id !== (int) $profile->id || $item->content_type !== LibraryContentType::Post) {
                 throw ValidationException::withMessages(['post' => __('blog.error_post_own')]);
+            }
+            if ($item->status === LibraryItemStatus::Published) {
+                return $this->saveChange($item, $data);
             }
             if (! in_array($item->status, [LibraryItemStatus::Draft, LibraryItemStatus::ChangesRequested], true)) {
                 throw ValidationException::withMessages(['post' => __('blog.error_post_not_editable')]);
@@ -68,6 +77,26 @@ class SaveBlogPostAction
         $saved->fill(['series_id' => $series?->id, 'series_position' => $position, 'pinned' => (bool) ($data['pinned'] ?? false)])->save();
 
         return $saved->refresh();
+    }
+
+    /** BL2c: a published post's edit, waiting beside the live text. */
+    private function saveChange(LibraryItem $item, array $data): LibraryItem
+    {
+        if ($item->review_stage !== null) {
+            throw ValidationException::withMessages(['post' => __('blog.error_change_waiting')]);
+        }
+        $title = trim((string) $data['title']);
+        if ($title === '') {
+            throw ValidationException::withMessages(['title' => __('common.library_error_title')]);
+        }
+        $item->fill([
+            'pending_title' => $title,
+            'pending_body' => app(SaveLibraryItemAction::class)->sanitiseBody($data['body'] ?? null),
+            'pending_saved_at' => now(),
+            'pinned' => (bool) ($data['pinned'] ?? false),
+        ])->save();
+
+        return $item->refresh();
     }
 
     private function series(WriterProfile $profile, array $data): ?LibraryPostSeries

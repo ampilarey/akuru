@@ -18,10 +18,17 @@ use Illuminate\Validation\ValidationException;
  *
  * Only the teacher the post was sent to, and only while it waits for them.
  * Each decision is a row in the item's review trail (`teacher_…`).
+ *
+ * BL2c: an edit to a published post is checked the same way. The post stays
+ * published with its live text whatever the teacher says: sending back keeps
+ * the edit for the student to fix; refusing drops it.
  */
 class TeacherReviewBlogPostAction
 {
     public const DECISIONS = ['approved', 'changes_requested', 'rejected'];
+
+    /** BL2c: how an edit's decision reads in the trail (`library_item_reviews.decision` holds 30 characters). */
+    public const EDIT_WORDS = ['approved' => 'approved', 'changes_requested' => 'returned', 'rejected' => 'refused'];
 
     public function execute(int $itemId, int $teacherUserId, string $decision, ?string $comment = null): LibraryItem
     {
@@ -34,16 +41,21 @@ class TeacherReviewBlogPostAction
         }
 
         $item = LibraryItem::query()->findOrFail($itemId);
-        if ($item->status !== LibraryItemStatus::Submitted || $item->review_stage !== 'teacher' || (int) $item->teacher_user_id !== $teacherUserId) {
+        $change = $item->status === LibraryItemStatus::Published && $item->hasPendingChange();
+        if ((! $change && $item->status !== LibraryItemStatus::Submitted) || $item->review_stage !== 'teacher' || (int) $item->teacher_user_id !== $teacherUserId) {
             throw ValidationException::withMessages(['post' => __('blog.error_not_yours_to_check')]);
         }
 
-        $item->fill(match ($decision) {
+        $item->fill($change ? match ($decision) {
+            'approved' => ['review_stage' => 'office'],
+            'changes_requested' => ['review_stage' => null],
+            'rejected' => ['review_stage' => null, 'pending_title' => null, 'pending_body' => null, 'pending_saved_at' => null],
+        } : match ($decision) {
             'approved' => ['review_stage' => 'office'],
             'changes_requested' => ['status' => LibraryItemStatus::ChangesRequested, 'review_stage' => null],
             'rejected' => ['status' => LibraryItemStatus::Rejected, 'review_stage' => null],
         })->save();
-        LibraryItemReview::query()->create(['library_item_id' => $item->id, 'reviewer_user_id' => $teacherUserId, 'decision' => 'teacher_'.$decision, 'comment' => $comment]);
+        LibraryItemReview::query()->create(['library_item_id' => $item->id, 'reviewer_user_id' => $teacherUserId, 'decision' => $change ? 'teacher_edit_'.self::EDIT_WORDS[$decision] : 'teacher_'.$decision, 'comment' => $comment]);
 
         $notify = app(NotifyLibraryUserAction::class);
         if ($decision === 'approved') {

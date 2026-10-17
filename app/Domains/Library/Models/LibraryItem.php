@@ -54,6 +54,10 @@ class LibraryItem extends Model
         'pinned',
         'review_stage',
         'teacher_user_id',
+        // BL2c: a published post's edit, waiting to be checked.
+        'pending_title',
+        'pending_body',
+        'pending_saved_at',
         // R2: the website research post this item was imported from.
         'imported_post_id',
         'page_count',
@@ -82,6 +86,7 @@ class LibraryItem extends Model
             'declared_at' => 'datetime',
             'featured' => 'boolean',
             'pinned' => 'boolean',
+            'pending_saved_at' => 'datetime',
             'featured_at' => 'datetime',
         ];
     }
@@ -135,5 +140,11 @@ class LibraryItem extends Model
     public function writer(): BelongsTo
     {
         return $this->belongsTo(WriterProfile::class, 'writer_id');
+    }
+
+    /** BLOG_PLAN BL2c: a published post with an edit waiting beside the live text. */
+    public function hasPendingChange(): bool
+    {
+        return $this->pending_saved_at !== null;
     }
 }

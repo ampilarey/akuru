@@ -278,6 +278,15 @@ class SaveLibraryItemAction
         return $rows;
     }
 
+    /**
+     * BLOG_PLAN BL2c: the same cleaning for a published post's waiting edit,
+     * which is stored beside the live body rather than in it.
+     */
+    public function sanitiseBody(?string $body): ?string
+    {
+        return $this->cleanBody($body);
+    }
+
     private function cleanBody(?string $body): ?string
     {
         if ($body === null || trim($body) === '') {

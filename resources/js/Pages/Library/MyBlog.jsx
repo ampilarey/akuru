@@ -70,7 +70,8 @@ const blank = { title: '', body: '', language: 'en', series_id: '', new_series: 
 
 function PostForm({ t, series, post, onDone }) {
     const common = usePage().props.i18n?.common || {};
-    const form = useForm(post ? { ...blank, title: post.title, body: post.body || '', language: post.language || 'en', series_id: post.series_id || '', pinned: post.pinned, own_work: post.own_work } : blank);
+    const live = post?.status === 'published';
+    const form = useForm(post ? { ...blank, title: post.edit_title || post.title, body: post.body || '', language: post.language || 'en', series_id: post.series_id || '', pinned: post.pinned, own_work: post.own_work } : blank);
     const save = (e) => {
         e.preventDefault();
         form.post(post ? `/my-blog/posts/${post.id}` : '/my-blog/posts', { preserveScroll: true, forceFormData: true, onSuccess: () => { form.reset(); onDone(); } });
@@ -79,6 +80,7 @@ function PostForm({ t, series, post, onDone }) {
     return (
         <form className="grid gap-3 rounded-lg border bg-white p-4" onSubmit={save} data-testid="post-form">
             <h3 className="text-base font-semibold">{post ? t.edit_post || 'Edit post' : t.new_post || 'New post'}</h3>
+            {live && <p className="rounded bg-amber-50 p-2 text-sm text-amber-900" data-testid="post-change-help">{t.change_help || 'This post is published. Your edit is checked before it replaces what readers see.'}</p>}
             <label className="block text-sm">
                 <span className="mb-1 block font-medium">{t.field_post_title || 'Title'}</span>
                 <input className="form-input w-full" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} maxLength={160} data-testid="post-title" />
@@ -87,7 +89,7 @@ function PostForm({ t, series, post, onDone }) {
                 <span className="mb-1 block font-medium">{t.field_post_body || 'Text'}</span>
                 <BodyEditor value={form.data.body} onChange={(html) => form.setData('body', html)} placeholder={t.field_post_body || 'Text'} labels={editorLabels(common)} testId="post-body" />
             </div>
-            <div className="grid gap-3 sm:grid-cols-3">
+            {!live && <div className="grid gap-3 sm:grid-cols-3">
                 <label className="block text-sm">
                     <span className="mb-1 block font-medium">{t.field_language || 'Language'}</span>
                     <select className="form-input w-full" value={form.data.language} onChange={(e) => form.setData('language', e.target.value)} data-testid="post-language">
@@ -105,7 +107,7 @@ function PostForm({ t, series, post, onDone }) {
                     <span className="mb-1 block font-medium">{t.field_new_series || 'Or start a new series'}</span>
                     <input className="form-input w-full" value={form.data.new_series} onChange={(e) => form.setData('new_series', e.target.value)} maxLength={120} data-testid="post-new-series" />
                 </label>
-            </div>
+            </div>}
             <label className="block text-sm">
                 <span className="mb-1 block font-medium">{t.field_cover || 'Cover image'}</span>
                 <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => form.setData('cover', e.target.files[0] || null)} data-testid="post-cover" />
@@ -131,6 +133,8 @@ function Posts({ t, posts, series }) {
     const refusals = useRowRefusals();
     const [editing, setEditing] = useState(null);
     const statusKey = (p) => (p.status === 'submitted' ? `post_status_submitted_${p.review_stage === 'teacher' ? 'teacher' : 'office'}` : `post_status_${p.status}`);
+    // BL2c: a published post's waiting edit.
+    const changeKey = (p) => (p.review_stage ? `change_status_${p.review_stage === 'teacher' ? 'teacher' : 'office'}` : 'change_status_draft');
     const submit = (id) => refusals.actOn(`post:${id}`, () => router.post(`/my-blog/posts/${id}/submit`, {}, { preserveScroll: true }));
 
     return (
@@ -149,12 +153,13 @@ function Posts({ t, posts, series }) {
                             <span className="font-medium">{p.title}</span>
                             {p.pinned && <span className="rounded bg-[#F3EBE0] px-2 py-0.5 text-xs">{t.pinned_badge || 'Pinned'}</span>}
                             <span className="rounded bg-gray-100 px-2 py-0.5 text-xs" data-testid={`post-status-${p.id}`}>{t[statusKey(p)] || p.status}</span>
+                            {p.status === 'published' && p.has_change && <span className="rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-900" data-testid={`post-change-${p.id}`} data-stage={p.review_stage || ''}>{t[changeKey(p)] || 'Edit waiting'}</span>}
                         </div>
                         {p.series && <p className="text-xs text-gray-600">{fill(t.series_line || ':series, part :n', { series: p.series, n: p.series_position })}</p>}
-                        {p.note && ['changes_requested', 'rejected'].includes(p.status) && <p className="mt-1 text-sm text-amber-900" data-testid={`post-note-${p.id}`}>{fill(t.post_note || 'Note: :note', { note: p.note })}</p>}
+                        {p.note && (['changes_requested', 'rejected'].includes(p.status) || (p.status === 'published' && p.has_change && !p.review_stage)) && <p className="mt-1 text-sm text-amber-900" data-testid={`post-note-${p.id}`}>{fill(t.post_note || 'Note: :note', { note: p.note })}</p>}
                         <div className="mt-2 flex flex-wrap gap-3 text-sm">
                             {p.editable && <button type="button" className="underline" onClick={() => setEditing(p)} data-testid={`post-edit-${p.id}`}>{t.edit || 'Edit'}</button>}
-                            {p.editable && <button type="button" className="btn-primary" onClick={() => submit(p.id)} data-testid={`post-submit-${p.id}`}>{t.submit_post || 'Send for checking'}</button>}
+                            {p.editable && (p.status !== 'published' || p.has_change) && <button type="button" className="btn-primary" onClick={() => submit(p.id)} data-testid={`post-submit-${p.id}`}>{t.submit_post || 'Send for checking'}</button>}
                             {p.status === 'published' && <a className="underline" href={`/library/${p.slug}`}>{t.view_post || 'Read it'}</a>}
                         </div>
                         <FormErrors errors={refusals.errorsFor(`post:${p.id}`)} className="mt-1" />
