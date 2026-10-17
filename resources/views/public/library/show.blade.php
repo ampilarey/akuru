@@ -57,7 +57,10 @@
         </header>
 
         @if($follow ?? null)
-            <div class="mb-6">@include('public.library._follow', ['follow' => $follow])</div>
+            <div class="mb-6">
+                @include('public.library._follow', ['follow' => $follow])
+                @include('public.library._tip', ['follow' => $follow, 'tipItemId' => $item['id']])
+            </div>
         @endif
 
         @if($item['series'])

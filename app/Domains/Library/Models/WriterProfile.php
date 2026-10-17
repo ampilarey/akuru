@@ -42,6 +42,8 @@ class WriterProfile extends Model
         'followers_count',
         // BL5: the writer's comments switch; forced off under 13.
         'comments_enabled',
+        // BL6a: the writer's tips switch, off by default.
+        'tips_enabled',
         'approved_at',
         'approved_by',
         'default_commission',
@@ -62,6 +64,7 @@ class WriterProfile extends Model
             'pending_page' => 'array',
             'page_submitted_at' => 'datetime',
             'comments_enabled' => 'boolean',
+            'tips_enabled' => 'boolean',
         ];
     }
 

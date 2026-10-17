@@ -43,7 +43,7 @@ class FollowBlogAction
     /**
      * What the follow box shows a reader on a blog's page or post.
      *
-     * @return array{slug: string, following: bool, email: bool, count: int, own: bool, signed_in: bool}|null
+     * @return array{slug: string, following: bool, email: bool, count: int, own: bool, signed_in: bool, tips: bool, tip_amounts: list<int>}|null
      */
     public function state(?int $userId, string $writerSlug): ?array
     {
@@ -60,6 +60,9 @@ class FollowBlogAction
             'count' => (int) $writer->followers_count,
             'own' => $userId !== null && (int) $writer->user_id === $userId,
             'signed_in' => $userId !== null,
+            // BL6a: the tip box, where the writer turned it on.
+            'tips' => (bool) $writer->tips_enabled,
+            'tip_amounts' => $writer->tips_enabled ? StartTipAction::amounts() : [],
         ];
     }
 

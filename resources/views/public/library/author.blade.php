@@ -68,6 +68,9 @@
                 </ul>
             @endif
             <div class="mt-3">@include('public.library._follow', ['follow' => $follow ?? null])</div>
+            @if($follow ?? null)
+                @include('public.library._tip', ['follow' => $follow])
+            @endif
             <p class="mt-3 text-sm opacity-70">
                 {{ trans_choice('public.:count published work|:count published works', $author['totals']['published'], ['count' => $author['totals']['published']]) }}
                 @if($author['writing_since'])

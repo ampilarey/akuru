@@ -10,6 +10,8 @@ use App\Domains\Library\Console\RemindReviewersCommand;
 use App\Domains\Library\Console\SyncLibraryPagesCommand;
 use App\Domains\Library\Contracts\PdfPageTextExtractor;
 use App\Domains\Library\Listeners\GrantLibraryAccessOnPaymentConfirmed;
+use App\Domains\Library\Listeners\RecordTipOnPaymentConfirmed;
+use App\Domains\Library\Listeners\ReverseTipOnPaymentRefunded;
 use App\Domains\Library\Listeners\RevokeLibraryAccessOnPaymentRefunded;
 use App\Support\Pdf\PdfTextExtractor;
 use Illuminate\Support\Facades\Event;
@@ -31,6 +33,9 @@ class LibraryServiceProvider extends ServiceProvider
         // from money to a library access grant; a full refund revokes it.
         Event::listen(PaymentConfirmed::class, GrantLibraryAccessOnPaymentConfirmed::class);
         Event::listen(PaymentRefunded::class, RevokeLibraryAccessOnPaymentRefunded::class);
+        // BLOG_PLAN BL6a: a tip is paid on the webhook, and reversed on a refund.
+        Event::listen(PaymentConfirmed::class, RecordTipOnPaymentConfirmed::class);
+        Event::listen(PaymentRefunded::class, ReverseTipOnPaymentRefunded::class);
 
         if ($this->app->runningInConsole()) {
             $this->commands([SyncLibraryPagesCommand::class, RemindReadersCommand::class, ImportWebsiteResearchCommand::class, RemindReviewersCommand::class]);

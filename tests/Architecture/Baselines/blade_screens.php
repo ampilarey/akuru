@@ -214,6 +214,8 @@ return [
     // Not a screen: BLOG_PLAN BL4's follow box, one partial for the blog's
     // page and its posts.
     'public/library/_follow.blade.php',
+    // Not a screen: BLOG_PLAN BL6a's tip box, beside the follow box.
+    'public/library/_tip.blade.php',
     // BLOG_PLAN BL2b: the blogs' front, in the same public Blade zone as the
     // shelf and the author page it links to.
     'public/library/blogs.blade.php',

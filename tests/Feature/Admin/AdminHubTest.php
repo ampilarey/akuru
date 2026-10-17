@@ -49,7 +49,7 @@ it('shows the system admin every Institute section, each inner screen a real rou
             ->where('parts.1.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['admin_enrolments'])
             ->where('parts.2.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['commerce', 'library_office', 'bookshop', 'akuru_fulfilment', 'print_desk', 'complaints', 'sms_campaigns', 'shop_customers', 'shop_credit', 'lending_office']
                 && collect($sections)->every(fn ($section) => is_string($section['description']) && ! str_starts_with($section['description'], 'admin.')))
-            ->where('parts.2.sections.1.children', fn ($children) => collect($children)->pluck('href')->all() === ['/admin/library/insights', '/admin/library/promotions', '/admin/library/reviewers', '/admin/library/settings', '/admin/library/blog-requests', '/admin/library/blog-pages', '/admin/library/comments'])
+            ->where('parts.2.sections.1.children', fn ($children) => collect($children)->pluck('href')->all() === ['/admin/library/insights', '/admin/library/promotions', '/admin/library/reviewers', '/admin/library/settings', '/admin/library/blog-requests', '/admin/library/blog-pages', '/admin/library/comments', '/admin/library/tips'])
             ->where('parts.2.clusters', fn ($clusters) => collect($clusters)->pluck('key')->all() === ['bookstore']
                 && $clusters[0]['sections'] === ['bookshop', 'akuru_fulfilment', 'print_desk', 'complaints', 'sms_campaigns', 'shop_customers', 'shop_credit'])
             ->where('parts.3.sections', fn ($sections) => collect($sections)->pluck('key')->all() === ['system_settings', 'library_settings', 'bookshop_settings', 'print_desk', 'translations']

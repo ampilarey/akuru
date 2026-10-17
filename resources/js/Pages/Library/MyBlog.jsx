@@ -203,6 +203,37 @@ export default function MyBlog({ state, blog = null, request = null, posts = [],
             {(state === 'blog' || state === 'writer') && <Posts t={t} posts={posts} series={series} />}
 
             {(state === 'blog' || state === 'writer') && blog && (
+                <section className="mt-6 max-w-3xl rounded-lg border bg-white p-4" data-testid="blog-tips">
+                    {/* BL6a: the tip box switch, the tips and the writer's share, a CSV. */}
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                        <h2 className="text-lg font-semibold">{t.tips_heading || 'Tips'}</h2>
+                        <a className="text-sm underline" href="/my-blog/tips/export" data-testid="blog-tips-export">{t.export_csv || 'Export CSV'}</a>
+                    </div>
+                    <label className="mt-1 flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={blog.tips_enabled} onChange={(e) => router.post('/my-blog/tips', { enabled: e.target.checked }, { preserveScroll: true })} data-testid="blog-tips-switch" />
+                        {t.tips_switch || 'Readers may tip me (Akuru keeps a share; the rest is my earning)'}
+                    </label>
+                    {(blog.tips || []).length === 0 ? (
+                        <p className="mt-2 text-sm text-gray-500">{t.tips_none || 'No tips yet.'}</p>
+                    ) : (
+                        <ul className="mt-3 grid gap-2 text-sm">
+                            {blog.tips.map((tip) => (
+                                <li key={tip.id} className="rounded border p-2" data-testid={`blog-tip-${tip.id}`}>
+                                    <p className="text-xs text-gray-500">{tip.at} · {tip.from}{tip.post ? ` · ${tip.post}` : ''}</p>
+                                    <p>
+                                        MVR {tip.amount.toFixed(2)}
+                                        {tip.writer_share !== null && ` · ${fill(t.tips_your_share || 'your share MVR :amount', { amount: tip.writer_share.toFixed(2) })}`}
+                                        {tip.refund_of && ` · ${t.tips_refunded || 'refunded'}`}
+                                    </p>
+                                    {tip.note && <p className="mt-1 italic">{tip.note}</p>}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </section>
+            )}
+
+            {(state === 'blog' || state === 'writer') && blog && (
                 <section className="mt-6 max-w-3xl rounded-lg border bg-white p-4" data-testid="blog-comments">
                     {/* BL5: the writer's switch, forced off under 13; the comments, read only — the office decides. */}
                     <h2 className="text-lg font-semibold">{t.comments_heading || 'Comments'}</h2>

@@ -109,5 +109,8 @@ return [
     'blog' => [
         'teacher_review' => (bool) env('LIBRARY_BLOG_TEACHER_REVIEW', true),
         'posts_per_week' => (int) env('LIBRARY_BLOG_POSTS_PER_WEEK', 3),
+        // BL6a (§3.6, §7.1): the tip box's amounts in MVR, and Akuru's share of a tip in percent.
+        'tip_amounts' => env('LIBRARY_BLOG_TIP_AMOUNTS', '5,10,25,50'),
+        'tip_share_percent' => (int) env('LIBRARY_BLOG_TIP_SHARE', 10),
     ],
 ];

@@ -93,6 +93,18 @@ export default function Settings({ settings, t = {} }) {
                     <p className="text-xs text-gray-600 md:col-span-2">{t.library_settings_office_note || 'Every sale reaches this address and number, as the two switches above allow. Leave empty to keep sales in the app.'}</p>
                 </fieldset>
 
+                {/* BLOG_PLAN BL6a: the blogs' tip box. */}
+                <fieldset className="grid gap-4 md:grid-cols-2" data-testid="library-settings-tips">
+                    <legend className="mb-2 text-base font-semibold md:col-span-2">{t.library_settings_tips || 'Tips to blog writers'}</legend>
+                    <label className="text-sm">
+                        <span className="mb-1 block font-medium">{t.library_settings_label_tip_amounts || 'Tip amounts (MVR, comma between)'}</span>
+                        <input className="form-input w-full" name="tip_amounts" value={form.data.tip_amounts || ''} onChange={(e) => form.setData('tip_amounts', e.target.value)} data-testid="library-setting-tip_amounts" />
+                        <span className="mt-1 block text-xs text-gray-500">{t.library_settings_default || 'Default'}: {String(settings.tip_amounts?.default ?? '')}</span>
+                        {form.errors.tip_amounts && <span className="mt-1 block text-xs text-red-600">{form.errors.tip_amounts}</span>}
+                    </label>
+                    <NumberField name="tip_share_percent" label={t.library_settings_label_tip_share || 'Akuru’s share of a tip'} hint={t.library_settings_hint_tip_share || 'Percent kept by Akuru; the rest is the writer’s earning.'} form={form} settings={settings} t={t} />
+                </fieldset>
+
                 <FormErrors errors={form.errors} />
                 <div className="flex items-center gap-3">
                     <button type="submit" className="btn-primary" disabled={form.processing}>{t.library_settings_save || 'Save settings'}</button>

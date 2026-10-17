@@ -188,6 +188,8 @@ Route::get('library/authors/{slug}/feed', [\App\Domains\Library\Http\Controllers
 // BLOG_PLAN BL5: comments on posts, checked before they show.
 Route::post('library/posts/{item}/comments', [\App\Domains\Library\Http\Controllers\BlogCommentController::class, 'store'])->name('public.library.comments.store')->whereNumber('item')->middleware('throttle:10,1,blog-comment');
 Route::post('library/comments/{comment}/report', [\App\Domains\Library\Http\Controllers\BlogCommentController::class, 'report'])->name('public.library.comments.report')->whereNumber('comment')->middleware('throttle:10,1,blog-comment-report');
+// BLOG_PLAN BL6a: a tip to a blog's writer — paid on the webhook, never the return URL.
+Route::post('library/authors/{slug}/tip', [\App\Domains\Library\Http\Controllers\BlogTipController::class, 'store'])->name('public.library.author.tip')->middleware(['throttle:10,1,blog-tip', 'customer_password']);
 Route::post('library/authors/{slug}/follow', [\App\Domains\Library\Http\Controllers\BlogFollowController::class, 'follow'])->name('public.library.author.follow')->middleware('throttle:30,1,blog-follow');
 // B4 (§8.5): the offers running now.
 Route::get('library/promotions', [PublicLibraryController::class, 'promotions'])->name('public.library.promotions');
