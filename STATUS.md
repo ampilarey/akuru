@@ -5038,7 +5038,7 @@ back by status, as a sale's is, not by a negative earning row.
 `WorkspacesTest` and `AdminHubTest` name the new Library office item; the
 tip route and the tip box partial are declared in their baselines.
 
-Whole suite locally: SUITE_RESULT_BL6A.
+Whole suite locally: **3248 passed** (68601 assertions).
 
 **Walk:** `blog-tips.mjs` (new, in the runner), 9/9: under `/dv` a reader
 tips MVR 10 from the wallet on a post, with a note, and is thanked; the wallet
