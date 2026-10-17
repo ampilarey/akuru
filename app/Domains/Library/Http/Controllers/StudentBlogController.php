@@ -4,6 +4,7 @@ namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Library\Actions\Blog\ListBlogPostsAction;
 use App\Domains\Library\Actions\Blog\PresentStudentBlogAction;
+use App\Domains\Library\Actions\Blog\SetBlogCommentsAction;
 use App\Domains\Library\Actions\Blog\StartStudentBlogAction;
 use App\Http\Controllers\Controller;
 use App\Support\Inertia\Phrases;
@@ -30,6 +31,16 @@ class StudentBlogController extends Controller
             ...(in_array($blog['state'], ['blog', 'writer'], true) ? app(ListBlogPostsAction::class)->mine($userId) : []),
             't' => Phrases::once('blog'),
         ]);
+    }
+
+    /** BL5: the writer turns comments on their blog on or off. */
+    public function comments(Request $request): RedirectResponse
+    {
+        abort_unless($request->user() !== null, 403);
+        $data = $request->validate(['enabled' => 'required|boolean']);
+        app(SetBlogCommentsAction::class)->execute((int) $request->user()->id, (bool) $data['enabled']);
+
+        return redirect()->route('my-blog')->with('success', __($data['enabled'] ? 'blog.flash_comments_on' : 'blog.flash_comments_off'));
     }
 
     public function store(Request $request): RedirectResponse

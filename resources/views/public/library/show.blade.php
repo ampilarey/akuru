@@ -211,5 +211,60 @@
             @endif
         </footer>
     </article>
+
+    @if($comments ?? null)
+        {{-- BLOG_PLAN BL5 (§3.5): only what the office published shows; every comment and reply is checked first. --}}
+        <section class="mt-12 border-t pt-8" id="comments" data-testid="post-comments">
+            <h2 class="text-2xl font-bold text-brandMaroon-900 mb-4">{{ __('blog.comments_heading') }}</h2>
+            @error('comment')
+                <p class="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700" role="alert">{{ $message }}</p>
+            @enderror
+            @if(count($comments['list']) === 0)
+                <p class="mb-4 text-gray-500" data-testid="comments-none">{{ __('blog.comments_none') }}</p>
+            @endif
+            @foreach($comments['list'] as $comment)
+                <div class="mb-4 rounded-lg border bg-white p-4" data-comment="{{ $comment['id'] }}">
+                    <p class="text-sm text-gray-500">{{ $comment['by'] }} · {{ $comment['at'] }}</p>
+                    <p class="mt-1 whitespace-pre-line">{{ $comment['body'] }}</p>
+                    @if($comments['signed_in'])
+                        <form method="POST" action="{{ route('public.library.comments.report', $comment['id']) }}" class="mt-2">
+                            @csrf
+                            <button type="submit" class="text-xs text-gray-500 underline" data-testid="comment-report-{{ $comment['id'] }}">{{ __('blog.comment_report') }}</button>
+                        </form>
+                    @endif
+                    @foreach($comment['replies'] as $reply)
+                        <div class="mt-3 border-s-4 ps-3" style="border-color: #E9D8B4;" data-comment="{{ $reply['id'] }}">
+                            <p class="text-sm text-gray-500">{{ $reply['by'] }} · {{ __('blog.comment_owner_reply') }} · {{ $reply['at'] }}</p>
+                            <p class="mt-1 whitespace-pre-line">{{ $reply['body'] }}</p>
+                        </div>
+                    @endforeach
+                    @if($comments['owner'] && $comments['open'])
+                        <form method="POST" action="{{ route('public.library.comments.store', $comments['item_id']) }}" class="mt-3 grid gap-2">
+                            @csrf
+                            <input type="hidden" name="parent_id" value="{{ $comment['id'] }}">
+                            <textarea name="body" rows="2" maxlength="1000" class="w-full rounded border-gray-300 text-sm" aria-label="{{ __('blog.comment_reply_label') }}" placeholder="{{ __('blog.comment_reply_label') }}" data-testid="comment-reply-{{ $comment['id'] }}"></textarea>
+                            <button type="submit" class="justify-self-start rounded border px-3 py-1 text-sm">{{ __('blog.comment_reply_send') }}</button>
+                        </form>
+                    @endif
+                </div>
+            @endforeach
+
+            @if($comments['under_13'])
+                <p class="text-sm text-gray-600" data-testid="comments-closed">{{ __('blog.comments_closed_young') }}</p>
+            @elseif(! $comments['open'])
+                <p class="text-sm text-gray-600" data-testid="comments-closed">{{ __('blog.comments_closed') }}</p>
+            @elseif(! $comments['signed_in'])
+                <p class="text-sm"><a href="{{ route('login') }}" class="text-brandMaroon-700 underline" data-testid="comments-sign-in">{{ __('blog.comments_sign_in') }}</a></p>
+            @elseif(! $comments['owner'])
+                <form method="POST" action="{{ route('public.library.comments.store', $comments['item_id']) }}" class="grid gap-2" data-testid="comment-form">
+                    @csrf
+                    <label for="comment-body" class="font-medium">{{ __('blog.comment_label') }}</label>
+                    <textarea id="comment-body" name="body" rows="3" maxlength="1000" class="w-full rounded border-gray-300" data-testid="comment-body">{{ old('body') }}</textarea>
+                    <p class="text-xs text-gray-500">{{ __('blog.comment_help') }}</p>
+                    <button type="submit" class="justify-self-start rounded bg-brandMaroon-600 px-4 py-1.5 text-white" data-testid="comment-send">{{ __('blog.comment_send') }}</button>
+                </form>
+            @endif
+        </section>
+    @endif
 </div>
 @endsection

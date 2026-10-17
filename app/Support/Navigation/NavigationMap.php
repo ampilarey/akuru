@@ -462,6 +462,8 @@ final class NavigationMap
                     ['key' => 'blog_requests', 'href' => '/admin/library/blog-requests'],
                     // BLOG_PLAN BL3a: blog page changes, checked before they show.
                     ['key' => 'blog_pages', 'href' => '/admin/library/blog-pages'],
+                    // BLOG_PLAN BL5: comments, checked before they show.
+                    ['key' => 'blog_comments', 'href' => '/admin/library/comments'],
                 ]],
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
                 // COMMERCE_PARITY_PLAN P6a: the orders Akuru packs, and its charges.

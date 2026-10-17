@@ -9,7 +9,8 @@
 > The owner's decisions are in **§13**. Everything else is the default an
 > implementer takes unless the owner says otherwise. **BL1 and BL2 are
 > built** (2026-10-17: BL1 STATUS §5se; BL2 in three parts, §5sf–§5sh),
-> BL3 in two parts (§5si, §5sj) and BL4 (§5sk); **BL5–BL7 are not.** This document is the whole
+> BL3 in two parts (§5si, §5sj), BL4 (§5sk) and BL5 (§5sl); **BL6–BL7 are
+> not.** This document is the whole
 > brief for the agent that builds them.
 
 Written against `main` at `51b9c58` (#777). Every name below was read from
@@ -537,6 +538,16 @@ touched + no files outside its scope.
 - Walk `blog-follow.mjs`.
 
 ### BL5 — Comments, checked
+
+> **Built 2026-10-18** (STATUS §5sl): `library_comments`; the comment box on
+> a published post for signed-in readers; the owner's replies; *Report*,
+> which takes a published comment off the page until the office decides; the
+> office's *Blog comments* list (publish, refuse with a note, hide) with a
+> CSV; the writer's comments switch on *My blog* with the comments listed
+> there read only; no comments on an under-13's blog, nor where the record
+> cannot tell the age. Readers see a commenter's first name and initial, never
+> the full name. Per-post comment switches are left for later: the writer's
+> switch covers the blog.
 - `library_comments`; the comment box, replies and *Report*.
 - The office's comments list (publish, refuse with a note, hide).
 - Comments forced off under 13.

@@ -98,6 +98,8 @@ return [
     'GET library/blogs/feed' => 'Public site content (BLOG_PLAN BL4): RSS of the latest published blog posts. Titles and plain-text excerpts, XML-escaped; nothing reads the session.',
     'GET library/authors/{slug}/feed' => 'Public site content (BLOG_PLAN BL4): one active blog\'s RSS — its published posts only, XML-escaped. Nothing reads the session.',
     'POST library/authors/{slug}/follow' => 'Guarded in the handler (BLOG_PLAN BL4): BlogFollowController::follow sends a guest to sign in, and FollowBlogAction refuses a writer following themselves; it changes only the signed-in reader\'s own follow. Throttled.',
+    'POST library/posts/{item}/comments' => 'Guarded in the handler (BLOG_PLAN BL5): BlogCommentController::store sends a guest to sign in; PostCommentAction takes a comment only on a published post whose blog is open to comments (never an under-13\'s), replies only from the blog\'s owner, and stores every one as pending for the office. Throttled.',
+    'POST library/comments/{comment}/report' => 'Guarded in the handler (BLOG_PLAN BL5): BlogCommentController::report sends a guest to sign in; a signed-in reader may only take a published comment off the page for the office to decide. Throttled.',
     'GET library/blogs' => 'Public site content (BLOG_PLAN BL2b): the latest published blog posts and the blogs that wrote them. Only what the office published; a student shown by pen name. Nothing here reads the session.',
     'GET library/promotions' => 'Public site content (B4, LIBRARY_PLAN §8.5): the offers running now and what they cover. No per-person data; nothing here reads the session.',
     'GET news' => 'Public site content. No per-person data; nothing here reads the session.',

@@ -24,6 +24,25 @@ class BlogPageRulesAction
         return ! $profile->isStudent() || (bool) $profile->show_photo;
     }
 
+    /**
+     * BL5 (D13): whether a blog takes comments — the writer's switch, and
+     * never under 13 (nor at an age the record cannot tell).
+     */
+    public function commentsOpen(WriterProfile $profile): bool
+    {
+        return (bool) ($profile->comments_enabled ?? true) && ! $this->underThirteen($profile);
+    }
+
+    public function underThirteen(WriterProfile $profile): bool
+    {
+        if (! $profile->isStudent()) {
+            return false;
+        }
+        $age = app(ResolveStudentAgeForUserAction::class)->execute((int) $profile->user_id)['age'] ?? null;
+
+        return $age === null || $age < 13;
+    }
+
     public function linksAllowed(WriterProfile $profile): bool
     {
         if (! $profile->isStudent()) {

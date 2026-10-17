@@ -31,6 +31,10 @@ class PresentStudentBlogAction
                     'about' => $profile->bio,
                     'slug' => $profile->slug,
                     'since' => $profile->approved_at?->toDateString(),
+                    // BL5: the comments switch, forced off under 13, and the comments on the posts (read only).
+                    'comments_enabled' => (bool) $profile->comments_enabled,
+                    'under_13' => app(BlogPageRulesAction::class)->underThirteen($profile),
+                    'comments' => app(ListCommentsAction::class)->forWriter((int) $profile->id),
                 ],
             ];
         }

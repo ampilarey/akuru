@@ -40,6 +40,8 @@ class WriterProfile extends Model
         'status',
         // BL4: a cached count, kept by the follow action.
         'followers_count',
+        // BL5: the writer's comments switch; forced off under 13.
+        'comments_enabled',
         'approved_at',
         'approved_by',
         'default_commission',
@@ -59,6 +61,7 @@ class WriterProfile extends Model
             'sections' => 'array',
             'pending_page' => 'array',
             'page_submitted_at' => 'datetime',
+            'comments_enabled' => 'boolean',
         ];
     }
 

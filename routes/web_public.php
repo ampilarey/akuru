@@ -185,6 +185,9 @@ Route::get('library/blogs', [PublicLibraryController::class, 'blogs'])->name('pu
 // BLOG_PLAN BL4: following a blog, and the feeds.
 Route::get('library/blogs/feed', [\App\Domains\Library\Http\Controllers\BlogFollowController::class, 'blogsFeed'])->name('public.library.blogs.feed');
 Route::get('library/authors/{slug}/feed', [\App\Domains\Library\Http\Controllers\BlogFollowController::class, 'authorFeed'])->name('public.library.author.feed');
+// BLOG_PLAN BL5: comments on posts, checked before they show.
+Route::post('library/posts/{item}/comments', [\App\Domains\Library\Http\Controllers\BlogCommentController::class, 'store'])->name('public.library.comments.store')->whereNumber('item')->middleware('throttle:10,1,blog-comment');
+Route::post('library/comments/{comment}/report', [\App\Domains\Library\Http\Controllers\BlogCommentController::class, 'report'])->name('public.library.comments.report')->whereNumber('comment')->middleware('throttle:10,1,blog-comment-report');
 Route::post('library/authors/{slug}/follow', [\App\Domains\Library\Http\Controllers\BlogFollowController::class, 'follow'])->name('public.library.author.follow')->middleware('throttle:30,1,blog-follow');
 // B4 (§8.5): the offers running now.
 Route::get('library/promotions', [PublicLibraryController::class, 'promotions'])->name('public.library.promotions');

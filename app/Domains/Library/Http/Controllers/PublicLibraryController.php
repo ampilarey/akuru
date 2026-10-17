@@ -5,6 +5,7 @@ namespace App\Domains\Library\Http\Controllers;
 use App\Domains\Commerce\Actions\ListPromotionCampaignsAction;
 use App\Domains\Library\Actions\Blog\FollowBlogAction;
 use App\Domains\Library\Actions\Blog\ListBlogsAction;
+use App\Domains\Library\Actions\Blog\PresentPostCommentsAction;
 use App\Domains\Library\Actions\DownloadLibraryItemAction;
 use App\Domains\Library\Actions\ListLibraryAuthorsAction;
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
@@ -104,7 +105,12 @@ class PublicLibraryController extends Controller
         // BLOG_PLAN BL4: a post carries its blog's follow box.
         $follow = $item['content_type'] === 'post' && $item['writer'] ? app(FollowBlogAction::class)->state($request->user()?->id, $item['writer']['slug']) : null;
 
-        return view('public.library.show', ['item' => $item, 'follow' => $follow]);
+        return view('public.library.show', [
+            'item' => $item,
+            'follow' => $follow,
+            // BLOG_PLAN BL5: a post's published comments and its comment box.
+            'comments' => app(PresentPostCommentsAction::class)->execute($slug, $request->user()?->id),
+        ]);
     }
 
     /**
