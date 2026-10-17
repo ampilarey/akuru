@@ -5035,7 +5035,11 @@ not cropped on upload.
 - an under-18 student's links refused, then allowed by the parent (only
   their own child), approved and shown; stopped, gone at once.
 
-Whole suite locally: SUITE_RESULT_BL3B.
+`DetailScreensDoNotCrashTest` names the writer's image route among the
+screens it cannot sweep, with why.
+
+Whole suite locally: **3234 passed, 1 failed** (68308 assertions) — the
+failure was that test's list missing the new route; added, it passes alone.
 
 **Walk:** `blog-design.mjs`, extended, 17/17. The four new steps: a banner
 shows in the preview before it is saved; the pupil, under 18 for the run, is

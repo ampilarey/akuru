@@ -116,6 +116,8 @@ function unresolvedDetailScreens(): array
         'admin/identity-checks/{verification}/{side}' => 'streams a private identity card; covered by IdentityVerificationTest',
         // COMMERCE_PARITY_PLAN P6b: a delivery's proof photo, streamed to the office or the driver.
         'deliveries/{delivery}/proof' => 'streams a private delivery photo; covered by AkuruDeliveryTest',
+        // BLOG_PLAN BL3b: streams the caller's own waiting banner or picture (private media); a 404 with none. Covered by BlogPageMediaTest.
+        'my-blog/design/image/{kind}' => 'streams the blogger\'s own waiting blog-page image; covered by BlogPageMediaTest',
         // Not screens of their own: both render the public vendor page from
         // the storefront's draft, for a designer's or the office's iframe.
         // StorefrontSectionsTest loads the page preview as its shop and the
