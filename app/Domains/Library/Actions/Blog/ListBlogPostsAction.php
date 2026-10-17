@@ -8,6 +8,7 @@ use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
 use App\Domains\Library\Models\LibraryPostSeries;
 use App\Domains\Library\Models\WriterProfile;
+use App\Domains\People\Actions\ListStudentsByIdsAction;
 use App\Domains\People\Actions\ResolveStudentAgeForUserAction;
 
 /**
@@ -59,18 +60,16 @@ class ListBlogPostsAction
             ->orderBy('submitted_at')
             ->get();
         $series = LibraryPostSeries::query()->whereIn('id', $posts->pluck('series_id')->filter())->pluck('title', 'id');
-        $students = app(ResolveStudentAgeForUserAction::class);
+        $resolve = app(ResolveStudentAgeForUserAction::class);
+        $studentIds = $posts->mapWithKeys(fn (LibraryItem $item) => [$item->id => $item->writer?->user_id ? $resolve->execute((int) $item->writer->user_id)['student_id'] ?? null : null]);
+        $names = app(ListStudentsByIdsAction::class)->execute($studentIds->filter()->values()->all())->pluck('name', 'id');
 
-        return $posts->map(function (LibraryItem $item) use ($series, $students) {
-            $student = $item->writer?->user_id ? $students->execute((int) $item->writer->user_id) : null;
-
-            return $this->row($item, $item->series_id ? ($series[$item->series_id] ?? null) : null) + [
-                'body' => $item->body,
-                'pen_name' => $item->writer?->display_name,
-                // The teacher knows whose post it is; readers see only the pen name.
-                'student_name' => $student ? trim($student['first_name'].' '.$student['last_name']) : null,
-            ];
-        })->values()->all();
+        return $posts->map(fn (LibraryItem $item) => $this->row($item, $item->series_id ? ($series[$item->series_id] ?? null) : null) + [
+            'body' => $item->body,
+            'pen_name' => $item->writer?->display_name,
+            // The teacher knows whose post it is; readers see only the pen name.
+            'student_name' => $names[$studentIds[$item->id]] ?? null,
+        ])->values()->all();
     }
 
     /** @return array<string, mixed> */

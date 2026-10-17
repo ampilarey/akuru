@@ -5040,7 +5040,13 @@ public blog pages, edits to published posts, the menu, search and sitemap.
 rather than in `/write`; topic tags and *comments on or off* wait for BL2b
 and BL4.
 
-**Tests:** `BlogPostsTest` (new, 6):
+**Found on the way, fixed:** a title in Thaana or Arabic slugged to an
+empty string, and an empty slug is the shelf's own address — the walk's
+first Dhivehi post "opened" at `/library/`. `SaveLibraryItemAction` now
+keeps the item's slug, or makes one (`post-…`, `book-…`), for any item, not
+only posts.
+
+**Tests:** `BlogPostsTest` (new, 7):
 - a student's post through the teacher and then the office: nothing public
   before, not in the office's queue while with the teacher, the office's
   review and publish refused there, the trail `submitted → teacher_approved
@@ -5052,8 +5058,29 @@ and BL4.
 - a full writer's post to the office, and posts out of the writer portal;
 - the menus and the phrases in Thaana and Arabic script.
 
+- a post titled in Thaana gets an address of its own, kept through an edit.
+
 `RawHtmlRendersAreDeclaredTest`: the teacher's preview of the post body is
-declared, sanitised on write.
+declared, sanitised on write. `StudentNamesCarryTheMiddleNameTest` caught
+the teacher's queue joining first and last names; it uses People's
+`ListStudentsByIdsAction` instead.
+
+Whole suite locally: SUITE_RESULT.
+
+**Walk:** `blog-posts.mjs` (new, in the runner), 13/13:
+- the pupil writes a two-part series under `/dv`, right to left, and sends
+  both; both wait for the class teacher, numbered part 1 and part 2;
+- the teacher sees both by pen name and the pupil's name, approves part 1,
+  is refused sending part 2 back without a note, then sends it back with
+  one;
+- the office's queue has part 1 and not part 2, and *Approve & publish*
+  publishes it;
+- part 1 reads under `/ar`, right to left; part 2 is not public; posts are
+  off the book shelf;
+- the pupil reads the teacher's note on part 2 and may edit it.
+
+The walk gives the seeded pupil a student blog and the seeded teacher their
+class for the run, and puts both back.
 
 ## 5se. Students can start a blog, with a parent's consent (BLOG_PLAN BL1, 2026-10-17)
 

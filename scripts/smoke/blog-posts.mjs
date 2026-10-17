@@ -102,8 +102,9 @@ try {
     await Promise.all([teacher.waitForLoadState('networkidle'), teacher.click(`[data-testid="teacher-post-approve-${one}"]`)]);
     await teacher.waitForFunction((pid) => !document.querySelector(`[data-testid="teacher-post-${pid}"]`), one);
     await teacher.click(`[data-testid="teacher-post-changes-${two}"]`);
-    await teacher.waitForLoadState('networkidle');
-    check('sending back without a note is refused, on the post', (await teacher.locator(`[data-testid="teacher-post-${two}"]`).textContent()).includes(say('blog.error_teacher_note', 'en')));
+    const noNote = say('blog.error_teacher_note', 'en');
+    await teacher.waitForFunction(([pid, text]) => document.querySelector(`[data-testid="teacher-post-${pid}"]`)?.textContent?.includes(text), [two, noNote], { timeout: 10000 }).catch(() => {});
+    check('sending back without a note is refused, on the post', (await teacher.locator(`[data-testid="teacher-post-${two}"]`).textContent()).includes(noNote), flat(await teacher.locator(`[data-testid="teacher-post-${two}"]`).textContent()).slice(-160));
     await teacher.fill(`[data-testid="teacher-post-note-${two}"]`, 'Say which flower it was.');
     await Promise.all([teacher.waitForLoadState('networkidle'), teacher.click(`[data-testid="teacher-post-changes-${two}"]`)]);
     await teacher.waitForSelector('[data-testid="teacher-posts-empty"]');
@@ -112,8 +113,10 @@ try {
     // The office publishes part 1.
     const office = await signIn(OFFICE, 'en');
     await office.goto(`${BASE}/en/admin/library`, { waitUntil: 'networkidle' });
-    const row = office.locator('tr', { hasText: PART1 });
-    check('the office has part 1, and not part 2', (await row.count()) === 1 && (await office.locator('tr', { hasText: PART2 }).count()) === 0);
+    // The submissions queue: the rows with *Approve & publish* (the items list below shows every item, posts too).
+    const queued = (title) => office.locator('tr', { hasText: title }).filter({ has: office.locator('[data-testid="approve-publish"]') });
+    const row = queued(PART1);
+    check('the office has part 1, and not part 2', (await row.count()) === 1 && (await queued(PART2).count()) === 0, `${await row.count()} / ${await queued(PART2).count()}`);
     await Promise.all([office.waitForLoadState('networkidle'), row.locator('[data-testid="approve-publish"]').click()]);
     await office.waitForFunction((title) => ![...document.querySelectorAll('tr')].some((tr) => tr.textContent.includes(title) && tr.querySelector('[data-testid="approve-publish"]')), PART1);
     check('approving publishes it', tinker(`echo DB::table('library_items')->where('id', ${one})->value('status');`) === 'published');
@@ -122,7 +125,7 @@ try {
     const reader = await (await browser.newContext()).newPage();
     const slugs = JSON.parse(tinker(`echo json_encode(DB::table('library_items')->whereIn('id', [${one}, ${two}])->orderBy('id')->pluck('slug'));`));
     const live = await reader.goto(`${BASE}/ar/library/${slugs[0]}`, { waitUntil: 'networkidle' });
-    check('part 1 reads under /ar, right to left', live.status() === 200 && (await reader.locator('html').getAttribute('dir')) === 'rtl' && (await reader.content()).includes(PART1));
+    check('part 1 reads under /ar, right to left', live.status() === 200 && (await reader.locator('html').getAttribute('dir')) === 'rtl' && (await reader.content()).includes(PART1), `${live.status()} ${await reader.locator('html').getAttribute('dir')} ${(await reader.content()).includes(PART1)}`);
     const hidden = await reader.goto(`${BASE}/ar/library/${slugs[1]}`, { waitUntil: 'networkidle' });
     check('part 2, sent back, is not public', hidden.status() === 404, String(hidden.status()));
     await reader.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });

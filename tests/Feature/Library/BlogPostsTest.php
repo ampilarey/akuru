@@ -82,6 +82,15 @@ it('takes a student\'s post to the class teacher, then the office, and publishes
     $web->actingAs($child)->get('/my-blog')->assertInertia(fn (Assert $p) => $p->where('posts.0.status', 'published')->where('series.0.title', 'Garden diary'));
 });
 
+it('gives a post titled in Thaana an address of its own, and keeps it through an edit', function () {
+    [$child] = bl2Student(withTeacher: false);
+    bl2Write($child, ['title' => 'ބަގީޗާ ފެށުން', 'language' => 'dv']);
+    $post = LibraryItem::query()->sole();
+    expect($post->slug)->toStartWith('post-')->and(strlen($post->slug))->toBe(13);
+    bl2Write($child, ['title' => 'ބަގީޗާ ފެށުން', 'body' => '<p>ހެލޯ</p>'], $post->id);
+    expect($post->fresh()->slug)->toBe($post->slug);
+});
+
 it('lets only the post\'s teacher decide, needs a note to send back, and lets the student fix and resend', function () {
     [$child, $teacher] = bl2Student();
     bl2Write($child);
