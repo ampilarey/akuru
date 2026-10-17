@@ -77,6 +77,8 @@ final class NavigationMap
             ],
             'writer' => [
                 ['key' => 'write', 'href' => '/write'],
+                // BLOG_PLAN BL2a: a writer's posts are written on My blog.
+                ['key' => 'my_blog', 'href' => '/my-blog'],
             ],
             'reviewer' => [
                 ['key' => 'review', 'href' => '/review'],
@@ -250,6 +252,8 @@ final class NavigationMap
                 ['key' => 'quran_sessions', 'href' => '/teach/quran-sessions', 'roles' => $staff],
                 // The dean too, as the queue's own gate admits (STATUS §5ps).
                 ['key' => 'pronunciation', 'href' => '/teach/pronunciation', 'roles' => $staff],
+                // BLOG_PLAN BL2a: a class teacher checks their students' blog posts first.
+                ['key' => 'blog_posts', 'href' => '/teach/blog-posts', 'roles' => $staff],
                 // The Hifz hub redirects to a role's dashboard, Inertia since STATUS §5jw, so a visit follows it.
                 ['key' => 'hifz', 'href' => '/hifz', 'can' => ['view_hifz_programs']],
                 // Blade screens the Blade nav used to link by hand (STATUS §5id).

@@ -289,6 +289,7 @@ return [
     'library_type_article' => 'مقال',
     'library_type_research' => 'بحث',
     'library_type_course_material' => 'مادة دراسية',
+    'library_type_post' => 'تدوينة',
     'library_access_free_public' => 'مجاني (للجميع)',
     'library_access_free_login' => 'مجاني (بعد تسجيل الدخول)',
     'library_access_paid' => 'مدفوع',

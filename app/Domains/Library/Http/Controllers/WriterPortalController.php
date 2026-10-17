@@ -37,7 +37,7 @@ class WriterPortalController extends Controller
             'earnings' => app(ListWriterEarningsSummaryAction::class)->execute((int) $request->user()->id),
             'item_sales' => app(ListWriterItemSalesAction::class)->execute((int) $request->user()->id),
             'options' => [
-                'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),
+                'content_types' => array_values(array_map(fn ($case) => $case->value, array_filter(LibraryContentType::cases(), fn ($case) => $case !== LibraryContentType::Post))),
                 'categories' => app(ListLibraryCategoriesAction::class)->execute(),
                 'languages' => ['en' => __('common.library_lang_en'), 'dv' => __('common.library_lang_dv'), 'ar' => __('common.library_lang_ar')],
                 // R1: the teachers a writer may name as co-authors.

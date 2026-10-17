@@ -289,6 +289,7 @@ return [
     'library_type_article' => 'ލިޔުން',
     'library_type_research' => 'ދިރާސާ',
     'library_type_course_material' => 'ކޯހުގެ މާއްދާ',
+    'library_type_post' => 'ބްލޮގް ޕޯސްޓް',
     'library_access_free_public' => 'ހިލޭ (ހުރިހާ ފަރާތަކަށް)',
     'library_access_free_login' => 'ހިލޭ (ސައިން އިން ވެގެން)',
     'library_access_paid' => 'ފައިސާ ދައްކައިގެން',

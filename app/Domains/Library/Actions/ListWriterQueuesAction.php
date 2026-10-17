@@ -48,6 +48,8 @@ class ListWriterQueuesAction
 
         $submitted = LibraryItem::query()
             ->where('status', LibraryItemStatus::Submitted)
+            // BLOG_PLAN BL2a: a student's post reaches the office once its class teacher has checked it.
+            ->where(fn ($query) => $query->whereNull('review_stage')->orWhere('review_stage', '!=', 'teacher'))
             ->orderBy('submitted_at')
             ->get();
 

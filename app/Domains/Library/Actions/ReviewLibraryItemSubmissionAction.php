@@ -27,6 +27,10 @@ class ReviewLibraryItemSubmissionAction
         if ($status !== LibraryItemStatus::Submitted) {
             throw ValidationException::withMessages(['item' => __('admin.library_office_error_not_submitted_review')]);
         }
+        // BLOG_PLAN BL2a: a student's post is the class teacher's first.
+        if ($item->review_stage === 'teacher') {
+            throw ValidationException::withMessages(['item' => __('blog.error_with_teacher')]);
+        }
 
         // R3 (D2): research needs its peer-review accepts before approval;
         // the publisher checks again, so no path skips it.

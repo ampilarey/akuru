@@ -33,6 +33,10 @@ class SubmitLibraryItemForReviewAction
         if ((int) $item->writer_id !== (int) $profile->id) {
             throw ValidationException::withMessages(['item' => __('common.library_error_submit_own')]);
         }
+        // BLOG_PLAN BL2a: a post is sent from My blog, to its own checking.
+        if ($item->content_type === LibraryContentType::Post) {
+            throw ValidationException::withMessages(['item' => __('blog.error_posts_on_my_blog')]);
+        }
 
         $status = $item->status instanceof LibraryItemStatus ? $item->status : LibraryItemStatus::tryFrom((string) $item->status);
         if (! in_array($status, [LibraryItemStatus::Draft, LibraryItemStatus::ChangesRequested], true)) {

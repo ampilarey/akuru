@@ -97,7 +97,17 @@ return [
         'office_events' => ['new_sale'],
         'office_email' => env('LIBRARY_OFFICE_EMAIL', ''),
         'office_phone' => env('LIBRARY_OFFICE_PHONE', ''),
-        'events' => ['writer_application_decided', 'submission_decided', 'published', 'new_sale', 'payout_decided', 'review_assigned', 'purchase_ready', 'blog_consent_asked', 'blog_request_decided'],
+        'events' => ['writer_application_decided', 'submission_decided', 'published', 'new_sale', 'payout_decided', 'review_assigned', 'purchase_ready', 'blog_consent_asked', 'blog_request_decided', 'post_decided'],
         'sms_max_length' => 300,
+    ],
+
+    /*
+     * BLOG_PLAN BL2a: a student's post goes to their class teacher first,
+     * then the office (D6: the office may turn the teacher step off); a
+     * student sends at most this many posts in seven days (D18).
+     */
+    'blog' => [
+        'teacher_review' => (bool) env('LIBRARY_BLOG_TEACHER_REVIEW', true),
+        'posts_per_week' => (int) env('LIBRARY_BLOG_POSTS_PER_WEEK', 3),
     ],
 ];

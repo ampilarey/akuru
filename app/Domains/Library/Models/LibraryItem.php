@@ -48,6 +48,12 @@ class LibraryItem extends Model
         'featured_at',
         'published_at',
         'writer_id',
+        // BLOG_PLAN BL2a: a post's series, its place in it, pinning, and its checking.
+        'series_id',
+        'series_position',
+        'pinned',
+        'review_stage',
+        'teacher_user_id',
         // R2: the website research post this item was imported from.
         'imported_post_id',
         'page_count',
@@ -75,6 +81,7 @@ class LibraryItem extends Model
             'declarations' => 'array',
             'declared_at' => 'datetime',
             'featured' => 'boolean',
+            'pinned' => 'boolean',
             'featured_at' => 'datetime',
         ];
     }

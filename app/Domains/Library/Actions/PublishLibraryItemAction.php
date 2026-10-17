@@ -4,6 +4,7 @@ namespace App\Domains\Library\Actions;
 
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
+use Illuminate\Validation\ValidationException;
 
 /**
  * Business rule §43.3: admin must approve content — publishing stamps
@@ -19,6 +20,10 @@ class PublishLibraryItemAction
             // R3 (D2): research goes out only once peer review says so —
             // whichever screen asked.
             app(AssertResearchReviewedAction::class)->execute($item);
+            // BLOG_PLAN BL2a: nor a student's post its class teacher has not checked.
+            if ($item->review_stage === 'teacher') {
+                throw ValidationException::withMessages(['item' => __('blog.error_with_teacher')]);
+            }
             $item->fill([
                 'status' => LibraryItemStatus::Published,
                 'published_at' => $item->published_at ?? now(),

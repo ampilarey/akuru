@@ -50,6 +50,9 @@ class ListLibraryItemsAction
                 ->withCount(['readingEvents as popular_count' => fn ($sub) => $sub
                     ->where('occurred_at', '>=', now()->subDays($sort === 'popular_week' ? 7 : 30))]))
             ->when($publishedOnly, fn ($query) => $query->where('status', 'published'))
+            // BLOG_PLAN BL2a: blog posts live on the blogs, not the public
+            // shelf; the office's own list (not published-only) keeps them.
+            ->when($publishedOnly && ($filters['content_type'] ?? null) !== 'post', fn ($query) => $query->where('content_type', '!=', 'post'))
             // B5 (§8.2–§8.4): difficulty, the reading-time band, and for
             // research: reviewed by a peer, or open to everyone.
             ->when(in_array($filters['difficulty'] ?? null, self::DIFFICULTIES, true), fn ($query) => $query->where('difficulty', $filters['difficulty']))

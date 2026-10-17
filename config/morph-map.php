@@ -207,6 +207,7 @@ return [
     'library_item_author' => \App\Domains\Library\Models\LibraryItemAuthor::class,
     'library_item_page' => \App\Domains\Library\Models\LibraryItemPage::class,
     'library_item_review' => \App\Domains\Library\Models\LibraryItemReview::class,
+    'library_post_series' => \App\Domains\Library\Models\LibraryPostSeries::class,
     'library_purchase' => \App\Domains\Library\Models\LibraryPurchase::class,
     'library_review_assignment' => \App\Domains\Library\Models\LibraryReviewAssignment::class,
     'library_reading_alert' => \App\Domains\Library\Models\LibraryReadingAlert::class,

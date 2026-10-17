@@ -79,7 +79,7 @@ class AdminLibraryController extends Controller
             'identity_checks' => app(IdentityVerificationAction::class)->list('writer'),
             'filters' => $filters,
             'options' => [
-                'content_types' => array_map(fn ($case) => $case->value, LibraryContentType::cases()),
+                'content_types' => array_values(array_map(fn ($case) => $case->value, array_filter(LibraryContentType::cases(), fn ($case) => $case !== LibraryContentType::Post))),
                 'access_types' => array_map(fn ($case) => $case->value, LibraryAccessType::cases()),
             ] + $this->authoringOptions(),
         ] + $this->phraseBooks());

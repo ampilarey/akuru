@@ -296,6 +296,7 @@ return [
     'library_type_article' => 'article',
     'library_type_research' => 'research',
     'library_type_course_material' => 'course material',
+    'library_type_post' => 'blog post',
     'library_access_free_public' => 'free public',
     'library_access_free_login' => 'free (login)',
     'library_access_paid' => 'paid',
