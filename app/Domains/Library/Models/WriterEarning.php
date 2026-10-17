@@ -8,8 +8,11 @@ class WriterEarning extends Model
 {
     protected $fillable = [
         'writer_id',
+        // BLOG_PLAN BL6a: `sale`, `tip` or `reward`; a tip's earning points at its tip.
+        'kind',
         'library_item_id',
         'library_purchase_id',
+        'library_tip_id',
         'gross_amount',
         'discount_amount',
         'discount_funding_source',

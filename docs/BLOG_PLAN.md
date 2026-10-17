@@ -9,8 +9,8 @@
 > The owner's decisions are in **§13**. Everything else is the default an
 > implementer takes unless the owner says otherwise. **BL1 and BL2 are
 > built** (2026-10-17: BL1 STATUS §5se; BL2 in three parts, §5sf–§5sh),
-> BL3 in two parts (§5si, §5sj), BL4 (§5sk) and BL5 (§5sl); **BL6–BL7 are
-> not.** This document is the whole
+> BL3 in two parts (§5si, §5sj), BL4 (§5sk), BL5 (§5sl) and BL6a (§5sm);
+> **BL6b and BL7 are not.** This document is the whole
 > brief for the agent that builds them.
 
 Written against `main` at `51b9c58` (#777). Every name below was read from
@@ -559,6 +559,21 @@ touched + no files outside its scope.
 - Walk `blog-comments.mjs`.
 
 ### BL6 — Tips
+
+> **Split in two, 2026-10-18.** **BL6a is built** (STATUS §5sm):
+> `library_tips`; `writer_earnings.kind` (and `library_tip_id`); the tip box
+> on a blog's page and posts, the office's preset amounts, by card through
+> BML (paid and earned only on the webhook) or from the wallet (at once);
+> Akuru's share from the `tip_share_percent` setting; a refund reversed with
+> a new tip row; the note checked by the office; *Tips* on My blog with a CSV
+> and the office's *Blog tips* with a CSV. **BL6b** is the payouts: an
+> under-18's payout refused to a bank and paid to the consenting parent's
+> wallet when payouts are on.
+>
+> One departure, deliberate: a refunded tip's **earning** is clawed back the
+> way a refunded sale's is today (its status becomes `refunded`), not with a
+> negative earning row, so earnings, maturing and payouts keep one rule. The
+> tip itself is never edited: its refund is a new row.
 - `library_tips`; `writer_earnings.kind`.
 - The tip box, paid through the Library's payment paths.
 - Earnings on the webhook, less Akuru's share.

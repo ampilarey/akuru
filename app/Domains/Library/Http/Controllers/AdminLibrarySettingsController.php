@@ -42,6 +42,9 @@ class AdminLibrarySettingsController extends Controller
             // COMMERCE_PARITY_PLAN P5: the office's own address and number for a sale.
             'office_email' => 'nullable|email|max:255',
             'office_phone' => ['nullable', 'string', 'max:20', 'regex:/^\+?[0-9 ]{7,20}$/'],
+            // BLOG_PLAN BL6a: the tip box.
+            'tip_amounts' => ['sometimes', 'string', 'max:60', 'regex:/^\s*[1-9][0-9]{0,3}(\s*,\s*[1-9][0-9]{0,3}){0,5}\s*$/'],
+            'tip_share_percent' => 'sometimes|integer|min:0|max:50',
         ]);
 
         app(SaveLibrarySettingsAction::class)->execute($data);

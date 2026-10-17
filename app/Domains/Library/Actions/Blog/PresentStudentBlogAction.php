@@ -35,6 +35,9 @@ class PresentStudentBlogAction
                     'comments_enabled' => (bool) $profile->comments_enabled,
                     'under_13' => app(BlogPageRulesAction::class)->underThirteen($profile),
                     'comments' => app(ListCommentsAction::class)->forWriter((int) $profile->id),
+                    // BL6a: the tip box switch and the latest tips.
+                    'tips_enabled' => (bool) $profile->tips_enabled,
+                    'tips' => app(ListTipsAction::class)->forWriter((int) $profile->id, 20),
                 ],
             ];
         }

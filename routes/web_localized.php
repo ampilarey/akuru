@@ -201,6 +201,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/my-blog/posts', [\App\Domains\Library\Http\Controllers\BlogPostController::class, 'store'])->name('my-blog.posts.store')->middleware('throttle:60,60,blog-post');
     Route::post('/my-blog/posts/{post}', [\App\Domains\Library\Http\Controllers\BlogPostController::class, 'update'])->name('my-blog.posts.update')->whereNumber('post')->middleware('throttle:60,60,blog-post');
     Route::post('/my-blog/posts/{post}/submit', [\App\Domains\Library\Http\Controllers\BlogPostController::class, 'submit'])->name('my-blog.posts.submit')->whereNumber('post')->middleware('throttle:20,60,blog-post-submit');
+    // BL6a: the writer's tip box switch, and their tips as CSV.
+    Route::post('/my-blog/tips', [\App\Domains\Library\Http\Controllers\WriterTipsController::class, 'update'])->name('my-blog.tips')->middleware('throttle:20,60,blog-tips-switch');
+    Route::get('/my-blog/tips/export', [\App\Domains\Library\Http\Controllers\WriterTipsController::class, 'export'])->name('my-blog.tips.export');
     // BL5: the writer's comments switch.
     Route::post('/my-blog/comments', [\App\Domains\Library\Http\Controllers\StudentBlogController::class, 'comments'])->name('my-blog.comments')->middleware('throttle:20,60,blog-comments-switch');
     // BL3a: the page designer — a draft, sent to the office.
@@ -854,6 +857,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('blog-requests/export', [\App\Domains\Library\Http\Controllers\AdminBlogRequestController::class, 'export'])->name('admin.library.blog-requests.export');
         Route::post('blog-requests/{blogRequest}/decide', [\App\Domains\Library\Http\Controllers\AdminBlogRequestController::class, 'decide'])->name('admin.library.blog-requests.decide')->whereNumber('blogRequest');
         // BLOG_PLAN BL3a: blog page changes, checked before they show.
+        // BLOG_PLAN BL6a: tips, and their notes checked.
+        Route::get('tips', [\App\Domains\Library\Http\Controllers\AdminBlogTipController::class, 'index'])->name('admin.library.tips');
+        Route::get('tips/export', [\App\Domains\Library\Http\Controllers\AdminBlogTipController::class, 'export'])->name('admin.library.tips.export');
+        Route::post('tips/{tip}/note', [\App\Domains\Library\Http\Controllers\AdminBlogTipController::class, 'note'])->name('admin.library.tips.note')->whereNumber('tip');
         // BLOG_PLAN BL5: comments, checked before they show.
         Route::get('comments', [\App\Domains\Library\Http\Controllers\AdminBlogCommentController::class, 'index'])->name('admin.library.comments');
         Route::get('comments/export', [\App\Domains\Library\Http\Controllers\AdminBlogCommentController::class, 'export'])->name('admin.library.comments.export');

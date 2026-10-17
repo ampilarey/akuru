@@ -4983,6 +4983,71 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sm. Tips to a blog's writer, paid on the webhook (BLOG_PLAN BL6a, 2026-10-18)
+
+The first half of BL6. Payouts for under-18s are **BL6b**.
+
+**Built:**
+- **The tip box** on a blog's page and its posts, where the writer turned
+  tips on (`writer_profiles.tips_enabled`, off by default; the switch is on
+  *My blog*): the office's preset amounts (MVR 5, 10, 25, 50 by default), an
+  optional thank-you note, *pay from my Akuru wallet*. A guest is sent to sign
+  in; nobody tips themselves; another amount is refused; a tip is never
+  discounted.
+- **Paying** (`StartTipAction`):
+  - by card: a `pending` tip and a BML payment (`payable_type
+    library_tip`); paid, and earned, **only on the webhook**
+    (`RecordTipOnPaymentConfirmed`); the return page says the tip counts
+    once the bank confirms, and grants nothing (rule 12);
+  - from the wallet (which holds what a gift card added): the debit, the paid
+    tip and its earning together.
+- **Earning** (`RecordTipPaidAction`, idempotent): a `writer_earnings` row of
+  kind `tip` (the column is new; existing rows are `sale`), the tip less
+  Akuru's share (`tip_share_percent`, default 10%, on the settings screen),
+  maturing after the refund window like a sale's. The writer is told.
+- **Refund** (`ReverseTipOnPaymentRefunded`, `ReverseTipAction`): a new tip
+  row reverses the tip (negative amount, `reverses_tip_id`); the tip itself is
+  never edited; its earning is clawed back as a refunded sale's is.
+- **The note** waits for the office (`ModerateTipNoteAction`); the writer
+  sees it only once published, and sees a first name, never a full name.
+- **Lists:** *Tips* on My blog (amount, share, note, refunds) with a CSV
+  (`/my-blog/tips/export`); the office's *Blog tips*
+  (`/admin/library/tips`, under the Library office) with the notes filter and
+  a CSV.
+- **Data:** migration `2026_10_18_000005_bl6a_blog_tips`: `library_tips`;
+  `writer_earnings.kind` and `library_tip_id`, and its sale columns made
+  nullable (foreign keys kept); `writer_profiles.tips_enabled`; morph alias
+  `library_tip`. Two Library settings, `tip_amounts` and
+  `tip_share_percent`.
+- **Language:** 32 `blog` phrases, 4 `admin` phrases, `nav.blog_tips`, in
+  EN/DV/AR.
+
+**One departure, recorded in the plan:** a refunded tip's earning is clawed
+back by status, as a sale's is, not by a negative earning row.
+
+**Tests:** `BlogTipsTest` (new, 5):
+- a card tip pending until the webhook, the return page granting nothing,
+  one earning of kind `tip` at 90%, a webhook retry writing nothing;
+- the share from the setting (80% at 20); a wallet tip paid at once; too
+  little in the wallet, nothing paid or earned;
+- a refund: a reversing row, the tip untouched, the earning refunded, once;
+- tips off, oneself, an amount not offered: refused, nothing written;
+- the note hidden from the writer until the office publishes it; first name
+  only; both CSVs; the office list behind its gate; the switch; the phrases.
+
+`WorkspacesTest` and `AdminHubTest` name the new Library office item; the
+tip route and the tip box partial are declared in their baselines.
+
+Whole suite locally: **3248 passed** (68601 assertions).
+
+**Walk:** `blog-tips.mjs` (new, in the runner), 9/9: under `/dv` a reader
+tips MVR 10 from the wallet on a post, with a note, and is thanked; the wallet
+paid MVR 10; a card tip goes to the bank or says plainly it could not start
+(no gateway keys on this host), granting nothing; My blog shows the tip and
+the MVR 9.00 share without the note; the office publishes the note; the
+writer reads it, and their CSV carries it. The walk removes everything it
+made.
+
 ## 5sl. Comments on blog posts, every one checked (BLOG_PLAN BL5, 2026-10-18)
 
 **Built:**

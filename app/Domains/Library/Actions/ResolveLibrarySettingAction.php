@@ -37,6 +37,9 @@ class ResolveLibrarySettingAction
         // COMMERCE_PARITY_PLAN P5: the office's own address and number for a sale.
         'office_email' => ['library.notices.office_email', 'string'],
         'office_phone' => ['library.notices.office_phone', 'string'],
+        // BLOG_PLAN BL6a: the tip box's amounts, and Akuru's share of a tip.
+        'tip_amounts' => ['library.blog.tip_amounts', 'string'],
+        'tip_share_percent' => ['library.blog.tip_share_percent', 'int'],
     ];
 
     public function execute(string $key): int|bool|string
