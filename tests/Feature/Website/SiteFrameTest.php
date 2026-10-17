@@ -45,7 +45,7 @@ it('leads with the four products and keeps the institute under About', function 
         ->and($row[1])->not->toContain(route('public.gallery.index'));
 });
 
-it('opens the Digital Library\'s sections from its caret — books, articles, research, authors and gift cards (R5)', function () {
+it('opens the Digital Library\'s sections from its caret — books, articles, research, blogs, authors and gift cards (R5, BL2b)', function () {
     $html = siteFramePage()->getContent();
 
     preg_match('#data-testid="nav-library-menu">(.*?)</div>#s', $html, $menu);
@@ -57,6 +57,8 @@ it('opens the Digital Library\'s sections from its caret — books, articles, re
         'books' => route('public.library.index', ['content_type' => 'book']),
         'articles' => route('public.library.index', ['content_type' => 'article']),
         'research' => route('public.library.index', ['content_type' => 'research']),
+        // BLOG_PLAN BL2b.
+        'blogs' => route('public.library.blogs'),
         'authors' => route('public.library.index').'#authors',
         'gift-cards' => route('public.gift-cards.index'),
     ]);
@@ -64,7 +66,7 @@ it('opens the Digital Library\'s sections from its caret — books, articles, re
     // The phone lists the same sections under the library's row.
     preg_match('#data-testid="mobile-menu-library">(.*?)</div>#s', $html, $phone);
     expect($phone[1])->toContain('href="'.e(route('public.library.index', ['content_type' => 'research'])).'"')
-        ->and(substr_count($phone[1], '<a '))->toBe(5);
+        ->and(substr_count($phone[1], '<a '))->toBe(6);
 });
 
 it('marks the product you are in', function () {

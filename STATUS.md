@@ -4983,6 +4983,65 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sg. The blogs' public pages (BLOG_PLAN BL2b, 2026-10-17)
+
+The second part of BL2 (§5sf was BL2a). What is left of BL2, a checked edit
+to a published post, is now **BL2c** in `docs/BLOG_PLAN.md`.
+
+**Built:**
+- **The blogs' front** (`/library/blogs`, Blade, like the rest of the public
+  Library):
+  - the latest published posts, newest first, each with its writer (a pen
+    name for a student), *Student writer* where it applies, the date and a
+    plain-text excerpt; a post in Dhivehi or Arabic is set right to left;
+  - a language filter;
+  - the blogs that have published a post, by their latest, with the count.
+
+  `ListBlogsAction` (new) reads only published posts of active writers.
+- **The author page as a blog** (`PresentWriterPublicProfileAction`):
+  - the blog's title, and *Student writer* in place of *Author*;
+  - *Posts*: pinned first, then the latest;
+  - *Series*: each series with its published parts, in order;
+  - then *Published works* — the books, articles and research, posts no
+    longer among them;
+  - a student's photo shows only where the parent allowed it (`show_photo`).
+- **The post page:** *Blogs* in the breadcrumb; *Part n of m in "series"*,
+  with the previous and next parts (`PresentPostSeriesAction`, new). Only
+  published parts count, so a part still being checked leaves no gap.
+- **Finding posts:**
+  - *Blogs* in the Digital Library's menu, on the phone too, and in the
+    footer;
+  - the site search finds posts (`with_posts`), though the shelf still does
+    not show them;
+  - the sitemap lists `/library/blogs`; each post was already there as an
+    item.
+- **The catch-all:** `library/blogs` is registered before `library/{slug}`,
+  and `SaveLibraryItemAction` refuses the shelf's own words as slugs
+  (`blogs`, `authors`, `promotions`, `export`), adding a suffix.
+- **Language:** 19 `public` phrases (`post`, `blogs_*`) and `site.blogs`, in
+  EN/DV/AR.
+
+**Tests:** `BlogPagesTest` (new, 6):
+- the front lists published posts and the blogs, never a waiting one; the
+  language filter; a post's breadcrumb;
+- the author page: pinned, latest, series, works, in that order; an
+  unpublished part absent;
+- a student's photo hidden without the parent's yes, shown with it;
+- *part 2 of 2* when part 2 of 3 is still being checked; next and previous;
+- an item titled *Blogs* gets `blogs-…`; the search finds a post the shelf
+  does not show; the sitemap has the front;
+- the menu link, and the phrases in Thaana and Arabic script.
+
+`SiteFrameTest` names the new menu link. The new Blade page and the public
+route are declared in their baselines, with the reason.
+
+Whole suite locally: SUITE_RESULT_BL2B.
+
+**Walk:** `blog-posts.mjs`, extended, 17/17. The four new steps: the blogs'
+front under `/ar` lists part 1 and not part 2; the pupil's author page reads
+as their blog, with the post and the series; the post says *part 1 of 1*,
+counting only what is published; the site search finds it.
+
 ## 5sf. Blog posts, checked by the class teacher and the office (BLOG_PLAN BL2a, 2026-10-17)
 
 The first half of BL2 (§5se was BL1). The plan's BL2 is split in two,

@@ -52,7 +52,8 @@ class ListLibraryItemsAction
             ->when($publishedOnly, fn ($query) => $query->where('status', 'published'))
             // BLOG_PLAN BL2a: blog posts live on the blogs, not the public
             // shelf; the office's own list (not published-only) keeps them.
-            ->when($publishedOnly && ($filters['content_type'] ?? null) !== 'post', fn ($query) => $query->where('content_type', '!=', 'post'))
+            // BL2b: the site search asks for them too (`with_posts`).
+            ->when($publishedOnly && ($filters['content_type'] ?? null) !== 'post' && empty($filters['with_posts']), fn ($query) => $query->where('content_type', '!=', 'post'))
             // B5 (§8.2–§8.4): difficulty, the reading-time band, and for
             // research: reviewed by a peer, or open to everyone.
             ->when(in_array($filters['difficulty'] ?? null, self::DIFFICULTIES, true), fn ($query) => $query->where('difficulty', $filters['difficulty']))

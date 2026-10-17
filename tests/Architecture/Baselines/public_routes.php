@@ -95,6 +95,7 @@ return [
     'GET library' => 'Public site content. No per-person data; nothing here reads the session.',
     'GET library/authors/{slug}' => 'A named writer\'s public author page — deliberately about someone, published for that purpose (LIBRARY_PLAN §8.7). Only active writers and only their published items.',
     'GET library/export' => 'Public site content. No per-person data; nothing here reads the session.',
+    'GET library/blogs' => 'Public site content (BLOG_PLAN BL2b): the latest published blog posts and the blogs that wrote them. Only what the office published; a student shown by pen name. Nothing here reads the session.',
     'GET library/promotions' => 'Public site content (B4, LIBRARY_PLAN §8.5): the offers running now and what they cover. No per-person data; nothing here reads the session.',
     'GET news' => 'Public site content. No per-person data; nothing here reads the session.',
     'GET news/{post}' => 'Public site content. No per-person data; nothing here reads the session.',

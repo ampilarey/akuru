@@ -18,8 +18,12 @@
             <div class="flex h-32 w-32 shrink-0 items-center justify-center rounded-full bg-brandBeige-100 text-4xl font-bold text-brandMaroon-700" aria-hidden="true">{{ Str::upper(Str::substr($author['display_name'], 0, 1)) }}</div>
         @endif
         <div class="min-w-0">
-            <p class="text-sm uppercase tracking-wide text-gray-500">{{ __('public.Author') }}</p>
+            <p class="text-sm uppercase tracking-wide text-gray-500">{{ $author['student'] ? __('public.blogs_student') : __('public.Author') }}</p>
             <h1 class="text-4xl font-bold text-brandMaroon-900 mb-2">{{ $author['display_name'] }}</h1>
+            @if($author['blog_title'])
+                {{-- BLOG_PLAN BL2b: the blog's own name. --}}
+                <p class="text-xl text-brandMaroon-700 mb-2" data-testid="blog-title">{{ $author['blog_title'] }}</p>
+            @endif
             @if($author['expertise'])
                 <p class="text-brandMaroon-700 font-medium mb-1">{{ $author['expertise'] }}</p>
             @endif
@@ -46,6 +50,45 @@
         </div>
     </header>
 
+    @if($author['blog'])
+        {{-- BLOG_PLAN BL2b: the blog — pinned posts, then the latest, then the series. --}}
+        <section class="mb-10" data-testid="author-blog">
+            <h2 class="text-2xl font-bold text-brandMaroon-900 mb-4">{{ __('public.blogs_posts_heading') }}</h2>
+            @foreach(['pinned', 'latest'] as $group)
+                @foreach($author['blog'][$group] as $post)
+                    <article class="mb-4 rounded-lg border bg-white p-5 {{ $group === 'pinned' ? 'border-2 border-brandMaroon-200' : '' }}" data-post="{{ $post['slug'] }}" @if($post['language'] === 'dv' || $post['language'] === 'ar') dir="rtl" @endif>
+                        @if($group === 'pinned')
+                            <span class="rounded bg-brandBeige-100 px-2 py-0.5 text-xs text-gray-600" data-testid="pinned-post">{{ __('public.blogs_pinned') }}</span>
+                        @endif
+                        <h3 class="mt-1 text-xl font-semibold text-brandMaroon-900"><a href="{{ route('public.library.show', $post['slug']) }}" class="hover:underline">{{ $post['title'] }}</a></h3>
+                        @if($post['published_at'])
+                            <p class="text-sm text-gray-500">{{ $post['published_at'] }}</p>
+                        @endif
+                        @if($post['excerpt'] !== '')
+                            <p class="mt-2 text-gray-700">{{ $post['excerpt'] }}</p>
+                        @endif
+                    </article>
+                @endforeach
+            @endforeach
+
+            @if(count($author['blog']['series']) > 0)
+                <h3 class="mt-6 mb-3 text-xl font-bold text-brandMaroon-900">{{ __('public.blogs_series') }}</h3>
+                <div class="grid gap-4 md:grid-cols-2" data-testid="author-series">
+                    @foreach($author['blog']['series'] as $series)
+                        <div class="rounded-lg border bg-white p-4">
+                            <p class="font-semibold text-brandMaroon-900">{{ $series['title'] }}</p>
+                            <ol class="mt-2 list-decimal list-inside text-sm">
+                                @foreach($series['posts'] as $part)
+                                    <li><a href="{{ route('public.library.show', $part['slug']) }}" class="text-brandMaroon-700 hover:underline">{{ $part['title'] }}</a></li>
+                                @endforeach
+                            </ol>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+        </section>
+    @endif
+
     @if(count($author['featured']) > 0)
         {{-- B6 (§8.7): up to three works the writer pinned, before the full shelf. --}}
         <h2 class="text-2xl font-bold text-brandMaroon-900 mb-4">{{ __('public.Featured works') }}</h2>
@@ -65,8 +108,10 @@
         </div>
     @endif
 
+    @if(count($author['items']) > 0 || ! $author['blog'])
     <h2 class="text-2xl font-bold text-brandMaroon-900 mb-4">{{ __('public.Published works') }}</h2>
-    @if(count($author['items']) === 0)
+    @endif
+    @if(count($author['items']) === 0 && ! $author['blog'])
         <p class="text-gray-500">{{ __('public.Nothing published yet.') }}</p>
     @endif
     <div class="grid gap-6 md:grid-cols-2">

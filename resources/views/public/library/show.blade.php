@@ -8,6 +8,11 @@
     <nav class="text-sm text-gray-500 mb-6 flex gap-2 items-center flex-wrap">
         <a href="{{ route('public.library.index') }}" class="hover:text-brandMaroon-600">{{ __('public.Digital Library') }}</a>
         <span>›</span>
+        @if($item['content_type'] === 'post')
+            {{-- BLOG_PLAN BL2b: a post sits under the blogs, not the shelf. --}}
+            <a href="{{ route('public.library.blogs') }}" class="hover:text-brandMaroon-600">{{ __('public.blogs_title') }}</a>
+            <span>›</span>
+        @endif
         <span class="text-gray-700 truncate max-w-xs">{{ $item['title'] }}</span>
     </nav>
 
@@ -50,6 +55,21 @@
             </div>
           </div>
         </header>
+
+        @if($item['series'])
+            {{-- BLOG_PLAN BL2b (§4.3): part n of m, with the parts either side. --}}
+            <nav class="mb-6 rounded-lg border bg-brandBeige-50 p-4 text-sm" data-testid="post-series" aria-label="{{ __('public.blogs_series') }}">
+                <p class="font-medium text-brandMaroon-900">{{ __('public.blogs_series_part', ['n' => $item['series']['position'], 'count' => $item['series']['count'], 'series' => $item['series']['title']]) }}</p>
+                <div class="mt-2 flex flex-wrap justify-between gap-3">
+                    @if($item['series']['previous'])
+                        <a href="{{ route('public.library.show', $item['series']['previous']['slug']) }}" class="text-brandMaroon-700 hover:underline" rel="prev" data-testid="series-previous">{{ __('public.blogs_previous') }}: {{ $item['series']['previous']['title'] }}</a>
+                    @endif
+                    @if($item['series']['next'])
+                        <a href="{{ route('public.library.show', $item['series']['next']['slug']) }}" class="text-brandMaroon-700 hover:underline" rel="next" data-testid="series-next">{{ __('public.blogs_next') }}: {{ $item['series']['next']['title'] }}</a>
+                    @endif
+                </div>
+            </nav>
+        @endif
 
         {{-- LT6: the checkout refuses on `item` too — not for sale, or already
              yours — whatever this page then shows, so it is said up here. --}}

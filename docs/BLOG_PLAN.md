@@ -8,7 +8,8 @@
 >
 > The owner's decisions are in **§13**. Everything else is the default an
 > implementer takes unless the owner says otherwise. **BL1 is built
-> (2026-10-17, STATUS §5se), and BL2a (STATUS §5sf); BL2b–BL7 are not.** This document is the whole
+> (2026-10-17, STATUS §5se), and BL2a and BL2b (STATUS §5sf, §5sg); BL2c–BL7
+> are not.** This document is the whole
 > brief for the agent that builds them.
 
 Written against `main` at `51b9c58` (#777). Every name below was read from
@@ -436,11 +437,15 @@ touched + no files outside its scope.
 > series on *My blog*, *own work* and the weekly cap, the class teacher's
 > queue (`/teach/blog-posts`, under *Teaching*), the office's step through
 > the existing Library office queue, publishing, and posts kept off the
-> book shelf. **BL2b** is the rest: edits to a published post as drafts
-> (`pending_title`, `pending_body`), `/library/blogs`, the blog layout of
-> the author page, series navigation on the post page, *Blogs* in the menu,
-> the search and the sitemap, the `blogs` slug refused, and the walk
-> `blog-posts.mjs` extended to the blog page.
+> book shelf. **BL2b is built** (STATUS §5sg): `/library/blogs`, the blog
+> layout of the author page (pinned, latest, series, then published works),
+> *part n of m* with previous and next on the post page, *Blogs* in the
+> Digital Library menu and footer, posts in the site search, the blogs'
+> front in the sitemap, the shelf's own `library/…` words refused as slugs,
+> and the walk `blog-posts.mjs` extended to the blog pages. **BL2c** is what
+> is left of BL2: an edit to a published post kept as a draft
+> (`pending_title`, `pending_body`) and checked, as a new post is, before it
+> replaces the live text (D3).
 >
 > Two departures in BL2a, both deliberate:
 > - *New post* is on *My blog* (`/my-blog`), for students and full writers

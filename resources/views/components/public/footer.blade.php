@@ -68,6 +68,7 @@
                 [__('site.browse_books'), route('public.library.index', ['content_type' => 'book'])],
                 [__('site.articles'), route('public.library.index', ['content_type' => 'article'])],
                 [__('site.research'), route('public.library.index', ['content_type' => 'research'])],
+                [__('site.blogs'), route('public.library.blogs')],
                 [__('site.authors'), route('public.library.index').'#authors'],
                 [__('site.gift_cards'), route('public.gift-cards.index')],
                 [__('site.write_for_akuru'), route('write.index')],

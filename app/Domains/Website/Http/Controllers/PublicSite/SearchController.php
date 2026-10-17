@@ -24,7 +24,8 @@ class SearchController extends Controller
         // R5 (RESEARCH_ARTICLES_PLAN): books, articles and research — the
         // Digital Library's published shelf, through its own action.
         $library = $searching
-            ? collect(app(ListLibraryItemsAction::class)->execute(['q' => $q]))->take(10)
+            // BLOG_PLAN BL2b: blog posts are found here, though not on the shelf.
+            ? collect(app(ListLibraryItemsAction::class)->execute(['q' => $q, 'with_posts' => true]))->take(10)
             : collect();
 
         $total = $courses->count() + $library->count() + $posts->count() + $events->count();

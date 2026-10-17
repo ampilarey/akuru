@@ -211,6 +211,9 @@ return [
     // deviation, consistent within the zone); an Inertia page here would be
     // the odd one out beside index/show/reader.
     'public/library/author.blade.php',
+    // BLOG_PLAN BL2b: the blogs' front, in the same public Blade zone as the
+    // shelf and the author page it links to.
+    'public/library/blogs.blade.php',
     'public/library/index.blade.php',
     'public/library/my.blade.php',
     'public/library/payment-return.blade.php',

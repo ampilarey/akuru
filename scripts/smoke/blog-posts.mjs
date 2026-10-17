@@ -1,13 +1,16 @@
 /**
  * Can a student write a series of posts, their class teacher check them,
- * and the office publish one? (BLOG_PLAN BL2a, STATUS §5sf.)
+ * and the office publish one — and do readers find it on the blogs? (BLOG_PLAN
+ * BL2a and BL2b, STATUS §5sf, §5sg.)
  *
  * The seeded pupil (student@) is given a student blog for the run, and the
  * seeded class teacher (teacher@) their class. The pupil writes a two-part
  * series under /dv in Dhivehi and sends both. The teacher approves part 1
  * and sends part 2 back with a note. The office approves part 1 on the
  * Library office. Part 1 is readable under /ar, right to left; part 2 is
- * not, and the pupil reads the teacher's note on *My blog*.
+ * not, and the pupil reads the teacher's note on *My blog*. BL2b: part 1 is
+ * on the blogs' front, the pupil's author page reads as their blog with the
+ * series, the post says *part 1 of 1*, and the site search finds it.
  *
  * The walk puts everything back: the posts, the series, the profile, the
  * role and the class teacher. Local server only.
@@ -130,6 +133,16 @@ try {
     check('part 2, sent back, is not public', hidden.status() === 404, String(hidden.status()));
     await reader.goto(`${BASE}/en/library`, { waitUntil: 'networkidle' });
     check('posts stay off the book shelf', !(await reader.content()).includes(PART1));
+
+    // BL2b: the blogs' front, the blog on the author page, and the series on the post.
+    await reader.goto(`${BASE}/ar/library/blogs`, { waitUntil: 'networkidle' });
+    check('the blogs\' front lists part 1 under /ar, in Arabic, and not part 2', (await reader.locator('h1').textContent())?.trim() === say('public.blogs_title', 'ar') && (await reader.locator(`[data-post="${slugs[0]}"]`).count()) === 1 && (await reader.locator(`[data-post="${slugs[1]}"]`).count()) === 0);
+    await reader.goto(`${BASE}/en/library/authors/walk-tari-${setup.user}`, { waitUntil: 'networkidle' });
+    check('the pupil\'s page is a blog: its title, the post and its series', flat(await reader.locator('[data-testid="blog-title"]').textContent()) === 'މާލޭގެ ނޯޓްތައް' && (await reader.locator('[data-testid="author-blog"]').textContent()).includes(PART1) && (await reader.locator('[data-testid="author-series"]').textContent()).includes('ބަގީޗާގެ ޑައިރީ'));
+    await reader.goto(`${BASE}/en/library/${slugs[0]}`, { waitUntil: 'networkidle' });
+    check('the post says its part of the series, counting only what is published', flat(await reader.locator('[data-testid="post-series"] p').textContent()) === say('public.blogs_series_part', 'en').replace(':n', '1').replace(':count', '1').replace(':series', 'ބަގީޗާގެ ޑައިރީ') && (await reader.locator('[data-testid="series-next"]').count()) === 0, flat(await reader.locator('[data-testid="post-series"]').textContent()));
+    await reader.goto(`${BASE}/en/search?q=${encodeURIComponent('ބަގީޗާ')}`, { waitUntil: 'networkidle' });
+    check('the site search finds the post', (await reader.content()).includes(PART1));
 
     // The pupil reads the note and may edit part 2.
     await pupil.goto(`${BASE}/dv/my-blog`, { waitUntil: 'networkidle' });

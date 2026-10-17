@@ -180,6 +180,8 @@ Route::get('shop/{vendor}/{collection}', [\App\Domains\Bookshop\Http\Controllers
 Route::get('library/export', [PublicLibraryController::class, 'export'])->name('public.library.export');
 Route::get('library', [PublicLibraryController::class, 'index'])->name('public.library.index');
 Route::get('library/authors/{slug}', [PublicLibraryController::class, 'author'])->name('public.library.author');
+// BLOG_PLAN BL2b: the blogs' front — before `library/{slug}`, whose slugs may not be `blogs`.
+Route::get('library/blogs', [PublicLibraryController::class, 'blogs'])->name('public.library.blogs');
 // B4 (§8.5): the offers running now.
 Route::get('library/promotions', [PublicLibraryController::class, 'promotions'])->name('public.library.promotions');
 Route::get('my-library', [LibraryReaderController::class, 'myLibrary'])->name('public.library.my');
