@@ -419,4 +419,6 @@ return [
     'upload_error_type' => 'That kind of file cannot be uploaded here.',
     'upload_error_size' => 'That file is larger than :size MB.',
     'upload_error_document_type' => 'Upload a PDF, JPEG or PNG.',
+    'library_student_blog_body' => 'Your student blog is set up. Writing posts opens soon; every post is checked before it is published.',
+    'library_student_blog_open' => 'Open My blog',
 ];

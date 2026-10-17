@@ -97,7 +97,7 @@ it('lands a learner on My learning, and a parent-learner on Family with My learn
         ->assertInertia(fn (Assert $page) => $page->component('Courses/Learn/Dashboard')
             ->where('auth.workspace', 'learner')
             ->where('auth.workspaces.1.label', 'My learning')
-            ->where('nav.primary', fn ($bar) => collect($bar)->pluck('label')->all() === ['My learning', 'Schedule', 'Browse courses'])
+            ->where('nav.primary', fn ($bar) => collect($bar)->pluck('label')->all() === ['My learning', 'Schedule', 'Browse courses', 'My blog'])
             ->where('nav.groups', fn ($groups) => collect($groups)->pluck('key')->all() === ['education', 'me'])
             ->where('enrollments.0.title', 'Tajweed for adults'));
 

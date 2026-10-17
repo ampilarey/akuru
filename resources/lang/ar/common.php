@@ -412,4 +412,6 @@ return [
     'upload_error_type' => 'لا يمكن رفع هذا النوع من الملفات هنا.',
     'upload_error_size' => 'هذا الملف أكبر من :size ميغابايت.',
     'upload_error_document_type' => 'ارفع ملف PDF أو JPEG أو PNG.',
+    'library_student_blog_body' => 'مدونتك الطلابية جاهزة. تُفتح كتابة المنشورات قريبًا؛ يُراجَع كل منشور قبل نشره.',
+    'library_student_blog_open' => 'افتح مدونتي',
 ];

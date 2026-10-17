@@ -346,5 +346,7 @@ return [
     'print_template' => \App\Domains\Bookshop\Models\PrintTemplate::class,
     'print_image' => \App\Domains\Bookshop\Models\PrintImage::class,
     'print_job' => \App\Domains\Bookshop\Models\PrintJob::class,
+    // BLOG_PLAN BL1: a student's request to start a blog.
+    'blog_request' => \App\Domains\Library\Models\BlogRequest::class,
     'print_job_reprint' => \App\Domains\Bookshop\Models\PrintJobReprint::class,
 ];

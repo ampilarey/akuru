@@ -1,7 +1,7 @@
 import { Link, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
-export default function Children({ children, pending = [], t = {} }) {
+export default function Children({ blogs = {}, children, pending = [], t = {} }) {
     // A relationship is named by the `learn` book the shell shares.
     const learn = usePage().props.i18n?.learn || {};
     // The column names, also the captions a phone shows beside each value
@@ -60,7 +60,16 @@ export default function Children({ children, pending = [], t = {} }) {
                                 <td className="px-3 py-2" data-label={col.relationship}>{relationship(child.relationship)}</td>
                                 <td className="px-3 py-2" data-label={col.status}>{t[`student_status_${child.status}`] || child.status}</td>
                                 {/* B8: what they are reading and have bought. */}
-                                <td className="table-actions px-3 py-2"><Link href={`/portal/children/${child.id}/library`} className="chip-link" data-testid="child-library">{col.library}</Link></td>
+                                <td className="table-actions px-3 py-2">
+                                    <Link href={`/portal/children/${child.id}/library`} className="chip-link" data-testid="child-library">{col.library}</Link>
+                                    {/* BLOG_PLAN BL1: a request to start a blog, and whether it waits for this parent. */}
+                                    {blogs[child.id] && (
+                                        <Link href={`/portal/children/${child.id}/blog`} className="chip-link ms-2" data-testid="child-blog">
+                                            {t.col_blog || 'Blog'}
+                                            {blogs[child.id].status === 'waiting_parent' && <span className="ms-1 rounded bg-amber-100 px-1.5 text-xs text-amber-900" data-testid="child-blog-waiting">{t.blog_waiting_for_you || 'waiting for you'}</span>}
+                                        </Link>
+                                    )}
+                                </td>
                             </tr>
                         ))}
                     </tbody>

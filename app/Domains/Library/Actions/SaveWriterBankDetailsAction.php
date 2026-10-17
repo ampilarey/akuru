@@ -18,6 +18,10 @@ class SaveWriterBankDetailsAction
         if ($profile === null) {
             throw ValidationException::withMessages(['writer' => __('common.library_error_not_writer')]);
         }
+        // BLOG_PLAN BL1: a student is never paid to a bank while under 18, and a student blog's money opens with tips (BL6, D8).
+        if ($profile->isStudent()) {
+            throw ValidationException::withMessages(['writer' => __('blog.error_student_no_bank')]);
+        }
 
         return WriterBankDetail::query()->updateOrCreate(
             ['writer_id' => $profile->id],

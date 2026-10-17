@@ -143,6 +143,8 @@ return [
     'bookshop' => 'متجر أكورو للكتب',
     'akuru_fulfilment' => 'تجهيز أكورو',
     'print_desk' => 'مكتب الطباعة',
+    'my_blog' => 'مدونتي',
+    'blog_requests' => 'طلبات المدونات',
     'print_templates' => 'قوالب الطباعة',
     'print_queue' => 'طابور الطباعة',
     'complaints' => 'المشكلات المبلّغ عنها',

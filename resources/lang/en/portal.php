@@ -580,4 +580,6 @@ return [
     // A family's form, what the server says (slice SE1).
     'error_form_not_your_child' => 'That is not your child.',
     'error_form_which_child' => 'Please say which child this is for.',
+    'col_blog' => 'Blog',
+    'blog_waiting_for_you' => 'waiting for you',
 ];

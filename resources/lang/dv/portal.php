@@ -570,4 +570,6 @@ return [
     // A family's form, what the server says (slice SE1).
     'error_form_not_your_child' => 'އެއީ ތިބާގެ ދަރިއެއް ނޫން.',
     'error_form_which_child' => 'މިއީ ކޮން ދަރިއަކަށްތޯ ބުނެދީ.',
+    'col_blog' => 'ބްލޮގް',
+    'blog_waiting_for_you' => 'ތިބާއަށް މަޑުކުރަނީ',
 ];

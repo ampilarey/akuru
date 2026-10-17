@@ -146,6 +146,7 @@ return [
     'consent_type_data_processing' => 'މަޢުލޫމާތު ބޭނުންކުރުން',
     'consent_type_marketing_messages' => 'މާކެޓިންގ މެސެޖު',
     'consent_type_prayer_reminders' => 'ނަމާދު ހަނދާންކޮށްދިނުން',
+    'consent_type_blog_publishing' => 'ބްލޮގެއް ޝާއިޢުކުރުން',
     'consent_source_admission_form' => 'ވަނުމުގެ ފޯމު',
     'consent_source_portal' => 'ބެލެނިވެރިންގެ ޕޯޓަލް',
     'consent_source_admin' => 'އޮފީސް',

@@ -4983,6 +4983,114 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5se. Students can start a blog, with a parent's consent (BLOG_PLAN BL1, 2026-10-17)
+
+The first slice of `docs/BLOG_PLAN.md` (§5sd).
+
+**Built:**
+- **My blog** (`/my-blog`, `Library/MyBlog`), in the student's and the
+  course learner's menus:
+  - a student asks with a pen name, a blog title and a line about what they
+    will write;
+  - then follows the request through their parent and the office;
+  - then sees the blog, badged *Student writer*.
+
+  Rules:
+  - one open request at a time, and none for someone who already writes;
+  - a pen name carrying the student's surname is refused (D9);
+  - "student" means a `students` row on the account (People's new
+    `ResolveStudentAgeForUserAction`), so school pupils and course learners
+    alike.
+- **Under 18** (or an age the record cannot tell), the request waits for a
+  parent.
+  - Each verified parent with an account (People's new
+    `ListConsentingGuardiansAction`) is told, with a link.
+  - *My children* shows *Blog — waiting for you*.
+  - The parent's page (`/portal/children/{student}/blog`, `Portal/ChildBlog`)
+    says what the child asked and what consent means, and takes *I agree* or
+    *Not now*.
+  - The answer is a People consent, `blog_publishing`, a new `ConsentType`
+    named in three languages.
+  - With a yes, the parent also chooses whether the photo and the school name
+    may show.
+  - With no verified parent, the student and the office are told a parent
+    must be linked first.
+- **At 18 or over,** the request goes straight to the office.
+- **The office** (`/admin/library/blog-requests`, under the Library office,
+  `Library/BlogRequests`):
+  - sees the pupil's real name and number beside the pen name, the parent and
+    their choices;
+  - can filter, and download the list as CSV;
+  - approval needs the request past its parent and, under 18, the
+    `blog_publishing` consent still in force (one withdrawn on the record
+    stops it);
+  - refusal needs a note, which the student reads.
+
+  Approval makes a writer profile with `kind = student` (the pen name, the
+  blog title, the parent and their choices) and grants `writer`, as a writer
+  application's approval does.
+- **A student in the writer portal** (`/write`) sees a short *My blog* panel.
+  - No ID card, no earnings, no new draft.
+  - The actions refuse a student's item draft (posts open in BL2), a change to
+    their public page (checked changes open in BL3) and bank details (D8).
+  - A full writer's application and portal are unchanged.
+- **Notices:** two new Library events, `blog_consent_asked` and
+  `blog_request_decided`, so they also go by email and SMS when the office's
+  switches allow.
+- **Data and language:**
+  - migration `2026_10_17_000001_bl1_student_blogs` adds the `writer_profiles`
+    student columns and a `blog_requests` table;
+  - a `blog` phrase book (81 phrases, EN/DV/AR);
+  - morph alias `blog_request`.
+
+**Two departures from the plan, both recorded in it:**
+- The photo choice is the blog's own (`show_photo`), not the school's
+  `photo_media_use` consent. That consent covers the school's media and
+  should not be widened by a blog page.
+- *My blog* is in the student's and the learner's menus rather than on My
+  account. My account is the home only of someone with no other workspace,
+  which a pupil never is.
+
+**Tests:** `StudentBlogStartTest` (new, 6):
+- the under-18 path, from request to parent to office to a student profile:
+  - the parent notified with the link;
+  - the office refused before the parent;
+  - the real name on the office's list;
+  - the parent's choices kept;
+- no approval without a parent: none linked, or consent withdrawn on the
+  record;
+- only the child's own verified parent answers, and a *no* lets the student
+  ask again;
+- an adult student goes straight to the office; a note is needed to refuse;
+  a surname is refused in the pen name; the CSV;
+- a student's draft, bank details and page change refused, and a writer's
+  profile still a writer's;
+- the menus, and the phrases in Thaana and Arabic script.
+
+`LearnerWorkspaceTest`, `WorkspacesTest` and `AdminHubTest` name the new
+menu items.
+
+Whole suite locally: **RESULT**.
+
+**Walk:** `blog-start.mjs` (new, in the runner), 12/12:
+- under `/dv` the seeded pupil asks in Dhivehi, right to left, and is told a
+  parent agrees first;
+- the request waits for a parent;
+- their verified parent sees *Blog — waiting for you* on My children, reads
+  the pen name, allows the school name and agrees;
+- the office sees the pen name beside the pupil's real name, approves, and
+  the CSV downloads;
+- the pupil's *My blog* shows the blog badged *Student writer* in Dhivehi;
+- the writer portal shows them the panel with no bank or ID card.
+
+The walk puts everything back.
+
+**Deploy:** one additive migration. The built assets are in the commit. The
+standard pull command.
+
+**Next:** BL2 — posts, checked by the class teacher then the office, and the
+blog pages.
+
 ## 5sd. Blogs in the Digital Library: a plan, not built (BLOG_PLAN, 2026-10-17)
 
 The owner asked for blogs for students who want to write, with a chance to

@@ -454,7 +454,7 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
     return (
         <AppShell title={t.library_write_title || 'Writer portal'}>
             <FormErrors errors={refusals.unplaced} className="mb-4" />
-            {profile && <IdentityCardUpload identity={identity} href="/write/identity" l={id_l} blurb={id_l.id_writer_blurb} actOn={refusals.actOn} />}
+            {profile && profile.kind !== 'student' && <IdentityCardUpload identity={identity} href="/write/identity" l={id_l} blurb={id_l.id_writer_blurb} actOn={refusals.actOn} />}
             <FormErrors errors={refusals.errorsFor('identity')} except={['id_front', 'id_back']} className="mb-4" />
             {!profile && (
                 <div className="mb-6">
@@ -472,7 +472,16 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
                 </div>
             )}
 
-            {profile && (
+            {/* BLOG_PLAN BL1: a student's blog has its own page; posts open in BL2. */}
+            {profile && profile.kind === 'student' && (
+                <section className="max-w-xl rounded-lg border bg-white p-4" data-testid="write-student-blog">
+                    <h2 className="text-lg font-semibold">{profile.blog_title || profile.display_name}</h2>
+                    <p className="mt-1 text-sm text-gray-700">{t.library_student_blog_body || 'Your student blog is set up. Writing posts opens soon; every post is checked before it is published.'}</p>
+                    <a className="mt-3 inline-block underline" href="/my-blog">{t.library_student_blog_open || 'Open My blog'}</a>
+                </section>
+            )}
+
+            {profile && profile.kind !== 'student' && (
                 <>
                     <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
                         <div className="flex items-center gap-3">

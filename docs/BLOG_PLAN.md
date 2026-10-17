@@ -7,8 +7,9 @@
 > blogs, under different rules.
 >
 > The owner's decisions are in **§13**. Everything else is the default an
-> implementer takes unless the owner says otherwise. **Nothing here is built
-> yet.** This document is the whole brief for the agent that builds it.
+> implementer takes unless the owner says otherwise. **BL1 is built
+> (2026-10-17, STATUS §5se); BL2–BL7 are not.** This document is the whole
+> brief for the agent that builds them.
 
 Written against `main` at `51b9c58` (#777). Every name below was read from
 the tree. Where a slice must verify something before relying on it, the
@@ -399,6 +400,19 @@ Each slice: code + tests + arch green + walk + STATUS entry + BACKLOG row
 touched + no files outside its scope.
 
 ### BL1 — Student blogs can be started, with a parent's consent
+
+> **Built 2026-10-17 (STATUS §5se).** Two departures, by the code as it
+> stands:
+> - The parent's photo choice is the blog's own (`show_photo` on the
+>   profile), not the school's `photo_media_use` consent, which covers the
+>   school's media.
+> - *My blog* (`/my-blog`) is in the student's and the course learner's
+>   menus, not on My account, which is only the home of someone with no
+>   other workspace.
+>
+> Until BL2 and BL3 the writer portal refuses a student's draft, page
+> change and bank details.
+
 - `writer_profiles.kind` and the student columns.
 - `blog_requests`, *Start a blog*.
 - The parent's consent in the family portal (`blog_publishing`; photo and

@@ -194,6 +194,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // ID2b). `my.enrollments` kept its name and address: the registration
     // flow, the receipt and the payment pages send people to it.
     Route::get('/my-account', [MyAccountController::class, 'index'])->name('account.home');
+    // BLOG_PLAN BL1: a student asks to start a blog, and sees it once approved.
+    Route::get('/my-blog', [\App\Domains\Library\Http\Controllers\StudentBlogController::class, 'index'])->name('my-blog');
+    Route::post('/my-blog', [\App\Domains\Library\Http\Controllers\StudentBlogController::class, 'store'])->name('my-blog.store')->middleware('throttle:10,60,blog-request');
     Route::get('/my-enrollments/export', [MyAccountController::class, 'export'])->name('my.enrollments.export');
     Route::get('/my-enrollments', [MyAccountController::class, 'enrolments'])->name('my.enrollments');
     // COMMERCE_PARITY_PLAN P6b: a driver's deliveries, and the proof photo (the office, or the driver who took it).
@@ -218,6 +221,9 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // B8 (LIBRARY_PLAN §10): what a child is reading and has bought, for their parent.
     Route::get('/portal/children/{student}/library/export', [\App\Domains\Portal\Http\Controllers\GuardianChildLibraryController::class, 'export'])->name('portal.children.library.export')->whereNumber('student');
     Route::get('/portal/children/{student}/library', [\App\Domains\Portal\Http\Controllers\GuardianChildLibraryController::class, 'show'])->name('portal.children.library')->whereNumber('student');
+    // BLOG_PLAN BL1 (D7): a parent agrees to a child's blog, or says no.
+    Route::get('/portal/children/{student}/blog', [\App\Domains\Portal\Http\Controllers\GuardianChildBlogController::class, 'show'])->name('portal.children.blog')->whereNumber('student');
+    Route::post('/portal/children/{student}/blog/consent', [\App\Domains\Portal\Http\Controllers\GuardianChildBlogController::class, 'consent'])->name('portal.children.blog.consent')->whereNumber('student')->middleware('throttle:20,60,blog-consent');
     Route::get('/portal/holidays', [PortalHolidayController::class, 'index'])->name('portal.holidays');
     // E15: what is still on the shelf. Families only ever see unreturned items.
     // E8, the family side.
@@ -829,6 +835,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
 
     Route::prefix('admin/library')->middleware(['role:super_admin', 'can:library.manage'])->group(function () {
         Route::get('/', [AdminLibraryController::class, 'index'])->name('admin.library.index');
+        // BLOG_PLAN BL1: students' requests to start a blog.
+        Route::get('blog-requests', [\App\Domains\Library\Http\Controllers\AdminBlogRequestController::class, 'index'])->name('admin.library.blog-requests');
+        Route::get('blog-requests/export', [\App\Domains\Library\Http\Controllers\AdminBlogRequestController::class, 'export'])->name('admin.library.blog-requests.export');
+        Route::post('blog-requests/{blogRequest}/decide', [\App\Domains\Library\Http\Controllers\AdminBlogRequestController::class, 'decide'])->name('admin.library.blog-requests.decide')->whereNumber('blogRequest');
         // B12 (LIBRARY_PLAN §42): the commercial knobs, on a screen.
         Route::get('settings', [\App\Domains\Library\Http\Controllers\AdminLibrarySettingsController::class, 'edit'])->name('admin.library.settings');
         Route::put('settings', [\App\Domains\Library\Http\Controllers\AdminLibrarySettingsController::class, 'update'])->name('admin.library.settings.update');
