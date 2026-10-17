@@ -5070,7 +5070,7 @@ The first slice of `docs/BLOG_PLAN.md` (§5sd).
 `LearnerWorkspaceTest`, `WorkspacesTest` and `AdminHubTest` name the new
 menu items.
 
-Whole suite locally: **RESULT**.
+Whole suite locally: **3211 passed** (67791 assertions).
 
 **Walk:** `blog-start.mjs` (new, in the runner), 12/12:
 - under `/dv` the seeded pupil asks in Dhivehi, right to left, and is told a
