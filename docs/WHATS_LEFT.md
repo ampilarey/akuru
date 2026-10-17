@@ -25,6 +25,12 @@ closes or adds a line.
 | K2 | A teacher's **absence cannot be removed** from its page: `absences.destroy` exists, no button calls it. | KNOWN_ISSUES |
 | K3 | A **promotion campaign ended before it starts** reads its window backwards on the list and in the CSV. A wording choice: *ended before it started*, or keep its end at its start. | KNOWN_ISSUES, PC1 (STATUS §5qy) |
 
+## 1b. Planned, waiting for the owner's go
+
+| # | What | Where |
+|---|---|---|
+| P1 | **Blogs in the Digital Library**, for students and full writers: seven slices, BL1–BL7. | `docs/BLOG_PLAN.md`, BACKLOG C25 |
+
 ## 2. The owner's — server, credentials, settings (OWNER_ACTIONS)
 
 | # | What | Item |
