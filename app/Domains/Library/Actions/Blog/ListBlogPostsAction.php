@@ -36,11 +36,15 @@ class ListBlogPostsAction
 
         return [
             'posts' => $posts->map(fn (LibraryItem $item) => $this->row($item, $series->firstWhere('id', $item->series_id)?->title) + [
-                'body' => $item->body,
+                // BL2c: a published post's form holds its waiting edit, if it has one.
+                'edit_title' => $item->hasPendingChange() ? $item->pending_title : $item->title,
+                'body' => $item->hasPendingChange() ? $item->pending_body : $item->body,
                 'language' => $item->language,
                 'series_id' => $item->series_id,
                 'own_work' => ! empty($item->declarations['copyright']),
-                'editable' => in_array($item->status, [LibraryItemStatus::Draft, LibraryItemStatus::ChangesRequested], true),
+                'editable' => in_array($item->status, [LibraryItemStatus::Draft, LibraryItemStatus::ChangesRequested], true)
+                    || ($item->status === LibraryItemStatus::Published && $item->review_stage === null),
+                'has_change' => $item->hasPendingChange(),
                 'note' => $notes[$item->id] ?? null,
             ])->values()->all(),
             'series' => $series->map(fn (LibraryPostSeries $s) => ['id' => $s->id, 'title' => $s->title])->values()->all(),
@@ -54,7 +58,9 @@ class ListBlogPostsAction
     {
         $posts = LibraryItem::query()
             ->with('writer')
-            ->where('status', LibraryItemStatus::Submitted->value)
+            // BL2c: a published post's edit waits for the teacher too.
+            ->where(fn ($query) => $query->where('status', LibraryItemStatus::Submitted->value)
+                ->orWhere(fn ($sub) => $sub->where('status', LibraryItemStatus::Published->value)->whereNotNull('pending_saved_at')))
             ->where('review_stage', 'teacher')
             ->where('teacher_user_id', $teacherUserId)
             ->orderBy('submitted_at')
@@ -65,7 +71,9 @@ class ListBlogPostsAction
         $names = app(ListStudentsByIdsAction::class)->execute($studentIds->filter()->values()->all())->pluck('name', 'id');
 
         return $posts->map(fn (LibraryItem $item) => $this->row($item, $item->series_id ? ($series[$item->series_id] ?? null) : null) + [
-            'body' => $item->body,
+            'body' => $item->hasPendingChange() ? $item->pending_body : $item->body,
+            'change' => $item->hasPendingChange(),
+            'edit_title' => $item->pending_title,
             'pen_name' => $item->writer?->display_name,
             // The teacher knows whose post it is; readers see only the pen name.
             'student_name' => $names[$studentIds[$item->id]] ?? null,

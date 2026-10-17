@@ -72,7 +72,7 @@ it('takes a student\'s post to the class teacher, then the office, and publishes
     // Now the office has it, and publishes.
     expect(collect(app(ListWriterQueuesAction::class)->execute()['submissions'])->pluck('id')->all())->toContain($post->id);
     $web->actingAs($office)->post("/admin/library/items/{$post->id}/review", ['decision' => 'approved'])->assertSessionHas('success');
-    expect($post->fresh()->status->value)->toBe('published');
+    expect($post->fresh()->status->value)->toBe('published')->and($post->fresh()->review_stage)->toBeNull();
     expect(LibraryItemReview::query()->where('library_item_id', $post->id)->orderBy('id')->pluck('decision')->all())->toBe(['submitted', 'teacher_approved', 'approved']);
 
     // Readable at its address; kept off the book shelf; on My blog as published.

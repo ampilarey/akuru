@@ -1,7 +1,7 @@
 /**
  * Can a student write a series of posts, their class teacher check them,
  * and the office publish one — and do readers find it on the blogs? (BLOG_PLAN
- * BL2a and BL2b, STATUS §5sf, §5sg.)
+ * BL2a–BL2c, STATUS §5sf–§5sh.)
  *
  * The seeded pupil (student@) is given a student blog for the run, and the
  * seeded class teacher (teacher@) their class. The pupil writes a two-part
@@ -10,7 +10,9 @@
  * Library office. Part 1 is readable under /ar, right to left; part 2 is
  * not, and the pupil reads the teacher's note on *My blog*. BL2b: part 1 is
  * on the blogs' front, the pupil's author page reads as their blog with the
- * series, the post says *part 1 of 1*, and the site search finds it.
+ * series, the post says *part 1 of 1*, and the site search finds it. BL2c:
+ * the pupil edits part 1; readers see the old title until the teacher and
+ * the office approve, then the new one at the same address.
  *
  * The walk puts everything back: the posts, the series, the profile, the
  * role and the class teacher. Local server only.
@@ -148,6 +150,30 @@ try {
     await pupil.goto(`${BASE}/dv/my-blog`, { waitUntil: 'networkidle' });
     check('the pupil reads the teacher\'s note on part 2, and may edit it', flat(await pupil.locator(`[data-testid="post-note-${two}"]`).textContent()).includes('Say which flower it was.') && (await pupil.locator(`[data-testid="post-edit-${two}"]`).count()) === 1);
     check('part 1 shows published', flat(await pupil.locator(`[data-testid="post-status-${one}"]`).textContent()) === say('blog.post_status_published'));
+
+    // BL2c: the pupil edits published part 1; readers see the old text until the teacher and the office approve.
+    const EDITED = 'ބަގީޗާ ފެށުން — އިތުރު';
+    await pupil.click(`[data-testid="post-edit-${one}"]`);
+    await pupil.waitForSelector('[data-testid="post-change-help"]');
+    await pupil.fill('[data-testid="post-title"]', EDITED);
+    await Promise.all([pupil.waitForLoadState('networkidle'), pupil.click('[data-testid="post-save"]')]);
+    await pupil.waitForSelector(`[data-testid="post-change-${one}"]`);
+    await Promise.all([pupil.waitForLoadState('networkidle'), pupil.click(`[data-testid="post-submit-${one}"]`)]);
+    await pupil.waitForFunction((pid) => document.querySelector(`[data-testid="post-change-${pid}"]`)?.dataset.stage === 'teacher', one);
+    check('an edit to part 1 waits for the class teacher, in Dhivehi', flat(await pupil.locator(`[data-testid="post-change-${one}"]`).textContent()) === say('blog.change_status_teacher'));
+    await reader.goto(`${BASE}/en/library/${slugs[0]}`, { waitUntil: 'networkidle' });
+    check('readers still see part 1 as it was', flat(await reader.locator('h1').textContent()) === PART1);
+    await teacher.goto(`${BASE}/en/teach/blog-posts`, { waitUntil: 'networkidle' });
+    check('the teacher sees it marked as an edit, with the new title', (await teacher.locator(`[data-testid="teacher-post-edit-${one}"]`).count()) === 1 && flat(await teacher.locator(`[data-testid="teacher-post-${one}"] h2`).textContent()) === EDITED);
+    await Promise.all([teacher.waitForLoadState('networkidle'), teacher.click(`[data-testid="teacher-post-approve-${one}"]`)]);
+    await teacher.waitForFunction((pid) => !document.querySelector(`[data-testid="teacher-post-${pid}"]`), one);
+    await office.goto(`${BASE}/en/admin/library`, { waitUntil: 'networkidle' });
+    const editRow = queued(PART1);
+    check('the office sees the edit, marked as one', (await editRow.count()) === 1 && (await office.locator(`[data-testid="submission-edit-${one}"]`).count()) === 1);
+    await Promise.all([office.waitForLoadState('networkidle'), editRow.locator('[data-testid="approve-publish"]').click()]);
+    await office.waitForFunction(() => !document.querySelector('[data-testid^="submission-edit-"]'));
+    await reader.goto(`${BASE}/en/library/${slugs[0]}`, { waitUntil: 'networkidle' });
+    check('once approved, readers see the new title at the same address', flat(await reader.locator('h1').textContent()) === EDITED);
 } catch (e) {
     problems.push(String(e).slice(0, 300));
 } finally {

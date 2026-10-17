@@ -47,9 +47,14 @@ class ListWriterQueuesAction
             ])->values()->all();
 
         $submitted = LibraryItem::query()
-            ->where('status', LibraryItemStatus::Submitted)
             // BLOG_PLAN BL2a: a student's post reaches the office once its class teacher has checked it.
-            ->where(fn ($query) => $query->whereNull('review_stage')->orWhere('review_stage', '!=', 'teacher'))
+            // BL2c: so does an edit to a published post, sent to be checked.
+            ->where(fn ($query) => $query
+                ->where(fn ($sub) => $sub->where('status', LibraryItemStatus::Submitted)
+                    ->where(fn ($stage) => $stage->whereNull('review_stage')->orWhere('review_stage', '!=', 'teacher')))
+                ->orWhere(fn ($sub) => $sub->where('status', LibraryItemStatus::Published)
+                    ->where('review_stage', 'office')
+                    ->whereNotNull('pending_saved_at')))
             ->orderBy('submitted_at')
             ->get();
 
@@ -78,7 +83,10 @@ class ListWriterQueuesAction
             'access_type' => $item->access_type?->value,
             'price' => $item->price !== null ? (float) $item->price : null,
             'writer' => $writers->get($item->writer_id)?->display_name ?? '—',
-            'submitted_at' => $item->submitted_at?->toDateTimeString(),
+            'submitted_at' => ($item->hasPendingChange() ? $item->pending_saved_at : $item->submitted_at)?->toDateTimeString(),
+            // BL2c: an edit to a published post — the live post stays as it is until approved.
+            'change' => $item->hasPendingChange(),
+            'pending_title' => $item->pending_title,
             'reviews' => ($assignments->get($item->id) ?? collect())->map(fn (LibraryReviewAssignment $assignment) => [
                 'status' => $assignment->status,
                 'recommendation' => $assignment->recommendation,
