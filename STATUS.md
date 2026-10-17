@@ -4983,6 +4983,40 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sd. Blogs in the Digital Library: a plan, not built (BLOG_PLAN, 2026-10-17)
+
+The owner asked for blogs for students who want to write, with a chance to
+earn, everything checked before it is published, and each writer's page
+customisable. Planned in `docs/BLOG_PLAN.md`; nothing is built. BACKLOG C25.
+
+- **Where:** inside the Digital Library, with its own blog front
+  (`/library/blogs`). It reuses the Library's review trail, earnings
+  ledger, editor, author pages, notices and three languages, rather than a
+  second set of each (rule 11).
+- **Who:** students and full writers, one system, a `kind` on the writer's
+  profile. A student under 18 needs a verified parent's consent, uses a pen
+  name, has a photo only with photo consent, and has no comments under 13.
+  Their earnings go only to the consenting parent's Akuru wallet. At 18
+  they become a writer and keep everything.
+- **Checking:** a student's post goes to their class teacher, then the
+  office. Edits to published posts, page changes, comments and tip notes
+  are all checked before they show.
+- **Money:**
+  - tips through the Library's payment paths (webhook, rule 12), less
+    Akuru's share;
+  - featured-post rewards funded by Akuru, off by default;
+  - payouts still off until the tax treatment is confirmed.
+- **Customising:** themes, an accent colour, heading font, banner, picture,
+  header and the order of sections; no custom CSS. `Theme` and `Contrast`
+  move from the Bookstore to `App\Support\Theme` so both can use them
+  (rule 3).
+- **Seven slices,** BL1–BL7, with a walk each. Owner items in §14:
+  - writing guidelines;
+  - the parent consent text;
+  - tip amounts and Akuru's share;
+  - the tax treatment;
+  - who checks.
+
 ## 5sc. Main green again (2026-10-16)
 
 Main had failed CI since #773 (2026-10-13). #773 and #775 were both merged
