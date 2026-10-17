@@ -146,6 +146,7 @@ return [
     'consent_type_data_processing' => 'Data processing',
     'consent_type_marketing_messages' => 'Marketing messages',
     'consent_type_prayer_reminders' => 'Prayer reminders',
+    'consent_type_blog_publishing' => 'Publishing a blog',
     'consent_source_admission_form' => 'Admission form',
     'consent_source_portal' => 'Family portal',
     'consent_source_admin' => 'Office',

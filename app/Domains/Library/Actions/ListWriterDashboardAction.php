@@ -108,6 +108,9 @@ class ListWriterDashboardAction
 
         return [
             'profile' => $profile ? [
+                // BLOG_PLAN BL1: a student's blog shows a simpler portal.
+                'kind' => $profile->kind ?? 'writer',
+                'blog_title' => $profile->blog_title,
                 'display_name' => $profile->display_name,
                 'slug' => $profile->slug,
                 'bio' => $profile->bio,

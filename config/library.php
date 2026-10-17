@@ -97,7 +97,7 @@ return [
         'office_events' => ['new_sale'],
         'office_email' => env('LIBRARY_OFFICE_EMAIL', ''),
         'office_phone' => env('LIBRARY_OFFICE_PHONE', ''),
-        'events' => ['writer_application_decided', 'submission_decided', 'published', 'new_sale', 'payout_decided', 'review_assigned', 'purchase_ready'],
+        'events' => ['writer_application_decided', 'submission_decided', 'published', 'new_sale', 'payout_decided', 'review_assigned', 'purchase_ready', 'blog_consent_asked', 'blog_request_decided'],
         'sms_max_length' => 300,
     ],
 ];

@@ -43,6 +43,10 @@ class SaveWriterPublicProfileAction
         if ($profile === null) {
             throw ValidationException::withMessages(['writer' => __('common.library_error_not_writer')]);
         }
+        // BLOG_PLAN BL1: a student's page changes are checked before they show (BL3).
+        if ($profile->isStudent()) {
+            throw ValidationException::withMessages(['writer' => __('blog.error_student_page_soon')]);
+        }
 
         $name = trim((string) ($data['display_name'] ?? $profile->display_name));
         if ($name === '') {

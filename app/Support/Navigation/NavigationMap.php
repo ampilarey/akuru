@@ -67,6 +67,8 @@ final class NavigationMap
                 ['key' => 'homework', 'href' => '/portal/homework'],
                 ['key' => 'my_attendance', 'href' => '/portal/attendance'],
                 ['key' => 'results', 'href' => '/portal/exams'],
+                // BLOG_PLAN BL1: a student asks to start a blog, and sees it.
+                ['key' => 'my_blog', 'href' => '/my-blog'],
             ],
             'course_creator' => [
                 ['key' => 'catalog', 'href' => '/catalog/courses'],
@@ -98,6 +100,8 @@ final class NavigationMap
                 ['key' => 'my_learning', 'href' => '/learn'],
                 ['key' => 'schedule', 'href' => '/learn/schedule'],
                 ['key' => 'browse_courses', 'href' => '/learn/catalog'],
+                // BLOG_PLAN BL1: a course learner is a student too.
+                ['key' => 'my_blog', 'href' => '/my-blog'],
             ],
             // *My account* (SIGN_IN_PLAN ID2b): a person who holds no other
             // workspace — the enrolments they made, and the courses to start.
@@ -450,6 +454,8 @@ final class NavigationMap
                     ['key' => 'library_promotions', 'href' => '/admin/library/promotions'],
                     ['key' => 'library_reviewers', 'href' => '/admin/library/reviewers'],
                     ['key' => 'library_settings', 'href' => '/admin/library/settings'],
+                    // BLOG_PLAN BL1: students' requests to start a blog.
+                    ['key' => 'blog_requests', 'href' => '/admin/library/blog-requests'],
                 ]],
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
                 // COMMERCE_PARITY_PLAN P6a: the orders Akuru packs, and its charges.

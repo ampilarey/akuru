@@ -2,6 +2,7 @@
 
 namespace App\Domains\Portal\Http\Controllers;
 
+use App\Domains\Library\Actions\Blog\ListBlogRequestsAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Http\Controllers\Controller;
 use App\Support\Inertia\Phrases;
@@ -16,8 +17,12 @@ class GuardianChildrenController extends Controller
         $list = app(ListGuardianChildrenAction::class);
         $userId = (int) $request->user()->id;
 
+        $children = $list->executeForGuardianUserId($userId);
+
         return Inertia::render('Portal/Children', [
-            'children' => $list->executeForGuardianUserId($userId),
+            'children' => $children,
+            // BLOG_PLAN BL1: a child's request to start a blog, by student id.
+            'blogs' => app(ListBlogRequestsAction::class)->latestForStudents($children->pluck('id')->map(fn ($id) => (int) $id)->all()),
             // Item 13: links the office has not verified yet, by name only.
             'pending' => $list->executePendingForGuardianUserId($userId),
             't' => Phrases::once('portal'),

@@ -570,4 +570,6 @@ return [
     // A family's form, what the server says (slice SE1).
     'error_form_not_your_child' => 'هذا ليس طفلك.',
     'error_form_which_child' => 'يرجى تحديد الطفل المقصود.',
+    'col_blog' => 'المدونة',
+    'blog_waiting_for_you' => 'بانتظارك',
 ];

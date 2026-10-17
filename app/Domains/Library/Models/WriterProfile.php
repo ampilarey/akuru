@@ -9,12 +9,20 @@ class WriterProfile extends Model
 {
     protected $fillable = [
         'user_id',
+        // BLOG_PLAN BL1: `writer`, or `student` (a student's blog).
+        'kind',
         'display_name',
+        'blog_title',
         'slug',
         'bio',
         'qualifications',
         'expertise',
         'photo_media_file_id',
+        // A student's parent chose these at consent (BL1).
+        'show_photo',
+        'show_school',
+        'guardian_user_id',
+        'guardian_consented_at',
         'featured_item_ids',
         'social_links',
         'status',
@@ -30,7 +38,15 @@ class WriterProfile extends Model
             'default_commission' => 'decimal:2',
             'featured_item_ids' => 'array',
             'social_links' => 'array',
+            'show_photo' => 'boolean',
+            'show_school' => 'boolean',
+            'guardian_consented_at' => 'datetime',
         ];
+    }
+
+    public function isStudent(): bool
+    {
+        return $this->kind === 'student';
     }
 
     public function items(): HasMany

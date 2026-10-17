@@ -30,6 +30,11 @@ class SaveWriterItemAction
         if ($profile === null) {
             throw ValidationException::withMessages(['writer' => __('common.library_error_not_writer')]);
         }
+        // BLOG_PLAN BL1: a student blogs; books, research and paid articles
+        // are a full writer's. Posts open in BL2.
+        if ($profile->isStudent()) {
+            throw ValidationException::withMessages(['writer' => __('blog.error_student_posts_soon')]);
+        }
 
         $item = null;
         if ($itemId !== null) {
