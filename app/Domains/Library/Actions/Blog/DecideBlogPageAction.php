@@ -5,6 +5,9 @@ namespace App\Domains\Library\Actions\Blog;
 use App\Domains\Library\Actions\NotifyLibraryUserAction;
 use App\Domains\Library\Models\WriterProfile;
 use App\Domains\Library\Support\BlogPage;
+use App\Domains\Media\Actions\ReadPrivateMediaAction;
+use App\Domains\Media\Actions\StoreGeneratedPublicImageAction;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -12,6 +15,10 @@ use Illuminate\Validation\ValidationException;
  * This is the one place the live design changes: approval writes the whole
  * set to the live columns (the *about* text is the profile's `bio`); a
  * refusal needs a note, and leaves the set with the writer to fix.
+ *
+ * BL3b: approving copies a new banner or picture from private to public
+ * media, and asks the consents again — a picture or links the parent has not
+ * allowed (or has since withdrawn) are not approved.
  */
 class DecideBlogPageAction
 {
@@ -29,7 +36,17 @@ class DecideBlogPageAction
             if (BlogPage::problems($design) !== []) {
                 throw ValidationException::withMessages(['page' => __('blog.error_contrast_short')]);
             }
+            $rules = app(BlogPageRulesAction::class);
+            if ($design['photo'] !== null && $design['photo'] !== $profile->photo_media_file_id && ! $rules->photoAllowed($profile)) {
+                throw ValidationException::withMessages(['page' => __('blog.error_photo_consent')]);
+            }
+            if ($design['links'] !== [] && ! $rules->linksAllowed($profile)) {
+                throw ValidationException::withMessages(['page' => __('blog.error_links_consent')]);
+            }
             $profile->fill([
+                'banner_media_file_id' => $this->publish($design['banner'], $profile->banner_media_file_id, $profile->id, 'banner', $decidedBy),
+                'photo_media_file_id' => $this->publish($design['photo'], $profile->photo_media_file_id, $profile->id, 'photo', $decidedBy),
+                'social_links' => $design['links'] === [] ? null : $design['links'],
                 'theme_key' => $design['theme'], 'accent_color' => $design['accent'], 'heading_font' => $design['font'],
                 'tagline' => $design['tagline'], 'bio' => $design['about'], 'languages' => $design['languages'], 'sections' => $design['sections'],
                 'pending_page' => null, 'page_submitted_at' => null, 'page_decision_note' => null,
@@ -50,5 +67,29 @@ class DecideBlogPageAction
         );
 
         return $profile->refresh();
+    }
+
+    /**
+     * The live media id for an approved image: unchanged if it is the live
+     * one already, otherwise the private upload copied to public media.
+     */
+    private function publish(?int $chosen, ?int $live, int $profileId, string $kind, int $decidedBy): ?int
+    {
+        if ($chosen === null || $chosen === $live) {
+            return $chosen;
+        }
+        $file = app(ReadPrivateMediaAction::class)->execute($chosen);
+        if ($file === null) {
+            return $live;
+        }
+        $extension = ['image/png' => 'png', 'image/webp' => 'webp'][$file['mime']] ?? 'jpg';
+
+        return (int) app(StoreGeneratedPublicImageAction::class)->execute(
+            $file['contents'],
+            'blog-pages/'.$profileId.'/'.$kind.'-'.Str::lower(Str::random(16)).'.'.$extension,
+            $kind.'.'.$extension,
+            (string) $file['mime'],
+            $decidedBy,
+        )['id'];
     }
 }

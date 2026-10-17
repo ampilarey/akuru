@@ -4,11 +4,14 @@ namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Library\Actions\Blog\DecideBlogPageAction;
 use App\Domains\Library\Actions\Blog\ListBlogPageChangesAction;
+use App\Domains\Library\Actions\Blog\ReadBlogPageImageAction;
+use App\Domains\Library\Models\WriterProfile;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response as HttpResponse;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -35,17 +38,27 @@ class AdminBlogPageController extends Controller
 
         return response()->streamDownload(function () use ($rows): void {
             $out = fopen('php://output', 'w');
-            Csv::put($out, ['id', 'pen_name', 'student', 'sent_at', 'theme_now', 'theme_next', 'accent_next', 'font_next', 'tagline_next', 'about_next', 'languages_next', 'sections_next']);
+            Csv::put($out, ['id', 'pen_name', 'student', 'sent_at', 'theme_now', 'theme_next', 'accent_next', 'font_next', 'tagline_next', 'about_next', 'languages_next', 'sections_next', 'links_next', 'new_banner', 'new_photo']);
             foreach ($rows as $r) {
                 $next = $r['next'];
                 Csv::put($out, [
                     $r['id'], $r['display_name'], $r['student'] ? 'yes' : 'no', $r['submitted_at'], $r['live']['theme_name'], $next['theme_name'],
                     $next['accent'] ?? '', $next['font'] ?? '', $next['tagline'] ?? '', $next['about'] ?? '', implode(' ', $next['languages']),
                     implode(' ', array_map(fn (array $s) => $s['key'].($s['on'] ? '' : ':off'), $next['sections'])),
+                    implode(' ', $next['links']), $next['banner'] !== $r['live']['banner'] ? 'yes' : 'no', $next['photo'] !== $r['live']['photo'] ? 'yes' : 'no',
                 ]);
             }
             fclose($out);
         }, 'blog-page-changes.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
+    /** BL3b: a waiting banner or picture, for the office to check. */
+    public function image(int $profile, string $kind): HttpResponse
+    {
+        $image = app(ReadBlogPageImageAction::class)->execute(WriterProfile::query()->findOrFail($profile), $kind);
+        abort_if($image === null, 404);
+
+        return response($image['contents'], 200, ['Content-Type' => $image['mime'], 'Cache-Control' => 'private, no-store', 'X-Content-Type-Options' => 'nosniff']);
     }
 
     public function decide(Request $request, int $profile): RedirectResponse

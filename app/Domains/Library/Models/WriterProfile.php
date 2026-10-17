@@ -18,6 +18,8 @@ class WriterProfile extends Model
         'qualifications',
         'expertise',
         'photo_media_file_id',
+        // BL3b: the blog page's banner, public once approved.
+        'banner_media_file_id',
         // A student's parent chose these at consent (BL1).
         'show_photo',
         'show_school',

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Portal\Http\Controllers;
 
+use App\Domains\Library\Actions\Blog\AllowBlogLinksAction;
 use App\Domains\Library\Actions\Blog\ConsentToBlogRequestAction;
 use App\Domains\Library\Actions\Blog\ListBlogRequestsAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
@@ -29,6 +30,8 @@ class GuardianChildBlogController extends Controller
         return Inertia::render('Portal/ChildBlog', [
             'child' => ['id' => (int) $child->id, 'name' => PersonName::ofStudent($child)],
             'request' => $latest,
+            // BL3b: whether the approved blog may carry links.
+            'links_allowed' => app(AllowBlogLinksAction::class)->allowed($student),
             't' => Phrases::once('blog'),
         ]);
     }
@@ -48,6 +51,16 @@ class GuardianChildBlogController extends Controller
         app(ConsentToBlogRequestAction::class)->execute((int) $data['request_id'], (int) $request->user()->id, (bool) $data['agree'], (bool) ($data['show_photo'] ?? false), (bool) ($data['show_school'] ?? false));
 
         return back()->with('success', __($data['agree'] ? 'blog.flash_parent_agreed' : 'blog.flash_parent_declined'));
+    }
+
+    /** BL3b: the parent allows links on the child's approved blog, or stops them. */
+    public function links(Request $request, int $student): RedirectResponse
+    {
+        abort_if($this->child($request, $student) === null, 403);
+        $data = $request->validate(['allow' => 'required|boolean']);
+        app(AllowBlogLinksAction::class)->execute($student, (int) $request->user()->id, (bool) $data['allow']);
+
+        return back()->with('success', __($data['allow'] ? 'blog.flash_links_allowed' : 'blog.flash_links_stopped'));
     }
 
     /** The named child, if they are one of this parent's verified children. */

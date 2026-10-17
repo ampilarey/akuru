@@ -4983,6 +4983,70 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sj. A blog page's banner, picture and links (BLOG_PLAN BL3b, 2026-10-18)
+
+The second half of BL3 (§5si). With it, BL3 is done.
+
+**Built:**
+- **Banner and picture** in the designer (`/my-blog/design`):
+  - uploaded as **private** media (JPEG, PNG or WebP, up to 4 MB, shrunk to
+    1,600 pixels) into the same waiting design, never straight to the page;
+  - the preview shows a new one at once; the writer's own route
+    (`/my-blog/design/image/{banner|photo}`) and the office's
+    (`/admin/library/blog-pages/{profile}/image/{kind}`) serve a waiting
+    one, images only, `no-store`;
+  - *remove it* is a change like any other;
+  - approving copies a new image to public media
+    (`DecideBlogPageAction`) — the private upload stays private;
+  - the banner shows across the top of the author page at 4:1
+    (`writer_profiles.banner_media_file_id`, migration
+    `2026_10_18_000002_bl3b_blog_banner`).
+- **Links:** up to five, to the writer portal's sites, https only; anything
+  else is dropped. They are part of the same draft; approving writes them to
+  `social_links`.
+- **The consents** (`BlogPageRulesAction`, new, asked fresh every time):
+  - a student's picture only where the parent said the photo may show
+    (`show_photo`, BL1); otherwise the upload is refused and the designer
+    says why;
+  - links on an under-18 student's blog only with the parent's new
+    `blog_links` consent (People `ConsentType::BlogLinks`, named in three
+    languages);
+  - the parent gives or stops it on the child's blog page in the family
+    portal (`/portal/children/{student}/blog/links`, the parent's own
+    verified child only, `AllowBlogLinksAction`);
+  - stopping it takes the links off the public page at once; the office's
+    approval checks both again.
+- **The office's list** shows the waiting banner and picture beside the live
+  ones, and the links; the CSV gains `links_next`, `new_banner`, `new_photo`.
+- `PrivateMediaReadersAreScopedTest` pins the two new private readers, with
+  how each scopes.
+- **Language:** 25 `blog` phrases and `people.consent_type_blog_links`, in
+  EN/DV/AR.
+
+**Not done, recorded in the plan:** the banner is shown at 4:1 by the page,
+not cropped on upload.
+
+**Tests:** `BlogPageMediaTest` (new, 3):
+- a writer's banner and picture private in the draft, served to the writer
+  and the office only, absent from the public page until approved, public
+  copies after; https links kept and others dropped; *remove* clears it;
+- a student's picture refused without the parent's photo choice, nothing
+  stored; allowed with it;
+- an under-18 student's links refused, then allowed by the parent (only
+  their own child), approved and shown; stopped, gone at once.
+
+`DetailScreensDoNotCrashTest` names the writer's image route among the
+screens it cannot sweep, with why.
+
+Whole suite locally: **3234 passed, 1 failed** (68308 assertions) — the
+failure was that test's list missing the new route; added, it passes alone.
+
+**Walk:** `blog-design.mjs`, extended, 17/17. The four new steps: a banner
+shows in the preview before it is saved; the pupil, under 18 for the run, is
+told in Dhivehi that links need a parent's yes; the office sees the waiting
+banner through its own route; after approval the banner is public and shows.
+The walk deletes the media it made.
+
 ## 5si. Bloggers design their page; the office checks it first (BLOG_PLAN BL3a, 2026-10-18)
 
 The first half of BL3. The banner, the picture and the links are **BL3b**,

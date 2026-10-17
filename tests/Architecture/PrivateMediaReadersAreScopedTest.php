@@ -65,6 +65,14 @@ it('pins every caller that can read a private file', function () {
         // a shop's card for `bookshop.manage`, a writer's for `library.manage`,
         // a learner's for the enrolments office.
         'app/Domains/Identity/Actions/IdentityVerificationAction.php',
+        // BLOG_PLAN BL3b: a blog page's waiting banner or picture. Both
+        // resolve the media id from the profile's own waiting design
+        // (`pending_page`, which only the designer's upload writes), never a
+        // request; the read action serves images only, to the profile's own
+        // writer (`/my-blog/design/image`) or the office (`library.manage`);
+        // the decision copies it to public media when the office approves.
+        'app/Domains/Library/Actions/Blog/DecideBlogPageAction.php',
+        'app/Domains/Library/Actions/Blog/ReadBlogPageImageAction.php',
         // R1 (RESEARCH_ARTICLES_PLAN D1): a research item's or article's PDF,
         // as a download, where its author chose one. The media id comes from
         // the published item's own row (found by slug), and the answer goes

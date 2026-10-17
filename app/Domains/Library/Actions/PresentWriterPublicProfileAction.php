@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Library\Actions\Blog\BlogPageRulesAction;
 use App\Domains\Library\Actions\Blog\ListBlogsAction;
 use App\Domains\Library\Actions\Blog\PresentPostSeriesAction;
 use App\Domains\Library\Enums\LibraryContentType;
@@ -61,7 +62,8 @@ class PresentWriterPublicProfileAction
             ->values();
 
         $links = [];
-        foreach (SaveWriterPublicProfileAction::LINK_KEYS as $key) {
+        // BL3b: a student's links show only while the parent's consent is in force.
+        foreach (app(BlogPageRulesAction::class)->linksAllowed($profile) ? SaveWriterPublicProfileAction::LINK_KEYS : [] as $key) {
             $url = (string) (($profile->social_links ?? [])[$key] ?? '');
             if ($url !== '') {
                 $links[$key] = $url;
@@ -79,8 +81,9 @@ class PresentWriterPublicProfileAction
                 ? app(ResolvePublicMediaUrlAction::class)->execute((int) $profile->photo_media_file_id)
                 : null,
             'student' => $profile->isStudent(),
+            'banner_url' => $profile->banner_media_file_id ? app(ResolvePublicMediaUrlAction::class)->execute((int) $profile->banner_media_file_id) : null,
             // BL3a: the page's approved design — never the waiting one.
-            'design' => ($design = BlogPage::live($profile->only(['theme_key', 'accent_color', 'heading_font', 'tagline', 'bio', 'languages', 'sections']))) + [
+            'design' => ($design = BlogPage::live($profile->only(BlogPage::LIVE_COLUMNS))) + [
                 'css' => BlogPage::cssVariables($design),
                 'fonts_url' => BlogPage::fontsUrl($design['font']),
             ],

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Support;
 
+use App\Domains\Library\Actions\SaveWriterPublicProfileAction;
 use App\Domains\Library\Models\LibraryBlogTheme;
 use App\Support\Theme\Contrast;
 
@@ -19,6 +20,9 @@ final class BlogPage
 
     public const LANGUAGES = ['en', 'dv', 'ar'];
 
+    /** The profile columns the live design is read from. */
+    public const LIVE_COLUMNS = ['theme_key', 'accent_color', 'heading_font', 'tagline', 'bio', 'languages', 'sections', 'social_links', 'banner_media_file_id', 'photo_media_file_id'];
+
     /** Heading faces for Latin text; Thaana and Arabic always use the site's own. */
     public const FONTS = ['Inter', 'Merriweather', 'Lora', 'Poppins', 'Bree Serif'];
 
@@ -26,15 +30,21 @@ final class BlogPage
 
     public const ABOUT_MAX = 1500;
 
+    /** BL3b: at most this many links, each to a site from the writer portal's list. */
+    public const LINKS_MAX = 5;
+
     /**
      * The design a profile shows now, made whole.
      *
      * @param  array<string, mixed>  $profile  the profile's live columns
-     * @return array{theme: string, accent: ?string, font: ?string, tagline: ?string, about: ?string, languages: list<string>, sections: list<array{key: string, on: bool}>}
+     * @return array<string, mixed>
      */
     public static function live(array $profile): array
     {
         return [
+            'links' => self::links($profile['social_links'] ?? []),
+            'banner' => isset($profile['banner_media_file_id']) ? (int) $profile['banner_media_file_id'] : null,
+            'photo' => isset($profile['photo_media_file_id']) ? (int) $profile['photo_media_file_id'] : null,
             'theme' => (string) ($profile['theme_key'] ?? self::defaultTheme()),
             'accent' => $profile['accent_color'] ?? null,
             'font' => $profile['heading_font'] ?? null,
@@ -50,7 +60,9 @@ final class BlogPage
      * back; text is trimmed to its limits and kept plain.
      *
      * @param  array<string, mixed>  $input
-     * @return array{theme: string, accent: ?string, font: ?string, tagline: ?string, about: ?string, languages: list<string>, sections: list<array{key: string, on: bool}>}
+     *                                       BL3b: `banner` and `photo` are media ids the designer's action put
+     *                                       there itself (private until approved), never a value a form sent.
+     * @return array<string, mixed>
      */
     public static function normalize(array $input): array
     {
@@ -65,7 +77,29 @@ final class BlogPage
             'about' => $plain($input['about'] ?? null, self::ABOUT_MAX),
             'languages' => self::languages($input['languages'] ?? []),
             'sections' => self::sections($input['sections'] ?? null),
+            'links' => self::links($input['links'] ?? []),
+            'banner' => is_int($input['banner'] ?? null) ? $input['banner'] : null,
+            'photo' => is_int($input['photo'] ?? null) ? $input['photo'] : null,
         ];
+    }
+
+    /**
+     * BL3b: the links kept to the writer portal's sites, https only, at most
+     * five, in the list's order.
+     *
+     * @return array<string, string>
+     */
+    public static function links(mixed $value): array
+    {
+        $out = [];
+        foreach (SaveWriterPublicProfileAction::LINK_KEYS as $key) {
+            $url = trim((string) (is_array($value) ? ($value[$key] ?? '') : ''));
+            if ($url !== '' && filter_var($url, FILTER_VALIDATE_URL) && str_starts_with(strtolower($url), 'https://') && count($out) < self::LINKS_MAX) {
+                $out[$key] = $url;
+            }
+        }
+
+        return $out;
     }
 
     /**

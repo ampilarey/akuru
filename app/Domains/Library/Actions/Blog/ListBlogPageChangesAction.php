@@ -25,14 +25,19 @@ class ListBlogPageChangesAction
             ->orderBy('page_submitted_at')
             ->get()
             ->map(function (WriterProfile $profile) use ($names) {
-                $live = BlogPage::live($profile->only(['theme_key', 'accent_color', 'heading_font', 'tagline', 'bio', 'languages', 'sections']));
+                $live = BlogPage::live($profile->only(BlogPage::LIVE_COLUMNS));
                 $next = BlogPage::normalize((array) $profile->pending_page);
                 $describe = fn (array $design) => $design + [
                     'theme_name' => $names[$design['theme']] ?? $design['theme'],
                     'colors' => BlogPage::colors($design),
                 ];
 
+                $images = app(PresentBlogDesignerAction::class);
+
                 return [
+                    // BL3b: the images, live (public) and waiting (through the office's route).
+                    'live_images' => $images->images($profile, $live, $live, 'admin.library.blog-pages.image'),
+                    'next_images' => $images->images($profile, $live, $next, 'admin.library.blog-pages.image'),
                     'id' => $profile->id,
                     'display_name' => $profile->display_name,
                     'slug' => $profile->slug,

@@ -1,4 +1,4 @@
-import { Link, useForm } from '@inertiajs/react';
+import { Link, router, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 
@@ -10,7 +10,7 @@ import FormErrors from '../../Components/FormErrors';
  */
 const fill = (text, values) => Object.entries(values).reduce((out, [key, value]) => out.split(`:${key}`).join(String(value ?? '')), String(text));
 
-export default function ChildBlog({ child, request = null, t = {} }) {
+export default function ChildBlog({ child, request = null, links_allowed: linksAllowed = false, t = {} }) {
     const form = useForm({ request_id: request?.id ?? 0, agree: true, show_photo: false, show_school: false });
     const decide = (agree) => {
         form.transform((data) => ({ ...data, agree }));
@@ -52,6 +52,22 @@ export default function ChildBlog({ child, request = null, t = {} }) {
                                 <button type="button" className="btn-secondary" disabled={form.processing} onClick={() => decide(false)} data-testid="child-blog-decline">{t.btn_decline || 'Not now'}</button>
                             </div>
                         </form>
+                    )}
+
+                    {request.status === 'approved' && (
+                        <div className="mt-4 rounded border p-3 text-sm" data-testid="child-blog-links" data-allowed={linksAllowed ? 'yes' : 'no'}>
+                            {/* BL3b: links to other sites only with the parent's yes. */}
+                            <p className="font-medium">{t.links_heading || 'Links to other sites'}</p>
+                            <p className="text-gray-700">{linksAllowed ? t.links_on || 'Your child’s blog may show links to other sites, such as a YouTube channel. The office checks each one.' : t.links_off || 'Your child’s blog shows no links to other sites.'}</p>
+                            <button
+                                type="button"
+                                className={`mt-2 ${linksAllowed ? 'btn-secondary' : 'btn-primary'}`}
+                                onClick={() => router.post(`/portal/children/${child.id}/blog/links`, { allow: !linksAllowed }, { preserveScroll: true })}
+                                data-testid="child-blog-links-toggle"
+                            >
+                                {linksAllowed ? t.links_stop || 'Stop links' : t.links_allow || 'Allow links'}
+                            </button>
+                        </div>
                     )}
                 </section>
             )}

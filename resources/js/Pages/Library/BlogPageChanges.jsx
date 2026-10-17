@@ -9,11 +9,14 @@ import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
  * approval covers the whole set; sending it back needs a note the writer
  * reads.
  */
-function Design({ design, t }) {
+function Design({ design, images = {}, t }) {
     const c = design.colors;
 
     return (
         <div className="text-xs">
+            {/* BL3b: the banner and picture; a waiting one comes through the office's own route. */}
+            {images.banner && <img src={images.banner} alt={t.field_banner || 'Banner'} className="mb-1 aspect-[4/1] w-48 rounded object-cover" data-testid="change-banner" />}
+            {images.photo && <img src={images.photo} alt={t.field_picture || 'Picture'} className="mb-1 h-10 w-10 rounded-full object-cover" data-testid="change-photo" />}
             <p className="mb-1 flex items-center gap-1">
                 {['page_bg', 'card_bg', 'accent', 'text'].map((slot) => <span key={slot} className="inline-block h-3 w-3 rounded border" style={{ background: c[slot] }} aria-hidden="true" />)}
                 <span className="font-medium">{design.theme_name}</span>
@@ -24,6 +27,11 @@ function Design({ design, t }) {
             {design.about && <p className="mt-1 whitespace-pre-line text-gray-700">{design.about}</p>}
             <p className="mt-1 text-gray-600">{design.sections.filter((s) => s.on).map((s) => t[`section_${s.key}`] || s.key).join(' · ')}</p>
             {design.languages.length > 0 && <p className="text-gray-600">{design.languages.map((code) => t[`lang_${code}`] || code).join(' · ')}</p>}
+            {Object.keys(design.links || {}).length > 0 && (
+                <ul className="mt-1" data-testid="change-links">
+                    {Object.entries(design.links).map(([key, url]) => <li key={key} className="break-all">{t[`link_${key}`] || key}: {url}</li>)}
+                </ul>
+            )}
         </div>
     );
 }
@@ -60,8 +68,8 @@ export default function BlogPageChanges({ changes = [], t = {} }) {
                                     {c.student && <p className="text-xs text-gray-600">{t.badge_student || 'Student writer'}</p>}
                                     <p className="text-xs text-gray-500">{c.submitted_at}</p>
                                 </td>
-                                <td className="px-3 py-2" data-label={col.now}><Design design={c.live} t={t} /></td>
-                                <td className="px-3 py-2" data-label={col.next}><Design design={c.next} t={t} /></td>
+                                <td className="px-3 py-2" data-label={col.now}><Design design={c.live} images={c.live_images} t={t} /></td>
+                                <td className="px-3 py-2" data-label={col.next}><Design design={c.next} images={c.next_images} t={t} /></td>
                                 <td className="table-actions px-3 py-2" data-label={col.actions}>
                                     <div className="grid gap-2">
                                         <input className="form-input text-sm" placeholder={t.note_placeholder || 'Note (needed to refuse)'} aria-label={t.note_placeholder || 'Note (needed to refuse)'} value={notes[c.id] || ''} onChange={(e) => setNotes({ ...notes, [c.id]: e.target.value })} data-testid={`blog-page-note-${c.id}`} />

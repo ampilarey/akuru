@@ -11,4 +11,6 @@ enum ConsentType: string
     case PrayerReminders = 'prayer_reminders';
     // BLOG_PLAN BL1: a parent lets a child under 18 publish a blog.
     case BlogPublishing = 'blog_publishing';
+    // BLOG_PLAN BL3b: a parent lets that blog carry links to other sites.
+    case BlogLinks = 'blog_links';
 }
