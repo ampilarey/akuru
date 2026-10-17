@@ -5065,7 +5065,7 @@ declared, sanitised on write. `StudentNamesCarryTheMiddleNameTest` caught
 the teacher's queue joining first and last names; it uses People's
 `ListStudentsByIdsAction` instead.
 
-Whole suite locally: SUITE_RESULT.
+Whole suite locally: **3218 passed** (67946 assertions).
 
 **Walk:** `blog-posts.mjs` (new, in the runner), 13/13:
 - the pupil writes a two-part series under `/dv`, right to left, and sends
