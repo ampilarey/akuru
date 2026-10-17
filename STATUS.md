@@ -5028,7 +5028,7 @@ migration clears it on posts already decided.
 
 `BlogPostsTest` checks that a published post is with nobody.
 
-Whole suite locally: SUITE_RESULT_BL2C.
+Whole suite locally: **3228 passed** (68096 assertions).
 
 **Walk:** `blog-posts.mjs`, extended, 22/22. The five new steps: the pupil
 edits published part 1 and it waits for the class teacher, in Dhivehi;
