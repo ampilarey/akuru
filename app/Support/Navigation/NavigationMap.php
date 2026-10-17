@@ -466,6 +466,8 @@ final class NavigationMap
                     ['key' => 'blog_comments', 'href' => '/admin/library/comments'],
                     // BLOG_PLAN BL6a: tips to blog writers.
                     ['key' => 'blog_tips', 'href' => '/admin/library/tips'],
+                    // BLOG_PLAN BL7: the blogs at a glance, and Featured this month.
+                    ['key' => 'blog_insights', 'href' => '/admin/library/blog-insights'],
                 ]],
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
                 // COMMERCE_PARITY_PLAN P6a: the orders Akuru packs, and its charges.

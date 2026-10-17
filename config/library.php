@@ -112,5 +112,10 @@ return [
         // BL6a (§3.6, §7.1): the tip box's amounts in MVR, and Akuru's share of a tip in percent.
         'tip_amounts' => env('LIBRARY_BLOG_TIP_AMOUNTS', '5,10,25,50'),
         'tip_share_percent' => (int) env('LIBRARY_BLOG_TIP_SHARE', 10),
+        // BL7 (§7.2, D12): a reward for a post featured this month — off, and capped in MVR.
+        'reward_enabled' => (bool) env('LIBRARY_BLOG_REWARD_ENABLED', false),
+        'reward_cap' => (int) env('LIBRARY_BLOG_REWARD_CAP', 500),
+        // §6, owner item 1: the writing guidelines the owner writes (a CMS page); linked from New post once set.
+        'guidelines_url' => env('LIBRARY_BLOG_GUIDELINES_URL'),
     ],
 ];

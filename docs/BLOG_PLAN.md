@@ -9,8 +9,9 @@
 > The owner's decisions are in **§13**. Everything else is the default an
 > implementer takes unless the owner says otherwise. **BL1 and BL2 are
 > built** (2026-10-17: BL1 STATUS §5se; BL2 in three parts, §5sf–§5sh),
-> BL3 in two parts (§5si, §5sj), BL4 (§5sk), BL5 (§5sl) and BL6 in two
-> parts (§5sm, §5sn); **BL7 is not.** This document is the whole
+> BL3 in two parts (§5si, §5sj), BL4 (§5sk), BL5 (§5sl), BL6 in two parts
+> (§5sm, §5sn) and BL7 (§5so). **Every slice is built (2026-10-18).** What
+> remains is the owner's (§14) and the *Later, on request* list. This document is the whole
 > brief for the agent that builds them.
 
 Written against `main` at `51b9c58` (#777). Every name below was read from
@@ -595,6 +596,16 @@ touched + no files outside its scope.
 - Walk `blog-tips.mjs`, with the payment fake.
 
 ### BL7 — Featured posts, rewards, growing up, insights
+
+> **Built 2026-10-18** (STATUS §5so): *Featured this month* on the blogs'
+> front, set from the office's new *Blog insights*; the reward, an
+> Akuru-funded `reward` earning, off by default, capped, once per post; reads
+> per post on *My blog* and in the insights; the insights' totals and the age
+> of each checking queue, with a CSV; the daily `library:blogs-growing-up`
+> that makes an 18-year-old's blog a writer's (same profile, so page, posts,
+> followers and earnings stay; the parent's part ended; both told). Also the
+> writing guidelines link (§6), shown on *My blog* once the owner sets
+> `LIBRARY_BLOG_GUIDELINES_URL`.
 - *Featured this month* and the reward (off by default, capped).
 - Reads per post for the writer.
 - Blog insights on the Library office (posts, follows, tips, the queues'

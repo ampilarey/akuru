@@ -129,7 +129,7 @@ function PostForm({ t, series, post, onDone }) {
     );
 }
 
-function Posts({ t, posts, series }) {
+function Posts({ t, posts, series, guidelinesUrl = null }) {
     const refusals = useRowRefusals();
     const [editing, setEditing] = useState(null);
     const statusKey = (p) => (p.status === 'submitted' ? `post_status_submitted_${p.review_stage === 'teacher' ? 'teacher' : 'office'}` : `post_status_${p.status}`);
@@ -142,6 +142,7 @@ function Posts({ t, posts, series }) {
             <div>
                 <h2 className="text-lg font-semibold">{t.posts_heading || 'My posts'}</h2>
                 <p className="text-sm text-gray-600">{t.posts_intro || 'Every post is checked before anyone can read it.'}</p>
+                {guidelinesUrl && <a className="text-sm underline" href={guidelinesUrl} data-testid="blog-guidelines">{t.guidelines_link || 'Read the writing guidelines'}</a>}
             </div>
             {editing === null && <PostForm key="new" t={t} series={series} post={null} onDone={() => setEditing(null)} />}
             {editing !== null && <PostForm key={editing.id} t={t} series={series} post={editing} onDone={() => setEditing(null)} />}
@@ -155,6 +156,7 @@ function Posts({ t, posts, series }) {
                             <span className="rounded bg-gray-100 px-2 py-0.5 text-xs" data-testid={`post-status-${p.id}`}>{t[statusKey(p)] || p.status}</span>
                             {p.status === 'published' && p.has_change && <span className="rounded bg-amber-50 px-2 py-0.5 text-xs text-amber-900" data-testid={`post-change-${p.id}`} data-stage={p.review_stage || ''}>{t[changeKey(p)] || 'Edit waiting'}</span>}
                         </div>
+                        {p.status === 'published' && <p className="text-xs text-gray-600" data-testid={`post-reads-${p.id}`}>{fill(t.post_reads || ':count readers', { count: p.reads || 0 })}</p>}
                         {p.series && <p className="text-xs text-gray-600">{fill(t.series_line || ':series, part :n', { series: p.series, n: p.series_position })}</p>}
                         {p.note && (['changes_requested', 'rejected'].includes(p.status) || (p.status === 'published' && p.has_change && !p.review_stage)) && <p className="mt-1 text-sm text-amber-900" data-testid={`post-note-${p.id}`}>{fill(t.post_note || 'Note: :note', { note: p.note })}</p>}
                         <div className="mt-2 flex flex-wrap gap-3 text-sm">
@@ -170,7 +172,7 @@ function Posts({ t, posts, series }) {
     );
 }
 
-export default function MyBlog({ state, blog = null, request = null, posts = [], series = [], under_18: under18 = false, guardian_linked: guardianLinked = true, t = {} }) {
+export default function MyBlog({ state, blog = null, request = null, posts = [], series = [], guidelines_url: guidelinesUrl = null, under_18: under18 = false, guardian_linked: guardianLinked = true, t = {} }) {
     const statusName = (status) => t[`status_${status}`] || status;
 
     return (
@@ -200,7 +202,7 @@ export default function MyBlog({ state, blog = null, request = null, posts = [],
                 </section>
             )}
 
-            {(state === 'blog' || state === 'writer') && <Posts t={t} posts={posts} series={series} />}
+            {(state === 'blog' || state === 'writer') && <Posts t={t} posts={posts} series={series} guidelinesUrl={guidelinesUrl} />}
 
             {(state === 'blog' || state === 'writer') && blog && (
                 <section className="mt-6 max-w-3xl rounded-lg border bg-white p-4" data-testid="blog-tips">

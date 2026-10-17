@@ -45,6 +45,9 @@ class AdminLibrarySettingsController extends Controller
             // BLOG_PLAN BL6a: the tip box.
             'tip_amounts' => ['sometimes', 'string', 'max:60', 'regex:/^\s*[1-9][0-9]{0,3}(\s*,\s*[1-9][0-9]{0,3}){0,5}\s*$/'],
             'tip_share_percent' => 'sometimes|integer|min:0|max:50',
+            // BLOG_PLAN BL7: the featured post's reward.
+            'reward_enabled' => 'sometimes|boolean',
+            'reward_cap' => 'sometimes|integer|min:0|max:100000',
         ]);
 
         app(SaveLibrarySettingsAction::class)->execute($data);

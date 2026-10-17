@@ -33,6 +33,8 @@ class ListBlogPostsAction
             ->orderByDesc('id')
             ->get();
         $notes = $this->latestNotes($posts->pluck('id')->all());
+        // BL7: how many readers opened each published post.
+        $reads = app(ListBlogInsightsAction::class)->reads($posts->where('status', LibraryItemStatus::Published)->pluck('id')->all());
 
         return [
             'posts' => $posts->map(fn (LibraryItem $item) => $this->row($item, $series->firstWhere('id', $item->series_id)?->title) + [
@@ -45,6 +47,7 @@ class ListBlogPostsAction
                 'editable' => in_array($item->status, [LibraryItemStatus::Draft, LibraryItemStatus::ChangesRequested], true)
                     || ($item->status === LibraryItemStatus::Published && $item->review_stage === null),
                 'has_change' => $item->hasPendingChange(),
+                'reads' => $reads[$item->id] ?? 0,
                 'note' => $notes[$item->id] ?? null,
             ])->values()->all(),
             'series' => $series->map(fn (LibraryPostSeries $s) => ['id' => $s->id, 'title' => $s->title])->values()->all(),

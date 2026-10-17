@@ -160,6 +160,8 @@ class PublicLibraryController extends Controller
 
         return view('public.library.blogs', [
             'posts' => app(ListBlogsAction::class)->latestPosts(24, is_string($language) ? $language : null),
+            // BLOG_PLAN BL7: the office's picks this month.
+            'featured' => app(ListBlogsAction::class)->featured(),
             'blogs' => app(ListBlogsAction::class)->blogs(),
             'language' => is_string($language) && in_array($language, ['en', 'dv', 'ar'], true) ? $language : null,
             'languages' => ['en' => 'English', 'dv' => 'ދިވެހި', 'ar' => 'العربية'],

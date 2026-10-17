@@ -22,6 +22,26 @@
         <a href="{{ route('public.library.blogs.feed') }}" class="mt-2 inline-block text-sm text-brandMaroon-700 underline" data-testid="blogs-feed">{{ __('public.follow_feed') }}</a>
     </header>
 
+    @if(count($featured ?? []) > 0)
+        {{-- BLOG_PLAN BL7: the posts the office featured this month. --}}
+        <section class="mb-10" data-testid="blogs-featured">
+            <h2 class="text-2xl font-bold text-brandMaroon-900 mb-4">{{ __('public.blogs_featured') }}</h2>
+            <div class="grid gap-4 md:grid-cols-3">
+                @foreach($featured as $post)
+                    <a href="{{ route('public.library.show', $post['slug']) }}" class="block rounded-lg border-2 border-brandMaroon-200 bg-white p-4 hover:shadow-md" data-featured="{{ $post['slug'] }}" @if($post['language'] === 'dv' || $post['language'] === 'ar') dir="rtl" @endif>
+                        <h3 class="font-semibold text-brandMaroon-900">{{ $post['title'] }}</h3>
+                        @if($post['writer'])
+                            <p class="text-sm text-gray-500">{{ __('public.blogs_by', ['name' => $post['writer']['display_name']]) }}</p>
+                        @endif
+                        @if($post['excerpt'] !== '')
+                            <p class="mt-2 text-sm text-gray-700">{{ Str::limit($post['excerpt'], 120) }}</p>
+                        @endif
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
     <div class="grid gap-10 lg:grid-cols-3">
         <section class="lg:col-span-2" data-testid="blogs-latest">
             <div class="mb-4 flex flex-wrap items-end justify-between gap-3">

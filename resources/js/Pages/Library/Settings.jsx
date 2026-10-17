@@ -102,6 +102,11 @@ export default function Settings({ settings, t = {} }) {
                         <span className="mt-1 block text-xs text-gray-500">{t.library_settings_default || 'Default'}: {String(settings.tip_amounts?.default ?? '')}</span>
                         {form.errors.tip_amounts && <span className="mt-1 block text-xs text-red-600">{form.errors.tip_amounts}</span>}
                     </label>
+                    <label className="flex items-center gap-2 text-sm md:col-span-2">
+                        <input type="checkbox" checked={!!form.data.reward_enabled} onChange={(e) => form.setData('reward_enabled', e.target.checked)} data-testid="library-setting-reward_enabled" />
+                        {t.library_settings_label_reward || 'Akuru may reward a post featured this month'}
+                    </label>
+                    <NumberField name="reward_cap" label={t.library_settings_label_reward_cap || 'Largest reward'} hint={t.library_settings_hint_reward_cap || 'In MVR, for one featured post.'} form={form} settings={settings} t={t} />
                     <NumberField name="tip_share_percent" label={t.library_settings_label_tip_share || 'Akuru’s share of a tip'} hint={t.library_settings_hint_tip_share || 'Percent kept by Akuru; the rest is the writer’s earning.'} form={form} settings={settings} t={t} />
                 </fieldset>
 
