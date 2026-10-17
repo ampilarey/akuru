@@ -4983,6 +4983,52 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sk. Readers follow a blog, hear of new posts, and read its feed (BLOG_PLAN BL4, 2026-10-18)
+
+**Built:**
+- **Following** (`library_follows`, migration
+  `2026_10_18_000003_bl4_blog_follows`, morph alias `library_follow`):
+  - a follow box on a blog's page and on each of its posts: *Follow*, then
+    *Following ✓*, *Email me new posts*, the follower count and the RSS link;
+  - a guest pressing *Follow* is sent to sign in; a writer does not follow
+    themselves; following twice is one follow;
+  - `writer_profiles.followers_count` is recounted by `FollowBlogAction`
+    and nowhere else;
+  - *Blogs I follow* in My Library, each with *Stop following*.
+- **New-post notices** (`NotifyReadersOfNewWorkAction`):
+  - followers join the earlier readers (who read or bought the writer's
+    other work) in being told;
+  - once per item: `library_items.readers_notified_at` keeps a second
+    publish — after an unpublish — quiet;
+  - in the app always; by email too for a follower who asked
+    (`NotifyLibraryUserAction::withEmail`, the reader's choice, not the
+    office's switches); a reader who switched library notices off hears
+    nothing.
+- **Feeds:** RSS 2.0 for one blog (`/library/authors/{slug}/feed`) and for all
+  blogs (`/library/blogs/feed`): the latest 30 published posts, plain-text
+  excerpts, everything XML-escaped; linked from the pages' heads and from the
+  follow box and the blogs' front.
+- The three public routes are declared in their baseline, the follow box
+  partial in the Blade one.
+- **Language:** 14 `public` phrases, in EN/DV/AR.
+
+**Tests:** `BlogFollowTest` (new, 4):
+- a guest sent to sign in; follow, the count, My Library, email by choice,
+  no self-follow, stop following;
+- a new post tells followers and earlier readers and nobody else, emails only
+  the follower who asked, and is not told twice after an unpublish;
+- each blog's feed and the all-blogs feed parse as XML, carry published posts
+  only, escape `&` and `<`, and an unknown blog is a 404;
+- the follow box on a post, and the phrases in Thaana and Arabic script.
+
+Whole suite locally: SUITE_RESULT_BL4.
+
+**Walk:** `blog-follow.mjs` (new, in the runner), 9/9: a guest is sent to
+sign in; under `/dv` a reader follows (count one) and asks for email; the
+office publishes the blog's next post on the Library office; the reader finds
+the notice; the blog's feed lists it and not a draft; My Library lists the
+blog and stopping there leaves no followers.
+
 ## 5sj. A blog page's banner, picture and links (BLOG_PLAN BL3b, 2026-10-18)
 
 The second half of BL3 (§5si). With it, BL3 is done.

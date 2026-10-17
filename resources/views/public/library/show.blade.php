@@ -56,6 +56,10 @@
           </div>
         </header>
 
+        @if($follow ?? null)
+            <div class="mb-6">@include('public.library._follow', ['follow' => $follow])</div>
+        @endif
+
         @if($item['series'])
             {{-- BLOG_PLAN BL2b (§4.3): part n of m, with the parts either side. --}}
             <nav class="mb-6 rounded-lg border bg-brandBeige-50 p-4 text-sm" data-testid="post-series" aria-label="{{ __('public.blogs_series') }}">

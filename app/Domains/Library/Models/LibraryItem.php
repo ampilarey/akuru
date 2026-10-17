@@ -58,6 +58,8 @@ class LibraryItem extends Model
         'pending_title',
         'pending_body',
         'pending_saved_at',
+        // BL4: readers are told of an item once.
+        'readers_notified_at',
         // R2: the website research post this item was imported from.
         'imported_post_id',
         'page_count',
@@ -87,6 +89,7 @@ class LibraryItem extends Model
             'featured' => 'boolean',
             'pinned' => 'boolean',
             'pending_saved_at' => 'datetime',
+            'readers_notified_at' => 'datetime',
             'featured_at' => 'datetime',
         ];
     }

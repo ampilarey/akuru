@@ -211,6 +211,9 @@ return [
     // deviation, consistent within the zone); an Inertia page here would be
     // the odd one out beside index/show/reader.
     'public/library/author.blade.php',
+    // Not a screen: BLOG_PLAN BL4's follow box, one partial for the blog's
+    // page and its posts.
+    'public/library/_follow.blade.php',
     // BLOG_PLAN BL2b: the blogs' front, in the same public Blade zone as the
     // shelf and the author page it links to.
     'public/library/blogs.blade.php',

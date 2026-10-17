@@ -3,6 +3,10 @@
 @section('title', $author['display_name'] . ' - ' . __('public.Digital Library') . ' - ' . config('app.name'))
 @section('description', Str::limit($author['design']['tagline'] ?? $author['bio'] ?? $author['display_name'], 155))
 
+@push('head_meta')
+    {{-- BLOG_PLAN BL4: the blog's own feed. --}}
+    <link rel="alternate" type="application/rss+xml" title="{{ $author['blog_title'] ?: $author['display_name'] }}" href="{{ route('public.library.author.feed', $author['slug']) }}">
+@endpush
 @if($author['blog'] && $author['design']['fonts_url'])
     @push('head_meta')
         <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -63,6 +67,7 @@
                     @endforeach
                 </ul>
             @endif
+            <div class="mt-3">@include('public.library._follow', ['follow' => $follow ?? null])</div>
             <p class="mt-3 text-sm opacity-70">
                 {{ trans_choice('public.:count published work|:count published works', $author['totals']['published'], ['count' => $author['totals']['published']]) }}
                 @if($author['writing_since'])
