@@ -5042,7 +5042,7 @@ Bookstore's `Theme` knows vendors and badges); the designer is at
 
 `WorkspacesTest` and `AdminHubTest` name the new Library office item.
 
-Whole suite locally: SUITE_RESULT_BL3A.
+Whole suite locally: **3232 passed** (68223 assertions).
 
 **Walk:** `blog-design.mjs` (new, in the runner), 13/13: under `/dv` the
 pupil opens the designer from *My blog*, chooses Night, is warned and then
