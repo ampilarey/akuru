@@ -7,9 +7,9 @@
 > blogs, under different rules.
 >
 > The owner's decisions are in **§13**. Everything else is the default an
-> implementer takes unless the owner says otherwise. **BL1 is built
-> (2026-10-17, STATUS §5se), and BL2a and BL2b (STATUS §5sf, §5sg); BL2c–BL7
-> are not.** This document is the whole
+> implementer takes unless the owner says otherwise. **BL1 and BL2 are
+> built** (2026-10-17: BL1 STATUS §5se; BL2 in three parts, §5sf–§5sh);
+> **BL3–BL7 are not.** This document is the whole
 > brief for the agent that builds them.
 
 Written against `main` at `51b9c58` (#777). Every name below was read from
@@ -442,10 +442,11 @@ touched + no files outside its scope.
 > *part n of m* with previous and next on the post page, *Blogs* in the
 > Digital Library menu and footer, posts in the site search, the blogs'
 > front in the sitemap, the shelf's own `library/…` words refused as slugs,
-> and the walk `blog-posts.mjs` extended to the blog pages. **BL2c** is what
-> is left of BL2: an edit to a published post kept as a draft
+> and the walk `blog-posts.mjs` extended to the blog pages. **BL2c is built**
+> (STATUS §5sh): an edit to a published post kept beside the live text
 > (`pending_title`, `pending_body`) and checked, as a new post is, before it
-> replaces the live text (D3).
+> replaces it (D3). Series and language stay as published; the pin changes
+> at once, being the writer's page rather than the text.
 >
 > Two departures in BL2a, both deliberate:
 > - *New post* is on *My blog* (`/my-blog`), for students and full writers

@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Library\Actions\Blog\DecidePostChangeAction;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
@@ -24,6 +25,14 @@ class ReviewLibraryItemSubmissionAction
 
         $item = LibraryItem::query()->findOrFail($itemId);
         $status = $item->status instanceof LibraryItemStatus ? $item->status : LibraryItemStatus::tryFrom((string) $item->status);
+        // BLOG_PLAN BL2c: an edit to a published post, sent to be checked.
+        if ($status === LibraryItemStatus::Published && $item->hasPendingChange() && $item->review_stage !== null) {
+            if ($item->review_stage === 'teacher') {
+                throw ValidationException::withMessages(['item' => __('blog.error_with_teacher')]);
+            }
+
+            return app(DecidePostChangeAction::class)->execute($item, $reviewerUserId, $decision, $comment);
+        }
         if ($status !== LibraryItemStatus::Submitted) {
             throw ValidationException::withMessages(['item' => __('admin.library_office_error_not_submitted_review')]);
         }
@@ -44,6 +53,10 @@ class ReviewLibraryItemSubmissionAction
             $item->status = $decision === 'rejected' ? LibraryItemStatus::Rejected : LibraryItemStatus::ChangesRequested;
             $item->save();
             $item = $item->refresh();
+        }
+        // BLOG_PLAN BL2c: decided, a post is with nobody — so a published one may be edited.
+        if ($item->review_stage !== null) {
+            $item->forceFill(['review_stage' => null])->save();
         }
 
         LibraryItemReview::query()->create([

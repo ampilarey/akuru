@@ -25,7 +25,8 @@ export default function TeacherBlogPosts({ posts = [], t = {} }) {
             <div className="grid max-w-3xl gap-4">
                 {posts.map((p) => (
                     <article key={p.id} className="rounded-lg border bg-white p-4" data-testid={`teacher-post-${p.id}`}>
-                        <h2 className="text-lg font-semibold">{p.title}</h2>
+                        <h2 className="text-lg font-semibold">{p.change && p.edit_title ? p.edit_title : p.title}</h2>
+                        {p.change && <p className="text-sm font-medium text-amber-800" data-testid={`teacher-post-edit-${p.id}`}>{t.teacher_edit_note || 'An edit to a published post. Readers see the live post until the office approves the edit.'}</p>}
                         <p className="text-sm text-gray-600">
                             {fill(t.teacher_by || ':pen, written by :student', { pen: p.pen_name, student: p.student_name || '—' })}
                             {p.series ? ` · ${fill(t.series_line || ':series, part :n', { series: p.series, n: p.series_position })}` : ''}

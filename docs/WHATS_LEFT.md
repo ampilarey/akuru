@@ -29,7 +29,7 @@ closes or adds a line.
 
 | # | What | Where |
 |---|---|---|
-| P1 | **Blogs in the Digital Library**, for students and full writers: seven slices, BL1–BL7. BL1 (starting a blog with a parent's consent) BL2a (writing posts, checked by the class teacher and the office) and BL2b (the public blog pages) are built; BL2c (checked edits to published posts) and BL3–BL7 are next. | `docs/BLOG_PLAN.md`, BACKLOG C25 |
+| P1 | **Blogs in the Digital Library**, for students and full writers: seven slices, BL1–BL7. BL1 (starting a blog with a parent's consent) BL2 (writing posts checked by the class teacher and the office, the public blog pages, checked edits to published posts) are built; BL3–BL7 are next. | `docs/BLOG_PLAN.md`, BACKLOG C25 |
 
 ## 2. The owner's — server, credentials, settings (OWNER_ACTIONS)
 

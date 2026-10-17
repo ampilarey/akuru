@@ -141,4 +141,12 @@ return [
     'flash_teacher_approved' => 'Approved. It goes on to the Library office.',
     'flash_teacher_changes_requested' => 'Sent back to the student with your note.',
     'flash_teacher_rejected' => 'Refused, with your note.',
+    // BL2c: an edit to a published post, checked before it replaces the live text.
+    'change_help' => 'This post is published. Your edit is checked before it replaces what readers see.',
+    'change_status_draft' => 'Edit saved, not sent',
+    'change_status_teacher' => 'Edit with your class teacher',
+    'change_status_office' => 'Edit with the Library office',
+    'teacher_edit_note' => 'An edit to a published post. Readers see the live post until the office approves the edit.',
+    'error_change_waiting' => 'Your edit is being checked. You can edit again once it is decided.',
+    'error_no_change_to_send' => 'There is no edit to send. Edit the post first.',
 ];

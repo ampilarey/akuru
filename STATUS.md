@@ -4983,6 +4983,59 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sh. An edit to a published post is checked first (BLOG_PLAN BL2c, 2026-10-17)
+
+The last part of BL2 (§5sf, §5sg). With it, BL2 is done.
+
+**Built:**
+- **Editing a published post** on *My blog* (D3):
+  - the edit is kept beside the live text (`pending_title`, `pending_body`,
+    `pending_saved_at`; migration `2026_10_17_000003_bl2c_post_edits`),
+    cleaned as every body is (`SaveLibraryItemAction::sanitiseBody`);
+  - readers see the live post, unchanged, until the edit is approved;
+  - the form says so; series and language stay as published; the pin changes
+    at once, being the writer's page rather than the text;
+  - an edit that is being checked cannot be edited again.
+- **Checking an edit** goes the way a new post does (`SubmitBlogPostAction`):
+  - a student's to the class teacher, then the office; otherwise the office;
+  - an edit does not count against the weekly cap.
+- **The class teacher** (`TeacherReviewBlogPostAction`) sees it marked as an
+  edit, with the new title. *Approve* sends it to the office; *send back*
+  keeps the edit for the student to fix; *refuse* drops it. The post stays
+  published either way.
+- **The office** sees it in the same queue, marked as an edit, with the new
+  title. Its decision goes to `DecidePostChangeAction` (new), the one place a
+  published post's title and text change: approving puts the edit live and
+  re-pages the reader; sending back keeps it; refusing drops it.
+- **The trail:** `edit_submitted`, `teacher_edit_approved|returned|refused`,
+  `edit_approved|returned|refused`, named for the office in three languages.
+- **Language:** 7 `blog` phrases and 8 `admin` phrases, in EN/DV/AR.
+
+**Found on the way, fixed:** the office's decision on a new post left
+`review_stage = office` on it, so a published post read as still with the
+office and could not be edited. The decision now clears it, and the
+migration clears it on posts already decided.
+
+**Tests:** `BlogPostEditsTest` (new, 4):
+- the live post unchanged, on the page and in the database, through the
+  teacher and the office; the text cleaned; no second edit while one is
+  checked; the office refused while the teacher has it; live after; the trail;
+- a sent-back edit kept for the student, with the note; a refused one
+  dropped; the post live throughout;
+- a learner's edit to the office, sent back and then refused; nothing to
+  send before an edit;
+- the weekly cap does not count an edit; the phrases.
+
+`BlogPostsTest` checks that a published post is with nobody.
+
+Whole suite locally: **3228 passed** (68096 assertions).
+
+**Walk:** `blog-posts.mjs`, extended, 22/22. The five new steps: the pupil
+edits published part 1 and it waits for the class teacher, in Dhivehi;
+readers still see the old title; the teacher sees it marked as an edit and
+approves; the office sees it marked as an edit and approves; readers see the
+new title at the same address.
+
 ## 5sg. The blogs' public pages (BLOG_PLAN BL2b, 2026-10-17)
 
 The second part of BL2 (§5sf was BL2a). What is left of BL2, a checked edit

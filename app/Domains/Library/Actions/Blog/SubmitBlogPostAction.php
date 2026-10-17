@@ -25,6 +25,11 @@ use Illuminate\Validation\ValidationException;
  *    days, counting the ones waiting and published (D18).
  *
  * Logged in the item's review trail, as every submission is.
+ *
+ * BL2c: a published post's waiting edit goes the same way — the class
+ * teacher for a student, then the office — while the post stays published
+ * with its live text. An edit is not a new post, so the weekly cap does not
+ * count it.
  */
 class SubmitBlogPostAction
 {
@@ -35,18 +40,22 @@ class SubmitBlogPostAction
         if ($profile === null || (int) $item->writer_id !== (int) $profile->id || $item->content_type !== LibraryContentType::Post) {
             throw ValidationException::withMessages(['post' => __('blog.error_post_own')]);
         }
-        if (! in_array($item->status, [LibraryItemStatus::Draft, LibraryItemStatus::ChangesRequested], true)) {
+        $change = $item->status === LibraryItemStatus::Published;
+        if ($change && (! $item->hasPendingChange() || $item->review_stage !== null)) {
+            throw ValidationException::withMessages(['post' => __('blog.error_no_change_to_send')]);
+        }
+        if (! $change && ! in_array($item->status, [LibraryItemStatus::Draft, LibraryItemStatus::ChangesRequested], true)) {
             throw ValidationException::withMessages(['post' => __('blog.error_post_not_submittable')]);
         }
         if (empty($item->declarations['copyright'])) {
             throw ValidationException::withMessages(['own_work' => __('blog.error_own_work')]);
         }
-        if (trim(strip_tags((string) $item->body)) === '') {
+        if (trim(strip_tags((string) ($change ? $item->pending_body : $item->body))) === '') {
             throw ValidationException::withMessages(['body' => __('blog.error_post_empty')]);
         }
 
         $teacher = null;
-        if ($profile->isStudent()) {
+        if ($profile->isStudent() && ! $change) {
             $limit = max(1, (int) config('library.blog.posts_per_week', 3));
             $recent = LibraryItem::query()
                 ->where('writer_id', $profile->id)
@@ -58,20 +67,23 @@ class SubmitBlogPostAction
             if ($recent >= $limit) {
                 throw ValidationException::withMessages(['post' => trans_choice('blog.error_weekly_cap', $limit, ['count' => $limit])]);
             }
+        }
+        if ($profile->isStudent() && config('library.blog.teacher_review', true)) {
             $student = app(ResolveStudentAgeForUserAction::class)->execute($userId);
-            if ($student !== null && config('library.blog.teacher_review', true)) {
+            if ($student !== null) {
                 $teacher = app(ResolveClassTeacherForStudentAction::class)->execute($student['student_id']);
             }
         }
 
         $item->fill([
-            'status' => LibraryItemStatus::Submitted,
             'review_stage' => $teacher !== null ? 'teacher' : 'office',
             'teacher_user_id' => $teacher,
-        ]);
-        $item->submitted_at = now();
+        ] + ($change ? [] : ['status' => LibraryItemStatus::Submitted]));
+        if (! $change) {
+            $item->submitted_at = now();
+        }
         $item->save();
-        LibraryItemReview::query()->create(['library_item_id' => $item->id, 'reviewer_user_id' => null, 'decision' => 'submitted', 'comment' => null]);
+        LibraryItemReview::query()->create(['library_item_id' => $item->id, 'reviewer_user_id' => null, 'decision' => $change ? 'edit_submitted' : 'submitted', 'comment' => null]);
 
         $notify = app(NotifyLibraryUserAction::class);
         if ($teacher !== null) {

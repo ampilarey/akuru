@@ -141,4 +141,12 @@ return [
     'flash_teacher_approved' => 'تمت الموافقة. تنتقل إلى مكتب المكتبة.',
     'flash_teacher_changes_requested' => 'أُعيدت إلى الطالب مع ملاحظتك.',
     'flash_teacher_rejected' => 'رُفضت مع ملاحظتك.',
+    // BL2c: an edit to a published post, checked before it replaces the live text.
+    'change_help' => 'هذه التدوينة منشورة. يُراجَع تعديلك قبل أن يحلّ محل ما يراه القرّاء.',
+    'change_status_draft' => 'حُفظ التعديل ولم يُرسل',
+    'change_status_teacher' => 'التعديل لدى معلم الفصل',
+    'change_status_office' => 'التعديل لدى مكتب المكتبة',
+    'teacher_edit_note' => 'تعديل على تدوينة منشورة. يرى القرّاء التدوينة الحالية حتى يوافق المكتب على التعديل.',
+    'error_change_waiting' => 'تعديلك قيد المراجعة. يمكنك التعديل مجدداً بعد البتّ فيه.',
+    'error_no_change_to_send' => 'لا يوجد تعديل للإرسال. عدّل التدوينة أولاً.',
 ];

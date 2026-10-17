@@ -197,6 +197,12 @@ function SubmissionsQueue({ submissions, reviewers = [], t, common, refusals }) 
                         <tr key={sub.id} className="border-t align-top">
                             <td data-label={t.library_office_th_submitted || 'Submitted item'} className="px-3 py-2">
                                 <p className="font-medium">{sub.title}</p>
+                                {sub.change && (
+                                    <p className="text-xs font-medium text-amber-800" data-testid={`submission-edit-${sub.id}`}>
+                                        {t.library_office_post_edit || 'An edit to a published post. Readers see the live post until you approve.'}
+                                        {sub.pending_title && sub.pending_title !== sub.title ? ` → ${sub.pending_title}` : ''}
+                                    </p>
+                                )}
                                 <p className="text-xs text-gray-500">
                                     {sub.writer} · {common[`library_type_${sub.content_type}`] || sub.content_type} · {common[`library_access_${sub.access_type}`] || sub.access_type}{sub.price ? ` · ${money(common, sub.price)}` : ''} · {sub.submitted_at}
                                 </p>
