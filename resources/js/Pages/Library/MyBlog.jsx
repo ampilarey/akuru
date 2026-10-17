@@ -193,6 +193,8 @@ export default function MyBlog({ state, blog = null, request = null, posts = [],
                     {state === 'writer' && <p className="mt-3 rounded bg-gray-50 p-3 text-sm text-gray-700">{t.writer_state || 'You write as a full writer. Your blog comes with your writer page.'}</p>}
                     <div className="mt-3 flex flex-wrap gap-3 text-sm">
                         {blog.slug && <a className="underline" href={`/library/authors/${blog.slug}`} data-testid="blog-view-page">{t.view_page || 'See my page'}</a>}
+                        {/* BL3a: the page designer. */}
+                        <a className="underline" href="/my-blog/design" data-testid="blog-design-link">{t.design_link || 'Design my page'}</a>
                         {state === 'writer' && <a className="underline" href="/write">{t.open_writer_portal || 'Open the writer portal'}</a>}
                     </div>
                 </section>

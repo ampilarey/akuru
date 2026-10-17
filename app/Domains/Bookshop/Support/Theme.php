@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Support;
 
 use App\Domains\Bookshop\Models\Vendor;
+use App\Support\Theme\Contrast;
 
 /**
  * A storefront theme as data (BOOKSHOP_PLAN §6.2): colours, fonts, scale,

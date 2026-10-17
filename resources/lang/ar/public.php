@@ -740,4 +740,5 @@ return [
     'blogs_next' => 'الجزء التالي',
     'blogs_posts_heading' => 'التدوينات',
     'blogs_more_from' => 'المزيد في هذه المدونة',
+    'blogs_about' => 'نبذة',
 ];

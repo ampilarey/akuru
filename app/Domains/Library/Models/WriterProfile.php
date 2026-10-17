@@ -25,6 +25,16 @@ class WriterProfile extends Model
         'guardian_consented_at',
         'featured_item_ids',
         'social_links',
+        // BL3a: the blog's page design, live and waiting.
+        'theme_key',
+        'accent_color',
+        'heading_font',
+        'tagline',
+        'languages',
+        'sections',
+        'pending_page',
+        'page_submitted_at',
+        'page_decision_note',
         'status',
         'approved_at',
         'approved_by',
@@ -41,6 +51,10 @@ class WriterProfile extends Model
             'show_photo' => 'boolean',
             'show_school' => 'boolean',
             'guardian_consented_at' => 'datetime',
+            'languages' => 'array',
+            'sections' => 'array',
+            'pending_page' => 'array',
+            'page_submitted_at' => 'datetime',
         ];
     }
 

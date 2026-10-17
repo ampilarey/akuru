@@ -785,4 +785,5 @@ return [
     'blogs_next' => 'Next part',
     'blogs_posts_heading' => 'Posts',
     'blogs_more_from' => 'More on this blog',
+    'blogs_about' => 'About',
 ];

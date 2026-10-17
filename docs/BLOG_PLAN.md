@@ -8,8 +8,8 @@
 >
 > The owner's decisions are in **§13**. Everything else is the default an
 > implementer takes unless the owner says otherwise. **BL1 and BL2 are
-> built** (2026-10-17: BL1 STATUS §5se; BL2 in three parts, §5sf–§5sh);
-> **BL3–BL7 are not.** This document is the whole
+> built** (2026-10-17: BL1 STATUS §5se; BL2 in three parts, §5sf–§5sh),
+> and BL3a (§5si); **BL3b–BL7 are not.** This document is the whole
 > brief for the agent that builds them.
 
 Written against `main` at `51b9c58` (#777). Every name below was read from
@@ -475,6 +475,27 @@ touched + no files outside its scope.
   - the blog shows part 1 only, under `/ar` right to left.
 
 ### BL3 — The page designer
+
+> **Split in two, 2026-10-18.** **BL3a is built** (STATUS §5si): the gallery
+> (`library_blog_themes`, five themes), the designer at `/my-blog/design`
+> (theme, accent checked for contrast, heading font, tagline, *about me*,
+> languages, sections on or off and in order), the preview left to right and
+> right to left, the whole set as a draft sent to the office, the office's
+> *Blog page changes* list with its CSV, and the author page drawn from the
+> approved design. **BL3b** is the rest: the banner, the picture (photo
+> consent under 18), and the links (students only with consent), each an
+> upload or a field checked as part of the same draft.
+>
+> Three departures, deliberate:
+> - Only `Contrast` moved to `App\Support\Theme\`. The Bookstore's `Theme`
+>   knows vendors, badges and the Bookstore's presets; moving it would carry
+>   those into shared code. The blog has its own small `BlogPage` in the
+>   Library, on the same contrast check. The Bookstore's 248 tests pass
+>   unchanged.
+> - The designer is at `/my-blog/design`, beside *My blog*, not
+>   `/write/blog/design`.
+> - The sections are pinned, latest, series, works and about. Topics come
+>   with tags, tips with BL5.
 - `Theme` and `Contrast` move to `App\Support\Theme\`; the Bookstore
   follows, with its tests rerun.
 - `library_blog_themes` with five seeded themes.
