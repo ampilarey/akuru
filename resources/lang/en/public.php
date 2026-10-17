@@ -785,6 +785,7 @@ return [
     'blogs_next' => 'Next part',
     'blogs_posts_heading' => 'Posts',
     'blogs_more_from' => 'More on this blog',
+    'blogs_featured' => 'Featured this month',
     'blogs_about' => 'About',
     // BLOG_PLAN BL4: following a blog, and its feed.
     'follow_follow' => 'Follow',

@@ -29,7 +29,7 @@ closes or adds a line.
 
 | # | What | Where |
 |---|---|---|
-| P1 | **Blogs in the Digital Library**, for students and full writers: seven slices, BL1–BL7. BL1 (starting a blog with a parent's consent) BL2 (writing posts checked by the class teacher and the office, the public blog pages, checked edits to published posts) and BL3 (the page designer with banner, picture and links, every change checked by the office) BL4 (following a blog, notices, feeds), BL5 (comments, checked) and BL6 (tips, and payouts to a parent's wallet under 18) are built; BL7 is next. | `docs/BLOG_PLAN.md`, BACKLOG C25 |
+| P1 | **Blogs in the Digital Library**, for students and full writers: seven slices, BL1–BL7. BL1 (starting a blog with a parent's consent) BL2 (writing posts checked by the class teacher and the office, the public blog pages, checked edits to published posts) and BL3 (the page designer with banner, picture and links, every change checked by the office) BL4 (following a blog, notices, feeds), BL5 (comments, checked), BL6 (tips, and payouts to a parent's wallet under 18) and BL7 (featured posts, rewards, insights, growing up) are built — **the whole plan**. What is left is the owner's: the writing guidelines page and its address, the consent text, tip amounts, the share and rewards, and the tax treatment that keeps payouts off. | `docs/BLOG_PLAN.md`, BACKLOG C25 |
 
 ## 2. The owner's — server, credentials, settings (OWNER_ACTIONS)
 

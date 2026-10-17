@@ -41,6 +41,23 @@ class ListBlogsAction
     }
 
     /**
+     * BL7 (§7.2): the posts the office featured this month, newest first.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function featured(): array
+    {
+        $serialize = app(ListLibraryItemsAction::class);
+
+        return LibraryItem::query()->with(['category', 'tags', 'authors', 'writer'])
+            ->where('content_type', LibraryContentType::Post->value)->where('status', LibraryItemStatus::Published->value)
+            ->where('featured', true)->where('featured_at', '>=', now()->startOfMonth())
+            ->orderByDesc('featured_at')->limit(6)->get()
+            ->map(fn (LibraryItem $item) => $serialize->serialize($item) + ['excerpt' => $this->excerpt((string) $item->body), 'student' => $item->writer?->isStudent() ?? false])
+            ->values()->all();
+    }
+
+    /**
      * BL3a: one writer's latest published posts, for the designer's preview.
      *
      * @return list<array{title: string, excerpt: string, published_at: ?string}>

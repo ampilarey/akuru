@@ -30,6 +30,8 @@ class StudentBlogController extends Controller
             // BL2a: a blogger's posts and series.
             ...(in_array($blog['state'], ['blog', 'writer'], true) ? app(ListBlogPostsAction::class)->mine($userId) : []),
             't' => Phrases::once('blog'),
+            // BL7 (§6): the owner's writing guidelines, once their page exists.
+            'guidelines_url' => config('library.blog.guidelines_url') ?: null,
         ]);
     }
 

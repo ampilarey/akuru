@@ -40,6 +40,9 @@ class ResolveLibrarySettingAction
         // BLOG_PLAN BL6a: the tip box's amounts, and Akuru's share of a tip.
         'tip_amounts' => ['library.blog.tip_amounts', 'string'],
         'tip_share_percent' => ['library.blog.tip_share_percent', 'int'],
+        // BLOG_PLAN BL7: a featured post's reward — off by default, capped.
+        'reward_enabled' => ['library.blog.reward_enabled', 'bool'],
+        'reward_cap' => ['library.blog.reward_cap', 'int'],
     ];
 
     public function execute(string $key): int|bool|string

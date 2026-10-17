@@ -4983,6 +4983,72 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5so. Featured posts, rewards, insights, growing up — the blog plan is complete (BLOG_PLAN BL7, 2026-10-18)
+
+The last slice of `docs/BLOG_PLAN.md`. Every slice, BL1–BL7, is built
+(§5se–§5so). What remains is the owner's (the plan's §14) and its *Later, on
+request* list.
+
+**Built:**
+- **Featured this month** (`FeaturePostAction`): the office features a
+  published post from *Blog insights*; the blogs' front shows the month's
+  picks first; the writer is told. *Stop featuring* takes it off.
+- **The reward** (§7.2, D12): an Akuru-funded `writer_earnings` row of kind
+  `reward` — no payment, no share kept — for a featured post; **off by
+  default** (`reward_enabled`), at most `reward_cap` (MVR 500 by default),
+  once per post. It matures, and a student's is paid, as their other earnings
+  are (BL6b). Both settings are on the Library settings screen.
+- **Reads per post:** distinct readers from the reading log, on each
+  published post on *My blog* and in the insights.
+- **Blog insights** (`/admin/library/blog-insights`, under the Library
+  office): blogs, student blogs, posts published (all and this month),
+  follows, tips and rewards this month; each checking queue — blog requests,
+  posts with class teachers, posts with the office, page changes, comments,
+  tip notes — with its count and the age of its oldest; the last 60 days'
+  posts to feature, with their readers; a CSV.
+- **Growing up at 18** (D15): `library:blogs-growing-up`, daily at 02:15
+  (Indian/Maldives), makes a student blogger who has turned 18 a full writer
+  — the same profile, so the page, posts, series, followers and earnings stay
+  — ends the parent's part (the consenting parent and the photo choice
+  cleared), and tells both.
+- **The writing guidelines** (§6, owner item 1): *My blog* links them once
+  the owner writes the page and sets `LIBRARY_BLOG_GUIDELINES_URL`.
+- **Language:** 33 `blog` phrases, 3 `admin` phrases, `public.blogs_featured`,
+  `nav.blog_insights`, in EN/DV/AR.
+
+No migration: featuring reuses `featured` and `featured_at`, the reward the
+`kind` column from BL6a.
+
+**Tests:** `BlogFeaturedTest` (new, 5):
+- a post featured on the blogs' front and off again; a reward refused while
+  rewards are off, over the cap, or a second time; written as an
+  Akuru-funded earning when allowed;
+- three distinct readers counted for the writer and the office; the insights'
+  totals and the teacher queue; the CSV; the page behind its gate;
+- the growing-up command moves an 18-year-old's blog and not a 12-year-old's,
+  keeping posts, followers and earnings, telling both, and moving nothing
+  twice;
+- the guidelines link appears once its address is set;
+- the menu item and the phrases in Thaana and Arabic script.
+
+`WorkspacesTest` and `AdminHubTest` name the new Library office item.
+
+Whole suite locally: **3256 passed** (68768 assertions).
+
+**Walk:** `blog-featured.mjs` (new, in the runner), 7/7: Blog insights lists a
+15-year-old's post with three readers; the office types a reward of MVR 50
+and features it; the reward is an Akuru-funded earning with no payment
+behind it; under `/ar` the blogs' front shows it as *Featured this month*,
+right to left; the writer sees three readers on My blog, in Dhivehi; the
+growing-up run moves an 18-year-old's blog to a writer's, and its page and
+post stay. The walk removes what it made and puts the settings back.
+
+**What the owner still owns** (the plan's §14): the writing guidelines page
+and `LIBRARY_BLOG_GUIDELINES_URL`; the parent consent text (BL1's first
+draft); the tip amounts, Akuru's share and whether rewards are on; the tax
+treatment that keeps writer payouts off (A9); who in the office checks
+posts and comments — Blog insights shows each queue's age.
+
 ## 5sn. A student blogger is paid to a wallet, a parent's while under 18 (BLOG_PLAN BL6b, 2026-10-18)
 
 The second half of BL6 (§5sm). Writer payouts stay **off** until the owner

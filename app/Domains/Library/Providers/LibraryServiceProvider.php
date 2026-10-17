@@ -4,6 +4,7 @@ namespace App\Domains\Library\Providers;
 
 use App\Domains\Finance\Events\PaymentConfirmed;
 use App\Domains\Finance\Events\PaymentRefunded;
+use App\Domains\Library\Console\GrowBlogStudentsUpCommand;
 use App\Domains\Library\Console\ImportWebsiteResearchCommand;
 use App\Domains\Library\Console\RemindReadersCommand;
 use App\Domains\Library\Console\RemindReviewersCommand;
@@ -38,7 +39,7 @@ class LibraryServiceProvider extends ServiceProvider
         Event::listen(PaymentRefunded::class, ReverseTipOnPaymentRefunded::class);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([SyncLibraryPagesCommand::class, RemindReadersCommand::class, ImportWebsiteResearchCommand::class, RemindReviewersCommand::class]);
+            $this->commands([SyncLibraryPagesCommand::class, RemindReadersCommand::class, ImportWebsiteResearchCommand::class, RemindReviewersCommand::class, GrowBlogStudentsUpCommand::class]);
         }
     }
 }

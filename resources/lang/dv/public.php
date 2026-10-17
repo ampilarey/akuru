@@ -740,6 +740,7 @@ return [
     'blogs_next' => 'ދެން އޮތް ބައި',
     'blogs_posts_heading' => 'ޕޯސްޓްތައް',
     'blogs_more_from' => 'މި ބްލޮގުގައި އިތުރަށް',
+    'blogs_featured' => 'މި މަހުގެ ޚާއްޞަ ޕޯސްޓްތައް',
     'blogs_about' => 'ތަޢާރަފް',
     // BLOG_PLAN BL4: following a blog, and its feed.
     'follow_follow' => 'ފޮލޯ ކުރޭ',

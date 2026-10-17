@@ -740,6 +740,7 @@ return [
     'blogs_next' => 'الجزء التالي',
     'blogs_posts_heading' => 'التدوينات',
     'blogs_more_from' => 'المزيد في هذه المدونة',
+    'blogs_featured' => 'مميّز هذا الشهر',
     'blogs_about' => 'نبذة',
     // BLOG_PLAN BL4: following a blog, and its feed.
     'follow_follow' => 'متابعة',

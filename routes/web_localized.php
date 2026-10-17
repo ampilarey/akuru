@@ -858,6 +858,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('blog-requests/export', [\App\Domains\Library\Http\Controllers\AdminBlogRequestController::class, 'export'])->name('admin.library.blog-requests.export');
         Route::post('blog-requests/{blogRequest}/decide', [\App\Domains\Library\Http\Controllers\AdminBlogRequestController::class, 'decide'])->name('admin.library.blog-requests.decide')->whereNumber('blogRequest');
         // BLOG_PLAN BL3a: blog page changes, checked before they show.
+        // BLOG_PLAN BL7: the blogs' insights, and Featured this month with its reward.
+        Route::get('blog-insights', [\App\Domains\Library\Http\Controllers\AdminBlogInsightsController::class, 'index'])->name('admin.library.blog-insights');
+        Route::get('blog-insights/export', [\App\Domains\Library\Http\Controllers\AdminBlogInsightsController::class, 'export'])->name('admin.library.blog-insights.export');
+        Route::post('blog-insights/{item}/feature', [\App\Domains\Library\Http\Controllers\AdminBlogInsightsController::class, 'feature'])->name('admin.library.blog-insights.feature')->whereNumber('item');
         // BLOG_PLAN BL6a: tips, and their notes checked.
         Route::get('tips', [\App\Domains\Library\Http\Controllers\AdminBlogTipController::class, 'index'])->name('admin.library.tips');
         Route::get('tips/export', [\App\Domains\Library\Http\Controllers\AdminBlogTipController::class, 'export'])->name('admin.library.tips.export');

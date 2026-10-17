@@ -202,7 +202,7 @@ it('composes the Institute and the School homes from the workspace’s own menu'
             ->where('parts.0.sections.1.key', 'admin_instructors')
             ->where('parts.0.sections.2.key', 'prayer_times')->has('parts.0.sections.2.children', 4)
             ->where('parts.1.key', 'panel_admissions')->has('parts.1.sections', 1)
-            ->where('parts.2.key', 'panel_money')->has('parts.2.sections', 10)->has('parts.2.sections.1.children', 8)
+            ->where('parts.2.key', 'panel_money')->has('parts.2.sections', 10)->has('parts.2.sections.1.children', 9)
             ->where('parts.3.key', 'panel_settings')->where('parts.3.label', 'Settings')->has('parts.3.sections', 5)
             ->where('parts.3.sections.2.key', 'bookshop_settings')->where('parts.3.sections.2.href', '/admin/bookshop/settings')
             ->where('parts.3.sections.3.key', 'print_desk')->where('parts.3.sections.3.href', '/admin/bookshop/print')
