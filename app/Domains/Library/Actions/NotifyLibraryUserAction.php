@@ -59,6 +59,18 @@ class NotifyLibraryUserAction
     }
 
     /**
+     * BLOG_PLAN BL4: in the app, and by email too — for a reader who asked
+     * for a blog's new posts by email. Not an office switch: the reader's own
+     * choice, and a reader who switched library notices off gets neither.
+     */
+    public function withEmail(int $userId, string $title, string $message, ?string $href = null): void
+    {
+        if ($this->inApp($userId, $title, $message, $href)) {
+            $this->email($this->person($userId), $title, $message, $href);
+        }
+    }
+
+    /**
      * Everyone who runs the Library: the holders of `library.manage`, in the app.
      * COMMERCE_PARITY_PLAN P5: a sale (`office_events`) also goes to the
      * office's own address and number from the settings screen, as the two

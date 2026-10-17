@@ -3,6 +3,10 @@
 @section('title', __('public.blogs_title') . ' - ' . __('public.Digital Library') . ' - ' . config('app.name'))
 @section('description', __('public.blogs_intro'))
 
+@push('head_meta')
+    <link rel="alternate" type="application/rss+xml" title="{{ __('public.blogs_title') }}" href="{{ route('public.library.blogs.feed') }}">
+@endpush
+
 @section('content')
 {{-- BLOG_PLAN BL2b: the blogs' front — the latest published posts and the blogs that wrote them. --}}
 <div class="container mx-auto px-4 py-10 max-w-6xl">
@@ -15,6 +19,7 @@
     <header class="mb-8">
         <h1 class="text-4xl font-bold text-brandMaroon-900 mb-2">{{ __('public.blogs_title') }}</h1>
         <p class="text-gray-600">{{ __('public.blogs_intro') }}</p>
+        <a href="{{ route('public.library.blogs.feed') }}" class="mt-2 inline-block text-sm text-brandMaroon-700 underline" data-testid="blogs-feed">{{ __('public.follow_feed') }}</a>
     </header>
 
     <div class="grid gap-10 lg:grid-cols-3">

@@ -182,6 +182,10 @@ Route::get('library', [PublicLibraryController::class, 'index'])->name('public.l
 Route::get('library/authors/{slug}', [PublicLibraryController::class, 'author'])->name('public.library.author');
 // BLOG_PLAN BL2b: the blogs' front — before `library/{slug}`, whose slugs may not be `blogs`.
 Route::get('library/blogs', [PublicLibraryController::class, 'blogs'])->name('public.library.blogs');
+// BLOG_PLAN BL4: following a blog, and the feeds.
+Route::get('library/blogs/feed', [\App\Domains\Library\Http\Controllers\BlogFollowController::class, 'blogsFeed'])->name('public.library.blogs.feed');
+Route::get('library/authors/{slug}/feed', [\App\Domains\Library\Http\Controllers\BlogFollowController::class, 'authorFeed'])->name('public.library.author.feed');
+Route::post('library/authors/{slug}/follow', [\App\Domains\Library\Http\Controllers\BlogFollowController::class, 'follow'])->name('public.library.author.follow')->middleware('throttle:30,1,blog-follow');
 // B4 (§8.5): the offers running now.
 Route::get('library/promotions', [PublicLibraryController::class, 'promotions'])->name('public.library.promotions');
 Route::get('my-library', [LibraryReaderController::class, 'myLibrary'])->name('public.library.my');

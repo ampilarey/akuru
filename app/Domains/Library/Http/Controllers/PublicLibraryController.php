@@ -3,6 +3,7 @@
 namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Commerce\Actions\ListPromotionCampaignsAction;
+use App\Domains\Library\Actions\Blog\FollowBlogAction;
 use App\Domains\Library\Actions\Blog\ListBlogsAction;
 use App\Domains\Library\Actions\DownloadLibraryItemAction;
 use App\Domains\Library\Actions\ListLibraryAuthorsAction;
@@ -100,7 +101,10 @@ class PublicLibraryController extends Controller
             abort(404);
         }
 
-        return view('public.library.show', ['item' => $item]);
+        // BLOG_PLAN BL4: a post carries its blog's follow box.
+        $follow = $item['content_type'] === 'post' && $item['writer'] ? app(FollowBlogAction::class)->state($request->user()?->id, $item['writer']['slug']) : null;
+
+        return view('public.library.show', ['item' => $item, 'follow' => $follow]);
     }
 
     /**
@@ -157,13 +161,13 @@ class PublicLibraryController extends Controller
     }
 
     /** L8 (§8.7): an author and everything of theirs that is published. */
-    public function author(string $slug)
+    public function author(Request $request, string $slug)
     {
         $author = app(PresentWriterPublicProfileAction::class)->execute($slug);
         if ($author === null) {
             abort(404);
         }
 
-        return view('public.library.author', ['author' => $author]);
+        return view('public.library.author', ['author' => $author, 'follow' => app(FollowBlogAction::class)->state($request->user()?->id, $slug)]);
     }
 }

@@ -9,7 +9,7 @@
 > The owner's decisions are in **§13**. Everything else is the default an
 > implementer takes unless the owner says otherwise. **BL1 and BL2 are
 > built** (2026-10-17: BL1 STATUS §5se; BL2 in three parts, §5sf–§5sh),
-> and BL3 in two parts (§5si, §5sj); **BL4–BL7 are not.** This document is the whole
+> BL3 in two parts (§5si, §5sj) and BL4 (§5sk); **BL5–BL7 are not.** This document is the whole
 > brief for the agent that builds them.
 
 Written against `main` at `51b9c58` (#777). Every name below was read from
@@ -520,6 +520,14 @@ touched + no files outside its scope.
 - Walk `blog-design.mjs`.
 
 ### BL4 — Follow, notices, feeds
+
+> **Built 2026-10-18** (STATUS §5sk): `library_follows` and the cached
+> `followers_count`; the follow box on a blog's page and on its posts (a
+> guest is sent to sign in, a writer cannot follow themselves); *Blogs I
+> follow* in My Library; a new post tells the followers and earlier readers
+> once (`readers_notified_at`), by email only for followers who asked; RSS
+> for each blog and for all blogs. The email goes by the reader's own choice,
+> not the office's notice switches.
 - `library_follows`; *Follow* and *Following* in My Library.
 - New-post notices through `NotifyLibraryUserAction` (in-app; email by the
   reader's choice).

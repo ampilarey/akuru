@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Library\Actions\Blog\FollowBlogAction;
 use App\Domains\Library\Models\LibraryBookmark;
 use App\Domains\Library\Models\LibraryReadingProgress;
 
@@ -60,6 +61,8 @@ class ListMyLibraryAction
             'continue' => $continue,
             'bookmarks' => $bookmarks,
             'purchases' => app(ListLibraryPurchasesAction::class)->execute($userId),
+            // BLOG_PLAN BL4: the blogs this reader follows.
+            'following' => app(FollowBlogAction::class)->following($userId),
         ];
     }
 }

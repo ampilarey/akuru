@@ -202,6 +202,7 @@ return [
     'lead' => \App\Domains\Website\Models\Lead::class,
     'library_access_grant' => \App\Domains\Library\Models\LibraryAccessGrant::class,
     'library_blog_theme' => \App\Domains\Library\Models\LibraryBlogTheme::class,
+    'library_follow' => \App\Domains\Library\Models\LibraryFollow::class,
     'library_bookmark' => \App\Domains\Library\Models\LibraryBookmark::class,
     'library_category' => \App\Domains\Library\Models\LibraryCategory::class,
     'library_item' => \App\Domains\Library\Models\LibraryItem::class,

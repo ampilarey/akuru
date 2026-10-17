@@ -22,6 +22,27 @@
         @endforeach
     </div>
 
+    {{-- BLOG_PLAN BL4: the blogs this reader follows. --}}
+    <h2 class="text-xl font-semibold mb-3">{{ __('public.follow_my_heading') }}</h2>
+    <div class="mb-8 grid gap-2" data-testid="my-following">
+        @if(count($library['following'] ?? []) === 0)
+            <p class="text-gray-500">{{ __('public.follow_my_none') }} <a href="{{ route('public.library.blogs') }}" class="underline">{{ __('public.blogs_title') }}</a></p>
+        @endif
+        @foreach($library['following'] ?? [] as $row)
+            <div class="flex flex-wrap items-center justify-between gap-2 rounded-lg border bg-white p-3" data-testid="following-{{ $row['slug'] }}">
+                <div>
+                    <a href="{{ route('public.library.author', $row['slug']) }}" class="font-medium text-brandMaroon-900 hover:underline">{{ $row['blog_title'] ?: $row['display_name'] }}</a>
+                    <span class="text-sm text-gray-500"> — {{ __('public.blogs_by', ['name' => $row['display_name']]) }}{{ $row['email'] ? ' · '.__('public.follow_by_email') : '' }}</span>
+                </div>
+                <form method="POST" action="{{ route('public.library.author.follow', $row['slug']) }}">
+                    @csrf
+                    <input type="hidden" name="follow" value="0">
+                    <button type="submit" class="text-sm underline" data-testid="unfollow-{{ $row['slug'] }}">{{ __('public.follow_unfollow') }}</button>
+                </form>
+            </div>
+        @endforeach
+    </div>
+
     <h2 class="text-xl font-semibold mb-3">{{ __('public.Purchases') }}</h2>
     <div class="mb-8 grid gap-2">
         @if(count($library['purchases']) === 0)

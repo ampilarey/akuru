@@ -38,6 +38,8 @@ class WriterProfile extends Model
         'page_submitted_at',
         'page_decision_note',
         'status',
+        // BL4: a cached count, kept by the follow action.
+        'followers_count',
         'approved_at',
         'approved_by',
         'default_commission',
