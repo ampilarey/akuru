@@ -740,4 +740,5 @@ return [
     'blogs_next' => 'ދެން އޮތް ބައި',
     'blogs_posts_heading' => 'ޕޯސްޓްތައް',
     'blogs_more_from' => 'މި ބްލޮގުގައި އިތުރަށް',
+    'blogs_about' => 'ތަޢާރަފް',
 ];

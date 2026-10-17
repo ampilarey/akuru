@@ -4983,6 +4983,76 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5si. Bloggers design their page; the office checks it first (BLOG_PLAN BL3a, 2026-10-18)
+
+The first half of BL3. The banner, the picture and the links are **BL3b**,
+recorded in `docs/BLOG_PLAN.md`.
+
+**Built:**
+- **The gallery:** `library_blog_themes` (migration
+  `2026_10_18_000001_bl3a_blog_design`, morph alias `library_blog_theme`),
+  five themes — Akuru, Ocean, Forest, Sand, Night — named in three
+  languages, each colours and shape as data.
+- **The designer** (`/my-blog/design`, `Library/BlogDesign`, linked from *My
+  blog*):
+  - a theme; an accent colour; a heading font from a fixed list;
+  - a tagline (120) and *about me* (1,500, plain text, tags stripped);
+  - the languages written in;
+  - the sections — pinned, latest, series, published works, about — on or
+    off and in order;
+  - a preview drawn with the page's own colours, left to right or right to
+    left.
+
+  The accent must stand out on the page and on a card (3:1) and carry
+  readable text (4.5:1); the screen flags it at once and the server refuses
+  it with the ratio reached (`BlogPage`, new, on the shared
+  `App\Support\Theme\Contrast`).
+- **Every change is a draft** (D14): the whole set waits in
+  `writer_profiles.pending_page`; *Send for checking* sends it; a set being
+  checked cannot be changed. The live page is untouched.
+- **The office** (`/admin/library/blog-pages`, *Blog page changes* under the
+  Library office): each waiting set beside the live design, oldest first, with
+  a CSV. Approving writes the whole set to the live columns
+  (`DecideBlogPageAction`, the one place they change); refusing needs a note
+  and leaves the set with the writer.
+- **The author page** draws from the approved design only: the theme's
+  colours as CSS custom properties (normalised hex and fixed words, escaped
+  like any value), the heading font, the tagline, the language chips, and the
+  sections in the writer's order.
+- **`Contrast` moved** from the Bookstore to `App\Support\Theme\`; the
+  Bookstore's `Theme` imports it there. Its 248 tests pass unchanged.
+- **Language:** 40 `blog` phrases, `public.blogs_about`, `nav.blog_pages`, in
+  EN/DV/AR.
+
+**Three departures, recorded in the plan:** only `Contrast` moved (the
+Bookstore's `Theme` knows vendors and badges); the designer is at
+`/my-blog/design`; topics and tips sections wait for tags and BL5.
+
+**Tests:** `BlogDesignTest` (new, 4):
+- the live page unchanged through draft and sending, a sent set locked, the
+  office's list and CSV, approval writing every live column, the public page
+  in the new theme with the accent, the font, the tagline, the language and
+  the writer's section order;
+- a colour that does not read refused with the ratio, nothing saved;
+  unknown themes, fonts and sections falling back, each section once;
+- a refusal needs a note and leaves the set with the writer; the office
+  list behind its gate; no designer without a blog;
+- the menu item, the phrases in Thaana and Arabic script, `Contrast` where
+  it now lives.
+
+`WorkspacesTest` and `AdminHubTest` name the new Library office item.
+
+Whole suite locally: SUITE_RESULT_BL3A.
+
+**Walk:** `blog-design.mjs` (new, in the runner), 13/13: under `/dv` the
+pupil opens the designer from *My blog*, chooses Night, is warned and then
+refused (in Dhivehi, with the ratio) for an accent that does not read,
+writes a tagline and *about*, moves *About me* to the top and switches the
+series off, previews right to left, saves and sends; readers still see the
+old page; the office sees the set beside the live one, downloads the CSV and
+approves; under `/ar` the page is Night with the tagline, *About* first, no
+series, the approved accent; the designer says it is live.
+
 ## 5sh. An edit to a published post is checked first (BLOG_PLAN BL2c, 2026-10-17)
 
 The last part of BL2 (§5sf, §5sg). With it, BL2 is done.

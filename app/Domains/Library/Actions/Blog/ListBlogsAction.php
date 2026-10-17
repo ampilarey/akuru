@@ -41,6 +41,24 @@ class ListBlogsAction
     }
 
     /**
+     * BL3a: one writer's latest published posts, for the designer's preview.
+     *
+     * @return list<array{title: string, excerpt: string, published_at: ?string}>
+     */
+    public function latestPostsFor(int $writerId, int $limit = 3): array
+    {
+        return LibraryItem::query()
+            ->where('writer_id', $writerId)
+            ->where('content_type', LibraryContentType::Post->value)
+            ->where('status', LibraryItemStatus::Published->value)
+            ->orderByDesc('published_at')
+            ->limit($limit)
+            ->get(['title', 'body', 'published_at'])
+            ->map(fn (LibraryItem $item) => ['title' => (string) $item->title, 'excerpt' => $this->excerpt((string) $item->body, 120), 'published_at' => $item->published_at?->toDateString()])
+            ->all();
+    }
+
+    /**
      * @return list<array{display_name: string, blog_title: ?string, slug: string, student: bool, posts: int, latest_at: ?string}>
      */
     public function blogs(): array

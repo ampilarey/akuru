@@ -7,6 +7,7 @@ use App\Domains\Library\Actions\Blog\PresentPostSeriesAction;
 use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\WriterProfile;
+use App\Domains\Library\Support\BlogPage;
 use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
 
 /**
@@ -78,6 +79,11 @@ class PresentWriterPublicProfileAction
                 ? app(ResolvePublicMediaUrlAction::class)->execute((int) $profile->photo_media_file_id)
                 : null,
             'student' => $profile->isStudent(),
+            // BL3a: the page's approved design — never the waiting one.
+            'design' => ($design = BlogPage::live($profile->only(['theme_key', 'accent_color', 'heading_font', 'tagline', 'bio', 'languages', 'sections']))) + [
+                'css' => BlogPage::cssVariables($design),
+                'fonts_url' => BlogPage::fontsUrl($design['font']),
+            ],
             'blog_title' => $profile->blog_title,
             'blog' => $posts->isEmpty() ? null : [
                 'pinned' => $posts->filter(fn (LibraryItem $item) => $item->pinned)->map($post)->values()->all(),
