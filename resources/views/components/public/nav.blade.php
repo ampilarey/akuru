@@ -20,6 +20,7 @@
       ['key' => 'books', 'label' => __('site.books'), 'href' => route('public.library.index', ['content_type' => 'book'])],
       ['key' => 'articles', 'label' => __('site.articles'), 'href' => route('public.library.index', ['content_type' => 'article'])],
       ['key' => 'research', 'label' => __('site.research'), 'href' => route('public.library.index', ['content_type' => 'research'])],
+      ['key' => 'blogs', 'label' => __('site.blogs'), 'href' => route('public.library.blogs')],
       ['key' => 'authors', 'label' => __('site.authors'), 'href' => route('public.library.index').'#authors'],
       ['key' => 'gift-cards', 'label' => __('site.gift_cards'), 'href' => route('public.gift-cards.index')],
   ];

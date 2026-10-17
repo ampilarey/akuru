@@ -3,6 +3,7 @@
 namespace App\Domains\Library\Actions;
 
 use App\Domains\HR\Actions\ReadPublicInstructorProfileAction;
+use App\Domains\Library\Actions\Blog\PresentPostSeriesAction;
 use App\Domains\Library\Enums\LibraryDelivery;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemPage;
@@ -81,6 +82,9 @@ class PresentLibraryItemAction
             'currency' => $item->currency,
             'total_pages' => $totalPages,
             'continue_page' => $continuePage !== null ? (int) $continuePage : null,
+            // BLOG_PLAN BL2b: a post's place in its series, and its writer's blog.
+            'series' => app(PresentPostSeriesAction::class)->execute($item),
+            'student_writer' => $item->writer?->isStudent() ?? false,
         ];
     }
 

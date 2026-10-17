@@ -23,6 +23,9 @@ use Illuminate\Validation\ValidationException;
  */
 class SaveLibraryItemAction
 {
+    /** The `library/…` addresses that are the shelf's, not an item's. */
+    public const RESERVED_SLUGS = ['blogs', 'authors', 'promotions', 'export'];
+
     /**
      * @param  array<string, mixed>  $data
      */
@@ -56,6 +59,10 @@ class SaveLibraryItemAction
         // the shelf's own address (BLOG_PLAN BL2a): keep the item's, or make one.
         if ($slug === '') {
             $slug = $item?->slug ?: $contentType->value.'-'.Str::lower(Str::random(8));
+        }
+        // BL2b: the shelf's own pages sit under `library/` too, before an item's.
+        if (in_array($slug, self::RESERVED_SLUGS, true)) {
+            $slug .= '-'.Str::lower(Str::random(6));
         }
         $exists = LibraryItem::query()
             ->where('slug', $slug)

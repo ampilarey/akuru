@@ -20,6 +20,7 @@ return [
     'news' => 'News',
     'articles' => 'Articles',
     'research' => 'Research',
+    'blogs' => 'Blogs',
     // R5: the Digital Library's sections in the menu, and the site search.
     'library_all' => 'Everything in the library',
     'books' => 'Books',

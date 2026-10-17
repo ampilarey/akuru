@@ -17,6 +17,7 @@ return [
     'news' => 'ޚަބަރު',
     'articles' => 'ލިޔުންތައް',
     'research' => 'ދިރާސާ',
+    'blogs' => 'ބްލޮގުތައް',
     // R5: the Digital Library's sections in the menu, and the site search.
     'library_all' => 'ލައިބްރަރީގައި ހުރިހާ އެއްޗެއް',
     'books' => 'ފޮތްތައް',

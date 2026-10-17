@@ -2,6 +2,9 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Library\Actions\Blog\ListBlogsAction;
+use App\Domains\Library\Actions\Blog\PresentPostSeriesAction;
+use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\WriterProfile;
 use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
@@ -39,6 +42,10 @@ class PresentWriterPublicProfileAction
             ->get();
 
         $serialize = app(ListLibraryItemsAction::class);
+        // BLOG_PLAN BL2b: the posts are the blog; the rest are published works.
+        $posts = $items->filter(fn (LibraryItem $item) => $item->content_type === LibraryContentType::Post)->values();
+        $items = $items->reject(fn (LibraryItem $item) => $item->content_type === LibraryContentType::Post)->values();
+        $post = fn (LibraryItem $item) => $serialize->serialize($item) + ['excerpt' => app(ListBlogsAction::class)->excerpt((string) $item->body)];
         $byType = [];
         foreach ($items as $item) {
             $byType[$item->content_type?->value ?? 'other'] = ($byType[$item->content_type?->value ?? 'other'] ?? 0) + 1;
@@ -66,9 +73,18 @@ class PresentWriterPublicProfileAction
             'bio' => $profile->bio,
             'qualifications' => $profile->qualifications,
             'expertise' => $profile->expertise,
-            'photo_url' => $profile->photo_media_file_id
+            // BL1: a student's photo shows only where their parent allowed it.
+            'photo_url' => $profile->photo_media_file_id && (! $profile->isStudent() || $profile->show_photo)
                 ? app(ResolvePublicMediaUrlAction::class)->execute((int) $profile->photo_media_file_id)
                 : null,
+            'student' => $profile->isStudent(),
+            'blog_title' => $profile->blog_title,
+            'blog' => $posts->isEmpty() ? null : [
+                'pinned' => $posts->filter(fn (LibraryItem $item) => $item->pinned)->map($post)->values()->all(),
+                'latest' => $posts->reject(fn (LibraryItem $item) => $item->pinned)->map($post)->values()->all(),
+                'series' => app(PresentPostSeriesAction::class)->forWriter((int) $profile->id),
+                'count' => $posts->count(),
+            ],
             'writing_since' => $profile->approved_at?->format('Y'),
             'links' => $links,
             'totals' => ['published' => $items->count()] + $byType,

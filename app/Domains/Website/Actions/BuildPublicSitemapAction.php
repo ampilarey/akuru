@@ -46,6 +46,8 @@ class BuildPublicSitemapAction
             'news' => ['0.8', 'weekly'],
             // R2: research and articles are on the Digital Library's shelf.
             'library' => ['0.8', 'weekly'],
+            // BLOG_PLAN BL2b: the blogs' front; each post is among the items below.
+            'library/blogs' => ['0.7', 'daily'],
             'prayer-times' => ['0.6', 'daily'],
             'events' => ['0.8', 'weekly'],
             'gallery' => ['0.7', 'weekly'],

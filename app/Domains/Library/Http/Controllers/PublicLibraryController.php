@@ -3,6 +3,7 @@
 namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Commerce\Actions\ListPromotionCampaignsAction;
+use App\Domains\Library\Actions\Blog\ListBlogsAction;
 use App\Domains\Library\Actions\DownloadLibraryItemAction;
 use App\Domains\Library\Actions\ListLibraryAuthorsAction;
 use App\Domains\Library\Actions\ListLibraryCategoriesAction;
@@ -139,6 +140,19 @@ class PublicLibraryController extends Controller
             'promotions' => array_map(fn (array $campaign) => $campaign + [
                 'items' => array_slice($items->execute(['campaign' => $campaign['slug']]), 0, 8),
             ], $campaigns),
+        ]);
+    }
+
+    /** BLOG_PLAN BL2b: the latest posts and the blogs that wrote them. */
+    public function blogs(Request $request)
+    {
+        $language = $request->query('language');
+
+        return view('public.library.blogs', [
+            'posts' => app(ListBlogsAction::class)->latestPosts(24, is_string($language) ? $language : null),
+            'blogs' => app(ListBlogsAction::class)->blogs(),
+            'language' => is_string($language) && in_array($language, ['en', 'dv', 'ar'], true) ? $language : null,
+            'languages' => ['en' => 'English', 'dv' => 'ދިވެހި', 'ar' => 'العربية'],
         ]);
     }
 

@@ -17,6 +17,7 @@ return [
     'news' => 'الأخبار',
     'articles' => 'المقالات',
     'research' => 'الأبحاث',
+    'blogs' => 'المدونات',
     // R5: the Digital Library's sections in the menu, and the site search.
     'library_all' => 'كل ما في المكتبة',
     'books' => 'الكتب',
