@@ -5035,7 +5035,7 @@ to a published post, is now **BL2c** in `docs/BLOG_PLAN.md`.
 `SiteFrameTest` names the new menu link. The new Blade page and the public
 route are declared in their baselines, with the reason.
 
-Whole suite locally: SUITE_RESULT_BL2B.
+Whole suite locally: **3224 passed** (67998 assertions).
 
 **Walk:** `blog-posts.mjs`, extended, 17/17. The four new steps: the blogs'
 front under `/ar` lists part 1 and not part 2; the pupil's author page reads
