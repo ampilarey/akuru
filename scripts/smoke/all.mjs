@@ -169,6 +169,7 @@ const WALKS = [
     { name: 'blog-follow', writes: true, asks: 'Can a reader follow a blog in Dhivehi, hear of its next post when the office publishes it, read it in the blog\'s RSS feed, and stop following from My Library?' },
     { name: 'blog-comments', writes: true, asks: 'Is a blog comment checked by the office before it shows, can the writer reply (checked too), does a report take it down, and is an under-13\'s blog closed to comments?' },
     { name: 'blog-tips', writes: true, asks: 'Can a reader tip a blog\'s writer from the wallet in Dhivehi (a card tip going to the bank or saying it could not start, granting nothing), does the writer see their share, and does the note reach them only once the office publishes it?' },
+    { name: 'blog-payout', writes: true, asks: 'Is an under-18 blogger\'s payout, asked for on My blog in Dhivehi, paid by the office into the consenting parent\'s Akuru wallet and never a bank?' },
     { name: 'public-rtl', writes: false, asks: 'Does the website read right to left in Dhivehi and Arabic, on a desk and on a phone?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
     { name: 'course-screens-language', writes: true, asks: 'Do the screens teachers build courses on — and the Qur\'an screens, a learner\'s among them — read in Dhivehi and Arabic, with a name on every field?' },

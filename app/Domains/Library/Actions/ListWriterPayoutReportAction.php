@@ -5,6 +5,7 @@ namespace App\Domains\Library\Actions;
 use App\Domains\Library\Models\WriterEarning;
 use App\Domains\Library\Models\WriterPayout;
 use App\Domains\Library\Models\WriterProfile;
+use Illuminate\Support\Facades\DB;
 
 /**
  * L6 (§7.7, §13): the admin money view — requested payouts to act on and
@@ -31,6 +32,9 @@ class ListWriterPayoutReportAction
                 'amount' => (float) $payout->amount,
                 'currency' => $payout->currency,
                 'requested_at' => $payout->requested_at?->toDateTimeString(),
+                // BLOG_PLAN BL6b: a wallet payout names the wallet's owner (a student's parent).
+                'method' => $payout->method,
+                'wallet_owner' => $payout->wallet_user_id ? (string) DB::table('users')->where('id', $payout->wallet_user_id)->value('name') : null,
             ])->values()->all();
 
         $writers = WriterEarning::query()

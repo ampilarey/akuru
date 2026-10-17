@@ -213,6 +213,19 @@ export default function MyBlog({ state, blog = null, request = null, posts = [],
                         <input type="checkbox" checked={blog.tips_enabled} onChange={(e) => router.post('/my-blog/tips', { enabled: e.target.checked }, { preserveScroll: true })} data-testid="blog-tips-switch" />
                         {t.tips_switch || 'Readers may tip me (Akuru keeps a share; the rest is my earning)'}
                     </label>
+                    {blog.earnings && (
+                        <div className="mt-3 rounded bg-gray-50 p-3 text-sm" data-testid="blog-earnings">
+                            {/* BL6b: a student's earnings, paid to an Akuru wallet only — a parent's while under 18. */}
+                            <p>{fill(t.earnings_line || 'Waiting MVR :pending · available MVR :available · paid MVR :paid', { pending: blog.earnings.pending.toFixed(2), available: blog.earnings.available.toFixed(2), paid: blog.earnings.paid.toFixed(2) })}</p>
+                            <p className="mt-1 text-xs text-gray-600">{blog.earnings.to_parent ? t.earnings_to_parent || 'Payouts go to your parent’s Akuru wallet while you are under 18.' : t.earnings_to_self || 'Payouts go to your Akuru wallet.'}</p>
+                            {blog.earnings.problem && <p className="mt-1 text-xs text-amber-800">{blog.earnings.problem}</p>}
+                            {!blog.earnings.payouts_enabled && <p className="mt-1 text-xs text-gray-600" data-testid="blog-payouts-closed">{t.earnings_closed || 'Payouts are not open yet. Your earnings are kept until they are.'}</p>}
+                            {blog.earnings.requested && <p className="mt-1 text-xs text-gray-600">{t.earnings_requested || 'A payout is waiting for the office.'}</p>}
+                            {blog.earnings.payouts_enabled && !blog.earnings.problem && !blog.earnings.requested && blog.earnings.available >= blog.earnings.minimum && blog.earnings.available > 0 && (
+                                <button type="button" className="btn-primary mt-2" onClick={() => router.post('/my-blog/payout', {}, { preserveScroll: true })} data-testid="blog-payout">{t.earnings_request || 'Ask for a payout'}</button>
+                            )}
+                        </div>
+                    )}
                     {(blog.tips || []).length === 0 ? (
                         <p className="mt-2 text-sm text-gray-500">{t.tips_none || 'No tips yet.'}</p>
                     ) : (

@@ -9,8 +9,8 @@
 > The owner's decisions are in **§13**. Everything else is the default an
 > implementer takes unless the owner says otherwise. **BL1 and BL2 are
 > built** (2026-10-17: BL1 STATUS §5se; BL2 in three parts, §5sf–§5sh),
-> BL3 in two parts (§5si, §5sj), BL4 (§5sk), BL5 (§5sl) and BL6a (§5sm);
-> **BL6b and BL7 are not.** This document is the whole
+> BL3 in two parts (§5si, §5sj), BL4 (§5sk), BL5 (§5sl) and BL6 in two
+> parts (§5sm, §5sn); **BL7 is not.** This document is the whole
 > brief for the agent that builds them.
 
 Written against `main` at `51b9c58` (#777). Every name below was read from
@@ -566,9 +566,14 @@ touched + no files outside its scope.
 > BML (paid and earned only on the webhook) or from the wallet (at once);
 > Akuru's share from the `tip_share_percent` setting; a refund reversed with
 > a new tip row; the note checked by the office; *Tips* on My blog with a CSV
-> and the office's *Blog tips* with a CSV. **BL6b** is the payouts: an
-> under-18's payout refused to a bank and paid to the consenting parent's
-> wallet when payouts are on.
+> and the office's *Blog tips* with a CSV. **BL6b is built** (STATUS
+> §5sn): a student blogger is never paid to a bank — under 18 (or of an age
+> the record cannot tell) into the consenting parent's Akuru wallet, only
+> while the consent is in force; at 18 or over into their own wallet until
+> BL7 makes them a writer; the payout asked for on *My blog*, marked for the
+> wallet on the Library office, credited when the office marks it paid
+> (`writer_payouts.method`, `wallet_user_id`). Payouts stay off until the
+> owner turns them on (A9).
 >
 > One departure, deliberate: a refunded tip's **earning** is clawed back the
 > way a refunded sale's is today (its status becomes `refunded`), not with a

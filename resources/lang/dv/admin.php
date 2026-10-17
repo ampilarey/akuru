@@ -103,6 +103,7 @@ return [
     'library_settings_hint_gift_expiry' => 'ގަތުމަށްފަހު މަސް. 0 މާނައީ ދުވަހަކުވެސް ނޫން.',
     'library_settings_label_reviews' => 'ރިސާޗް ރިވިއު',
     'library_settings_hint_reviews' => 'ރިސާޗެއް ޝާއިޢުކުރުމުގެ ކުރިން ބޭނުންވާ ރިވިއުއަރުންގެ ގަބޫލުކުރުން. މަދުވެގެން 1.',
+    'library_office_payout_wallet' => ':name ގެ އަކުރު ވޯލެޓަށް',
     'library_settings_tips' => 'ބްލޮގް ލިޔުންތެރިންނަށް ޓިޕް',
     'library_settings_label_tip_amounts' => 'ޓިޕްގެ އަދަދުތައް (ރުފިޔާ، ކޮމާއިން ވަކިކޮށް)',
     'library_settings_label_tip_share' => 'ޓިޕަކުން އަކުރަށް ލިބޭ ބައި',

@@ -10,6 +10,9 @@ class WriterPayout extends Model
         'writer_id',
         'amount',
         'currency',
+        // BLOG_PLAN BL6b: `bank`, or `wallet` into `wallet_user_id`'s Akuru wallet.
+        'method',
+        'wallet_user_id',
         'status',
         'requested_at',
         'decided_by',

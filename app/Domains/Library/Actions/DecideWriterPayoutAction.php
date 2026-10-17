@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Commerce\Actions\CreditWalletAction;
 use App\Domains\Library\Models\WriterEarning;
 use App\Domains\Library\Models\WriterPayout;
 use App\Domains\Library\Models\WriterProfile;
@@ -34,6 +35,27 @@ class DecideWriterPayoutAction
                 WriterEarning::query()
                     ->where('writer_payout_id', $payout->id)
                     ->update(['status' => 'paid', 'paid_at' => now()]);
+                // BLOG_PLAN BL6b: a wallet payout is paid here, into the named
+                // wallet (a student's parent's while under 18), naming both.
+                if ($payout->method === 'wallet' && $payout->wallet_user_id !== null) {
+                    $writerName = (string) WriterProfile::query()->whereKey($payout->writer_id)->value('display_name');
+                    app(CreditWalletAction::class)->execute(
+                        (int) $payout->wallet_user_id,
+                        (float) $payout->amount,
+                        'library_payout',
+                        $payout->id,
+                        'Blog earnings of '.$writerName.' (payout '.$payout->id.')',
+                    );
+                    if ((int) $payout->wallet_user_id !== (int) WriterProfile::query()->whereKey($payout->writer_id)->value('user_id')) {
+                        app(NotifyLibraryUserAction::class)->execute(
+                            (int) $payout->wallet_user_id,
+                            'Blog earnings in your wallet',
+                            'MVR '.number_format((float) $payout->amount, 2).' earned by '.$writerName.'\'s blog is now in your Akuru wallet.',
+                            '/my-wallet',
+                            'payout_decided',
+                        );
+                    }
+                }
             } else {
                 WriterEarning::query()
                     ->where('writer_payout_id', $payout->id)

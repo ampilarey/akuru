@@ -104,6 +104,7 @@ return [
     'library_settings_hint_gift_expiry' => 'Months after purchase. 0 means never.',
     'library_settings_label_reviews' => 'Research reviews',
     'library_settings_hint_reviews' => 'How many reviewer accepts a research item needs before it can be published. At least 1.',
+    'library_office_payout_wallet' => 'To the Akuru wallet of :name',
     'library_settings_tips' => 'Tips to blog writers',
     'library_settings_label_tip_amounts' => 'Tip amounts (MVR, comma between)',
     'library_settings_label_tip_share' => 'Akuru’s share of a tip',

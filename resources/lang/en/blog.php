@@ -288,4 +288,13 @@ return [
     'flash_tips_off' => 'Tips are off.',
     'flash_tip_note_published' => 'The note is published to the writer.',
     'flash_tip_note_refused' => 'The note is refused; the writer will not see it.',
+    // BL6b: a student's earnings, paid to an Akuru wallet.
+    'earnings_line' => 'Waiting MVR :pending · available MVR :available · paid MVR :paid',
+    'earnings_to_parent' => 'Payouts go to your parent’s Akuru wallet while you are under 18.',
+    'earnings_to_self' => 'Payouts go to your Akuru wallet.',
+    'earnings_closed' => 'Payouts are not open yet. Your earnings are kept until they are.',
+    'earnings_requested' => 'A payout is waiting for the office.',
+    'earnings_request' => 'Ask for a payout',
+    'error_payout_no_parent' => 'Payouts for a student under 18 go to the consenting parent’s wallet, and that consent is not in force.',
+    'flash_payout_requested' => 'Asked. The office pays it into the Akuru wallet.',
 ];

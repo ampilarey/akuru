@@ -103,6 +103,7 @@ return [
     'library_settings_hint_gift_expiry' => 'أشهر بعد الشراء. 0 يعني لا تنتهي.',
     'library_settings_label_reviews' => 'مراجعات البحث',
     'library_settings_hint_reviews' => 'عدد موافقات المحكّمين اللازمة قبل نشر البحث. واحدة على الأقل.',
+    'library_office_payout_wallet' => 'إلى محفظة أكورو الخاصة بـ :name',
     'library_settings_tips' => 'إكراميات كتّاب المدونات',
     'library_settings_label_tip_amounts' => 'مبالغ الإكرامية (روفيه، بفاصلة بينها)',
     'library_settings_label_tip_share' => 'حصة أكورو من الإكرامية',
