@@ -148,6 +148,7 @@ return [
     'akuru_fulfilment' => 'Akuru fulfilment',
     'print_desk' => 'Print desk',
     'my_blog' => 'My blog',
+    'blog_posts' => 'Students’ blog posts',
     'blog_requests' => 'Blog requests',
     'print_templates' => 'Print templates',
     'print_queue' => 'Print queue',

@@ -52,6 +52,11 @@ class SaveLibraryItemAction
             : null;
 
         $slug = (string) ($data['slug'] ?? Str::slug($title));
+        // A title in Thaana or Arabic slugs to nothing, and an empty slug is
+        // the shelf's own address (BLOG_PLAN BL2a): keep the item's, or make one.
+        if ($slug === '') {
+            $slug = $item?->slug ?: $contentType->value.'-'.Str::lower(Str::random(8));
+        }
         $exists = LibraryItem::query()
             ->where('slug', $slug)
             ->when($item, fn ($query) => $query->whereKeyNot($item->id))

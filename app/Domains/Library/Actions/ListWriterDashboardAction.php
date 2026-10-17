@@ -32,6 +32,8 @@ class ListWriterDashboardAction
         if ($profile !== null) {
             $itemModels = LibraryItem::query()
                 ->where('writer_id', $profile->id)
+                // BLOG_PLAN BL2a: posts are on My blog.
+                ->where('content_type', '!=', 'post')
                 ->orderByDesc('updated_at')
                 ->get();
 

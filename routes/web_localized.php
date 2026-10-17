@@ -197,6 +197,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // BLOG_PLAN BL1: a student asks to start a blog, and sees it once approved.
     Route::get('/my-blog', [\App\Domains\Library\Http\Controllers\StudentBlogController::class, 'index'])->name('my-blog');
     Route::post('/my-blog', [\App\Domains\Library\Http\Controllers\StudentBlogController::class, 'store'])->name('my-blog.store')->middleware('throttle:10,60,blog-request');
+    // BL2a: posts, written on My blog and sent to be checked; a class teacher's queue.
+    Route::post('/my-blog/posts', [\App\Domains\Library\Http\Controllers\BlogPostController::class, 'store'])->name('my-blog.posts.store')->middleware('throttle:60,60,blog-post');
+    Route::post('/my-blog/posts/{post}', [\App\Domains\Library\Http\Controllers\BlogPostController::class, 'update'])->name('my-blog.posts.update')->whereNumber('post')->middleware('throttle:60,60,blog-post');
+    Route::post('/my-blog/posts/{post}/submit', [\App\Domains\Library\Http\Controllers\BlogPostController::class, 'submit'])->name('my-blog.posts.submit')->whereNumber('post')->middleware('throttle:20,60,blog-post-submit');
+    Route::get('/teach/blog-posts', [\App\Domains\Library\Http\Controllers\TeacherBlogPostController::class, 'index'])->name('teach.blog-posts');
+    Route::post('/teach/blog-posts/{post}/decide', [\App\Domains\Library\Http\Controllers\TeacherBlogPostController::class, 'decide'])->name('teach.blog-posts.decide')->whereNumber('post')->middleware('throttle:60,60,blog-post-check');
     Route::get('/my-enrollments/export', [MyAccountController::class, 'export'])->name('my.enrollments.export');
     Route::get('/my-enrollments', [MyAccountController::class, 'enrolments'])->name('my.enrollments');
     // COMMERCE_PARITY_PLAN P6b: a driver's deliveries, and the proof photo (the office, or the driver who took it).

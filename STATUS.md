@@ -4983,6 +4983,105 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sf. Blog posts, checked by the class teacher and the office (BLOG_PLAN BL2a, 2026-10-17)
+
+The first half of BL2 (§5se was BL1). The plan's BL2 is split in two,
+recorded in `docs/BLOG_PLAN.md`: BL2a writes and checks posts; BL2b is the
+public blog pages, edits to published posts, the menu, search and sitemap.
+
+**Built:**
+- **A post** is a `library_items` row with the new `content_type = post`:
+  free to read, in the reader, written through the one item writer
+  (`SaveLibraryItemAction`), so its text is sanitised and paged like every
+  item's. The review trail, the publisher and the item page are the items'.
+- **Writing, on My blog** (`/my-blog`, `Library/MyBlog`), for a student's
+  blog and a full writer's alike:
+  - title, text in the article editor, language, cover image;
+  - a series, chosen or started on the form; the post goes last in it
+    (`library_post_series`, new);
+  - *pin to my page*;
+  - *this is my own work* — the copyright declaration, which sending needs.
+
+  The list shows each post's state (draft, with the class teacher, with the
+  office, sent back, not accepted, published), its series and part, and the
+  last reviewer's note. A post waiting cannot be edited; one sent back can,
+  and goes again.
+- **Sending** (`SubmitBlogPostAction`):
+  - a student's post goes to their **class teacher** — Academics' new
+    `ResolveClassTeacherForStudentAction`, the active class first, then the
+    record's own — and they are told, with a link;
+  - with no class teacher, or with `library.blog.teacher_review` off (D6),
+    and for a full writer, it goes to the office;
+  - no ID card is asked for; the text and *own work* are;
+  - a student sends at most `library.blog.posts_per_week` (3) posts in
+    seven days, waiting and published (D18).
+- **The class teacher's queue** (`/teach/blog-posts`,
+  `Library/TeacherBlogPosts`, under *Teaching*): their students' posts,
+  oldest first, with the pen name and the pupil's real name. *Approve* sends
+  it on to the office; *send back* and *refuse* need a note, which the student
+  reads. Only the teacher it was sent to may decide.
+- **The office** decides in the Library office's existing submissions queue.
+  A post with the teacher is not in that queue, and the office's review and
+  its *publish* switch both refuse it there (`review_stage = teacher`).
+- **Kept off the book shelf:** the public listings leave posts out; the
+  office's own list keeps them. The writer portal's types and dashboard
+  leave them out, and refuses a post sent its way.
+- **Data and language:**
+  - migration `2026_10_17_000002_bl2a_blog_posts`: `library_post_series`;
+    `library_items.series_id`, `series_position`, `pinned`,
+    `review_stage`, `teacher_user_id`;
+  - morph alias `library_post_series`;
+  - a new Library notice event, `post_decided`;
+  - 58 new `blog` phrases (138 in all), `common.library_type_post`, `nav.blog_posts`, in
+    EN/DV/AR;
+  - *My blog* in a full writer's menu too.
+
+**Two departures from the plan, recorded in it:** *New post* is on My blog
+rather than in `/write`; topic tags and *comments on or off* wait for BL2b
+and BL4.
+
+**Found on the way, fixed:** a title in Thaana or Arabic slugged to an
+empty string, and an empty slug is the shelf's own address — the walk's
+first Dhivehi post "opened" at `/library/`. `SaveLibraryItemAction` now
+keeps the item's slug, or makes one (`post-…`, `book-…`), for any item, not
+only posts.
+
+**Tests:** `BlogPostsTest` (new, 7):
+- a student's post through the teacher and then the office: nothing public
+  before, not in the office's queue while with the teacher, the office's
+  review and publish refused there, the trail `submitted → teacher_approved
+  → approved`, public after, off the shelf;
+- only the post's teacher decides; a note to send back; edit and resend;
+  refuse;
+- straight to the office with no class teacher, or with the step off;
+- the own-work tick, a text, the weekly cap, someone else's series;
+- a full writer's post to the office, and posts out of the writer portal;
+- the menus and the phrases in Thaana and Arabic script.
+
+- a post titled in Thaana gets an address of its own, kept through an edit.
+
+`RawHtmlRendersAreDeclaredTest`: the teacher's preview of the post body is
+declared, sanitised on write. `StudentNamesCarryTheMiddleNameTest` caught
+the teacher's queue joining first and last names; it uses People's
+`ListStudentsByIdsAction` instead.
+
+Whole suite locally: **3218 passed** (67946 assertions).
+
+**Walk:** `blog-posts.mjs` (new, in the runner), 13/13:
+- the pupil writes a two-part series under `/dv`, right to left, and sends
+  both; both wait for the class teacher, numbered part 1 and part 2;
+- the teacher sees both by pen name and the pupil's name, approves part 1,
+  is refused sending part 2 back without a note, then sends it back with
+  one;
+- the office's queue has part 1 and not part 2, and *Approve & publish*
+  publishes it;
+- part 1 reads under `/ar`, right to left; part 2 is not public; posts are
+  off the book shelf;
+- the pupil reads the teacher's note on part 2 and may edit it.
+
+The walk gives the seeded pupil a student blog and the seeded teacher their
+class for the run, and puts both back.
+
 ## 5se. Students can start a blog, with a parent's consent (BLOG_PLAN BL1, 2026-10-17)
 
 The first slice of `docs/BLOG_PLAN.md` (§5sd).

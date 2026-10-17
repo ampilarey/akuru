@@ -31,9 +31,12 @@ class SaveWriterItemAction
             throw ValidationException::withMessages(['writer' => __('common.library_error_not_writer')]);
         }
         // BLOG_PLAN BL1: a student blogs; books, research and paid articles
-        // are a full writer's. Posts open in BL2.
+        // are a full writer's. BL2a: posts are written on *My blog*.
         if ($profile->isStudent()) {
             throw ValidationException::withMessages(['writer' => __('blog.error_student_posts_soon')]);
+        }
+        if (($data['content_type'] ?? null) === 'post') {
+            throw ValidationException::withMessages(['content_type' => __('blog.error_posts_on_my_blog')]);
         }
 
         $item = null;

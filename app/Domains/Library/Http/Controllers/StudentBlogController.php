@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Http\Controllers;
 
+use App\Domains\Library\Actions\Blog\ListBlogPostsAction;
 use App\Domains\Library\Actions\Blog\PresentStudentBlogAction;
 use App\Domains\Library\Actions\Blog\StartStudentBlogAction;
 use App\Http\Controllers\Controller;
@@ -20,8 +21,13 @@ class StudentBlogController extends Controller
 {
     public function index(Request $request): Response
     {
+        $userId = (int) $request->user()->id;
+        $blog = app(PresentStudentBlogAction::class)->execute($userId);
+
         return Inertia::render('Library/MyBlog', [
-            ...app(PresentStudentBlogAction::class)->execute((int) $request->user()->id),
+            ...$blog,
+            // BL2a: a blogger's posts and series.
+            ...(in_array($blog['state'], ['blog', 'writer'], true) ? app(ListBlogPostsAction::class)->mine($userId) : []),
             't' => Phrases::once('blog'),
         ]);
     }
