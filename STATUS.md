@@ -5021,7 +5021,7 @@ reached them.
   only, escape `&` and `<`, and an unknown blog is a 404;
 - the follow box on a post, and the phrases in Thaana and Arabic script.
 
-Whole suite locally: SUITE_RESULT_BL4.
+Whole suite locally: **3239 passed** (68371 assertions).
 
 **Walk:** `blog-follow.mjs` (new, in the runner), 9/9: a guest is sent to
 sign in; under `/dv` a reader follows (count one) and asks for email; the
