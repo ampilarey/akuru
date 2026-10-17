@@ -9,7 +9,7 @@
 > The owner's decisions are in **§13**. Everything else is the default an
 > implementer takes unless the owner says otherwise. **BL1 and BL2 are
 > built** (2026-10-17: BL1 STATUS §5se; BL2 in three parts, §5sf–§5sh),
-> and BL3a (§5si); **BL3b–BL7 are not.** This document is the whole
+> and BL3 in two parts (§5si, §5sj); **BL4–BL7 are not.** This document is the whole
 > brief for the agent that builds them.
 
 Written against `main` at `51b9c58` (#777). Every name below was read from
@@ -482,9 +482,17 @@ touched + no files outside its scope.
 > languages, sections on or off and in order), the preview left to right and
 > right to left, the whole set as a draft sent to the office, the office's
 > *Blog page changes* list with its CSV, and the author page drawn from the
-> approved design. **BL3b** is the rest: the banner, the picture (photo
-> consent under 18), and the links (students only with consent), each an
-> upload or a field checked as part of the same draft.
+> approved design. **BL3b is built** (STATUS §5sj): the banner and the
+> picture, uploaded as private media into the same draft and copied to public
+> media only on approval; the links (up to five, https, the writer portal's
+> sites); a student's picture only with the parent's photo choice; links on
+> an under-18 student's blog only with a new parent consent, `blog_links`,
+> which the parent gives or stops on the child's blog page in the family
+> portal, and which is asked fresh wherever links show.
+>
+> Not done, deliberately: the banner is shown at 4:1 by the page (`object-cover`)
+> rather than cropped on upload — the file is kept as sent, shrunk to 1,600
+> pixels.
 >
 > Three departures, deliberate:
 > - Only `Contrast` moved to `App\Support\Theme\`. The Bookstore's `Theme`

@@ -146,6 +146,7 @@ return [
     'consent_type_data_processing' => 'معالجة البيانات',
     'consent_type_marketing_messages' => 'الرسائل التسويقية',
     'consent_type_prayer_reminders' => 'تذكيرات الصلاة',
+    'consent_type_blog_links' => 'روابط في المدونة',
     'consent_type_blog_publishing' => 'نشر مدونة',
     'consent_source_admission_form' => 'استمارة القبول',
     'consent_source_portal' => 'بوابة الأسرة',

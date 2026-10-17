@@ -17,6 +17,10 @@
 @php($blogStyle = $author['blog'] ? collect($author['design']['css'])->map(fn ($value, $name) => $name.': '.$value)->implode('; ').'; background: var(--blog-page); color: var(--blog-text);' : null)
 <div @if($blogStyle) style="{{ $blogStyle }}" data-blog-theme="{{ $author['design']['theme'] }}" @endif>
 <div class="container mx-auto px-4 py-10 max-w-5xl">
+    @if($author['banner_url'])
+        {{-- BLOG_PLAN BL3b: the banner, approved by the office, shown 4:1. --}}
+        <img src="{{ $author['banner_url'] }}" alt="" class="mb-6 aspect-[4/1] w-full rounded-lg object-cover" @if($blogStyle) style="border-radius: var(--blog-radius);" @endif data-testid="blog-banner">
+    @endif
     <nav class="text-sm mb-6 flex gap-2 items-center flex-wrap {{ $blogStyle ? 'opacity-80' : 'text-gray-500' }}">
         <a href="{{ route('public.library.index') }}" class="hover:underline">{{ __('public.Digital Library') }}</a>
         <span>›</span>

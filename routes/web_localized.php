@@ -204,6 +204,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     // BL3a: the page designer — a draft, sent to the office.
     Route::get('/my-blog/design', [\App\Domains\Library\Http\Controllers\BlogDesignController::class, 'index'])->name('my-blog.design');
     Route::post('/my-blog/design', [\App\Domains\Library\Http\Controllers\BlogDesignController::class, 'save'])->name('my-blog.design.save')->middleware('throttle:60,60,blog-design');
+    Route::get('/my-blog/design/image/{kind}', [\App\Domains\Library\Http\Controllers\BlogDesignController::class, 'image'])->name('my-blog.design.image')->where('kind', 'banner|photo');
     Route::post('/my-blog/design/submit', [\App\Domains\Library\Http\Controllers\BlogDesignController::class, 'submit'])->name('my-blog.design.submit')->middleware('throttle:20,60,blog-design-submit');
     Route::get('/teach/blog-posts', [\App\Domains\Library\Http\Controllers\TeacherBlogPostController::class, 'index'])->name('teach.blog-posts');
     Route::post('/teach/blog-posts/{post}/decide', [\App\Domains\Library\Http\Controllers\TeacherBlogPostController::class, 'decide'])->name('teach.blog-posts.decide')->whereNumber('post')->middleware('throttle:60,60,blog-post-check');
@@ -233,6 +234,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::get('/portal/children/{student}/library', [\App\Domains\Portal\Http\Controllers\GuardianChildLibraryController::class, 'show'])->name('portal.children.library')->whereNumber('student');
     // BLOG_PLAN BL1 (D7): a parent agrees to a child's blog, or says no.
     Route::get('/portal/children/{student}/blog', [\App\Domains\Portal\Http\Controllers\GuardianChildBlogController::class, 'show'])->name('portal.children.blog')->whereNumber('student');
+    Route::post('/portal/children/{student}/blog/links', [\App\Domains\Portal\Http\Controllers\GuardianChildBlogController::class, 'links'])->name('portal.children.blog.links')->whereNumber('student')->middleware('throttle:20,60,blog-consent');
     Route::post('/portal/children/{student}/blog/consent', [\App\Domains\Portal\Http\Controllers\GuardianChildBlogController::class, 'consent'])->name('portal.children.blog.consent')->whereNumber('student')->middleware('throttle:20,60,blog-consent');
     Route::get('/portal/holidays', [PortalHolidayController::class, 'index'])->name('portal.holidays');
     // E15: what is still on the shelf. Families only ever see unreturned items.
@@ -852,6 +854,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // BLOG_PLAN BL3a: blog page changes, checked before they show.
         Route::get('blog-pages', [\App\Domains\Library\Http\Controllers\AdminBlogPageController::class, 'index'])->name('admin.library.blog-pages');
         Route::get('blog-pages/export', [\App\Domains\Library\Http\Controllers\AdminBlogPageController::class, 'export'])->name('admin.library.blog-pages.export');
+        Route::get('blog-pages/{profile}/image/{kind}', [\App\Domains\Library\Http\Controllers\AdminBlogPageController::class, 'image'])->name('admin.library.blog-pages.image')->whereNumber('profile')->where('kind', 'banner|photo');
         Route::post('blog-pages/{profile}/decide', [\App\Domains\Library\Http\Controllers\AdminBlogPageController::class, 'decide'])->name('admin.library.blog-pages.decide')->whereNumber('profile');
         // B12 (LIBRARY_PLAN §42): the commercial knobs, on a screen.
         Route::get('settings', [\App\Domains\Library\Http\Controllers\AdminLibrarySettingsController::class, 'edit'])->name('admin.library.settings');

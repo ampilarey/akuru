@@ -25,9 +25,22 @@ const ratio = (a, b) => {
 };
 const fill = (text, values) => Object.entries(values).reduce((out, [key, value]) => out.split(`:${key}`).join(String(value ?? '')), String(text));
 
-export default function BlogDesign({ blog, themes = [], fonts = [], limits = {}, live, draft = null, state = 'live', decision_note: decisionNote = null, posts = [], t = {} }) {
+export default function BlogDesign({ blog, themes = [], fonts = [], limits = {}, live, draft = null, state = 'live', decision_note: decisionNote = null, posts = [], images = {}, link_keys: linkKeys = [], links_max: linksMax = 5, photo_allowed: photoAllowed = true, links_allowed: linksAllowed = true, t = {} }) {
     const start = draft || live;
-    const form = useForm({ ...start, accent: start.accent || '', font: start.font || '', tagline: start.tagline || '', about: start.about || '' });
+    const form = useForm({
+        theme: start.theme, accent: start.accent || '', font: start.font || '', tagline: start.tagline || '', about: start.about || '',
+        languages: start.languages || [], sections: start.sections || [],
+        // BL3b: the images go up as files; the links as one field per site.
+        links: Object.fromEntries(linkKeys.map((key) => [key, (linksAllowed && (start.links || {})[key]) || ''])),
+        banner: null, photo: null, banner_remove: false, photo_remove: false,
+    });
+    const [picked, setPicked] = useState({});
+    const pick = (kind, file) => {
+        form.setData((data) => ({ ...data, [kind]: file || null, [`${kind}_remove`]: false }));
+        setPicked((was) => ({ ...was, [kind]: file ? URL.createObjectURL(file) : null }));
+    };
+    const imageOf = (kind) => (form.data[`${kind}_remove`] ? null : picked[kind] || images[kind] || null);
+    const linksFilled = Object.values(form.data.links).filter((v) => v.trim() !== '').length;
     const [dir, setDir] = useState('ltr');
     const waiting = state === 'waiting';
     const theme = themes.find((x) => x.key === form.data.theme) || themes[0] || { colors: {} };
@@ -59,7 +72,7 @@ export default function BlogDesign({ blog, themes = [], fonts = [], limits = {},
                     className="grid gap-4 rounded-lg border bg-white p-4"
                     onSubmit={(e) => {
                         e.preventDefault();
-                        form.post('/my-blog/design', { preserveScroll: true, onSuccess: () => form.setDefaults() });
+                        form.post('/my-blog/design', { preserveScroll: true, forceFormData: true, onSuccess: () => { setPicked({}); form.setData((data) => ({ ...data, banner: null, photo: null, banner_remove: false, photo_remove: false })); form.setDefaults(); } });
                     }}
                     data-testid="design-form"
                 >
@@ -96,6 +109,25 @@ export default function BlogDesign({ blog, themes = [], fonts = [], limits = {},
                                 </select>
                             </label>
                         </div>
+                        {[['banner', t.field_banner || 'Banner', t.banner_help || 'A wide picture across the top of your page, shown 4 to 1.', true], ['photo', t.field_picture || 'Picture', t.picture_help || 'Your picture. Without one, your initial shows on the accent colour.', photoAllowed]].map(([kind, label, help, allowed]) => (
+                            <div key={kind} className="text-sm" data-testid={`design-${kind}-field`}>
+                                <p className="mb-1 font-medium">{label}</p>
+                                {allowed ? (
+                                    <>
+                                        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(e) => pick(kind, e.target.files[0])} data-testid={`design-${kind}`} />
+                                        <span className="mt-1 block text-xs text-gray-500">{help}</span>
+                                        {imageOf(kind) && (
+                                            <label className="mt-1 flex items-center gap-2 text-xs">
+                                                <input type="checkbox" checked={form.data[`${kind}_remove`]} onChange={(e) => form.setData(`${kind}_remove`, e.target.checked)} data-testid={`design-${kind}-remove`} />
+                                                {t.remove_image || 'Remove it'}
+                                            </label>
+                                        )}
+                                    </>
+                                ) : (
+                                    <p className="text-xs text-amber-800" data-testid={`design-${kind}-not-allowed`}>{t.picture_no_consent || 'Your parent chose that your photo does not show. Your initial shows instead.'}</p>
+                                )}
+                            </div>
+                        ))}
                         <label className="block text-sm">
                             <span className="mb-1 block font-medium">{t.field_tagline || 'Tagline'}</span>
                             <input className="form-input w-full" value={form.data.tagline} onChange={(e) => form.setData('tagline', e.target.value)} maxLength={limits.tagline || 120} data-testid="design-tagline" />
@@ -115,6 +147,28 @@ export default function BlogDesign({ blog, themes = [], fonts = [], limits = {},
                                     </label>
                                 ))}
                             </div>
+                        </div>
+                        <div className="text-sm" data-testid="design-links">
+                            <p className="mb-1 font-medium">{fill(t.field_links || 'Links (up to :max)', { max: linksMax })}</p>
+                            {linksAllowed ? (
+                                <div className="grid gap-1 sm:grid-cols-2">
+                                    {linkKeys.map((key) => (
+                                        <input
+                                            key={key}
+                                            className="form-input"
+                                            type="url"
+                                            placeholder={`${t[`link_${key}`] || key} — https://…`}
+                                            aria-label={t[`link_${key}`] || key}
+                                            value={form.data.links[key]}
+                                            disabled={!form.data.links[key] && linksFilled >= linksMax}
+                                            onChange={(e) => form.setData('links', { ...form.data.links, [key]: e.target.value })}
+                                            data-testid={`design-link-${key}`}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-xs text-amber-800" data-testid="design-links-not-allowed">{t.links_no_consent || 'Links to other sites need your parent’s yes. They can allow them on your blog’s page in the family portal.'}</p>
+                            )}
                         </div>
                         <div className="text-sm">
                             <p className="mb-1 font-medium">{t.field_sections || 'Sections, in order'}</p>
@@ -152,6 +206,14 @@ export default function BlogDesign({ blog, themes = [], fonts = [], limits = {},
                         <button type="button" className={`rounded px-2 py-0.5 ${dir === 'rtl' ? 'bg-gray-200' : ''}`} onClick={() => setDir('rtl')} data-testid="preview-rtl">{t.preview_rtl || 'Right to left'}</button>
                     </div>
                     <div dir={dir} className="rounded-lg border p-5" style={{ ...preview, background: 'var(--blog-page)', color: 'var(--blog-text)' }} data-testid="design-preview">
+                        {imageOf('banner') && <img src={imageOf('banner')} alt="" className="mb-3 aspect-[4/1] w-full object-cover" style={{ borderRadius: 'var(--blog-radius)' }} data-testid="preview-banner" />}
+                        <div className="mb-2 flex items-center gap-3">
+                            {imageOf('photo') && photoAllowed ? (
+                                <img src={imageOf('photo')} alt="" className="h-14 w-14 rounded-full object-cover" data-testid="preview-photo" />
+                            ) : (
+                                <span className="flex h-14 w-14 items-center justify-center rounded-full text-xl font-bold" style={{ background: 'var(--blog-accent)', color: 'var(--blog-on-accent)' }} aria-hidden="true">{(blog.pen_name || '?').slice(0, 1)}</span>
+                            )}
+                        </div>
                         <h2 className="text-2xl font-bold" style={{ fontFamily: 'var(--blog-font-heading, inherit)', color: 'var(--blog-accent)' }}>{blog.blog_title || blog.pen_name}</h2>
                         {form.data.tagline && <p className="mb-2" data-testid="preview-tagline">{form.data.tagline}</p>}
                         <p className="mb-3 text-sm opacity-80">{fill(t.blog_by || 'by :name', { name: blog.pen_name })}</p>
