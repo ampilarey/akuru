@@ -38,6 +38,8 @@ class PresentStudentBlogAction
                     // BL6a: the tip box switch and the latest tips.
                     'tips_enabled' => (bool) $profile->tips_enabled,
                     'tips' => app(ListTipsAction::class)->forWriter((int) $profile->id, 20),
+                    // BL6b: a student's earnings and payout, to a wallet only.
+                    'earnings' => $profile->isStudent() ? app(PresentBlogEarningsAction::class)->execute($profile) : null,
                 ],
             ];
         }

@@ -3,6 +3,7 @@
 namespace App\Domains\Library\Actions;
 
 use App\Domains\Identity\Actions\IdentityVerificationAction;
+use App\Domains\Library\Actions\Blog\ResolveBlogPayoutTargetAction;
 use App\Domains\Library\Models\WriterBankDetail;
 use App\Domains\Library\Models\WriterEarning;
 use App\Domains\Library\Models\WriterPayout;
@@ -15,6 +16,11 @@ use Illuminate\Validation\ValidationException;
  * until the operator confirms tax/accounting treatment
  * (library.payouts_enabled); needs bank details; respects the minimum;
  * earnings are linked to the payout so double-requests cannot happen.
+ *
+ * BLOG_PLAN BL6b (§7.3): a student blogger is never paid to a bank. Their
+ * payout goes to an Akuru wallet — the consenting parent's while they are
+ * under 18 (ResolveBlogPayoutTargetAction) — and needs no ID card or bank
+ * details of their own.
  */
 class RequestWriterPayoutAction
 {
@@ -26,18 +32,19 @@ class RequestWriterPayoutAction
             ]);
         }
 
-        if (! app(IdentityVerificationAction::class)->isVerified($userId, 'writer')) {
-            throw ValidationException::withMessages(['payout' => __('account.id_needed_writer')]);
-        }
         $profile = WriterProfile::query()->where('user_id', $userId)->where('status', 'active')->first();
         if ($profile === null) {
             throw ValidationException::withMessages(['writer' => __('common.library_error_not_writer')]);
         }
-        if (! WriterBankDetail::query()->where('writer_id', $profile->id)->exists()) {
+        $wallet = app(ResolveBlogPayoutTargetAction::class)->execute($profile);
+        if ($wallet === null && ! app(IdentityVerificationAction::class)->isVerified($userId, 'writer')) {
+            throw ValidationException::withMessages(['payout' => __('account.id_needed_writer')]);
+        }
+        if ($wallet === null && ! WriterBankDetail::query()->where('writer_id', $profile->id)->exists()) {
             throw ValidationException::withMessages(['payout' => __('common.library_error_no_bank')]);
         }
 
-        return DB::transaction(function () use ($profile) {
+        return DB::transaction(function () use ($profile, $wallet) {
             app(MatureWriterEarningsAction::class)->execute($profile->id);
 
             $earnings = WriterEarning::query()
@@ -58,6 +65,8 @@ class RequestWriterPayoutAction
                 'writer_id' => $profile->id,
                 'amount' => $amount,
                 'currency' => 'MVR',
+                'method' => $wallet['method'] ?? 'bank',
+                'wallet_user_id' => $wallet['wallet_user_id'] ?? null,
                 'status' => 'requested',
                 'requested_at' => now(),
             ]);

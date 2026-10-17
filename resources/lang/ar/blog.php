@@ -288,4 +288,13 @@ return [
     'flash_tips_off' => 'الإكراميات متوقفة.',
     'flash_tip_note_published' => 'نُشرت الرسالة للكاتب.',
     'flash_tip_note_refused' => 'رُفضت الرسالة؛ لن يراها الكاتب.',
+    // BL6b: a student's earnings, paid to an Akuru wallet.
+    'earnings_line' => 'قيد الانتظار :pending روفيه · متاح :available روفيه · مدفوع :paid روفيه',
+    'earnings_to_parent' => 'تُدفع الأرباح إلى محفظة وليّ أمرك في أكورو ما دمت دون 18.',
+    'earnings_to_self' => 'تُدفع الأرباح إلى محفظتك في أكورو.',
+    'earnings_closed' => 'لم تُفتح المدفوعات بعد. تُحفظ أرباحك حتى تُفتح.',
+    'earnings_requested' => 'طلب دفع بانتظار المكتب.',
+    'earnings_request' => 'اطلب الدفع',
+    'error_payout_no_parent' => 'تُدفع أرباح الطالب دون 18 إلى محفظة وليّ الأمر الموافق، وهذه الموافقة غير سارية.',
+    'flash_payout_requested' => 'تم الطلب. يدفعه المكتب إلى محفظة أكورو.',
 ];

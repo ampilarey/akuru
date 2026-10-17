@@ -203,6 +203,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::post('/my-blog/posts/{post}/submit', [\App\Domains\Library\Http\Controllers\BlogPostController::class, 'submit'])->name('my-blog.posts.submit')->whereNumber('post')->middleware('throttle:20,60,blog-post-submit');
     // BL6a: the writer's tip box switch, and their tips as CSV.
     Route::post('/my-blog/tips', [\App\Domains\Library\Http\Controllers\WriterTipsController::class, 'update'])->name('my-blog.tips')->middleware('throttle:20,60,blog-tips-switch');
+    Route::post('/my-blog/payout', [\App\Domains\Library\Http\Controllers\WriterTipsController::class, 'payout'])->name('my-blog.payout')->middleware('throttle:5,60,blog-payout');
     Route::get('/my-blog/tips/export', [\App\Domains\Library\Http\Controllers\WriterTipsController::class, 'export'])->name('my-blog.tips.export');
     // BL5: the writer's comments switch.
     Route::post('/my-blog/comments', [\App\Domains\Library\Http\Controllers\StudentBlogController::class, 'comments'])->name('my-blog.comments')->middleware('throttle:20,60,blog-comments-switch');

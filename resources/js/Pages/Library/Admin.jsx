@@ -116,7 +116,11 @@ function PayoutsQueue({ payouts, t, common, refusals }) {
                     <tbody>
                         {payouts.requests.map((req) => (
                             <tr key={req.id} className="border-t">
-                                <td data-label={t.library_office_th_payout || 'Payout request'} className="px-3 py-2">{req.writer} · {req.requested_at}</td>
+                                <td data-label={t.library_office_th_payout || 'Payout request'} className="px-3 py-2">
+                                    {req.writer} · {req.requested_at}
+                                    {/* BLOG_PLAN BL6b: a student's payout goes to a wallet, a parent's while under 18. */}
+                                    {req.method === 'wallet' && <p className="text-xs text-amber-800" data-testid={`payout-wallet-${req.id}`}>{(t.library_office_payout_wallet || 'To the Akuru wallet of :name').replace(':name', req.wallet_owner || '—')}</p>}
+                                </td>
                                 <td data-label={t.library_office_th_amount || 'Amount'} className="px-3 py-2 font-medium">{money(common, req.amount)}</td>
                                 <td className="table-actions px-3 py-2">
                                     <input

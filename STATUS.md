@@ -4983,6 +4983,52 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sn. A student blogger is paid to a wallet, a parent's while under 18 (BLOG_PLAN BL6b, 2026-10-18)
+
+The second half of BL6 (§5sm). Writer payouts stay **off** until the owner
+turns them on (`payouts_enabled`, BACKLOG A9); this is what happens when
+they are.
+
+**Built:**
+- **Where a student's payout goes** (`ResolveBlogPayoutTargetAction`, new):
+  never a bank;
+  - under 18, or of an age the record cannot tell: the Akuru wallet of the
+    parent who consented (`writer_profiles.guardian_user_id`), only while
+    the `blog_publishing` consent is in force — withdrawn, the payout is
+    refused and *My blog* says why;
+  - 18 or over: the student's own Akuru wallet, until BL7 makes them a full
+    writer.
+- **Asking** (`RequestWriterPayoutAction`): a student blogger asks on *My
+  blog* (`/my-blog/payout`); no ID card or bank details are needed, as a
+  student has neither. The payout records `method = wallet` and
+  `wallet_user_id` (migration `2026_10_18_000006_bl6b_payout_wallets`); a full
+  writer's is `bank` and unchanged.
+- **Paying** (`DecideWriterPayoutAction`): when the office marks a wallet
+  payout paid, `CreditWalletAction` credits the named wallet (source
+  `library_payout`, the description naming the blog), and the parent is
+  told. The Library office's payout list marks it *To the Akuru wallet of …*.
+- **My blog** shows a student's earnings (waiting, available, paid), where a
+  payout goes, whether payouts are open, and *Ask for a payout* once the
+  available balance reaches the minimum.
+- **Language:** 8 `blog` phrases and 1 `admin` phrase, in EN/DV/AR.
+
+**Tests:** `BlogPayoutsTest` (new, 3):
+- an under-18's payout made for the parent's wallet, no bank details
+  possible, credited to the parent and not the child when marked paid, the
+  earnings paid, the parent told;
+- refused once the parent's consent is withdrawn, and My blog says so;
+- an 18-year-old's to their own wallet; a full writer still needs the ID
+  card and bank details; nothing while payouts are closed.
+
+Whole suite locally: **3251 passed** (68649 assertions).
+
+**Walk:** `blog-payout.mjs` (new, in the runner), 6/6: a 13-year-old's blog
+with a consenting parent and MVR 120 available, payouts on for the run; under
+`/dv` My blog says payouts go to the parent's wallet, offers no bank details,
+and the pupil asks; the office sees it marked for the parent's wallet and
+marks it paid; the parent's wallet holds MVR 120 and the pupil's nothing; My
+blog shows it paid. The walk removes what it made and puts the setting back.
+
 ## 5sm. Tips to a blog's writer, paid on the webhook (BLOG_PLAN BL6a, 2026-10-18)
 
 The first half of BL6. Payouts for under-18s are **BL6b**.

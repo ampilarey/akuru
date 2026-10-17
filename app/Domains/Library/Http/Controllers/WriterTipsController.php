@@ -4,6 +4,7 @@ namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Library\Actions\Blog\ListTipsAction;
 use App\Domains\Library\Actions\Blog\SetBlogTipsAction;
+use App\Domains\Library\Actions\RequestWriterPayoutAction;
 use App\Domains\Library\Models\WriterProfile;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
@@ -24,6 +25,15 @@ class WriterTipsController extends Controller
         app(SetBlogTipsAction::class)->execute((int) $request->user()->id, (bool) $data['enabled']);
 
         return redirect()->route('my-blog')->with('success', __($data['enabled'] ? 'blog.flash_tips_on' : 'blog.flash_tips_off'));
+    }
+
+    /** BL6b: a student blogger asks for their available earnings, paid to an Akuru wallet. */
+    public function payout(Request $request): RedirectResponse
+    {
+        abort_unless($request->user() !== null, 403);
+        app(RequestWriterPayoutAction::class)->execute((int) $request->user()->id);
+
+        return redirect()->route('my-blog')->with('success', __('blog.flash_payout_requested'));
     }
 
     public function export(Request $request): StreamedResponse
