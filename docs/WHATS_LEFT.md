@@ -1,7 +1,8 @@
-# What is left — one list (2026-10-12)
+# What is left — one list (2026-10-18)
 
 Everything still to do on the platform, in one place, as of `main` after
 the name tags plan, BH1 and the print-draft clean-up (STATUS §5ru–§5rx).
+**The owner's own work, as one checklist in order: [`docs/OWNER_TODO.md`](OWNER_TODO.md).**
 Each line points at the document that holds its detail. That document stays
 the source of truth; this page is the index. Update it in the PR that
 closes or adds a line.
@@ -15,9 +16,10 @@ closes or adds a line.
 - sign-in and workspaces (ID1–ID5);
 - the trilingual sweep (C21);
 - name tags (NT0–NT7);
-- BH1 (C22).
+- BH1 (C22);
+- blogs (BL1–BL7) and the small defects K1–K3.
 
-## 1. Agent-buildable — small defects (KNOWN_ISSUES, all P4)
+## 1. Agent-buildable — small defects (KNOWN_ISSUES, all P4) — all fixed 2026-10-18
 
 | # | What | Where |
 |---|---|---|
@@ -27,9 +29,10 @@ closes or adds a line.
 
 ## 1b. Planned, waiting for the owner's go
 
-| # | What | Where |
-|---|---|---|
-| P1 | **Blogs in the Digital Library**, for students and full writers: seven slices, BL1–BL7. BL1 (starting a blog with a parent's consent) BL2 (writing posts checked by the class teacher and the office, the public blog pages, checked edits to published posts) and BL3 (the page designer with banner, picture and links, every change checked by the office) BL4 (following a blog, notices, feeds), BL5 (comments, checked), BL6 (tips, and payouts to a parent's wallet under 18) and BL7 (featured posts, rewards, insights, growing up) are built — **the whole plan**. What is left is the owner's: the writing guidelines page and its address, the consent text, tip amounts, the share and rewards, and the tax treatment that keeps payouts off. | `docs/BLOG_PLAN.md`, BACKLOG C25 |
+Nothing. The blog plan (BL1–BL7, `docs/BLOG_PLAN.md`) was the last; it is
+built. Its owner items (the writing guidelines page and address, the consent
+wording, tip amounts and share, rewards, the tax treatment) are on
+`docs/OWNER_TODO.md`.
 
 ## 2. The owner's — server, credentials, settings (OWNER_ACTIONS)
 

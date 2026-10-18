@@ -11,6 +11,7 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 | `docs/LIBRARY_PLAN.md` | Akuru Digital Library (L-track, formerly Knowledge Library) requirements |
 | `docs/EDUPAGE_FEATURES_PLAN.md` | EduPage parity track (E1–E22). **Verify every row against the code before starting a slice** — it has been wrong 16 times across two audits, always recording as missing work that already shipped. Its own correction section says how to audit it. |
 | `docs/KNOWN_ISSUES.md` | open defects by severity, and what is operator-blocked rather than unbuilt |
+| `docs/OWNER_TODO.md` | the owner's own checklist, in order (server, `.env`, screens, pages, switches, decisions) — update it when an item is done or added |
 | `docs/BACKLOG.md` | parked items and ideas kept for later, with why — update it in the PR that parks or builds one |
 | `docs/BOOKSHOP_PLAN.md` | Akuru Bookstore (named 2026-09-26; multi-vendor books and educational items) plan: slices B0–B9, the owner's decisions (all made 2026-09-25) and the audit |
 | `docs/ADMIN_PANEL.md` | the admin panel (`/admin/*`): inventory of every group with its gate, screens, CSV, tests and walk; the 2026-09-26 audit's findings and what the owner still owns |

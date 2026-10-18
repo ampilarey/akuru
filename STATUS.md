@@ -3,7 +3,7 @@
 **Verified against:** `main` after PR **#402** (`ee558c8`).
 **USABLE column** cites `docs/PILOT_REHEARSAL.md` (Rounds 1–3) and staging notes in the [archive](docs/STATUS_ARCHIVE.md). It is **not** inferred from code or tests.
 **History:** per-slice append log → [`docs/STATUS_ARCHIVE.md`](docs/STATUS_ARCHIVE.md). Recent work is in the §5 sections below, newest first.
-**Everything left, in one list:** [`docs/WHATS_LEFT.md`](docs/WHATS_LEFT.md). **Defects:** [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md). **What only a person can do:** [`docs/OWNER_ACTIONS.md`](docs/OWNER_ACTIONS.md), [`docs/OPERATOR_CHECKLIST.md`](docs/OPERATOR_CHECKLIST.md).
+**Everything left, in one list:** [`docs/WHATS_LEFT.md`](docs/WHATS_LEFT.md). **Defects:** [`docs/KNOWN_ISSUES.md`](docs/KNOWN_ISSUES.md). **What only a person can do:** [`docs/OWNER_TODO.md`](docs/OWNER_TODO.md) (the one checklist, in order), [`docs/OWNER_ACTIONS.md`](docs/OWNER_ACTIONS.md), [`docs/OPERATOR_CHECKLIST.md`](docs/OPERATOR_CHECKLIST.md).
 
 ## 1. Honest summary
 
@@ -4982,6 +4982,16 @@ reds. `family.mjs` 3/4 on this branch **and on `main`** ("a register for
 today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
+
+## 5ss. The owner's checklist, and nothing agent-buildable left (2026-10-18)
+
+With K1–K3 merged (§5sp–§5sr), `WHATS_LEFT` §1 is empty and every planned
+slice is built. `docs/OWNER_TODO.md` (new) is the one checklist of what only
+the owner can do, in the order to do it: the server, `.env`, the office's
+screens, pages to rewrite, numbers and switches, decisions, and the staging
+walk, each pointing at its `OWNER_ACTIONS` item or plan. `WHATS_LEFT` links
+it, and the blog row leaves *waiting for the owner's go* — it is built; what
+is left of it is on the checklist. Docs only.
 
 ## 5sr. A campaign ended before it starts says so (KNOWN_ISSUES K3, 2026-10-18)
 
