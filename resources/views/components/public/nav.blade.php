@@ -1,4 +1,7 @@
 @php
+  // STATUS §5su: the languages the office has switched on; one that is off
+  // leaves the Translate menu, pinned and searched alike.
+  $siteLocalesOn = app(\App\Domains\Settings\Actions\ListEnabledLocalesAction::class)->execute();
   // The website's frame is built around the four products (E-Learning,
   // Digital Library, Bookstore, School); everything about the institute
   // itself sits under About (the 2026-09-28 website design, STATUS §5ki).
@@ -218,12 +221,16 @@
             <button onclick="translateTo('en')"
                     class="gt-pin w-full text-start px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
                     data-code="en">🇬🇧 English</button>
-            <button onclick="translateTo('ar')"
-                    class="gt-pin w-full text-start px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
-                    data-code="ar">🇸🇦 العربية</button>
-            <button onclick="translateTo('dv')"
-                    class="gt-pin w-full text-start px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
-                    data-code="dv">🇲🇻 ދިވެހި</button>
+            @if(in_array('ar', $siteLocalesOn, true))
+              <button onclick="translateTo('ar')"
+                      class="gt-pin w-full text-start px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
+                      data-code="ar">🇸🇦 العربية</button>
+            @endif
+            @if(in_array('dv', $siteLocalesOn, true))
+              <button onclick="translateTo('dv')"
+                      class="gt-pin w-full text-start px-3 py-2 text-sm rounded-lg border border-gray-200 hover:border-brandMaroon-400 hover:bg-brandBeige-50 transition-colors text-gray-700 font-medium"
+                      data-code="dv">🇲🇻 ދިވެހި</button>
+            @endif
           </div>
 
           {{-- Search --}}
@@ -435,8 +442,16 @@ var GT_LANGS = [
   {c:'uk',l:'Ukrainian'},{c:'ur',l:'Urdu'},{c:'uz',l:'Uzbek'},{c:'vi',l:'Vietnamese'},
   {c:'cy',l:'Welsh'},{c:'xh',l:'Xhosa'},{c:'yi',l:'Yiddish'},{c:'yo',l:'Yoruba'},{c:'zu',l:'Zulu'}
 ];
-// Pinned languages excluded from the search list
-var GT_PINNED = ['en','ar','dv'];
+// Pinned languages excluded from the search list; a language the office
+// switched off (STATUS §5su) is neither pinned nor found by the search.
+var GT_PINNED = @json($siteLocalesOn);
+var GT_OFF = @json(array_values(array_diff(\App\Domains\Settings\Actions\ListEnabledLocalesAction::SWITCHABLE, $siteLocalesOn)));
+GT_LANGS = GT_LANGS.filter(function(l) { return !GT_OFF.includes(l.c); });
+// A page still machine-translated into a language now off goes back to English.
+(function() {
+  var m = document.cookie.match(/googtrans=\/en\/([a-z-]+)/);
+  if (m && GT_OFF.includes(m[1])) { translateTo('en'); }
+})();
 
 function googleTranslateElementInit() {
   new google.translate.TranslateElement({ pageLanguage: 'en', autoDisplay: false }, 'google_translate_element');

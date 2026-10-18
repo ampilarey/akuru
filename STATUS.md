@@ -4983,6 +4983,40 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5su. Dhivehi and Arabic each switch off (2026-10-18)
+
+**The owner asked:** "is there any language off switch?" — there was none;
+English, Dhivehi and Arabic were fixed in `config/laravellocalization.php`.
+**Built:** a *Languages* card on System Settings (`/admin/settings`,
+super admin) with a switch for Dhivehi and one for Arabic, both on until
+turned off. English has no switch: every phrase falls back to it.
+- `ListEnabledLocalesAction` (Settings, new) reads `locale.dv_enabled` and
+  `locale.ar_enabled` (on by default); `SetEnabledLocalesAction` writes them.
+- A language that is off:
+  - its addresses open the same page in English, query kept
+    (`RedirectDisabledLocale`, first in the web group; GET and HEAD only, so
+    a form posted from a page opened before the switch still saves), and the
+    session is told so a bare address does not send the visitor back;
+  - the app's language menu (`locales`, `locale_urls`) and the public
+    Translate menu, pinned and searched, leave it out; a page still
+    machine-translated into it goes back to English;
+  - `/locale/{x}` refuses it; the sitemap and the hreflang links leave it out.
+- Nothing is deleted: switched back on, it is as it was. What a book, a post
+  or a certificate is written in is content and is not touched.
+
+**Tests:** `LanguageSwitchTest` (new, 5): all on by default; Arabic off
+leaves the shared menu, the sitemap, the hreflang links, the Translate menu
+and `/locale/ar`, and comes back; the redirect keeps the path and query,
+passes a POST and a language that is on; only the super admin may switch,
+English never; the phrases in three languages. Whole suite locally:
+3267 passed (68914 assertions).
+
+**Walk:** `language-switch.mjs` (new, in `all.mjs`), 7/7: the office unticks
+Arabic on System Settings; `/ar/library?q=walk` opens `/en/library?q=walk`,
+the Translate menu offers Dhivehi and not Arabic, the app's menu has no
+Arabic link, `/dv/library` stays Dhivehi; ticked again, `/ar/library` is
+Arabic.
+
 ## 5st. The Library's filters laid out, and every select's arrow given its room (2026-10-18)
 
 **The owner's screenshot:** on `/library` the select arrows sat on the last

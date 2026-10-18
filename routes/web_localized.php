@@ -754,6 +754,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     Route::prefix('admin/settings')->middleware(['role:super_admin'])->group(function () {
         Route::get('/', [AdminSettingsController::class, 'index'])->name('admin.settings.index');
         Route::post('/clear-cache', [AdminSettingsController::class, 'clearCache'])->name('admin.settings.clear-cache');
+        Route::put('/languages', [AdminSettingsController::class, 'languages'])->name('admin.settings.languages');
     });
 
     // Admin CMS routes: the public website is the system admin's. Until

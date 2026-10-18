@@ -101,6 +101,8 @@ class HandleInertiaRequests extends Middleware
     public function share(Request $request): array
     {
         $locale = app()->getLocale();
+        // The language menu offers what the office has switched on (STATUS §5su).
+        $locales = app(\App\Domains\Settings\Actions\ListEnabledLocalesAction::class)->execute();
         // The workspaces this person holds and the active one (STATUS §5id):
         // the shell shows one at a time and a switcher for the others.
         $workspaces = app(ResolveWorkspacesAction::class)->execute($request->user());
@@ -108,8 +110,8 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'locale' => $locale,
-            'locales' => ['en', 'dv', 'ar'],
-            'locale_urls' => collect(['en', 'dv', 'ar'])->mapWithKeys(
+            'locales' => $locales,
+            'locale_urls' => collect($locales)->mapWithKeys(
                 fn (string $code) => [$code => LaravelLocalization::getLocalizedURL($code) ?: '/'.$code],
             )->all(),
             'rtl' => in_array($locale, ['ar', 'dv'], true),

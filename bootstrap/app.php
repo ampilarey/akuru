@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // the canonical site before anything else runs.
         $middleware->prepend(\App\Domains\Bookshop\Http\Middleware\RedirectShopHosts::class);
         $middleware->web(append: [
+            // An address in a language the office switched off goes to the
+            // same page in English (STATUS §5su), before anything reads it.
+            \App\Http\Middleware\RedirectDisabledLocale::class,
             // A form sent to an address without a language answers in the
             // language of the page it came from (STATUS §5os). First, so
             // everything after it — the shell's props included — reads it.
