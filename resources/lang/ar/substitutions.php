@@ -100,4 +100,6 @@ return [
     'flash_cancelled' => 'أُلغي الطلب.',
     'error_cannot_close' => 'لا يُغلق إلا طلب مُسند.',
     'error_cannot_cancel' => 'انتهى هذا الطلب مسبقاً.',
+    'remove_absence' => 'حذف الغياب',
+    'remove_absence_confirm' => 'حذف هذا الغياب؟ لا يمكن التراجع عن ذلك.',
 ];

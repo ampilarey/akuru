@@ -22,7 +22,7 @@ closes or adds a line.
 | # | What | Where |
 |---|---|---|
 | ~~K1~~ | ~~Nothing closes or cancels a **substitution request**~~ — **fixed 2026-10-18** (STATUS §5sp): *Mark covered* and *Cancel request* on the request's page. | KNOWN_ISSUES |
-| K2 | A teacher's **absence cannot be removed** from its page: `absences.destroy` exists, no button calls it. | KNOWN_ISSUES |
+| ~~K2~~ | ~~A teacher's **absence cannot be removed** from its page~~ — **fixed 2026-10-18** (STATUS §5sq): *Remove absence* on its page. | KNOWN_ISSUES |
 | K3 | A **promotion campaign ended before it starts** reads its window backwards on the list and in the CSV. A wording choice: *ended before it started*, or keep its end at its start. | KNOWN_ISSUES, PC1 (STATUS §5qy) |
 
 ## 1b. Planned, waiting for the owner's go

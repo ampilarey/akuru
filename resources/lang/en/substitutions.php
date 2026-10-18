@@ -100,4 +100,6 @@ return [
     'flash_cancelled' => 'The request is cancelled.',
     'error_cannot_close' => 'Only an assigned request can be closed.',
     'error_cannot_cancel' => 'This request has already ended.',
+    'remove_absence' => 'Remove absence',
+    'remove_absence_confirm' => 'Remove this absence? It cannot be undone.',
 ];
