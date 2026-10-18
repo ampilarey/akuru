@@ -203,7 +203,10 @@ was covered stays *assigned*, and one that is no longer needed stays open
 until it is deleted. `StatusValuesAreWritableTest` baselines both values
 (TS1, STATUS §5rh).
 
-### A teacher's absence cannot be removed from its page — **open (P4)**
+### A teacher's absence cannot be removed from its page — **fixed (2026-10-18, STATUS §5sq)**
+
+The absence's page now offers *Remove absence*, after a confirmation.
+
 
 `absences.destroy` exists and says *The absence is removed*, but no page
 has a button for it.

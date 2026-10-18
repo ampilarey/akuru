@@ -4983,6 +4983,24 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sq. A teacher's absence can be removed from its page (KNOWN_ISSUES K2, 2026-10-18)
+
+**Fixed:** `absences.destroy` existed and said *The absence is removed*, but
+no page had a button for it, so an absence recorded in error stayed.
+- The absence's page (its Edit screen) offers *Remove absence* under the
+  form, after a confirmation; it returns to the list with the flash.
+- 2 `substitutions` phrases, in EN/DV/AR.
+
+**Tests:** `TeacherAbsenceRemoveTest` (new, 1): the page shows the button
+pointing at `absences.destroy`; removing deletes the row and says so; the
+phrases in three languages.
+
+Whole suite locally: 3259 passed (68819 assertions).
+
+**Walk:** `substitutions-language.mjs`, extended, 20/20: under `/dv` the
+recorded absence's page offers *Remove absence* in Dhivehi; removing it says
+so once and it leaves the list.
+
 ## 5sp. A substitution request can be closed or cancelled (KNOWN_ISSUES K1, 2026-10-18)
 
 **Fixed:** a request was opened and assigned, and nothing ended it — a

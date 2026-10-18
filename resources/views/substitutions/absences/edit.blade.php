@@ -15,6 +15,12 @@
                 </form>
             </div>
         </div>
+        {{-- KNOWN_ISSUES K2: an absence recorded in error can be removed. --}}
+        <form action="{{ route('absences.destroy', $absence) }}" method="POST" class="mt-3 text-end">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-outline-danger" onclick="return confirm(@js(__('substitutions.remove_absence_confirm')))" data-testid="remove-absence">{{ __('substitutions.remove_absence') }}</button>
+        </form>
     </div>
 </div>
 @endsection

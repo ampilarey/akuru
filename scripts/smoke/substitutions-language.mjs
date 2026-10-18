@@ -151,6 +151,13 @@ check('the absence is recorded, and said once in Dhivehi', path(page).endsWith('
 check('its state and month are in Dhivehi', (await row.textContent().catch(() => '')).includes(say('substitutions.absence_status_pending'))
     && (await row.textContent().catch(() => '')).includes('ނޮވެންބަރު'), flat(await row.textContent().catch(() => '')).slice(0, 120));
 
+// KNOWN_ISSUES K2: recorded in error, it is removed from its page.
+await submit(row.locator('a[href*="/edit"]').first());
+check('the absence\'s page offers Remove, in Dhivehi', flat(await text('[data-testid="remove-absence"]')) === say('substitutions.remove_absence'), await text('[data-testid="remove-absence"]'));
+await submit(page.locator('[data-testid="remove-absence"]'));
+check('removing it says so once and it leaves the list', path(page).endsWith('/substitutions/absences') && await times(say('substitutions.flash_absence_removed')) === 1
+    && await page.locator('[data-testid="absence-row"]', { hasText: MARK }).count() === 0, path(page));
+
 await browser.close();
 cleanUp();
 
