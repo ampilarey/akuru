@@ -114,6 +114,9 @@ class ListPromotionCampaignsAction
     {
         $now = now();
         $state = match (true) {
+            // KNOWN_ISSUES K3: ended before its start, its end reads before
+            // its start; the state says so rather than a window backwards.
+            $campaign->status === 'ended' && $campaign->ends_at?->lt($campaign->starts_at) => 'ended_before_start',
             $campaign->status === 'ended' => 'ended',
             $campaign->starts_at->isFuture() => 'scheduled',
             $campaign->ends_at !== null && $campaign->ends_at->lte($now) => 'expired',

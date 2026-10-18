@@ -193,6 +193,7 @@ return [
     'library_promotions_state_scheduled' => 'Scheduled',
     'library_promotions_state_expired' => 'Expired',
     'library_promotions_state_ended' => 'Ended',
+    'library_promotions_state_ended_before_start' => 'Ended before it started',
     'library_promotions_none' => 'No campaigns yet.',
     'library_promotions_saved' => 'Campaign started.',
     'library_promotions_ended' => 'Campaign ended.',

@@ -214,8 +214,10 @@ await rowOf(admin, 'smoke-pc1').locator('[data-testid="end-smoke-pc1"]').click()
 const ended = dvSays('admin.library_promotions_ended');
 await admin.getByText(ended, { exact: true }).first().waitFor({ timeout: 10000 }).catch(() => {});
 const endedRow = flat(await rowOf(admin, 'smoke-pc1').textContent().catch(() => ''));
-check('it is ended, told in Dhivehi, the row saying so',
-    flat(await admin.locator('body').textContent()).includes(ended) && endedRow.includes(book.library_promotions_state_ended)
+// KNOWN_ISSUES K3: it had not started, so the row says it ended before it
+// started, not a window that reads backwards.
+check('it is ended, told in Dhivehi, the row saying it ended before it started',
+    flat(await admin.locator('body').textContent()).includes(ended) && endedRow.includes(book.library_promotions_state_ended_before_start)
         && (await rowOf(admin, 'smoke-pc1').locator('[data-testid="end-smoke-pc1"]').count()) === 0,
     endedRow.slice(0, 160));
 

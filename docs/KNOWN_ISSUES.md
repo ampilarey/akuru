@@ -304,7 +304,11 @@ still sent to log in, with *Forgot your password?* beside the box
 
 ## Found by the promotions language walk (2026-10-10)
 
-### A campaign ended before it starts reads its window backwards — **open (P4)**
+### A campaign ended before it starts reads its window backwards — **fixed (2026-10-18, STATUS §5sr)**
+
+Such a campaign now reads *Ended before it started* on the list (no end in
+its window) and `ended_before_start` in the CSV; its data is unchanged.
+
 
 Ending a campaign that has not started yet (`EndPromotionCampaignAction`)
 moves its end to now, which is before its start, so the office's list
