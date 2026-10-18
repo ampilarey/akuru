@@ -5000,7 +5000,7 @@ year and ended reads `ended_before_start`, one ended while running reads
 `ended`, on the list's phrase book and in the CSV; the phrase in three
 languages.
 
-Whole suite locally: SUITE_RESULT_K3.
+Whole suite locally: 3260 passed (68839 assertions).
 
 **Walk:** `promotions-language.mjs`, 15/15: under `/dv` the walk's
 next-year campaign, ended, reads *ended before it started* in Dhivehi.
