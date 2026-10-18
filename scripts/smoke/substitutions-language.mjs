@@ -10,7 +10,9 @@
  *     (a save was always refused as "assigned or closed");
  *   - the smoke seed's teacher takes it from the list and is told so in
  *     Dhivehi (Take was always refused);
- *   - the office assigns the second from its page (Assign had no form);
+ *   - the office assigns the second from its page (Assign had no form),
+ *     marks it covered (closed), and cancels the first (nothing ended a
+ *     request, KNOWN_ISSUES);
  *   - the office records a teacher's absence: the list's heading and its
  *     Record button are there, and the absence is said once, with its state
  *     and month in Dhivehi.
@@ -117,6 +119,19 @@ if (await assign.count() > 0) {
 const assigned = say('substitutions.flash_assigned');
 check('the substitute is assigned, and said in Dhivehi', await text('[data-testid="flash-success"]') === flat(assigned)
     && await text('[data-testid="request-status"]') === flat(say('substitutions.status_assigned')), await text('[role="alert"]'));
+
+// ------------------------------------------------ KNOWN_ISSUES (TS1): the office ends a request
+const closeBtn = page.locator('[data-testid="close-request"]');
+check('an assigned request offers Mark covered', await closeBtn.count() === 1);
+if (await closeBtn.count() > 0) await submit(closeBtn);
+check('closed, it says so in Dhivehi', await text('[data-testid="flash-success"]') === flat(say('substitutions.flash_closed'))
+    && await text('[data-testid="request-status"]') === flat(say('substitutions.status_closed'))
+    && tinker(`echo ${M}\\SubstitutionRequest::find(${second})->status;`) === 'closed', await text('[role="alert"]'));
+await page.goto(`${BASE}/dv/substitutions/requests/${first}`, { waitUntil: 'networkidle' });
+const cancelBtn = page.locator('[data-testid="cancel-request"]');
+if (await cancelBtn.count() > 0) await submit(cancelBtn);
+check('another, called off, is cancelled, in Dhivehi', await text('[data-testid="request-status"]') === flat(say('substitutions.status_cancelled'))
+    && tinker(`echo ${M}\\SubstitutionRequest::find(${first})->status;`) === 'cancelled', await text('[role="alert"]'));
 
 // ------------------------------------------------ a teacher's absence
 await page.goto(`${BASE}/dv/substitutions/absences`, { waitUntil: 'networkidle' });

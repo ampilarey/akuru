@@ -609,6 +609,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
             ->names('substitutions.requests');
         Route::post('substitutions/requests/{substitutionRequest}/take', [SubstitutionRequestController::class, 'take'])->name('substitutions.requests.take');
         Route::post('substitutions/requests/{substitutionRequest}/assign', [SubstitutionRequestController::class, 'assign'])->name('substitutions.requests.assign');
+        // The office closes a covered request or cancels one no longer needed.
+        Route::post('substitutions/requests/{substitutionRequest}/finish', [SubstitutionRequestController::class, 'finish'])->name('substitutions.requests.finish');
     });
 
     // The workspace homes (STATUS §5id): `/admin` is the Institute's, `/school`

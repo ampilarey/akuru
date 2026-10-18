@@ -133,6 +133,22 @@
                         </form>
                     @endif
 
+                    {{-- The office ends a request: covered (closed), or no longer needed (cancelled). --}}
+                    @if($teachers->isNotEmpty() && $request->status === 'assigned')
+                        <form method="POST" action="{{ route('substitutions.requests.finish', $request) }}" class="inline">
+                            @csrf
+                            <input type="hidden" name="outcome" value="closed">
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg" data-testid="close-request">{{ __('substitutions.mark_covered') }}</button>
+                        </form>
+                    @endif
+                    @if($teachers->isNotEmpty() && in_array($request->status, ['open', 'assigned'], true))
+                        <form method="POST" action="{{ route('substitutions.requests.finish', $request) }}" class="inline">
+                            @csrf
+                            <input type="hidden" name="outcome" value="cancelled">
+                            <button type="submit" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg" onclick="return confirm(@js(__('substitutions.cancel_confirm')))" data-testid="cancel-request">{{ __('substitutions.cancel_request') }}</button>
+                        </form>
+                    @endif
+
                     @if($request->status === 'open')
                         <a href="{{ route('substitutions.requests.edit', $request) }}"
                            class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg inline-flex items-center" data-testid="edit">

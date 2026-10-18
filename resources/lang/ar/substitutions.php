@@ -92,4 +92,12 @@ return [
     'flash_absence_updated' => 'حُدّث الغياب.',
     'flash_absence_removed' => 'حُذف الغياب.',
     'requests_link' => 'طلبات الاستبدال',
+    // KNOWN_ISSUES TS1: ending a request.
+    'mark_covered' => 'تمت التغطية',
+    'cancel_request' => 'إلغاء الطلب',
+    'cancel_confirm' => 'إلغاء هذا الطلب؟ لن يبقى مفتوحاً للتغطية.',
+    'flash_closed' => 'أُغلق الطلب: غُطّي الدرس.',
+    'flash_cancelled' => 'أُلغي الطلب.',
+    'error_cannot_close' => 'لا يُغلق إلا طلب مُسند.',
+    'error_cannot_cancel' => 'انتهى هذا الطلب مسبقاً.',
 ];
