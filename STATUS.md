@@ -5004,7 +5004,7 @@ office and not by a teacher; an unknown outcome refused; the phrases.
 `StatusValuesAreWritableTest` drops its baseline entry for the two values,
 now reachable.
 
-Whole suite locally: SUITE_RESULT_K1.
+Whole suite locally: 3258 passed (68800 assertions).
 
 **Walk:** `substitutions-language.mjs`, extended, 18/18: under `/dv` the
 assigned request offers *Mark covered* and is closed, said in Dhivehi; the
