@@ -188,7 +188,13 @@ record names (`PasswordResetFlowsKeepTheirOwnAccountTest`,
 
 ## Found making the substitution requests work (2026-10-11)
 
-### Nothing closes or cancels a substitution request — **open (P4)**
+### Nothing closes or cancels a substitution request — **fixed (2026-10-18, STATUS §5sp)**
+
+The office now ends a request on its page: *Mark covered* closes an
+assigned one, *Cancel request* cancels an open or assigned one
+(`FinishSubstitutionRequestAction`). Both are final; the assignment stays as
+the record. `StatusValuesAreWritableTest` no longer baselines the two values.
+
 
 A request is opened, and an assignment marks it *assigned*. Removing the
 assignment opens it again (`SubstitutionAssignment::boot`). No path sets

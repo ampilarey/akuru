@@ -4983,6 +4983,33 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sp. A substitution request can be closed or cancelled (KNOWN_ISSUES K1, 2026-10-18)
+
+**Fixed:** a request was opened and assigned, and nothing ended it — a
+covered lesson stayed *assigned*, one no longer needed stayed open until
+deleted, though the list filtered by *closed* and *cancelled*.
+- The request's page offers the office *Mark covered* (an assigned request
+  becomes `closed`) and *Cancel request* (an open or assigned one becomes
+  `cancelled`, after a confirmation). `FinishSubstitutionRequestAction`
+  (new) holds the rule; the controller's `finish` checks the office's roles,
+  and a teacher is refused.
+- Both are final: the request leaves the open list and cannot be edited,
+  taken or ended again; the assignment stays as the record of who covered it.
+- 7 `substitutions` phrases, in EN/DV/AR.
+
+**Tests:** `SubstitutionRequestOutcomesTest` (new, 2): an open request cannot
+be closed; assigned, it closes, keeps its assignment, is listed under
+*closed*, and cannot then be cancelled; an open one is cancelled by the
+office and not by a teacher; an unknown outcome refused; the phrases.
+`StatusValuesAreWritableTest` drops its baseline entry for the two values,
+now reachable.
+
+Whole suite locally: SUITE_RESULT_K1.
+
+**Walk:** `substitutions-language.mjs`, extended, 18/18: under `/dv` the
+assigned request offers *Mark covered* and is closed, said in Dhivehi; the
+other is cancelled.
+
 ## 5so. Featured posts, rewards, insights, growing up — the blog plan is complete (BLOG_PLAN BL7, 2026-10-18)
 
 The last slice of `docs/BLOG_PLAN.md`. Every slice, BL1–BL7, is built

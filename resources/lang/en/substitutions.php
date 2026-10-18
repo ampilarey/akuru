@@ -92,4 +92,12 @@ return [
     'flash_absence_updated' => 'The absence is updated.',
     'flash_absence_removed' => 'The absence is removed.',
     'requests_link' => 'Substitution requests',
+    // KNOWN_ISSUES TS1: ending a request.
+    'mark_covered' => 'Mark covered',
+    'cancel_request' => 'Cancel request',
+    'cancel_confirm' => 'Cancel this request? It will no longer be open for cover.',
+    'flash_closed' => 'The request is closed: the lesson was covered.',
+    'flash_cancelled' => 'The request is cancelled.',
+    'error_cannot_close' => 'Only an assigned request can be closed.',
+    'error_cannot_cancel' => 'This request has already ended.',
 ];

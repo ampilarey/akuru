@@ -2,6 +2,7 @@
 
 namespace App\Domains\Academics\Http\Controllers;
 
+use App\Domains\Academics\Actions\FinishSubstitutionRequestAction;
 use App\Domains\Academics\Actions\NotifySubstituteAssignedAction;
 use App\Domains\Academics\Models\ClassRoom;
 use App\Domains\Academics\Models\Period;
@@ -255,6 +256,21 @@ class SubstitutionRequestController extends Controller
         return redirect()
             ->route('substitutions.requests.show', $substitutionRequest)
             ->with('success', __('substitutions.flash_assigned'));
+    }
+
+    /**
+     * The office closes a covered request, or cancels one no longer needed
+     * (KNOWN_ISSUES: nothing used to end a request).
+     */
+    public function finish(Request $request, SubstitutionRequest $substitutionRequest): RedirectResponse
+    {
+        abort_unless($this->canAssign(), 403, __('substitutions.error_cannot_assign_role'));
+        $validated = $request->validate(['outcome' => 'required|in:'.implode(',', FinishSubstitutionRequestAction::OUTCOMES)]);
+        app(FinishSubstitutionRequestAction::class)->execute($substitutionRequest, $validated['outcome']);
+
+        return redirect()
+            ->route('substitutions.requests.show', $substitutionRequest)
+            ->with('success', __('substitutions.flash_'.$validated['outcome']));
     }
 
     public function absencesIndex(): View
