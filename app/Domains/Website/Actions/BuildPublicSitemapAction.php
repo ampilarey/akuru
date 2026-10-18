@@ -5,6 +5,7 @@ namespace App\Domains\Website\Actions;
 use App\Domains\Bookshop\Actions\Shop\ListShopSitemapEntriesAction;
 use App\Domains\Courses\Actions\ListPublicCourseSitemapEntriesAction;
 use App\Domains\Library\Actions\ListLibraryItemsAction;
+use App\Domains\Settings\Actions\ListEnabledLocalesAction;
 use App\Domains\Website\Enums\DailyContentStatus;
 use App\Domains\Website\Enums\DailyContentType;
 use App\Domains\Website\Models\DailyContent;
@@ -19,11 +20,11 @@ class BuildPublicSitemapAction
      */
     public function execute(): string
     {
-        $locales = array_keys(config('laravellocalization.supportedLocales', [
-            'en' => [],
-            'ar' => [],
-            'dv' => [],
-        ]));
+        // Only the languages the office has switched on (STATUS §5su).
+        $locales = array_values(array_intersect(
+            array_keys(config('laravellocalization.supportedLocales', ['en' => [], 'ar' => [], 'dv' => []])),
+            app(ListEnabledLocalesAction::class)->execute(),
+        ));
         $base = rtrim((string) config('app.url'), '/');
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>'."\n";

@@ -2,6 +2,8 @@
 
 namespace App\Domains\Website\Actions;
 
+use App\Domains\Settings\Actions\ListEnabledLocalesAction;
+
 class ComposeHreflangLinksAction
 {
     /**
@@ -12,11 +14,11 @@ class ComposeHreflangLinksAction
     public function execute(?string $absoluteUrl = null): array
     {
         $absoluteUrl = $absoluteUrl ?: url()->current();
-        $locales = array_keys(config('laravellocalization.supportedLocales', [
-            'en' => [],
-            'ar' => [],
-            'dv' => [],
-        ]));
+        // Only the languages the office has switched on (STATUS §5su).
+        $locales = array_values(array_intersect(
+            array_keys(config('laravellocalization.supportedLocales', ['en' => [], 'ar' => [], 'dv' => []])),
+            app(ListEnabledLocalesAction::class)->execute(),
+        ));
         if ($locales === []) {
             return [];
         }

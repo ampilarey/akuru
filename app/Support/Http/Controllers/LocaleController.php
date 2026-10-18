@@ -2,6 +2,7 @@
 
 namespace App\Support\Http\Controllers;
 
+use App\Domains\Settings\Actions\ListEnabledLocalesAction;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Session;
@@ -10,7 +11,8 @@ class LocaleController extends Controller
 {
     public function setLocale($locale)
     {
-        if (in_array($locale, ['en', 'ar', 'dv'])) {
+        // Only a language the office has switched on (STATUS §5su).
+        if (in_array($locale, app(ListEnabledLocalesAction::class)->execute(), true)) {
             App::setLocale($locale);
             Session::put('locale', $locale);
         }

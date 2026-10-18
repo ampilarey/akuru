@@ -171,6 +171,7 @@ const WALKS = [
     { name: 'blog-tips', writes: true, asks: 'Can a reader tip a blog\'s writer from the wallet in Dhivehi (a card tip going to the bank or saying it could not start, granting nothing), does the writer see their share, and does the note reach them only once the office publishes it?' },
     { name: 'blog-payout', writes: true, asks: 'Is an under-18 blogger\'s payout, asked for on My blog in Dhivehi, paid by the office into the consenting parent\'s Akuru wallet and never a bank?' },
     { name: 'blog-featured', writes: true, asks: 'Can the office feature a blog post this month with an Akuru-funded reward, shown on the blogs\' front under /ar, does the writer see their readers, and does a student\'s blog become a writer\'s at 18?' },
+    { name: 'language-switch', writes: true, asks: 'Can the office switch Arabic off on System Settings, so /ar addresses open in English and no menu offers it, and switch it back on?' },
     { name: 'public-rtl', writes: false, asks: 'Does the website read right to left in Dhivehi and Arabic, on a desk and on a phone?' },
     { name: 'rtl', writes: false, asks: 'Do English sentences read right on a Dhivehi or Arabic page, without the page\'s alignment changing?' },
     { name: 'course-screens-language', writes: true, asks: 'Do the screens teachers build courses on — and the Qur\'an screens, a learner\'s among them — read in Dhivehi and Arabic, with a name on every field?' },

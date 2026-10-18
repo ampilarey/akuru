@@ -72,6 +72,7 @@ production.
 | ☐ | **Referral credit** | `/admin/bookshop` → *Referral credit*: the credit to each side (default MVR 25) and the smallest first order (default MVR 100). Then **Turn referral credit on**. | OWNER_ACTIONS 21 |
 | ☐ | **Blog tips** | `/admin/library/settings`: the tip amounts and Akuru's share of each tip. | BLOG_PLAN D17 |
 | ☐ | **Featured-post rewards** | `/admin/library/settings`: on or off, and the most one reward may be. | BLOG_PLAN D12 |
+| ☐ | **Languages** (on by default) | `/admin/settings` → *Languages*: untick Dhivehi or Arabic to take it off the site until it is ready. Its addresses then open in English. Tick it again to bring it back unchanged. | STATUS §5su |
 
 ## F. Decisions only you can make
 

@@ -1,4 +1,4 @@
-import { router } from '@inertiajs/react';
+import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 
 /**
@@ -19,7 +19,45 @@ function Card({ icon, label, value, note, tone = 'text-gray-900', testId }) {
     );
 }
 
-export default function Index({ settings, sms_configured, bml_configured, configuration_cached, links = [], t = {} }) {
+/**
+ * STATUS §5su: Dhivehi and Arabic each switch on or off; English always on.
+ * The names are each language's own, as in the language menu.
+ */
+const NATIVE = { dv: 'ދިވެހި', ar: 'العربية' };
+
+function Languages({ languages, t }) {
+    const form = useForm({ ...languages });
+
+    return (
+        <form
+            className="mb-6 rounded-lg border bg-white"
+            data-testid="languages"
+            onSubmit={(e) => {
+                e.preventDefault();
+                form.put('/admin/settings/languages', { preserveScroll: true });
+            }}
+        >
+            <h2 className="border-b px-4 py-3 text-sm font-semibold">{t.system_settings_languages || 'Languages'}</h2>
+            <div className="space-y-3 px-4 py-4">
+                <p className="text-sm text-gray-600">{t.system_settings_languages_help || 'English is always on. A language switched off leaves the menus and its addresses open in English.'}</p>
+                <p className="text-sm text-gray-500">{t.system_settings_language_en_always || 'English — always on'}</p>
+                {Object.keys(languages).map((code) => (
+                    <label key={code} className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={!!form.data[code]} onChange={(e) => form.setData(code, e.target.checked)} data-testid={`language-${code}`} />
+                        <span lang={code} dir="auto" className="font-medium">{NATIVE[code] || code}</span>
+                        <span className="text-xs text-gray-500">— {t.system_settings_language_on || 'On'}</span>
+                        {form.errors[code] && <span className="text-xs text-red-700" role="alert">{form.errors[code]}</span>}
+                    </label>
+                ))}
+                <button type="submit" className="btn-primary" disabled={form.processing} data-testid="languages-save">
+                    {t.system_settings_languages_save || 'Save languages'}
+                </button>
+            </div>
+        </form>
+    );
+}
+
+export default function Index({ settings, sms_configured, bml_configured, configuration_cached, languages = {}, links = [], t = {} }) {
     const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—');
     const configured = (on) => (on ? t.system_settings_configured || 'Configured' : t.system_settings_not_configured || 'Not configured');
     const tone = (on) => (on ? 'text-green-800' : 'text-amber-800');
@@ -58,6 +96,8 @@ export default function Index({ settings, sms_configured, bml_configured, config
                     </div>
                 ))}
             </details>
+
+            <Languages languages={languages} t={t} />
 
             <div className="mb-6 rounded-lg border bg-white" data-testid="cache-management">
                 <h2 className="border-b px-4 py-3 text-sm font-semibold">{t.system_settings_cache_management || 'Cache management'}</h2>
