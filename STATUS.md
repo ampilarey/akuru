@@ -4983,6 +4983,32 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5st. The Library's filters laid out, and every select's arrow given its room (2026-10-18)
+
+**The owner's screenshot:** on `/library` the select arrows sat on the last
+letters (*All categorie⌄s*, *Free and pai⌄d*), the filters wrapped wherever
+the widths fell (the ticks and the sort on a ragged second row), and the
+header's carets touched their words (*Library⌄*).
+- **The arrow.** The forms plugin's own `.form-input` class pads a field by
+  0.75rem each side and outranks the plugin's select rule, so every select
+  carrying it lost the 2.5rem kept for the arrow. `app.css` gives
+  `select.form-input` that room back, and on the left in Dhivehi and Arabic.
+  It is one rule, so it mends every public and Blade select with the class,
+  not this page alone.
+- **The filters** are three rows: the search with the sort, *Filter* and
+  *Export CSV*; the choices in an even grid (two columns on a phone, four
+  on a tablet, eight on a desk); then the ticks.
+- **The header's carets** lose the negative margin that pulled them into
+  the product's name.
+
+**Tests:** `SelectArrowsKeepTheirRoomTest` (new, 2): the rule in both
+directions, no negative margin on the caret, and the form's three rows in
+order. Whole suite locally: 3260 passed before the two new tests, which pass on their own.
+
+**Walked** by screenshot at 1534 px (`/en/library`, `/dv/library`), 1024
+and 390: the select's right padding reads 40 px where it read 12, the
+arrows are clear in both directions, and no width scrolls sideways.
+
 ## 5ss. The owner's checklist, and nothing agent-buildable left (2026-10-18)
 
 With K1–K3 merged (§5sp–§5sr), `WHATS_LEFT` §1 is empty and every planned

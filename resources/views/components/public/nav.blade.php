@@ -142,7 +142,7 @@
       .nav-link.is-active { border-bottom-color: #C9A227; }
       .nav-about { position: relative; }
       .nav-lib { display: inline-flex; align-items: center; }
-      .nav-lib-btn { display: inline-flex; align-items: center; padding: .35rem .15rem; margin-inline-start: -.35rem; color: #5E5650; background: none; border: 0; cursor: pointer; border-radius: .4rem; }
+      .nav-lib-btn { display: inline-flex; align-items: center; padding: .35rem .2rem; margin-inline-start: 0; color: #5E5650; background: none; border: 0; cursor: pointer; border-radius: .4rem; }
       .nav-lib-btn:hover, .nav-lib.is-open .nav-lib-btn { color: #7C2D37; }
       .nav-about-menu { display: none; position: absolute; top: 100%; inset-inline-start: -1rem; z-index: 60; min-width: 13rem; padding: .4rem; margin-top: .35rem; background: #fff; border: 1px solid #EDE4D8; border-radius: .75rem; box-shadow: 0 16px 40px rgba(60,20,27,.14); }
       .nav-about.is-open .nav-about-menu { display: block; }
