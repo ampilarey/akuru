@@ -88,3 +88,15 @@ production.
 | ☐ | What | How | Detail |
 |---|---|---|---|
 | ☐ | **Walk staging** | On `test.akuru.edu.mv` only, never on production: `php artisan db:seed --class=SmokeMarkerSeeder`, then `SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs`. Paste the summary to the agent, which records it in STATUS. | OWNER_ACTIONS 7 |
+
+## H. The agent can still build these — only if you ask (not planned)
+
+None of these is started, and none is needed for go-live. Say which one,
+and it is planned and built one slice at a time like the rest.
+
+| What | What it would be | Detail |
+|---|---|---|
+| **Print products beyond name tags** | Other sheet sizes (A3), cards, stickers by the roll, photo prints. Vendors other than Akuru printing. School bulk orders through quotes and credit, with a *for a class* mode. | NAME_TAGS_PLAN §11, WHATS_LEFT §5 |
+| **OCR for scanned PDFs in the Library** | Today a scanned PDF gives no text, and the uploader is told to paste it. This would add page images and text recognition. Ghostscript is already on the host, behind `PdfRasterizerInterface`; an OCR engine or service would still be needed. Two-column PDFs and reversed right-to-left text could come in the same work. | BACKLOG B1, B2 |
+| **Translating the old Blade screens** | Analytics (41 strings), the Qur'an progress pages (49), e-learning (35) and the old layouts (17) are still English-only. They can be translated or retired. Decide *the old Blade screens* in F first (retire or translate); then it is built screen by screen. | BACKLOG C21, WHATS_LEFT D3 |
+| **Any parked item in the backlog** | Every idea raised and set aside, with why it was parked. Open rows have no strike-through. §B13 lists what was ruled out on purpose (DOI, subscriptions, offline reading, DRM, audiobooks and so on), so nobody asks twice. | `docs/BACKLOG.md` §B, §C |
