@@ -192,6 +192,7 @@ return [
     'library_promotions_state_scheduled' => 'مجدولة',
     'library_promotions_state_expired' => 'منتهية المدة',
     'library_promotions_state_ended' => 'أُنهيت',
+    'library_promotions_state_ended_before_start' => 'أُنهيت قبل أن تبدأ',
     'library_promotions_none' => 'لا حملات بعد.',
     'library_promotions_saved' => 'بدأت الحملة.',
     'library_promotions_ended' => 'أُنهيت الحملة.',

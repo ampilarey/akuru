@@ -119,7 +119,7 @@ export default function Promotions({ campaigns = [], options = { categories: [],
         c.is_gift_card_bonus ? (t.library_promotions_bonus || 'bonus') : null,
         c.minimum_amount ? (t.library_promotions_from || 'from :amount').replace(':amount', money(c.minimum_amount)) : null,
     ].filter(Boolean).join(' ');
-    const stateLabel = (state) => t[`library_promotions_state_${state}`] || { live: 'Live', scheduled: 'Scheduled', expired: 'Expired', ended: 'Ended' }[state] || state;
+    const stateLabel = (state) => t[`library_promotions_state_${state}`] || { live: 'Live', scheduled: 'Scheduled', expired: 'Expired', ended: 'Ended', ended_before_start: 'Ended before it started' }[state] || state;
 
     return (
         <AppShell title={t.library_promotions_title || 'Library promotions'}>
@@ -155,7 +155,7 @@ export default function Promotions({ campaigns = [], options = { categories: [],
                                     {c.description && <p className="text-xs text-gray-500">{c.description}</p>}
                                     <p className="text-xs text-gray-400">{t[`library_promotions_funding_${c.funding_source}`] || c.funding_source}</p>
                                 </td>
-                                <td data-label={t.library_promotions_col_window || 'Window'} className="px-3 py-2 text-xs text-gray-600">{c.starts_at}<br />{c.ends_at || '—'}</td>
+                                <td data-label={t.library_promotions_col_window || 'Window'} className="px-3 py-2 text-xs text-gray-600">{c.starts_at}<br />{c.state === 'ended_before_start' ? '—' : (c.ends_at || '—')}</td>
                                 <td data-label={t.library_promotions_col_discount || 'Discount'} className="px-3 py-2">{describe(c)}</td>
                                 <td data-label={t.library_promotions_col_covers || 'Covers'} className="px-3 py-2 text-xs text-gray-600">{c.targets.map((target, i) => <p key={i}>{targetLabel(target, options, t)}</p>)}</td>
                                 <td data-label={t.library_promotions_col_uses || 'Uses'} className="px-3 py-2">{c.uses} <span className="text-xs text-gray-500">({c.confirmed} {t.library_promotions_confirmed || 'paid'})</span></td>

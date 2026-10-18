@@ -4983,6 +4983,28 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sr. A campaign ended before it starts says so (KNOWN_ISSUES K3, 2026-10-18)
+
+**Fixed:** ending a campaign that had not started moves its end to now,
+before its start, so the office's list read *starts 2027-10-10, ends
+2026-10-11*, and so did the CSV. The data stays as it is — the end is when
+the office stopped it — and the words change:
+- `ListPromotionCampaignsAction` gives such a campaign the state
+  `ended_before_start`; one ended while running still reads `ended`.
+- The list says *Ended before it started* and shows no end in the window;
+  the CSV's `state` column reads `ended_before_start`.
+- 1 `admin` phrase, in EN/DV/AR.
+
+**Tests:** `PromotionEndedBeforeStartTest` (new, 1): a campaign set for next
+year and ended reads `ended_before_start`, one ended while running reads
+`ended`, on the list's phrase book and in the CSV; the phrase in three
+languages.
+
+Whole suite locally: SUITE_RESULT_K3.
+
+**Walk:** `promotions-language.mjs`, 15/15: under `/dv` the walk's
+next-year campaign, ended, reads *ended before it started* in Dhivehi.
+
 ## 5sq. A teacher's absence can be removed from its page (KNOWN_ISSUES K2, 2026-10-18)
 
 **Fixed:** `absences.destroy` existed and said *The absence is removed*, but

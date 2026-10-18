@@ -192,6 +192,7 @@ return [
     'library_promotions_state_scheduled' => 'ރޭވިފައި',
     'library_promotions_state_expired' => 'މުއްދަތު ހަމަވެފައި',
     'library_promotions_state_ended' => 'ނިމިފައި',
+    'library_promotions_state_ended_before_start' => 'ފެށުމުގެ ކުރިން ނިމުނު',
     'library_promotions_none' => 'އަދި ކެމްޕެއިނެއް ނެތް.',
     'library_promotions_saved' => 'ކެމްޕެއިން ފެށުނީ.',
     'library_promotions_ended' => 'ކެމްޕެއިން ނިމުނީ.',
