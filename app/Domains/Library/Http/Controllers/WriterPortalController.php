@@ -15,6 +15,7 @@ use App\Domains\Library\Actions\SaveWriterBankDetailsAction;
 use App\Domains\Library\Actions\SaveWriterItemAction;
 use App\Domains\Library\Actions\SaveWriterPublicProfileAction;
 use App\Domains\Library\Actions\SubmitLibraryItemForReviewAction;
+use App\Domains\Library\Actions\SyncLibraryItemPagesAction;
 use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Enums\LibraryDelivery;
 use App\Domains\Library\Models\LibraryItem;
@@ -155,6 +156,10 @@ class WriterPortalController extends Controller
         $count = (int) $item->page_count;
         if ($count > 0) {
             return trans_choice('common.library_pages_ready', $count, ['count' => $count]);
+        }
+
+        if (SyncLibraryItemPagesAction::recognising($item)) {
+            return __('common.library_pages_reading');
         }
 
         return $pdfUploaded || $item->pdf_media_file_id !== null

@@ -336,6 +336,7 @@ return [
     'library_flash_draft_updated' => 'حُدِّثت المسودة.',
     'library_pages_ready' => 'صفحات القراءة الجاهزة: :count.',
     'library_pages_scan' => 'لا يحتوي ملف PDF على نص مقروء (مسح ضوئي أو صور)، فلن يرى القرّاء أي صفحة — الصق النص في المتن.',
+    'library_pages_reading' => 'ملف PDF الخاص بك ممسوح ضوئيًا، لذا يجري التعرّف على نصه آليًا. ستظهر صفحاته هنا خلال بضع دقائق.',
     'library_pages_none' => 'لا صفحات للقراءة بعد — أضف المتن أو ارفع ملف PDF.',
     'library_flash_submitted' => 'أُرسل للمراجعة.',
     'review_flash_declared' => 'شكراً لك. الورقة متاحة للتحكيم الآن.',

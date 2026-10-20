@@ -83,6 +83,10 @@ it('pins every caller that can read a private file', function () {
         // from the application row and reaches those documents only; the
         // route that calls it is the office's (`library.manage`).
         'app/Domains/Library/Actions/ReadWriterApplicationDocumentAction.php',
+        // B1: the same PDF, read again by text recognition in the queue. The
+        // id is the job's, checked against the item's own `pdf_media_file_id`
+        // before it is read; the pictures never leave the process.
+        'app/Domains/Library/Actions/RecogniseLibraryItemPagesAction.php',
         // Server-side only: reads the item's own PDF original (the id comes
         // from the library item record, never a request) to make reader
         // pages. The bytes never leave the process; the reader serves pages.
