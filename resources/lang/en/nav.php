@@ -150,6 +150,7 @@ return [
     'my_blog' => 'My blog',
     'blog_posts' => 'Students’ blog posts',
     'blog_insights' => 'Blog insights',
+    'library_copyright' => 'Copyright reports',
     'blog_tips' => 'Blog tips',
     'blog_comments' => 'Blog comments',
     'blog_pages' => 'Blog page changes',

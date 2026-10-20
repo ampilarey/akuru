@@ -4983,6 +4983,52 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ts. Copyright reports, and a large wallet credit told (BP3, BACKLOG B11, 2026-10-20)
+
+Two of B11's four unbuilt notices had nothing behind them: no copyright
+form, no alert on money added to a wallet by hand. Both are built.
+- **Reporting:** every published work's footer has *Report a copyright
+  problem*. It folds open to a name, an email (filled in for a signed-in
+  reader), *which work of yours is copied*, *what is copied, and where*,
+  and a good-faith statement to tick. It is throttled to five reports in
+  ten minutes. One open report per email per work is allowed, and only a
+  published work can be reported. Refusals show in the form's own error
+  bag, and the redirect lands back on the form.
+- **The office** hears in the app (everyone with `library.manage`). It
+  works the reports on `/admin/library/copyright`: a Library office child
+  in the menu, and a button on the office page. Each report is upheld or
+  dismissed, with a note either way.
+  - **Upheld:** the work is archived and its writer is told why.
+  - **Dismissed:** the work stays.
+  - Decided once only. *Show decided too* and a CSV export are on the
+    page.
+  - Table `library_copyright_reports`, carrying `academic_year_id`.
+- **A large wallet credit:** a credit made by hand on `/admin/commerce` at
+  or above `COMMERCE_WALLET_ALERT_CREDIT_AT` (default MVR 1,000,
+  `config/commerce.php`) is told in the app to every other commerce
+  manager, not to the one who made it.
+- Discount used and payment issue are still unbuilt. Nobody has said who
+  should hear them (BACKLOG B11).
+
+**Tests:** `CopyrightReportsTest` (5):
+- a report taken and the office told; the duplicate and the missing tick
+  refused;
+- an unpublished work is a 404;
+- upholding needs a note, archives the work, tells the writer, and is
+  decided once only;
+- dismissing keeps the work; list, *all* and CSV for the office; 403 for
+  anyone else;
+- the wallet alert at 1,500 but not at 50, and never to its maker.
+
+Whole suite 3338. Its first run failed four, all from this slice: a morph-map alias, the public form in the write-route baseline, and two menu counts. They were fixed and rerun green. Pint clean.
+
+**Walk** (`scripts/smoke/copyright.mjs`, 390 × 844, /dv), 12/12:
+- a signed-out reader unfolds the form, is refused without the tick, then
+  is thanked;
+- the office finds the report from the Library office's button;
+- a dismiss without a note is refused on its row, then dismissed with one;
+- the work stays published, and nothing scrolls sideways.
+
 ## 5tr. Two-column PDFs read down, reversed Arabic put back (BP2, BACKLOG B2, 2026-10-20)
 
 The Library's PDF reader read a two-column page straight across both

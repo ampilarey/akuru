@@ -204,6 +204,7 @@ return [
     'library_blog_theme' => \App\Domains\Library\Models\LibraryBlogTheme::class,
     'library_follow' => \App\Domains\Library\Models\LibraryFollow::class,
     'library_comment' => \App\Domains\Library\Models\LibraryComment::class,
+    'library_copyright_report' => \App\Domains\Library\Models\LibraryCopyrightReport::class,
     'library_tip' => \App\Domains\Library\Models\LibraryTip::class,
     'library_bookmark' => \App\Domains\Library\Models\LibraryBookmark::class,
     'library_category' => \App\Domains\Library\Models\LibraryCategory::class,

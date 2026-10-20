@@ -205,6 +205,8 @@ Route::post('my-wallet/redeem', [WalletController::class, 'redeem'])->name('publ
 Route::get('gift-cards', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'index'])->name('public.gift-cards.index');
 Route::post('gift-cards', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'purchase'])->name('public.gift-cards.purchase')->middleware(['throttle:10,1,gift-card-buy', 'customer_password']);
 Route::get('gift-cards/return', [\App\Domains\Commerce\Http\Controllers\GiftCardPurchaseController::class, 'paymentReturn'])->name('public.gift-cards.return');
+// BP3 (BACKLOG B11): a copyright report on a published work, signed in or not; throttled.
+Route::post('library/{slug}/copyright-report', [\App\Domains\Library\Http\Controllers\LibraryCopyrightController::class, 'store'])->name('public.library.copyright')->middleware('throttle:5,10,library-copyright');
 Route::get('library/{slug}/download', [PublicLibraryController::class, 'download'])->name('public.library.download')->middleware('throttle:20,1,library-download');
 Route::get('library/{slug}/read', [LibraryReaderController::class, 'read'])->name('public.library.read');
 Route::post('library/{slug}/checkout', [LibraryCheckoutController::class, 'checkout'])->name('public.library.checkout')->middleware(['throttle:10,1,library-checkout', 'customer_password']);

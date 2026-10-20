@@ -1207,6 +1207,7 @@ return [
     // LT3 (STATUS §5pf): the Library office in three languages — its queues, the item form, the shelf's list, the reading alerts, what was saved and what was refused.
     'library_office_title' => 'إدارة المكتبة الرقمية',
     'library_office_reading_alerts' => 'تنبيهات القراءة',
+    'library_office_copyright' => 'بلاغات حقوق النشر',
     'library_office_settings' => 'الإعدادات',
     'library_office_insights' => 'المؤشرات',
     'library_office_promotions' => 'العروض',
@@ -1508,6 +1509,8 @@ return [
     // What the server says on it, and the names of its fields (slice CO1).
     'commerce_flash_deactivated' => 'عُطّلت بطاقة الهدية.',
     'commerce_flash_credited' => 'أُضيف الرصيد إلى المحفظة.',
+    'commerce_alert_credit_title' => 'إضافة كبيرة إلى محفظة',
+    'commerce_alert_credit_body' => 'أضاف :actor يدويًا :amount روفية إلى محفظة :owner.',
     'commerce_flash_discount_saved' => 'حُفظ رمز الخصم.',
     'commerce_attr_amount' => 'المبلغ',
     'commerce_attr_recipient_name' => 'اسم المستلم',

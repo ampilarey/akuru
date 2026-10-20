@@ -2,6 +2,7 @@
 
 namespace App\Domains\Commerce\Http\Controllers;
 
+use App\Domains\Commerce\Actions\AlertLargeWalletCreditAction;
 use App\Domains\Commerce\Actions\CreditWalletAction;
 use App\Domains\Commerce\Actions\DeactivateGiftCardAction;
 use App\Domains\Commerce\Actions\IssueGiftCardAction;
@@ -124,6 +125,7 @@ class AdminCommerceController extends Controller
             // The ledger's own record, kept as it is written (rule 12).
             $data['description'] ?? 'Manual credit',
         );
+        app(AlertLargeWalletCreditAction::class)->execute((int) $data['user_id'], (float) $data['amount'], (int) $request->user()->id);
 
         return back()->with('success', __('admin.commerce_flash_credited'));
     }

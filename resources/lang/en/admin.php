@@ -1210,6 +1210,7 @@ return [
     // LT3 (STATUS §5pf): the Library office in three languages — its queues, the item form, the shelf's list, the reading alerts, what was saved and what was refused.
     'library_office_title' => 'Digital Library admin',
     'library_office_reading_alerts' => 'Reading alerts',
+    'library_office_copyright' => 'Copyright reports',
     'library_office_settings' => 'Settings',
     'library_office_insights' => 'Insights',
     'library_office_promotions' => 'Promotions',
@@ -1511,6 +1512,8 @@ return [
     // What the server says on it, and the names of its fields (slice CO1).
     'commerce_flash_deactivated' => 'Gift card deactivated.',
     'commerce_flash_credited' => 'Wallet credited.',
+    'commerce_alert_credit_title' => 'A large wallet credit',
+    'commerce_alert_credit_body' => ":actor added MVR :amount to :owner's wallet by hand.",
     'commerce_flash_discount_saved' => 'Discount code saved.',
     'commerce_attr_amount' => 'amount',
     'commerce_attr_recipient_name' => 'recipient name',
