@@ -4983,6 +4983,37 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tf. E-learning in Dhivehi and Arabic — the old Blade screens are done (OB3, 2026-10-20)
+
+**BACKLOG C21's last item closes.** The e-learning portal, its three areas
+(Qur'an, Arabic, Islamic studies) and a subject printed all three languages
+side by side. A subject's page showed its name and description in all three
+at once. They now read in the page's language only:
+- An `elearning` book of 34 phrases (EN/DV/AR), with a subject's type named.
+- A subject is read by the name and description the school gave it for the
+  page's language (`name_dhivehi`, `description_arabic`), or its English one
+  where none was given.
+- The pages are rewritten phone-first: cards for the areas and a lesson list,
+  the subjects table as `table-stack`, `data-phone-main` on what each page is
+  for. Their titles had sat in a section the layout never prints.
+- **Fixed:**
+  - A student with no class could not open a subject: the access check read
+    the class's subjects without asking for the class. It now refuses (403).
+  - `.rtl-flip` was defined in the public layout only, so the app's back and
+    start arrows pointed the wrong way in Dhivehi and Arabic. It is in
+    `app.css` now.
+- Across OB1–OB3, the 137 strings the old screens printed are gone: 0 remain
+  (the guest layout's app-name fallback aside).
+
+**Tests:** `OldScreensSpeakThreeLanguagesTest` grows to 6: no English of the
+pages' own, every type named; a subject by its Dhivehi name on the portal,
+an area and its page, by its Arabic name in Arabic; a student with no class
+refused. Whole suite locally: 3289 passed; pint clean.
+
+**Walk:** `phone-first.mjs` 130/130, now with e-learning as a student and as
+the super admin. Screenshots at 390 px: the portal in Dhivehi, the Qur'an
+lessons in Arabic, a subject in Dhivehi, the arrows flipped.
+
 ## 5te. The Qur'an progress pages in Dhivehi and Arabic, and working (OB2, 2026-10-20)
 
 **BACKLOG C21's old Blade screens, the second slice.** The five Qur'an

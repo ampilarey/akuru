@@ -21,8 +21,8 @@ class ELearningController extends Controller
         // Check if user has access to this subject
         if ($user->isStudent()) {
             $student = $user->student;
-            if (! $student || ! $student->classRoom->subjects->contains($subject)) {
-                abort(403, 'You do not have access to this subject.');
+            if (! $student || ! $student->classRoom?->subjects->contains($subject)) {
+                abort(403, __('elearning.no_access'));
             }
         }
 

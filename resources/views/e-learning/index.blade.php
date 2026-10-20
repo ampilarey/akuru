@@ -1,226 +1,66 @@
 @extends('layouts.app')
 
-@section('title', 'E-Learning')
-@section('page-title', 'E-Learning Portal')
+@section('title', __('elearning.title'))
 
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    @if(app()->getLocale() === 'ar')
-                        بوابة التعلم الإلكتروني
-                    @elseif(app()->getLocale() === 'dv')
-                        އެލެކްޓްރޮނިކް ތައުލީމް ޕޯޓަލް
-                    @else
-                        E-Learning Portal
-                    @endif
-                </h6>
-            </div>
-            <div class="card-body">
-                <div class="row">
-                    <!-- Quran Lessons -->
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body text-center">
-                                <i class="fas fa-quran fa-3x text-success mb-3"></i>
-                                <h5 class="card-title">
-                                    @if(app()->getLocale() === 'ar')
-                                        دروس القرآن الكريم
-                                    @elseif(app()->getLocale() === 'dv')
-                                        ޤުރުއާން ދަރުސް
-                                    @else
-                                        Quran Lessons
-                                    @endif
-                                </h5>
-                                <p class="card-text">
-                                    @if(app()->getLocale() === 'ar')
-                                        تعلم القرآن الكريم وحفظه وتلاوته
-                                    @elseif(app()->getLocale() === 'dv')
-                                        ޤުރުއާން ހަފްޒު އަދި ތިލާވަތް
-                                    @else
-                                        Learn Quran memorization and recitation
-                                    @endif
-                                </p>
-                                <a href="{{ route('e-learning.quran') }}" class="btn btn-success">
-                                    @if(app()->getLocale() === 'ar')
-                                        ابدأ التعلم
-                                    @elseif(app()->getLocale() === 'dv')
-                                        ތައުލީމް ފަށާ
-                                    @else
-                                        Start Learning
-                                    @endif
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+{{-- OB3 (STATUS §5tf): in the page's language only — it printed all three side by
+     side, and its title sat in a section the layout never prints. --}}
+@php
+    $locale = app()->getLocale();
+    $name = fn ($s) => match ($locale) { 'ar' => $s->name_arabic ?: $s->name, 'dv' => $s->name_dhivehi ?: $s->name, default => $s->name };
+    $about = fn ($s) => match ($locale) { 'ar' => $s->description_arabic ?: $s->description, 'dv' => $s->description_dhivehi ?: $s->description, default => $s->description };
+    $typeName = function ($type) {
+        $key = 'elearning.type_'.\Illuminate\Support\Str::slug((string) $type, '_');
 
-                    <!-- Arabic Language -->
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body text-center">
-                                <i class="fas fa-language fa-3x text-primary mb-3"></i>
-                                <h5 class="card-title">
-                                    @if(app()->getLocale() === 'ar')
-                                        اللغة العربية
-                                    @elseif(app()->getLocale() === 'dv')
-                                        ޢަރަބި ބަހުން
-                                    @else
-                                        Arabic Language
-                                    @endif
-                                </h5>
-                                <p class="card-text">
-                                    @if(app()->getLocale() === 'ar')
-                                        تعلم اللغة العربية وقواعدها
-                                    @elseif(app()->getLocale() === 'dv')
-                                        ޢަރަބި ބަހުން އަދި ގަސްތައް
-                                    @else
-                                        Learn Arabic language and grammar
-                                    @endif
-                                </p>
-                                <a href="{{ route('e-learning.arabic') }}" class="btn btn-primary">
-                                    @if(app()->getLocale() === 'ar')
-                                        ابدأ التعلم
-                                    @elseif(app()->getLocale() === 'dv')
-                                        ތައުލީމް ފަށާ
-                                    @else
-                                        Start Learning
-                                    @endif
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+        return __($key) === $key ? $type : __($key);
+    };
+    $areas = [
+        ['route' => 'e-learning.quran', 'title' => __('elearning.quran'), 'line' => __('elearning.quran_line'), 'icon' => 'fa-quran'],
+        ['route' => 'e-learning.arabic', 'title' => __('elearning.arabic'), 'line' => __('elearning.arabic_line'), 'icon' => 'fa-language'],
+        ['route' => 'e-learning.islamic-studies', 'title' => __('elearning.islamic'), 'line' => __('elearning.islamic_line'), 'icon' => 'fa-mosque'],
+    ];
+@endphp
+<div class="p-4">
+    <h1 class="mb-1 text-2xl font-bold text-brandMaroon-900">{{ __('elearning.title') }}</h1>
+    <p class="mb-4 text-sm text-gray-600">{{ __('elearning.intro') }}</p>
 
-                    <!-- Islamic Studies -->
-                    <div class="col-lg-4 col-md-6 mb-4">
-                        <div class="card h-100">
-                            <div class="card-body text-center">
-                                <i class="fas fa-mosque fa-3x text-info mb-3"></i>
-                                <h5 class="card-title">
-                                    @if(app()->getLocale() === 'ar')
-                                        الدراسات الإسلامية
-                                    @elseif(app()->getLocale() === 'dv')
-                                        އިސްލާމް ތައުލީމް
-                                    @else
-                                        Islamic Studies
-                                    @endif
-                                </h5>
-                                <p class="card-text">
-                                    @if(app()->getLocale() === 'ar')
-                                        تعلم العلوم الإسلامية والفقه
-                                    @elseif(app()->getLocale() === 'dv')
-                                        އިސްލާމް ތައުލީމް އަދި ފިގްހު
-                                    @else
-                                        Learn Islamic sciences and jurisprudence
-                                    @endif
-                                </p>
-                                <a href="{{ route('e-learning.islamic-studies') }}" class="btn btn-info">
-                                    @if(app()->getLocale() === 'ar')
-                                        ابدأ التعلم
-                                    @elseif(app()->getLocale() === 'dv')
-                                        ތައުލީމް ފަށާ
-                                    @else
-                                        Start Learning
-                                    @endif
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Available Subjects -->
-                <div class="row mt-4">
-                    <div class="col-12">
-                        <h5 class="mb-3">
-                            @if(app()->getLocale() === 'ar')
-                                المواد المتاحة
-                            @elseif(app()->getLocale() === 'dv')
-                                ހުށަހަޅާ މާދާ
-                            @else
-                                Available Subjects
-                            @endif
-                        </h5>
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr>
-                                        <th>
-                                            @if(app()->getLocale() === 'ar')
-                                                اسم المادة
-                                            @elseif(app()->getLocale() === 'dv')
-                                                މާދާގެ ނަން
-                                            @else
-                                                Subject Name
-                                            @endif
-                                        </th>
-                                        <th>
-                                            @if(app()->getLocale() === 'ar')
-                                                النوع
-                                            @elseif(app()->getLocale() === 'dv')
-                                                ގަސް
-                                            @else
-                                                Type
-                                            @endif
-                                        </th>
-                                        <th>
-                                            @if(app()->getLocale() === 'ar')
-                                                الوصف
-                                            @elseif(app()->getLocale() === 'dv')
-                                                ތަފްސީލު
-                                            @else
-                                                Description
-                                            @endif
-                                        </th>
-                                        <th>
-                                            @if(app()->getLocale() === 'ar')
-                                                الإجراءات
-                                            @elseif(app()->getLocale() === 'dv')
-                                                ކުރެވިދާނެ ކަމުތައް
-                                            @else
-                                                Actions
-                                            @endif
-                                        </th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($subjects as $subject)
-                                    <tr>
-                                        <td>
-                                            <div>
-                                                <strong>{{ $subject->name }}</strong>
-                                                @if($subject->name_arabic)
-                                                    <br><span class="arabic-text">{{ $subject->name_arabic }}</span>
-                                                @endif
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{{ $subject->is_quran_subject ? 'success' : ($subject->type === 'Arabic' ? 'primary' : 'info') }}">
-                                                {{ $subject->type }}
-                                            </span>
-                                        </td>
-                                        <td>{{ Str::limit($subject->description, 50) }}</td>
-                                        <td>
-                                            <a href="{{ route('e-learning.show', $subject) }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-eye"></i>
-                                                @if(app()->getLocale() === 'ar')
-                                                    عرض
-                                                @elseif(app()->getLocale() === 'dv')
-                                                    ބެލުމުން
-                                                @else
-                                                    View
-                                                @endif
-                                            </a>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <div class="mb-6 grid gap-3 sm:grid-cols-3" data-phone-main>
+        @foreach($areas as $area)
+            <a href="{{ route($area['route']) }}" class="flex flex-col gap-1 rounded-lg border bg-white p-4 hover:shadow-md" data-testid="el-area">
+                <i class="fas {{ $area['icon'] }} text-2xl text-brandMaroon-700" aria-hidden="true"></i>
+                <span class="font-semibold text-gray-900">{{ $area['title'] }}</span>
+                <span class="text-sm text-gray-600">{{ $area['line'] }}</span>
+                <span class="mt-1 text-sm font-semibold text-brandMaroon-700">{{ __('elearning.start') }} <span class="rtl-flip" aria-hidden="true">→</span></span>
+            </a>
+        @endforeach
     </div>
+
+    <h2 class="mb-2 text-lg font-semibold">{{ __('elearning.subjects') }}</h2>
+    @if($subjects->isEmpty())
+        <p class="rounded-lg border bg-white p-4 text-sm text-gray-600">{{ __('elearning.none_subjects') }}</p>
+    @else
+        <div class="overflow-x-auto rounded-lg border bg-white">
+            <table class="table-stack min-w-full text-sm">
+                <thead class="bg-[#F3EBE0] text-start">
+                    <tr>
+                        <th class="px-3 py-2 text-start">{{ __('elearning.subject') }}</th>
+                        <th class="px-3 py-2 text-start">{{ __('elearning.type') }}</th>
+                        <th class="px-3 py-2 text-start">{{ __('elearning.description') }}</th>
+                        <th class="px-3 py-2"><span class="sr-only">{{ __('elearning.view') }}</span></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($subjects as $subject)
+                        <tr class="border-t" data-testid="el-subject">
+                            <td data-label="{{ __('elearning.subject') }}" class="px-3 py-2 font-semibold">{{ $name($subject) }}</td>
+                            <td data-label="{{ __('elearning.type') }}" class="px-3 py-2">{{ $typeName($subject->type) }}</td>
+                            <td data-label="{{ __('elearning.description') }}" class="px-3 py-2 text-gray-600">{{ \Illuminate\Support\Str::limit((string) $about($subject), 80) }}</td>
+                            <td class="px-3 py-2"><a href="{{ route('e-learning.show', $subject) }}" class="text-brandMaroon-700 underline">{{ __('elearning.view') }}</a></td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+    @endif
 </div>
 @endsection

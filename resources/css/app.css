@@ -214,6 +214,14 @@ select.form-input:where(:not([multiple]):not([size]), [size="1"]) {
   padding-right: 0.75rem;
 }
 
+/* An arrow that points the way the page reads (OB3): it was defined in the
+   public layout only, so the app's pages pointed back the wrong way in
+   Dhivehi and Arabic. */
+[dir="rtl"] .rtl-flip {
+  display: inline-block;
+  transform: scaleX(-1);
+}
+
 [dir="rtl"] .text-left {
   text-align: right;
 }

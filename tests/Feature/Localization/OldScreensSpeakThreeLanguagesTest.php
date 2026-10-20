@@ -148,3 +148,55 @@ it('lets a teacher add, change and remove a record in Dhivehi, and the office on
     $web->actingAs($office)->get("/students/{$student->id}/quran-progress")->assertOk()
         ->assertSee(__('quran.qp_ayahs', ['from' => 1, 'to' => 7], 'dv'))->assertSee(__('quran.qp_title', [], 'dv'));
 });
+
+/*
+ * OB3: e-learning — the portal, its three areas and a subject. They printed
+ * all three languages side by side (a subject's name and description in all
+ * three at once on its page), and their titles sat in a section the layout
+ * never prints. A student with no class could not open a subject: the
+ * access check read the class's subjects without asking for the class.
+ */
+function ob3Views(): array
+{
+    return [
+        'e-learning/index.blade.php',
+        'e-learning/quran-lessons.blade.php',
+        'e-learning/arabic-lessons.blade.php',
+        'e-learning/islamic-studies.blade.php',
+        'e-learning/show.blade.php',
+    ];
+}
+
+it('prints no English of the e-learning pages\' own, and names every subject type', function () {
+    expect(obPrintsNoEnglish(ob3Views()))->toBe([]);
+    foreach (obKeysIn(ob3Views(), 'elearning') as $key) {
+        foreach (['en', 'dv', 'ar'] as $locale) {
+            expect(__($key, [], $locale))->not->toBe($key, "{$key} in {$locale}");
+        }
+    }
+    foreach (['quran', 'arabic', 'islamic_studies'] as $type) {
+        expect(__('elearning.type_'.$type, [], 'dv'))->not->toBe('elearning.type_'.$type);
+    }
+});
+
+it('shows a subject by its name in the page\'s language, and lets a student with no class be refused rather than fail', function () {
+    $subject = makeSubject();
+    $subject->update(['name_dhivehi' => 'ޢަރަބި ބަސް ދަރުސް', 'name_arabic' => 'دروس العربية', 'description_dhivehi' => 'ތަފްސީލު', 'is_active' => true]);
+    $user = User::factory()->create();
+    $user->assignRole('teacher');
+    $web = test()->withoutLocalizationMiddleware()->actingAs($user);
+
+    app()->setLocale('dv');
+    $web->get('/e-learning')->assertOk()->assertSee(__('elearning.title', [], 'dv'))->assertSee('ޢަރަބި ބަސް ދަރުސް')->assertSee(__('elearning.type_arabic', [], 'dv'));
+    $web->get('/e-learning/arabic')->assertOk()->assertSee('ޢަރަބި ބަސް ދަރުސް');
+    $page = $web->get("/e-learning/{$subject->id}")->assertOk()->getContent();
+    expect($page)->toContain('ޢަރަބި ބަސް ދަރުސް')->not->toContain('دروس العربية');
+
+    app()->setLocale('ar');
+    $web->get("/e-learning/{$subject->id}")->assertOk()->assertSee('دروس العربية')->assertSee(__('elearning.active', [], 'ar'));
+
+    $student = makeStudent();
+    $student->update(['class_id' => null]);
+    test()->withoutLocalizationMiddleware()->actingAs(User::query()->findOrFail($student->user_id)->assignRole('student'))
+        ->get("/e-learning/{$subject->id}")->assertForbidden();
+});
