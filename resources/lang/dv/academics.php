@@ -392,6 +392,7 @@ return [
     'timetable_no_periods' => 'އަދި އެއްވެސް ޕީރިއަޑެއް ނެތް. ޓައިމްޓޭބަލް ހެދުމުގެ ކުރިން ޕީރިއަޑްތައް އިތުރުކުރައްވާ.',
     'timetable_conflict' => 'ދެކޮޅުޖެހުން: :list',
     'timetable_cover' => 'ބަދަލުގައި: :name',
+    'timetable_cover_needed' => 'ބަދަލުގައި މީހަކު ބޭނުންވޭ',
     'timetable_copy_from_class' => 'އެހެން ކްލާހަކުން ކޮޕީކުރޭ',
     'timetable_source_class' => 'ކޮޕީކުރާ ކްލާސް',
     'timetable_copy_week_title' => 'ހަފްތާ ކޮޕީކުރޭ (7 ދުވަސް އިތުރަށް ޞައްޙަ)',

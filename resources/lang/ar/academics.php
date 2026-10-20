@@ -392,6 +392,7 @@ return [
     'timetable_no_periods' => 'لا حصص بعد. أضف الحصص قبل بناء الجدول.',
     'timetable_conflict' => 'تعارض: :list',
     'timetable_cover' => 'البديل: :name',
+    'timetable_cover_needed' => 'يلزم بديل',
     'timetable_copy_from_class' => 'النسخ من صف آخر',
     'timetable_source_class' => 'الصف المنسوخ منه',
     'timetable_copy_week_title' => 'نسخ الأسبوع (صلاحية 7 أيام إضافية)',

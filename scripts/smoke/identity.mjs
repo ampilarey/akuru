@@ -116,11 +116,13 @@ async function readMore(page, shot) {
     const groups = (await page.locator('#app-shell-more section h2').allTextContents()).map((t) => t.trim());
     const links = await page.locator('#app-shell-more section a').evaluateAll((els) => els.map((el) => [el.textContent.trim(), el.getAttribute('href') || '', el.hasAttribute('data-nav-hard')]));
     const home = await page.locator('#app-shell-more [data-testid="workspace-home"]').getAttribute('href').catch(() => null);
+    // The workspace's own bar (`nav.primary`) is listed above the groups, outside their sections (BL1 put My blog only there).
+    const bar = await page.locator('#app-shell-more [data-testid="shell-bar-links"] a').evaluateAll((els) => els.map((el) => el.getAttribute('href') || ''));
     if (process.env.SMOKE_SHOTS) {
         await page.screenshot({ path: `${process.env.SMOKE_SHOTS}/identity-${shot}.png`, fullPage: true });
     }
 
-    return { groups, labels: links.map(([label]) => label), paths: links.map(([, href]) => path(href)), hard: links.filter(([, , hard]) => hard).map(([, href]) => path(href)), home: path(home) };
+    return { groups, labels: links.map(([label]) => label), paths: links.map(([, href]) => path(href)), bar: bar.map(path), hard: links.filter(([, , hard]) => hard).map(([, href]) => path(href)), home: path(home) };
 }
 
 
@@ -128,7 +130,7 @@ async function readMore(page, shot) {
 // Messages first where the workspace has it.
 async function tilesAreMenu(page, menu, who) {
     const tiles = (await page.locator('[data-testid="workspace-tiles"] a').evaluateAll((els) => els.map((el) => el.getAttribute('href') || ''))).map(path);
-    const strays = tiles.filter((t) => !menu.paths.includes(t));
+    const strays = tiles.filter((t) => !menu.paths.includes(t) && !menu.bar.includes(t));
     const messagesFirst = !tiles.includes('/portal/messages') || tiles[0] === '/portal/messages';
     check(`${who}: the home's tiles are its menu${tiles.includes('/portal/messages') ? ', Messages first' : ''}`, tiles.length > 0 && strays.length === 0 && messagesFirst, `${tiles.length} tiles${strays.length ? ` · not in the menu: ${strays.join(', ')}` : ''}`);
 }

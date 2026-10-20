@@ -245,7 +245,10 @@ export default function Builder({
                                                         {entry.conflicts?.length > 0 && (
                                                             <div className="text-red-700">{(t.timetable_conflict || 'Conflict: :list').replace(':list', clashes(entry.conflicts))}</div>
                                                         )}
-                                                        {sub && <div className="text-[#7C2D37]">{(t.timetable_cover || 'Cover: :name').replace(':name', teacherName(sub.substitute_teacher_id))}</div>}
+                                                        {sub && <div className="text-[#7C2D37]">{sub.substitute_teacher_id
+                                                            ? (t.timetable_cover || 'Cover: :name').replace(':name', teacherName(sub.substitute_teacher_id))
+                                                            // An open request has no one yet: say so, not "Teacher #null".
+                                                            : (t.timetable_cover_needed || 'Cover needed')}</div>}
                                                         <button
                                                             type="button"
                                                             className="no-print text-[11px] text-red-700 underline"

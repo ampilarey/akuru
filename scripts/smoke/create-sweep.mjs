@@ -90,10 +90,10 @@ const dayAfterLastCalendarEntry = async (page) => {
 const SCREENS = [
   { slice: 'S2.1  rooms',        path: '/en/academics/rooms',   button: /create room/i },
   { slice: 'S2.5  calendar days', path: '/en/academics/calendar', button: /add|create|save/i, date: dayAfterLastCalendarEntry },
-  // The first field on this form is a bare text box for a **student id** —
-  // no placeholder, no picker, a number the person recording behaviour is
-  // expected to know. Hence a positional hint, and hence the note in STATUS.
-  { slice: 'S2.9  behaviour',    path: '/en/academics/behavior', button: /^record$/i, byIndex: { 0: '1' } },
+  // This form's first field was a bare text box for a student id, filled by
+  // position. Since BH1 the pupil is chosen by name (`PersonPicker`): the
+  // sweep searches for a seeded pupil and takes the first match.
+  { slice: 'S2.9  behaviour',    path: '/en/academics/behavior', button: /^record$/i, pick: { testId: 'behavior-pupil', query: 'Fatima' } },
   { slice: 'S3.5  standards',    path: '/en/exams/standards',   button: /create standard/i },
   // `Hours` is a text input rather than type=number, so a generic filler puts
   // a word in it. That is what surfaced the silent-refusal defect this sweep
@@ -193,7 +193,7 @@ if (page.url().includes('/login')) {
 }
 
 let failures = 0;
-for (const { slice, path, button, hints = {}, byIndex = {}, date } of SCREENS) {
+for (const { slice, path, button, hints = {}, byIndex = {}, date, pick } of SCREENS) {
   await page.goto(BASE + path, { waitUntil: 'domcontentloaded' });
   await page.waitForTimeout(1000);
 
@@ -213,6 +213,8 @@ for (const { slice, path, button, hints = {}, byIndex = {}, date } of SCREENS) {
 
   const controls = await form.$$('input:not([type=hidden]), select, textarea');
   for (const [index, control] of controls.entries()) {
+    // A person picker is filled by choosing, below, not by typing a marker into its search.
+    if (pick && await control.evaluate((e, id) => !!e.closest(`[data-testid="${id}"]`), pick.testId)) continue;
     const tag = await control.evaluate((e) => e.tagName.toLowerCase());
     const type = await control.evaluate((e) => e.type ?? '');
     const placeholder = await control.evaluate((e) => e.getAttribute('placeholder') ?? '');
@@ -233,6 +235,13 @@ for (const { slice, path, button, hints = {}, byIndex = {}, date } of SCREENS) {
       // runs, and reported it as six screens refusing their own forms.
       console.log(`    [could not fill a field on ${path}] ${String(error).slice(0, 110)}`);
     }
+  }
+
+  if (pick) {
+    await page.locator(`[data-testid="${pick.testId}-search"]`).fill(pick.query);
+    await page.locator(`[data-testid="${pick.testId}-matches"] button`).first().click({ timeout: 10000 })
+      .catch((error) => console.log(`    [could not choose from ${pick.testId}] ${String(error).slice(0, 110)}`));
+    await page.waitForTimeout(400);
   }
 
   await target.click();

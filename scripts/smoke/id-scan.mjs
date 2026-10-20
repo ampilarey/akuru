@@ -138,7 +138,8 @@ const value = (page, selector) => page.locator(selector).first().inputValue().ca
     await page.goto(`${BASE}/en/courses/${COURSE}/checkout`, { waitUntil: 'networkidle' });
     check('signed in, the checkout goes to the details form', page.url().includes('register/continue'), page.url());
 
-    await page.getByText('I am a parent/guardian enrolling my child').click();
+    // The wording became 'a parent or guardian'; the stable part is what is matched.
+    await page.getByText(/enrolling my child/).first().click();
     const addNew = page.locator('input[name="student_mode"][value="new"]');
     if (await addNew.count()) {
         await addNew.check();

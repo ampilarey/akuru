@@ -138,3 +138,14 @@ it('renders the JSON-LD on a news page and an event page, now that @context is a
     $this->withoutLocalizationMiddleware()->get(route('public.events.show', $event->id))
         ->assertOk()->assertSee('"@context": "https://schema.org"', false)->assertSee('Quran Evening');
 });
+
+it('puts a saved post on the home page at once, though the home page was cached a moment before', function () {
+    $admin = newsOffice();
+    // The home page caches its latest news for ten minutes; a visitor has just warmed it.
+    $this->withoutLocalizationMiddleware()->get(route('public.home'))->assertOk()->assertDontSee('Open Day on Saturday');
+
+    writeNews($admin)->assertSessionHasNoErrors();
+
+    // No Cache::flush() here: saving the post forgot the home page's cache.
+    $this->withoutLocalizationMiddleware()->get(route('public.home'))->assertOk()->assertSee('Open Day on Saturday');
+});

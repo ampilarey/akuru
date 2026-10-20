@@ -112,13 +112,15 @@ class SmokeMarkerSeeder extends Seeder
         $this->consent($studentId, $admin);
         $this->ownData($year, $studentId, $admin);
         $this->sensitiveRecords($year, $studentId, $admin);
-        $this->payslips($admin);
         $this->dailyLists($year, $studentId, $admin);
         $this->pronunciation();
         $this->recitations();
         $this->examCycle($year);
         $this->documentsCycle($year);
         $this->hrCycle($year, $admin);
+        // After the HR cycle, which makes the teacher's staff profile: on a fresh
+        // seed the pair was skipped until a second run (own-data.mjs had no payslip to ask about).
+        $this->payslips($admin);
         $this->authorCycle();
         $this->intakeCycle();
         $this->assessCycle();
