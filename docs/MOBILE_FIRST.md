@@ -73,7 +73,7 @@ scrolled sideways. What was not phone-first:
 | A4 | Portal and teacher pages with a form and a list: absence notes, requests, events, teaching plans, materials, behaviour | The whole "new" form comes first; the person's own records start below it | MF3 |
 | A5 | 114 Inertia pages with a table not `table-stack` | Squeezed columns that wrap mid-word ("2026-␤10-17") or are cut off | MF4–MF6 |
 | A6 | `/substitutions/requests` (old Blade) | *New request* is white on white, nearly invisible | MF3 |
-| A7 | Seven files with `max-width` rules, seven on the home page alone | Desk layouts patched for phones | ratchet; rewritten as touched |
+| A7 | Seven files with `max-width` rules, seven on the home page alone | Desk layouts patched for phones | ratchet; the home page rewritten phone-first 2026-10-20 (STATUS §5tc) — 12 rules in 6 files left, rewritten as touched |
 | A8 | Office pages with a form and a list (rooms, periods, invoices, leave balances, students and others), found walking MF4–MF6 | The *new* form before the list | MF7 |
 
 Already phone-first, and the pattern the others follow: the Bookstore's

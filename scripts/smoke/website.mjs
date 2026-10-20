@@ -135,7 +135,7 @@ check('the chat button shows on a phone, clear of the bar', await phone.locator(
 await phone.click('[data-testid="nav-burger"]');
 check('the menu opens with the four products and About', (await phone.locator('[data-testid="mobile-menu-products"] > a').count()) === 4 && (await phone.locator('[data-testid="mobile-menu-about"] a').count()) >= 7);
 const phoneSections = (await phone.locator('[data-testid="mobile-menu-library"] a').allInnerTexts()).map((t) => t.trim());
-check('the library\'s row lists Books, Articles, Research, Authors and Gift cards', JSON.stringify(phoneSections) === JSON.stringify(['Books', 'Articles', 'Research', 'Authors', 'Gift cards']), phoneSections.join(' · '));
+check('the library\'s row lists Books, Articles, Research, Blogs, Authors and Gift cards', JSON.stringify(phoneSections) === JSON.stringify(['Books', 'Articles', 'Research', 'Blogs', 'Authors', 'Gift cards']), phoneSections.join(' · '));
 await phone.fill('#nav-m-q', 'Arabic');
 await Promise.all([phone.waitForURL(/\/search/), phone.press('#nav-m-q', 'Enter')]);
 check('searching from the menu opens the results', path(phone.url()) === '/search' && new URL(phone.url()).searchParams.get('q') === 'Arabic', phone.url());

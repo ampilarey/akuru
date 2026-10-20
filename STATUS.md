@@ -4983,6 +4983,36 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tc. The home page is written phone-first (2026-10-20)
+
+**docs/MOBILE_FIRST.md A7, its largest part.** The home page held 7 of the
+site's 19 `max-width` rules. It was a desk layout patched for phones, the
+hero by `!important` over inline styles. Now the phone layout is the
+default, and `min-width` widens it:
+- **Hero:** the spacing moved from inline styles to classes (`hero-pad`,
+  `hero-h1`, `hero-p`). It is short on a phone, with no arrows (the dots and
+  a swipe), and roomier with arrows from 640 px. No `!important`.
+- **Product tiles:** two compact tiles a row by default, roomier from 640 px,
+  four from 1024 px.
+- **Content rows:** a sideways swipe by default, a grid of two (books three)
+  from 640 px, four (books six) from 1024 px.
+- **Stats:** a tighter gap by default.
+
+How it looks does not change: screenshots at 390 px (English and Dhivehi),
+768 px and 1366 px match the audit's. `desktop_first_media_queries.php`
+loses the home page: 12 rules in 6 files remain.
+
+**Tests:** `PhoneFirstStylesTest` (baseline lowered). Whole suite locally:
+3283 passed; pint clean.
+
+**Walks:** `public-rtl.mjs` 90/90; `phone-first.mjs` 108/108; `website.mjs`
+53/54, with the home page's swipe rows passing. The step that still fails
+was already failing on `main`, and is a gap in the data, not in this change:
+*Authors lands on the shelf's list of writers* needs an active writer with a
+published work, and no seeder plants one (a fresh `--seed` has none). The
+walk is read-only, so it passes on a host with writers. `website.mjs` also
+now expects *Blogs* in the Library's menu (BL2b added it).
+
 ## 5tb. Office pages list their records before the new form on a phone (MF7, 2026-10-20)
 
 **docs/MOBILE_FIRST.md A8 — the audit's last finding.** Walking MF4–MF6 at
