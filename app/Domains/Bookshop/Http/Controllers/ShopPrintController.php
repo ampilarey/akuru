@@ -11,6 +11,7 @@ use App\Domains\Bookshop\Http\Controllers\Concerns\ResolvesCart;
 use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintTemplate;
 use App\Domains\Bookshop\Support\PrintDesk;
+use App\Domains\Bookshop\Support\PrintProducts;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Http\Controllers\Controller;
 use App\Support\Inertia\Phrases;
@@ -35,13 +36,44 @@ class ShopPrintController extends Controller
 {
     use ResolvesCart;
 
-    public function door(Request $request): Response
+    /** PP2: `/shop/print` — the print products on sale, each with its door. */
+    public function index(Request $request): Response
     {
         $this->available($request);
+        $manager = (bool) $request->user()?->can('bookshop.manage');
+        $locale = app()->getLocale();
+        $products = [];
+        foreach (PrintProducts::KINDS as $kind => $meta) {
+            $onSale = PrintProducts::open($kind);
+            if ($onSale || $manager) {
+                $product = PrintProducts::product($kind);
+                $products[] = [
+                    'kind' => $kind, 'path' => $meta['path'], 'title' => PrintProducts::title($kind, $locale),
+                    'summary' => $product?->{$locale === 'en' ? 'summary' : 'summary_'.$locale} ?: $meta['summary'],
+                    'on_sale' => $onSale, 'templates' => \App\Domains\Bookshop\Models\PrintTemplate::query()->where('status', 'active')->where('print_kind', $kind)->count(),
+                ];
+            }
+        }
+
+        return Inertia::render('Shop/PrintIndex', [
+            't' => Phrases::once('print'),
+            'products' => $products,
+            'enabled' => PrintDesk::settings()['enabled'],
+        ]);
+    }
+
+    /** The door of one print product (name tags at `/shop/print/name-tags`, the others at their own path). */
+    public function door(Request $request, string $path = 'name-tags'): Response
+    {
+        $kind = PrintProducts::kindOfPath($path);
+        abort_if($kind === null, 404);
+        $this->available($request, $kind);
 
         return Inertia::render('Shop/PrintDoor', [
             't' => Phrases::once('print'),
-            'templates' => app(PresentPrintJobAction::class)->gallery(app()->getLocale()),
+            'kind' => $kind,
+            'product_title' => PrintProducts::title($kind, app()->getLocale()),
+            'templates' => app(PresentPrintJobAction::class)->gallery(app()->getLocale(), $kind),
             ...collect(app(PresentPrintJobAction::class)->choices(app()->getLocale(), []))->only(['fonts', 'font_css'])->all(),
             'sample' => \App\Domains\Bookshop\Actions\Print\ListPrintTemplatesAction::sampleRow(app()->getLocale()),
             'enabled' => PrintDesk::settings()['enabled'],
@@ -54,6 +86,7 @@ class ShopPrintController extends Controller
         $this->available($request);
         $data = $request->validate(['template' => 'required|integer', 'grade' => 'nullable|string|max:40']);
         $template = PrintTemplate::query()->findOrFail((int) $data['template']);
+        $this->available($request, PrintProducts::valid($template->print_kind) ? $template->print_kind : PrintProducts::DEFAULT);
         $cart = $request->user() === null ? $this->cart($request, create: true) : null;
         $job = app(SavePrintJobAction::class)->start($template, $request->user()?->id, $cart?->id, app()->getLocale(), $data['grade'] ?? null);
 
@@ -63,9 +96,10 @@ class ShopPrintController extends Controller
     /** NT6: a blank design for the free-form designer (open to guests, as templates are). */
     public function startFreeform(Request $request): RedirectResponse
     {
-        $this->available($request);
+        $kind = $this->kindFrom($request);
+        $this->available($request, $kind);
         $cart = $request->user() === null ? $this->cart($request, create: true) : null;
-        $job = app(SavePrintJobAction::class)->startFreeform($request->user()?->id, $cart?->id, app()->getLocale());
+        $job = app(SavePrintJobAction::class)->startFreeform($request->user()?->id, $cart?->id, app()->getLocale(), $kind);
 
         return redirect()->route('public.shop.print.job', $job->id);
     }
@@ -82,8 +116,9 @@ class ShopPrintController extends Controller
     /** NT5: a new job for the customer's own artwork (signed in: the file is kept privately on the account). */
     public function startUpload(Request $request): RedirectResponse
     {
-        $this->available($request);
-        $job = app(SavePrintJobAction::class)->startUpload((int) $request->user()->id, app()->getLocale());
+        $kind = $this->kindFrom($request);
+        $this->available($request, $kind);
+        $job = app(SavePrintJobAction::class)->startUpload((int) $request->user()->id, app()->getLocale(), $kind);
 
         return redirect()->route('public.shop.print.job', $job->id);
     }
@@ -114,7 +149,9 @@ class ShopPrintController extends Controller
         return Inertia::render($row->isUpload() ? 'Shop/PrintUploadJob' : 'Shop/PrintJob', [
             't' => Phrases::once('print'),
             'job' => $present->job($row, app()->getLocale()),
-            ...$present->choices(app()->getLocale(), (array) $row->design),
+            ...$present->choices(app()->getLocale(), (array) $row->design, $row->printKind()),
+            'product_title' => PrintProducts::title($row->printKind(), app()->getLocale()),
+            'door' => PrintProducts::KINDS[$row->printKind()]['path'],
             // NT6: the designer's library, field names and limits, for a free-form design.
             'designer' => $row->source === 'freeform' ? collect(app(\App\Domains\Bookshop\Actions\Print\ListPrintTemplatesAction::class)->designerProps())
                 ->only(['images', 'field_keys', 'max_elements'])->all() + ['sample' => \App\Domains\Bookshop\Actions\Print\ListPrintTemplatesAction::sampleRow(app()->getLocale())] : null,
@@ -221,10 +258,23 @@ class ShopPrintController extends Controller
         ]);
     }
 
-    /** The service is the customer's only while it is on; the office may try it before. */
-    private function available(Request $request): void
+    /**
+     * The service is the customer's only while it is on, and a print product
+     * only while it is on sale (PP2); the office may try either before.
+     */
+    private function available(Request $request, ?string $kind = null): void
     {
-        abort_unless(PrintDesk::settings()['enabled'] || $request->user()?->can('bookshop.manage'), 404);
+        $open = $kind === null ? PrintDesk::settings()['enabled'] : PrintProducts::open($kind);
+        abort_unless($open || $request->user()?->can('bookshop.manage'), 404);
+    }
+
+    /** PP2: the print product a start names (`kind`), name tags when it names none. */
+    private function kindFrom(Request $request): string
+    {
+        $kind = (string) $request->input('kind', PrintProducts::DEFAULT);
+        abort_unless(PrintProducts::valid($kind), 404);
+
+        return $kind;
     }
 
     /** The caller's own job: theirs by account, or a guest's by their basket. Anyone else's is not found. */

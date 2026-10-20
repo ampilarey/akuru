@@ -57,7 +57,7 @@ export default function PrintDesigns({ t = {}, designs = [], fonts = {}, font_cs
             <FormErrors errors={errors} className="mb-4" />
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <p className="text-sm text-gray-600">{t.my_designs_intro}</p>
-                {enabled && <Link href={`/${locale}/shop/print/name-tags`} className="btn-primary text-sm" data-testid="print-designs-new">{t.start_new}</Link>}
+                {enabled && <Link href={`/${locale}/shop/print`} className="btn-primary text-sm" data-testid="print-designs-new">{t.start_new}</Link>}
             </div>
             {designs.length === 0 ? <p className="text-sm text-gray-600" data-testid="print-designs-none">{t.my_designs_none}</p> : (
                 <ul className="space-y-3" data-testid="print-designs">{designs.map((d) => <Row key={d.id} d={d} t={t} fonts={fonts} locale={locale} />)}</ul>

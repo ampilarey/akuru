@@ -71,6 +71,14 @@ what is printed.
 
 ### PP2 — Print products and their doors
 
+> **Built 2026-10-20 (STATUS §5tj)**, with these choices: name tags stays
+> on and off with the desk's own switch (it has no button of its own); the
+> other three are put on sale one by one, only while the desk is on and only
+> with an active layout of their own, and the desk switched off takes them
+> all off. **PD11 (per-product lead time and minimum) moves to the slice
+> that first needs a different one** — every product shares the desk's
+> settings until then.
+
 - `print_templates.kind` gains `card`, `sticker` and `photo`; layouts and
   templates belong to a product; `PrintDesk::ensure()` makes the four
   products (F5), each off until the office switches it on.

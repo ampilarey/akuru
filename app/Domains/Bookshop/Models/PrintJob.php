@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Models;
 
 use App\Domains\Bookshop\Enums\PrintJobStatus;
+use App\Domains\Bookshop\Support\PrintProducts;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -37,6 +38,14 @@ class PrintJob extends Model
     }
 
     /** NT5: a job made from the customer's own artwork rather than a template. */
+    /** PP2: which print product the job is — name tags, cards, stickers or photos. */
+    public function printKind(): string
+    {
+        $slug = $this->product_id === null ? null : Product::query()->whereKey($this->product_id)->value('slug');
+
+        return PrintProducts::kindOfSlug($slug) ?? PrintProducts::DEFAULT;
+    }
+
     public function isUpload(): bool
     {
         return $this->source === 'upload';

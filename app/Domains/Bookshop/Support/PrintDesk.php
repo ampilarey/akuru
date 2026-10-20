@@ -96,7 +96,8 @@ final class PrintDesk
 
     /**
      * The Akuru vendor (plan §4.1), the *Print* category and the draft
-     * product *Name tags — A4*, made once, the first time the office opens
+     * products — *Name tags — A4* and, since PP2, the other print products
+     * (`PrintProducts`) — made once, the first time the office opens
      * the print desk. Idempotent; a Bookstore that never opens it has no
      * Akuru shop in its lists.
      *
@@ -116,16 +117,16 @@ final class PrintDesk
             VendorDeliveryMethod::query()->create(['vendor_id' => $vendor->id, 'kind' => 'collect_akuru', 'name' => 'Collect from Akuru Institute', 'fee' => 0, 'handling_days' => 2, 'is_active' => true, 'sort_order' => 1]);
         }
         $category = ProductCategory::query()->firstOrCreate(['slug' => 'print'], ['name' => 'Print', 'name_dv' => 'ޕްރިންޓް', 'name_ar' => 'طباعة', 'sort_order' => 20, 'is_active' => true]);
-        $product = self::product() ?? Product::query()->create([
-            'vendor_id' => $vendor->id, 'product_category_id' => $category->id, 'slug' => self::PRODUCT_SLUG,
-            'title' => 'Name tags — A4', 'title_dv' => 'ނަން ޓެގް — A4', 'title_ar' => 'بطاقات أسماء — A4',
-            'summary' => 'Name tags and subject tags, designed by you, printed by Akuru.',
-            'summary_dv' => 'ތިބާ ފަރުމާކޮށް އަކުރުން ޕްރިންޓްކުރާ ނަން ޓެގާއި މާއްދާ ޓެގް.',
-            'summary_ar' => 'بطاقات أسماء ومواد، تصمّمها أنت وتطبعها أكورو.',
-            'price' => 0, 'currency' => 'MVR', 'tax_class' => 'standard', 'track_stock' => false, 'stock' => 0, 'status' => 'draft', 'visibility' => 'shop',
-        ]);
+        // PP2: every print product, each a draft until it is put on sale.
+        foreach (PrintProducts::KINDS as $meta) {
+            Product::query()->where('slug', $meta['slug'])->exists() || Product::query()->create([
+                'vendor_id' => $vendor->id, 'product_category_id' => $category->id, 'slug' => $meta['slug'],
+                ...collect($meta)->only(['title', 'title_dv', 'title_ar', 'summary', 'summary_dv', 'summary_ar'])->all(),
+                'price' => 0, 'currency' => 'MVR', 'tax_class' => 'standard', 'track_stock' => false, 'stock' => 0, 'status' => 'draft', 'visibility' => 'shop',
+            ]);
+        }
 
-        return [$vendor, $product];
+        return [$vendor, self::product()];
     }
 
     public static function product(): ?Product

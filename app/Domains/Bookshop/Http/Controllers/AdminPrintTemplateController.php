@@ -59,7 +59,7 @@ class AdminPrintTemplateController extends Controller
         abort_unless($request->user()?->can('bookshop.manage'), 403);
         $data = $request->validate([
             'title' => 'required|string|max:120', 'title_dv' => 'nullable|string|max:120', 'title_ar' => 'nullable|string|max:120',
-            'kind' => 'required|string|max:20', 'print_layout_id' => 'nullable|integer', 'design' => 'required', 'sort_order' => 'nullable|integer|min:0|max:1000',
+            'kind' => 'required|string|max:20', 'print_kind' => 'nullable|in:name_tags,cards,stickers,photos', 'print_layout_id' => 'nullable|integer', 'design' => 'required', 'sort_order' => 'nullable|integer|min:0|max:1000',
         ]);
         $saved = app(SavePrintTemplateAction::class)->execute($data, $template === null ? null : PrintTemplate::query()->findOrFail($template), (int) $request->user()->id);
 

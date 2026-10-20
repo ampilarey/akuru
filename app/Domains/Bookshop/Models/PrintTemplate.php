@@ -16,7 +16,7 @@ class PrintTemplate extends Model
 
     public const STATUSES = ['draft', 'active', 'retired'];
 
-    protected $fillable = ['title', 'title_dv', 'title_ar', 'kind', 'print_layout_id', 'design', 'status', 'created_by', 'uses_count', 'sort_order'];
+    protected $fillable = ['title', 'title_dv', 'title_ar', 'kind', 'print_kind', 'print_layout_id', 'design', 'status', 'created_by', 'uses_count', 'sort_order'];
 
     protected function casts(): array
     {

@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Models\Cart;
 use App\Domains\Bookshop\Models\CartItem;
 use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\PrintJob;
+use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintLine;
 use Illuminate\Validation\ValidationException;
@@ -25,7 +26,8 @@ class AddPrintJobToCartAction
         if ($why !== null) {
             throw ValidationException::withMessages(['job' => __($why)]);
         }
-        $product = PrintDesk::product();
+        // PP2: the job's own print product.
+        $product = $job->product_id !== null ? Product::query()->find($job->product_id) : PrintDesk::product();
         if ($product === null || ! ListShopProductsAction::forSale()->whereKey($product->id)->exists()) {
             throw ValidationException::withMessages(['job' => __('print.error_cart_service_off')]);
         }

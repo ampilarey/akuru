@@ -19,7 +19,7 @@ const money = (n) => (Number(n) || 0).toFixed(2);
 const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
 export default function PrintUploadJob(props) {
-    const { t = {}, job: initial, layouts = [], papers = [], finishing_options: finishingOptions = [], settings = {} } = props;
+    const { t = {}, job: initial, layouts = [], papers = [], finishing_options: finishingOptions = [], settings = {}, door = 'name-tags', product_title: productTitle = '' } = props;
     const { errors = {}, locale = 'en' } = usePage().props;
     const [job, setJob] = useState(initial);
     useEffect(() => setJob(initial), [initial]);
@@ -81,7 +81,7 @@ export default function PrintUploadJob(props) {
         <AppShell title={job.name || t.upload_title}>
             <FormErrors errors={errors} className="mb-4" />
             <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
-                <Link href={`/${locale}/shop/print/name-tags`} className="underline">← {t.door_title}</Link>
+                <Link href={`/${locale}/shop/print/${door}`} className="underline">← {door === 'name-tags' ? t.door_title : productTitle}</Link>
                 <Link href={`/${locale}/my-designs`} className="underline">{t.my_designs_title}</Link>
                 <span className="ms-auto rounded bg-gray-100 px-2 py-0.5" data-testid="print-job-status">{t[`job_status_${job.status}`]}</span>
                 <span className="text-xs text-gray-500" data-testid="print-job-saved" aria-live="polite">{state === 'saving' ? t.saving : state === 'saved' ? t.saved : ''}</span>

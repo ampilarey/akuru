@@ -14,6 +14,7 @@ use App\Domains\Bookshop\Support\PrintDesign;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintJobEntry;
 use App\Domains\Bookshop\Support\PrintLine;
+use App\Domains\Bookshop\Support\PrintProducts;
 use App\Domains\Bookshop\Support\PrintSheet;
 use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
 use App\Support\Contracts\PdfRasterizerInterface;
@@ -32,9 +33,10 @@ class PresentPrintJobAction
     public const PROOF_LINK_MINUTES = 15;
 
     /** @return list<array<string, mixed>> the active templates, for the door */
-    public function gallery(string $locale): array
+    public function gallery(string $locale, string $kind = PrintProducts::DEFAULT): array
     {
-        return PrintTemplate::query()->with('layout')->where('status', 'active')->orderBy('sort_order')->orderBy('id')->get()
+        // PP2: the templates of one print product.
+        return PrintTemplate::query()->with('layout')->where('status', 'active')->where('print_kind', $kind)->orderBy('sort_order')->orderBy('id')->get()
             ->map(fn (PrintTemplate $t) => [
                 'id' => $t->id, 'title' => $t->titleIn($locale), 'kind' => $t->kind, 'design' => $t->design,
                 'fields' => PrintDesign::fieldKeys((array) $t->design), 'layout' => $t->layout?->name,
@@ -115,7 +117,7 @@ class PresentPrintJobAction
     }
 
     /** @return array<string, mixed> the lists a job's page chooses from */
-    public function choices(string $locale, array $design): array
+    public function choices(string $locale, array $design, string $kind = PrintProducts::DEFAULT): array
     {
         $media = [];
         foreach ((array) ($design['elements'] ?? []) as $el) {
@@ -126,7 +128,8 @@ class PresentPrintJobAction
         $settings = PrintDesk::settings();
 
         return [
-            'layouts' => PrintLayout::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get()
+            // PP2: the layouts of the job's print product.
+            'layouts' => PrintLayout::query()->where('is_active', true)->where('print_kind', $kind)->orderBy('sort_order')->orderBy('id')->get()
                 ->map(fn (PrintLayout $l) => ['id' => $l->id, 'name' => $l->name, 'sheet_size' => $l->sheet_size, 'sheet_label' => PrintSheet::label($l->sheet_size), 'tags' => $l->tagsPerSheet(), 'tag_w_mm' => $l->tag_w_mm, 'tag_h_mm' => $l->tag_h_mm])->values()->all(),
             // PP1: each paper names its sheet size; the page offers those of the chosen layout's size.
             'papers' => PrintPaperOption::query()->where('is_active', true)->where(fn ($q) => $q->where('price_bw', '>', 0)->orWhere('price_colour', '>', 0))->orderBy('sort_order')->orderBy('id')->get()

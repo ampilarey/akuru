@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Actions\Print;
 use App\Domains\Bookshop\Models\PrintLayout;
 use App\Domains\Bookshop\Models\PrintTemplate;
 use App\Domains\Bookshop\Support\PrintDesign;
+use App\Domains\Bookshop\Support\PrintProducts;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -23,6 +24,11 @@ class SavePrintTemplateAction
             throw ValidationException::withMessages(['kind' => __('print.error_template_kind')]);
         }
         $layout = isset($data['print_layout_id']) && $data['print_layout_id'] !== '' ? PrintLayout::query()->find((int) $data['print_layout_id']) : null;
+        // PP2: a template belongs to one print product, and its layout to the same.
+        $printKind = PrintProducts::valid($data['print_kind'] ?? null) ? $data['print_kind'] : ($template?->print_kind ?? PrintProducts::DEFAULT);
+        if ($layout !== null && $layout->print_kind !== $printKind) {
+            throw ValidationException::withMessages(['print_layout_id' => __('print.error_template_layout_product')]);
+        }
         $raw = $data['design'] ?? null;
         if (is_string($raw)) {
             $raw = json_decode($raw, true);
@@ -38,6 +44,7 @@ class SavePrintTemplateAction
             'title_dv' => trim((string) ($data['title_dv'] ?? '')) ?: null,
             'title_ar' => trim((string) ($data['title_ar'] ?? '')) ?: null,
             'kind' => $kind,
+            'print_kind' => $printKind,
             'print_layout_id' => $layout?->id,
             'design' => $design,
             'sort_order' => (int) ($data['sort_order'] ?? $template->sort_order ?? 0),

@@ -7,7 +7,7 @@ use App\Domains\Bookshop\Actions\Shop\ListShopProductsAction;
 use App\Domains\Bookshop\Models\Cart;
 use App\Domains\Bookshop\Models\CartItem;
 use App\Domains\Bookshop\Models\ProductVariant;
-use App\Domains\Bookshop\Support\PrintDesk;
+use App\Domains\Bookshop\Support\PrintProducts;
 use App\Domains\Bookshop\Support\Stock;
 use Illuminate\Validation\ValidationException;
 
@@ -22,7 +22,7 @@ class SaveCartItemAction
     public function add(Cart $cart, string $productSlug, ?int $variantId, int $quantity): CartItem
     {
         // NAME_TAGS_PLAN NT3: print is priced by its approved design, never added bare.
-        if ($productSlug === PrintDesk::PRODUCT_SLUG) {
+        if (PrintProducts::kindOfSlug($productSlug) !== null) {
             throw ValidationException::withMessages(['product' => __('print.error_cart_needs_design')]);
         }
         $product = ListShopProductsAction::forSale()->where('slug', $productSlug)->with('variants')->first();

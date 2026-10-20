@@ -15,13 +15,13 @@ import { blankDesign, normaliseDesign, withFields } from '../../Components/Print
 const fill = (s, vars) => Object.entries(vars).reduce((out, [k, v]) => out.split(`:${k}`).join(String(v ?? '')), s || '');
 const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
-export default function PrintTemplateDesigner({ t = {}, template = null, sample = {}, layouts = [], fonts = {}, font_css: fontCss = '', images = [], field_keys: fieldKeys = [], kinds = [], max_elements: maxElements = 60 }) {
+export default function PrintTemplateDesigner({ t = {}, template = null, sample = {}, layouts = [], fonts = {}, font_css: fontCss = '', images = [], field_keys: fieldKeys = [], kinds = [], print_kinds: printKinds = {}, max_elements: maxElements = 60 }) {
     const { errors = {} } = usePage().props;
     const [design, setDesign] = useState(() => (template ? normaliseDesign(template.design) : blankDesign()));
     const [checked, setChecked] = useState(null);
     const [busy, setBusy] = useState(false);
     const [meta, setMeta] = useState({
-        title: template?.title ?? '', title_dv: template?.title_dv ?? '', title_ar: template?.title_ar ?? '', kind: template?.kind ?? 'name_tag',
+        title: template?.title ?? '', title_dv: template?.title_dv ?? '', title_ar: template?.title_ar ?? '', kind: template?.kind ?? 'name_tag', print_kind: template?.print_kind ?? 'name_tags',
         print_layout_id: template?.print_layout_id ?? '', sort_order: template?.sort_order ?? 0,
     });
     const set = (key, value) => setMeta((m) => ({ ...m, [key]: value }));
@@ -74,10 +74,11 @@ export default function PrintTemplateDesigner({ t = {}, template = null, sample 
                 <label className="text-sm">{t.template_title}<input className="form-input w-full" value={meta.title} onChange={(e) => set('title', e.target.value)} required maxLength={120} data-testid="template-title" />{errors.title && <p className="text-xs text-red-700">{errors.title}</p>}</label>
                 <label className="text-sm">{t.title_in_dv}<input className="form-input w-full" dir="rtl" value={meta.title_dv} onChange={(e) => set('title_dv', e.target.value)} maxLength={120} data-testid="template-title-dv" /></label>
                 <label className="text-sm">{t.title_in_ar}<input className="form-input w-full" dir="rtl" value={meta.title_ar} onChange={(e) => set('title_ar', e.target.value)} maxLength={120} /></label>
+                <label className="text-sm">{t.product}<select className="form-input w-full" value={meta.print_kind} onChange={(e) => setMeta((m) => ({ ...m, print_kind: e.target.value, print_layout_id: '' }))} data-testid="template-product">{Object.entries(printKinds).map(([k, title]) => <option key={k} value={k}>{title}</option>)}</select>{errors.print_layout_id && <p className="text-xs text-red-700">{errors.print_layout_id}</p>}</label>
                 <label className="text-sm">{t.kind}<select className="form-input w-full" value={meta.kind} onChange={(e) => set('kind', e.target.value)} data-testid="template-kind">{kinds.map((k) => <option key={k} value={k}>{t[`kind_${k}`]}</option>)}</select>{errors.kind && <p className="text-xs text-red-700">{errors.kind}</p>}</label>
                 <label className="text-sm">{t.layout}<select className="form-input w-full" value={meta.print_layout_id ?? ''} onChange={(e) => pickLayout(e.target.value)} data-testid="template-layout">
                     <option value="">{t.layout_none}</option>
-                    {layouts.map((l) => <option key={l.id} value={l.id}>{l.name} — {l.tag_w_mm} × {l.tag_h_mm} mm</option>)}
+                    {layouts.filter((l) => (l.print_kind ?? 'name_tags') === meta.print_kind).map((l) => <option key={l.id} value={l.id}>{l.name} — {l.tag_w_mm} × {l.tag_h_mm} mm</option>)}
                 </select></label>
                 <div className="grid grid-cols-2 gap-2">
                     <label className="text-sm">{t.tag_size}<div className="flex items-center gap-1" dir="ltr">

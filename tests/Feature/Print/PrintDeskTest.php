@@ -28,7 +28,7 @@ it('makes the Akuru vendor, the Print category and a draft product once, and see
     PrintDesk::ensure();
     PrintDesk::ensure();
     $vendor = PrintDesk::vendor();
-    expect(Vendor::query()->where('kind', 'akuru')->count())->toBe(1)->and(Product::query()->count())->toBe(1)
+    expect(Vendor::query()->where('kind', 'akuru')->count())->toBe(1)->and(Product::query()->count())->toBe(4) // PP2: the four print products, each once.
         ->and($vendor->isAkuru())->toBeTrue()
         ->and($vendor->fulfilment)->toBe('akuru')
         ->and($vendor->deliveryMethods()->where('kind', 'collect_akuru')->exists())->toBeTrue();
