@@ -1003,6 +1003,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('print', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'index'])->name('admin.bookshop.print');
         Route::get('print/export', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'export'])->name('admin.bookshop.print.export');
         Route::post('print/settings', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'settings'])->name('admin.bookshop.print.settings');
+        // PRINT_PRODUCTS_PLAN PP6b: Akuru's own print quotes, priced by the office.
+        Route::get('print/quotes', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'quotes'])->name('admin.bookshop.print.quotes');
+        Route::post('print/quotes/{quote}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'quote'])->name('admin.bookshop.print.quotes.quote')->whereNumber('quote');
+        Route::post('print/quotes/{quote}/decline', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'declineQuote'])->name('admin.bookshop.print.quotes.decline')->whereNumber('quote');
         Route::post('print/products/{kind}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'product'])->name('admin.bookshop.print.product')->whereIn('kind', ['name_tags', 'cards', 'stickers', 'photos']);
         Route::post('print/papers/{paper?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'paper'])->name('admin.bookshop.print.paper')->whereNumber('paper');
         Route::post('print/finishing/{finishing?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'finishing'])->name('admin.bookshop.print.finishing')->whereNumber('finishing');

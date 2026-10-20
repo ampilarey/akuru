@@ -4983,6 +4983,59 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5to. Print jobs in schools' bulk quotes (PP6b, 2026-10-20)
+
+PRINT_PRODUCTS_PLAN PP6b (PD9). A school wanting a price for a big name-tag
+order had no way to ask: the Bookstore's quotes (B9d) took ordinary
+products only.
+- **Asked from the basket**, as for any shop: an approved print job is a
+  quote line that names its job (`quote_items.print_job_id`), at the price
+  held with the approval. A job that is not approved, or whose price has
+  lapsed, is refused.
+- **Priced by the office:** Akuru's quotes are on the print desk under
+  *School quotes* (`/admin/bookshop/print/quotes`). It is the shops' own
+  quotes page, acting for Akuru as the office does on the orders Akuru
+  packs (`ResolveVendorScopeAction::forOffice`).
+- **Accepted:** each job goes back into the basket once, at its own line's
+  price (`PrintLine::quoted`). It is held by the quote, not by the
+  approval's seven days. The basket and the checkout charge it, and the
+  order line keeps its quote.
+- **Minimum:** the Bookstore's own (10, sheets counting as items), not the
+  plan's 20 sheets. A customer with an open credit account has none
+  (`CustomerQuotesAction::minimumFor`). Payment is the checkout's as before,
+  credit (P8c) among it.
+
+**Tests:** `PrintQuotesTest` (3):
+- a 12-sheet job quoted, priced by the office at 2.50, accepted, and the
+  basket shows 2.50 / 30.00 with no problems;
+- ten days on, the approval's hold has lapsed but the quote still holds the
+  line;
+- no minimum with a credit account, the shop's without;
+- two jobs back once each at their own prices, and a line pointed at
+  another job's quote line pays nothing quoted.
+
+The 414 Bookstore and print tests stay green.
+
+**Walk:** `print-quote.mjs` (new, in `all.mjs`; proofs with this server's
+Chrome), 9/9 at 390 × 844 under /dv:
+- the basket offers to ask Akuru for a quote, and the customer asks;
+- the office finds it under *School quotes* and prices 2.50 a sheet, MVR
+  30.00 for 12;
+- the customer accepts, and the basket shows the line quoted at MVR 30.00.
+
+Nothing scrolls sideways.
+
+**Fixed along the way (an MF6 regression):** `vendor-mobile.mjs`'s
+notices step counted visible table headers. Since MF6 (#801) that table
+reads as cards on a phone, its head hidden, so the step read 0. Counting the
+first row's cells instead showed a real fault: 4 cells, not 3. The
+always-ticked *in the app* cell was back on phones. `.table-stack td`'s
+`display` rules outrank Tailwind's `hidden`, so every cell a page hides on a
+phone (`hidden sm:table-cell`) had come back inside a stacked table. One
+rule at the end of the phone block (`app.css`) keeps such cells hidden. The
+walk now counts cells: 27/27. `quotes.mjs` 13/13. With Chrome set, all
+fourteen print walks pass.
+
 ## 5tn. Names from a class, for the office and a class's teachers (PP6a, 2026-10-20)
 
 PRINT_PRODUCTS_PLAN PP6a (PD8). A teacher ordering name tags for a class

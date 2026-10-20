@@ -284,7 +284,7 @@ export default function Print({ t = {}, settings, can_enable: canEnable, cannot_
     return (
         <AppShell title={t.title}>
             <FormErrors errors={errors} className="mb-4" />
-            <p className="mb-1 text-sm text-gray-600">{t.intro} <Link href="/admin/bookshop/print/templates" className="text-blue-700 underline" data-testid="print-templates-link">{t.templates_link} →</Link> · <Link href="/admin/bookshop/print/queue" className="text-blue-700 underline" data-testid="print-queue-link">{t.queue_link} →</Link></p>
+            <p className="mb-1 text-sm text-gray-600">{t.intro} <Link href="/admin/bookshop/print/templates" className="text-blue-700 underline" data-testid="print-templates-link">{t.templates_link} →</Link> · <Link href="/admin/bookshop/print/queue" className="text-blue-700 underline" data-testid="print-queue-link">{t.queue_link} →</Link> · <Link href="/admin/bookshop/print/quotes" className="text-blue-700 underline" data-testid="print-quotes-link">{t.quotes_link} →</Link></p>
             {vendor && <p className="mb-1 text-sm text-gray-600" data-testid="print-vendor">{fill(t.vendor_line, { name: vendor.name, slug: vendor.slug })}</p>}
             {product && <p className="mb-4 text-sm text-gray-600" data-testid="print-product">{fill(t.product_line, { title: product.title, status: product.status === 'active' ? t.status_active : t.status_draft })}</p>}
             <Settings t={t} settings={settings} canEnable={canEnable} why={why} />

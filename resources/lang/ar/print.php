@@ -496,4 +496,6 @@ return [
     'error_class_not_yours' => 'يمكنك طباعة أسماء صفوفك فقط.',
     'error_class_no_name' => 'لا يحتوي هذا التصميم على اسم لملئه.',
     'error_class_empty' => 'لا يوجد طلاب في هذا الصف بعد.',
+    // PP6b: Akuru's print quotes, from the print desk.
+    'quotes_link' => 'عروض أسعار المدارس',
 ];

@@ -496,4 +496,6 @@ return [
     'error_class_not_yours' => 'ޕްރިންޓް ކުރެވޭނީ ތިބާގެ އަމިއްލަ ކްލާސްތަކުގެ ނަންތައް އެކަނި.',
     'error_class_no_name' => 'މި ޑިޒައިނުގައި ފުރާނެ ނަމެއް ނެތް.',
     'error_class_empty' => 'މި ކްލާހުގައި އަދި ދަރިވަރުން ނެތް.',
+    // PP6b: Akuru's print quotes, from the print desk.
+    'quotes_link' => 'ސްކޫލް ކޯޓް',
 ];

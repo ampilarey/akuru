@@ -92,14 +92,16 @@ class StartBookshopCheckoutAction
                 // NAME_TAGS_PLAN NT4: a print line is its approved job, at the price held with it — checked again here.
                 if ($item->print_job_id !== null) {
                     $job = PrintJob::withTrashed()->whereKey($item->print_job_id)->lockForUpdate()->first();
-                    $why = PrintLine::blocker($job, (int) $item->quantity, $userId)
+                    // PP6b: the school's quoted price while its quote holds, else the price held with the approval.
+                    $quoted = PrintLine::quoted($item, $product);
+                    $why = PrintLine::blocker($job, (int) $item->quantity, $userId, $quoted !== null)
                         ?? (AddPrintJobToCartAction::inOpenOrder((int) $item->print_job_id) ? 'print.error_cart_already_ordered' : null);
                     if ($why !== null) {
                         throw ValidationException::withMessages(['cart' => __($why)]);
                     }
                     $lines[] = [
-                        'product' => $product, 'variant' => null, 'quantity' => (int) $item->quantity, 'quote_item_id' => null,
-                        'unit' => PrintLine::unit($job), 'total' => PrintLine::total($job), 'print_job_id' => (int) $job->id,
+                        'product' => $product, 'variant' => null, 'quantity' => (int) $item->quantity, 'quote_item_id' => $quoted !== null ? (int) $item->quote_item_id : null,
+                        'unit' => $quoted ?? PrintLine::unit($job), 'total' => $quoted !== null ? round($quoted * (int) $item->quantity, 2) : PrintLine::total($job), 'print_job_id' => (int) $job->id,
                     ];
 
                     continue;

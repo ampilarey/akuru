@@ -9,12 +9,15 @@ import VendorNav from '../../Components/Bookshop/VendorNav';
  * requests waiting for a price first, a price for each line and how many
  * days it holds, or a decline with a note. The customer accepts it into
  * their cart and pays the quoted price while it holds.
+ *
+ * PRINT_PRODUCTS_PLAN PP6b: the same page serves the office pricing Akuru's
+ * own print quotes, at its own address (`base`), without the shop's menu.
  */
 
 const fill = (s, vars) => Object.entries(vars).reduce((out, [k, v]) => out.replaceAll(`:${k}`, v), s || '');
 const money = (n) => (Math.round(Number(n || 0) * 100) / 100).toFixed(2);
 
-function PriceForm({ quote, t, defaultDays, maxDays }) {
+function PriceForm({ quote, t, defaultDays, maxDays, base }) {
     const form = useForm({
         prices: Object.fromEntries(quote.items.map((i) => [i.id, i.quoted_price ?? i.list_price])),
         valid_days: defaultDays,
@@ -26,7 +29,7 @@ function PriceForm({ quote, t, defaultDays, maxDays }) {
 
     return (
         <div className="mt-3 border-t pt-3">
-            <form onSubmit={(e) => { e.preventDefault(); form.post(`/vendor/quotes/${quote.id}`, { preserveScroll: true }); }}>
+            <form onSubmit={(e) => { e.preventDefault(); form.post(`${base}/${quote.id}`, { preserveScroll: true }); }}>
                 <table className="table-stack w-full text-sm">
                     <thead className="text-start text-xs text-gray-500"><tr><th className="p-1 text-start">{t.quote_item}</th><th className="p-1 text-end">{t.quantity}</th><th className="p-1 text-end">{t.quote_list_price}</th><th className="p-1 text-end">{t.quote_your_price}</th></tr></thead>
                     <tbody>
@@ -58,7 +61,7 @@ function PriceForm({ quote, t, defaultDays, maxDays }) {
                 </div>
             </form>
             {declining && (
-                <form className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap" onSubmit={(e) => { e.preventDefault(); decline.post(`/vendor/quotes/${quote.id}/decline`, { preserveScroll: true }); }}>
+                <form className="mt-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap" onSubmit={(e) => { e.preventDefault(); decline.post(`${base}/${quote.id}/decline`, { preserveScroll: true }); }}>
                     <input className="form-input w-full min-w-0 flex-1" required maxLength={2000} placeholder={t.quote_decline_note} aria-label={t.quote_decline_note} value={decline.data.note} onChange={(e) => decline.setData('note', e.target.value)} dir="auto" data-testid="quote-decline-note" />
                     <button type="submit" className="btn-secondary text-red-700" disabled={decline.processing} data-testid="quote-decline">{t.quote_decline}</button>
                 </form>
@@ -67,7 +70,7 @@ function PriceForm({ quote, t, defaultDays, maxDays }) {
     );
 }
 
-function QuoteCard({ quote, t, defaultDays, maxDays }) {
+function QuoteCard({ quote, t, defaultDays, maxDays, base }) {
     const open = ['requested', 'quoted'].includes(quote.status);
 
     return (
@@ -85,12 +88,12 @@ function QuoteCard({ quote, t, defaultDays, maxDays }) {
                 </div>
             </div>
             {quote.status === 'declined' && quote.vendor_note && <p className="mt-2 text-sm text-gray-600" dir="auto">{quote.vendor_note}</p>}
-            {open && <PriceForm quote={quote} t={t} defaultDays={defaultDays} maxDays={maxDays} />}
+            {open && <PriceForm quote={quote} t={t} defaultDays={defaultDays} maxDays={maxDays} base={base} />}
         </li>
     );
 }
 
-export default function VendorQuotes({ t, vendor, quotes, counts, statuses, status, default_valid_days, max_valid_days }) {
+export default function VendorQuotes({ t, vendor, quotes, counts, statuses, status, default_valid_days, max_valid_days, base = '/vendor/quotes', office = false }) {
     const { errors } = usePage().props;
 
     return (
@@ -102,14 +105,14 @@ export default function VendorQuotes({ t, vendor, quotes, counts, statuses, stat
                         <h1 className="text-2xl font-bold" data-testid="quotes-heading">{t.quotes_title} · {vendor.name}</h1>
                         <p className="text-sm text-gray-600">{t.quotes_vendor_intro}</p>
                     </div>
-                    <a href="/vendor/quotes/export" className="btn-secondary" data-testid="export-quotes">{t.export_csv}</a>
+                    {!office && <a href="/vendor/quotes/export" className="btn-secondary" data-testid="export-quotes">{t.export_csv}</a>}
                 </div>
-                <VendorNav t={t} current="quotes" />
+                {!office && <VendorNav t={t} current="quotes" />}
             </header>
             <nav className="mb-4 flex min-w-0 flex-wrap gap-2 text-sm" data-testid="quote-filters">
-                <button type="button" className={`inline-flex min-h-[2rem] max-w-full items-center rounded px-3 py-1 ${!status ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get('/vendor/quotes')}>{t.all_orders}</button>
+                <button type="button" className={`inline-flex min-h-[2rem] max-w-full items-center rounded px-3 py-1 ${!status ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get(base)}>{t.all_orders}</button>
                 {statuses.map((s) => (
-                    <button key={s} type="button" className={`inline-flex min-h-[2rem] max-w-full items-center rounded px-3 py-1 ${status === s ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get('/vendor/quotes', { status: s })} data-testid={`quote-filter-${s}`}>
+                    <button key={s} type="button" className={`inline-flex min-h-[2rem] max-w-full items-center rounded px-3 py-1 ${status === s ? 'bg-gray-800 text-white' : 'bg-gray-100'}`} onClick={() => router.get(base, { status: s })} data-testid={`quote-filter-${s}`}>
                         {t[`quote_status_${s}`] || s} ({counts[s] || 0})
                     </button>
                 ))}
@@ -118,7 +121,7 @@ export default function VendorQuotes({ t, vendor, quotes, counts, statuses, stat
                 <p className="rounded border bg-white p-4 text-gray-600" data-testid="no-quotes">{t.no_vendor_quotes}</p>
             ) : (
                 <ul className="space-y-3">
-                    {quotes.map((q) => <QuoteCard key={q.id} quote={q} t={t} defaultDays={default_valid_days} maxDays={max_valid_days} />)}
+                    {quotes.map((q) => <QuoteCard key={q.id} quote={q} t={t} defaultDays={default_valid_days} maxDays={max_valid_days} base={base} />)}
                 </ul>
             )}
         </AppShell>

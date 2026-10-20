@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Support;
 use App\Domains\Bookshop\Enums\PrintJobStatus;
 use App\Domains\Bookshop\Models\CartItem;
 use App\Domains\Bookshop\Models\PrintJob;
+use App\Domains\Bookshop\Models\Product;
 use Illuminate\Support\Carbon;
 
 /**
@@ -17,8 +18,12 @@ use Illuminate\Support\Carbon;
  */
 final class PrintLine
 {
-    /** Why the line cannot be bought now, as a `print.*` phrase key — or null where it can. */
-    public static function blocker(?PrintJob $job, int $quantity, ?int $userId = null): ?string
+    /**
+     * Why the line cannot be bought now, as a `print.*` phrase key — or null
+     * where it can. A line priced by a school's quote (PP6b) is held by the
+     * quote, not by the approval's seven days.
+     */
+    public static function blocker(?PrintJob $job, int $quantity, ?int $userId = null, bool $quoted = false): ?string
     {
         if ($job === null || $job->trashed()) {
             return 'print.error_cart_job_gone';
@@ -29,7 +34,7 @@ final class PrintLine
         if ($userId !== null && (int) $job->user_id !== $userId) {
             return 'print.error_cart_job_gone';
         }
-        if (! self::held($job)) {
+        if (! $quoted && ! self::held($job)) {
             return 'print.error_cart_price_lapsed';
         }
         if ($quantity !== (int) $job->sheets) {
@@ -61,6 +66,20 @@ final class PrintLine
     public static function unit(PrintJob $job): float
     {
         return round(self::total($job) / max(1, (int) $job->sheets), 2);
+    }
+
+    /**
+     * PP6b: a print line from an accepted school quote pays the quoted price
+     * while the quote holds — the quote's own line for this very job.
+     */
+    public static function quoted(CartItem $item, Product $product): ?float
+    {
+        $price = CartPrice::quoted($item, $product, null);
+        if ($price === null || $item->print_job_id === null) {
+            return null;
+        }
+
+        return (int) ($item->quoteItem()->value('print_job_id') ?? 0) === (int) $item->print_job_id ? $price : null;
     }
 
     public static function job(CartItem $item): ?PrintJob

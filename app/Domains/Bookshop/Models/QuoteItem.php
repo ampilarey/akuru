@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 /** One line of a quote: what was asked for, at what list price, and the shop's price (BOOKSHOP_PLAN B9d). */
 class QuoteItem extends Model
 {
-    protected $fillable = ['quote_request_id', 'product_id', 'product_variant_id', 'title', 'variant_name', 'sku', 'quantity', 'list_price', 'quoted_price'];
+    protected $fillable = ['quote_request_id', 'product_id', 'product_variant_id', 'print_job_id', 'title', 'variant_name', 'sku', 'quantity', 'list_price', 'quoted_price'];
 
     protected function casts(): array
     {
