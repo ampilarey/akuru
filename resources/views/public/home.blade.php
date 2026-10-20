@@ -32,15 +32,15 @@ $bannerCount = count($bannerList);
     <div id="akuru-track" style="display:flex;transition:transform .7s cubic-bezier(.4,0,.2,1);will-change:transform">
       @foreach($bannerList as $i => $bn)
       <div style="min-width:100%;min-height:clamp(20rem,55vw,28rem);display:flex;align-items:center;justify-content:center">
-        <div class="container mx-auto px-4 text-center text-white"
-             style="width:100%;padding-top:4.5rem;padding-bottom:{{ $bannerCount > 1 ? '3rem' : '4.5rem' }}">
+        <div class="container mx-auto px-4 text-center text-white hero-pad{{ $bannerCount > 1 ? ' hero-pad--dots' : '' }}"
+             style="width:100%">
           <span style="display:inline-block;background:rgba(201,162,39,0.2);border:1px solid rgba(201,162,39,0.4);color:#E8BC3C;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:.375rem 1rem;border-radius:9999px;margin-bottom:1.25rem">
             🕌 {{ __('public.Islamic Education in the Maldives') }}
           </span>
-          <h1 style="font-size:clamp(1.75rem,4.5vw,3.25rem);font-weight:800;line-height:1.15;margin-bottom:1.25rem;text-shadow:0 2px 16px rgba(0,0,0,.4)">
+          <h1 class="hero-h1" style="font-size:clamp(1.75rem,4.5vw,3.25rem);font-weight:800;line-height:1.15;text-shadow:0 2px 16px rgba(0,0,0,.4)">
             {{ $bn['title'] }}
           </h1>
-          <p style="font-size:clamp(.95rem,2vw,1.2rem);color:rgba(255,255,255,.8);max-width:40rem;margin:0 auto 2.25rem;line-height:1.7">
+          <p class="hero-p" style="font-size:clamp(.95rem,2vw,1.2rem);color:rgba(255,255,255,.8);max-width:40rem;line-height:1.7">
             {{ $bn['subtitle'] }}
           </p>
           <div style="display:flex;flex-wrap:wrap;gap:.875rem;justify-content:center">
@@ -65,12 +65,12 @@ $bannerCount = count($bannerList);
   @if($bannerCount > 1)
   {{-- Prev / Next arrows — hidden on mobile --}}
   <button id="akuru-prev" class="hero-arrow" aria-label="{{ __('public.Previous slide') }}"
-      style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10;padding:0"
+      style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10;padding:0"
       onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/></svg>
   </button>
   <button id="akuru-next" class="hero-arrow" aria-label="{{ __('public.Next slide') }}"
-      style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10;padding:0"
+      style="position:absolute;right:1rem;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);color:white;width:2.5rem;height:2.5rem;border-radius:50%;align-items:center;justify-content:center;cursor:pointer;transition:background .2s;z-index:10;padding:0"
       onmouseover="this.style.background='rgba(255,255,255,.3)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
     <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
   </button>
@@ -85,8 +85,21 @@ $bannerCount = count($bannerList);
   @endif
   </div>{{-- end hero stage (slides + arrows + dots) --}}
 
+  {{-- Phone-first (docs/MOBILE_FIRST.md, 2026-10-20): the phone hero is the
+       default — no arrows (a swipe or the dots), shorter spacing — and a wider
+       screen adds them. It was a desk hero patched with max-width and !important. --}}
   <style>
-    @media (max-width: 639px) { .hero-arrow { display: none !important; } }
+    .hero-arrow { display: none; }
+    .hero-pad { padding-top: 2rem; padding-bottom: 2.5rem; }
+    .hero-h1 { margin-bottom: .75rem; }
+    .hero-p { margin: 0 auto 1.25rem; }
+    @media (min-width: 640px) {
+      .hero-arrow { display: flex; }
+      .hero-pad { padding-top: 4.5rem; padding-bottom: 4.5rem; }
+      .hero-pad--dots { padding-bottom: 3rem; }
+      .hero-h1 { margin-bottom: 1.25rem; }
+      .hero-p { margin: 0 auto 2.25rem; }
+    }
   </style>
 
   {{-- White wave into next section --}}
@@ -175,42 +188,39 @@ $bannerCount = count($bannerList);
   .home-h2 { font-size: clamp(1.5rem, 3vw, 2.25rem); font-weight: 800; color: #111827; margin: .25rem 0 0; }
   .home-head { display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.75rem; }
   .home-more { color: #7C2D37; font-weight: 700; font-size: .9rem; text-decoration: none; display: inline-flex; align-items: center; gap: .25rem; }
-  .home-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; }
-  .home-row--books { grid-template-columns: repeat(6, minmax(0, 1fr)); }
-  @media (max-width: 1023px) {
-    .home-row { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Phone-first: a phone swipes a row sideways instead of stacking it, so the
+     page is half as long and the next section is always in reach; a tablet
+     shows a grid of two (books three), a desk four (books six). */
+  .home-row, .home-row--books { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 1rem; gap: .75rem; margin: 0 -1rem; padding: 0 1rem .75rem; scrollbar-width: none; }
+  .home-row::-webkit-scrollbar { display: none; }
+  .home-row > * { flex: 0 0 78%; scroll-snap-align: start; }
+  .home-row--books > * { flex: 0 0 40%; }
+  @media (min-width: 640px) {
+    .home-row, .home-row--books { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); overflow: visible; gap: 1.25rem; margin: 0; padding: 0; }
     .home-row--books { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   }
-  /* A phone swipes a row sideways instead of stacking it, so the page is
-     half as long and the next section is always in reach. */
-  @media (max-width: 639px) {
-    .home-row, .home-row--books { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: 1rem; gap: .75rem; margin: 0 -1rem; padding: 0 1rem .75rem; scrollbar-width: none; }
-    .home-row::-webkit-scrollbar { display: none; }
-    .home-row > * { flex: 0 0 78%; scroll-snap-align: start; }
-    .home-row--books > * { flex: 0 0 40%; }
+  @media (min-width: 1024px) {
+    .home-row { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .home-row--books { grid-template-columns: repeat(6, minmax(0, 1fr)); }
   }
-  /* A phone's hero is shorter, so the four products are in the first screen. */
-  @media (max-width: 639px) {
-    #akuru-hero .container { padding-top: 2rem !important; padding-bottom: 2.5rem !important; }
-    #akuru-hero h1 { margin-bottom: .75rem !important; }
-    #akuru-hero p { margin-bottom: 1.25rem !important; }
-  }
-  .home-tiles { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1.25rem; margin-top: -3rem; }
-  .home-tile { display: flex; flex-direction: column; gap: .6rem; padding: 1.5rem; background: #fff; border: 1px solid #EDE4D8; border-radius: 1rem; box-shadow: 0 12px 30px rgba(60, 20, 27, .12); color: #1F1A17; text-decoration: none; transition: transform .2s, box-shadow .2s; }
+  /* Phone-first: two compact tiles a row on a phone, so the four products sit
+     in the first screen under the hero; roomier from 640 px, four from 1024. */
+  .home-tiles { position: relative; z-index: 2; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .75rem; margin-top: -1.5rem; }
+  .home-tile { display: flex; flex-direction: column; gap: .35rem; padding: .9rem; background: #fff; border: 1px solid #EDE4D8; border-radius: 1rem; box-shadow: 0 6px 18px rgba(60, 20, 27, .10); color: #1F1A17; text-decoration: none; transition: transform .2s, box-shadow .2s; }
   .home-tile:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(60, 20, 27, .16); }
-  .home-tile-icon { width: 3rem; height: 3rem; border-radius: .75rem; background: #F6ECEE; color: #7C2D37; display: flex; align-items: center; justify-content: center; }
-  .home-tile strong { font-size: 1.2rem; }
-  .home-tile-line { font-size: .925rem; line-height: 1.5; color: #5E5650; }
-  .home-tile-go { margin-top: auto; font-size: .925rem; font-weight: 700; color: #7C2D37; }
-  @media (max-width: 1023px) { .home-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-  @media (max-width: 639px) {
-    .home-tiles { gap: .75rem; margin-top: -1.5rem; }
-    .home-tile { padding: .9rem; gap: .35rem; box-shadow: 0 6px 18px rgba(60, 20, 27, .10); }
-    .home-tile-icon { width: 2.5rem; height: 2.5rem; }
-    .home-tile strong { font-size: 1rem; }
-    .home-tile-line { font-size: .8rem; }
-    .home-tile-go { display: none; }
+  .home-tile-icon { width: 2.5rem; height: 2.5rem; border-radius: .75rem; background: #F6ECEE; color: #7C2D37; display: flex; align-items: center; justify-content: center; }
+  .home-tile strong { font-size: 1rem; }
+  .home-tile-line { font-size: .8rem; line-height: 1.5; color: #5E5650; }
+  .home-tile-go { display: none; margin-top: auto; font-size: .925rem; font-weight: 700; color: #7C2D37; }
+  @media (min-width: 640px) {
+    .home-tiles { gap: 1.25rem; margin-top: -3rem; }
+    .home-tile { padding: 1.5rem; gap: .6rem; box-shadow: 0 12px 30px rgba(60, 20, 27, .12); }
+    .home-tile-icon { width: 3rem; height: 3rem; }
+    .home-tile strong { font-size: 1.2rem; }
+    .home-tile-line { font-size: .925rem; }
+    .home-tile-go { display: block; }
   }
+  @media (min-width: 1024px) { .home-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 </style>
 <section style="background:#FFFFFF;padding:0 0 1.5rem" data-testid="home-products">
   <div class="container mx-auto px-4">
@@ -454,12 +464,12 @@ $bannerCount = count($bannerList);
   </div>
 </section>
 <style>
-  .home-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem 4rem; text-align: center; }
+  .home-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.25rem 2rem; text-align: center; }
   .home-stat { display: flex; flex-direction: column; gap: .35rem; text-decoration: none; min-width: 7rem; }
   .home-stat-n { font-size: clamp(2rem, 5vw, 2.75rem); font-weight: 800; color: #E8C766; line-height: 1; font-variant-numeric: tabular-nums; }
   .home-stat-l { color: rgba(255,255,255,.8); font-size: .875rem; }
   .home-stat:hover .home-stat-l { color: #fff; text-decoration: underline; }
-  @media (max-width: 639px) { .home-stats { gap: 1.25rem 2rem; } }
+  @media (min-width: 640px) { .home-stats { gap: 1.5rem 4rem; } }
 </style>
 @endif
 
