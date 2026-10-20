@@ -392,6 +392,7 @@ return [
     'timetable_no_periods' => 'No periods yet. Add periods before building a timetable.',
     'timetable_conflict' => 'Conflict: :list',
     'timetable_cover' => 'Cover: :name',
+    'timetable_cover_needed' => 'Cover needed',
     'timetable_copy_from_class' => 'Copy from class',
     'timetable_source_class' => 'Source class',
     'timetable_copy_week_title' => 'Copy week (+7 days validity)',

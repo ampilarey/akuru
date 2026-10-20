@@ -21,7 +21,8 @@ use Illuminate\Validation\ValidationException;
  * is sanitised with PROFILE_CMS here, because `public/news/show.blade.php`
  * renders it raw (tests/Architecture/Baselines/raw_html_renders.php).
  * The cover is public media, stored by path so `x-public.picture` can find
- * its WebP.
+ * its WebP. Saving forgets the home page's cache, so the latest-news row
+ * shows the post at once rather than ten minutes later.
  */
 class SaveNewsPostAction
 {
@@ -92,6 +93,10 @@ class SaveNewsPostAction
         } else {
             $post->fill($payload)->save();
         }
+
+        // The home page caches its latest news for ten minutes; a post saved here
+        // is on it at once, as a published course is (ForgetHomePageCacheAction).
+        app(ForgetHomePageCacheAction::class)->execute();
 
         return $post->refresh();
     }

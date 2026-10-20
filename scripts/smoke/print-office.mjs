@@ -38,6 +38,8 @@ const cleanUp = () => tinker(`DB::table('print_paper_options')->where('name', 'l
 cleanUp();
 const canPrint = tinker(`echo app(\\App\\Support\\Contracts\\PdfConverterInterface::class)->enabled() && app(\\App\\Support\\Contracts\\PageImageInterface::class)->enabled() ? 'yes' : 'no';`) === 'yes';
 const wasEnabled = tinker(`echo \\App\\Domains\\Bookshop\\Support\\PrintDesk::settings()['enabled'] ? 'yes' : 'no';`) === 'yes';
+// It starts from the desk off and the product off sale, whatever an earlier walk left; the end puts the desk back.
+tinker(`DB::table('settings')->updateOrInsert(['key' => 'bookshop_print_enabled'], ['value' => '0', 'updated_at' => now(), 'created_at' => now()]); \\App\\Domains\\Bookshop\\Support\\PrintDesk::product()?->update(['status' => 'draft']); Cache::flush(); echo 'ok';`);
 
 const browser = await chromium.launch({
     args: ['--no-first-run', '--disable-background-networking'],
@@ -97,6 +99,7 @@ if (canPrint) {
 
 await browser.close();
 cleanUp();
+if (!canPrint) tinker(`DB::table('settings')->updateOrInsert(['key' => 'bookshop_print_enabled'], ['value' => '${wasEnabled ? 1 : 0}', 'updated_at' => now(), 'created_at' => now()]); Cache::flush(); echo 'ok';`);
 
 for (const problem of problems) check(problem, false);
 let passed = 0;
