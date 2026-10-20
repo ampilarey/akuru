@@ -12,9 +12,14 @@
  * A page without the marker is checked for (1) only. Add the marker when you
  * build or change a listing page; the walk then holds it there.
  *
+ * Then the app, signed in as a student, a parent and a teacher (MF3): the
+ * pages with a "new" form and a list of records, whose form folds under one
+ * button on a phone so the records start on the first screen.
+ *
  * Read-only: runs against staging as well as a local server.
  *
- * Environment: SMOKE_BASE_URL, SMOKE_CHROMIUM.
+ * Environment: SMOKE_BASE_URL, SMOKE_STUDENT, SMOKE_PARENT, SMOKE_TEACHER,
+ * SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
 
@@ -29,6 +34,13 @@ const PAGES = [
     'shop/compare', 'shop/deals', 'shop/track', 'shop/used', 'terms', 'login',
 ];
 
+const APP = {
+    [process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv']: ['portal/absence-notes', 'portal/events'],
+    [process.env.SMOKE_PARENT ?? 'parent@akuru.edu.mv']: ['portal/absence-notes', 'portal/events', 'academics/requests'],
+    [process.env.SMOKE_TEACHER ?? 'teacher@akuru.edu.mv']: ['academics/plans', 'academics/materials', 'academics/behavior', 'substitutions/requests'],
+};
+const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
+
 const results = [];
 const check = (step, ok, detail = '') => results.push([step, ok, detail]);
 
@@ -38,41 +50,62 @@ const browser = await chromium.launch({
 });
 const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
 
+const visit = async (page, locale, path) => {
+    const url = `${BASE}/${locale}/${path}`;
+    try {
+        const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+        if (!response || response.status() >= 400) {
+            check(`/${locale}/${path} answers`, false, `HTTP ${response?.status()}`);
+            return;
+        }
+        const seen = await page.evaluate(() => {
+            const width = window.innerWidth;
+            let culprit = null;
+            if (document.documentElement.scrollWidth > width + 1) {
+                for (const el of document.querySelectorAll('body *')) {
+                    const box = el.getBoundingClientRect();
+                    if (box.width > 0 && box.right > width + 1 && getComputedStyle(el).position !== 'fixed') {
+                        culprit = `${el.tagName.toLowerCase()}.${String(el.className).slice(0, 60)}`;
+                        break;
+                    }
+                }
+            }
+            const main = document.querySelector('[data-phone-main]');
+            return { culprit, main: main ? Math.round(main.getBoundingClientRect().top + window.scrollY) : null };
+        });
+        check(`/${locale}/${path} fits the phone`, seen.culprit === null, seen.culprit ?? '');
+        if (seen.main !== null) {
+            check(`/${locale}/${path} shows what it is for on the first screen`, seen.main <= FIRST_SCREEN, `starts at ${seen.main}px`);
+        }
+    } catch (e) {
+        check(`/${locale}/${path} loads`, false, String(e).slice(0, 160));
+    }
+};
+
 for (const locale of ['en', 'dv']) {
     for (const path of PAGES) {
         const page = await context.newPage();
-        const url = `${BASE}/${locale}/${path}`;
         try {
-            const response = await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
-            if (!response || response.status() >= 400) {
-                check(`/${locale}/${path} answers`, false, `HTTP ${response?.status()}`);
-                continue;
-            }
-            const seen = await page.evaluate(() => {
-                const width = window.innerWidth;
-                let culprit = null;
-                if (document.documentElement.scrollWidth > width + 1) {
-                    for (const el of document.querySelectorAll('body *')) {
-                        const box = el.getBoundingClientRect();
-                        if (box.width > 0 && box.right > width + 1 && getComputedStyle(el).position !== 'fixed') {
-                            culprit = `${el.tagName.toLowerCase()}.${String(el.className).slice(0, 60)}`;
-                            break;
-                        }
-                    }
-                }
-                const main = document.querySelector('[data-phone-main]');
-                return { culprit, main: main ? Math.round(main.getBoundingClientRect().top + window.scrollY) : null };
-            });
-            check(`/${locale}/${path} fits the phone`, seen.culprit === null, seen.culprit ?? '');
-            if (seen.main !== null) {
-                check(`/${locale}/${path} shows what it is for on the first screen`, seen.main <= FIRST_SCREEN, `starts at ${seen.main}px`);
-            }
-        } catch (e) {
-            check(`/${locale}/${path} loads`, false, String(e).slice(0, 160));
+            await visit(page, locale, path);
         } finally {
             await page.close();
         }
     }
+}
+
+for (const [who, paths] of Object.entries(APP)) {
+    const signedIn = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+    const page = await signedIn.newPage();
+    await page.goto(`${BASE}/en/login`, { waitUntil: 'networkidle' });
+    await page.locator('input[name="identifier"]').fill(who);
+    await page.locator('input[name="password"]').fill(PASSWORD);
+    await Promise.all([page.waitForLoadState('networkidle'), page.locator('form[action$="/login"] button[type="submit"]').first().click()]);
+    for (const locale of ['en', 'dv']) {
+        for (const path of paths) {
+            await visit(page, locale, path);
+        }
+    }
+    await signedIn.close();
 }
 await browser.close();
 

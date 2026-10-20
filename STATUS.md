@@ -4983,6 +4983,40 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sx. Records before the form on a phone; the invisible substitution buttons (MF3, 2026-10-20)
+
+**docs/MOBILE_FIRST.md A4 and A6.**
+- **A4 — records first.** Six pages put a whole *new* form above the
+  person's own records, so on a phone the records began a screen or more
+  down: absence notes (student and parent), events, requests, teaching
+  plans, materials and behaviour.
+  - `PhoneFold` (new component) puts each form under one *New …* button on
+    a phone, and from `md` the form shows as before.
+  - It uses the public site's `filter-fold` classes, written phone-first, and
+    the form opens again when it comes back with errors, so a refusal is
+    never hidden.
+  - The records are marked `data-phone-main`.
+  - 5 phrases in EN/DV/AR (*New absence note*, *Register for an event*, *New
+    request*, *New plan*, *New record*; *New material* existed).
+- **A6 — the invisible buttons.** The four substitution pages styled six
+  buttons and three links `bg-brandBlue-*` / `text-brandBlue-*`, and
+  `brandBlue` was never in `tailwind.config.js`. Tailwind made nothing, so
+  *New request* was white on white. They are brand maroon now.
+  `BrandColoursExistTest` (new, CI) fails any `brand…-NNN` class whose
+  colour the config does not define.
+- **The walk.** `phone-first.mjs` signs in as a student, a parent and a
+  teacher, and checks these pages and the substitution list in English and
+  Dhivehi.
+
+**Tests:** `RecordsComeFirstOnPhonesTest` (new, 7): each page folds its form
+with `PhoneFold`, re-opening on errors, and marks its records after the fold;
+the phrases in three languages; the button hidden from `md`.
+`BrandColoursExistTest` (new, 1). Whole suite locally: 3281 passed.
+
+**Walk:** `phone-first.mjs`, 108/108: 16 new first-screen checks for the
+signed-in pages, all passing. Screenshots at 390 px: the records under one
+*New …* button; the substitution buttons visible.
+
 ## 5sw. The Library, Courses and Lending put their results first on a phone (MF2, 2026-10-20)
 
 **docs/MOBILE_FIRST.md A1–A3.** On a 390 px phone the filters filled the

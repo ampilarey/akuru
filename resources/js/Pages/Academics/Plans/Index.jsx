@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 
 function Field({ label, error, children }) {
@@ -29,54 +30,57 @@ export default function Index({ plans, teacherId, canManage, years, classes, sub
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/academics/plans/export">{t.export_csv || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/academics/plans', { preserveScroll: true });
-                }}
-                className="mb-6 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
-            >
-                <Field label={t.title || 'Title'} error={form.errors.title}>
-                    <input className="form-input w-full" aria-label={t.title || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-                </Field>
-                <Field label={t.subject || 'Subject'} error={form.errors.subject_id}>
-                    <select className="form-input w-full" aria-label={t.subject || 'Subject'} value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
-                        {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}
-                    </select>
-                </Field>
-                <Field label={t.class || 'Class'} error={form.errors.classroom_id}>
-                    <select className="form-input w-full" aria-label={t.class || 'Class'} value={form.data.classroom_id} onChange={(e) => form.setData('classroom_id', e.target.value)}>
-                        {classes.map((item) => <option key={item.id} value={item.id}>{item.name} {item.section}</option>)}
-                    </select>
-                </Field>
-                <Field label={t.year || 'Year'} error={form.errors.academic_year_id}>
-                    <select className="form-input w-full" aria-label={t.year || 'Year'} value={form.data.academic_year_id} onChange={(e) => form.setData('academic_year_id', e.target.value)}>
-                        {years.map((year) => <option key={year.id} value={year.id}>{year.name}</option>)}
-                    </select>
-                </Field>
-                {canManage && (
-                    // BH1 (BACKLOG C22): the teacher by name, not a typed id.
-                    <Field label={t.plans_teacher || 'Teacher'} error={form.errors.teacher_id}>
-                        <select className="form-input w-full" aria-label={t.plans_teacher || 'Teacher'} value={form.data.teacher_id} onChange={(e) => form.setData('teacher_id', e.target.value)} data-testid="plan-teacher">
-                            <option value="">—</option>
-                            {teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.name}</option>)}
+            {/* docs/MOBILE_FIRST.md rule 4 (MF3): on a phone the form folds under one button, so the records below start on the first screen. */}
+            <PhoneFold label={t.plans_new || 'New plan'} forceOpen={Object.keys(form.errors).length > 0} testId="plans-new">
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/academics/plans', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
+                >
+                    <Field label={t.title || 'Title'} error={form.errors.title}>
+                        <input className="form-input w-full" aria-label={t.title || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+                    </Field>
+                    <Field label={t.subject || 'Subject'} error={form.errors.subject_id}>
+                        <select className="form-input w-full" aria-label={t.subject || 'Subject'} value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
+                            {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subject.name}</option>)}
                         </select>
                     </Field>
-                )}
-                <Field label={t.status || 'Status'} error={form.errors.status}>
-                    <select className="form-input w-full" aria-label={t.status || 'Status'} value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
-                        {statuses.map((status) => <option key={status} value={status}>{statusName(status)}</option>)}
-                    </select>
-                </Field>
-                <div className="flex items-end">
-                    <button type="submit" className="btn-primary">{t.plans_create || 'Create plan'}</button>
-                </div>
-            </form>
+                    <Field label={t.class || 'Class'} error={form.errors.classroom_id}>
+                        <select className="form-input w-full" aria-label={t.class || 'Class'} value={form.data.classroom_id} onChange={(e) => form.setData('classroom_id', e.target.value)}>
+                            {classes.map((item) => <option key={item.id} value={item.id}>{item.name} {item.section}</option>)}
+                        </select>
+                    </Field>
+                    <Field label={t.year || 'Year'} error={form.errors.academic_year_id}>
+                        <select className="form-input w-full" aria-label={t.year || 'Year'} value={form.data.academic_year_id} onChange={(e) => form.setData('academic_year_id', e.target.value)}>
+                            {years.map((year) => <option key={year.id} value={year.id}>{year.name}</option>)}
+                        </select>
+                    </Field>
+                    {canManage && (
+                        // BH1 (BACKLOG C22): the teacher by name, not a typed id.
+                        <Field label={t.plans_teacher || 'Teacher'} error={form.errors.teacher_id}>
+                            <select className="form-input w-full" aria-label={t.plans_teacher || 'Teacher'} value={form.data.teacher_id} onChange={(e) => form.setData('teacher_id', e.target.value)} data-testid="plan-teacher">
+                                <option value="">—</option>
+                                {teachers.map((teacher) => <option key={teacher.id} value={teacher.id}>{teacher.name}</option>)}
+                            </select>
+                        </Field>
+                    )}
+                    <Field label={t.status || 'Status'} error={form.errors.status}>
+                        <select className="form-input w-full" aria-label={t.status || 'Status'} value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
+                            {statuses.map((status) => <option key={status} value={status}>{statusName(status)}</option>)}
+                        </select>
+                    </Field>
+                    <div className="flex items-end">
+                        <button type="submit" className="btn-primary">{t.plans_create || 'Create plan'}</button>
+                    </div>
+                </form>
+            </PhoneFold>
 
             {plans.length === 0 && (
                 <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">{t.plans_none || 'No teaching plans yet.'}</p>
             )}
-            <div className="grid gap-4">
+            <div className="grid gap-4" data-phone-main>
                 {plans.map((plan) => (
                     <PlanCard key={plan.id} plan={plan} classes={classes} years={years} statusName={statusName} t={t} />
                 ))}

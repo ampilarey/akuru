@@ -24,7 +24,8 @@ updates."*
    the filters that are.
 4. **Records before the form.** A page that lists records and lets you add
    one (absence notes, requests, plans, behaviour) shows the records first
-   and folds the form under a **New …** button on a phone.
+   and folds the form under a **New …** button on a phone — `PhoneFold`
+   (`resources/js/Components/PhoneFold.jsx`) in an Inertia page.
 5. **Tables become cards.** Every `<table>` is `table-stack` with a
    `data-label` on each cell (`app.css`): below `sm` each row reads as a
    card of label–value lines, with no sideways drag.
@@ -42,7 +43,8 @@ updates."*
     are listed in `tests/Architecture/Baselines/tables_not_stacked_on_phones.php`,
     and the list may only shrink.
 - **Walk:** `scripts/smoke/phone-first.mjs` (in `all.mjs`) loads every public
-  page in English and Dhivehi on a phone. It fails a page that scrolls
+  page, and the student's, parent's and teacher's record pages, in English
+  and Dhivehi on a phone. It fails a page that scrolls
   sideways, and a page whose `data-phone-main` starts below the first screen.
 - **Definition of done** (CLAUDE.md): a slice that adds or changes a screen
   is walked at 390 px, in English and in Dhivehi, before it is done.
@@ -75,5 +77,5 @@ Already phone-first, and the pattern the others follow: the Bookstore's
 |---|---|
 | MF1 | The rule (this page, CLAUDE.md), `PhoneFirstStylesTest`, `phone-first.mjs` |
 | MF2 | A1–A3: the Library, Courses and Lending filters fold; their lists carry `data-phone-main` — **done 2026-10-20 (STATUS §5sw)** |
-| MF3 | A4, A6: records first, the form under *New …* on a phone; the invisible button |
+| MF3 | A4, A6: records first, the form under *New …* on a phone (`PhoneFold`); the invisible buttons (`brandBlue` was never a colour; `BrandColoursExistTest`) — **done 2026-10-20 (STATUS §5sx)** |
 | MF4–MF6 | A5: the tables, in batches (portal and teacher first, then the offices) |

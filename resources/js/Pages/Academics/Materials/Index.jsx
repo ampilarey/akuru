@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 
 function Field({ label, error, children }) {
@@ -101,68 +102,71 @@ export default function Index({ materials = [], subjects = [], filters = {}, use
                 </div>
             </form>
 
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    create.post('/academics/materials', {
-                        preserveScroll: true,
-                        onSuccess: () => create.reset(),
-                    });
-                }}
-                className="mb-6 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-2"
-            >
-                <p className="text-sm font-semibold md:col-span-2">{t.materials_new || 'New material'}</p>
-                <Field label={t.title || 'Title'} error={create.errors.title}>
-                    <input
-                        className="form-input w-full"
-                        aria-label={t.title || 'Title'}
-                        value={create.data.title}
-                        onChange={(e) => create.setData('title', e.target.value)}
-                    />
-                </Field>
-                <Field label={t.subject || 'Subject'} error={create.errors.subject_id}>
-                    <select
-                        className="form-input w-full"
-                        aria-label={t.subject || 'Subject'}
-                        value={create.data.subject_id}
-                        onChange={(e) => create.setData('subject_id', e.target.value)}
-                    >
-                        <option value="">{t.materials_no_subject || 'No subject'}</option>
-                        {subjects.map((subject) => (
-                            <option key={subject.id} value={subject.id}>{subject.name}</option>
-                        ))}
-                    </select>
-                </Field>
-                <div className="md:col-span-2">
-                    <Field label={t.materials_details || 'Details'} error={create.errors.body}>
-                        <textarea
+            {/* docs/MOBILE_FIRST.md rule 4 (MF3): on a phone the form folds under one button, so the records below start on the first screen. */}
+            <PhoneFold label={t.materials_new || 'New material'} forceOpen={Object.keys(create.errors).length > 0} testId="materials-new">
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        create.post('/academics/materials', {
+                            preserveScroll: true,
+                            onSuccess: () => create.reset(),
+                        });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-2"
+                >
+                    <p className="text-sm font-semibold md:col-span-2">{t.materials_new || 'New material'}</p>
+                    <Field label={t.title || 'Title'} error={create.errors.title}>
+                        <input
                             className="form-input w-full"
-                            rows={3}
-                            aria-label={t.materials_details || 'Details'}
-                            value={create.data.body}
-                            onChange={(e) => create.setData('body', e.target.value)}
+                            aria-label={t.title || 'Title'}
+                            value={create.data.title}
+                            onChange={(e) => create.setData('title', e.target.value)}
                         />
                     </Field>
-                </div>
-                <Field label={t.materials_tags || 'Tags (comma separated)'} error={create.errors.tags}>
-                    <input
-                        className="form-input w-full"
-                        aria-label={t.materials_tags || 'Tags (comma separated)'}
-                        value={create.data.tags}
-                        onChange={(e) => create.setData('tags', e.target.value)}
-                    />
-                </Field>
-                <div className="flex items-end">
-                    <button type="submit" className="btn-primary" disabled={create.processing}>{t.materials_save || 'Save material'}</button>
-                </div>
-            </form>
+                    <Field label={t.subject || 'Subject'} error={create.errors.subject_id}>
+                        <select
+                            className="form-input w-full"
+                            aria-label={t.subject || 'Subject'}
+                            value={create.data.subject_id}
+                            onChange={(e) => create.setData('subject_id', e.target.value)}
+                        >
+                            <option value="">{t.materials_no_subject || 'No subject'}</option>
+                            {subjects.map((subject) => (
+                                <option key={subject.id} value={subject.id}>{subject.name}</option>
+                            ))}
+                        </select>
+                    </Field>
+                    <div className="md:col-span-2">
+                        <Field label={t.materials_details || 'Details'} error={create.errors.body}>
+                            <textarea
+                                className="form-input w-full"
+                                rows={3}
+                                aria-label={t.materials_details || 'Details'}
+                                value={create.data.body}
+                                onChange={(e) => create.setData('body', e.target.value)}
+                            />
+                        </Field>
+                    </div>
+                    <Field label={t.materials_tags || 'Tags (comma separated)'} error={create.errors.tags}>
+                        <input
+                            className="form-input w-full"
+                            aria-label={t.materials_tags || 'Tags (comma separated)'}
+                            value={create.data.tags}
+                            onChange={(e) => create.setData('tags', e.target.value)}
+                        />
+                    </Field>
+                    <div className="flex items-end">
+                        <button type="submit" className="btn-primary" disabled={create.processing}>{t.materials_save || 'Save material'}</button>
+                    </div>
+                </form>
+            </PhoneFold>
 
             {materials.length === 0 ? (
-                <p className="rounded-lg border bg-white p-4 text-sm text-gray-600">
+                <p className="rounded-lg border bg-white p-4 text-sm text-gray-600" data-phone-main>
                     {t.materials_none || 'No materials match. Add one above and it is available to every lesson.'}
                 </p>
             ) : (
-                <div className="grid gap-3">
+                <div className="grid gap-3" data-phone-main>
                     {materials.map((material) => (
                         editing === material.id ? (
                             <EditCard

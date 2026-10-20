@@ -957,4 +957,7 @@ return [
     // The registers' last two refusals (slice TS1).
     'register_error_own_registers' => 'لا يمكنك تعديل إلا سجلاتك.',
     'register_error_excused_by_note' => 'يُعذر الغياب بقبول ملاحظة ولي الأمر، لا بوضع علامة معذور هنا.',
+    'requests_new' => 'طلب جديد',
+    'plans_new' => 'خطة جديدة',
+    'behavior_new' => 'سجل جديد',
 ];

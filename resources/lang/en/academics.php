@@ -956,4 +956,7 @@ return [
     // The registers' last two refusals (slice TS1).
     'register_error_own_registers' => 'You can only change your own registers.',
     'register_error_excused_by_note' => 'An absence is excused by approving the guardian\'s note, not by marking it excused here.',
+    'requests_new' => 'New request',
+    'plans_new' => 'New plan',
+    'behavior_new' => 'New record',
 ];
