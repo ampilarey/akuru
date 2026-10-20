@@ -4,10 +4,10 @@
 @section('description', __('public.Books, articles and research from Akuru Institute'))
 
 @section('content')
-<section class="bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 py-12">
+<section class="bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 py-6 md:py-12">
     <div class="container mx-auto px-4">
-        <h1 class="text-4xl font-bold text-brandMaroon-900 mb-3">{{ __('public.Akuru Digital Library') }}</h1>
-        <p class="text-xl text-brandGray-700">{{ __('public.Books, articles and research from Akuru Institute') }}</p>
+        <h1 class="text-3xl md:text-4xl font-bold text-brandMaroon-900 mb-2 md:mb-3">{{ __('public.Akuru Digital Library') }}</h1>
+        <p class="text-lg md:text-xl text-brandGray-700">{{ __('public.Books, articles and research from Akuru Institute') }}</p>
         <p class="mt-3 text-sm text-brandGray-600">
             <a href="{{ route('public.gift-cards.index') }}" class="text-brandMaroon-700 hover:underline">{{ __('public.Gift cards') }}</a>
             @auth
@@ -20,116 +20,126 @@
 
 <section class="bg-white border-b py-4">
     <div class="container mx-auto px-4">
-        {{-- The filters in three rows (2026-10-18): the search with its sort and
-             buttons, the choices in an even grid, then the ticks. They used to
-             wrap wherever the widths fell. --}}
-        <form method="GET" action="{{ route('public.library.index') }}" class="space-y-3" data-testid="shelf-filters">
+        {{-- Phone-first (docs/MOBILE_FIRST.md rule 3, MF2): the search stays in view and
+             the rest folds under "Filter and sort" on a phone, so the shelf starts on the
+             first screen. Served open, so it works without script; the public layout folds
+             it on a phone. On a desk the button goes and the filters show. --}}
+        @php($libraryFilters = collect(['content_type', 'category', 'year', 'access', 'language', 'price_min', 'price_max', 'difficulty', 'reading', 'peer_reviewed', 'open_access', 'discounted'])
+            ->filter(fn ($key) => filled($filters[$key] ?? null))->count() + ((($filters['sort'] ?? 'newest') !== 'newest') ? 1 : 0))
+        <form method="GET" action="{{ route('public.library.index') }}" data-testid="shelf-filters">
             @if($filters['author'] ?? null)
                 <input type="hidden" name="author" value="{{ $filters['author'] }}">
             @endif
-            <div class="flex flex-wrap items-end gap-3">
-                <div class="flex-1 min-w-[16rem]">
+            <div class="flex items-end gap-3">
+                <div class="flex-1 min-w-0">
                     <label class="block text-xs text-gray-500 mb-1" for="library-q">{{ __('public.Search') }}</label>
                     <input type="text" name="q" id="library-q" value="{{ $filters['q'] ?? '' }}" class="form-input w-full" placeholder="{{ __('public.Search the library') }}">
                 </div>
-                <div class="w-full sm:w-48">
-                    <label class="block text-xs text-gray-500 mb-1" for="library-sort">{{ __('public.Sort') }}</label>
-                    <select name="sort" id="library-sort" class="form-input">
-                        @foreach($sorts as $sort)
-                            <option value="{{ $sort }}" @selected(($filters['sort'] ?? 'newest') === $sort)>{{ __('public.sort_'.$sort) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="flex gap-3">
-                    <button type="submit" class="btn-primary">{{ __('public.Filter') }}</button>
-                    <a href="{{ route('public.library.export', request()->query()) }}" class="btn-secondary">{{ __('public.Export CSV') }}</a>
-                </div>
+                <button type="submit" class="btn-primary">{{ __('public.Filter') }}</button>
             </div>
-            <div class="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8">
-                <div>
-                    <label class="block text-xs text-gray-500 mb-1" for="library-type">{{ __('public.Type') }}</label>
-                    <select name="content_type" id="library-type" class="form-input">
-                        <option value="">{{ __('public.All types') }}</option>
-                        @foreach(['book', 'article', 'research', 'course_material'] as $type)
-                            <option value="{{ $type }}" @selected(($filters['content_type'] ?? '') === $type)>{{ __('public.'.$type) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-500 mb-1" for="library-category">{{ __('public.Category') }}</label>
-                    <select name="category" id="library-category" class="form-input">
-                        <option value="">{{ __('public.All categories') }}</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category['slug'] }}" @selected(($filters['category'] ?? '') === $category['slug']) data-office-words>{{ $category['label'] }} ({{ $category['published_count'] }})</option>
-                        @endforeach
-                    </select>
-                </div>
-                {{-- R1 (F12): research is found by the year it came out. --}}
-                @if(count($years ?? []) > 0)
-                    <div>
-                        <label class="block text-xs text-gray-500 mb-1" for="library-year">{{ __('public.Year') }}</label>
-                        <select name="year" id="library-year" class="form-input" data-testid="library-year">
-                            <option value="">{{ __('public.All years') }}</option>
-                            @foreach($years as $year)
-                                <option value="{{ $year }}" @selected((string) ($filters['year'] ?? '') === (string) $year)>{{ $year }}</option>
-                            @endforeach
-                        </select>
+            <details class="filter-fold mt-3" open data-filter-fold data-testid="shelf-filters-fold">
+                <summary class="filter-fold-toggle" data-testid="shelf-filters-toggle">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M6 12h12M10 20h4"/></svg>
+                    {{ __('shop.filter_and_sort') }}
+                    @if($libraryFilters > 0)<span class="filter-fold-count">{{ $libraryFilters }}</span>@endif
+                </summary>
+                <div class="filter-fold-body space-y-3">
+                    <div class="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-[repeat(auto-fit,minmax(11rem,1fr))]">
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1" for="library-sort">{{ __('public.Sort') }}</label>
+                            <select name="sort" id="library-sort" class="form-input">
+                                @foreach($sorts as $sort)
+                                    <option value="{{ $sort }}" @selected(($filters['sort'] ?? 'newest') === $sort)>{{ __('public.sort_'.$sort) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1" for="library-type">{{ __('public.Type') }}</label>
+                            <select name="content_type" id="library-type" class="form-input">
+                                <option value="">{{ __('public.All types') }}</option>
+                                @foreach(['book', 'article', 'research', 'course_material'] as $type)
+                                    <option value="{{ $type }}" @selected(($filters['content_type'] ?? '') === $type)>{{ __('public.'.$type) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1" for="library-category">{{ __('public.Category') }}</label>
+                            <select name="category" id="library-category" class="form-input">
+                                <option value="">{{ __('public.All categories') }}</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category['slug'] }}" @selected(($filters['category'] ?? '') === $category['slug']) data-office-words>{{ $category['label'] }} ({{ $category['published_count'] }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        {{-- R1 (F12): research is found by the year it came out. --}}
+                        @if(count($years ?? []) > 0)
+                            <div>
+                                <label class="block text-xs text-gray-500 mb-1" for="library-year">{{ __('public.Year') }}</label>
+                                <select name="year" id="library-year" class="form-input" data-testid="library-year">
+                                    <option value="">{{ __('public.All years') }}</option>
+                                    @foreach($years as $year)
+                                        <option value="{{ $year }}" @selected((string) ($filters['year'] ?? '') === (string) $year)>{{ $year }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+                        {{-- §8.2 / §8.3 discovery: free or paid, language, price (the sort leads the grid). --}}
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1" for="library-access">{{ __('public.Access') }}</label>
+                            <select name="access" id="library-access" class="form-input">
+                                <option value="">{{ __('public.Free and paid') }}</option>
+                                <option value="free" @selected(($filters['access'] ?? '') === 'free')>{{ __('public.Free') }}</option>
+                                <option value="paid" @selected(($filters['access'] ?? '') === 'paid')>{{ __('public.Paid') }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1" for="library-language">{{ __('public.Language') }}</label>
+                            <select name="language" id="library-language" class="form-input">
+                                <option value="">{{ __('public.All languages') }}</option>
+                                @foreach($languages as $code => $label)
+                                    <option value="{{ $code }}" @selected(($filters['language'] ?? '') === $code)>{{ $label }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1">{{ __('public.Price (MVR)') }}</label>
+                            <div class="flex gap-1">
+                                <input type="number" name="price_min" min="0" step="1" value="{{ $filters['price_min'] ?? '' }}" class="form-input w-full min-w-0" placeholder="{{ __('public.min') }}" aria-label="{{ __('public.Min price') }}">
+                                <input type="number" name="price_max" min="0" step="1" value="{{ $filters['price_max'] ?? '' }}" class="form-input w-full min-w-0" placeholder="{{ __('public.max') }}" aria-label="{{ __('public.Max price') }}">
+                            </div>
+                        </div>
+                        {{-- B5 (§8.2–§8.4): the remaining filters. --}}
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1" for="library-difficulty">{{ __('public.Difficulty') }}</label>
+                            <select name="difficulty" id="library-difficulty" class="form-input">
+                                <option value="">{{ __('public.Any difficulty') }}</option>
+                                @foreach($difficulties as $level)
+                                    <option value="{{ $level }}" @selected(($filters['difficulty'] ?? '') === $level)>{{ __('public.difficulty_'.$level) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs text-gray-500 mb-1" for="library-reading">{{ __('public.Reading time') }}</label>
+                            <select name="reading" id="library-reading" class="form-input">
+                                <option value="">{{ __('public.Any length') }}</option>
+                                @foreach($reading_bands as $band)
+                                    <option value="{{ $band }}" @selected(($filters['reading'] ?? '') === $band)>{{ __('public.reading_'.$band) }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
-                @endif
-                {{-- §8.2 / §8.3 discovery: free or paid, language, price (the sort sits by the search). --}}
-                <div>
-                    <label class="block text-xs text-gray-500 mb-1" for="library-access">{{ __('public.Access') }}</label>
-                    <select name="access" id="library-access" class="form-input">
-                        <option value="">{{ __('public.Free and paid') }}</option>
-                        <option value="free" @selected(($filters['access'] ?? '') === 'free')>{{ __('public.Free') }}</option>
-                        <option value="paid" @selected(($filters['access'] ?? '') === 'paid')>{{ __('public.Paid') }}</option>
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-500 mb-1" for="library-language">{{ __('public.Language') }}</label>
-                    <select name="language" id="library-language" class="form-input">
-                        <option value="">{{ __('public.All languages') }}</option>
-                        @foreach($languages as $code => $label)
-                            <option value="{{ $code }}" @selected(($filters['language'] ?? '') === $code)>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-500 mb-1">{{ __('public.Price (MVR)') }}</label>
-                    <div class="flex gap-1">
-                        <input type="number" name="price_min" min="0" step="1" value="{{ $filters['price_min'] ?? '' }}" class="form-input w-full min-w-0" placeholder="{{ __('public.min') }}" aria-label="{{ __('public.Min price') }}">
-                        <input type="number" name="price_max" min="0" step="1" value="{{ $filters['price_max'] ?? '' }}" class="form-input w-full min-w-0" placeholder="{{ __('public.max') }}" aria-label="{{ __('public.Max price') }}">
+                    <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
+                        <label class="flex items-center gap-1"><input type="checkbox" name="peer_reviewed" value="1" @checked(filter_var($filters['peer_reviewed'] ?? false, FILTER_VALIDATE_BOOL))> {{ __('public.Peer-reviewed') }}</label>
+                        <label class="flex items-center gap-1"><input type="checkbox" name="open_access" value="1" @checked(filter_var($filters['open_access'] ?? false, FILTER_VALIDATE_BOOL))> {{ __('public.Open access') }}</label>
+                        {{-- B4 (§8.2–§8.4): what a live campaign covers. --}}
+                        <label class="flex items-center gap-1"><input type="checkbox" name="discounted" value="1" @checked(filter_var($filters['discounted'] ?? false, FILTER_VALIDATE_BOOL))> {{ __('public.Discounted') }}</label>
+                        @if($filters['campaign'] ?? null)
+                            <input type="hidden" name="campaign" value="{{ $filters['campaign'] }}">
+                        @endif
+                        <a href="{{ route('public.library.export', request()->query()) }}" class="btn-secondary">{{ __('public.Export CSV') }}</a>
                     </div>
                 </div>
-                {{-- B5 (§8.2–§8.4): the remaining filters. --}}
-                <div>
-                    <label class="block text-xs text-gray-500 mb-1" for="library-difficulty">{{ __('public.Difficulty') }}</label>
-                    <select name="difficulty" id="library-difficulty" class="form-input">
-                        <option value="">{{ __('public.Any difficulty') }}</option>
-                        @foreach($difficulties as $level)
-                            <option value="{{ $level }}" @selected(($filters['difficulty'] ?? '') === $level)>{{ __('public.difficulty_'.$level) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs text-gray-500 mb-1" for="library-reading">{{ __('public.Reading time') }}</label>
-                    <select name="reading" id="library-reading" class="form-input">
-                        <option value="">{{ __('public.Any length') }}</option>
-                        @foreach($reading_bands as $band)
-                            <option value="{{ $band }}" @selected(($filters['reading'] ?? '') === $band)>{{ __('public.reading_'.$band) }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-            <div class="flex flex-wrap items-center gap-x-5 gap-y-2 text-sm">
-                <label class="flex items-center gap-1"><input type="checkbox" name="peer_reviewed" value="1" @checked(filter_var($filters['peer_reviewed'] ?? false, FILTER_VALIDATE_BOOL))> {{ __('public.Peer-reviewed') }}</label>
-                <label class="flex items-center gap-1"><input type="checkbox" name="open_access" value="1" @checked(filter_var($filters['open_access'] ?? false, FILTER_VALIDATE_BOOL))> {{ __('public.Open access') }}</label>
-                {{-- B4 (§8.2–§8.4): what a live campaign covers. --}}
-                <label class="flex items-center gap-1"><input type="checkbox" name="discounted" value="1" @checked(filter_var($filters['discounted'] ?? false, FILTER_VALIDATE_BOOL))> {{ __('public.Discounted') }}</label>
-                @if($filters['campaign'] ?? null)
-                    <input type="hidden" name="campaign" value="{{ $filters['campaign'] }}">
-                @endif
-            </div>
+            </details>
         </form>
     </div>
 </section>
@@ -158,7 +168,7 @@
 @endif
 
 @if(count($continue_reading) > 0)
-    <section class="bg-brandBeige-50 py-6" data-testid="continue-reading">
+    <section class="bg-brandBeige-50 py-6" data-testid="continue-reading" data-phone-main>
         <div class="container mx-auto px-4">
             <h2 class="text-lg font-semibold text-brandMaroon-900 mb-3">{{ __('public.Continue reading') }}</h2>
             <div class="flex flex-wrap gap-3">
@@ -174,7 +184,7 @@
 @endif
 
 @if(count($featured) > 0)
-    <section class="py-8" data-testid="featured">
+    <section class="py-8" data-testid="featured" data-phone-main>
         <div class="container mx-auto px-4">
             <h2 class="text-lg font-semibold text-brandMaroon-900 mb-3">{{ __('public.Featured') }}</h2>
             <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -194,7 +204,7 @@
     </section>
 @endif
 
-<section class="py-10">
+<section class="py-6 md:py-10" data-phone-main>
     <div class="container mx-auto px-4">
         @if($filters['author'] ?? null)
             <p class="mb-4 text-sm text-gray-600">

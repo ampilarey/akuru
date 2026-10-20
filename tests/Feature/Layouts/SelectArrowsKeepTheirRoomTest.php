@@ -19,12 +19,13 @@ it('keeps a select\'s arrow its room, both directions, and the header\'s carets 
         ->toContain('.nav-lib-btn {')->not->toContain('margin-inline-start: -.35rem');
 });
 
-it('lays the Library\'s filters out in rows: the search with its sort and buttons, the choices, the ticks', function () {
+it('lays the Library\'s filters out in rows: the search, then the sort and the choices, then the ticks', function () {
     $html = $this->withoutLocalizationMiddleware()->get('/library')->assertOk()->getContent();
     $form = substr($html, strpos($html, 'data-testid="shelf-filters"'));
     $form = substr($form, 0, strpos($form, '</form>'));
 
-    expect($form)->toContain('class="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-8"')
+    // MF2 (STATUS §5sw): the choices sit in the fold under "Filter and sort".
+    expect($form)->toContain('class="grid grid-cols-2 gap-3 md:grid-cols-4 xl:grid-cols-[repeat(auto-fit,minmax(11rem,1fr))]"')
         ->and(strpos($form, 'id="library-sort"'))->toBeLessThan(strpos($form, 'id="library-type"'))
         ->and(strpos($form, 'name="peer_reviewed"'))->toBeGreaterThan(strpos($form, 'id="library-reading"'));
 });
