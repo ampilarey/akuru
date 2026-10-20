@@ -167,6 +167,33 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ## Found running every walk on a fresh database (2026-10-20)
 
+### 53 walks were never in `all.mjs`, and 22 of them failed — **fixed (2026-10-20, STATUS §5tu)**
+
+`all.mjs` is the one command that gates a deploy, and it held 102 of the 155
+walk scripts. The other 53 were never run by it: the Bookstore and vendor
+walks, the admin panel's, most language sweeps, and the copyright walk.
+Run after each other on a fresh seed, 22 of the 53 failed.
+- **Seven failed even alone**, each out of date with the app or missing a
+  setup step. None was a product defect:
+  - `admin-hub`: the menu's counts.
+  - `admin`: the Qur'an page's new title.
+  - `commerce-language`, `finance-language`: an ID typed where #768 put a
+    pick-by-name box.
+  - `operations`, `checkout`: the switches and contacts on their own settings
+    page.
+  - `workspaces`: roles it asked for by hand.
+  - `checkout`: also needs `BOOKSHOP_BANK_ACCOUNT_NUMBER`.
+- **The rest failed on what the shop walks before them left:**
+  - a basket with someone else's items;
+  - a wallet spent down;
+  - stock moved;
+  - a storefront already published.
+
+  On a local server `all.mjs` now runs the smoke seeder again before the 18
+  walks marked `reseed` (under a second each time). On another host, run the
+  seeder before each of them, or run them one by one.
+- **All 155 now run, and pass** on a fresh seed.
+
 ### Four walks fail only after others in `all.mjs` — **fixed (2026-10-20, STATUS §5tt)**
 
 On a fresh seed, `all.mjs` passes 98/102. `blog-start`, `blog-posts`,

@@ -4983,6 +4983,46 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tu. Every walk in the one runner (WA1–WA2, 2026-10-20)
+
+`all.mjs` gates a deploy, but it held 102 of the 155 walk scripts. The other
+53 had been written beside it and never added: the Bookstore, vendor and
+admin-panel walks, ten language sweeps, and today's copyright walk.
+
+**WA1, the walks brought up to date.** Run on its own on a fresh seed, each
+of seven failed. None was a product defect.
+- `admin-hub`: counted 22 menu sections and a Library office of four; there
+  are 23 and ten.
+- `admin`: looked for "Quran" on the page OB2 retitled *Qur'an progress*.
+- `commerce-language` and `finance-language`: typed an ID where C22 BH1
+  (#768) put a pick-by-name box. The wallet step now sends with no account
+  chosen, and the adjustment step picks the pupil by number.
+- `operations` and `checkout`: went to the switches and the office's
+  contacts on `/admin/bookshop`. They have their own settings page now.
+- `workspaces`: asked for the parent and vendor roles to be granted by hand.
+  On a local server it grants them and takes back only what it gave.
+- `checkout`: also needs `BOOKSHOP_BANK_ACCOUNT_NUMBER`, as its header says.
+  That is a setting, not a defect.
+
+**WA2, the walks in the runner.**
+- All 53 join `WALKS`: the read-only ones first, then the Bookstore in the
+  order it was built.
+- Run after each other, 15 more failed, each on the shop walks before it:
+  - a basket holding others' items, so cash on delivery asked for MVR 610,
+    not 270;
+  - a spent wallet;
+  - moved stock;
+  - an already-published storefront.
+- A walk marked `reseed` (18 of them) has the smoke seeder run again first,
+  on a local server only; it reruns in under a second. On another host the
+  operator seeds before each of them.
+- The copyright walk (§5ts) checked the page before the refused send had
+  reloaded it, and failed once in the full run. It now waits for the reload,
+  and passed three runs in a row.
+
+**Walked:** `all.mjs` on a fresh seed, every walk: **155/155** in 56
+minutes. The header's timing is corrected from six and a half minutes.
+
 ## 5tt. The walks stop breaking each other (BP4, 2026-10-20)
 
 On a fresh seed `all.mjs` passed 98/102. Four walks passed alone and failed
