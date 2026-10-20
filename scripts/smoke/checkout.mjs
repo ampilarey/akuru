@@ -262,6 +262,8 @@ check('confirming it marks the slip confirmed', (await office.locator(`[data-tes
 check('and the orders list has all three orders', (await office.locator(`[data-testid="order-row-${bankNumber}-FIT"]`).count()) === 1 && (await office.locator(`[data-testid="order-row-${paidNumber}-SOS"]`).count()) === 1);
 const ordersCsv = await office.request.get(`${BASE}/en/admin/bookshop/orders/export`);
 check('the office exports orders as CSV', ordersCsv.status() === 200 && (await ordersCsv.text()).includes(bankNumber), `HTTP ${ordersCsv.status()}`);
+// The office's contacts and switches are on the Bookstore settings page.
+await office.goto(`${BASE}/en/admin/bookshop/settings`, { waitUntil: 'networkidle' });
 check('the office\'s notice settings carry its own email and phone for purchase notices', (await office.locator('[data-testid="office-contact-email"]').inputValue().catch(() => '')) === 'bookshop-office@akuru.edu.mv' && (await office.locator('[data-testid="office-contact-phone"]').inputValue().catch(() => '')) === '7000999' && (await office.locator('[data-testid="switch-office_sms"]').isChecked().catch(() => false)));
 
 await customer.reload({ waitUntil: 'networkidle' });

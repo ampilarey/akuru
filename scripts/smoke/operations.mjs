@@ -231,7 +231,9 @@ const officeLines = await csvOf(office, await office.locator('[data-testid="expo
 check('and exports order lines for every shop', officeLines.status === 200 && officeLines.text.startsWith('number,status,vendor'));
 // The office closes shop SMS: Fitrah's SMS choice is disabled and the note
 // says why. Then open again — the default — so the next run finds it so
-// (this walk used to leave the switch flipped, STATUS §5nv).
+// (this walk used to leave the switch flipped, STATUS §5nv). The switches
+// have their own Bookstore settings page since the admin panel's Settings part.
+await office.goto(`${BASE}/en/admin/bookshop/settings`, { waitUntil: 'networkidle' });
 await office.uncheck('[data-testid="switch-vendor_sms"]');
 await office.click('[data-testid="save-switches"]');
 await settle(office, '[data-testid="flash-success"]');

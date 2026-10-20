@@ -254,7 +254,10 @@ const studentId = Number(tinker("echo (int) DB::table('fee_adjustments')->where(
 await office.goto(`${BASE}/dv/finance/adjustments`, { waitUntil: 'networkidle' });
 const adjustForm = office.locator('form').filter({ has: office.getByRole('button', { name: book.adjustments_save, exact: true }) }).first();
 const adjustmentsBefore = count('fee_adjustments');
-await adjustForm.getByLabel(book.adjustments_student_id, { exact: true }).fill(String(studentId));
+// The pupil is chosen by name or number since C22 BH1 (#768), not typed as an id.
+const studentNumber = tinker(`echo DB::table('students')->where('id', ${studentId})->value('student_id');`);
+await adjustForm.locator('[data-testid="adjustment-pupil-search"]').fill(studentNumber);
+await adjustForm.locator('[data-testid="adjustment-pupil-matches"] button').first().click();
 await adjustForm.getByLabel(book.adjustments_applies, { exact: true }).selectOption('item_types');
 const offered = await adjustForm.locator('fieldset input[type=checkbox]').count();
 await adjustForm.getByRole('button', { name: book.adjustments_save, exact: true }).click();

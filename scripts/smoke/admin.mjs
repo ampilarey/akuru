@@ -205,7 +205,7 @@ check('from an Inertia School screen, the educational admin\'s More menu reaches
 check('its Blade entries are plain links (a full page load), the Inertia ones are not', hardLinks.some((h) => h.endsWith('/quran-progress')) && hardLinks.some((h) => h.endsWith('/announcements')) && !hardLinks.some((h) => h.endsWith('/academics/years')) && !hardLinks.some((h) => h.endsWith('/admin/enrollments')), hardLinks.join(', '));
 check('and nothing of the Institute is offered: no Website CMS, Commerce, Users or Settings', !menuLinks.some((h) => h && /\/admin\/(public-site\/pages|commerce|users|settings|operations)$/.test(h)));
 await Promise.all([office.waitForNavigation({ waitUntil: 'networkidle' }).catch(() => {}), office.click('#app-shell-more a[data-nav-hard][href$="/quran-progress"]')]);
-check('clicking a Blade entry lands on the Blade screen', /\/quran-progress$/.test(office.url()) && (await text(office)).includes('Quran'), office.url().replace(BASE, ''));
+check('clicking a Blade entry lands on the Blade screen', /\/quran-progress$/.test(office.url()) && (await text(office)).includes('Qur\'an progress'), office.url().replace(BASE, ''));
 // The role as people read it (STATUS §5if): the Blade user menu names the job.
 // textContent, not innerText: the user menu is closed (hidden) until clicked.
 const officeMenu = (await office.locator('nav').first().textContent().catch(() => '')) || '';

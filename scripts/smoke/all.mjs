@@ -12,9 +12,10 @@
  * whatever `SMOKE_BASE_URL` points at and prints one table. It exits non-zero
  * if any walk fails, so it can gate a deploy.
  *
- * **About six and a half minutes** locally, measured, of which `page-errors`
- * is five — it loads 265 routes as six roles, which is some 1,600 page loads.
- * Against a real web server rather than `artisan serve` it should be quicker.
+ * **About an hour** locally for all 155 (56 minutes measured on 2026-10-20,
+ * STATUS §5tu). It was six and a half minutes when it held ten walks, of which
+ * `page-errors` was five: it loads 265 routes as six roles. Against a real web
+ * server rather than `artisan serve` it should be quicker.
  *
  * ## Read-only and writing walks are separated, on purpose
  *
@@ -27,8 +28,8 @@
  * nobody should discover it by pointing the runner at a live school.
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
- *   node scripts/smoke/all.mjs --read     the eleven that only look
- *   node scripts/smoke/all.mjs --write    the forty that change data
+ *   node scripts/smoke/all.mjs --read     the twenty that only look
+ *   node scripts/smoke/all.mjs --write    the 135 that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -46,7 +47,7 @@
  * where Playwright expects. Dates the walks compute are in `SMOKE_TZ`, default
  * `Indian/Maldives` — the school's day, not the walker's (STATUS §5fz).
  */
-import { spawn } from 'node:child_process';
+import { execFileSync, spawn } from 'node:child_process';
 import { existsSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
@@ -200,6 +201,62 @@ const WALKS = [
     { name: 'pay-buttons', writes: true, asks: 'Do Pay on a family\'s fees and Enroll on a paid course take the browser to the bank, asking it for the right amount?' },
     { name: 'portal-language', writes: true, asks: 'Do the family\'s and the staff\'s own portal pages read in Dhivehi and Arabic, codes named, and are a sent message, a refused reply, a refused Pay and a too-obvious PIN said in Dhivehi?' },
     { name: 'office-language', writes: true, asks: 'Do the office\'s registers and attendance screens read in Dhivehi and Arabic, codes named, and are generating registers and a reason the school already has said in Dhivehi?' },
+    // WA2 (STATUS §5tu): the walks written beside this runner and never added to it:
+    // the Bookstore, the admin panel, the language sweeps. Read-only ones first, then
+    // the Bookstore in the order it was built, so each finds what the one before left.
+    { name: 'admin-pages', writes: false, asks: 'Does every admin page draw, desktop and phone?' },
+    { name: 'admin-mobile', writes: false, asks: 'Does every admin landing fit a 390 px phone?' },
+    { name: 'admin-layout', writes: false, asks: 'Do the admin panel\'s shells work for the office, on a phone and a desktop?' },
+    { name: 'long-pages', writes: false, asks: 'Are the four long admin pages short on a phone?' },
+    { name: 'phone-targets', writes: false, asks: 'Is every tap target in the admin panel big enough for a thumb?' },
+    { name: 'once-props', writes: false, asks: 'Do the phrase books travel once, not on every visit?' },
+    { name: 'fonts', writes: false, asks: 'Are the fonts self-hosted, with no third party asked for a face?' },
+    { name: 'admin-hub', writes: false, asks: 'Do the School office and the Institute open on today\'s numbers, then the workspace in parts?' },
+    { name: 'admin', writes: true, asks: 'Can the two people who run the admin panel reach what they run, and nothing else?' },
+    { name: 'workspaces', writes: true, asks: 'Does a person with three workspaces switch between them, one job at a time?' },
+    { name: 'logout', writes: true, asks: 'Does logging out of the shell leave the shell?' },
+    { name: 'vendor', writes: true, reseed: true, asks: 'Can the office invite a vendor, and the vendor open its shop and list a product?' },
+    { name: 'insights', writes: true, reseed: true, asks: 'Does a shop see how visitors move through it, and does search find things?' },
+    { name: 'shop', writes: true, reseed: true, asks: 'Can anyone find Fitrah\'s products in the Akuru Bookstore?' },
+    { name: 'checkout', writes: true, asks: 'Can a customer buy from two shops in one basket, and pay by bank transfer?' },
+    { name: 'fulfilment', writes: true, reseed: true, asks: 'Can a shop send an order, and a customer track, return, cancel and talk to the shop?' },
+    { name: 'storefront', writes: true, asks: 'Can a vendor make its page look like its brand, inside the Akuru frame?' },
+    { name: 'storefront-colours', writes: true, reseed: true, asks: 'Do a shop\'s own colours reach its live page?' },
+    { name: 'sections', writes: true, asks: 'Can a vendor arrange its page from sections, and the office moderate it?' },
+    { name: 'vendor-money', writes: true, asks: 'Does a vendor see what it is owed, and is it paid?' },
+    { name: 'polish', writes: true, reseed: true, asks: 'Can a customer find, save, trust and be nudged in the shop?' },
+    { name: 'operations', writes: true, reseed: true, asks: 'Can a shop run its stock and products in bulk, and the office set how notices travel?' },
+    { name: 'apply', writes: true, asks: 'Can someone apply to open a shop, and the office open it for them?' },
+    { name: 'cod', writes: true, reseed: true, asks: 'Can a customer pay a shop in cash on delivery, and does the money come out right?' },
+    { name: 'newsletter', writes: true, reseed: true, asks: 'Can a shop collect newsletter sign-ups with consent, and is a forgotten cart remembered?' },
+    { name: 'quotes', writes: true, reseed: true, asks: 'Can a school buying in bulk get a shop\'s price, and does the checkout charge it?' },
+    { name: 'hosts', writes: true, asks: 'Can a shop use its own domain?' },
+    { name: 'team', writes: true, asks: 'Can the office have Bookstore admins who run the Bookstore and nothing else?' },
+    { name: 'css', writes: true, asks: 'Can a shop add its own CSS, safely, with the office\'s say-so?' },
+    { name: 'gallery', writes: true, reseed: true, asks: 'Can a shop pick a whole look from a gallery, and offer its own?' },
+    { name: 'followups', writes: true, reseed: true, asks: 'Can each of the Bookstore audit\'s seven follow-ups be done in a browser?' },
+    { name: 'vendor-mobile', writes: true, asks: 'Does the vendor portal work on a phone?' },
+    { name: 'customer-sign-in', writes: true, asks: 'Can a customer sign in on their phone number?' },
+    { name: 'akuru', writes: true, reseed: true, asks: 'Can Akuru pack and deliver for a shop, and charge for it?' },
+    { name: 'campaigns', writes: true, reseed: true, asks: 'Can the office send an SMS offer to those who asked, and can a customer stop it?' },
+    { name: 'customers', writes: true, reseed: true, asks: 'Can the office see a customer, tag them, keep a note and tick off a follow-up?' },
+    { name: 'credit', writes: true, reseed: true, asks: 'Can a school pay on a credit account, and the office record what it paid?' },
+    { name: 'preorder', writes: true, reseed: true, asks: 'Can a customer pre-order a book that is not out yet, and hear when it is?' },
+    { name: 'used-books', writes: true, asks: 'Can a shop sell old and used books from the short form?' },
+    { name: 'lending', writes: true, asks: 'Can people lend books to each other, checked by the office?' },
+    { name: 'gift', writes: true, asks: 'Can a signed-in reader find the Library and buy someone a gift card?' },
+    { name: 'copyright', writes: true, asks: 'Can a reader report a Library work that copies theirs, and the office decide it?' },
+    { name: 'account-language', writes: true, asks: 'Do linked accounts and a teacher\'s schedule read in Dhivehi and Arabic?' },
+    { name: 'bookstore-language', writes: true, reseed: true, asks: 'Does the Bookstore read in Dhivehi and Arabic, to its last words?' },
+    { name: 'commerce-language', writes: true, asks: 'Does the Commerce office read in Dhivehi and Arabic?' },
+    { name: 'exams-language', writes: true, asks: 'Do the office\'s exams and grades screens read in Dhivehi and Arabic?' },
+    { name: 'finance-language', writes: true, asks: 'Do the office\'s finance screens read in Dhivehi and Arabic?' },
+    { name: 'hr-language', writes: true, asks: 'Do the office\'s HR screens read in Dhivehi and Arabic?' },
+    { name: 'library-desk-language', writes: true, asks: 'Does the library desk read in Dhivehi and Arabic?' },
+    { name: 'people-language', writes: true, asks: 'Do the office\'s people screens read in Dhivehi and Arabic?' },
+    { name: 'promotions-language', writes: true, asks: 'Do the Library\'s promotion campaigns read in Dhivehi and Arabic?' },
+    { name: 'register-language', writes: true, asks: 'Does the course registration read in Dhivehi and Arabic?' },
+    { name: 'system-language', writes: true, asks: 'Do the system screens read in Dhivehi and Arabic?' },
 ];
 
 const args = process.argv.slice(2);
@@ -294,8 +351,19 @@ const results = [];
 // One at a time. They share a database and several of them sign in as the same
 // people; running them in parallel would have them stepping on each other's
 // fixtures, which is how a walk reports a failure that belongs to its neighbour.
+//
+// A walk marked `reseed` needs the Bookstore as the seeder leaves it: an empty
+// basket, a topped-up wallet, the stock and the shop page as planted. The shop
+// walks before it spend, stock and publish, so on a local server the seeder
+// runs again first (it runs twice, and in under a second: STATUS §5tu). On any
+// other host run `php artisan db:seed --class=SmokeMarkerSeeder` there before
+// each of them, or run them by name one at a time.
+const LOCAL = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(BASE);
 for (const walk of selected) {
     process.stdout.write(`  ${walk.name.padEnd(13)} … `);
+    if (walk.reseed && LOCAL) {
+        execFileSync('php', ['artisan', 'db:seed', '--class=SmokeMarkerSeeder', '--force', '-q'], { cwd: join(HERE, '..', '..'), stdio: 'ignore' });
+    }
     const result = await run(walk);
     results.push(result);
     console.log(`${result.code === 0 ? "ok  " : "FAIL"}  ${result.score.padEnd(46)}  ${result.seconds}s`);
