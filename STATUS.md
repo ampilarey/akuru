@@ -4983,6 +4983,40 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tp. A full walk run on a fresh database, and what it found (2026-10-20)
+
+`all.mjs` on a freshly seeded database passed 90/102 after the print plan.
+Each failure was rerun alone on its own fresh seed to tell faults from walk
+order.
+- **Fixed in the product:**
+  - Saving news did not forget the home page's ten-minute cache, so a new
+    post was missing from the home page's latest news for up to ten
+    minutes. `SaveNewsPostAction` now forgets it, as publishing a course
+    does. The existing test had hidden this with a `Cache::flush()`; a new
+    one warms the cache first.
+  - The timetable said "Cover: Teacher #null" for a substitution request no
+    one had taken yet. It now says *Cover needed* (EN/DV/AR).
+  - The smoke seeder planted the payslip pair before the HR cycle made the
+    teacher's staff profile. On a fresh seed there was then no pair, and
+    `own-data.mjs` could not ask about payslips. It now plants it after.
+- **Walks brought up to date:**
+  - `create-sweep`: behaviour's pupil is picked by name since BH1, not
+    typed as an id.
+  - `id-scan`: the wording became "a parent or guardian".
+  - `identity`: the learner's own bar links (`shell-bar-links`, where BL1
+    put *My blog*) count as menu.
+  - `print-office` starts from the desk off.
+- **Local tooling:** the walk runner starts a queue worker, so `exams.mjs`
+  can render its report card (27/27).
+- **Result:** 98/102 on a fresh seed. The four left (`blog-start`,
+  `blog-posts`, `blog-design`, `course-screens-language`) pass alone and
+  fail only after earlier walks. They are recorded in KNOWN_ISSUES as a
+  harness fault, not a product one.
+
+**Tests:** `NewsEditorTest` gains *a saved post is on the home page at
+once, though it was cached a moment before*. Whole suite 3330 passed;
+pint clean.
+
 ## 5to. Print jobs in schools' bulk quotes (PP6b, 2026-10-20)
 
 PRINT_PRODUCTS_PLAN PP6b (PD9). A school wanting a price for a big name-tag

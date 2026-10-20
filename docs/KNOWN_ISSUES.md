@@ -165,6 +165,21 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
+## Found running every walk on a fresh database (2026-10-20)
+
+### Four walks fail only after others in `all.mjs` — open (low; the harness, not the product)
+
+On a fresh seed, `all.mjs` passes 98/102. `blog-start`, `blog-posts`,
+`blog-design` and `course-screens-language` each pass **alone** on a fresh
+seed (12/12, and 422/422 for the last) and fail after the walks before them.
+`library.mjs` and `earnings.mjs` make the seeded pupil (`student@`) a
+writer and leave them one, so *My blog* shows the writer's page rather than
+the start form. `course-screens-language` finds the wallet course's row
+without its discount-code box after earlier walks have used the course.
+Not a product defect. The fix is in the harness: each blog walk needs its
+own pupil with a parent, or the library walks need to clean up after
+themselves.
+
 ## Found reading the sign-in pages (2026-10-11)
 
 ### Anyone could reset another person's password — **fixed (2026-10-11, STATUS §5rc)**
