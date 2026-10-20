@@ -106,7 +106,7 @@ export default function Index({ q = '', titles = [], overdue = [], t = {} }) {
             />
 
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
                             <th className="px-3 py-2 text-start">{t.col_title || 'Title'}</th>
@@ -118,18 +118,18 @@ export default function Index({ q = '', titles = [], overdue = [], t = {} }) {
                     <tbody>
                         {titles.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">
+                                <td data-label={t.col_title || 'Title'} className="px-3 py-2">
                                     <Link href={`/circulation/titles/${row.id}`} className="text-[#7C2D37] hover:underline">
                                         {row.title}
                                     </Link>
                                     {row.author && <span className="block text-xs text-gray-500">{row.author}</span>}
                                 </td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.col_on_shelf || 'On the shelf'} className="px-3 py-2">
                                     {row.available > 0
                                         ? <span className="text-emerald-700">{(t.on_shelf_count || ':available of :total').replace(':available', row.available).replace(':total', row.total)}</span>
                                         : <span className="text-gray-500">{t.on_shelf_none || 'none'}</span>}
                                 </td>
-                                <td className="px-3 py-2 text-gray-600">
+                                <td data-label={t.col_out || 'Out'} className="px-3 py-2 text-gray-600">
                                     {row.on_loan}
                                     {row.available === 0 && row.soonest_back && (
                                         <span className="block text-xs">{(t.back_on || 'back :date').replace(':date', row.soonest_back)}</span>
@@ -153,7 +153,7 @@ export default function Index({ q = '', titles = [], overdue = [], t = {} }) {
 
             <h2 className="mb-2 text-sm font-semibold">{(t.overdue_heading || 'Overdue (:count)').replace(':count', overdue.length)}</h2>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <tbody>
                         {overdue.map((loan) => (
                             <tr key={loan.id} className="border-t">

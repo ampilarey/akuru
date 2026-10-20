@@ -21,7 +21,7 @@ export default function NewsCategories({ categories = [], t = {} }) {
                 <button type="submit" className="btn-primary" disabled={form.processing}>{t.news_category_add || 'Add category'}</button>
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.news_category_name || 'Category name'}</th>
@@ -35,10 +35,10 @@ export default function NewsCategories({ categories = [], t = {} }) {
                         {categories.length === 0 && <tr><td colSpan="5" className="px-3 py-4 text-gray-500">{t.news_category_none || 'No categories yet.'}</td></tr>}
                         {categories.map((category) => (
                             <tr key={category.id} className="border-t" data-testid="news-category-row">
-                                <td className="px-3 py-2">{category.name}{!category.is_active && <span className="ms-2 text-xs text-gray-500">({t.news_category_hidden || 'hidden'})</span>}</td>
-                                <td className="px-3 py-2"><code className="text-xs" dir="ltr">{category.slug}</code></td>
-                                <td className="px-3 py-2">{category.sort_order}</td>
-                                <td className="px-3 py-2">{category.posts}</td>
+                                <td data-label={t.news_category_name || 'Category name'} className="px-3 py-2">{category.name}{!category.is_active && <span className="ms-2 text-xs text-gray-500">({t.news_category_hidden || 'hidden'})</span>}</td>
+                                <td data-label={t.pages_col_slug || 'Slug'} className="px-3 py-2"><code className="text-xs" dir="ltr">{category.slug}</code></td>
+                                <td data-label={t.news_category_order || 'Order'} className="px-3 py-2">{category.sort_order}</td>
+                                <td data-label={t.news_category_posts || 'News items'} className="px-3 py-2">{category.posts}</td>
                                 <td className="px-3 py-2 text-end"><button type="button" className="text-xs underline" onClick={() => toggle(category)}>{category.is_active ? (t.news_category_hide || 'Hide') : (t.news_category_show || 'Offer again')}</button></td>
                             </tr>
                         ))}

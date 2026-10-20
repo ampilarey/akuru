@@ -31,7 +31,8 @@ export default function VendorOrderPrint({ t, order }) {
             <section data-testid="packing-slip">
                 <h1 className="text-xl font-bold">{t.packing_slip} · <span className="font-mono">{order.number}</span></h1>
                 <p className="mb-3 text-sm text-gray-600">{order.vendor.legal_name || order.vendor.name} · {t.at_akuru} · {t.order_placed} {order.placed_at}</p>
-                <table className="mb-4 w-full text-sm">
+                {/* A printed document (docs/MOBILE_FIRST.md rule 5's exception): it keeps its table, scrolling in its own box on a phone. */}
+                <table className="mb-4 w-full text-sm" data-phone-scroll>
                     <thead className="border-b text-gray-500"><tr><th className="py-1 text-start">{t.product_title}</th><th className="text-start">{t.sku}</th><th className="text-end">{t.quantity}</th><th className="w-16 text-center">✓</th></tr></thead>
                     <tbody>
                         {order.items.map((i) => (

@@ -79,7 +79,7 @@ export default function Balances({ filters, years, staff, leaveTypes, rows, t = 
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.staff || 'Staff'}</th>
@@ -111,13 +111,13 @@ function BalanceRow({ row, t, named }) {
 
     return (
         <tr className="border-t">
-            <td className="px-3 py-2">{row.staff_name}</td>
-            <td className="px-3 py-2">{named({ name: row.leave_type, name_dhivehi: row.leave_type_dhivehi, name_arabic: row.leave_type_arabic })}</td>
-            <td className="px-3 py-2">{row.entitled_days}</td>
-            <td className="px-3 py-2">{row.carried_over_days}</td>
-            <td className="px-3 py-2">{row.adjusted_days}</td>
-            <td className="px-3 py-2">{row.balance}</td>
-            <td className="px-3 py-2">
+            <td data-label={t.staff || 'Staff'} className="px-3 py-2">{row.staff_name}</td>
+            <td data-label={t.type || 'Type'} className="px-3 py-2">{named({ name: row.leave_type, name_dhivehi: row.leave_type_dhivehi, name_arabic: row.leave_type_arabic })}</td>
+            <td data-label={t.balances_col_entitled || 'Entitled'} className="px-3 py-2">{row.entitled_days}</td>
+            <td data-label={t.balances_col_carried || 'Carried'} className="px-3 py-2">{row.carried_over_days}</td>
+            <td data-label={t.balances_col_adjusted || 'Adjusted'} className="px-3 py-2">{row.adjusted_days}</td>
+            <td data-label={t.balances_col_balance || 'Balance'} className="px-3 py-2">{row.balance}</td>
+            <td data-label={t.balances_col_adjust || 'Adjust'} className="px-3 py-2">
                 <form
                     className="flex flex-wrap gap-2"
                     onSubmit={(e) => {

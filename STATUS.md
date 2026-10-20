@@ -4983,6 +4983,31 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ta. Every table in the app reads as cards on a phone (MF6, 2026-10-20)
+
+**docs/MOBILE_FIRST.md A5, last batch — done.** The remaining 48 pages (HR,
+Finance, Website, People, Bookshop, Circulation, Forms, Lending,
+Pronunciation, Settings and the rest) are converted, so every table in every
+Inertia page is now `table-stack` with labelled cells, or a named grid.
+`tables_not_stacked_on_phones.php` is empty, and the test keeps it that way.
+- 40 pages by the script. An action column whose heading is for screen
+  readers only (`sr-only`) is left unlabelled, as it should be. 4 pages with
+  rows in components were done by script; the rest by hand:
+  - **Form results:** a response is a card, each answer labelled by its
+    question.
+  - **A student's guardians:** the guardian row component.
+  - **Circulation's overdue list:** its cells say what they are.
+- **Named grids:** the vendor's printed packing slip and the commission
+  invoice are documents. They keep their table (`data-phone-scroll`).
+- **Seen walking, not in this slice:** more office pages put a *new* form
+  above the list — invoices, leave balances, students. They join A8 (MF7).
+
+**Tests:** `PhoneFirstStylesTest` — baseline 0. Whole suite locally: 3281
+passed; pint clean.
+
+**Walk:** `phone-first.mjs`, 108/108. Screenshots at 390 px: invoices
+(English and Dhivehi), leave balances, students, forms.
+
 ## 5sz. Courses' and exams' tables read as cards on a phone (MF5, 2026-10-20)
 
 **docs/MOBILE_FIRST.md A5, second batch.** Every table on the 40 pages

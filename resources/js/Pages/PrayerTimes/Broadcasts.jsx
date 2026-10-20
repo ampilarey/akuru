@@ -39,7 +39,7 @@ export default function Broadcasts({ broadcasts = [], pagination, filters = {}, 
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="broadcasts-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.prayer_col_id || 'ID'}</th>
@@ -56,12 +56,12 @@ export default function Broadcasts({ broadcasts = [], pagination, filters = {}, 
                         )}
                         {broadcasts.map((row) => (
                             <tr key={row.id} className="border-t" data-testid="broadcast-row">
-                                <td className="px-3 py-2"><Link href={`/admin/prayer-times/broadcasts/${row.id}/edit`} className="text-[#1D4E89] underline" data-testid="broadcast-edit">{row.id}</Link></td>
-                                <td className="px-3 py-2">{modeLabel(row.mode)}</td>
-                                <td className="px-3 py-2" data-testid="broadcast-status">{statusLabel(row.status)}</td>
-                                <td className="px-3 py-2">{row.island}</td>
-                                <td className="px-3 py-2" dir="ltr">{row.sent_count}/{row.failed_count}</td>
-                                <td className="px-3 py-2" dir="ltr">{row.estimated_cost}</td>
+                                <td data-label={t.prayer_col_id || 'ID'} className="px-3 py-2"><Link href={`/admin/prayer-times/broadcasts/${row.id}/edit`} className="text-[#1D4E89] underline" data-testid="broadcast-edit">{row.id}</Link></td>
+                                <td data-label={t.prayer_col_mode || 'Mode'} className="px-3 py-2">{modeLabel(row.mode)}</td>
+                                <td data-label={t.prayer_col_status || 'Status'} className="px-3 py-2" data-testid="broadcast-status">{statusLabel(row.status)}</td>
+                                <td data-label={t.prayer_col_island || 'Island'} className="px-3 py-2">{row.island}</td>
+                                <td data-label={t.prayer_col_sent || 'Sent / failed'} className="px-3 py-2" dir="ltr">{row.sent_count}/{row.failed_count}</td>
+                                <td data-label={t.prayer_col_cost || 'Cost'} className="px-3 py-2" dir="ltr">{row.estimated_cost}</td>
                             </tr>
                         ))}
                     </tbody>

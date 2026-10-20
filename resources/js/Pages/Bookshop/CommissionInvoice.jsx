@@ -37,7 +37,8 @@ export default function CommissionInvoice({ t, invoice: i, back_url }) {
                 </div>
             </section>
 
-            <table className="mb-4 w-full text-sm">
+            {/* A printed document (docs/MOBILE_FIRST.md rule 5's exception): it keeps its table, scrolling in its own box on a phone. */}
+            <table className="mb-4 w-full text-sm" data-phone-scroll>
                 <thead className="border-b text-gray-500"><tr><th className="py-1 text-start">{t.order_number}</th><th className="text-start">{t.paid_on}</th><th className="text-end">{t.sales_charged}</th><th className="text-end">{t.rate}</th><th className="text-end">{t.commission}</th>{Number(i.tax) > 0 && <th className="text-end">{t.gst}</th>}</tr></thead>
                 <tbody>
                     {(i.lines || []).map((l) => (

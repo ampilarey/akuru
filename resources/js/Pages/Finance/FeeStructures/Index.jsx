@@ -151,7 +151,7 @@ export default function Index({ years, yearId, classes, feeItems, structures, ap
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_name || 'Name'}</th>
@@ -167,11 +167,11 @@ export default function Index({ years, yearId, classes, feeItems, structures, ap
                         )}
                         {structures.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.name}</td>
-                                <td className="px-3 py-2">{appliesName(row.applies_to)}</td>
-                                <td className="px-3 py-2">{row.applies_to === 'all_classes' || (row.class_ids || []).length === 0 ? appliesName('all_classes') : listed(row.class_ids.map(classLabel))}</td>
-                                <td className="px-3 py-2">{listed(row.items.map((line) => named(line))) || '—'}</td>
-                                <td className="px-3 py-2">{statusName(row.status)}</td>
+                                <td data-label={t.col_name || 'Name'} className="px-3 py-2">{row.name}</td>
+                                <td data-label={t.structures_applies || 'Applies to'} className="px-3 py-2">{appliesName(row.applies_to)}</td>
+                                <td data-label={t.structures_classes || 'Classes'} className="px-3 py-2">{row.applies_to === 'all_classes' || (row.class_ids || []).length === 0 ? appliesName('all_classes') : listed(row.class_ids.map(classLabel))}</td>
+                                <td data-label={t.structures_items || 'Fee items'} className="px-3 py-2">{listed(row.items.map((line) => named(line))) || '—'}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">{statusName(row.status)}</td>
                             </tr>
                         ))}
                     </tbody>

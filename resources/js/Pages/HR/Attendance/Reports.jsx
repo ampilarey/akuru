@@ -43,7 +43,7 @@ export default function Reports({ filters, years, departments, late, absence, t 
                     <a className="btn-secondary" href={`/hr/attendance/reports/export?kind=late&${query}`}>{t.reports_export_late || 'Export late CSV'}</a>
                 </div>
                 <div className="overflow-x-auto rounded-lg border bg-white">
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">{t.staff || 'Staff'}</th>
@@ -58,10 +58,10 @@ export default function Reports({ filters, years, departments, late, absence, t 
                             )}
                             {late.map((row) => (
                                 <tr key={row.staff_profile_id} className="border-t">
-                                    <td className="px-3 py-2">{row.staff_name}</td>
-                                    <td className="px-3 py-2">{row.department || '—'}</td>
-                                    <td className="px-3 py-2">{row.late_count}</td>
-                                    <td className="px-3 py-2">{row.minutes_late}</td>
+                                    <td data-label={t.staff || 'Staff'} className="px-3 py-2">{row.staff_name}</td>
+                                    <td data-label={t.department || 'Department'} className="px-3 py-2">{row.department || '—'}</td>
+                                    <td data-label={t.reports_late_days || 'Late days'} className="px-3 py-2">{row.late_count}</td>
+                                    <td data-label={t.reports_minutes || 'Minutes'} className="px-3 py-2">{row.minutes_late}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -75,7 +75,7 @@ export default function Reports({ filters, years, departments, late, absence, t 
                     <a className="btn-secondary" href={`/hr/attendance/reports/export?kind=absence&${query}`}>{t.reports_export_absence || 'Export absence CSV'}</a>
                 </div>
                 <div className="overflow-x-auto rounded-lg border bg-white">
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">{t.staff || 'Staff'}</th>
@@ -90,10 +90,10 @@ export default function Reports({ filters, years, departments, late, absence, t 
                             )}
                             {absence.map((row) => (
                                 <tr key={row.staff_profile_id} className="border-t">
-                                    <td className="px-3 py-2">{row.staff_name}</td>
-                                    <td className="px-3 py-2">{row.department || '—'}</td>
-                                    <td className="px-3 py-2">{row.absent_count}</td>
-                                    <td className="px-3 py-2">{row.half_day_count}</td>
+                                    <td data-label={t.staff || 'Staff'} className="px-3 py-2">{row.staff_name}</td>
+                                    <td data-label={t.department || 'Department'} className="px-3 py-2">{row.department || '—'}</td>
+                                    <td data-label={t.attendance_status_absent || 'Absent'} className="px-3 py-2">{row.absent_count}</td>
+                                    <td data-label={t.attendance_status_half_day || 'Half day'} className="px-3 py-2">{row.half_day_count}</td>
                                 </tr>
                             ))}
                         </tbody>

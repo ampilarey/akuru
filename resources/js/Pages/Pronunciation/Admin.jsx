@@ -43,7 +43,7 @@ export default function Admin({ pending_samples: pendingSamples, model_versions:
 
             {pendingSamples.length > 0 && (
                 <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">{t.pron_pending_sample || 'Pending sample'}</th>
@@ -53,11 +53,11 @@ export default function Admin({ pending_samples: pendingSamples, model_versions:
                         <tbody>
                             {pendingSamples.map((sample) => (
                                 <tr key={sample.id} className="border-t" data-testid={`pron-sample-${sample.id}`}>
-                                    <td className="px-3 py-2">
+                                    <td data-label={t.pron_pending_sample || 'Pending sample'} className="px-3 py-2">
                                         {sample.letter} + {sample.haraka} · {sample.created_at}
                                         {sample.notes && <p className="text-xs text-gray-500">{sample.notes}</p>}
                                     </td>
-                                    <td className="px-3 py-2">
+                                    <td data-label={t.pron_decision || 'Decision'} className="px-3 py-2">
                                         <input
                                             className="form-input mb-1 w-48"
                                             placeholder={t.pron_rejection_reason || 'Rejection reason'} aria-label={t.pron_rejection_reason || 'Rejection reason'}
@@ -95,7 +95,7 @@ export default function Admin({ pending_samples: pendingSamples, model_versions:
             </form>
 
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.pron_model_version || 'Model version'}</th>
@@ -111,10 +111,10 @@ export default function Admin({ pending_samples: pendingSamples, model_versions:
                         )}
                         {modelVersions.map((version) => (
                             <tr key={version.id} className="border-t">
-                                <td className="px-3 py-2">{version.version_name} <span className="text-xs text-gray-500">({t[`pron_model_type_${version.model_type}`] || version.model_type})</span></td>
-                                <td className="px-3 py-2">{version.training_sample_count}</td>
-                                <td className="px-3 py-2">{version.letter_accuracy ?? '—'} / {version.haraka_accuracy ?? '—'}</td>
-                                <td className="px-3 py-2">{version.is_active ? t.pron_is_active || '✓ active' : ''}</td>
+                                <td data-label={t.pron_model_version || 'Model version'} className="px-3 py-2">{version.version_name} <span className="text-xs text-gray-500">({t[`pron_model_type_${version.model_type}`] || version.model_type})</span></td>
+                                <td data-label={t.pron_samples || 'Samples'} className="px-3 py-2">{version.training_sample_count}</td>
+                                <td data-label={t.pron_accuracy || 'Accuracy (letter / haraka)'} className="px-3 py-2">{version.letter_accuracy ?? '—'} / {version.haraka_accuracy ?? '—'}</td>
+                                <td data-label={t.pron_active || 'Active'} className="px-3 py-2">{version.is_active ? t.pron_is_active || '✓ active' : ''}</td>
                                 <td className="px-3 py-2 text-end">
                                     {!version.is_active && (
                                         <button type="button" className="btn-secondary" onClick={() => refusals.actOn(`version:${version.id}`, () => router.post(`/admin/pronunciation/versions/${version.id}/activate`, {}, { preserveScroll: true }))}>
@@ -131,7 +131,7 @@ export default function Admin({ pending_samples: pendingSamples, model_versions:
 
             {stats.cells.length > 0 && (
                 <div className="overflow-x-auto rounded-lg border bg-white">
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">{t.pron_sound || 'Sound (letter + haraka)'}</th>
@@ -141,8 +141,8 @@ export default function Admin({ pending_samples: pendingSamples, model_versions:
                         <tbody>
                             {stats.cells.map((cell) => (
                                 <tr key={`${cell.letter}-${cell.haraka}`} className="border-t">
-                                    <td className="px-3 py-2">{cell.letter} + {cell.haraka}</td>
-                                    <td className="px-3 py-2">{cell.samples}</td>
+                                    <td data-label={t.pron_sound || 'Sound (letter + haraka)'} className="px-3 py-2">{cell.letter} + {cell.haraka}</td>
+                                    <td data-label={t.pron_approved_samples || 'Approved samples'} className="px-3 py-2">{cell.samples}</td>
                                 </tr>
                             ))}
                         </tbody>

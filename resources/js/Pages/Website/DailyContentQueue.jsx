@@ -32,7 +32,7 @@ export default function DailyContentQueue({ items = [], t = {} }) {
             <p className="mb-4 text-sm text-gray-600">{t.daily_queue_intro || 'The creator cannot approve their own item.'}</p>
 
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="queue-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.daily_col_date || 'Date'}</th>
@@ -45,9 +45,9 @@ export default function DailyContentQueue({ items = [], t = {} }) {
                         {items.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan="4">{t.daily_queue_empty || 'Nothing waiting.'}</td></tr>}
                         {items.map((item) => (
                             <tr key={item.id} className="border-t align-top" data-testid="queue-row">
-                                <td className="whitespace-nowrap px-3 py-2" dir="ltr">{item.publish_date}</td>
-                                <td className="px-3 py-2">{typeLabel(item.content_type)}</td>
-                                <td className="px-3 py-2">{preview(item)}</td>
+                                <td data-label={t.daily_col_date || 'Date'} className="whitespace-nowrap px-3 py-2" dir="ltr">{item.publish_date}</td>
+                                <td data-label={t.daily_type || 'Type'} className="px-3 py-2">{typeLabel(item.content_type)}</td>
+                                <td data-label={t.daily_col_preview || 'Preview'} className="px-3 py-2">{preview(item)}</td>
                                 <td className="px-3 py-2">
                                     {Number(item.created_by) === Number(viewerId)
                                         ? <span className="text-gray-500" data-testid="queue-waiting">{t.daily_waiting_reviewer || 'Waiting for another reviewer'}</span>

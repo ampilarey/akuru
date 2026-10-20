@@ -59,7 +59,7 @@ export default function Title({ title, copies = [], q = '', matches = [], bulk_r
 
             <h2 className="mb-2 text-sm font-semibold">{(t.copies_heading || 'Copies (:count)').replace(':count', copies.length)}</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
                             <th className="px-3 py-2 text-start">{t.col_accession || 'Accession'}</th>
@@ -71,10 +71,10 @@ export default function Title({ title, copies = [], q = '', matches = [], bulk_r
                     <tbody>
                         {copies.map((copy) => (
                             <tr key={copy.id} className="border-t">
-                                <td className="px-3 py-2 font-mono text-xs">{copy.accession_number}</td>
-                                <td className="px-3 py-2">{t[`copy_status_${copy.status}`] || copy.status_label}</td>
-                                <td className="px-3 py-2 text-gray-600">{copy.borrower ?? '—'}</td>
-                                <td className={`px-3 py-2 text-xs ${copy.overdue ? 'text-[#7C2D37]' : 'text-gray-500'}`}>
+                                <td data-label={t.col_accession || 'Accession'} className="px-3 py-2 font-mono text-xs">{copy.accession_number}</td>
+                                <td data-label={t.col_status || 'Status'} className="px-3 py-2">{t[`copy_status_${copy.status}`] || copy.status_label}</td>
+                                <td data-label={t.col_with || 'With'} className="px-3 py-2 text-gray-600">{copy.borrower ?? '—'}</td>
+                                <td data-label={t.col_due || 'Due'} className={`px-3 py-2 text-xs ${copy.overdue ? 'text-[#7C2D37]' : 'text-gray-500'}`}>
                                     {copy.due_on
                                         ? (copy.overdue ? (t.due_overdue || ':date (overdue)').replace(':date', copy.due_on) : copy.due_on)
                                         : '—'}

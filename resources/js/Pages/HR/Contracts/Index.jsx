@@ -47,7 +47,7 @@ export default function Index({ staff, types, rows, t = {} }) {
                 {refused && <span className="text-xs text-red-600 md:col-span-4">{refused}</span>}
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.staff || 'Staff'}</th>
@@ -64,12 +64,12 @@ export default function Index({ staff, types, rows, t = {} }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.staff_name}</td>
-                                <td className="px-3 py-2">{typeName(row.contract_type)}</td>
-                                <td className="px-3 py-2">{row.start_date}</td>
-                                <td className="px-3 py-2">{row.end_date || '—'}</td>
-                                <td className="px-3 py-2">{row.basic_salary}</td>
-                                <td className="px-3 py-2">{statusName(row.status)}</td>
+                                <td data-label={t.staff || 'Staff'} className="px-3 py-2">{row.staff_name}</td>
+                                <td data-label={t.type || 'Type'} className="px-3 py-2">{typeName(row.contract_type)}</td>
+                                <td data-label={t.contracts_start || 'Start'} className="px-3 py-2">{row.start_date}</td>
+                                <td data-label={t.contracts_end || 'End'} className="px-3 py-2">{row.end_date || '—'}</td>
+                                <td data-label={t.contracts_col_salary || 'Salary'} className="px-3 py-2">{row.basic_salary}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">{statusName(row.status)}</td>
                             </tr>
                         ))}
                     </tbody>

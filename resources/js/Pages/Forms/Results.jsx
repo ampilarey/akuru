@@ -48,7 +48,7 @@ export default function Results({ form, rows = [], t = {} }) {
             <FormErrors errors={refusals.unplaced} className="mb-4" />
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="w-full min-w-[40rem] text-sm">
+                <table className="table-stack w-full text-sm sm:min-w-[40rem]">
                     <thead className="bg-[#F9F4EE] text-start">
                         <tr>
                             {/* No respondent column at all on an anonymous form —
@@ -62,16 +62,16 @@ export default function Results({ form, rows = [], t = {} }) {
                     <tbody>
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t align-top">
-                                {!form.is_anonymous && <td className="p-2">{row.respondent}</td>}
-                                <td className="p-2 text-xs text-gray-500">{when(row.submitted_at)}</td>
+                                {!form.is_anonymous && <td data-label={t.results_who || 'Who'} className="p-2">{row.respondent}</td>}
+                                <td data-label={t.results_submitted || 'Submitted'} className="p-2 text-xs text-gray-500">{when(row.submitted_at)}</td>
                                 {form.requires_parent_confirmation && (
-                                    <td className={`p-2 text-xs ${row.confirmed_at ? 'text-green-700' : 'font-semibold text-[#7C2D37]'}`}>
+                                    <td data-label={t.results_confirmed || 'Confirmed'} className={`p-2 text-xs ${row.confirmed_at ? 'text-green-700' : 'font-semibold text-[#7C2D37]'}`}>
                                         {when(row.confirmed_at) || (t.results_not_confirmed || 'Not confirmed')}
                                     </td>
                                 )}
                                 {form.fields.map((f) => {
                                     const v = row.answers[f.key];
-                                    return <td key={f.key} className="p-2">{answer(f, v, t)}</td>;
+                                    return <td key={f.key} data-label={f.label} className="p-2">{answer(f, v, t)}</td>;
                                 })}
                             </tr>
                         ))}

@@ -124,7 +124,7 @@ export default function Index({ years, yearId, plans, openInvoices, t = {} }) {
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.plans_col_invoice || 'Invoice'}</th>
@@ -139,10 +139,10 @@ export default function Index({ years, yearId, plans, openInvoices, t = {} }) {
                         )}
                         {plans.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.invoice_number}</td>
-                                <td className="px-3 py-2">{row.student_name}</td>
-                                <td className="px-3 py-2">{row.paid_amount} / {row.total_amount}</td>
-                                <td className="px-3 py-2">{statusName(row.status)}</td>
+                                <td data-label={t.plans_col_invoice || 'Invoice'} className="px-3 py-2">{row.invoice_number}</td>
+                                <td data-label={t.student || 'Student'} className="px-3 py-2">{row.student_name}</td>
+                                <td data-label={t.plans_col_paid || 'Paid / total'} className="px-3 py-2">{row.paid_amount} / {row.total_amount}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">{statusName(row.status)}</td>
                             </tr>
                         ))}
                     </tbody>

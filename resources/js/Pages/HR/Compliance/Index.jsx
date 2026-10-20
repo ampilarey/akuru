@@ -24,7 +24,7 @@ export default function Index({ within, rows, t = {} }) {
                 </form>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.staff || 'Staff'}</th>
@@ -40,11 +40,11 @@ export default function Index({ within, rows, t = {} }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.staff_name}</td>
-                                <td className="px-3 py-2">{row.title || '—'}</td>
-                                <td className="px-3 py-2">{typeName(row.document_type)}</td>
-                                <td className="px-3 py-2">{row.expires_at}</td>
-                                <td className="px-3 py-2">{row.days_until}</td>
+                                <td data-label={t.staff || 'Staff'} className="px-3 py-2">{row.staff_name}</td>
+                                <td data-label={t.compliance_document || 'Document'} className="px-3 py-2">{row.title || '—'}</td>
+                                <td data-label={t.type || 'Type'} className="px-3 py-2">{typeName(row.document_type)}</td>
+                                <td data-label={t.compliance_expires || 'Expires'} className="px-3 py-2">{row.expires_at}</td>
+                                <td data-label={t.compliance_days || 'Days'} className="px-3 py-2">{row.days_until}</td>
                             </tr>
                         ))}
                     </tbody>

@@ -52,7 +52,7 @@ export default function DailySubscriptions({ metrics = { totals: {}, types: {}, 
             </section>
 
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="subs-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.subs_col_id || 'Id'}</th>
@@ -67,12 +67,12 @@ export default function DailySubscriptions({ metrics = { totals: {}, types: {}, 
                         {metrics.rows.length === 0 && <tr><td className="px-3 py-6 text-center text-gray-500" colSpan="6">{t.subs_none || 'No subscribers yet.'}</td></tr>}
                         {metrics.rows.map((row) => (
                             <tr key={row.id} className="border-t" data-testid="subs-row">
-                                <td className="px-3 py-2 text-gray-500">{row.id}</td>
-                                <td className="px-3 py-2">{row.user_id}</td>
-                                <td className="px-3 py-2">{channelLabel(row.channel)}</td>
-                                <td className="px-3 py-2">{statusLabel(row.status)}</td>
-                                <td className="px-3 py-2">{(row.content_types || []).map(typeLabel).join(', ')}</td>
-                                <td className="whitespace-nowrap px-3 py-2" dir="ltr">{row.send_time}</td>
+                                <td data-label={t.subs_col_id || 'Id'} className="px-3 py-2 text-gray-500">{row.id}</td>
+                                <td data-label={t.subs_col_user || 'User'} className="px-3 py-2">{row.user_id}</td>
+                                <td data-label={t.subs_col_channel || 'Channel'} className="px-3 py-2">{channelLabel(row.channel)}</td>
+                                <td data-label={t.subs_col_status || 'Status'} className="px-3 py-2">{statusLabel(row.status)}</td>
+                                <td data-label={t.subs_col_types || 'Types'} className="px-3 py-2">{(row.content_types || []).map(typeLabel).join(', ')}</td>
+                                <td data-label={t.subs_col_time || 'Time'} className="whitespace-nowrap px-3 py-2" dir="ltr">{row.send_time}</td>
                             </tr>
                         ))}
                     </tbody>

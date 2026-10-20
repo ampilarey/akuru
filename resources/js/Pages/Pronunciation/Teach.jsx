@@ -19,14 +19,14 @@ function ReviewRow({ attempt, letters, harakas, refusals, t }) {
 
     return (
         <tr className="border-t align-top" data-testid={`pron-attempt-${attempt.id}`}>
-            <td className="px-3 py-2">
+            <td data-label={t.pron_attempt_expected || 'Attempt (expected)'} className="px-3 py-2">
                 <p className="font-medium">{attempt.expected_letter} + {attempt.expected_haraka}</p>
                 <p className="text-xs text-gray-500">{attempt.submitted_at} · {t[`pron_attempt_status_${attempt.status}`] || attempt.status?.replaceAll('_', ' ')}</p>
                 {attempt.has_audio && (
                     <p className="text-xs text-gray-400">{(t.pron_audio || 'audio #:id').replace(':id', attempt.audio_media_file_id)}</p>
                 )}
             </td>
-            <td className="px-3 py-2 text-xs text-gray-600">
+            <td data-label={t.pron_ai_opinion || 'AI opinion'} className="px-3 py-2 text-xs text-gray-600">
                 {attempt.ai ? (
                     <>
                         <p>{attempt.ai.letter} + {attempt.ai.haraka}</p>
@@ -35,7 +35,7 @@ function ReviewRow({ attempt, letters, harakas, refusals, t }) {
                     </>
                 ) : '—'}
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.pron_your_verdict || 'Your verdict (verified letter + haraka)'} className="px-3 py-2">
                 <div className="mb-2 flex gap-2">
                     <select className="form-input" aria-label={t.pron_verified_letter || 'Verified letter'} value={letterId} onChange={(e) => setLetterId(e.target.value)}>
                         {letters.map((option) => <option key={option.id} value={option.id}>{option.char} {option.key_name}</option>)}
@@ -67,7 +67,7 @@ export default function Teach({ review_queue: reviewQueue, letters, harakas, ai_
             <FormErrors errors={refusals.unplaced} className="mb-4" />
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.pron_attempt_expected || 'Attempt (expected)'}</th>

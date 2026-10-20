@@ -126,7 +126,7 @@ export default function Show({ staff, employmentTypes = [], statuses = [], custo
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.qualification_col_title || 'Title'}</th>
@@ -141,9 +141,9 @@ export default function Show({ staff, employmentTypes = [], statuses = [], custo
                         )}
                         {(staff.qualifications || []).map((row) => (
                             <tr key={row.id} className="border-t align-top">
-                                <td className="px-3 py-2">{row.title}</td>
-                                <td className="px-3 py-2">{row.institution}</td>
-                                <td className="px-3 py-2">{row.year}</td>
+                                <td data-label={t.qualification_col_title || 'Title'} className="px-3 py-2">{row.title}</td>
+                                <td data-label={t.qualification_institution || 'Institution'} className="px-3 py-2">{row.institution}</td>
+                                <td data-label={t.qualification_year || 'Year'} className="px-3 py-2">{row.year}</td>
                                 <td className="px-3 py-2 text-end">
                                     <button
                                         type="button"

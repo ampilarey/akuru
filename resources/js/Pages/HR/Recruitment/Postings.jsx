@@ -58,7 +58,7 @@ export default function Postings({ rows, statuses, t = {} }) {
                 <FormErrors errors={form.errors} className="md:col-span-4" />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.postings_col_title || 'Title'}</th>
@@ -73,10 +73,10 @@ export default function Postings({ rows, statuses, t = {} }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{titled(row)}</td>
-                                <td className="px-3 py-2">{row.department || '—'}</td>
-                                <td className="px-3 py-2">{statusName(row.status)}</td>
-                                <td className="px-3 py-2">{row.public ? (t.yes || 'yes') : (t.no || 'no')}</td>
+                                <td data-label={t.postings_col_title || 'Title'} className="px-3 py-2">{titled(row)}</td>
+                                <td data-label={t.department || 'Department'} className="px-3 py-2">{row.department || '—'}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">{statusName(row.status)}</td>
+                                <td data-label={t.postings_public || 'Public'} className="px-3 py-2">{row.public ? (t.yes || 'yes') : (t.no || 'no')}</td>
                             </tr>
                         ))}
                     </tbody>

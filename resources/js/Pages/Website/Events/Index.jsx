@@ -147,7 +147,7 @@ export default function Index({ events, years, types, statuses, registrationType
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_title || 'Title'}</th>
@@ -163,16 +163,16 @@ export default function Index({ events, years, types, statuses, registrationType
                         )}
                         {events.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">
+                                <td data-label={t.col_title || 'Title'} className="px-3 py-2">
                                     <p className="font-medium">{titled(row)}</p>
                                     <p className="text-xs text-gray-500">{t[`event_status_${row.status}`] || row.status} · {t[`event_registration_${row.registration_type}`] || row.registration_type}</p>
                                 </td>
-                                <td className="px-3 py-2 text-xs">{row.start_date}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.events_when || 'When'} className="px-3 py-2 text-xs">{row.start_date}</td>
+                                <td data-label={t.events_seats || 'Seats'} className="px-3 py-2">
                                     {row.occupying}/{row.max_attendees ?? '∞'}
                                     {row.waitlisted > 0 ? ` · ${(t.events_waiting || ':count waiting').replace(':count', row.waitlisted)}` : ''}
                                 </td>
-                                <td className="px-3 py-2 text-xs">
+                                <td data-label={t.events_settings || 'Settings'} className="px-3 py-2 text-xs">
                                     {[
                                         row.is_elective && (t.events_flag_elective || 'elective'),
                                         row.waitlist_enabled && (t.events_flag_waitlist || 'waitlist'),
