@@ -4983,6 +4983,44 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5td. The analytics screens and the old menu in Dhivehi and Arabic (OB1, 2026-10-20)
+
+**BACKLOG C21's last item, the old Blade screens. The owner, 2026-10-20:
+"do all".** That needed a decision between retiring the screens and
+translating them. They are translated: it keeps every screen working and
+can be undone, and retiring them stays possible. OB1 is the analytics
+dashboard and reports, and the old app layout's menu.
+- An `analytics` book of 64 phrases in EN/DV/AR, covering:
+  - the dashboard's figures, sections and range;
+  - the charts' labels (weeks; CPU, memory, disk, network);
+  - the system's health named (*healthy*, *warning*, *critical*);
+  - every report type and category the form offers, and a report's state.
+  The old menu reads `nav`, `common`, `site` and `public` phrases that
+  already existed (*Skip to content*, *Dashboard*, *More*, *My profile*,
+  *Log out*, *Menu*). LTR-only spacing became logical (`gap`, `ms-`, `me-`).
+- **Two defects fixed:**
+  - *Generate report* posted a form and was answered with raw JSON, and the
+    page printed no flash. It now goes back to the list with *The report is
+    ready*, and a download not ready or missing is said there too.
+  - On a phone, the dashboard's two chart canvases were fixed at 400 px, so
+    the page was 441 px wide in every language and the phone zoomed it out.
+    They now fit the screen.
+- **`phone-first.mjs` measured against the wrong width.** A phone zooms out a
+  page that is too wide, so `innerWidth` grows with it and the check never
+  failed. It now measures against the screen (`clientWidth`), and walks the
+  analytics pages as the super admin. With the canvases unfixed it fails
+  (110/112); fixed, it passes (112/112).
+
+**Tests:** `OldScreensSpeakThreeLanguagesTest` (new, 2): no English of the
+pages' own, and every key and every type, category, health and state named
+in three languages. The dashboard and reports in Dhivehi; generating comes
+back to the list with its flash. Whole suite locally: 3285 passed; pint
+clean.
+
+**Walk:** `phone-first.mjs` 112/112. Screenshots at 390 px and 1280 px:
+`/dv/analytics` and `/ar/analytics/reports`, generating a report shown in
+Arabic.
+
 ## 5tc. The home page is written phone-first (2026-10-20)
 
 **docs/MOBILE_FIRST.md A7, its largest part.** The home page held 7 of the

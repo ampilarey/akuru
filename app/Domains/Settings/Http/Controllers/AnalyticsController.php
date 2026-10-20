@@ -79,11 +79,9 @@ class AnalyticsController extends Controller
             $request->format
         );
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Report generated successfully',
-            'data' => $report,
-        ]);
+        // OB1: the page posts a form, so it is sent back to the list with what
+        // happened — it was shown the raw JSON this used to return.
+        return redirect()->route('analytics.reports')->with('success', __('analytics.generated'));
     }
 
     /**
@@ -94,17 +92,11 @@ class AnalyticsController extends Controller
         $report = Report::forUser(Auth::id())->findOrFail($id);
 
         if ($report->status !== 'completed' || ! $report->file_path) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Report not ready for download',
-            ], 400);
+            return redirect()->route('analytics.reports')->with('error', __('analytics.not_ready'));
         }
 
         if (! file_exists($report->file_path)) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Report file not found',
-            ], 404);
+            return redirect()->route('analytics.reports')->with('error', __('analytics.file_missing'));
         }
 
         return response()->download($report->file_path, $report->name.'.'.$report->format);
