@@ -38,7 +38,9 @@ final class PrintDesign
         $tag = $raw['tag'] ?? [];
         $w = self::mm($tag['w'] ?? 0);
         $h = self::mm($tag['h'] ?? 0);
-        if ($w < 10 || $h < 10 || $w > 210 || $h > 297) {
+        // PP1: no tag is larger than the largest sheet (A3).
+        [$maxW, $maxH] = PrintSheet::largest();
+        if ($w < 10 || $h < 10 || $w > $maxW || $h > $maxH) {
             self::refuse('tag', 'print.error_design_tag');
         }
 

@@ -33,7 +33,7 @@ what is printed.
 | # | Question | Default |
 |---|---|---|
 | PD1 | Sheet sizes | **A4 and A3**, and **A5** for cards and photos. The office says which papers come in which size. |
-| PD2 | Price per size | **Each paper has a price per size**, black and white and colour, set by the office. A size with no price is not offered on that paper. |
+| PD2 | Price per size | ~~Each paper has a price per size~~ **Each paper is stock of one size, with its own prices** (as built in PP1). A size with no priced paper is not offered. |
 | PD3 | What is sold | Four print products: **name tags** (today), **cards**, **stickers on sheets** and **photo prints**. Each is a Bookstore product in *Print*. |
 | PD4 | Cards | **Flat cards only**: business cards (85 × 55 mm), place and gift cards (A6), invitations (A5). Folded cards are parked. Cards print with **3 mm bleed** and crop marks. |
 | PD5 | Stickers | **On A4 and A3 sticker sheets**, rectangles and circles, cut by a *kiss-cut* finishing. **Rolls are parked** until Akuru has a roll printer and cutter. |
@@ -47,6 +47,15 @@ what is printed.
 ## 3. Slices, in order (one PR each, walked in a browser, at 390 px, in English and Dhivehi)
 
 ### PP1 — Sheet sizes (A4, A3, A5)
+
+> **Built 2026-10-20 (STATUS §5ti)**, with one change from the plan: **a
+> paper is stock of one sheet size**, with its own two prices
+> (`print_paper_options.sheet_size`), instead of a `print_paper_prices`
+> table. A3 gloss is its own paper, as a print shop buys it. Today's price
+> columns stay as they are, and every paper made before reads as A4. A job
+> whose layout changes size moves to that size's first paper. Found and
+> fixed on the walk: the job pages scrolled 24 px sideways on a phone (the
+> grid had no phone column), on A4 too.
 
 - Additive: `print_layouts.sheet_size` (`a4` by default, so every layout
   stays as it is); a `print_paper_prices` table (paper, sheet size,

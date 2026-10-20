@@ -40,7 +40,7 @@ it('makes the Akuru vendor, the Print category and a draft product once, and see
         ->and($product->title_dv)->toMatch('/\p{Thaana}/u');
 
     expect(PrintLayout::query()->count())->toBe(5)
-        ->and(PrintLayout::query()->get()->every(fn (PrintLayout $l) => $l->fitsA4()))->toBeTrue()
+        ->and(PrintLayout::query()->get()->every(fn (PrintLayout $l) => $l->fitsSheet()))->toBeTrue()
         ->and(PrintLayout::query()->where('sheet_code', 'L7160')->first()->tagsPerSheet())->toBe(21)
         ->and(PrintPaperOption::query()->count())->toBe(4)
         ->and(PrintPaperOption::query()->where('is_active', true)->exists())->toBeFalse()
@@ -108,7 +108,7 @@ it('keeps a layout only when its grid fits an A4 sheet, and names the footprint 
     $grid = ['name' => 'Wide', 'columns' => 3, 'rows' => 4, 'tag_w_mm' => 80, 'tag_h_mm' => 60, 'margin_top_mm' => 10, 'margin_left_mm' => 5, 'gutter_x_mm' => 5, 'gutter_y_mm' => 5];
 
     printWeb()->actingAs($office)->from(route('admin.bookshop.print'))->post(route('admin.bookshop.print.layout'), $grid)
-        ->assertSessionHasErrors(['columns' => __('print.error_layout_fits', ['width' => 255, 'height' => 265], 'ar')]);
+        ->assertSessionHasErrors(['columns' => __('print.error_layout_fits', ['width' => 255, 'height' => 265, 'size' => 'A4', 'page_w' => 210, 'page_h' => 297], 'ar')]);
     printWeb()->actingAs($office)->post(route('admin.bookshop.print.layout'), ['tag_w_mm' => 5] + $grid)->assertSessionHasErrors('tag_w_mm');
     printWeb()->actingAs($office)->post(route('admin.bookshop.print.layout'), ['tag_w_mm' => 60] + $grid)->assertSessionHasNoErrors();
     expect(PrintLayout::query()->where('name', 'Wide')->first()->tagsPerSheet())->toBe(12);

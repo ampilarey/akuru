@@ -60,6 +60,9 @@ export default function PrintUploadJob(props) {
     const flush = () => { clearTimeout(timer.current); return send().then(() => inflight.current); };
     useEffect(() => () => clearTimeout(timer.current), []);
 
+    const sheetSize = layouts.find((l) => l.id === job.layout_id)?.sheet_size ?? 'a4';
+    // PP1: a paper is stock of one sheet size; only the chosen layout's size is offered.
+    const sheetPapers = papers.filter((p) => (p.sheet_size ?? 'a4') === sheetSize);
     const paper = papers.find((p) => p.id === job.paper_id);
     const price = job.price;
     const refused = (upload.refusals || []).length > 0;
@@ -97,7 +100,7 @@ export default function PrintUploadJob(props) {
                 </div>
             )}
 
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
                 <div className="space-y-4">
                     <section className="rounded-lg border bg-white p-4" data-testid="print-upload-file">
                         <h2 className="mb-1 font-semibold">{t.upload_heading}</h2>
@@ -135,12 +138,12 @@ export default function PrintUploadJob(props) {
                         <fieldset disabled={!open} className="space-y-3 text-sm">
                             {upload.kind !== 'sheet' && (
                                 <label className="block">{t.layout}<select className="form-input w-full" value={job.layout_id ?? ''} onChange={(e) => change({ layout_id: Number(e.target.value) })} data-testid="print-layout">
-                                    {layouts.map((l) => <option key={l.id} value={l.id}>{l.name} — {fill(t.tags_each, { count: l.tags })} · {l.tag_w_mm} × {l.tag_h_mm} mm</option>)}
+                                    {layouts.map((l) => <option key={l.id} value={l.id}>{l.name} ({l.sheet_label}) — {fill(t.tags_each, { count: l.tags })} · {l.tag_w_mm} × {l.tag_h_mm} mm</option>)}
                                 </select></label>
                             )}
                             <div>
                                 <span className="block">{t.paper_name}</span>
-                                {papers.length === 0 ? <p className="text-amber-800">{t.no_papers}</p> : papers.map((p) => (
+                                {sheetPapers.length === 0 ? <p className="text-amber-800">{t.no_papers}</p> : sheetPapers.map((p) => (
                                     <label key={p.id} className="mt-1 flex items-center gap-2 rounded border px-2 py-1.5">
                                         <input type="radio" name="paper" checked={job.paper_id === p.id} onChange={() => change({ paper_id: p.id, colour: p.price_colour > 0 ? job.colour : false }, { paper_id: p.id })} data-testid={`print-paper-${p.id}`} />
                                         <span className="flex-1" dir="auto">{p.name}{p.gsm ? ` · ${p.gsm} gsm` : ''}</span>

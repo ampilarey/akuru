@@ -9,6 +9,7 @@ use App\Domains\Bookshop\Models\PrintTemplate;
 use App\Domains\Bookshop\Support\PrintDesign;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintJobEntry;
+use App\Domains\Bookshop\Support\PrintSheet;
 use App\Domains\Bookshop\Support\PrintUpload;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Domains\Media\Actions\StoreGeneratedDocumentAction;
@@ -71,7 +72,7 @@ class ProofPrintJobAction
         $options = ['lang' => $locale, 'title' => (string) $job->name, 'grayscale' => ! $job->colour];
         $file = $this->pdf->fromHtml($this->render->document((array) $job->design, $layout, $rows, $options));
         $sheets = array_slice($this->render->execute((array) $job->design, $layout, $rows, $options + ['watermark' => PrintDesk::settings()['watermark']]), 0, self::MAX_PROOF_SHEETS);
-        [$w, $h] = [(int) config('print.proof.width_px', 794), (int) config('print.proof.height_px', 1123)];
+        [$w, $h] = PrintSheet::px($layout->sheet_size);
 
         $store = app(StoreGeneratedDocumentAction::class);
         $proofIds = [];
@@ -121,9 +122,11 @@ class ProofPrintJobAction
         $meta = (array) $job->upload_meta;
         $watermark = PrintDesk::settings()['watermark'];
         $options = ['lang' => $locale, 'title' => (string) $job->name, 'grayscale' => ! $job->colour];
-        [$w, $h] = [(int) config('print.proof.width_px', 794), (int) config('print.proof.height_px', 1123)];
-        $sheetLayout = PrintUpload::sheetLayout();
-        $page = PrintUpload::design(PrintLayout::PAGE_W, PrintLayout::PAGE_H);
+        // PP1: a whole-sheet upload is the size of the job's layout's sheet.
+        $jobLayout = PrintLayout::query()->find($job->print_layout_id);
+        $sheetLayout = PrintUpload::sheetLayout($jobLayout?->sheet_size);
+        $page = PrintUpload::design(...$sheetLayout->sheetMm());
+        [$w, $h] = PrintSheet::px($jobLayout?->sheet_size);
 
         if (($meta['type'] ?? null) === 'pdf') {
             $raster = app(PdfRasterizerInterface::class);

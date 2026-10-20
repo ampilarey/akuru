@@ -118,6 +118,9 @@ export default function PrintJob(props) {
     }, [entry, subjects]);
     const shown = rows[Math.min(preview, Math.max(0, rows.length - 1))] || {};
     const layout = layouts.find((l) => l.id === job.layout_id);
+    const sheetSize = layout?.sheet_size ?? 'a4';
+    // PP1: a paper is stock of one sheet size; only the chosen layout's size is offered.
+    const sheetPapers = papers.filter((p) => (p.sheet_size ?? 'a4') === sheetSize);
     const paper = papers.find((p) => p.id === job.paper_id);
     const price = job.price;
 
@@ -153,7 +156,7 @@ export default function PrintJob(props) {
                 </div>
             )}
 
-            <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
+            <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_22rem]">
                 <div className="space-y-4">
                     {freeform && open && designer ? (
                         <section className="rounded-lg border bg-white p-4" data-testid="print-job-designer">
@@ -257,11 +260,11 @@ export default function PrintJob(props) {
                         <h2 className="mb-2 font-semibold">{t.step_options}</h2>
                         <fieldset disabled={!open} className="space-y-3 text-sm">
                             <label className="block">{t.layout}<select className="form-input w-full" value={job.layout_id ?? ''} onChange={(e) => change({ layout_id: Number(e.target.value) })} data-testid="print-layout">
-                                {layouts.map((l) => <option key={l.id} value={l.id}>{l.name} — {fill(t.tags_each, { count: l.tags })}</option>)}
+                                {layouts.map((l) => <option key={l.id} value={l.id}>{l.name} ({l.sheet_label}) — {fill(t.tags_each, { count: l.tags })}</option>)}
                             </select></label>
                             <div>
                                 <span className="block">{t.paper_name}</span>
-                                {papers.length === 0 ? <p className="text-amber-800">{t.no_papers}</p> : papers.map((p) => (
+                                {sheetPapers.length === 0 ? <p className="text-amber-800">{t.no_papers}</p> : sheetPapers.map((p) => (
                                     <label key={p.id} className="mt-1 flex items-center gap-2 rounded border px-2 py-1.5">
                                         <input type="radio" name="paper" checked={job.paper_id === p.id} onChange={() => change({ paper_id: p.id, colour: p.price_colour > 0 ? job.colour : false }, { paper_id: p.id })} data-testid={`print-paper-${p.id}`} />
                                         <span className="flex-1" dir="auto">{p.name}{p.gsm ? ` · ${p.gsm} gsm` : ''}</span>

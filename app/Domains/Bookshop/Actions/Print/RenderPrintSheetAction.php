@@ -81,7 +81,7 @@ class RenderPrintSheetAction
             'title' => (string) ($options['title'] ?? 'Print sheet'),
             'lang' => (string) ($options['lang'] ?? 'en'),
             'fontCss' => ! empty($options['browser']) ? PrintFontFaces::forBrowser() : PrintFontFaces::forFile(),
-            'page' => ['w' => PrintLayout::PAGE_W, 'h' => PrintLayout::PAGE_H],
+            'page' => ['w' => $layout->sheetMm()[0], 'h' => $layout->sheetMm()[1]],
             'cropMarks' => (bool) ($options['crop_marks'] ?? ($layout->sheet_code === null)),
             'watermark' => $options['watermark'] ?? null,
             'grayscale' => (bool) ($options['grayscale'] ?? false),

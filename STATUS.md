@@ -4983,6 +4983,43 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ti. Print on A4, A3 and A5 sheets (PP1, 2026-10-20)
+
+PRINT_PRODUCTS_PLAN PP1. Every print sheet was A4: layouts had to fit
+210 × 297 mm, designs could be no bigger, a whole-sheet upload had to be
+A4-shaped, and a paper had one price.
+- **Sizes:** `PrintSheet` knows A4, A3 and A5. A layout is laid out on one
+  (`print_layouts.sheet_size`) and must fit it; the print file's pages and
+  the proof pictures are that size (A3 proofs at 1123 × 1587 px).
+- **Papers:** a paper is stock of one size with its own prices
+  (`print_paper_options.sheet_size`). This changes the plan's PD2: A3 gloss
+  is its own paper, as a print shop buys it, and today's price columns stay.
+  The quote refuses a paper of another size, in the page's language.
+- **The job:** the page offers the papers of the chosen layout's size. A job
+  moved to a layout of another size moves to that size's first paper, and
+  is priced there. A whole-sheet upload is the layout's sheet size.
+- **The office:** papers and layouts take a size, listed and in the CSVs.
+  The phrases that said "A4" now say "sheet".
+- Every layout and paper made before reads as A4 (additive migration,
+  default `a4`), so nothing printed before changes.
+- **Fixed:** the two job pages scrolled 24 px sideways on a phone, A4 or
+  not: their grid had no phone column, so the tag preview widened it.
+  `grid-cols-1` now.
+
+**Tests:** `PrintSheetSizesTest` (6): everything before is A4; an A3 grid
+saved, the same grid refused on A4 in Dhivehi with its sizes; a paper keeps
+to its size and price; a job moved to A3 takes the A3 paper and price; an
+A3 layout prints A3 pages and proofs; a whole-sheet upload is judged by the
+A3 shape. The 59 print tests stay green; whole suite 3304 passed, pint clean.
+
+**Walk:** `print-sizes.mjs` (new, in `all.mjs`), 10/10 at 390 × 844. Under
+/dv the office adds an A3 paper and an A3 layout, both listed as A3. On a
+job, choosing the A3 layout leaves only the A3 paper, chosen, at MVR 7.50.
+Under /en the layout names its sheet. Nothing scrolls sideways.
+The real Chrome printed an A3 layout's file as one 841.92 × 1191.12 pt page
+(`pdfinfo`: A3). With `DOCUMENTS_CHROME_PATH` set, `print-office` 8/8,
+`print-design` 18/18 and `print-upload` 10/10 still pass.
+
 ## 5th. Print products beyond name tags — planned (2026-10-20)
 
 `docs/PRINT_PRODUCTS_PLAN.md`. The print desk was audited against the code
