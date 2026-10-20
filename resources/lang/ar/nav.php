@@ -152,6 +152,7 @@ return [
     'blog_requests' => 'طلبات المدونات',
     'print_templates' => 'قوالب الطباعة',
     'print_queue' => 'طابور الطباعة',
+    'print_quotes' => 'عروض أسعار الطباعة للمدارس',
     'complaints' => 'المشكلات المبلّغ عنها',
     'sms_campaigns' => 'عروض الرسائل القصيرة',
     'shop_customers' => 'العملاء',

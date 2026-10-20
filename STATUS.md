@@ -5014,7 +5014,9 @@ products only.
 - two jobs back once each at their own prices, and a line pointed at
   another job's quote line pays nothing quoted.
 
-The 414 Bookstore and print tests stay green.
+The 414 Bookstore and print tests stay green. *School quotes for print*
+sits under the print desk in the office's menu (`NavigationMap`). Whole
+suite 3329 passed; pint clean.
 
 **Walk:** `print-quote.mjs` (new, in `all.mjs`; proofs with this server's
 Chrome), 9/9 at 390 × 844 under /dv:
