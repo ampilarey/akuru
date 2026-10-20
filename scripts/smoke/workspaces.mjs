@@ -15,12 +15,27 @@
  *
  * Environment: SMOKE_BASE_URL, SMOKE_MULTI, SMOKE_VENDOR, SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
+import { execFileSync } from 'node:child_process';
 import { chromium } from 'playwright';
 
 const BASE = process.env.SMOKE_BASE_URL ?? 'http://127.0.0.1:8000';
 const MULTI = process.env.SMOKE_MULTI ?? 'admin@akuru.edu.mv';
 const VENDOR = process.env.SMOKE_VENDOR ?? 'vendor@akuru.edu.mv';
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
+
+// On a local server the walk gives SMOKE_MULTI the parent and vendor roles it
+// needs and takes back only what it gave (it used to ask for this by hand, so
+// it failed in any run of every walk). Elsewhere the roles must be granted.
+const LOCAL = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(BASE);
+const tinker = (code) => execFileSync('php', ['artisan', 'tinker', `--execute=${code}`], { encoding: 'utf8' }).trim().split('\n').pop();
+const granted = LOCAL
+    ? tinker(`$u = \\App\\Domains\\Identity\\Models\\User::where('email', '${MULTI}')->firstOrFail(); $g = []; foreach (['parent', 'vendor'] as $r) { if (! $u->hasRole($r)) { $u->assignRole($r); $g[] = $r; } } app(\\Spatie\\Permission\\PermissionRegistrar::class)->forgetCachedPermissions(); echo implode(',', $g);`).split(',').filter(Boolean)
+    : [];
+const revoke = () => {
+    if (granted.length) {
+        tinker(`$u = \\App\\Domains\\Identity\\Models\\User::where('email', '${MULTI}')->first(); foreach (${JSON.stringify(granted).replace(/"/g, "'")} as $r) { $u?->removeRole($r); } app(\\Spatie\\Permission\\PermissionRegistrar::class)->forgetCachedPermissions(); echo 'ok';`);
+    }
+};
 
 const HERMETIC_ARGS = [
     '--disable-background-networking',
@@ -55,6 +70,7 @@ async function finish() {
     const failed = results.filter(([, ok]) => !ok).length;
     console.log(`\n${results.length - failed}/${results.length} steps passed.`);
     await browser.close();
+    revoke();
     process.exit(failed === 0 ? 0 : 1);
 }
 

@@ -229,15 +229,16 @@ form = await saveCode('10');
 await form.getByText(exists, { exact: true }).waitFor({ timeout: 10000 }).catch(() => {});
 check('and the same code again, in Dhivehi', flat(await form.textContent()).includes(exists), flat(await form.textContent()).slice(-160));
 
-// ------------------------------------- a credit to an account nobody has
+// ------------------------------------- a credit with no account chosen
+// The account is picked by name since C22 BH1 (#768), so one nobody has can
+// no longer be typed; sent with none chosen, the field is named in Dhivehi.
 await admin.goto(`${BASE}/dv/admin/commerce`, { waitUntil: 'networkidle' });
-const creditForm = admin.locator('main form', { has: admin.locator(`input[aria-label="${book.commerce_user_id}"]`) }).first();
-await creditForm.locator(`input[aria-label="${book.commerce_user_id}"]`).fill('999999999');
+const creditForm = admin.locator('main form', { has: admin.locator('[data-testid="credit-account"]') }).first();
 await creditForm.locator(`input[aria-label="${book.commerce_amount_mvr}"]`).fill('5');
 await creditForm.getByRole('button', { name: book.commerce_credit, exact: true }).click();
-const noAccount = tinker(`echo __('validation.exists', ['attribute' => __('admin.commerce_attr_user_id', [], 'dv')], 'dv');`);
+const noAccount = tinker(`echo __('validation.required', ['attribute' => __('admin.commerce_attr_user_id', [], 'dv')], 'dv');`);
 await creditForm.getByText(noAccount, { exact: true }).waitFor({ timeout: 10000 }).catch(() => {});
-check('a credit to an account nobody has is refused, the field named in Dhivehi', flat(await creditForm.textContent()).includes(noAccount), flat(await creditForm.textContent()).slice(-160));
+check('a credit with no account chosen is refused, the field named in Dhivehi', flat(await creditForm.textContent()).includes(noAccount), flat(await creditForm.textContent()).slice(-160));
 
 // ------------------------------------- the planted purchase, named in Dhivehi
 const purchase = flat(await admin.locator('main [data-testid="gift-card-orders"] tr', { hasText: ORDER }).first().textContent().catch(() => ''));
