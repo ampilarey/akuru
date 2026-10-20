@@ -101,3 +101,40 @@ function pdfBrokenLengthAndInlineImage(): string
         5 => "<< /Length 5 >>\nstream\n$page\nendstream",
     ], 1);
 }
+
+/** BACKLOG B2: a title across the page, then two columns of three lines each. */
+function pdfTwoColumns(): string
+{
+    $page = "BT /F1 18 Tf 72 740 Td (A title that runs across both of the columns below) Tj ET\n";
+    foreach (['one', 'two', 'three'] as $i => $word) {
+        $y = 700 - $i * 14;
+        $page .= "BT /F1 11 Tf 72 $y Td (Left $word) Tj ET\n";
+        $page .= "BT /F1 11 Tf 330 $y Td (Right $word) Tj ET\n";
+    }
+
+    return pdfFromObjects([
+        1 => '<< /Type /Catalog /Pages 2 0 R >>',
+        2 => '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+        3 => '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
+        4 => '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+        5 => pdfStream('', $page),
+    ], 1);
+}
+
+/** BACKLOG B2: a three-column table — not two columns; it reads row by row as before. */
+function pdfThreeColumnTable(): string
+{
+    $page = '';
+    foreach ([['Name', 'Class', 'Fee'], ['Aisha', '3B', '100'], ['Ahmed', '4A', '120'], ['Mariyam', '5C', '90']] as $i => [$a, $b, $c]) {
+        $y = 700 - $i * 14;
+        $page .= "BT /F1 11 Tf 72 $y Td ($a) Tj ET\nBT /F1 11 Tf 260 $y Td ($b) Tj ET\nBT /F1 11 Tf 450 $y Td ($c) Tj ET\n";
+    }
+
+    return pdfFromObjects([
+        1 => '<< /Type /Catalog /Pages 2 0 R >>',
+        2 => '<< /Type /Pages /Kids [3 0 R] /Count 1 >>',
+        3 => '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>',
+        4 => '<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>',
+        5 => pdfStream('', $page),
+    ], 1);
+}
