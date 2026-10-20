@@ -165,6 +165,7 @@ const WALKS = [
     { name: 'print-cards', writes: true, asks: 'Can a customer find Akuru\'s five card designs and start a business card on a phone, asked for name, role, phone and email in Dhivehi, and see it priced?' },
     { name: 'print-stickers', writes: true, asks: 'Does a customer find Akuru\'s sticker designs, the round ones drawn round, and start a round name sticker on a phone in Dhivehi, priced from the sticker sheet?' },
     { name: 'print-photos', writes: true, asks: 'Can a customer upload a photo on a phone, see it judged at photo resolution, choose fill or fit, and have two 4 × 6 prints counted and priced, in Dhivehi?' },
+    { name: 'print-class', writes: true, asks: 'Can a teacher fill a name-tag list from their own class on a phone in Dhivehi — one tag per pupil, with the class — while a parent gets no such choice and is refused the names?' },
     { name: 'print-freeform', writes: true, asks: 'Can a customer design name tags freely in Arabic — a text and a rectangle drawn, Arabic typed, turned 12°, kept on reload — and see Chrome\'s proof of it?' },
     { name: 'print-upsell', writes: true, asks: 'Does a school book list offer the child\'s name tags in Dhivehi, with the grade\'s subjects chosen, can a design be ordered again at today\'s price, and does the office see print sales by paper and month?' },
     { name: 'pick-by-name', writes: true, asks: 'Does the office choose the pupil, the teacher and the account by name — on the behaviour, plan, fee adjustment and wallet credit forms — instead of typing an id?' },

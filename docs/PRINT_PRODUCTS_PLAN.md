@@ -139,6 +139,15 @@ what is printed.
 
 ### PP6 — For a class, and bulk quotes
 
+> **Split in two.** **PP6a, names from a class — built 2026-10-20 (STATUS
+> §5tn).** The office is the roles that open Academics' class directory
+> (super admin, admin, headmaster, supervisor) with this year's active
+> classes; a teacher has the classes they teach
+> (`ListClassesTaughtByUserAction`). The names come through Academics'
+> own actions into the page's list, as if pasted, so the autosave and the
+> limits apply as to any list. Only the name, and the class where the design
+> prints one. **PP6b, print in bulk quotes**, is next.
+
 - A class roster contract from People (names in the three languages, no
   other fields); the configurator's *From a class* for the office and a
   class's teachers (PD8).

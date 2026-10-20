@@ -10,6 +10,8 @@ use App\Domains\Bookshop\Actions\Print\UploadPrintDesignAction;
 use App\Domains\Bookshop\Http\Controllers\Concerns\ResolvesCart;
 use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintTemplate;
+use App\Domains\Bookshop\Support\PrintClassLists;
+use App\Domains\Bookshop\Support\PrintDesign;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintProducts;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
@@ -156,7 +158,19 @@ class ShopPrintController extends Controller
             'designer' => $row->source === 'freeform' ? collect(app(\App\Domains\Bookshop\Actions\Print\ListPrintTemplatesAction::class)->designerProps())
                 ->only(['images', 'field_keys', 'max_elements'])->all() + ['sample' => \App\Domains\Bookshop\Actions\Print\ListPrintTemplatesAction::sampleRow(app()->getLocale())] : null,
             'signed_in' => $request->user() !== null,
+            // PP6a: the classes whose names this person may print — none for a parent or a guest.
+            'classes' => $row->isUpload() ? [] : PrintClassLists::classesFor($request->user()),
         ]);
+    }
+
+    /** PP6a: a class's names for the job's list — only from a class the caller may see. */
+    public function classNames(Request $request, int $job): JsonResponse
+    {
+        $this->available($request);
+        $row = $this->job($request, $job);
+        $data = $request->validate(['class' => 'required|integer']);
+
+        return response()->json(['rows' => PrintClassLists::rows($request->user(), (int) $data['class'], PrintDesign::fieldKeys((array) $row->design))]);
     }
 
     /** Autosave: the page sends what changed, and gets the job back priced, or the refusal. */

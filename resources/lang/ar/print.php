@@ -490,4 +490,10 @@ return [
     'photo_prints_count' => ':count صور مطبوعة',
     'photo_door_heading' => 'اطبع صورك',
     'photo_door_body' => 'ارفع صورة واختر مقاسها وورقها، وتطبعها أكورو.',
+    // PP6a: names from a class.
+    'from_class' => 'من صف',
+    'from_class_fill' => 'املأ القائمة',
+    'error_class_not_yours' => 'يمكنك طباعة أسماء صفوفك فقط.',
+    'error_class_no_name' => 'لا يحتوي هذا التصميم على اسم لملئه.',
+    'error_class_empty' => 'لا يوجد طلاب في هذا الصف بعد.',
 ];

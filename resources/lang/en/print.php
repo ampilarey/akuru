@@ -500,4 +500,10 @@ return [
     'photo_prints_count' => ':count prints',
     'photo_door_heading' => 'Print your photos',
     'photo_door_body' => 'Upload a photo, choose its size and paper, and Akuru prints it.',
+    // PP6a: names from a class.
+    'from_class' => 'From a class',
+    'from_class_fill' => 'Fill the list',
+    'error_class_not_yours' => 'You can print the names of your own classes only.',
+    'error_class_no_name' => 'This design has no name to fill.',
+    'error_class_empty' => 'This class has no pupils yet.',
 ];

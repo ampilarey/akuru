@@ -118,6 +118,8 @@ Route::middleware(['auth', 'customer_password'])->group(function () {
     // NT5: the customer's own artwork.
     Route::post('shop/print/uploads', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'startUpload'])->name('public.shop.print.upload.start')->middleware('throttle:20,1,shop-print-upload-start');
     Route::post('shop/print/jobs/{job}/upload', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'upload'])->name('public.shop.print.upload')->whereNumber('job')->middleware('throttle:20,1,shop-print-upload');
+    // PRINT_PRODUCTS_PLAN PP6a: a class's names into the job's list (the office's classes, or a teacher's own).
+    Route::get('shop/print/jobs/{job}/class-names', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'classNames'])->name('public.shop.print.class_names')->whereNumber('job')->middleware('throttle:30,1,shop-print-class');
     Route::post('shop/print/jobs/{job}/cart', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'addToCart'])->name('public.shop.print.cart')->whereNumber('job')->middleware('throttle:20,1,shop-print-cart');
     Route::post('shop/print/jobs/{job}/name', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'rename'])->name('public.shop.print.rename')->whereNumber('job')->middleware('throttle:30,1,shop-print-rename');
     Route::delete('shop/print/jobs/{job}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'destroy'])->name('public.shop.print.destroy')->whereNumber('job')->middleware('throttle:30,1,shop-print-remove');
