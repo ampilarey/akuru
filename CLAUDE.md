@@ -11,6 +11,7 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 | `docs/LIBRARY_PLAN.md` | Akuru Digital Library (L-track, formerly Knowledge Library) requirements |
 | `docs/EDUPAGE_FEATURES_PLAN.md` | EduPage parity track (E1–E22). **Verify every row against the code before starting a slice** — it has been wrong 16 times across two audits, always recording as missing work that already shipped. Its own correction section says how to audit it. |
 | `docs/KNOWN_ISSUES.md` | open defects by severity, and what is operator-blocked rather than unbuilt |
+| `docs/MOBILE_FIRST.md` | the phone-first rule (seven points), how CI and `phone-first.mjs` hold it, the 2026-10-20 audit and slices MF1–MF6 — **read before building or changing any screen** |
 | `docs/OWNER_TODO.md` | the owner's own checklist, in order (server, `.env`, screens, pages, switches, decisions) — update it when an item is done or added |
 | `docs/BACKLOG.md` | parked items and ideas kept for later, with why — update it in the PR that parks or builds one |
 | `docs/BOOKSHOP_PLAN.md` | Akuru Bookstore (named 2026-09-26; multi-vendor books and educational items) plan: slices B0–B9, the owner's decisions (all made 2026-09-25) and the audit |
@@ -42,6 +43,7 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 ## Conventions
 
 - New UI = Inertia + React. No new Blade screens (existing Blade keeps running until replaced). All screens trilingual-ready (EN/DV/AR) and RTL-safe; every listing gets CSV export.
+- **Phone-first** (`docs/MOBILE_FIRST.md`): design every screen at 390 px first and widen it with `sm:`/`md:`/`lg:` — no `@media (max-width)` or `max-*:` patches. What the page is for starts on the first phone screen (mark it `data-phone-main`); filters fold under *Filter and sort*; records come before the *New …* form; every table is `table-stack` with `data-label` cells. `PhoneFirstStylesTest` (CI) and `phone-first.mjs` hold it.
 - Pest for new tests; `tests/Architecture/` is CI-blocking.
 - Enums: string-backed PHP enums. Money: integer laari or decimal(10,2) consistently per ADR. Dates: app timezone Indian/Maldives.
 - Migrations live in the owning domain's `Database/migrations`.
@@ -53,7 +55,9 @@ This file governs every AI-assisted coding session in this repo. It encodes the 
 ## Definition of done (every slice)
 
 code + tests green + arch tests green + **walked in a browser** (a user
-can complete the task in a browser, not only when tests pass) +
+can complete the task in a browser, not only when tests pass) + **walked
+on a 390 px phone, in English and Dhivehi**, for any screen added or
+changed (`docs/MOBILE_FIRST.md`) +
 STATUS.md updated + (if a decision was made) ADR written + no
 out-of-scope files touched.
 
