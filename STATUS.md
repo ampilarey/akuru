@@ -5010,7 +5010,7 @@ by text recognition (OCR):
 - **Off by default**, and it stays off until the owner installs Tesseract
   (OWNER_TODO A, E). With it off, nothing changes.
 
-**Tests:** `ScannedPdfRecognitionTest` (9), with a fake PDF, Ghostscript and
+**Tests:** `ScannedPdfRecognitionTest` (9; whole suite 3298 passed, pint clean), with a fake PDF, Ghostscript and
 Tesseract: nothing starts while it is off or without an engine; it is queued
 and announced; it reads three pages per run and keeps the typed ones; a
 re-save keeps the pages and a new PDF is read again; a run whose PDF was
