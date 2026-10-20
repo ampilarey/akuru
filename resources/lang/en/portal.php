@@ -582,4 +582,6 @@ return [
     'error_form_which_child' => 'Please say which child this is for.',
     'col_blog' => 'Blog',
     'blog_waiting_for_you' => 'waiting for you',
+    'absence_new' => 'New absence note',
+    'events_new' => 'Register for an event',
 ];

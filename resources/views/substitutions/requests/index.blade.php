@@ -32,7 +32,7 @@
                         {{ __('substitutions.teacher_absences_link') }}
                     </a>
                     <a href="{{ route('substitutions.requests.create') }}"
-                       class="bg-brandBlue-500 hover:bg-brandBlue-600 text-white px-4 py-2 rounded-lg flex items-center" data-testid="new-request">
+                       class="bg-brandMaroon-600 hover:bg-brandMaroon-700 text-white px-4 py-2 rounded-lg flex items-center" data-testid="new-request">
                         <i class="fas fa-plus me-2"></i>
                         {{ __('substitutions.new_request') }}
                     </a>
@@ -147,7 +147,7 @@
                                         @endif
 
                                         <a href="{{ route('substitutions.requests.show', $request) }}"
-                                           class="bg-brandBlue-500 hover:bg-brandBlue-600 text-white px-3 py-1 rounded text-xs" data-testid="view">
+                                           class="bg-brandMaroon-600 hover:bg-brandMaroon-700 text-white px-3 py-1 rounded text-xs" data-testid="view">
                                             <i class="fas fa-eye me-1"></i>
                                             {{ __('substitutions.view') }}
                                         </a>
@@ -179,7 +179,7 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-2">{{ __('substitutions.empty_title') }}</h3>
                     <p class="text-gray-500 mb-6">{{ __('substitutions.empty_body') }}</p>
                     <a href="{{ route('substitutions.requests.create') }}"
-                       class="bg-brandBlue-500 hover:bg-brandBlue-600 text-white px-4 py-2 rounded-lg">
+                       class="bg-brandMaroon-600 hover:bg-brandMaroon-700 text-white px-4 py-2 rounded-lg">
                         <i class="fas fa-plus me-2"></i>
                         {{ __('substitutions.create_first') }}
                     </a>

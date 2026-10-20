@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
+import PhoneFold from '../../Components/PhoneFold';
 import AppShell from '../../Layouts/AppShell';
 
 export default function Events({ children, events, registrations, t = {} }) {
@@ -21,37 +22,40 @@ export default function Events({ children, events, registrations, t = {} }) {
                 <p className="mb-4 rounded-lg border bg-white p-4 text-sm text-gray-600">{t.events_no_children || 'No children are linked to this login.'}</p>
             )}
 
+            {/* docs/MOBILE_FIRST.md rule 4 (MF3): on a phone the form folds under one button, so the records below start on the first screen. */}
             {children.length > 0 && events.length > 0 && (
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        form.post(`/portal/events/${form.data.event_id}/register`, { preserveScroll: true });
-                    }}
-                    className="mb-6 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
-                >
-                    <label className="block text-sm">
-                        <span className="mb-1 block text-gray-600">{t.pick_child || 'Child'}</span>
-                        <select className="form-input w-full" value={form.data.student_id} onChange={(e) => form.setData('student_id', e.target.value)}>
-                            {children.map((child) => <option key={child.id} value={child.id}>{child.name}</option>)}
-                        </select>
-                        {form.errors.student_id && <span className="text-xs text-red-600">{form.errors.student_id}</span>}
-                    </label>
-                    <label className="block text-sm">
-                        <span className="mb-1 block text-gray-600">{t.events_event || 'Event'}</span>
-                        <select className="form-input w-full" value={form.data.event_id} onChange={(e) => form.setData('event_id', e.target.value)}>
-                            {events.map((event) => (
-                                <option key={event.id} value={event.id}>{event.title} ({seats(event)})</option>
-                            ))}
-                        </select>
-                        {form.errors.event_id && <span className="text-xs text-red-600">{form.errors.event_id}</span>}
-                    </label>
-                    <button type="submit" className="btn-primary self-end" disabled={form.processing}>{t.events_register || 'Register'}</button>
-                    <FormErrors errors={form.errors} except={['student_id', 'event_id']} className="md:col-span-3" />
-                </form>
+                <PhoneFold label={t.events_new || 'Register for an event'} forceOpen={Object.keys(form.errors).length > 0} testId="events-new">
+                    <form
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            form.post(`/portal/events/${form.data.event_id}/register`, { preserveScroll: true });
+                        }}
+                        className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
+                    >
+                        <label className="block text-sm">
+                            <span className="mb-1 block text-gray-600">{t.pick_child || 'Child'}</span>
+                            <select className="form-input w-full" value={form.data.student_id} onChange={(e) => form.setData('student_id', e.target.value)}>
+                                {children.map((child) => <option key={child.id} value={child.id}>{child.name}</option>)}
+                            </select>
+                            {form.errors.student_id && <span className="text-xs text-red-600">{form.errors.student_id}</span>}
+                        </label>
+                        <label className="block text-sm">
+                            <span className="mb-1 block text-gray-600">{t.events_event || 'Event'}</span>
+                            <select className="form-input w-full" value={form.data.event_id} onChange={(e) => form.setData('event_id', e.target.value)}>
+                                {events.map((event) => (
+                                    <option key={event.id} value={event.id}>{event.title} ({seats(event)})</option>
+                                ))}
+                            </select>
+                            {form.errors.event_id && <span className="text-xs text-red-600">{form.errors.event_id}</span>}
+                        </label>
+                        <button type="submit" className="btn-primary self-end" disabled={form.processing}>{t.events_register || 'Register'}</button>
+                        <FormErrors errors={form.errors} except={['student_id', 'event_id']} className="md:col-span-3" />
+                    </form>
+                </PhoneFold>
             )}
 
             <FormErrors errors={refusals.unplaced} className="mb-3" />
-            <ul className="grid gap-3">
+            <ul className="grid gap-3" data-phone-main>
                 {events.map((event) => (
                     <li key={event.id} className="rounded-lg border bg-white p-4 text-sm">
                         <div className="mb-1 flex flex-wrap justify-between gap-2">

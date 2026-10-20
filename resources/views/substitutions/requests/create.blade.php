@@ -6,7 +6,7 @@
 <div class="min-h-screen bg-gray-50 py-6">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-8">
-            <a href="{{ route('substitutions.requests.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 flex items-center mb-4">
+            <a href="{{ route('substitutions.requests.index') }}" class="text-brandMaroon-600 hover:text-brandMaroon-800 flex items-center mb-4">
                 <i class="fas fa-arrow-left me-2 rtl:rotate-180"></i>
                 {{ __('substitutions.back') }}
             </a>
@@ -112,7 +112,7 @@
                     <a href="{{ route('substitutions.requests.index') }}" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300">
                         {{ __('substitutions.cancel') }}
                     </a>
-                    <button type="submit" class="px-4 py-2 bg-brandBlue-500 hover:bg-brandBlue-600 text-white rounded-lg" data-testid="request-save">
+                    <button type="submit" class="px-4 py-2 bg-brandMaroon-600 hover:bg-brandMaroon-700 text-white rounded-lg" data-testid="request-save">
                         <i class="fas fa-plus me-2"></i>
                         {{ __('substitutions.create') }}
                     </button>

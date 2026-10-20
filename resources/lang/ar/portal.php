@@ -572,4 +572,6 @@ return [
     'error_form_which_child' => 'يرجى تحديد الطفل المقصود.',
     'col_blog' => 'المدونة',
     'blog_waiting_for_you' => 'بانتظارك',
+    'absence_new' => 'مذكرة غياب جديدة',
+    'events_new' => 'التسجيل في فعالية',
 ];

@@ -14,7 +14,7 @@
 <div class="min-h-screen bg-gray-50 py-6">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="mb-8">
-            <a href="{{ route('substitutions.requests.index') }}" class="text-brandBlue-600 hover:text-brandBlue-800 flex items-center mb-4">
+            <a href="{{ route('substitutions.requests.index') }}" class="text-brandMaroon-600 hover:text-brandMaroon-800 flex items-center mb-4">
                 <i class="fas fa-arrow-left me-2 rtl:rotate-180"></i>
                 {{ __('substitutions.back') }}
             </a>
@@ -116,7 +116,7 @@
                             <textarea name="notes" id="assign_notes" rows="2" class="form-input w-full rounded-md">{{ old('notes') }}</textarea>
                             @error('notes')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
                         </div>
-                        <button type="submit" class="bg-brandBlue-500 hover:bg-brandBlue-600 text-white px-4 py-2 rounded-lg" data-testid="assign">{{ __('substitutions.assign') }}</button>
+                        <button type="submit" class="bg-brandMaroon-600 hover:bg-brandMaroon-700 text-white px-4 py-2 rounded-lg" data-testid="assign">{{ __('substitutions.assign') }}</button>
                     </form>
                 @endif
 
