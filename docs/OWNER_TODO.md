@@ -81,7 +81,7 @@ production.
 | ☐ | What | Why it waits | Detail |
 |---|---|---|---|
 | ☐ | **Tax treatment of writer earnings** | Writer and student payouts stay off until an accountant confirms how sales, tips and rewards are taxed. | BACKLOG A9, WHATS_LEFT D1 |
-| ☐ | **A native reader for the Dhivehi and Arabic** | Every DV/AR string is a first pass. One example: the menu word `ސަލާމް` used for *Absences*. | BACKLOG A10, WHATS_LEFT D2 |
+| ☐ | **A native reader for the Dhivehi and Arabic** | Every DV/AR string is a first pass. The menu's *Absences* now reads ހާޒިރުނުވުންތައް, as its page does (2026-10-20, STATUS §5tq); please confirm ސަލާމް ނޯޓް for a parent's *absence note* and ސަލާމް ބެލުން for *Review notes* — leave-note wording, kept. | BACKLOG A10, WHATS_LEFT D2 |
 | ☑ | **The old Blade screens** | Decided 2026-10-20 ("do all"): **translated**, not retired; retiring stays possible. All done: analytics and the old menu (§5td), the Qur'an progress pages (§5te), e-learning (§5tf). | BACKLOG C21 |
 | ☐ | **Branch protection on `main`** | You said "keep this for later" (2026-10-03). Settings are in `docs/BRANCH_PROTECTION.md`; it needs a repo admin. | OWNER_ACTIONS 6 |
 | ☐ | **Linked separate logins** | Only if wanted, as its own track. | SIGN_IN_PLAN D7, WHATS_LEFT D4 |

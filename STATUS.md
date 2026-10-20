@@ -4983,6 +4983,29 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tq. The backlog pass, and the menu's word for absences (BP1, 2026-10-20)
+
+The backlog was read row by row (`docs/BACKLOG.md` §A–§C, and the open
+entries in KNOWN_ISSUES):
+- **§A** is the owner's: branch protection, the policy pages, the staging
+  OTP walk, the payouts' tax answer, and the native reader.
+- **§B** is built except B2 (two-column and glyph-reversed PDFs, next as
+  BP2), B11's remaining notices (BP3), B7's private highlights (dropped by
+  decision) and B13 (not MVP, on purpose).
+- **§C**'s tracks are built. What they leave is operator-gated (DNS, the
+  Qur'an read switch after dual-write, dropping the archived tables after a
+  stable period), an owner decision (paid themes), or marked fine as it is
+  (the per-filter listing cache).
+- **KNOWN_ISSUES** open: the walk-order harness (BP4) and the production
+  route cache (operator).
+
+**This slice:** the Dhivehi menu called *Absences* ސަލާމް, which reads as
+leave. The page it opens is the list of pupils who did not attend, titled
+ހާޒިރުނުވުންތައް, and the menu now says the same. ސަލާމް ނޯޓް for a
+parent's absence note and ސަލާމް ބެލުން for reviewing them are leave-note
+wording, as a school would say it, so they are kept and left for the native
+reader (OWNER_TODO F, WHATS_LEFT D2).
+
 ## 5tp. A full walk run on a fresh database, and what it found (2026-10-20)
 
 `all.mjs` on a freshly seeded database passed 90/102 after the print plan.
