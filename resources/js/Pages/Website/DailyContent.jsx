@@ -111,7 +111,7 @@ export default function DailyContent({ items = [], filters = {}, month, t = {} }
             </section>
 
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white" data-testid="daily-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.daily_col_date || 'Date'}</th>
@@ -125,10 +125,10 @@ export default function DailyContent({ items = [], filters = {}, month, t = {} }
                         {items.length === 0 && <tr><td className="px-3 py-8 text-center text-gray-500" colSpan="5">{t.daily_none || 'No items this month.'}</td></tr>}
                         {items.map((item) => (
                             <tr key={item.id} className="border-t align-top" data-testid="daily-row">
-                                <td className="whitespace-nowrap px-3 py-2 text-gray-900" dir="ltr">{item.publish_date}</td>
-                                <td className="px-3 py-2 text-gray-900">{typeLabel(item.content_type)}</td>
-                                <td className="px-3 py-2 text-gray-700" data-testid="daily-row-status">{statusLabel(item.status)}</td>
-                                <td className="px-3 py-2 text-gray-700">{preview(item)}</td>
+                                <td data-label={t.daily_col_date || 'Date'} className="whitespace-nowrap px-3 py-2 text-gray-900" dir="ltr">{item.publish_date}</td>
+                                <td data-label={t.daily_type || 'Type'} className="px-3 py-2 text-gray-900">{typeLabel(item.content_type)}</td>
+                                <td data-label={t.daily_status || 'Status'} className="px-3 py-2 text-gray-700" data-testid="daily-row-status">{statusLabel(item.status)}</td>
+                                <td data-label={t.daily_col_preview || 'Preview'} className="px-3 py-2 text-gray-700">{preview(item)}</td>
                                 <td className="whitespace-nowrap px-3 py-2"><Link href={`/admin/public-site/daily-content/${item.id}/edit`} className="text-xs font-semibold text-[#1D4E89] underline" data-testid="daily-edit">{t.research_edit || 'Edit'}</Link></td>
                             </tr>
                         ))}

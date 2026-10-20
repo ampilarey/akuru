@@ -44,7 +44,7 @@ export default function Cpd({ staff, rows, summary = [], t = {} }) {
                     <a className="btn-secondary" href="/hr/cpd/summary/export">{t.cpd_export_summary || 'Export summary CSV'}</a>
                 </div>
                 <div className="overflow-x-auto rounded-lg border bg-white">
-                    <table className="min-w-full text-sm" data-testid="cpd-summary">
+                    <table className="table-stack min-w-full text-sm" data-testid="cpd-summary">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">{t.staff || 'Staff'}</th>
@@ -60,11 +60,11 @@ export default function Cpd({ staff, rows, summary = [], t = {} }) {
                             )}
                             {summary.map((row) => (
                                 <tr key={row.staff_profile_id} className="border-t">
-                                    <td className="px-3 py-2">{row.staff_name}</td>
-                                    <td className="px-3 py-2">{row.hours_this_year}</td>
-                                    <td className="px-3 py-2">{row.records_this_year}</td>
-                                    <td className="px-3 py-2">{row.hours_total}</td>
-                                    <td className="px-3 py-2">{row.records_total}</td>
+                                    <td data-label={t.staff || 'Staff'} className="px-3 py-2">{row.staff_name}</td>
+                                    <td data-label={t.cpd_hours_year || 'Hours this year'} className="px-3 py-2">{row.hours_this_year}</td>
+                                    <td data-label={t.cpd_records_year || 'Records this year'} className="px-3 py-2">{row.records_this_year}</td>
+                                    <td data-label={t.cpd_hours_total || 'Hours all time'} className="px-3 py-2">{row.hours_total}</td>
+                                    <td data-label={t.cpd_records_total || 'Records all time'} className="px-3 py-2">{row.records_total}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -73,7 +73,7 @@ export default function Cpd({ staff, rows, summary = [], t = {} }) {
             </div>
             <h2 className="mb-2 font-medium">{t.cpd_records || 'Records'}</h2>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.staff || 'Staff'}</th>
@@ -86,11 +86,11 @@ export default function Cpd({ staff, rows, summary = [], t = {} }) {
                     <tbody>
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.staff_name}</td>
-                                <td className="px-3 py-2">{row.title}</td>
-                                <td className="px-3 py-2">{row.provider}</td>
-                                <td className="px-3 py-2">{row.hours}</td>
-                                <td className="px-3 py-2">{row.date}</td>
+                                <td data-label={t.staff || 'Staff'} className="px-3 py-2">{row.staff_name}</td>
+                                <td data-label={t.cpd_course || 'Title'} className="px-3 py-2">{row.title}</td>
+                                <td data-label={t.cpd_provider || 'Provider'} className="px-3 py-2">{row.provider}</td>
+                                <td data-label={t.cpd_hours || 'Hours'} className="px-3 py-2">{row.hours}</td>
+                                <td data-label={t.date || 'Date'} className="px-3 py-2">{row.date}</td>
                             </tr>
                         ))}
                     </tbody>

@@ -30,7 +30,7 @@ export default function Index({ years, yearId, rows, classes = [], t = {} }) {
                 <a className="btn-secondary" href={`/finance/collections/export?academic_year_id=${yearId || ''}`}>{t.export_csv || 'Export CSV'}</a>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.collections_class || 'Class'}</th>
@@ -45,10 +45,10 @@ export default function Index({ years, yearId, rows, classes = [], t = {} }) {
                         )}
                         {rows.map((row) => (
                             <tr key={`${row.class_id}-${row.month}`} className="border-t">
-                                <td className="px-3 py-2">{classLabel(row.class_id)}</td>
-                                <td className="px-3 py-2">{monthName(row.month)}</td>
-                                <td className="px-3 py-2">{row.billed}</td>
-                                <td className="px-3 py-2">{row.collected}</td>
+                                <td data-label={t.collections_class || 'Class'} className="px-3 py-2">{classLabel(row.class_id)}</td>
+                                <td data-label={t.collections_month || 'Month'} className="px-3 py-2">{monthName(row.month)}</td>
+                                <td data-label={t.collections_billed || 'Billed'} className="px-3 py-2">{row.billed}</td>
+                                <td data-label={t.collections_collected || 'Collected'} className="px-3 py-2">{row.collected}</td>
                             </tr>
                         ))}
                     </tbody>

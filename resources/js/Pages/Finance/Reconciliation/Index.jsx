@@ -32,7 +32,7 @@ export default function Index({ rows, daily, from = '', to = '', t = {} }) {
             </div>
             <h2 className="mb-2 text-sm font-medium">{t.reconciliation_daily || 'Daily totals by method'}</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.reconciliation_date || 'Date'}</th>
@@ -47,10 +47,10 @@ export default function Index({ rows, daily, from = '', to = '', t = {} }) {
                         )}
                         {daily.map((row) => (
                             <tr key={`${row.date}-${row.method}`} className="border-t">
-                                <td className="px-3 py-2">{row.date}</td>
-                                <td className="px-3 py-2">{methodName(row.method)}</td>
-                                <td className="px-3 py-2">{row.total}</td>
-                                <td className="px-3 py-2">{row.count}</td>
+                                <td data-label={t.reconciliation_date || 'Date'} className="px-3 py-2">{row.date}</td>
+                                <td data-label={t.reconciliation_method || 'Method'} className="px-3 py-2">{methodName(row.method)}</td>
+                                <td data-label={t.invoices_col_total || 'Total'} className="px-3 py-2">{row.total}</td>
+                                <td data-label={t.reconciliation_count || 'Receipts'} className="px-3 py-2">{row.count}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -58,7 +58,7 @@ export default function Index({ rows, daily, from = '', to = '', t = {} }) {
             </div>
             <h2 className="mb-2 text-sm font-medium">{t.reconciliation_receipts || 'Payments, receipts and balances'}</h2>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.reconciliation_receipt || 'Receipt'}</th>
@@ -75,12 +75,12 @@ export default function Index({ rows, daily, from = '', to = '', t = {} }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.receipt_number} className="border-t">
-                                <td className="px-3 py-2">{row.receipt_number}</td>
-                                <td className="px-3 py-2">{row.payment_reference || '—'}</td>
-                                <td className="px-3 py-2">{row.invoice_number}</td>
-                                <td className="px-3 py-2">{methodName(row.method)}</td>
-                                <td className="px-3 py-2">{row.amount}</td>
-                                <td className="px-3 py-2">{row.invoice_balance}</td>
+                                <td data-label={t.reconciliation_receipt || 'Receipt'} className="px-3 py-2">{row.receipt_number}</td>
+                                <td data-label={t.reconciliation_payment || 'Payment'} className="px-3 py-2">{row.payment_reference || '—'}</td>
+                                <td data-label={t.plans_col_invoice || 'Invoice'} className="px-3 py-2">{row.invoice_number}</td>
+                                <td data-label={t.reconciliation_method || 'Method'} className="px-3 py-2">{methodName(row.method)}</td>
+                                <td data-label={t.amount || 'Amount'} className="px-3 py-2">{row.amount}</td>
+                                <td data-label={t.arrears_balance || 'Balance'} className="px-3 py-2">{row.invoice_balance}</td>
                             </tr>
                         ))}
                     </tbody>

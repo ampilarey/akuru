@@ -52,7 +52,7 @@ export default function Observations({ staff, classes, subjects, rows, t = {} })
                 <FormErrors errors={form.errors} className="md:col-span-4" />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.staff || 'Staff'}</th>
@@ -68,11 +68,11 @@ export default function Observations({ staff, classes, subjects, rows, t = {} })
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.staff_name}</td>
-                                <td className="px-3 py-2">{row.date}</td>
-                                <td className="px-3 py-2">{row.class_name || '—'}</td>
-                                <td className="px-3 py-2">{named({ name: row.subject_name, name_dhivehi: row.subject_name_dhivehi, name_arabic: row.subject_name_arabic }) || '—'}</td>
-                                <td className="px-3 py-2">{row.summary}</td>
+                                <td data-label={t.staff || 'Staff'} className="px-3 py-2">{row.staff_name}</td>
+                                <td data-label={t.date || 'Date'} className="px-3 py-2">{row.date}</td>
+                                <td data-label={t.class || 'Class'} className="px-3 py-2">{row.class_name || '—'}</td>
+                                <td data-label={t.subject || 'Subject'} className="px-3 py-2">{named({ name: row.subject_name, name_dhivehi: row.subject_name_dhivehi, name_arabic: row.subject_name_arabic }) || '—'}</td>
+                                <td data-label={t.observations_summary || 'Summary'} className="px-3 py-2">{row.summary}</td>
                             </tr>
                         ))}
                     </tbody>

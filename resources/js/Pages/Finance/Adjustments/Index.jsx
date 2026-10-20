@@ -116,7 +116,7 @@ export default function Index({ years, yearId, studentId, adjustments, suggestio
             )}
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.student || 'Student'}</th>
@@ -132,13 +132,13 @@ export default function Index({ years, yearId, studentId, adjustments, suggestio
                         )}
                         {adjustments.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.student_name}</td>
-                                <td className="px-3 py-2">{typeName(row.type)}</td>
-                                <td className="px-3 py-2">{valueOf(row)}</td>
-                                <td className="px-3 py-2">{row.applies_to === 'item_types'
+                                <td data-label={t.student || 'Student'} className="px-3 py-2">{row.student_name}</td>
+                                <td data-label={t.adjustments_type || 'Kind of adjustment'} className="px-3 py-2">{typeName(row.type)}</td>
+                                <td data-label={t.adjustments_value || 'Value'} className="px-3 py-2">{valueOf(row)}</td>
+                                <td data-label={t.adjustments_applies || 'Applies to'} className="px-3 py-2">{row.applies_to === 'item_types'
                                     ? (row.item_types || []).map((type) => t[`fee_type_${type}`] || type).join(t.list_separator || ', ')
                                     : appliesName(row.applies_to)}</td>
-                                <td className="px-3 py-2">{statusName(row.status)}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">{statusName(row.status)}</td>
                             </tr>
                         ))}
                     </tbody>

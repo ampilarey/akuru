@@ -41,16 +41,16 @@ function Row({ group, item, locale, suggestAvailable, refusals, t }) {
 
     return (
         <tr className="border-t align-top">
-            <td className="px-3 py-2">
+            <td data-label={t.tr_col_english || 'English'} className="px-3 py-2">
                 <p className="font-mono text-xs text-gray-500">{item.key}</p>
                 <p className="text-sm">{item.en}</p>
             </td>
-            <td className="px-3 py-2 text-sm" dir="rtl">
+            <td data-label={(t.tr_col_file || 'File :language').replace(':language', language)} className="px-3 py-2 text-sm" dir="rtl">
                 <span className={item.suspect ? 'rounded bg-amber-50 px-1 text-amber-800' : ''}>
                     {item.file_value || <span className="text-gray-400">—</span>}
                 </span>
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.tr_col_correction || 'Correction'} className="px-3 py-2">
                 <div className="flex items-start gap-2">
                     {/* `text-base` below `sm`: a 14px control makes iOS zoom the page on focus (ADMIN_PANEL.md §7 M4). */}
                     <textarea
@@ -216,7 +216,7 @@ export default function Translations({ groups = [], items = [], active_group, pa
                 </p>
 
                 <div className="overflow-x-auto rounded-lg border bg-white">
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0]">
                             <tr>
                                 <th className="px-3 py-2 text-start">{t.tr_col_english || 'English'}</th>

@@ -245,7 +245,7 @@ export default function Index({
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_name || 'Name'}</th>
@@ -261,15 +261,15 @@ export default function Index({
                         )}
                         {students.map((student) => (
                             <tr key={student.id} className="border-t">
-                                <td className="px-3 py-2">
+                                <td data-label={t.col_name || 'Name'} className="px-3 py-2">
                                     <Link href={`/people/students/${student.id}`} className="text-[#7C2D37] hover:underline">
                                         {[student.first_name, student.middle_name, student.last_name].filter(Boolean).join(' ')}
                                     </Link>
                                 </td>
-                                <td className="px-3 py-2">{student.student_id}</td>
-                                <td className="px-3 py-2">{student.national_id}</td>
-                                <td className="px-3 py-2">{statusName(student.status)}</td>
-                                <td className="px-3 py-2">{[student.class_name, student.class_section].filter(Boolean).join(' ')}</td>
+                                <td data-label={t.col_number || 'Number'} className="px-3 py-2">{student.student_id}</td>
+                                <td data-label={t.col_national_id || 'National ID'} className="px-3 py-2">{student.national_id}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">{statusName(student.status)}</td>
+                                <td data-label={t.col_class || 'Class'} className="px-3 py-2">{[student.class_name, student.class_section].filter(Boolean).join(' ')}</td>
                             </tr>
                         ))}
                     </tbody>

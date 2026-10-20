@@ -34,7 +34,7 @@ export default function Index({ years, yearId, rows, t = {} }) {
                 <a className="btn-secondary" href={`/finance/arrears/export?academic_year_id=${yearId || ''}`}>{t.export_csv || 'Export CSV'}</a>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.invoices_col_number || 'Number'}</th>
@@ -51,12 +51,12 @@ export default function Index({ years, yearId, rows, t = {} }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.invoice_number}</td>
-                                <td className="px-3 py-2">{row.student_name}</td>
-                                <td className="px-3 py-2">{row.guardian_name || '—'}</td>
-                                <td className="px-3 py-2">{row.due_date}</td>
-                                <td className="px-3 py-2">{row.balance}</td>
-                                <td className="px-3 py-2">{bucketName(row.aging_bucket)} ({overdue(row.days_overdue)})</td>
+                                <td data-label={t.invoices_col_number || 'Number'} className="px-3 py-2">{row.invoice_number}</td>
+                                <td data-label={t.student || 'Student'} className="px-3 py-2">{row.student_name}</td>
+                                <td data-label={t.arrears_guardian || 'Guardian'} className="px-3 py-2">{row.guardian_name || '—'}</td>
+                                <td data-label={t.invoices_col_due || 'Due'} className="px-3 py-2">{row.due_date}</td>
+                                <td data-label={t.arrears_balance || 'Balance'} className="px-3 py-2">{row.balance}</td>
+                                <td data-label={t.arrears_aging || 'Overdue'} className="px-3 py-2">{bucketName(row.aging_bucket)} ({overdue(row.days_overdue)})</td>
                             </tr>
                         ))}
                     </tbody>

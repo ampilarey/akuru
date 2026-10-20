@@ -47,7 +47,7 @@ export default function Applications({ postings, statuses, rows, t = {} }) {
             </form>
             <FormErrors errors={refusals.unplaced} className="mb-4" />
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.name || 'Name'}</th>
@@ -62,9 +62,9 @@ export default function Applications({ postings, statuses, rows, t = {} }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.name}</td>
-                                <td className="px-3 py-2">{postingTitle(row.job_posting_id, row.job_title)}</td>
-                                <td className="px-3 py-2">{statusName(row.status)}</td>
+                                <td data-label={t.name || 'Name'} className="px-3 py-2">{row.name}</td>
+                                <td data-label={t.applications_job || 'Job'} className="px-3 py-2">{postingTitle(row.job_posting_id, row.job_title)}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">{statusName(row.status)}</td>
                                 <td className="px-3 py-2 text-end">
                                     {row.status !== 'hired' && (
                                         <button type="button" className="btn-secondary" onClick={() => refusals.actOn(`application:${row.id}`, () => router.post(`/hr/applications/${row.id}/hire`, {}, { preserveScroll: true }))}>{t.applications_hire || 'Hire'}</button>

@@ -50,17 +50,17 @@ function GuardianRow({ student, guardian, consentStatuses, verificationStatuses,
 
     return (
         <tr className="border-t align-top">
-            <td className="px-3 py-2">{guardian.name}</td>
-            <td className="px-3 py-2">{t[`relationship_${guardian.relationship}`] || guardian.relationship}</td>
-            <td className="px-3 py-2 text-xs">{flags.join(t.list_separator || ', ')}</td>
-            <td className="px-3 py-2">
+            <td data-label={t.col_name || 'Name'} className="px-3 py-2">{guardian.name}</td>
+            <td data-label={t.relationship || 'Relationship'} className="px-3 py-2">{t[`relationship_${guardian.relationship}`] || guardian.relationship}</td>
+            <td data-label={t.col_responsibilities || 'Responsibilities'} className="px-3 py-2 text-xs">{flags.join(t.list_separator || ', ')}</td>
+            <td data-label={t.col_consent || 'Consent'} className="px-3 py-2">
                 <select className="form-input" value={consent} onChange={(e) => setConsent(e.target.value)} aria-label={t.consent_status_aria || 'Consent status'}>
                     {consentStatuses.map((option) => (
                         <option key={option.value} value={option.value}>{t[`consent_status_${option.value}`] || option.label}</option>
                     ))}
                 </select>
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.col_verification || 'Verification'} className="px-3 py-2">
                 <select className="form-input" value={verification} onChange={(e) => setVerification(e.target.value)} aria-label={t.verification_status_aria || 'Verification status'}>
                     {verificationStatuses.map((option) => (
                         <option key={option.value} value={option.value}>{t[`verification_status_${option.value}`] || option.label}</option>
@@ -338,7 +338,7 @@ export default function Show({
                         <FormErrors errors={guardianForm.errors} className="w-full" />
                     </form>
                     <div className="overflow-x-auto rounded-lg border bg-white">
-                        <table className="min-w-full text-sm">
+                        <table className="table-stack min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">{t.col_name || 'Name'}</th>
@@ -409,7 +409,7 @@ export default function Show({
                         <FormErrors errors={contactForm.errors} except={['name', 'phone']} className="md:col-span-5" />
                     </form>
                     <div className="overflow-x-auto rounded-lg border bg-white">
-                        <table className="min-w-full text-sm">
+                        <table className="table-stack min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">#</th>
@@ -427,12 +427,12 @@ export default function Show({
                                 )}
                                 {emergencyContacts.map((contact) => (
                                     <tr key={contact.id} className="border-t align-top">
-                                        <td className="px-3 py-2">{contact.priority}</td>
-                                        <td className="px-3 py-2">{contact.name}</td>
-                                        <td className="px-3 py-2">
+                                        <td data-label="#" className="px-3 py-2">{contact.priority}</td>
+                                        <td data-label={t.col_name || 'Name'} className="px-3 py-2">{contact.name}</td>
+                                        <td data-label={t.phone || 'Phone'} className="px-3 py-2">
                                             <a className="text-[#7C2D37] underline" href={`tel:${contact.phone}`}>{contact.phone}</a>
                                         </td>
-                                        <td className="px-3 py-2">{contact.relationship || '—'}</td>
+                                        <td data-label={t.relationship || 'Relationship'} className="px-3 py-2">{contact.relationship || '—'}</td>
                                         <td className="px-3 py-2 text-end">
                                             <button
                                                 type="button"
@@ -475,7 +475,7 @@ export default function Show({
 
             {tab === 'history' && (
                 <div className="overflow-x-auto rounded-lg border bg-white">
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">{t.history_from || 'From'}</th>
@@ -490,10 +490,10 @@ export default function Show({
                             )}
                             {statusHistory.map((row) => (
                                 <tr key={row.id} className="border-t">
-                                    <td className="px-3 py-2">{row.from_status ? statusName(row.from_status) : '—'}</td>
-                                    <td className="px-3 py-2">{statusName(row.to_status)}</td>
-                                    <td className="px-3 py-2">{(row.reason_key && t[row.reason_key]) || row.reason}</td>
-                                    <td className="px-3 py-2">{row.effective_date}</td>
+                                    <td data-label={t.history_from || 'From'} className="px-3 py-2">{row.from_status ? statusName(row.from_status) : '—'}</td>
+                                    <td data-label={t.history_to || 'To'} className="px-3 py-2">{statusName(row.to_status)}</td>
+                                    <td data-label={t.history_reason || 'Reason'} className="px-3 py-2">{(row.reason_key && t[row.reason_key]) || row.reason}</td>
+                                    <td data-label={t.col_date || 'Date'} className="px-3 py-2">{row.effective_date}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -503,7 +503,7 @@ export default function Show({
 
             {tab === 'behavior' && (
                 <section className="overflow-x-auto rounded-lg border bg-white">
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">{t.col_date || 'Date'}</th>
@@ -516,11 +516,11 @@ export default function Show({
                         <tbody>
                             {behaviorRecords.map((row) => (
                                 <tr key={row.id} className="border-t">
-                                    <td className="px-3 py-2">{row.date}</td>
-                                    <td className="px-3 py-2">{t[`behavior_type_${row.type}`] || row.type}</td>
-                                    <td className="px-3 py-2">{t[`behavior_category_${row.category}`] || row.category}</td>
-                                    <td className="px-3 py-2">{row.description}</td>
-                                    <td className="px-3 py-2">{row.parent_visible ? (t.yes || 'yes') : (t.no || 'no')}</td>
+                                    <td data-label={t.col_date || 'Date'} className="px-3 py-2">{row.date}</td>
+                                    <td data-label={t.col_type || 'Type'} className="px-3 py-2">{t[`behavior_type_${row.type}`] || row.type}</td>
+                                    <td data-label={t.behavior_category || 'Category'} className="px-3 py-2">{t[`behavior_category_${row.category}`] || row.category}</td>
+                                    <td data-label={t.behavior_description || 'Description'} className="px-3 py-2">{row.description}</td>
+                                    <td data-label={t.behavior_visible || 'Visible'} className="px-3 py-2">{row.parent_visible ? (t.yes || 'yes') : (t.no || 'no')}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -555,7 +555,7 @@ export default function Show({
                         <FormErrors errors={refusals.errorsFor('consent')} className="w-full" />
                     </form>
                     <div className="overflow-x-auto rounded-lg border bg-white">
-                        <table className="min-w-full text-sm">
+                        <table className="table-stack min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">{t.col_type || 'Type'}</th>
@@ -570,10 +570,10 @@ export default function Show({
                                 )}
                                 {consents.map((row) => (
                                     <tr key={row.id} className="border-t" data-consent-type={row.consent_type}>
-                                        <td className="px-3 py-2">{consentTypeName(row.consent_type)}</td>
-                                        <td className="px-3 py-2">{row.granted ? (t.consent_granted || 'granted') : (t.consent_revoked || 'revoked')}</td>
-                                        <td className="px-3 py-2">{t[`consent_source_${row.source}`] || row.source}</td>
-                                        <td className="px-3 py-2">{row.granted_at}</td>
+                                        <td data-label={t.col_type || 'Type'} className="px-3 py-2">{consentTypeName(row.consent_type)}</td>
+                                        <td data-label={t.consent_answer || 'Answer'} className="px-3 py-2">{row.granted ? (t.consent_granted || 'granted') : (t.consent_revoked || 'revoked')}</td>
+                                        <td data-label={t.col_source || 'Source'} className="px-3 py-2">{t[`consent_source_${row.source}`] || row.source}</td>
+                                        <td data-label={t.col_at || 'At'} className="px-3 py-2">{row.granted_at}</td>
                                     </tr>
                                 ))}
                             </tbody>

@@ -102,7 +102,7 @@ export default function Index({ entityType, entityTypes, fieldTypes, definitions
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.fields_key || 'Key'}</th>
@@ -118,10 +118,10 @@ export default function Index({ entityType, entityTypes, fieldTypes, definitions
                         )}
                         {definitions.map((definition) => (
                             <tr key={definition.id} className="border-t align-top">
-                                <td className="px-3 py-2 font-mono">{definition.key}</td>
-                                <td className="px-3 py-2">{definition.label}</td>
-                                <td className="px-3 py-2">{fieldTypeName(definition.field_type)}</td>
-                                <td className="px-3 py-2 text-xs text-gray-600">
+                                <td data-label={t.fields_key || 'Key'} className="px-3 py-2 font-mono">{definition.key}</td>
+                                <td data-label={t.fields_label || 'Label'} className="px-3 py-2">{definition.label}</td>
+                                <td data-label={t.col_type || 'Type'} className="px-3 py-2">{fieldTypeName(definition.field_type)}</td>
+                                <td data-label={t.fields_settings || 'Settings'} className="px-3 py-2 text-xs text-gray-600">
                                     {[
                                         definition.required && (t.fields_flag_required || 'required'),
                                         definition.show_in_admission_form && (t.fields_flag_admission || 'on the admission form'),

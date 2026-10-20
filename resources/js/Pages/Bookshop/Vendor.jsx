@@ -646,16 +646,16 @@ function Notices({ settings, isOwner, t, panels }) {
             )}
             <form onSubmit={(e) => { e.preventDefault(); form.post('/vendor/notices', { preserveScroll: true }); }}>
                 <div className="max-w-full">
-                <table className="w-full rounded border bg-white text-sm">
+                <table className="table-stack w-full rounded border bg-white text-sm">
                     {/* §5mp: the always-ticked "in the app" column is the intro's words; on a phone it gives its width to the event names. */}
                     <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.notice_event}</th><th className="hidden p-2 sm:table-cell">{t.in_app}</th><th className="p-2">{t.email}</th><th className="p-2">SMS</th></tr></thead>
                     <tbody>
                         {Object.keys(form.data.events).map((event) => (
                             <tr key={event} className="border-t" data-testid={`notice-${event}`}>
-                                <td className="p-2">{t[`notice_event_${event}`] || event}</td>
-                                <td className="hidden p-2 text-center sm:table-cell">✓</td>
-                                <td className="p-2 text-center"><label className="inline-flex min-h-[2rem] min-w-[2rem] items-center justify-center"><input type="checkbox" className="h-5 w-5" checked={!!form.data.events[event].email} disabled={!isOwner || !office.vendor_email} onChange={(e) => set(event, 'email', e.target.checked)} data-testid={`notice-${event}-email`} /></label></td>
-                                <td className="p-2 text-center"><label className="inline-flex min-h-[2rem] min-w-[2rem] items-center justify-center"><input type="checkbox" className="h-5 w-5" checked={!!form.data.events[event].sms} disabled={!isOwner || !office.vendor_sms} onChange={(e) => set(event, 'sms', e.target.checked)} data-testid={`notice-${event}-sms`} /></label></td>
+                                <td data-label={t.notice_event} className="p-2">{t[`notice_event_${event}`] || event}</td>
+                                <td data-label={t.in_app} className="hidden p-2 text-center sm:table-cell">✓</td>
+                                <td data-label={t.email} className="p-2 text-center"><label className="inline-flex min-h-[2rem] min-w-[2rem] items-center justify-center"><input type="checkbox" className="h-5 w-5" checked={!!form.data.events[event].email} disabled={!isOwner || !office.vendor_email} onChange={(e) => set(event, 'email', e.target.checked)} data-testid={`notice-${event}-email`} /></label></td>
+                                <td data-label="SMS" className="p-2 text-center"><label className="inline-flex min-h-[2rem] min-w-[2rem] items-center justify-center"><input type="checkbox" className="h-5 w-5" checked={!!form.data.events[event].sms} disabled={!isOwner || !office.vendor_sms} onChange={(e) => set(event, 'sms', e.target.checked)} data-testid={`notice-${event}-sms`} /></label></td>
                             </tr>
                         ))}
                     </tbody>

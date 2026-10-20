@@ -55,7 +55,7 @@ export default function Index({ items, types, frequencies, t = {} }) {
                 <FormErrors errors={form.errors} className="md:col-span-4" />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_name || 'Name'}</th>
@@ -72,12 +72,12 @@ export default function Index({ items, types, frequencies, t = {} }) {
                         )}
                         {items.map((item) => (
                             <tr key={item.id} className="border-t">
-                                <td className="px-3 py-2">{named(item)}</td>
-                                <td className="px-3 py-2">{item.default_amount} {item.currency}</td>
-                                <td className="px-3 py-2">{typeName(item.type)}</td>
-                                <td className="px-3 py-2">{frequencyName(item.frequency)}</td>
-                                <td className="px-3 py-2">{item.is_mandatory ? (t.yes || 'yes') : (t.no || 'no')}</td>
-                                <td className="px-3 py-2">{item.is_active ? (t.yes || 'yes') : (t.no || 'no')}</td>
+                                <td data-label={t.col_name || 'Name'} className="px-3 py-2">{named(item)}</td>
+                                <td data-label={t.amount || 'Amount'} className="px-3 py-2">{item.default_amount} {item.currency}</td>
+                                <td data-label={t.fee_items_type || 'Kind of fee'} className="px-3 py-2">{typeName(item.type)}</td>
+                                <td data-label={t.frequency || 'How often'} className="px-3 py-2">{frequencyName(item.frequency)}</td>
+                                <td data-label={t.mandatory || 'Mandatory'} className="px-3 py-2">{item.is_mandatory ? (t.yes || 'yes') : (t.no || 'no')}</td>
+                                <td data-label={t.fee_items_active || 'Active'} className="px-3 py-2">{item.is_active ? (t.yes || 'yes') : (t.no || 'no')}</td>
                             </tr>
                         ))}
                     </tbody>

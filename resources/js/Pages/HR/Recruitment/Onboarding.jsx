@@ -40,7 +40,7 @@ export default function Onboarding({ kind, staff, rows, t = {} }) {
             </form>
             <FormErrors errors={refusals.unplaced} className="mb-4" />
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.staff || 'Staff'}</th>
@@ -54,9 +54,9 @@ export default function Onboarding({ kind, staff, rows, t = {} }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.staff_name}</td>
-                                <td className="px-3 py-2">{row.item}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.staff || 'Staff'} className="px-3 py-2">{row.staff_name}</td>
+                                <td data-label={t.onboarding_item || 'Item'} className="px-3 py-2">{row.item}</td>
+                                <td data-label={t.onboarding_done || 'Done'} className="px-3 py-2">
                                     <button
                                         type="button"
                                         className="btn-secondary"

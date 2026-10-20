@@ -409,7 +409,7 @@ function EarningsCard({ earnings, itemSales = [], t = {}, refusals }) {
             {itemSales.length > 0 && (
                 <div className="mt-4 overflow-x-auto">
                     <p className="mb-1 text-sm font-semibold">{t.library_sales_by_book || 'Sales by book'}</p>
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">{t.library_th_book || 'Book'}</th>
@@ -422,11 +422,11 @@ function EarningsCard({ earnings, itemSales = [], t = {}, refusals }) {
                         <tbody>
                             {itemSales.map((row) => (
                                 <tr key={row.item_id} className="border-t">
-                                    <td className="px-3 py-2 font-medium">{row.title}</td>
-                                    <td className="px-3 py-2">{row.sold}</td>
-                                    <td className="px-3 py-2">{row.gross}</td>
-                                    <td className="px-3 py-2">{row.earned}</td>
-                                    <td className="px-3 py-2">{row.refunded > 0 ? <span className="text-red-600">{row.refunded}</span> : '—'}</td>
+                                    <td data-label={t.library_th_book || 'Book'} className="px-3 py-2 font-medium">{row.title}</td>
+                                    <td data-label={t.library_th_sold || 'Copies sold'} className="px-3 py-2">{row.sold}</td>
+                                    <td data-label={t.library_th_gross || 'Gross (MVR)'} className="px-3 py-2">{row.gross}</td>
+                                    <td data-label={t.library_th_your_share || 'Your share (MVR)'} className="px-3 py-2">{row.earned}</td>
+                                    <td data-label={t.library_th_refunded || 'Refunded'} className="px-3 py-2">{row.refunded > 0 ? <span className="text-red-600">{row.refunded}</span> : '—'}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -520,7 +520,7 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
                     {editing && editing !== 'new' && <ItemEditor item={editing} options={options} onDone={() => setEditing(null)} t={t} actOn={refusals.actOn} />}
 
                     <div className="overflow-x-auto rounded-lg border bg-white">
-                        <table className="min-w-full text-sm">
+                        <table className="table-stack min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">{t.library_th_title || 'Title'}</th>
@@ -536,7 +536,7 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
                                 )}
                                 {items.map((item) => (
                                     <tr key={item.id} className="border-t">
-                                        <td className="px-3 py-2">
+                                        <td data-label={t.library_th_title || 'Title'} className="px-3 py-2">
                                             <div className="flex items-start gap-3">
                                                 {item.cover_url && <img src={item.cover_url} alt="" className="h-12 w-9 shrink-0 rounded object-cover" data-testid="item-cover" />}
                                                 <div>
@@ -550,10 +550,10 @@ export default function Write({ dashboard, options, earnings = null, item_sales 
                                                 </div>
                                             </div>
                                         </td>
-                                        <td className="px-3 py-2">{t[`library_status_${item.status}`] || item.status?.replaceAll('_', ' ')} {item.review_state && <ReviewStateChip state={item.review_state} t={t} />}</td>
-                                        <td className="px-3 py-2 text-xs text-gray-600">{item.latest_comment || '—'}</td>
-                                        <td className="px-3 py-2">{item.sales} ({item.revenue ? money(t, item.revenue) : '—'})</td>
-                                        <td className="px-3 py-2">
+                                        <td data-label={t.library_th_status || 'Status'} className="px-3 py-2">{t[`library_status_${item.status}`] || item.status?.replaceAll('_', ' ')} {item.review_state && <ReviewStateChip state={item.review_state} t={t} />}</td>
+                                        <td data-label={t.library_th_feedback || 'Editor feedback'} className="px-3 py-2 text-xs text-gray-600">{item.latest_comment || '—'}</td>
+                                        <td data-label={t.library_th_sales || 'Sales'} className="px-3 py-2">{item.sales} ({item.revenue ? money(t, item.revenue) : '—'})</td>
+                                        <td data-label={t.library_th_actions || 'Actions'} className="px-3 py-2">
                                             {['draft', 'changes_requested'].includes(item.status) && (
                                                 <span className="flex flex-wrap gap-2">
                                                     <button type="button" className="text-[#7C2D37] hover:underline" onClick={() => setEditing(item)}>{t.library_edit || 'Edit'}</button>

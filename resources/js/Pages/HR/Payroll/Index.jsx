@@ -51,7 +51,7 @@ export default function Index({ enabled, periods, periodId, rows, canApprove, t 
                 </div>
             )}
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.staff || 'Staff'}</th>
@@ -67,11 +67,11 @@ export default function Index({ enabled, periods, periodId, rows, canApprove, t 
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.staff_name}</td>
-                                <td className="px-3 py-2">{row.gross}</td>
-                                <td className="px-3 py-2">{row.net_pay}</td>
-                                <td className="px-3 py-2">{row.previous_net || '—'}</td>
-                                <td className="px-3 py-2">{statusName(row.status)}</td>
+                                <td data-label={t.staff || 'Staff'} className="px-3 py-2">{row.staff_name}</td>
+                                <td data-label={t.payroll_col_gross || 'Gross'} className="px-3 py-2">{row.gross}</td>
+                                <td data-label={t.payroll_col_net || 'Net'} className="px-3 py-2">{row.net_pay}</td>
+                                <td data-label={t.payroll_col_previous || 'Previous'} className="px-3 py-2">{row.previous_net || '—'}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">{statusName(row.status)}</td>
                             </tr>
                         ))}
                     </tbody>

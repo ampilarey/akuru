@@ -134,7 +134,7 @@ export default function BankStatements({
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.reconciliation_date || 'Date'}</th>
@@ -156,23 +156,23 @@ export default function BankStatements({
                         )}
                         {lines.map((line) => (
                             <tr key={line.id} className="border-t align-top">
-                                <td className="px-3 py-2 whitespace-nowrap">{line.posted_on}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.reconciliation_date || 'Date'} className="px-3 py-2 whitespace-nowrap">{line.posted_on}</td>
+                                <td data-label={t.bank_description || 'Description'} className="px-3 py-2">
                                     {line.description || '—'}
                                     {line.match_note && (
                                         <p className="mt-1 text-xs text-gray-500">{line.match_note}</p>
                                     )}
                                 </td>
-                                <td className="px-3 py-2">{line.reference || '—'}</td>
-                                <td className={`px-3 py-2 whitespace-nowrap ${line.is_credit ? '' : 'text-gray-500'}`}>
+                                <td data-label={t.bank_reference || 'Reference'} className="px-3 py-2">{line.reference || '—'}</td>
+                                <td data-label={t.amount || 'Amount'} className={`px-3 py-2 whitespace-nowrap ${line.is_credit ? '' : 'text-gray-500'}`}>
                                     {line.amount}
                                 </td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">
                                     <span className={`rounded px-2 py-0.5 text-xs ${STATUS_CLASS[line.match_status] ?? ''}`}>
                                         {statusName(line.match_status)}
                                     </span>
                                 </td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.plans_col_invoice || 'Invoice'} className="px-3 py-2">
                                     {line.match_status === 'confirmed' || !line.is_credit ? (
                                         line.invoice_number || '—'
                                     ) : (

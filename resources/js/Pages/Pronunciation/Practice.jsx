@@ -125,7 +125,7 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.pronounce_attempt || 'Attempt'}</th>
@@ -139,9 +139,9 @@ export default function Practice({ letters, harakas, attempts, ai_enabled: aiEna
                         )}
                         {attempts.map((attempt) => (
                             <tr key={attempt.id} className="border-t">
-                                <td className="px-3 py-2">{attempt.at}</td>
-                                <td className="px-3 py-2">{t[`pronounce_status_${attempt.status}`] || attempt.status?.replaceAll('_', ' ')}</td>
-                                <td className="px-3 py-2">{attempt.teacher_review_required ? t.pronounce_waiting || 'waiting' : t.pronounce_done || 'done'}</td>
+                                <td data-label={t.pronounce_attempt || 'Attempt'} className="px-3 py-2">{attempt.at}</td>
+                                <td data-label={t.pronounce_status || 'Status'} className="px-3 py-2">{t[`pronounce_status_${attempt.status}`] || attempt.status?.replaceAll('_', ' ')}</td>
+                                <td data-label={t.pronounce_review || 'Teacher review'} className="px-3 py-2">{attempt.teacher_review_required ? t.pronounce_waiting || 'waiting' : t.pronounce_done || 'done'}</td>
                             </tr>
                         ))}
                     </tbody>

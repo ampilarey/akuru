@@ -69,7 +69,7 @@ scrolled sideways. What was not phone-first:
 | A5 | 114 Inertia pages with a table not `table-stack` | Squeezed columns that wrap mid-word ("2026-␤10-17") or are cut off | MF4–MF6 |
 | A6 | `/substitutions/requests` (old Blade) | *New request* is white on white, nearly invisible | MF3 |
 | A7 | Seven files with `max-width` rules, seven on the home page alone | Desk layouts patched for phones | ratchet; rewritten as touched |
-| A8 | Office pages with a form and a list (rooms, periods and others), found walking MF4 | The *new* form before the list | MF7 |
+| A8 | Office pages with a form and a list (rooms, periods, invoices, leave balances, students and others), found walking MF4–MF6 | The *new* form before the list | MF7 |
 
 Already phone-first, and the pattern the others follow: the Bookstore's
 *Filter and sort* fold, the app's bottom tab bar, `table-stack` on 54 pages,
@@ -84,5 +84,5 @@ Already phone-first, and the pattern the others follow: the Bookstore's
 | MF3 | A4, A6: records first, the form under *New …* on a phone (`PhoneFold`); the invisible buttons (`brandBlue` was never a colour; `BrandColoursExistTest`) — **done 2026-10-20 (STATUS §5sx)** |
 | MF4 | A5, first batch: the 27 `Portal/` and `Academics/` pages — **done 2026-10-20 (STATUS §5sy)**; 88 pages left |
 | MF5 | A5: `Courses/` (29) and `ExamsGrades/` (11) — **done 2026-10-20 (STATUS §5sz)**; 48 pages left |
-| MF6 | A5: the rest — HR, Finance, Website, People and the others |
+| MF6 | A5: the rest — HR, Finance, Website, People and the others — **done 2026-10-20 (STATUS §5ta)**: every table stacked or a named grid; the baseline is empty |
 | MF7 | A8: office pages put the list before the *new* form |

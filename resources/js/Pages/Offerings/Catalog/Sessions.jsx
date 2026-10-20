@@ -86,7 +86,7 @@ export default function Sessions({ offering, types, sessions, programs = [], hal
                 <FormErrors errors={{ ...refusals.unplaced, ...refusals.errorsFor('halaqa') }} className="md:col-span-3" />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.catalog_col_title || 'Title'}</th>
@@ -102,10 +102,10 @@ export default function Sessions({ offering, types, sessions, programs = [], hal
                         )}
                         {sessions.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.title}{row.is_required ? ` · ${t.sessions_required || 'required'}` : ''}</td>
-                                <td className="px-3 py-2">{typeName(row.session_type)}</td>
-                                <td className="px-3 py-2">{row.starts_at}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.catalog_col_title || 'Title'} className="px-3 py-2">{row.title}{row.is_required ? ` · ${t.sessions_required || 'required'}` : ''}</td>
+                                <td data-label={t.sessions_col_type || 'Type'} className="px-3 py-2">{typeName(row.session_type)}</td>
+                                <td data-label={t.sessions_starts || 'Starts'} className="px-3 py-2">{row.starts_at}</td>
+                                <td data-label={t.sessions_col_halaqa || 'Halaqa session'} className="px-3 py-2">
                                     {halaqa_sessions.length > 0 ? (
                                         <select
                                             className="form-input"
@@ -129,7 +129,7 @@ export default function Sessions({ offering, types, sessions, programs = [], hal
                                     ) : (row.hifz_session_id || '—')}
                                     <FormErrors errors={refusals.errorsFor(`session:${row.id}`)} className="mt-1" />
                                 </td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.sessions_col_action || 'Action'} className="px-3 py-2">
                                     <button type="button" className="text-[#7C2D37] hover:underline" onClick={() => router.get(`/catalog/offerings/${offering.id}/sessions/${row.id}/attendance`)}>{t.sessions_attendance || 'Attendance'}</button>
                                 </td>
                             </tr>

@@ -268,7 +268,7 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
             </form>
             <FormErrors errors={refusals.unplaced} className="mb-4 rounded border border-red-200 bg-red-50 py-2 pe-3" />
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.catalog_col_title || 'Title'}</th>
@@ -289,19 +289,19 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">
+                                <td data-label={t.catalog_col_title || 'Title'} className="px-3 py-2">
                                     <button type="button" className="text-[#7C2D37] hover:underline" onClick={() => startEdit(row)}>
                                         {row.title}
                                     </button>
                                 </td>
-                                <td className="px-3 py-2">{row.course_title}</td>
-                                <td className="px-3 py-2">{modeName(row.delivery_mode)}</td>
-                                <td className="px-3 py-2">{row.audience || '—'}</td>
-                                <td className="px-3 py-2">{row.level || '—'}</td>
-                                <td className="px-3 py-2">{statusName(row.status)}</td>
-                                <td className="px-3 py-2">{row.price_override !== null && row.price_override !== undefined ? (t.offerings_price || 'MVR :amount').replace(':amount', row.price_override) : '—'}</td>
-                                <td className="px-3 py-2 text-xs text-gray-600">{ruleSummary(row.certificate_rules, t) || t.offerings_inherits || 'Inherits course template'}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.offerings_course || 'Course'} className="px-3 py-2">{row.course_title}</td>
+                                <td data-label={t.offerings_col_mode || 'Mode'} className="px-3 py-2">{modeName(row.delivery_mode)}</td>
+                                <td data-label={t.offerings_audience || 'Audience'} className="px-3 py-2">{row.audience || '—'}</td>
+                                <td data-label={t.offerings_level || 'Level'} className="px-3 py-2">{row.level || '—'}</td>
+                                <td data-label={t.offerings_status || 'Status'} className="px-3 py-2">{statusName(row.status)}</td>
+                                <td data-label={t.offerings_col_price || 'Price'} className="px-3 py-2">{row.price_override !== null && row.price_override !== undefined ? (t.offerings_price || 'MVR :amount').replace(':amount', row.price_override) : '—'}</td>
+                                <td data-label={t.offerings_col_rules || 'Certificate rules'} className="px-3 py-2 text-xs text-gray-600">{ruleSummary(row.certificate_rules, t) || t.offerings_inherits || 'Inherits course template'}</td>
+                                <td data-label={t.offerings_col_pin || 'Pin'} className="px-3 py-2">
                                     <span className="me-2">{pinName(row.pin_mode)}</span>
                                     {/* SPEC §28.4: re-pinning changes what enrolled
                                         students see mid-offering, so it must be
@@ -349,7 +349,7 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
                                         </details>
                                     )}
                                 </td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.offerings_col_sessions || 'Sessions'} className="px-3 py-2">
                                     <a className="text-[#7C2D37] hover:underline" href={`/catalog/offerings/${row.id}/sessions`}>{t.offerings_col_sessions || 'Sessions'}</a>
                                 </td>
                             </tr>

@@ -16,7 +16,7 @@ export default function Groups({ groups = [], t = {} }) {
                 <Link href="/admin/prayer-times/groups/create" className="btn-primary ms-auto" data-testid="group-new">{t.prayer_group_new || 'New group'}</Link>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white" data-testid="groups-table">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.prayer_col_name || 'Name'}</th>
@@ -30,9 +30,9 @@ export default function Groups({ groups = [], t = {} }) {
                         )}
                         {groups.map((group) => (
                             <tr key={group.id} className="border-t" data-testid="group-row">
-                                <td className="px-3 py-2"><Link href={`/admin/prayer-times/groups/${group.id}/edit`} className="text-[#1D4E89] underline" data-testid="group-edit">{group.name}</Link></td>
-                                <td className="px-3 py-2">{group.members}</td>
-                                <td className="px-3 py-2">{group.is_active ? (t.prayer_yes || 'yes') : (t.prayer_no || 'no')}</td>
+                                <td data-label={t.prayer_col_name || 'Name'} className="px-3 py-2"><Link href={`/admin/prayer-times/groups/${group.id}/edit`} className="text-[#1D4E89] underline" data-testid="group-edit">{group.name}</Link></td>
+                                <td data-label={t.prayer_col_members || 'Members'} className="px-3 py-2">{group.members}</td>
+                                <td data-label={t.prayer_col_active || 'Active'} className="px-3 py-2">{group.is_active ? (t.prayer_yes || 'yes') : (t.prayer_no || 'no')}</td>
                             </tr>
                         ))}
                     </tbody>

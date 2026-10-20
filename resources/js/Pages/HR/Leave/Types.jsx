@@ -73,7 +73,7 @@ export default function Types({ types, codes, t = {} }) {
                 {refused && <span className="text-xs text-red-600 md:col-span-4">{refused}</span>}
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.types_code || 'Code'}</th>
@@ -89,11 +89,11 @@ export default function Types({ types, codes, t = {} }) {
                         )}
                         {types.map((type) => (
                             <tr key={type.id} className="border-t">
-                                <td className="px-3 py-2">{codeName(type.code)}</td>
-                                <td className="px-3 py-2">{named(type)}</td>
-                                <td className="px-3 py-2">{type.days_per_year}</td>
-                                <td className="px-3 py-2">{type.carry_over_max}</td>
-                                <td className="px-3 py-2">{type.paid ? (t.yes || 'yes') : (t.no || 'no')}</td>
+                                <td data-label={t.types_code || 'Code'} className="px-3 py-2">{codeName(type.code)}</td>
+                                <td data-label={t.name || 'Name'} className="px-3 py-2">{named(type)}</td>
+                                <td data-label={t.types_col_days || 'Days'} className="px-3 py-2">{type.days_per_year}</td>
+                                <td data-label={t.types_col_carry || 'Carry'} className="px-3 py-2">{type.carry_over_max}</td>
+                                <td data-label={t.types_col_paid || 'Paid'} className="px-3 py-2">{type.paid ? (t.yes || 'yes') : (t.no || 'no')}</td>
                             </tr>
                         ))}
                     </tbody>

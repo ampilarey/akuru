@@ -103,7 +103,7 @@ export default function Index({ date, academicYearId, staff, rows, statuses, t =
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.staff || 'Staff'}</th>
@@ -120,12 +120,12 @@ export default function Index({ date, academicYearId, staff, rows, statuses, t =
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.staff_name}</td>
-                                <td className="px-3 py-2">{row.department || '—'}</td>
-                                <td className="px-3 py-2">{statusName(row.status)}</td>
-                                <td className="px-3 py-2">{sourceName(row.source)}</td>
-                                <td className="px-3 py-2">{row.minutes_late ?? '—'}</td>
-                                <td className="px-3 py-2">{row.remarks || '—'}</td>
+                                <td data-label={t.staff || 'Staff'} className="px-3 py-2">{row.staff_name}</td>
+                                <td data-label={t.department || 'Department'} className="px-3 py-2">{row.department || '—'}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">{statusName(row.status)}</td>
+                                <td data-label={t.attendance_col_source || 'Source'} className="px-3 py-2">{sourceName(row.source)}</td>
+                                <td data-label={t.attendance_col_late || 'Late'} className="px-3 py-2">{row.minutes_late ?? '—'}</td>
+                                <td data-label={t.remarks || 'Remarks'} className="px-3 py-2">{row.remarks || '—'}</td>
                             </tr>
                         ))}
                     </tbody>

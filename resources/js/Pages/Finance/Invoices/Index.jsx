@@ -120,7 +120,7 @@ export default function Index({ years, yearId, structures, structureId, invoices
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.invoices_col_number || 'Number'}</th>
@@ -139,17 +139,17 @@ export default function Index({ years, yearId, structures, structureId, invoices
                         )}
                         {invoices.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.invoice_number}</td>
-                                <td className="px-3 py-2">{row.student_name}</td>
-                                <td className="px-3 py-2">{periodName(row.period_key)}</td>
-                                <td className="px-3 py-2">{row.due_date}</td>
-                                <td className="px-3 py-2">{row.total_amount}</td>
-                                <td className="px-3 py-2">{row.paid_amount}</td>
-                                <td className="px-3 py-2">{row.plan
+                                <td data-label={t.invoices_col_number || 'Number'} className="px-3 py-2">{row.invoice_number}</td>
+                                <td data-label={t.student || 'Student'} className="px-3 py-2">{row.student_name}</td>
+                                <td data-label={t.invoices_col_period || 'Period'} className="px-3 py-2">{periodName(row.period_key)}</td>
+                                <td data-label={t.invoices_col_due || 'Due'} className="px-3 py-2">{row.due_date}</td>
+                                <td data-label={t.invoices_col_total || 'Total'} className="px-3 py-2">{row.total_amount}</td>
+                                <td data-label={t.invoices_col_paid || 'Paid'} className="px-3 py-2">{row.paid_amount}</td>
+                                <td data-label={t.invoices_col_plan || 'Plan'} className="px-3 py-2">{row.plan
                                     ? (t.invoices_plan_progress || ':paid of :total installments paid · :status')
                                         .replace(':paid', row.plan.paid).replace(':total', row.plan.total).replace(':status', planStatus(row.plan.status))
                                     : '—'}</td>
-                                <td className="px-3 py-2">{statusName(row.status)}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">{statusName(row.status)}</td>
                             </tr>
                         ))}
                     </tbody>

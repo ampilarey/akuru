@@ -169,7 +169,7 @@ export default function Show({ event, registrations, students, types, statuses, 
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_name || 'Name'}</th>
@@ -185,10 +185,10 @@ export default function Show({ event, registrations, students, types, statuses, 
                         )}
                         {registrations.map((row) => (
                             <tr key={row.id} className="border-t align-top">
-                                <td className="px-3 py-2">{row.student_name}</td>
-                                <td className="px-3 py-2">{row.email}</td>
-                                <td className="px-3 py-2 text-xs">{t[`registration_status_${row.status}`] || row.status}</td>
-                                <td className="px-3 py-2">{row.waitlist_position ?? ''}</td>
+                                <td data-label={t.col_name || 'Name'} className="px-3 py-2">{row.student_name}</td>
+                                <td data-label={t.events_email || 'Email'} className="px-3 py-2">{row.email}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2 text-xs">{t[`registration_status_${row.status}`] || row.status}</td>
+                                <td data-label={t.events_wait_position || 'Wait #'} className="px-3 py-2">{row.waitlist_position ?? ''}</td>
                                 <td className="px-3 py-2">
                                     {row.status === 'pending_parent' && (
                                         <button
