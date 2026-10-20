@@ -4983,6 +4983,39 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5te. The Qur'an progress pages in Dhivehi and Arabic, and working (OB2, 2026-10-20)
+
+**BACKLOG C21's old Blade screens, the second slice.** The five Qur'an
+progress pages and a student's Qur'an progress printed all three languages
+side by side. The Dhivehi was wrong in places: *ރަގަޅު* ("good") for
+*Student*, *ގަސް* for *Type*. They now read in the page's language only:
+- 52 `qp_` phrases in the `quran` book (EN/DV/AR): a record's type and
+  state named, a range of ayahs, a date by its month's name, the controller's
+  saved messages.
+- **Three defects fixed:**
+  - The list's heading and *Add* sat in sections the layout never prints
+    (`page-title`, `page-actions`), behind permissions that do not exist
+    (`create_`, `edit_`, `delete_quran_progress`). Nobody could add, change or
+    remove a record from the list. Both are on the page now, behind the real
+    `manage_quran_progress` (teachers and the super admin), and the office
+    reads.
+  - A student's page read `verse_from` and `verse_to`, which no record has,
+    so the ayahs never showed. It reads `from_ayah` and `to_ayah`.
+  - The pages use Bootstrap classes the app does not load: uneven fields, no
+    margin at the edges. Fields are full width and the pages have room on a
+    phone.
+- The list is `table-stack` (cards on a phone), and the page shows the
+  layout's missing flash.
+
+**Tests:** `OldScreensSpeakThreeLanguagesTest` grows to 4: no English of the
+pages' own, every type and state named; a teacher adds a record in Dhivehi,
+sees it with its ayahs, can change it; the headmaster only reads, and sees
+the ayahs on the student's page. Whole suite locally: 3287 passed; pint
+clean.
+
+**Walk:** `phone-first.mjs` 114/114, now including the list. Screenshots at
+390 px: the list and the form in Dhivehi, the list in Arabic.
+
 ## 5td. The analytics screens and the old menu in Dhivehi and Arabic (OB1, 2026-10-20)
 
 **BACKLOG C21's last item, the old Blade screens. The owner, 2026-10-20:

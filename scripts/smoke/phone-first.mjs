@@ -37,7 +37,7 @@ const PAGES = [
 const APP = {
     [process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv']: ['portal/absence-notes', 'portal/events'],
     [process.env.SMOKE_PARENT ?? 'parent@akuru.edu.mv']: ['portal/absence-notes', 'portal/events', 'academics/requests'],
-    [process.env.SMOKE_TEACHER ?? 'teacher@akuru.edu.mv']: ['academics/plans', 'academics/materials', 'academics/behavior', 'substitutions/requests'],
+    [process.env.SMOKE_TEACHER ?? 'teacher@akuru.edu.mv']: ['academics/plans', 'academics/materials', 'academics/behavior', 'substitutions/requests', 'quran-progress'],
     // The old Blade screens, translated in OB1–OB3.
     [process.env.SMOKE_ADMIN ?? 'superadmin@akuru.edu.mv']: ['analytics', 'analytics/reports'],
 };

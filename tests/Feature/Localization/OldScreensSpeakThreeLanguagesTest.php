@@ -83,3 +83,68 @@ it('shows the dashboard and the reports in Dhivehi, and generating a report come
         ->assertRedirect(route('analytics.reports'))->assertSessionHas('success', __('analytics.generated', [], 'dv'));
     $web->get('/analytics/reports')->assertSee(__('analytics.type_user_analytics', [], 'dv'))->assertSee(__('analytics.status_completed', [], 'dv'))->assertSee('data-testid="flash-success"', false);
 });
+
+/*
+ * OB2: the Qur'an progress pages and a student's Qur'an progress. They printed
+ * all three languages side by side, the Dhivehi wrong in places (*ރަގަޅު*,
+ * "good", for *Student*). Reading them found the list's heading and Add in
+ * sections the layout never prints, behind permissions that do not exist
+ * (`create_`, `edit_`, `delete_quran_progress`), so nobody could add, change
+ * or remove a record from the list; and a student's page read `verse_from`
+ * and `verse_to`, which no record has, so the ayahs never showed.
+ */
+function ob2Views(): array
+{
+    return [
+        'quran-progress/index.blade.php',
+        'quran-progress/create.blade.php',
+        'quran-progress/edit.blade.php',
+        'quran-progress/show.blade.php',
+        'quran-progress/_form.blade.php',
+        'students/quran-progress.blade.php',
+    ];
+}
+
+it('prints no English of the Qur\'an progress pages\' own, and names every type and state', function () {
+    expect(obPrintsNoEnglish(ob2Views()))->toBe([]);
+    foreach (obKeysIn(ob2Views(), 'quran') as $key) {
+        foreach (['en', 'dv', 'ar'] as $locale) {
+            expect(__($key, [], $locale))->not->toBe($key, "{$key} in {$locale}");
+        }
+    }
+    foreach (['memorization', 'recitation', 'revision'] as $type) {
+        expect(__('quran.qp_type_'.$type, [], 'dv'))->not->toBe('quran.qp_type_'.$type);
+    }
+    foreach (['in_progress', 'completed', 'needs_revision'] as $status) {
+        expect(__('quran.qp_status_'.$status, [], 'ar'))->not->toBe('quran.qp_status_'.$status);
+    }
+    expect((string) file_get_contents(app_path('Domains/Hifz/Http/Controllers/QuranProgressController.php')))->not->toContain('successfully!');
+});
+
+it('lets a teacher add, change and remove a record in Dhivehi, and the office only read them', function () {
+    $teacher = makeTeacherRow();
+    $teacherUser = User::query()->findOrFail($teacher->user_id);
+    $teacherUser->assignRole('teacher');
+    $student = makeStudent();
+    app()->setLocale('dv');
+    $web = test()->withoutLocalizationMiddleware();
+
+    $web->actingAs($teacherUser)->get('/quran-progress')->assertOk()
+        ->assertSee(__('quran.qp_records', [], 'dv'))->assertSee('data-testid="qp-add"', false)->assertSee(__('quran.qp_none', [], 'dv'));
+    $web->actingAs($teacherUser)->get('/quran-progress/create')->assertOk()->assertSee(__('quran.qp_type_memorization', [], 'dv'));
+    $web->actingAs($teacherUser)->post('/quran-progress', [
+        'student_id' => $student->id, 'teacher_id' => $teacher->id, 'surah_name' => 'Al-Fatiha', 'surah_name_arabic' => 'الفاتحة',
+        'surah_number' => 1, 'from_ayah' => 1, 'to_ayah' => 7, 'type' => 'memorization', 'status' => 'in_progress',
+    ])->assertRedirect(route('quran-progress.index'))->assertSessionHas('success', __('quran.qp_saved', [], 'dv'));
+
+    $list = $web->actingAs($teacherUser)->get('/quran-progress')->assertOk()->getContent();
+    expect($list)->toContain(__('quran.qp_ayahs', ['from' => 1, 'to' => 7], 'dv'))
+        ->toContain(__('quran.qp_status_in_progress', [], 'dv'))->toContain('/edit"')
+        ->not->toContain('ރަގަޅު');
+    $office = User::factory()->create();
+    $office->assignRole('headmaster');
+    $web->actingAs($office)->get('/quran-progress')->assertOk()->assertDontSee('data-testid="qp-add"', false)->assertDontSee('/edit"', false)->assertSee(__('quran.qp_view', [], 'dv'));
+    // A student's page is the office's, and now shows the ayahs it read from fields no record has.
+    $web->actingAs($office)->get("/students/{$student->id}/quran-progress")->assertOk()
+        ->assertSee(__('quran.qp_ayahs', ['from' => 1, 'to' => 7], 'dv'))->assertSee(__('quran.qp_title', [], 'dv'));
+});
