@@ -4983,6 +4983,34 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sv. Phone-first: the rule, its checks, and the audit (MF1, 2026-10-20)
+
+**The owner:** "Check everything and make sure everything follows mobile
+1st rule and make this a habit for future updates." `docs/MOBILE_FIRST.md`
+(new) holds the seven rules, how they are checked, the audit and the slices
+MF1–MF6.
+- **The habit.**
+  - CLAUDE.md gains a *Phone-first* convention, a doc-map row, and a phone
+    walk (390 px, English and Dhivehi) in the definition of done.
+  - `PhoneFirstStylesTest` (new, CI): no new `@media (max-width)` rule (7
+    files, 19 rules pinned per file, only allowed to fall) and no `max-*:`
+    variant; no new Inertia page with a table that is not `table-stack`
+    (114 pinned, only allowed to shrink).
+  - `phone-first.mjs` (new, in `all.mjs`, read-only): every public page in
+    English and Dhivehi at 390 × 844 must not scroll sideways, and a page's
+    `data-phone-main` must start on the first screen.
+- **The audit**, every public page in both languages and 42 student, parent
+  and teacher screens at 390 × 844. Nothing scrolls sideways. What is not
+  phone-first:
+  - the Library, Courses and Lending filters fill the first screen (MF2);
+  - portal and teacher pages show the *new* form before the records (MF3);
+  - the substitution page's *New request* is white on white (MF3);
+  - 114 tables squeeze instead of stacking (MF4–MF6).
+
+**Tests:** `PhoneFirstStylesTest` (2). Architecture suite locally: 76 passed.
+**Walk:** `phone-first.mjs`, 64/64. No listing page carries `data-phone-main`
+yet; MF2 adds the markers along with the folds that make them pass.
+
 ## 5su. Dhivehi and Arabic each switch off (2026-10-18)
 
 **The owner asked:** "is there any language off switch?" — there was none;
