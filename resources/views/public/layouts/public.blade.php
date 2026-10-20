@@ -368,6 +368,17 @@
     })();
     </script>
 
+    {{-- docs/MOBILE_FIRST.md rule 3 (MF2): a listing's filters are served open, so
+         they work without script; on a phone they fold, so the results come first.
+         Widened past `md` they open again, where the fold has no button. --}}
+    <script>
+    (function () {
+      var wide = window.matchMedia('(min-width: 768px)');
+      var folds = document.querySelectorAll('details[data-filter-fold]');
+      folds.forEach(function (fold) { if (!wide.matches) fold.open = false; });
+      wide.addEventListener('change', function () { if (wide.matches) folds.forEach(function (fold) { fold.open = true; }); });
+    })();
+    </script>
     @stack('scripts')
 </body>
 </html>

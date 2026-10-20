@@ -18,7 +18,7 @@ uses(RefreshDatabase::class);
 it('heads the shelf with the full name and links it by the short one', function () {
     $shelf = $this->withoutLocalizationMiddleware()->get(route('public.library.index'))->assertOk();
 
-    $shelf->assertSee('<h1 class="text-4xl font-bold text-brandMaroon-900 mb-3">Akuru Digital Library</h1>', false)
+    $shelf->assertSee('<h1 class="text-3xl md:text-4xl font-bold text-brandMaroon-900 mb-2 md:mb-3">Akuru Digital Library</h1>', false)
         ->assertSee('<title>Akuru Digital Library', false)
         ->assertDontSee('Knowledge Library');
 

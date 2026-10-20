@@ -10,142 +10,143 @@
     $courseLevelName = fn ($level) => ['kids' => __('public.Kids'), 'youth' => __('public.Youth'), 'adult' => __('public.Adult'), 'all' => __('public.All Ages')][$level] ?? $level;
 @endphp
 <!-- Page Header -->
-<section class="bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 py-12">
+<section class="bg-gradient-to-br from-brandMaroon-50 to-brandBeige-100 py-6 md:py-12">
     <div class="container mx-auto px-4">
-        <h1 class="text-4xl font-bold text-brandMaroon-900 mb-4">{{ __('public.Our Courses') }}</h1>
-        <p class="text-xl text-brandGray-700">{{ __('public.Explore our comprehensive Islamic education programs') }}</p>
+        <h1 class="text-3xl md:text-4xl font-bold text-brandMaroon-900 mb-2 md:mb-4">{{ __('public.Our Courses') }}</h1>
+        <p class="text-lg md:text-xl text-brandGray-700">{{ __('public.Explore our comprehensive Islamic education programs') }}</p>
     </div>
 </section>
 
 <!-- Search and Filters -->
-<section class="bg-white border-b py-6">
+{{-- Phone-first (docs/MOBILE_FIRST.md rule 3, MF2): one form, the search in view and
+     the filters folded under "Filter and sort" on a phone, so the courses start on
+     the first screen. It was two forms, and filtering dropped the search. --}}
+@php($courseFilters = collect(['category', 'status', 'language', 'level', 'enrollment', 'featured'])->filter(fn ($key) => filled(request($key)))->count() + (filled(request('sort')) && request('sort') !== 'default' ? 1 : 0))
+<section class="bg-white border-b py-4 md:py-6">
     <div class="container mx-auto px-4">
-        <!-- Search Bar -->
-        <div class="mb-6">
-            <form method="GET" action="{{ route('public.courses.index') }}" class="max-w-2xl mx-auto">
-                <div class="relative">
-                    <input type="text" 
-                           name="search" 
-                           aria-label="{{ __('public.Search courses...') }}"
-                           value="{{ request('search') }}"
-                           placeholder="{{ __('public.Search courses...') }}"
-                           class="form-input w-full ps-10 pe-4 py-3 text-lg">
-                    <div class="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
-                        <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                    </div>
-                    <button type="submit" class="absolute inset-y-0 end-0 px-4 bg-brandMaroon-600 text-white rounded-e-md hover:bg-brandMaroon-700">
-                        {{ __('public.Search') }}
-                    </button>
+        <form method="GET" action="{{ route('public.courses.index') }}" data-testid="courses-filters">
+            <div class="relative max-w-2xl md:mx-auto">
+                <input type="text"
+                       name="search"
+                       aria-label="{{ __('public.Search courses...') }}"
+                       value="{{ request('search') }}"
+                       placeholder="{{ __('public.Search courses...') }}"
+                       class="form-input w-full ps-10 pe-24 py-3 md:text-lg">
+                <div class="absolute inset-y-0 start-0 ps-3 flex items-center pointer-events-none">
+                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
                 </div>
-            </form>
-        </div>
-
-        <!-- Advanced Filters -->
-        <form method="GET" action="{{ route('public.courses.index') }}" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <!-- Category Filter -->
-                <div>
-                    <label for="courses-category" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Category') }}</label>
-                    <select id="courses-category" name="category" class="form-input w-full">
-                        <option value="">{{ __('public.All Categories') }}</option>
-                        @foreach($categories as $category)
-                            <option value="{{ $category->slug }}" {{ request('category') == $category->slug ? 'selected' : '' }} data-office-words>
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-
-                <!-- Status Filter -->
-                <div>
-                    <label for="courses-status" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Status') }}</label>
-                    <select id="courses-status" name="status" class="form-input w-full">
-                        <option value="">{{ __('public.All Statuses') }}</option>
-                        <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>{{ __('public.Open') }}</option>
-                        <option value="upcoming" {{ request('status') == 'upcoming' ? 'selected' : '' }}>{{ __('public.Upcoming') }}</option>
-                    </select>
-                </div>
-
-                <!-- Language Filter -->
-                <div>
-                    <label for="courses-language" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Language') }}</label>
-                    <select id="courses-language" name="language" class="form-input w-full">
-                        <option value="">{{ __('public.All Languages') }}</option>
-                        <option value="en" {{ request('language') == 'en' ? 'selected' : '' }}>English</option>
-                        <option value="ar" {{ request('language') == 'ar' ? 'selected' : '' }}>العربية</option>
-                        <option value="dv" {{ request('language') == 'dv' ? 'selected' : '' }}>ދިވެހި</option>
-                        <option value="mixed" {{ request('language') == 'mixed' ? 'selected' : '' }}>{{ __('public.Mixed') }}</option>
-                    </select>
-                </div>
-
-                <!-- Level Filter -->
-                <div>
-                    <label for="courses-level" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Level') }}</label>
-                    <select id="courses-level" name="level" class="form-input w-full">
-                        <option value="">{{ __('public.All Levels') }}</option>
-                        <option value="kids" {{ request('level') == 'kids' ? 'selected' : '' }}>{{ __('public.Kids') }}</option>
-                        <option value="youth" {{ request('level') == 'youth' ? 'selected' : '' }}>{{ __('public.Youth') }}</option>
-                        <option value="adult" {{ request('level') == 'adult' ? 'selected' : '' }}>{{ __('public.Adult') }}</option>
-                        <option value="all" {{ request('level') == 'all' ? 'selected' : '' }}>{{ __('public.All Ages') }}</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Additional Filters Row -->
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <!-- Enrollment Status -->
-                <div>
-                    <label for="courses-enrollment" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Enrollment') }}</label>
-                    <select id="courses-enrollment" name="enrollment" class="form-input w-full">
-                        <option value="">{{ __('public.All Enrollment') }}</option>
-                        <option value="open" {{ request('enrollment') == 'open' ? 'selected' : '' }}>{{ __('public.Enrollment Open') }}</option>
-                        <option value="upcoming" {{ request('enrollment') == 'upcoming' ? 'selected' : '' }}>{{ __('public.Starting Soon') }}</option>
-                    </select>
-                </div>
-
-                <!-- Sort By -->
-                <div>
-                    <label for="courses-sort" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Sort By') }}</label>
-                    <select id="courses-sort" name="sort" class="form-input w-full">
-                        <option value="default" {{ request('sort') == 'default' ? 'selected' : '' }}>{{ __('public.Default') }}</option>
-                        <option value="title" {{ request('sort') == 'title' ? 'selected' : '' }}>{{ __('public.Title A-Z') }}</option>
-                        <option value="fee_low" {{ request('sort') == 'fee_low' ? 'selected' : '' }}>{{ __('public.Price: Low to High') }}</option>
-                        <option value="fee_high" {{ request('sort') == 'fee_high' ? 'selected' : '' }}>{{ __('public.Price: High to Low') }}</option>
-                        <option value="start_date" {{ request('sort') == 'start_date' ? 'selected' : '' }}>{{ __('public.Start Date') }}</option>
-                        <option value="featured" {{ request('sort') == 'featured' ? 'selected' : '' }}>{{ __('public.Featured First') }}</option>
-                    </select>
-                </div>
-
-                <!-- Featured Only -->
-                <div class="flex items-end">
-                    <label class="flex items-center">
-                        <input type="checkbox" 
-                               name="featured" 
-                               value="1" 
-                               {{ request('featured') ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-brandMaroon-600 shadow-sm focus:border-brandMaroon-300 focus:ring focus:ring-brandMaroon-200 focus:ring-opacity-50">
-                        <span class="ms-2 text-sm text-gray-700">{{ __('public.Featured Only') }}</span>
-                    </label>
-                </div>
-            </div>
-
-            <!-- Filter Buttons -->
-            <div class="flex flex-wrap gap-3">
-                <button type="submit" class="btn-primary">
-                    {{ __('public.Apply Filters') }}
+                <button type="submit" class="absolute inset-y-0 end-0 px-4 bg-brandMaroon-600 text-white rounded-e-md hover:bg-brandMaroon-700">
+                    {{ __('public.Search') }}
                 </button>
-                <a href="{{ route('public.courses.index') }}" class="btn-secondary">
-                    {{ __('public.Clear All') }}
-                </a>
             </div>
+
+            <details class="filter-fold mt-3 md:mt-6" open data-filter-fold data-testid="courses-filters-fold">
+                <summary class="filter-fold-toggle" data-testid="courses-filters-toggle">
+                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4h18M6 12h12M10 20h4"/></svg>
+                    {{ __('shop.filter_and_sort') }}
+                    @if($courseFilters > 0)<span class="filter-fold-count">{{ $courseFilters }}</span>@endif
+                </summary>
+                <div class="filter-fold-body space-y-4">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Category Filter -->
+                        <div>
+                            <label for="courses-category" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Category') }}</label>
+                            <select id="courses-category" name="category" class="form-input w-full">
+                                <option value="">{{ __('public.All Categories') }}</option>
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->slug }}" {{ request('category') == $category->slug ? 'selected' : '' }} data-office-words>
+                                        {{ $category->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <!-- Status Filter -->
+                        <div>
+                            <label for="courses-status" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Status') }}</label>
+                            <select id="courses-status" name="status" class="form-input w-full">
+                                <option value="">{{ __('public.All Statuses') }}</option>
+                                <option value="open" {{ request('status') == 'open' ? 'selected' : '' }}>{{ __('public.Open') }}</option>
+                                <option value="upcoming" {{ request('status') == 'upcoming' ? 'selected' : '' }}>{{ __('public.Upcoming') }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Language Filter -->
+                        <div>
+                            <label for="courses-language" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Language') }}</label>
+                            <select id="courses-language" name="language" class="form-input w-full">
+                                <option value="">{{ __('public.All Languages') }}</option>
+                                <option value="en" {{ request('language') == 'en' ? 'selected' : '' }}>English</option>
+                                <option value="ar" {{ request('language') == 'ar' ? 'selected' : '' }}>العربية</option>
+                                <option value="dv" {{ request('language') == 'dv' ? 'selected' : '' }}>ދިވެހި</option>
+                                <option value="mixed" {{ request('language') == 'mixed' ? 'selected' : '' }}>{{ __('public.Mixed') }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Level Filter -->
+                        <div>
+                            <label for="courses-level" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Level') }}</label>
+                            <select id="courses-level" name="level" class="form-input w-full">
+                                <option value="">{{ __('public.All Levels') }}</option>
+                                <option value="kids" {{ request('level') == 'kids' ? 'selected' : '' }}>{{ __('public.Kids') }}</option>
+                                <option value="youth" {{ request('level') == 'youth' ? 'selected' : '' }}>{{ __('public.Youth') }}</option>
+                                <option value="adult" {{ request('level') == 'adult' ? 'selected' : '' }}>{{ __('public.Adult') }}</option>
+                                <option value="all" {{ request('level') == 'all' ? 'selected' : '' }}>{{ __('public.All Ages') }}</option>
+                            </select>
+                        </div>
+                        <!-- Enrollment Status -->
+                        <div>
+                            <label for="courses-enrollment" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Enrollment') }}</label>
+                            <select id="courses-enrollment" name="enrollment" class="form-input w-full">
+                                <option value="">{{ __('public.All Enrollment') }}</option>
+                                <option value="open" {{ request('enrollment') == 'open' ? 'selected' : '' }}>{{ __('public.Enrollment Open') }}</option>
+                                <option value="upcoming" {{ request('enrollment') == 'upcoming' ? 'selected' : '' }}>{{ __('public.Starting Soon') }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Sort By -->
+                        <div>
+                            <label for="courses-sort" class="block text-sm font-medium text-gray-700 mb-2">{{ __('public.Sort By') }}</label>
+                            <select id="courses-sort" name="sort" class="form-input w-full">
+                                <option value="default" {{ request('sort') == 'default' ? 'selected' : '' }}>{{ __('public.Default') }}</option>
+                                <option value="title" {{ request('sort') == 'title' ? 'selected' : '' }}>{{ __('public.Title A-Z') }}</option>
+                                <option value="fee_low" {{ request('sort') == 'fee_low' ? 'selected' : '' }}>{{ __('public.Price: Low to High') }}</option>
+                                <option value="fee_high" {{ request('sort') == 'fee_high' ? 'selected' : '' }}>{{ __('public.Price: High to Low') }}</option>
+                                <option value="start_date" {{ request('sort') == 'start_date' ? 'selected' : '' }}>{{ __('public.Start Date') }}</option>
+                                <option value="featured" {{ request('sort') == 'featured' ? 'selected' : '' }}>{{ __('public.Featured First') }}</option>
+                            </select>
+                        </div>
+
+                        <!-- Featured Only -->
+                        <div class="flex items-end sm:col-span-2 md:col-span-1">
+                            <label class="flex items-center">
+                                <input type="checkbox" 
+                                       name="featured" 
+                                       value="1" 
+                                       {{ request('featured') ? 'checked' : '' }}
+                                       class="rounded border-gray-300 text-brandMaroon-600 shadow-sm focus:border-brandMaroon-300 focus:ring focus:ring-brandMaroon-200 focus:ring-opacity-50">
+                                <span class="ms-2 text-sm text-gray-700">{{ __('public.Featured Only') }}</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <button type="submit" class="btn-primary">
+                            {{ __('public.Apply Filters') }}
+                        </button>
+                        <a href="{{ route('public.courses.index') }}" class="btn-secondary">
+                            {{ __('public.Clear All') }}
+                        </a>
+                    </div>
+                </div>
+            </details>
         </form>
     </div>
 </section>
 
 <!-- Courses Grid -->
-<section class="py-12">
+<section class="py-6 md:py-12" data-phone-main>
     <div class="container mx-auto px-4">
         @if($courses->count() > 0)
             <div class="grid lg:grid-cols-4 gap-8">

@@ -4983,6 +4983,42 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sw. The Library, Courses and Lending put their results first on a phone (MF2, 2026-10-20)
+
+**docs/MOBILE_FIRST.md A1–A3.** On a 390 px phone the filters filled the
+first screen: the first book sat about 1,000 px down on `/library` (and on
+`/research` and `/articles`, which open it), with four selects before the
+first course on `/courses` and six fields before the first book on
+`/lending`.
+- **The fold.** Each page keeps its search in view and puts the rest in a
+  `<details class="filter-fold" data-filter-fold>` under *Filter and sort*,
+  with a count of the filters in use.
+  - It is served open, so it works without script. The public layout's one
+    script folds it on a phone, and opens it again past `md`.
+  - The fold's button is the phone default and `min-width: 768px` hides it,
+    so the rule is written phone-first (`app.css`).
+  - On a desk nothing changes but the order: the search, then the choices,
+    with *Sort* first.
+- **Courses** was two forms: filtering dropped the search. It is one form now.
+- **Shorter heads on a phone.** The Library's and Courses' headers take half
+  the height below `md`; Lending loses half its top padding.
+- **The results are marked** `data-phone-main` (the Library's shelf,
+  continue-reading and featured sections; the course grid; the lending grid
+  and its empty state), so `phone-first.mjs` holds them on the first screen.
+- Desk grid cells are at least 11rem, so a choice such as *All categories*
+  is never cut.
+
+**Tests:** `FiltersFoldOnPhonesTest` (new, 4): each page folds its filters
+with the search outside and its results marked; the count; the course
+search kept with the filters. `SelectArrowsKeepTheirRoomTest` and
+`DigitalLibraryNameTest` follow the new markup. Whole suite locally: 3273
+passed.
+
+**Walk:** `phone-first.mjs`, 74/74 — ten new first-screen checks for the
+Library, Research, Articles, Courses and Lending, in English and Dhivehi,
+all passing. Screenshots at 390 px (folded and opened, English and Dhivehi)
+and 1366 px.
+
 ## 5sv. Phone-first: the rule, its checks, and the audit (MF1, 2026-10-20)
 
 **The owner:** "Check everything and make sure everything follows mobile

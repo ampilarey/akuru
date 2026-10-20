@@ -74,6 +74,6 @@ Already phone-first, and the pattern the others follow: the Bookstore's
 | Slice | What |
 |---|---|
 | MF1 | The rule (this page, CLAUDE.md), `PhoneFirstStylesTest`, `phone-first.mjs` |
-| MF2 | A1–A3: the Library, Courses and Lending filters fold; their lists carry `data-phone-main` |
+| MF2 | A1–A3: the Library, Courses and Lending filters fold; their lists carry `data-phone-main` — **done 2026-10-20 (STATUS §5sw)** |
 | MF3 | A4, A6: records first, the form under *New …* on a phone; the invisible button |
 | MF4–MF6 | A5: the tables, in batches (portal and teacher first, then the offices) |
