@@ -1,4 +1,5 @@
 import { router, useForm, usePage } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 
@@ -79,45 +80,48 @@ export default function Index({ years, yearId, structures, structureId, invoices
             </div>
             <FormErrors errors={refusals.unplaced} className="mb-4" />
 
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/finance/invoices/generate', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
-            >
-                <select className="form-input" aria-label={t.invoices_structure || 'Fee structure'} value={form.data.fee_structure_id} onChange={(e) => form.setData('fee_structure_id', e.target.value)}>
-                    <option value="">{t.invoices_structure || 'Fee structure'}</option>
-                    {structures.map((row) => <option key={row.id} value={row.id}>{row.name} ({structureStatus(row.status)})</option>)}
-                </select>
-                <input className="form-input" type="date" aria-label={t.invoices_period_start || 'Period starts'} value={form.data.period_start} onChange={(e) => form.setData('period_start', e.target.value)} />
-                <input className="form-input" type="date" aria-label={t.invoices_period_end || 'Period ends'} value={form.data.period_end} onChange={(e) => form.setData('period_end', e.target.value)} />
-                <select className="form-input" aria-label={t.invoices_monthly || 'Monthly fees'} value={form.data.monthly_mode} onChange={(e) => form.setData('monthly_mode', e.target.value)}>
-                    <option value="per_month">{t.invoices_mode_per_month || 'One invoice per month'}</option>
-                    <option value="consolidated">{t.invoices_mode_consolidated || 'Consolidate monthly items'}</option>
-                </select>
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={!!form.data.include_optional} onChange={(e) => form.setData('include_optional', e.target.checked)} />
-                    {t.invoices_include_optional || 'Include all optional items'}
-                </label>
-                {!form.data.include_optional && optionalItems.length > 0 && (
-                    <div className="flex flex-wrap gap-3 text-sm md:col-span-3">
-                        <span className="text-gray-600">{t.invoices_only_these || 'Or only these:'}</span>
-                        {optionalItems.map((item) => (
-                            <label key={item.id} className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    checked={form.data.optional_item_ids.map(String).includes(String(item.fee_item_id))}
-                                    onChange={() => toggleOptional(item.fee_item_id)}
-                                />
-                                {named(item) || (t.invoices_item || 'Item :id').replace(':id', item.fee_item_id)} ({item.amount})
-                            </label>
-                        ))}
-                    </div>
-                )}
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.invoices_generate || 'Generate drafts'}</button>
-                <FormErrors errors={form.errors} className="md:col-span-3" />
-            </form>
+            <PhoneFold label={t.invoices_generate || 'Generate drafts'} forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/finance/invoices/generate', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
+                >
+                    <select className="form-input" aria-label={t.invoices_structure || 'Fee structure'} value={form.data.fee_structure_id} onChange={(e) => form.setData('fee_structure_id', e.target.value)}>
+                        <option value="">{t.invoices_structure || 'Fee structure'}</option>
+                        {structures.map((row) => <option key={row.id} value={row.id}>{row.name} ({structureStatus(row.status)})</option>)}
+                    </select>
+                    <input className="form-input" type="date" aria-label={t.invoices_period_start || 'Period starts'} value={form.data.period_start} onChange={(e) => form.setData('period_start', e.target.value)} />
+                    <input className="form-input" type="date" aria-label={t.invoices_period_end || 'Period ends'} value={form.data.period_end} onChange={(e) => form.setData('period_end', e.target.value)} />
+                    <select className="form-input" aria-label={t.invoices_monthly || 'Monthly fees'} value={form.data.monthly_mode} onChange={(e) => form.setData('monthly_mode', e.target.value)}>
+                        <option value="per_month">{t.invoices_mode_per_month || 'One invoice per month'}</option>
+                        <option value="consolidated">{t.invoices_mode_consolidated || 'Consolidate monthly items'}</option>
+                    </select>
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={!!form.data.include_optional} onChange={(e) => form.setData('include_optional', e.target.checked)} />
+                        {t.invoices_include_optional || 'Include all optional items'}
+                    </label>
+                    {!form.data.include_optional && optionalItems.length > 0 && (
+                        <div className="flex flex-wrap gap-3 text-sm md:col-span-3">
+                            <span className="text-gray-600">{t.invoices_only_these || 'Or only these:'}</span>
+                            {optionalItems.map((item) => (
+                                <label key={item.id} className="flex items-center gap-2">
+                                    <input
+                                        type="checkbox"
+                                        checked={form.data.optional_item_ids.map(String).includes(String(item.fee_item_id))}
+                                        onChange={() => toggleOptional(item.fee_item_id)}
+                                    />
+                                    {named(item) || (t.invoices_item || 'Item :id').replace(':id', item.fee_item_id)} ({item.amount})
+                                </label>
+                            ))}
+                        </div>
+                    )}
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.invoices_generate || 'Generate drafts'}</button>
+                    <FormErrors errors={form.errors} className="md:col-span-3" />
+                </form>
+            </PhoneFold>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">

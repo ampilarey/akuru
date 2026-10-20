@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import PhoneFold from '../../Components/PhoneFold';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 
@@ -43,122 +44,125 @@ export default function Index({ forms = [], fieldTypes = [], classes = [], t = {
             </div>
 
             {open && (
-                <form
-                    onSubmit={(e) => { e.preventDefault(); form.post('/forms', { onSuccess: () => setOpen(false) }); }}
-                    className="mb-6 grid gap-3 rounded-lg border bg-white p-4"
-                >
-                    <label className="block text-sm">
-                        <span className="mb-1 block text-gray-600">{t.col_title || 'Title'}</span>
-                        <input className="form-input w-full" value={form.data.title}
-                            onChange={(e) => form.setData('title', e.target.value)} />
-                        {form.errors.title && <span className="text-xs text-red-600">{form.errors.title}</span>}
-                    </label>
-                    <label className="block text-sm">
-                        <span className="mb-1 block text-gray-600">{t.description || 'Description'}</span>
-                        <textarea className="form-input w-full" rows={2} value={form.data.description}
-                            onChange={(e) => form.setData('description', e.target.value)} />
-                    </label>
+                <PhoneFold forceOpen={Object.keys(form.errors).length > 0}>
+                    {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                    <form
+                        onSubmit={(e) => { e.preventDefault(); form.post('/forms', { onSuccess: () => setOpen(false) }); }}
+                        className="grid gap-3 rounded-lg border bg-white p-4"
+                    >
+                        <label className="block text-sm">
+                            <span className="mb-1 block text-gray-600">{t.col_title || 'Title'}</span>
+                            <input className="form-input w-full" value={form.data.title}
+                                onChange={(e) => form.setData('title', e.target.value)} />
+                            {form.errors.title && <span className="text-xs text-red-600">{form.errors.title}</span>}
+                        </label>
+                        <label className="block text-sm">
+                            <span className="mb-1 block text-gray-600">{t.description || 'Description'}</span>
+                            <textarea className="form-input w-full" rows={2} value={form.data.description}
+                                onChange={(e) => form.setData('description', e.target.value)} />
+                        </label>
 
-                    <fieldset className="rounded border border-[#E6D9C8] p-3">
-                        <legend className="px-1 text-xs uppercase tracking-wide text-gray-500">{t.forms_questions || 'Questions'}</legend>
-                        {form.data.fields.map((field, i) => (
-                            <div key={i} className="mb-3 grid gap-2 border-b pb-3 last:border-0 sm:grid-cols-[2fr,1fr,auto]">
-                                <input className="form-input" aria-label={t.forms_question || 'Question'} placeholder={t.forms_question || 'Question'} value={field.label}
-                                    onChange={(e) => setField(i, { label: e.target.value })} />
-                                <select className="form-input" aria-label={t.forms_question_type || 'Question type'} value={field.type}
-                                    onChange={(e) => setField(i, { type: e.target.value })}>
-                                    {fieldTypes.map((type) => <option key={type} value={type}>{t[`form_type_${type}`] || type}</option>)}
-                                </select>
-                                <label className="flex items-center gap-1 text-xs">
-                                    <input type="checkbox" checked={field.required}
-                                        onChange={(e) => setField(i, { required: e.target.checked })} />
-                                    {t.forms_required || 'Required'}
-                                </label>
-                                {['select', 'multi_select'].includes(field.type) && (
-                                    <input className="form-input sm:col-span-3" aria-label={t.forms_options || 'Options, comma separated'} placeholder={t.forms_options || 'Options, comma separated'}
-                                        value={(field.options || []).join(t.forms_options_separator || ', ')}
-                                        onChange={(e) => setField(i, { options: e.target.value.split(/[,،]/).map((o) => o.trim()) })} />
-                                )}
-                                {/* `fields.*.label` is `required` server-side, and nothing
-                                    rendered its error. Leaving a question blank made Save
-                                    do nothing at all: no save, no message, composer still
-                                    open. Every other rule on this form was already
-                                    surfaced — this was the one gap, and it sat on the
-                                    field a person is most likely to leave empty, because
-                                    "Add question" creates it blank. */}
-                                {form.errors[`fields.${i}.label`] && (
-                                    <span className="text-xs text-red-600 sm:col-span-3">{form.errors[`fields.${i}.label`]}</span>
-                                )}
-                                {form.errors[`fields.${i}.type`] && (
-                                    <span className="text-xs text-red-600 sm:col-span-3">{form.errors[`fields.${i}.type`]}</span>
-                                )}
-                                {form.errors[`fields.${i}.options`] && (
-                                    <span className="text-xs text-red-600 sm:col-span-3">{form.errors[`fields.${i}.options`]}</span>
-                                )}
-                            </div>
-                        ))}
-                        <button type="button" className="text-xs text-[#7C2D37] hover:underline"
-                            onClick={() => form.setData('fields', [...form.data.fields, { label: '', type: 'text', options: [], required: false }])}>
-                            {t.forms_add_question || 'Add question'}
-                        </button>
-                        {form.errors.fields && <span className="block text-xs text-red-600">{form.errors.fields}</span>}
-                    </fieldset>
-
-                    {/* E6's acceptance is a sign-up "targeted at one class" that
-                        "closed forms reject": the action honoured both and the
-                        screen offered neither, so the office could only send a
-                        sheet to the whole school and never close it (STATUS §5fq). */}
-                    <div className="text-sm">
-                        <span className="mb-1 block text-gray-600">{t.forms_classes || 'Only these classes (optional — blank means everyone)'}</span>
-                        <div className="flex max-h-28 flex-wrap gap-2 overflow-y-auto">
-                            {classes.map((c) => (
-                                <label key={c.id} className="inline-flex items-center gap-1">
-                                    <input type="checkbox" checked={form.data.target_classes.includes(c.id)} onChange={() => toggleClass(c.id)} />
-                                    {c.label}
-                                </label>
+                        <fieldset className="rounded border border-[#E6D9C8] p-3">
+                            <legend className="px-1 text-xs uppercase tracking-wide text-gray-500">{t.forms_questions || 'Questions'}</legend>
+                            {form.data.fields.map((field, i) => (
+                                <div key={i} className="mb-3 grid gap-2 border-b pb-3 last:border-0 sm:grid-cols-[2fr,1fr,auto]">
+                                    <input className="form-input" aria-label={t.forms_question || 'Question'} placeholder={t.forms_question || 'Question'} value={field.label}
+                                        onChange={(e) => setField(i, { label: e.target.value })} />
+                                    <select className="form-input" aria-label={t.forms_question_type || 'Question type'} value={field.type}
+                                        onChange={(e) => setField(i, { type: e.target.value })}>
+                                        {fieldTypes.map((type) => <option key={type} value={type}>{t[`form_type_${type}`] || type}</option>)}
+                                    </select>
+                                    <label className="flex items-center gap-1 text-xs">
+                                        <input type="checkbox" checked={field.required}
+                                            onChange={(e) => setField(i, { required: e.target.checked })} />
+                                        {t.forms_required || 'Required'}
+                                    </label>
+                                    {['select', 'multi_select'].includes(field.type) && (
+                                        <input className="form-input sm:col-span-3" aria-label={t.forms_options || 'Options, comma separated'} placeholder={t.forms_options || 'Options, comma separated'}
+                                            value={(field.options || []).join(t.forms_options_separator || ', ')}
+                                            onChange={(e) => setField(i, { options: e.target.value.split(/[,،]/).map((o) => o.trim()) })} />
+                                    )}
+                                    {/* `fields.*.label` is `required` server-side, and nothing
+                                        rendered its error. Leaving a question blank made Save
+                                        do nothing at all: no save, no message, composer still
+                                        open. Every other rule on this form was already
+                                        surfaced — this was the one gap, and it sat on the
+                                        field a person is most likely to leave empty, because
+                                        "Add question" creates it blank. */}
+                                    {form.errors[`fields.${i}.label`] && (
+                                        <span className="text-xs text-red-600 sm:col-span-3">{form.errors[`fields.${i}.label`]}</span>
+                                    )}
+                                    {form.errors[`fields.${i}.type`] && (
+                                        <span className="text-xs text-red-600 sm:col-span-3">{form.errors[`fields.${i}.type`]}</span>
+                                    )}
+                                    {form.errors[`fields.${i}.options`] && (
+                                        <span className="text-xs text-red-600 sm:col-span-3">{form.errors[`fields.${i}.options`]}</span>
+                                    )}
+                                </div>
                             ))}
+                            <button type="button" className="text-xs text-[#7C2D37] hover:underline"
+                                onClick={() => form.setData('fields', [...form.data.fields, { label: '', type: 'text', options: [], required: false }])}>
+                                {t.forms_add_question || 'Add question'}
+                            </button>
+                            {form.errors.fields && <span className="block text-xs text-red-600">{form.errors.fields}</span>}
+                        </fieldset>
+
+                        {/* E6's acceptance is a sign-up "targeted at one class" that
+                            "closed forms reject": the action honoured both and the
+                            screen offered neither, so the office could only send a
+                            sheet to the whole school and never close it (STATUS §5fq). */}
+                        <div className="text-sm">
+                            <span className="mb-1 block text-gray-600">{t.forms_classes || 'Only these classes (optional — blank means everyone)'}</span>
+                            <div className="flex max-h-28 flex-wrap gap-2 overflow-y-auto">
+                                {classes.map((c) => (
+                                    <label key={c.id} className="inline-flex items-center gap-1">
+                                        <input type="checkbox" checked={form.data.target_classes.includes(c.id)} onChange={() => toggleClass(c.id)} />
+                                        {c.label}
+                                    </label>
+                                ))}
+                            </div>
                         </div>
-                    </div>
 
-                    <label className="block text-sm">
-                        <span className="mb-1 block text-gray-600">{t.forms_closes_at || 'Closes at (optional)'}</span>
-                        <input className="form-input w-full sm:w-64" type="datetime-local" value={form.data.closes_at}
-                            onChange={(e) => form.setData('closes_at', e.target.value)} />
-                        {form.errors.closes_at && <span className="text-xs text-red-600">{form.errors.closes_at}</span>}
-                    </label>
+                        <label className="block text-sm">
+                            <span className="mb-1 block text-gray-600">{t.forms_closes_at || 'Closes at (optional)'}</span>
+                            <input className="form-input w-full sm:w-64" type="datetime-local" value={form.data.closes_at}
+                                onChange={(e) => form.setData('closes_at', e.target.value)} />
+                            {form.errors.closes_at && <span className="text-xs text-red-600">{form.errors.closes_at}</span>}
+                        </label>
 
-                    <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={form.data.is_anonymous}
-                            onChange={(e) => form.setData('is_anonymous', e.target.checked)} />
-                        {t.forms_anonymous || 'Anonymous — no name is recorded, and answers cannot be traced back'}
-                    </label>
+                        <label className="flex items-center gap-2 text-sm">
+                            <input type="checkbox" checked={form.data.is_anonymous}
+                                onChange={(e) => form.setData('is_anonymous', e.target.checked)} />
+                            {t.forms_anonymous || 'Anonymous — no name is recorded, and answers cannot be traced back'}
+                        </label>
 
-                    <label className="flex items-center gap-2 text-sm">
-                        <input type="checkbox" checked={form.data.requires_parent_confirmation}
-                            disabled={form.data.is_anonymous}
-                            onChange={(e) => form.setData('requires_parent_confirmation', e.target.checked)} />
-                        {t.forms_parent_confirmation || 'A pupil’s answer needs a parent to confirm it'}
-                    </label>
-                    {form.errors.requires_parent_confirmation && (
-                        <span className="text-xs text-red-600">{form.errors.requires_parent_confirmation}</span>
-                    )}
+                        <label className="flex items-center gap-2 text-sm">
+                            <input type="checkbox" checked={form.data.requires_parent_confirmation}
+                                disabled={form.data.is_anonymous}
+                                onChange={(e) => form.setData('requires_parent_confirmation', e.target.checked)} />
+                            {t.forms_parent_confirmation || 'A pupil’s answer needs a parent to confirm it'}
+                        </label>
+                        {form.errors.requires_parent_confirmation && (
+                            <span className="text-xs text-red-600">{form.errors.requires_parent_confirmation}</span>
+                        )}
 
-                    <label className="block text-sm">
-                        <span className="mb-1 block text-gray-600">{t.forms_fee || 'Fee (MVR, leave blank for free)'}</span>
-                        <input className="form-input w-full sm:w-40" type="number" min="0" step="0.01"
-                            value={form.data.fee_amount} disabled={form.data.is_anonymous}
-                            onChange={(e) => form.setData('fee_amount', e.target.value)} />
-                        <span className="mt-1 block text-xs text-gray-500">
-                            {t.forms_fee_hint || 'Raises an invoice per pupil when they sign up. Paid through the normal invoice screen — the amount cannot be changed once families have been invoiced.'}
-                        </span>
-                        {form.errors.fee_amount && <span className="text-xs text-red-600">{form.errors.fee_amount}</span>}
-                    </label>
+                        <label className="block text-sm">
+                            <span className="mb-1 block text-gray-600">{t.forms_fee || 'Fee (MVR, leave blank for free)'}</span>
+                            <input className="form-input w-full sm:w-40" type="number" min="0" step="0.01"
+                                value={form.data.fee_amount} disabled={form.data.is_anonymous}
+                                onChange={(e) => form.setData('fee_amount', e.target.value)} />
+                            <span className="mt-1 block text-xs text-gray-500">
+                                {t.forms_fee_hint || 'Raises an invoice per pupil when they sign up. Paid through the normal invoice screen — the amount cannot be changed once families have been invoiced.'}
+                            </span>
+                            {form.errors.fee_amount && <span className="text-xs text-red-600">{form.errors.fee_amount}</span>}
+                        </label>
 
-                    <FormErrors errors={form.errors} except={saidBeside} />
-                    <button type="submit" className="btn-primary justify-self-start" disabled={form.processing}>
-                        {t.forms_save || 'Save form'}
-                    </button>
-                </form>
+                        <FormErrors errors={form.errors} except={saidBeside} />
+                        <button type="submit" className="btn-primary justify-self-start" disabled={form.processing}>
+                            {t.forms_save || 'Save form'}
+                        </button>
+                    </form>
+                </PhoneFold>
             )}
 
             <ul className="grid gap-2">

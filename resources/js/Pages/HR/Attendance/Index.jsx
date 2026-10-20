@@ -1,4 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 
 /**
@@ -55,26 +56,29 @@ export default function Index({ date, academicYearId, staff, rows, statuses, t =
                 </div>
             </div>
 
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/hr/attendance', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
-            >
-                <select className="form-input" aria-label={t.staff_member || 'Staff member'} value={form.data.staff_profile_id} onChange={(e) => form.setData('staff_profile_id', e.target.value)}>
-                    {staff.map((row) => (
-                        <option key={row.id} value={row.id}>{row.first_name} {row.last_name}</option>
-                    ))}
-                </select>
-                <select className="form-input" aria-label={t.status || 'Status'} value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
-                    {statuses.map((status) => <option key={status} value={status}>{statusName(status)}</option>)}
-                </select>
-                <input className="form-input" aria-label={t.attendance_late_minutes || 'Late minutes'} placeholder={t.attendance_late_minutes || 'Late minutes'} value={form.data.minutes_late} onChange={(e) => form.setData('minutes_late', e.target.value)} />
-                <input className="form-input" aria-label={t.remarks || 'Remarks'} placeholder={t.remarks || 'Remarks'} value={form.data.remarks} onChange={(e) => form.setData('remarks', e.target.value)} />
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.attendance_mark || 'Mark attendance'}</button>
-                {refused && <span className="text-xs text-red-600 md:col-span-5">{refused}</span>}
-            </form>
+            <PhoneFold label={t.attendance_mark || 'Mark attendance'} forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/hr/attendance', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
+                >
+                    <select className="form-input" aria-label={t.staff_member || 'Staff member'} value={form.data.staff_profile_id} onChange={(e) => form.setData('staff_profile_id', e.target.value)}>
+                        {staff.map((row) => (
+                            <option key={row.id} value={row.id}>{row.first_name} {row.last_name}</option>
+                        ))}
+                    </select>
+                    <select className="form-input" aria-label={t.status || 'Status'} value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
+                        {statuses.map((status) => <option key={status} value={status}>{statusName(status)}</option>)}
+                    </select>
+                    <input className="form-input" aria-label={t.attendance_late_minutes || 'Late minutes'} placeholder={t.attendance_late_minutes || 'Late minutes'} value={form.data.minutes_late} onChange={(e) => form.setData('minutes_late', e.target.value)} />
+                    <input className="form-input" aria-label={t.remarks || 'Remarks'} placeholder={t.remarks || 'Remarks'} value={form.data.remarks} onChange={(e) => form.setData('remarks', e.target.value)} />
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.attendance_mark || 'Mark attendance'}</button>
+                    {refused && <span className="text-xs text-red-600 md:col-span-5">{refused}</span>}
+                </form>
+            </PhoneFold>
 
             <div className="mb-4 grid gap-3 md:grid-cols-2">
                 <form

@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 
 /**
@@ -25,31 +26,34 @@ export default function Templates({ templates, sections, t = {} }) {
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/exams/report-templates/export">{t.export_csv || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/exams/report-templates', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
-            >
-                <input className="form-input" aria-label={t.name || 'Name'} placeholder={t.name || 'Name'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-                <input className="form-input" aria-label={t.templates_header || 'Header'} placeholder={t.templates_header || 'Header'} value={form.data.header} onChange={(e) => form.setData('header', e.target.value)} />
-                <input className="form-input" aria-label={t.templates_footer || 'Footer'} placeholder={t.templates_footer || 'Footer'} value={form.data.footer} onChange={(e) => form.setData('footer', e.target.value)} />
-                <fieldset className="md:col-span-3">
-                    <legend className="mb-1 text-sm text-gray-600">{t.templates_sections || 'Sections'}</legend>
-                    <div className="flex flex-wrap gap-3">
-                        {sections.map((section) => (
-                            <label key={section} className="flex items-center gap-2 text-sm">
-                                <input type="checkbox" checked={form.data.sections.includes(section)} onChange={(e) => toggle(section, e.target.checked)} />
-                                {sectionName(section)}
-                            </label>
-                        ))}
-                    </div>
-                    {form.errors.sections && <span className="text-xs text-red-600">{form.errors.sections}</span>}
-                </fieldset>
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.templates_create || 'Create template'}</button>
-                {form.errors.name && <span className="text-xs text-red-600 md:col-span-2">{form.errors.name}</span>}
-            </form>
+            <PhoneFold label={t.templates_create || 'Create template'} forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/exams/report-templates', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
+                >
+                    <input className="form-input" aria-label={t.name || 'Name'} placeholder={t.name || 'Name'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+                    <input className="form-input" aria-label={t.templates_header || 'Header'} placeholder={t.templates_header || 'Header'} value={form.data.header} onChange={(e) => form.setData('header', e.target.value)} />
+                    <input className="form-input" aria-label={t.templates_footer || 'Footer'} placeholder={t.templates_footer || 'Footer'} value={form.data.footer} onChange={(e) => form.setData('footer', e.target.value)} />
+                    <fieldset className="md:col-span-3">
+                        <legend className="mb-1 text-sm text-gray-600">{t.templates_sections || 'Sections'}</legend>
+                        <div className="flex flex-wrap gap-3">
+                            {sections.map((section) => (
+                                <label key={section} className="flex items-center gap-2 text-sm">
+                                    <input type="checkbox" checked={form.data.sections.includes(section)} onChange={(e) => toggle(section, e.target.checked)} />
+                                    {sectionName(section)}
+                                </label>
+                            ))}
+                        </div>
+                        {form.errors.sections && <span className="text-xs text-red-600">{form.errors.sections}</span>}
+                    </fieldset>
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.templates_create || 'Create template'}</button>
+                    {form.errors.name && <span className="text-xs text-red-600 md:col-span-2">{form.errors.name}</span>}
+                </form>
+            </PhoneFold>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

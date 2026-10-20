@@ -45,6 +45,11 @@ updates."*
   - no new page with a table that is not `table-stack`. The pages still to do
     are listed in `tests/Architecture/Baselines/tables_not_stacked_on_phones.php`,
     and the list may only shrink.
+- **CI:** `tests/Architecture/RecordsBeforeFormsTest.php`: a page whose posting
+  form comes before its list must fold it (`PhoneFold`) or be listed, with
+  the reason, in `Baselines/forms_before_lists.php`.
+- **CI:** `tests/Architecture/BrandColoursExistTest.php`: no class names a
+  brand colour the Tailwind config does not define.
 - **Walk:** `scripts/smoke/phone-first.mjs` (in `all.mjs`) loads every public
   page, and the student's, parent's and teacher's record pages, in English
   and Dhivehi on a phone. It fails a page that scrolls
@@ -85,4 +90,4 @@ Already phone-first, and the pattern the others follow: the Bookstore's
 | MF4 | A5, first batch: the 27 `Portal/` and `Academics/` pages — **done 2026-10-20 (STATUS §5sy)**; 88 pages left |
 | MF5 | A5: `Courses/` (29) and `ExamsGrades/` (11) — **done 2026-10-20 (STATUS §5sz)**; 48 pages left |
 | MF6 | A5: the rest — HR, Finance, Website, People and the others — **done 2026-10-20 (STATUS §5ta)**: every table stacked or a named grid; the baseline is empty |
-| MF7 | A8: office pages put the list before the *new* form |
+| MF7 | A8: office pages put the list before the *new* form — **done 2026-10-20 (STATUS §5tb)**: 34 pages folded; `RecordsBeforeFormsTest` holds it, 24 pages kept on purpose with their reasons |

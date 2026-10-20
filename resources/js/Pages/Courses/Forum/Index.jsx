@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
@@ -26,26 +27,29 @@ export default function Index({ course, role, topics = [], t = {} }) {
             <p className="mb-2 text-sm text-gray-600">{t.intro}</p>
             {role === 'moderator' && <p className="mb-4 text-xs text-gray-500" data-testid="forum-moderator">{t.moderator_note}</p>}
 
-            <form
-                className="mb-6 space-y-3 rounded-lg border bg-white p-4"
-                data-testid="forum-new-topic"
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post(`/learn/courses/${course.id}/forum`, { onSuccess: () => form.reset() });
-                }}
-            >
-                <h2 className="font-medium">{t.new_topic || 'Start a topic'}</h2>
-                <label className="block text-sm">
-                    <span className="mb-1 block text-gray-600">{t.topic_title || 'Title'}</span>
-                    <input className="form-input w-full" name="title" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} maxLength={200} required />
-                </label>
-                <label className="block text-sm">
-                    <span className="mb-1 block text-gray-600">{t.topic_body || 'What would you like to say?'}</span>
-                    <textarea className="form-input w-full" name="body" rows={4} value={form.data.body} onChange={(e) => form.setData('body', e.target.value)} maxLength={10000} required />
-                </label>
-                <FormErrors errors={form.errors} />
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.post || 'Post'}</button>
-            </form>
+            <PhoneFold label={t.post || 'Post'} forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    className="space-y-3 rounded-lg border bg-white p-4"
+                    data-testid="forum-new-topic"
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post(`/learn/courses/${course.id}/forum`, { onSuccess: () => form.reset() });
+                    }}
+                >
+                    <h2 className="font-medium">{t.new_topic || 'Start a topic'}</h2>
+                    <label className="block text-sm">
+                        <span className="mb-1 block text-gray-600">{t.topic_title || 'Title'}</span>
+                        <input className="form-input w-full" name="title" value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} maxLength={200} required />
+                    </label>
+                    <label className="block text-sm">
+                        <span className="mb-1 block text-gray-600">{t.topic_body || 'What would you like to say?'}</span>
+                        <textarea className="form-input w-full" name="body" rows={4} value={form.data.body} onChange={(e) => form.setData('body', e.target.value)} maxLength={10000} required />
+                    </label>
+                    <FormErrors errors={form.errors} />
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.post || 'Post'}</button>
+                </form>
+            </PhoneFold>
 
             {topics.length === 0 && <p className="text-sm text-gray-500">{t.none || 'No topics yet. Start the first one.'}</p>}
             <ul className="space-y-2" data-testid="forum-topics">

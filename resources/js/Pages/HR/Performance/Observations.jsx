@@ -1,4 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
@@ -24,33 +25,36 @@ export default function Observations({ staff, classes, subjects, rows, t = {} })
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/hr/observations/export">{t.export_csv || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/hr/observations', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
-            >
-                <select className="form-input" aria-label={t.staff_member || 'Staff member'} value={form.data.staff_profile_id} onChange={(e) => form.setData('staff_profile_id', e.target.value)}>
-                    {staff.map((row) => <option key={row.id} value={row.id}>{row.first_name} {row.last_name}</option>)}
-                </select>
-                <input type="date" className="form-input" aria-label={t.date || 'Date'} value={form.data.date} onChange={(e) => form.setData('date', e.target.value)} />
-                <select className="form-input" aria-label={t.class || 'Class'} value={form.data.class_id} onChange={(e) => form.setData('class_id', e.target.value)}>
-                    <option value="">{t.class || 'Class'}</option>
-                    {classes.map((row) => <option key={row.id} value={row.id}>{row.label}</option>)}
-                </select>
-                <select className="form-input" aria-label={t.subject || 'Subject'} value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
-                    <option value="">{t.subject || 'Subject'}</option>
-                    {subjects.map((row) => <option key={row.id} value={row.id}>{named(row)}</option>)}
-                </select>
-                <input className="form-input md:col-span-3" aria-label={t.observations_summary || 'Summary'} placeholder={t.observations_summary || 'Summary'} value={form.data.summary} onChange={(e) => form.setData('summary', e.target.value)} />
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.observations_save || 'Save observation'}</button>
-                <label className="flex items-center gap-2 text-sm md:col-span-4">
-                    <input type="checkbox" checked={form.data.shared_with_staff} onChange={(e) => form.setData('shared_with_staff', e.target.checked)} />
-                    {t.observations_shared || 'Shared with the member of staff'}
-                </label>
-                <FormErrors errors={form.errors} className="md:col-span-4" />
-            </form>
+            <PhoneFold forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/hr/observations', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
+                >
+                    <select className="form-input" aria-label={t.staff_member || 'Staff member'} value={form.data.staff_profile_id} onChange={(e) => form.setData('staff_profile_id', e.target.value)}>
+                        {staff.map((row) => <option key={row.id} value={row.id}>{row.first_name} {row.last_name}</option>)}
+                    </select>
+                    <input type="date" className="form-input" aria-label={t.date || 'Date'} value={form.data.date} onChange={(e) => form.setData('date', e.target.value)} />
+                    <select className="form-input" aria-label={t.class || 'Class'} value={form.data.class_id} onChange={(e) => form.setData('class_id', e.target.value)}>
+                        <option value="">{t.class || 'Class'}</option>
+                        {classes.map((row) => <option key={row.id} value={row.id}>{row.label}</option>)}
+                    </select>
+                    <select className="form-input" aria-label={t.subject || 'Subject'} value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
+                        <option value="">{t.subject || 'Subject'}</option>
+                        {subjects.map((row) => <option key={row.id} value={row.id}>{named(row)}</option>)}
+                    </select>
+                    <input className="form-input md:col-span-3" aria-label={t.observations_summary || 'Summary'} placeholder={t.observations_summary || 'Summary'} value={form.data.summary} onChange={(e) => form.setData('summary', e.target.value)} />
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.observations_save || 'Save observation'}</button>
+                    <label className="flex items-center gap-2 text-sm md:col-span-4">
+                        <input type="checkbox" checked={form.data.shared_with_staff} onChange={(e) => form.setData('shared_with_staff', e.target.checked)} />
+                        {t.observations_shared || 'Shared with the member of staff'}
+                    </label>
+                    <FormErrors errors={form.errors} className="md:col-span-4" />
+                </form>
+            </PhoneFold>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

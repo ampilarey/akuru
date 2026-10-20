@@ -1,4 +1,5 @@
 import { Link, router, useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 
 export default function Roster({ club, members = [], t = {} }) {
@@ -20,29 +21,32 @@ export default function Roster({ club, members = [], t = {} }) {
                 <a href={`/academics/clubs/${club.id}/export`} className="text-[#7C2D37] underline">{t.catalog_export || 'Export CSV'}</a>
             </p>
 
-            <form
-                className="mb-6 flex flex-wrap items-end gap-2 rounded-lg border bg-white p-4"
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post(`/academics/clubs/${club.id}/members`, {
-                        preserveScroll: true,
-                        onSuccess: () => form.reset(),
-                    });
-                }}
-            >
-                <label className="block text-sm">
-                    <span className="mb-1 block text-gray-600">{t.clubs_add_label || 'Add a member by student id'}</span>
-                    <input className="form-input w-48" value={form.data.student_id}
-                        onChange={(e) => form.setData('student_id', e.target.value)} />
-                    {form.errors.student_id && (
-                        <span className="mt-1 block text-xs text-red-600">{form.errors.student_id}</span>
-                    )}
-                </label>
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.clubs_add || 'Add'}</button>
-                <p className="w-full text-xs text-gray-500">
-                    {t.clubs_add_hint || 'A club member does not have to be on a class roster — siblings and children of staff are welcome, and the register marks them as visitors.'}
-                </p>
-            </form>
+            <PhoneFold label={t.clubs_add || 'Add'} forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    className="flex flex-wrap items-end gap-2 rounded-lg border bg-white p-4"
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post(`/academics/clubs/${club.id}/members`, {
+                            preserveScroll: true,
+                            onSuccess: () => form.reset(),
+                        });
+                    }}
+                >
+                    <label className="block text-sm">
+                        <span className="mb-1 block text-gray-600">{t.clubs_add_label || 'Add a member by student id'}</span>
+                        <input className="form-input w-48" value={form.data.student_id}
+                            onChange={(e) => form.setData('student_id', e.target.value)} />
+                        {form.errors.student_id && (
+                            <span className="mt-1 block text-xs text-red-600">{form.errors.student_id}</span>
+                        )}
+                    </label>
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.clubs_add || 'Add'}</button>
+                    <p className="w-full text-xs text-gray-500">
+                        {t.clubs_add_hint || 'A club member does not have to be on a class roster — siblings and children of staff are welcome, and the register marks them as visitors.'}
+                    </p>
+                </form>
+            </PhoneFold>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">

@@ -1,4 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
@@ -30,30 +31,33 @@ export default function Index({ items, types, frequencies, t = {} }) {
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/finance/fee-items/export">{t.export_csv || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/finance/fee-items', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
-            >
-                <input className="form-input" aria-label={t.name_en || 'Name (EN)'} placeholder={t.name_en || 'Name (EN)'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-                <input className="form-input" dir="rtl" aria-label={t.name_dv || 'Name (DV)'} placeholder={t.name_dv || 'Name (DV)'} value={form.data.name_dhivehi} onChange={(e) => form.setData('name_dhivehi', e.target.value)} />
-                <input className="form-input" dir="rtl" aria-label={t.name_ar || 'Name (AR)'} placeholder={t.name_ar || 'Name (AR)'} value={form.data.name_arabic} onChange={(e) => form.setData('name_arabic', e.target.value)} />
-                <input className="form-input" inputMode="decimal" aria-label={t.amount || 'Amount'} placeholder={t.amount || 'Amount'} value={form.data.default_amount} onChange={(e) => form.setData('default_amount', e.target.value)} />
-                <select className="form-input" aria-label={t.fee_items_type || 'Kind of fee'} value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
-                    {types.map((type) => <option key={type} value={type}>{typeName(type)}</option>)}
-                </select>
-                <select className="form-input" aria-label={t.frequency || 'How often'} value={form.data.frequency} onChange={(e) => form.setData('frequency', e.target.value)}>
-                    {frequencies.map((frequency) => <option key={frequency} value={frequency}>{frequencyName(frequency)}</option>)}
-                </select>
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={!!form.data.is_mandatory} onChange={(e) => form.setData('is_mandatory', e.target.checked)} />
-                    {t.mandatory || 'Mandatory'}
-                </label>
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.fee_items_create || 'Create fee item'}</button>
-                <FormErrors errors={form.errors} className="md:col-span-4" />
-            </form>
+            <PhoneFold label={t.fee_items_create || 'Create fee item'} forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/finance/fee-items', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
+                >
+                    <input className="form-input" aria-label={t.name_en || 'Name (EN)'} placeholder={t.name_en || 'Name (EN)'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+                    <input className="form-input" dir="rtl" aria-label={t.name_dv || 'Name (DV)'} placeholder={t.name_dv || 'Name (DV)'} value={form.data.name_dhivehi} onChange={(e) => form.setData('name_dhivehi', e.target.value)} />
+                    <input className="form-input" dir="rtl" aria-label={t.name_ar || 'Name (AR)'} placeholder={t.name_ar || 'Name (AR)'} value={form.data.name_arabic} onChange={(e) => form.setData('name_arabic', e.target.value)} />
+                    <input className="form-input" inputMode="decimal" aria-label={t.amount || 'Amount'} placeholder={t.amount || 'Amount'} value={form.data.default_amount} onChange={(e) => form.setData('default_amount', e.target.value)} />
+                    <select className="form-input" aria-label={t.fee_items_type || 'Kind of fee'} value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
+                        {types.map((type) => <option key={type} value={type}>{typeName(type)}</option>)}
+                    </select>
+                    <select className="form-input" aria-label={t.frequency || 'How often'} value={form.data.frequency} onChange={(e) => form.setData('frequency', e.target.value)}>
+                        {frequencies.map((frequency) => <option key={frequency} value={frequency}>{frequencyName(frequency)}</option>)}
+                    </select>
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={!!form.data.is_mandatory} onChange={(e) => form.setData('is_mandatory', e.target.checked)} />
+                        {t.mandatory || 'Mandatory'}
+                    </label>
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.fee_items_create || 'Create fee item'}</button>
+                    <FormErrors errors={form.errors} className="md:col-span-4" />
+                </form>
+            </PhoneFold>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

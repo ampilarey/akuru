@@ -1,4 +1,5 @@
 import { router, useForm, usePage } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 
@@ -29,22 +30,25 @@ export default function Applications({ postings, statuses, rows, t = {} }) {
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/hr/applications/export">{t.export_csv || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/hr/applications', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
-            >
-                <select className="form-input" aria-label={t.applications_job || 'Job'} value={form.data.job_posting_id} onChange={(e) => form.setData('job_posting_id', e.target.value)}>
-                    {postings.map((posting) => <option key={posting.id} value={posting.id}>{titled(posting)}</option>)}
-                </select>
-                <input className="form-input" aria-label={t.name || 'Name'} placeholder={t.name || 'Name'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-                <input className="form-input" dir="ltr" aria-label={t.applications_email || 'Email'} placeholder={t.applications_email || 'Email'} value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} />
-                <input className="form-input" dir="ltr" aria-label={t.applications_mobile || 'Mobile'} placeholder={t.applications_mobile || 'Mobile'} value={form.data.mobile} onChange={(e) => form.setData('mobile', e.target.value)} />
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.applications_record || 'Record application'}</button>
-                <FormErrors errors={form.errors} className="md:col-span-4" />
-            </form>
+            <PhoneFold label={t.applications_record || 'Record application'} forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/hr/applications', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
+                >
+                    <select className="form-input" aria-label={t.applications_job || 'Job'} value={form.data.job_posting_id} onChange={(e) => form.setData('job_posting_id', e.target.value)}>
+                        {postings.map((posting) => <option key={posting.id} value={posting.id}>{titled(posting)}</option>)}
+                    </select>
+                    <input className="form-input" aria-label={t.name || 'Name'} placeholder={t.name || 'Name'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+                    <input className="form-input" dir="ltr" aria-label={t.applications_email || 'Email'} placeholder={t.applications_email || 'Email'} value={form.data.email} onChange={(e) => form.setData('email', e.target.value)} />
+                    <input className="form-input" dir="ltr" aria-label={t.applications_mobile || 'Mobile'} placeholder={t.applications_mobile || 'Mobile'} value={form.data.mobile} onChange={(e) => form.setData('mobile', e.target.value)} />
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.applications_record || 'Record application'}</button>
+                    <FormErrors errors={form.errors} className="md:col-span-4" />
+                </form>
+            </PhoneFold>
             <FormErrors errors={refusals.unplaced} className="mb-4" />
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">

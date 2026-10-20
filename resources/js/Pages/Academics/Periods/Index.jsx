@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 
 export default function Index({ periods, t = {} }) {
@@ -19,23 +20,26 @@ export default function Index({ periods, t = {} }) {
                     {t.export_csv || 'Export CSV'}
                 </a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/academics/periods', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-6"
-            >
-                <input className="form-input" placeholder={t.name || 'Name'} aria-label={t.name || 'Name'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-                <input className="form-input" type="time" aria-label={t.start || 'Start'} value={form.data.start_time} onChange={(e) => form.setData('start_time', e.target.value)} />
-                <input className="form-input" type="time" aria-label={t.end || 'End'} value={form.data.end_time} onChange={(e) => form.setData('end_time', e.target.value)} />
-                <input className="form-input" type="number" min="1" aria-label={t.col_order || 'Order'} value={form.data.order} onChange={(e) => form.setData('order', e.target.value)} />
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.data.is_break} onChange={(e) => form.setData('is_break', e.target.checked)} />
-                    {t.periods_break || 'Break'}
-                </label>
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.periods_create || 'Create period'}</button>
-            </form>
+            <PhoneFold label={t.periods_create || 'Create period'} forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/academics/periods', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-6"
+                >
+                    <input className="form-input" placeholder={t.name || 'Name'} aria-label={t.name || 'Name'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+                    <input className="form-input" type="time" aria-label={t.start || 'Start'} value={form.data.start_time} onChange={(e) => form.setData('start_time', e.target.value)} />
+                    <input className="form-input" type="time" aria-label={t.end || 'End'} value={form.data.end_time} onChange={(e) => form.setData('end_time', e.target.value)} />
+                    <input className="form-input" type="number" min="1" aria-label={t.col_order || 'Order'} value={form.data.order} onChange={(e) => form.setData('order', e.target.value)} />
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.data.is_break} onChange={(e) => form.setData('is_break', e.target.checked)} />
+                        {t.periods_break || 'Break'}
+                    </label>
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.periods_create || 'Create period'}</button>
+                </form>
+            </PhoneFold>
             {form.errors.name && <p className="mb-2 text-sm text-red-600">{form.errors.name}</p>}
             {form.errors.start_time && <p className="mb-2 text-sm text-red-600">{form.errors.start_time}</p>}
             {form.errors.order && <p className="mb-2 text-sm text-red-600">{form.errors.order}</p>}

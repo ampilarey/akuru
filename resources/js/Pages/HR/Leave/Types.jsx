@@ -1,4 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 
 /**
@@ -38,40 +39,43 @@ export default function Types({ types, codes, t = {} }) {
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/hr/leave-types/export">{t.export_csv || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    if (existing) {
-                        form.put(`/hr/leave-types/${existing.id}`, { preserveScroll: true });
-                    } else {
-                        form.post('/hr/leave-types', { preserveScroll: true });
-                    }
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
-            >
-                <select className="form-input" aria-label={t.types_code || 'Code'} value={form.data.code} onChange={(e) => form.setData(valuesOf(e.target.value))}>
-                    {codes.map((code) => <option key={code} value={code}>{codeName(code)}</option>)}
-                </select>
-                <input className="form-input" aria-label={t.name_en || 'Name (EN)'} placeholder={t.name_en || 'Name (EN)'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-                <input className="form-input" dir="rtl" aria-label={t.name_dv || 'Name (DV)'} placeholder={t.name_dv || 'Name (DV)'} value={form.data.name_dhivehi} onChange={(e) => form.setData('name_dhivehi', e.target.value)} />
-                <input className="form-input" dir="rtl" aria-label={t.name_ar || 'Name (AR)'} placeholder={t.name_ar || 'Name (AR)'} value={form.data.name_arabic} onChange={(e) => form.setData('name_arabic', e.target.value)} />
-                <input className="form-input" aria-label={t.types_days_year || 'Days / year'} placeholder={t.types_days_year || 'Days / year'} value={form.data.days_per_year} onChange={(e) => form.setData('days_per_year', e.target.value)} />
-                <input className="form-input" aria-label={t.types_carry_max || 'Carry-over max'} placeholder={t.types_carry_max || 'Carry-over max'} value={form.data.carry_over_max} onChange={(e) => form.setData('carry_over_max', e.target.value)} />
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.data.requires_document} onChange={(e) => form.setData('requires_document', e.target.checked)} />
-                    {t.types_requires_document || 'Needs a supporting document'}
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.data.paid} onChange={(e) => form.setData('paid', e.target.checked)} />
-                    {t.types_paid || 'Paid leave'}
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.data.active} onChange={(e) => form.setData('active', e.target.checked)} />
-                    {t.types_active || 'Offered to staff'}
-                </label>
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.types_save || 'Save leave type'}</button>
-                {refused && <span className="text-xs text-red-600 md:col-span-4">{refused}</span>}
-            </form>
+            <PhoneFold forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        if (existing) {
+                            form.put(`/hr/leave-types/${existing.id}`, { preserveScroll: true });
+                        } else {
+                            form.post('/hr/leave-types', { preserveScroll: true });
+                        }
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
+                >
+                    <select className="form-input" aria-label={t.types_code || 'Code'} value={form.data.code} onChange={(e) => form.setData(valuesOf(e.target.value))}>
+                        {codes.map((code) => <option key={code} value={code}>{codeName(code)}</option>)}
+                    </select>
+                    <input className="form-input" aria-label={t.name_en || 'Name (EN)'} placeholder={t.name_en || 'Name (EN)'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+                    <input className="form-input" dir="rtl" aria-label={t.name_dv || 'Name (DV)'} placeholder={t.name_dv || 'Name (DV)'} value={form.data.name_dhivehi} onChange={(e) => form.setData('name_dhivehi', e.target.value)} />
+                    <input className="form-input" dir="rtl" aria-label={t.name_ar || 'Name (AR)'} placeholder={t.name_ar || 'Name (AR)'} value={form.data.name_arabic} onChange={(e) => form.setData('name_arabic', e.target.value)} />
+                    <input className="form-input" aria-label={t.types_days_year || 'Days / year'} placeholder={t.types_days_year || 'Days / year'} value={form.data.days_per_year} onChange={(e) => form.setData('days_per_year', e.target.value)} />
+                    <input className="form-input" aria-label={t.types_carry_max || 'Carry-over max'} placeholder={t.types_carry_max || 'Carry-over max'} value={form.data.carry_over_max} onChange={(e) => form.setData('carry_over_max', e.target.value)} />
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.data.requires_document} onChange={(e) => form.setData('requires_document', e.target.checked)} />
+                        {t.types_requires_document || 'Needs a supporting document'}
+                    </label>
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.data.paid} onChange={(e) => form.setData('paid', e.target.checked)} />
+                        {t.types_paid || 'Paid leave'}
+                    </label>
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.data.active} onChange={(e) => form.setData('active', e.target.checked)} />
+                        {t.types_active || 'Offered to staff'}
+                    </label>
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.types_save || 'Save leave type'}</button>
+                    {refused && <span className="text-xs text-red-600 md:col-span-4">{refused}</span>}
+                </form>
+            </PhoneFold>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

@@ -1,4 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 
@@ -29,25 +30,28 @@ export default function Sessions({ offering, types, sessions, programs = [], hal
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href={`/catalog/offerings/${offering.id}/sessions/export`}>{t.catalog_export || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post(`/catalog/offerings/${offering.id}/sessions`, { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
-            >
-                <input className="form-input" placeholder={t.sessions_session_title || 'Session title'} aria-label={t.sessions_session_title || 'Session title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-                <select className="form-input" aria-label={t.sessions_type || 'Session type'} value={form.data.session_type} onChange={(e) => form.setData('session_type', e.target.value)}>
-                    {types.map((type) => <option key={type} value={type}>{typeName(type)}</option>)}
-                </select>
-                <input className="form-input" type="datetime-local" aria-label={t.sessions_starts || 'Starts'} value={form.data.starts_at} onChange={(e) => form.setData('starts_at', e.target.value)} />
-                <input className="form-input" type="datetime-local" aria-label={t.sessions_ends || 'Ends'} value={form.data.ends_at} onChange={(e) => form.setData('ends_at', e.target.value)} />
-                <input className="form-input" placeholder={t.sessions_location || 'Location'} aria-label={t.sessions_location || 'Location'} value={form.data.location_name} onChange={(e) => form.setData('location_name', e.target.value)} />
-                <input className="form-input" placeholder={t.sessions_meeting_url || 'Meeting URL'} aria-label={t.sessions_meeting_url || 'Meeting URL'} value={form.data.online_meeting_url} onChange={(e) => form.setData('online_meeting_url', e.target.value)} />
-                <input className="form-input" placeholder={t.sessions_teacher_id || 'Teacher user id'} aria-label={t.sessions_teacher_id || 'Teacher user id'} value={form.data.teacher_user_id} onChange={(e) => form.setData('teacher_user_id', e.target.value)} />
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.sessions_save || 'Save session'}</button>
-                <FormErrors errors={form.errors} />
-            </form>
+            <PhoneFold forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post(`/catalog/offerings/${offering.id}/sessions`, { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
+                >
+                    <input className="form-input" placeholder={t.sessions_session_title || 'Session title'} aria-label={t.sessions_session_title || 'Session title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+                    <select className="form-input" aria-label={t.sessions_type || 'Session type'} value={form.data.session_type} onChange={(e) => form.setData('session_type', e.target.value)}>
+                        {types.map((type) => <option key={type} value={type}>{typeName(type)}</option>)}
+                    </select>
+                    <input className="form-input" type="datetime-local" aria-label={t.sessions_starts || 'Starts'} value={form.data.starts_at} onChange={(e) => form.setData('starts_at', e.target.value)} />
+                    <input className="form-input" type="datetime-local" aria-label={t.sessions_ends || 'Ends'} value={form.data.ends_at} onChange={(e) => form.setData('ends_at', e.target.value)} />
+                    <input className="form-input" placeholder={t.sessions_location || 'Location'} aria-label={t.sessions_location || 'Location'} value={form.data.location_name} onChange={(e) => form.setData('location_name', e.target.value)} />
+                    <input className="form-input" placeholder={t.sessions_meeting_url || 'Meeting URL'} aria-label={t.sessions_meeting_url || 'Meeting URL'} value={form.data.online_meeting_url} onChange={(e) => form.setData('online_meeting_url', e.target.value)} />
+                    <input className="form-input" placeholder={t.sessions_teacher_id || 'Teacher user id'} aria-label={t.sessions_teacher_id || 'Teacher user id'} value={form.data.teacher_user_id} onChange={(e) => form.setData('teacher_user_id', e.target.value)} />
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.sessions_save || 'Save session'}</button>
+                    <FormErrors errors={form.errors} />
+                </form>
+            </PhoneFold>
             <form
                 onSubmit={(e) => {
                     e.preventDefault();
