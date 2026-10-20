@@ -108,6 +108,14 @@ what is printed.
 
 ### PP4 — Stickers on sheets
 
+> **Built 2026-10-20 (STATUS §5tl)**: a layout's shape is a rectangle or a
+> circle (`print_layouts.shape`); round stickers print and proof as their
+> circle, with no crop marks (a kiss-cut follows the outline). Four sticker
+> layouts (round 40 mm 24/A4 and 54/A3, round 60 mm 12/A4, labels
+> 63 × 38 mm 21/A4) with a 2 mm bleed, a *Kiss-cut* finishing and an A3
+> sticker sheet (both off until priced), and three designs. The shape is the
+> layout's, not the design's: the design format is unchanged.
+
 - Layouts with a shape (rectangle or circle) that the designer and the
   proof show; a sticker paper kind; *Kiss-cut* as a finishing
   (`cuts_sheet` false, so the sheet stays whole).

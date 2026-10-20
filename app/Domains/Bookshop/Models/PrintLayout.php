@@ -13,7 +13,10 @@ class PrintLayout extends Model
 
     public const PAGE_H = 297.0;
 
-    protected $fillable = ['name', 'print_kind', 'sheet_size', 'columns', 'rows', 'tag_w_mm', 'tag_h_mm', 'margin_top_mm', 'margin_left_mm', 'gutter_x_mm', 'gutter_y_mm', 'bleed_mm', 'sheet_code', 'is_active', 'sort_order'];
+    /** PP4: a tag's outline — a rectangle, or a circle (round stickers). */
+    public const SHAPES = ['rect', 'circle'];
+
+    protected $fillable = ['name', 'print_kind', 'sheet_size', 'shape', 'columns', 'rows', 'tag_w_mm', 'tag_h_mm', 'margin_top_mm', 'margin_left_mm', 'gutter_x_mm', 'gutter_y_mm', 'bleed_mm', 'sheet_code', 'is_active', 'sort_order'];
 
     protected function casts(): array
     {

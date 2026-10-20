@@ -38,7 +38,7 @@ class PresentPrintJobAction
         // PP2: the templates of one print product.
         return PrintTemplate::query()->with('layout')->where('status', 'active')->where('print_kind', $kind)->orderBy('sort_order')->orderBy('id')->get()
             ->map(fn (PrintTemplate $t) => [
-                'id' => $t->id, 'title' => $t->titleIn($locale), 'kind' => $t->kind, 'design' => $t->design,
+                'id' => $t->id, 'title' => $t->titleIn($locale), 'kind' => $t->kind, 'shape' => $t->layout?->shape ?? 'rect', 'design' => $t->design,
                 'fields' => PrintDesign::fieldKeys((array) $t->design), 'layout' => $t->layout?->name,
             ])->values()->all();
     }
@@ -130,7 +130,7 @@ class PresentPrintJobAction
         return [
             // PP2: the layouts of the job's print product.
             'layouts' => PrintLayout::query()->where('is_active', true)->where('print_kind', $kind)->orderBy('sort_order')->orderBy('id')->get()
-                ->map(fn (PrintLayout $l) => ['id' => $l->id, 'name' => $l->name, 'sheet_size' => $l->sheet_size, 'sheet_label' => PrintSheet::label($l->sheet_size), 'tags' => $l->tagsPerSheet(), 'tag_w_mm' => $l->tag_w_mm, 'tag_h_mm' => $l->tag_h_mm])->values()->all(),
+                ->map(fn (PrintLayout $l) => ['id' => $l->id, 'name' => $l->name, 'shape' => $l->shape, 'sheet_size' => $l->sheet_size, 'sheet_label' => PrintSheet::label($l->sheet_size), 'tags' => $l->tagsPerSheet(), 'tag_w_mm' => $l->tag_w_mm, 'tag_h_mm' => $l->tag_h_mm])->values()->all(),
             // PP1: each paper names its sheet size; the page offers those of the chosen layout's size.
             'papers' => PrintPaperOption::query()->where('is_active', true)->where(fn ($q) => $q->where('price_bw', '>', 0)->orWhere('price_colour', '>', 0))->orderBy('sort_order')->orderBy('id')->get()
                 ->map(fn (PrintPaperOption $p) => ['id' => $p->id, 'name' => $p->nameIn($locale), 'sheet_size' => $p->sheet_size, 'gsm' => $p->gsm, 'price_bw' => (float) $p->price_bw, 'price_colour' => (float) $p->price_colour])->values()->all(),
@@ -148,9 +148,9 @@ class PresentPrintJobAction
     /** @return list<array<string, mixed>> the customer's designs, newest first */
     public function mine(int $userId, string $locale): array
     {
-        return PrintJob::query()->with('template')->where('user_id', $userId)->latest('updated_at')->limit(200)->get()
+        return PrintJob::query()->with(['template', 'layout'])->where('user_id', $userId)->latest('updated_at')->limit(200)->get()
             ->map(fn (PrintJob $j) => [
-                'id' => $j->id, 'name' => $j->name, 'status' => $j->status->value, 'template' => $j->template?->titleIn($locale), 'source' => (string) $j->source,
+                'id' => $j->id, 'name' => $j->name, 'shape' => $j->layout?->shape ?? 'rect', 'status' => $j->status->value, 'template' => $j->template?->titleIn($locale), 'source' => (string) $j->source,
                 'design' => $j->design, 'entry' => $j->entry, 'sheets' => (int) $j->sheets, 'total' => (float) $j->price_total,
                 'updated_at' => $j->updated_at?->toIso8601String(),
                 'removable' => ! in_array($j->status, [PrintJobStatus::Ordered, PrintJobStatus::Printing, PrintJobStatus::Finished], true),

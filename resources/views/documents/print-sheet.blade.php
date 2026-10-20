@@ -10,7 +10,7 @@
 
     $fontCss   string   the @font-face rules
     $page      array    {w, h} mm (A4: 210 × 297)
-    $tags      list     [{x, y, w, h, background, elements: [{type, x, y, w, h, ...}]}]
+    $tags      list     [{x, y, w, h, background, round?, elements: [{type, x, y, w, h, ...}]}] (round: PP4, a circle)
     $sheets    ?list    several sheets' tags in one document (the print PDF, NT3); else [$tags]
     $grayscale bool     a black-and-white job: the sheet is printed in grey (NT3)
     $cropMarks bool     draw marks in the gutters
@@ -46,7 +46,7 @@
 @foreach (($sheets ?? null) ?: [$tags] as $sheetTags)
 <div class="sheet{{ ! empty($grayscale) ? ' grey' : '' }}">
     @foreach ($sheetTags as $tag)
-        <div class="tag" style="left: {{ $tag['x'] }}mm; top: {{ $tag['y'] }}mm; width: {{ $tag['w'] }}mm; height: {{ $tag['h'] }}mm; background: {{ $tag['background'] ?? '#FFFFFF' }};">
+        <div class="tag" style="left: {{ $tag['x'] }}mm; top: {{ $tag['y'] }}mm; width: {{ $tag['w'] }}mm; height: {{ $tag['h'] }}mm; background: {{ $tag['background'] ?? '#FFFFFF' }};{{ ! empty($tag['round']) ? ' border-radius: 50%;' : '' }}">
             @foreach ($tag['elements'] as $el)
                 @php
                     $box = sprintf('left: %smm; top: %smm; width: %smm; height: %smm;', $el['x'], $el['y'], $el['w'], $el['h']);

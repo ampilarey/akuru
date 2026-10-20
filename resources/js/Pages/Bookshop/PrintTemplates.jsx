@@ -35,7 +35,7 @@ export default function PrintTemplates({ t = {}, templates = [], fonts = {}, fon
                         return (
                             <li key={tpl.id} className="rounded-lg border bg-white p-3" data-testid={`template-${tpl.id}`} data-status={tpl.status}>
                                 <div className="mb-2 flex justify-center overflow-hidden rounded bg-gray-50 p-2" dir="ltr">
-                                    <TagCanvas design={design} fonts={fonts} images={imageUrls} row={sample} scale={Math.min(2.2, 200 / design.tag.w)} testId={`template-thumb-${tpl.id}`} />
+                                    <TagCanvas design={design} shape={tpl.shape} fonts={fonts} images={imageUrls} row={sample} scale={Math.min(2.2, 200 / design.tag.w)} testId={`template-thumb-${tpl.id}`} />
                                 </div>
                                 <h2 className="font-semibold" dir="auto">{tpl.title}{tpl.title_dv && <span className="ms-2 text-sm font-normal text-gray-600" dir="rtl">{tpl.title_dv}</span>}</h2>
                                 <p className="text-xs text-gray-600">

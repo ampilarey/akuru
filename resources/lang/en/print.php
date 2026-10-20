@@ -487,4 +487,8 @@ return [
     'bleed' => 'Bleed (mm)',
     'bleed_help' => 'How far the artwork runs past the cut on every side. Cards: 3 mm. Needs margins at least this, and gutters twice it.',
     'error_layout_bleed' => 'A :bleed mm bleed needs margins of at least :bleed mm and gaps between tags of at least :gutter mm.',
+    // PP4: a layout's shape.
+    'shape' => 'Shape',
+    'shape_rect' => 'Rectangle',
+    'shape_circle' => 'Circle',
 ];

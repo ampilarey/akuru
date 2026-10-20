@@ -1,4 +1,4 @@
-import { useRef } from 'react';
+import { useId, useRef } from 'react';
 import { PT_TO_MM, clampElement, fillText, resolveColour, round, snap } from './design';
 
 /**
@@ -16,11 +16,14 @@ import { PT_TO_MM, clampElement, fillText, resolveColour, round, snap } from './
  *   scale     px per mm
  *   selected  the selected element's id (interactive only)
  *   onSelect(id | null), onChange(elements, commit)   interactive only
+ *   shape     'rect' or 'circle' — the layout's (PP4: a round sticker is clipped to its circle, as it prints)
  */
 const HANDLES = ['nw', 'n', 'ne', 'e', 'se', 's', 'sw', 'w'];
 const CURSORS = { nw: 'nwse-resize', se: 'nwse-resize', ne: 'nesw-resize', sw: 'nesw-resize', n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize' };
 
-export default function TagCanvas({ design, fonts = {}, images = {}, row = {}, scale = 4, selected = null, onSelect, onChange, interactive = false, testId = 'tag-canvas' }) {
+export default function TagCanvas({ design, fonts = {}, images = {}, row = {}, scale = 4, selected = null, onSelect, onChange, interactive = false, testId = 'tag-canvas', shape = 'rect' }) {
+    const clipId = `tag-clip-${useId().replace(/[^a-zA-Z0-9_-]/g, '')}`;
+    const round_ = shape === 'circle';
     const svgRef = useRef(null);
     const drag = useRef(null);
     const { w, h } = design.tag;
@@ -87,20 +90,27 @@ export default function TagCanvas({ design, fonts = {}, images = {}, row = {}, s
             width={round(w * scale, 1)}
             height={round(h * scale, 1)}
             className="block touch-none select-none"
-            style={{ background: '#fff', boxShadow: '0 0 0 1px #d1d5db', overflow: 'visible' }}
+            style={{ background: round_ ? 'transparent' : '#fff', boxShadow: round_ ? 'none' : '0 0 0 1px #d1d5db', overflow: 'visible' }}
             data-testid={testId}
+            data-shape={shape}
             onPointerDown={() => interactive && onSelect?.(null)}
             onPointerMove={interactive ? move : undefined}
             onPointerUp={interactive ? end : undefined}
             onPointerCancel={interactive ? end : undefined}
         >
-            <rect x="0" y="0" width={w} height={h} fill={background} />
-            {design.background?.image && images[design.background.image] && (
-                <image href={images[design.background.image]} x="0" y="0" width={w} height={h} preserveAspectRatio="xMidYMid slice" />
+            {round_ && (
+                <defs><clipPath id={clipId}><ellipse cx={w / 2} cy={h / 2} rx={w / 2} ry={h / 2} /></clipPath></defs>
             )}
-            {design.elements.map((el) => (
-                <Element key={el.id} el={el} design={design} fonts={fonts} images={images} row={row} interactive={interactive} selected={selected === el.id} hs={hs} start={start} />
-            ))}
+            <g clipPath={round_ ? `url(#${clipId})` : undefined}>
+                <rect x="0" y="0" width={w} height={h} fill={background} />
+                {design.background?.image && images[design.background.image] && (
+                    <image href={images[design.background.image]} x="0" y="0" width={w} height={h} preserveAspectRatio="xMidYMid slice" />
+                )}
+                {design.elements.map((el) => (
+                    <Element key={el.id} el={el} design={design} fonts={fonts} images={images} row={row} interactive={interactive} selected={selected === el.id} hs={hs} start={start} />
+                ))}
+            </g>
+            {round_ && <ellipse cx={w / 2} cy={h / 2} rx={w / 2} ry={h / 2} fill="none" stroke="#9ca3af" strokeWidth={0.3} strokeDasharray="1 1" style={{ pointerEvents: 'none' }} />}
         </svg>
     );
 }

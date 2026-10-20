@@ -17,7 +17,7 @@ import { clampElement, fieldKeysOf, newElement, nextId, resolveColour, round, wi
 const fill = (s, vars) => Object.entries(vars).reduce((out, [k, v]) => out.split(`:${k}`).join(String(v ?? '')), s || '');
 const HISTORY = 60;
 
-export default function Designer({ design, onChange, fonts = {}, images = [], fieldKeys = [], maxElements = 60, sample = {}, t = {} }) {
+export default function Designer({ design, onChange, fonts = {}, images = [], fieldKeys = [], maxElements = 60, sample = {}, t = {}, shape = 'rect' }) {
     const [selected, setSelected] = useState(null);
     const history = useRef({ past: [], future: [] });
     const [, tick] = useState(0);
@@ -119,7 +119,7 @@ export default function Designer({ design, onChange, fonts = {}, images = [], fi
                     <button type="button" className="text-sm underline disabled:opacity-40" onClick={redo} disabled={history.current.future.length === 0} data-testid="designer-redo">{t.redo}</button>
                 </div>
                 <div ref={frame} className="overflow-auto rounded-lg border bg-gray-100 p-3 outline-none" tabIndex={0} onKeyDown={onKey} data-testid="designer-frame">
-                    <TagCanvas design={design} fonts={fonts} images={imageUrls} row={sample} scale={scale} selected={selected} onSelect={setSelected} onChange={setElements} interactive />
+                    <TagCanvas design={design} shape={shape} fonts={fonts} images={imageUrls} row={sample} scale={scale} selected={selected} onSelect={setSelected} onChange={setElements} interactive />
                 </div>
                 <p className="mt-1 text-xs text-gray-500">{t.keyboard_hint}</p>
 

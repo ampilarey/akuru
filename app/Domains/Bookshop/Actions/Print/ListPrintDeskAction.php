@@ -35,7 +35,7 @@ class ListPrintDeskAction
                 'cuts_sheet' => $f->cuts_sheet, 'is_active' => $f->is_active, 'sort_order' => $f->sort_order,
             ])->values()->all(),
             'layouts' => PrintLayout::query()->orderBy('sort_order')->orderBy('id')->get()->map(fn (PrintLayout $l) => [
-                'id' => $l->id, 'name' => $l->name, 'print_kind' => $l->print_kind, 'sheet_size' => $l->sheet_size, 'columns' => $l->columns, 'rows' => $l->rows, 'tags' => $l->tagsPerSheet(),
+                'id' => $l->id, 'name' => $l->name, 'print_kind' => $l->print_kind, 'shape' => $l->shape, 'sheet_size' => $l->sheet_size, 'columns' => $l->columns, 'rows' => $l->rows, 'tags' => $l->tagsPerSheet(),
                 'tag_w_mm' => $l->tag_w_mm, 'tag_h_mm' => $l->tag_h_mm, 'margin_top_mm' => $l->margin_top_mm, 'margin_left_mm' => $l->margin_left_mm,
                 'gutter_x_mm' => $l->gutter_x_mm, 'gutter_y_mm' => $l->gutter_y_mm, 'bleed_mm' => $l->bleed_mm, 'sheet_code' => $l->sheet_code, 'is_active' => $l->is_active, 'sort_order' => $l->sort_order,
             ])->values()->all(),
@@ -66,7 +66,7 @@ class ListPrintDeskAction
         return match ($list) {
             'papers' => [['name', 'name_dv', 'name_ar', 'gsm', 'kind', 'sheet_size', 'price_bw', 'price_colour', 'active'], array_map(fn ($p) => [$p['name'], $p['name_dv'], $p['name_ar'], $p['gsm'], $p['kind'], $p['sheet_size'], $p['price_bw'], $p['price_colour'], $p['is_active'] ? 'yes' : 'no'], $data['papers'])],
             'finishing' => [['name', 'name_dv', 'name_ar', 'price', 'cuts_sheet', 'active'], array_map(fn ($f) => [$f['name'], $f['name_dv'], $f['name_ar'], $f['price'], $f['cuts_sheet'] ? 'yes' : 'no', $f['is_active'] ? 'yes' : 'no'], $data['finishing'])],
-            'layouts' => [['name', 'product', 'sheet_size', 'columns', 'rows', 'tags', 'tag_w_mm', 'tag_h_mm', 'margin_top_mm', 'margin_left_mm', 'gutter_x_mm', 'gutter_y_mm', 'bleed_mm', 'sheet_code', 'active'], array_map(fn ($l) => [$l['name'], $l['print_kind'], $l['sheet_size'], $l['columns'], $l['rows'], $l['tags'], $l['tag_w_mm'], $l['tag_h_mm'], $l['margin_top_mm'], $l['margin_left_mm'], $l['gutter_x_mm'], $l['gutter_y_mm'], $l['bleed_mm'], $l['sheet_code'], $l['is_active'] ? 'yes' : 'no'], $data['layouts'])],
+            'layouts' => [['name', 'product', 'shape', 'sheet_size', 'columns', 'rows', 'tags', 'tag_w_mm', 'tag_h_mm', 'margin_top_mm', 'margin_left_mm', 'gutter_x_mm', 'gutter_y_mm', 'bleed_mm', 'sheet_code', 'active'], array_map(fn ($l) => [$l['name'], $l['print_kind'], $l['shape'], $l['sheet_size'], $l['columns'], $l['rows'], $l['tags'], $l['tag_w_mm'], $l['tag_h_mm'], $l['margin_top_mm'], $l['margin_left_mm'], $l['gutter_x_mm'], $l['gutter_y_mm'], $l['bleed_mm'], $l['sheet_code'], $l['is_active'] ? 'yes' : 'no'], $data['layouts'])],
             default => [['label', 'label_dv', 'label_ar', 'subjects', 'active'], array_map(fn ($s) => [$s['label'], $s['label_dv'], $s['label_ar'], implode('; ', array_column($s['subjects'], 'en')), $s['is_active'] ? 'yes' : 'no'], $data['subject_sets'])],
         };
     }

@@ -98,7 +98,7 @@ export default function PrintTemplateDesigner({ t = {}, template = null, sample 
                 </div>
             </form>
 
-            <Designer design={design} onChange={setDesign} fonts={fonts} images={images} fieldKeys={fieldKeys} maxElements={maxElements} sample={sample} t={t} />
+            <Designer design={design} shape={layouts.find((l) => String(l.id) === String(meta.print_layout_id))?.shape} onChange={setDesign} fonts={fonts} images={images} fieldKeys={fieldKeys} maxElements={maxElements} sample={sample} t={t} />
 
             <section className="mt-6 rounded-lg border bg-white p-4" data-testid="print-images">
                 <h2 className="text-lg font-semibold">{t.images_heading}</h2>

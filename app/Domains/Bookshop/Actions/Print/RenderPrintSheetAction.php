@@ -69,6 +69,8 @@ class RenderPrintSheetAction
                     'y' => round($layout->margin_top_mm + $line * ($layout->tag_h_mm + $layout->gutter_y_mm) - $bleed, 2),
                     'w' => round($layout->tag_w_mm + 2 * $bleed, 2),
                     'h' => round($layout->tag_h_mm + 2 * $bleed, 2),
+                    // PP4: a round sticker prints as its circle, its bleed included.
+                    'round' => $layout->shape === 'circle',
                     'background' => $this->colour($design['background']['color'] ?? '#FFFFFF', $design),
                     'elements' => self::bleed($this->elements($design, $row, $images, (bool) ($options['browser'] ?? false)), $tagW, $tagH, $bleed),
                 ];
@@ -162,7 +164,8 @@ class RenderPrintSheetAction
     /** @param  list<list<array<string, mixed>>>  $sheets */
     private function render(array $sheets, PrintLayout $layout, array $options): string
     {
-        $crop = (bool) ($options['crop_marks'] ?? ($layout->sheet_code === null));
+        // PP4: a round sticker is kiss-cut along its own outline; marks on the sheet would only be in the way.
+        $crop = (bool) ($options['crop_marks'] ?? ($layout->sheet_code === null)) && $layout->shape !== 'circle';
 
         return $this->renderer->render('print-sheet', [
             'title' => (string) ($options['title'] ?? 'Print sheet'),

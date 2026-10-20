@@ -60,7 +60,7 @@ export default function PrintDoor({ t = {}, kind: product = 'name_tags', product
                         return (
                             <li key={tpl.id} className="flex flex-col rounded-lg border bg-white p-3" data-testid={`print-door-template-${tpl.id}`}>
                                 <div className="mb-2 flex justify-center overflow-hidden rounded bg-gray-50 p-2" dir="ltr">
-                                    <TagCanvas design={design} fonts={fonts} row={sample} scale={Math.min(2.4, 220 / design.tag.w)} testId={`print-door-thumb-${tpl.id}`} />
+                                    <TagCanvas design={design} shape={tpl.shape} fonts={fonts} row={sample} scale={Math.min(2.4, 220 / design.tag.w)} testId={`print-door-thumb-${tpl.id}`} />
                                 </div>
                                 <h2 className="font-semibold" dir="auto">{tpl.title}</h2>
                                 <p className="mb-3 text-xs text-gray-600">{product === 'name_tags' ? t[`kind_${tpl.kind}`] : ''}</p>

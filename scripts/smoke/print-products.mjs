@@ -42,7 +42,9 @@ tinker(`\\App\\Domains\\Bookshop\\Support\\PrintDesk::ensure(); echo 'ok';`);
 const saved = tinker(`echo DB::table('settings')->where('key', 'bookshop_print_enabled')->value('value') ?? 'none';`);
 const restore = () => tinker(`DB::table('print_layouts')->where('name', 'like', '${MARK}%')->delete(); DB::table('products')->whereIn('slug', ['print-cards', 'print-stickers', 'print-photos'])->update(['status' => 'draft']); ${saved === 'none' ? "DB::table('settings')->where('key', 'bookshop_print_enabled')->delete();" : `DB::table('settings')->where('key', 'bookshop_print_enabled')->update(['value' => '${saved}']);`} Cache::flush(); echo 'ok';`);
 restore();
-tinker(`DB::table('settings')->updateOrInsert(['key' => 'bookshop_print_enabled'], ['value' => '1', 'updated_at' => now(), 'created_at' => now()]); Cache::flush(); echo 'ok';`);
+// Stickers' shipped layouts (PP4) are set aside for the walk, so it has none to print on.
+const stickerLayouts = tinker(`echo DB::table('print_layouts')->where('print_kind', 'stickers')->where('is_active', true)->pluck('id')->implode(',');`);
+tinker(`DB::table('settings')->updateOrInsert(['key' => 'bookshop_print_enabled'], ['value' => '1', 'updated_at' => now(), 'created_at' => now()]); DB::table('print_layouts')->where('print_kind', 'stickers')->update(['is_active' => false]); Cache::flush(); echo 'ok';`);
 
 const browser = await chromium.launch({
     args: ['--no-first-run', '--disable-background-networking'],
@@ -110,6 +112,7 @@ check('taken off sale, the Cards door is gone for the customer', gone.status() =
 
 await browser.close();
 restore();
+if (stickerLayouts) tinker(`DB::table('print_layouts')->whereIn('id', [${stickerLayouts}])->update(['is_active' => true]); echo 'ok';`);
 
 for (const problem of problems) check(problem, false);
 let passed = 0;

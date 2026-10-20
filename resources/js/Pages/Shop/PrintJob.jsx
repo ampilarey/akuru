@@ -162,7 +162,7 @@ export default function PrintJob(props) {
                         <section className="rounded-lg border bg-white p-4" data-testid="print-job-designer">
                             <h2 className="mb-2 font-semibold">{t.freeform_heading}</h2>
                             <Suspense fallback={<p className="text-sm text-gray-600">{t.saving}</p>}>
-                                <Designer design={design} onChange={designChanged} fonts={fonts} images={designer.images} fieldKeys={designer.field_keys} maxElements={designer.max_elements} sample={{ ...designer.sample, ...shown }} t={t} />
+                                <Designer design={design} shape={layout?.shape} onChange={designChanged} fonts={fonts} images={designer.images} fieldKeys={designer.field_keys} maxElements={designer.max_elements} sample={{ ...designer.sample, ...shown }} t={t} />
                             </Suspense>
                         </section>
                     ) : null}
@@ -170,7 +170,7 @@ export default function PrintJob(props) {
                         <h2 className="mb-2 font-semibold">{t.preview_heading}</h2>
                         {open && !freeform && <button type="button" className="mb-2 text-sm text-blue-700 underline" onClick={openDesigner} disabled={busy} data-testid="print-open-designer">{t.open_in_designer}</button>}
                         <div className="flex justify-center overflow-hidden rounded bg-gray-100 p-3" dir="ltr" style={job.colour ? undefined : { filter: 'grayscale(100%)' }}>
-                            <TagCanvas design={design} fonts={fonts} images={images} row={shown} scale={Math.min(5, 340 / design.tag.w)} testId="print-job-tag" />
+                            <TagCanvas design={design} fonts={fonts} images={images} row={shown} scale={Math.min(5, 340 / design.tag.w)} testId="print-job-tag" shape={layout?.shape} />
                         </div>
                         <div className="mt-2 flex items-center justify-between text-sm text-gray-600">
                             <button type="button" className="px-2 underline disabled:opacity-30" disabled={preview <= 0} onClick={() => setPreview((p) => p - 1)} aria-label={t.previous_tag}>‹</button>

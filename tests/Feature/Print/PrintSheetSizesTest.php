@@ -43,7 +43,7 @@ it('reads every layout and paper made before as A4', function () {
 
     $tags = PrintLayout::query()->where('print_kind', 'name_tags');
     expect((clone $tags)->pluck('sheet_size')->unique()->all())->toBe(['a4'])
-        ->and(PrintPaperOption::query()->pluck('sheet_size')->unique()->all())->toBe(['a4'])
+        ->and(PrintPaperOption::query()->where('name', '!=', 'Sticker sheet A3')->pluck('sheet_size')->unique()->all())->toBe(['a4'])
         ->and((clone $tags)->get()->every(fn (PrintLayout $l) => $l->fitsSheet() && $l->sheetMm() === [210.0, 297.0]))->toBeTrue();
 });
 
