@@ -255,7 +255,7 @@ await office.goto(`${BASE}/dv/finance/adjustments`, { waitUntil: 'networkidle' }
 const adjustForm = office.locator('form').filter({ has: office.getByRole('button', { name: book.adjustments_save, exact: true }) }).first();
 const adjustmentsBefore = count('fee_adjustments');
 // The pupil is chosen by name or number since C22 BH1 (#768), not typed as an id.
-const studentNumber = tinker(`echo DB::table('students')->where('id', ${studentId})->value('student_number');`);
+const studentNumber = tinker(`echo DB::table('students')->where('id', ${studentId})->value('student_id');`);
 await adjustForm.locator('[data-testid="adjustment-pupil-search"]').fill(studentNumber);
 await adjustForm.locator('[data-testid="adjustment-pupil-matches"] button').first().click();
 await adjustForm.getByLabel(book.adjustments_applies, { exact: true }).selectOption('item_types');
