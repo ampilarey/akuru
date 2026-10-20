@@ -20,7 +20,7 @@ dataset('record pages', [
 it('folds the new form on a phone and marks the records', function (string $page, string $phrase, string $group) {
     $source = (string) file_get_contents(resource_path("js/Pages/{$page}.jsx"));
 
-    expect($source)->toContain("import PhoneFold from")
+    expect($source)->toContain('import PhoneFold from')
         ->and($source)->toMatch('/<PhoneFold label=\{t\.'.$phrase.' \|\| [^}]+\} forceOpen=\{Object\.keys\(\w+\.errors\)\.length > 0\}/')
         ->and($source)->toContain('data-phone-main')
         ->and(strpos($source, '</PhoneFold>'))->toBeLessThan(strpos($source, 'data-phone-main'));
