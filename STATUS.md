@@ -4983,6 +4983,41 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tr. Two-column PDFs read down, reversed Arabic put back (BP2, BACKLOG B2, 2026-10-20)
+
+The Library's PDF reader read a two-column page straight across both
+columns. Chrome's own two-column page came out as "The second column starts
+with this The first column begins here and runs sentence, which must come
+after down the page…".
+- **Columns:** a page with one clear gutter in the middle of its text is
+  read column by column: the left first, or the right on a mostly
+  right-to-left page. The gutter must be crossed by nothing but a spanning
+  title, at least one and a half font sizes wide, and have three lines or
+  more on each side. A title across both columns comes first, and
+  something spanning below them comes last. Three or more columns are
+  taken as a table and still read row by row (`PdfTextExtractor::columns`).
+- **Reversed Arabic:** some producers write Arabic glyph by glyph in visual
+  order. In presentation forms the letters' shapes show it: a final or
+  medial shape first, an initial last. Such a word is put back in reading
+  order; one already in order is left alone (`unreverseArabic`). Thaana has
+  no positional shapes to judge by and stays as written. The KNOWN_ISSUES
+  entry is narrowed and says so.
+- Items saved before are reread with `php artisan library:sync-pages --all`.
+
+**Tests:** `PdfTextExtractorTest` grows from 9 to 12:
+- a hand-built two-column page reads title, left, right;
+- a three-column table still reads row by row;
+- a visual-order Arabic word (كتاب) comes back, and a word already in
+  order, Thaana and Latin are left alone.
+
+The real Chromium three-script PDF still reads as before. Whole suite 3333
+passed; pint clean.
+
+**Real run (local Chrome):** a page with CSS `column-count: 2` printed by
+Chrome reads as its title, the left column's two paragraphs, then the right
+column's. The old extractor on the same file interleaved the two columns
+line by line.
+
 ## 5tq. The backlog pass, and the menu's word for absences (BP1, 2026-10-20)
 
 The backlog was read row by row (`docs/BACKLOG.md` §A–§C, and the open

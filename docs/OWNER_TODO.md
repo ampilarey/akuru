@@ -30,6 +30,7 @@ cd /home/akuruedu/akuru-institute && git pull origin main && composer install --
 | ☐ | **The Bookstore catalogue and policy pages** | `php artisan db:seed --class=BookshopCatalogueSeeder --force`, then `php artisan db:seed --class=BookshopPolicyPagesSeeder --force` | OWNER_ACTIONS 18 |
 | ☐ | **Uploaded pictures show** | If `public/storage` is missing, run `php artisan storage:link`. Blog banners and pictures need it. | BLOG_PLAN BL3 |
 | ☐ | **Text recognition for scanned PDFs** (only if wanted) | Install Tesseract with its English, Dhivehi and Arabic data (`tesseract --list-langs` should show `eng`, `div` and `ara`; on a shared host ask the hosting company). Ghostscript must be set too (`DOCUMENTS_GS_PATH`). Then switch it on (E below). | STATUS §5tg |
+| ☐ | **Reread the Library's PDFs once** | After the pull that brings two-column reading (2026-10-20): `php artisan library:sync-pages --all`. Books saved before are read again, column by column. | STATUS §5tr |
 | ☐ | **The leftover route cache** | `/en/catalog/courses` answered 404 once (2026-10-03). If `bootstrap/cache/routes-v7.php` exists, delete it, then run `php artisan route:clear`. | KNOWN_ISSUES, WHATS_LEFT O15 |
 
 ## B. In production's `.env`, then `php artisan config:cache`

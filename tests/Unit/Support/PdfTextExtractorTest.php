@@ -100,3 +100,22 @@ it('knows glyph names, including composed accents and uniXXXX', function () {
         ->and(PdfEncodings::glyph('a.sc'))->toBe('a')
         ->and(PdfEncodings::glyph('g123'))->toBeNull();
 });
+
+it('reads a two-column page column by column, its title first (B2)', function () use ($extract) {
+    expect($extract(pdfTwoColumns())[0])->toBe("A title that runs across both of the columns below\n\nLeft one Left two Left three\n\nRight one Right two Right three");
+});
+
+it('leaves a table of three columns reading row by row (B2)', function () use ($extract) {
+    expect($extract(pdfThreeColumnTable())[0])->toBe('Name Class Fee Aisha 3B 100 Ahmed 4A 120 Mariyam 5C 90');
+});
+
+it('puts an Arabic word written in visual order back in reading order, and leaves one in reading order alone (B2)', function () {
+    // كتاب as presentation forms: kaf initial, teh medial, alef final, beh isolated.
+    $reading = "\u{FEDB}\u{FE98}\u{FE8E}\u{FE8F}";
+    $visual = "\u{FE8F}\u{FE8E}\u{FE98}\u{FEDB}";
+
+    expect(PdfTextExtractor::unreverseArabic($visual))->toBe($reading)
+        ->and(PdfTextExtractor::unreverseArabic($reading))->toBe($reading)
+        // Letters without presentation forms, Thaana and Latin pass through.
+        ->and(PdfTextExtractor::unreverseArabic('كتاب ދިވެހި book'))->toBe('كتاب ދިވެހި book');
+});

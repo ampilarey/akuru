@@ -861,18 +861,22 @@ group and the public site's account menu now carry them (STATUS §5gn). Since
 SIGN_IN_PLAN ID1 the group is *Personal*, every workspace's last, and its
 Blade pages open as full pages rather than in a modal (STATUS §5jz).
 
-### PDF text extraction has known limits — open, by design of the hosts
+### PDF text extraction has known limits — narrowed (2026-10-20, STATUS §5tg, §5tr)
 
-- A two-column page reads across the columns, not down them.
-- Producers that write right-to-left text glyph-reversed (some office
-  suites) come out reversed within words. Browser-printed PDFs (the
-  tested case) read correctly in English, Arabic and Dhivehi. **Spot-read
-  page one of a Dhivehi or Arabic PDF before publishing it**; if it reads
-  wrongly, paste the text into the body, which always wins.
-- A scanned book is pictures: no text, no pages, and the save says so.
-  OCR is not available on these hosts.
-- Page *images* (§36's other option) are not produced: no Imagick,
-  poppler, ghostscript or mutool on the hosts.
+- ~~A two-column page reads across the columns, not down them.~~ **Read
+  column by column since B2** (STATUS §5tr), a spanning title first. Three
+  or more columns are treated as a table and read row by row.
+- Producers that write right-to-left text glyph-reversed: **Arabic** in
+  presentation forms is put back in order since B2, judged by its letters'
+  shapes. **Thaana** has no positional shapes to judge by and stays as
+  written. Browser-printed PDFs read correctly in English, Arabic and
+  Dhivehi. **Spot-read page one of a Dhivehi PDF before publishing it**;
+  if it reads wrongly, paste the text into the body, which always wins.
+- ~~A scanned book is pictures: no text.~~ **Read by text recognition
+  since B1** (STATUS §5tg), where the host has Tesseract and the switch is
+  on; otherwise as before.
+- Page *images* (§36's other option) are not shown to readers. The reader
+  serves text by design.
 
 `--all` on `library:sync-pages` rebuilds every item after the extractor
 improves.

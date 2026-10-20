@@ -15,9 +15,16 @@ use App\Domains\Library\Contracts\PdfPageTextExtractor;
  * when the line is mostly Arabic or Thaana), spaced by the gaps between
  * them, and grouped into paragraphs by the vertical gaps between lines.
  *
+ * Since BACKLOG B2 (STATUS §5tr) a page set in two columns is read column
+ * by column — the left first, or the right on a mostly right-to-left page —
+ * with a title that spans both kept above them; and an Arabic word a
+ * producer wrote in visual order (its letters' shapes show it: a final form
+ * first, an initial form last) is put back in reading order.
+ *
  * What it does not do: rasterise (a scanned book is pictures, and yields no
- * text), read columns as columns (a two-column page reads across), or undo
- * the glyph order of producers that write right-to-left runs visually.
+ * text; OCR is `RecogniseLibraryItemPagesAction`), read three or more
+ * columns (a table stays as it was), or undo visual order in Thaana, whose
+ * letters have no positional shapes to tell by.
  */
 final class PdfTextExtractor implements PdfPageTextExtractor
 {
@@ -290,6 +297,159 @@ final class PdfTextExtractor implements PdfPageTextExtractor
      * @param  list<array{text: string, x0: float, x1: float, y: float, size: float}>  $runs
      */
     private function assemble(array $runs): string
+    {
+        if ($runs === []) {
+            return '';
+        }
+        $runs = array_map(fn (array $run) => ['text' => self::unreverseArabic($run['text'])] + $run, $runs);
+
+        // B2: two columns are read one after the other, a spanning title above them.
+        $columns = self::columns($runs);
+        if ($columns !== null) {
+            return trim(implode("\n\n", array_filter(array_map(fn (array $block) => $this->assembleBlock($block), $columns), fn (string $text) => $text !== '')));
+        }
+
+        return $this->assembleBlock($runs);
+    }
+
+    /**
+     * BACKLOG B2: a page in two columns, as blocks in reading order — what
+     * spans the gutter above the columns, the columns (right first on a
+     * mostly right-to-left page), what spans it below — or null where the
+     * page is not two columns. A gutter must be clear of every run but the
+     * spanning ones, sit in the middle of the text, be at least one and a
+     * half font sizes wide, be the only such gap (three columns is a table),
+     * and have three lines or more on each side.
+     *
+     * @param  list<array{text: string, x0: float, x1: float, y: float, size: float}>  $runs
+     * @return list<list<array{text: string, x0: float, x1: float, y: float, size: float}>>|null
+     */
+    public static function columns(array $runs): ?array
+    {
+        if (count($runs) < 6) {
+            return null;
+        }
+        $left = min(array_column($runs, 'x0'));
+        $right = max(array_column($runs, 'x1'));
+        $width = $right - $left;
+        if ($width <= 0) {
+            return null;
+        }
+        $sizes = array_column($runs, 'size');
+        sort($sizes);
+        $size = max(1.0, (float) $sizes[intdiv(count($sizes), 2)]);
+
+        // Runs narrower than half the text block mark where text is; wider ones may span.
+        $narrow = array_values(array_filter($runs, fn (array $r) => ($r['x1'] - $r['x0']) < 0.5 * $width));
+        $spans = [];
+        foreach ($narrow as $r) {
+            $spans[] = [$r['x0'], $r['x1']];
+        }
+        usort($spans, fn ($a, $b) => $a[0] <=> $b[0]);
+        $gaps = [];
+        $reach = $left;
+        foreach ($spans as [$x0, $x1]) {
+            if ($x0 - $reach >= 1.5 * $size) {
+                $gaps[] = [$reach, $x0];
+            }
+            $reach = max($reach, $x1);
+        }
+        $middle = array_values(array_filter($gaps, function (array $g) use ($left, $width) {
+            $centre = (($g[0] + $g[1]) / 2 - $left) / $width;
+
+            return $centre > 0.3 && $centre < 0.7;
+        }));
+        if (count($gaps) !== 1 || count($middle) !== 1) {
+            return null;
+        }
+        [$g0, $g1] = $middle[0];
+
+        $first = $second = $spanning = [];
+        foreach ($runs as $r) {
+            if ($r['x1'] <= $g0 + 0.01) {
+                $first[] = $r;
+            } elseif ($r['x0'] >= $g1 - 0.01) {
+                $second[] = $r;
+            } else {
+                $spanning[] = $r;
+            }
+        }
+        $lines = fn (array $side) => count(array_unique(array_map(fn ($r) => (int) round($r['y']), $side)));
+        if ($lines($first) < 3 || $lines($second) < 3) {
+            return null;
+        }
+        $joined = implode('', array_column($runs, 'text'));
+        if (preg_match_all(self::RTL, $joined) > preg_match_all(self::LTR, $joined)) {
+            [$first, $second] = [$second, $first];
+        }
+        $top = max(max(array_column($first, 'y')), max(array_column($second, 'y')));
+        $above = array_values(array_filter($spanning, fn ($r) => $r['y'] >= $top - 0.01));
+        $below = array_values(array_filter($spanning, fn ($r) => $r['y'] < $top - 0.01));
+
+        return array_values(array_filter([$above, $first, $second, $below], fn (array $block) => $block !== []));
+    }
+
+    /**
+     * BACKLOG B2: an Arabic word written in visual order — its letters'
+     * presentation forms read backwards, a final or isolated-final shape
+     * first and an initial shape last — put back in reading order. A word
+     * in logical order, or with no presentation forms, is left alone.
+     */
+    public static function unreverseArabic(string $text): string
+    {
+        if (preg_match('/[\x{FB50}-\x{FDFF}\x{FE70}-\x{FEFF}]/u', $text) !== 1) {
+            return $text;
+        }
+
+        return (string) preg_replace_callback('/[\x{FB50}-\x{FDFF}\x{FE70}-\x{FEFF}\x{0600}-\x{06FF}]{2,}/u', function (array $m) {
+            $letters = (array) preg_split('//u', $m[0], -1, PREG_SPLIT_NO_EMPTY);
+            $form = fn (string $c) => self::arabicForm($c);
+            $firstForm = $form($letters[0]);
+            $lastForm = $form($letters[count($letters) - 1]);
+            $backwards = in_array($firstForm, ['final', 'medial'], true) || in_array($lastForm, ['initial', 'medial'], true);
+            $forwards = in_array($firstForm, ['initial', 'isolated'], true) && in_array($lastForm, ['final', 'isolated'], true);
+
+            return $backwards && ! $forwards ? implode('', array_reverse($letters)) : $m[0];
+        }, $text);
+    }
+
+    /**
+     * The positional shape of an Arabic presentation-form letter (Unicode's
+     * Arabic Presentation Forms-B), or null for anything else. Each letter's
+     * forms run isolated, final, then — for a letter that joins on both
+     * sides — initial and medial; the letters that join only on the right
+     * (alef, dal, reh, waw and their kin, teh marbuta, the lam-alefs) have
+     * the first two only, so the table names where each letter starts.
+     */
+    private static function arabicForm(string $char): ?string
+    {
+        $code = mb_ord($char, 'UTF-8');
+        if ($code === false || $code < 0xFE81 || $code > 0xFEFC) {
+            return null;
+        }
+        // Letter start => how many forms it has, in Unicode's order.
+        static $letters = [
+            0xFE81 => 2, 0xFE83 => 2, 0xFE85 => 2, 0xFE87 => 2, 0xFE89 => 4, 0xFE8D => 2, 0xFE8F => 4, 0xFE93 => 2,
+            0xFE95 => 4, 0xFE99 => 4, 0xFE9D => 4, 0xFEA1 => 4, 0xFEA5 => 4, 0xFEA9 => 2, 0xFEAB => 2, 0xFEAD => 2,
+            0xFEAF => 2, 0xFEB1 => 4, 0xFEB5 => 4, 0xFEB9 => 4, 0xFEBD => 4, 0xFEC1 => 4, 0xFEC5 => 4, 0xFEC9 => 4,
+            0xFECD => 4, 0xFED1 => 4, 0xFED5 => 4, 0xFED9 => 4, 0xFEDD => 4, 0xFEE1 => 4, 0xFEE5 => 4, 0xFEE9 => 4,
+            0xFEED => 2, 0xFEEF => 2, 0xFEF1 => 4, 0xFEF5 => 2, 0xFEF7 => 2, 0xFEF9 => 2, 0xFEFB => 2,
+        ];
+        foreach ($letters as $first => $count) {
+            if ($code >= $first && $code < $first + $count) {
+                return ['isolated', 'final', 'initial', 'medial'][$code - $first];
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Runs → lines → paragraphs → text, for one block of the page.
+     *
+     * @param  list<array{text: string, x0: float, x1: float, y: float, size: float}>  $runs
+     */
+    private function assembleBlock(array $runs): string
     {
         if ($runs === []) {
             return '';
