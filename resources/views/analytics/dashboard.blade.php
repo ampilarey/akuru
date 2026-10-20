@@ -1,27 +1,32 @@
 @extends('layouts.app')
 
 @section('content')
+@php
+    // The charts' labels, in the page's language (OB1).
+    $weekLabels = array_map(fn ($n) => __('analytics.week', ['number' => $n]), [1, 2, 3, 4]);
+    $healthLabels = [__('analytics.cpu'), __('analytics.memory'), __('analytics.disk'), __('analytics.network')];
+@endphp
 <div class="min-h-screen bg-gray-50">
     <!-- Header -->
     <div class="bg-white shadow-sm border-b">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center py-6">
                 <div>
-                    <h1 class="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-                    <p class="mt-1 text-sm text-gray-600">Comprehensive insights and reporting for Akuru Institute</p>
+                    <h1 class="text-3xl font-bold text-gray-900">{{ __('analytics.title') }}</h1>
+                    <p class="mt-1 text-sm text-gray-600">{{ __('analytics.intro') }}</p>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center gap-4">
                     <select id="timeRange" class="form-input">
-                        <option value="7" {{ $days == 7 ? 'selected' : '' }}>Last 7 days</option>
-                        <option value="30" {{ $days == 30 ? 'selected' : '' }}>Last 30 days</option>
-                        <option value="90" {{ $days == 90 ? 'selected' : '' }}>Last 90 days</option>
-                        <option value="365" {{ $days == 365 ? 'selected' : '' }}>Last year</option>
+                        <option value="7" {{ $days == 7 ? 'selected' : '' }}>{{ __('analytics.range_days', ['days' => 7]) }}</option>
+                        <option value="30" {{ $days == 30 ? 'selected' : '' }}>{{ __('analytics.range_days', ['days' => 30]) }}</option>
+                        <option value="90" {{ $days == 90 ? 'selected' : '' }}>{{ __('analytics.range_days', ['days' => 90]) }}</option>
+                        <option value="365" {{ $days == 365 ? 'selected' : '' }}>{{ __('analytics.range_year') }}</option>
                     </select>
                     <button id="refreshAnalytics" class="btn-primary">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <svg class="w-4 h-4 me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                         </svg>
-                        Refresh
+                        {{ __('analytics.refresh') }}
                     </button>
                 </div>
             </div>
@@ -40,8 +45,8 @@
                             </svg>
                         </div>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Total Users</p>
+                    <div class="ms-4">
+                        <p class="text-sm font-medium text-gray-600">{{ __('analytics.total_users') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $analytics['overview']['total_users'] }}</p>
                     </div>
                 </div>
@@ -56,8 +61,8 @@
                             </svg>
                         </div>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Active Users</p>
+                    <div class="ms-4">
+                        <p class="text-sm font-medium text-gray-600">{{ __('analytics.active_users') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $analytics['overview']['active_users'] }}</p>
                     </div>
                 </div>
@@ -73,8 +78,8 @@
                             </svg>
                         </div>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Total Courses</p>
+                    <div class="ms-4">
+                        <p class="text-sm font-medium text-gray-600">{{ __('analytics.total_courses') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $analytics['overview']['total_courses'] }}</p>
                     </div>
                 </div>
@@ -89,8 +94,8 @@
                             </svg>
                         </div>
                     </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Upcoming Events</p>
+                    <div class="ms-4">
+                        <p class="text-sm font-medium text-gray-600">{{ __('analytics.upcoming_events') }}</p>
                         <p class="text-2xl font-semibold text-gray-900">{{ $analytics['overview']['upcoming_events'] }}</p>
                     </div>
                 </div>
@@ -102,26 +107,26 @@
             <!-- User Growth Chart -->
             <div class="bg-white rounded-lg shadow-sm border">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">User Growth</h3>
+                    <h3 class="text-lg font-medium text-gray-900">{{ __('analytics.user_growth') }}</h3>
                 </div>
                 <div class="p-6">
-                    <canvas id="userGrowthChart" width="400" height="200"></canvas>
+                    <canvas id="userGrowthChart" width="400" height="200" style="max-width:100%"></canvas>
                 </div>
             </div>
 
             <!-- System Health Chart -->
             <div class="bg-white rounded-lg shadow-sm border">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">System Health</h3>
+                    <h3 class="text-lg font-medium text-gray-900">{{ __('analytics.system_health') }}</h3>
                 </div>
                 <div class="p-6">
                     <div class="flex items-center justify-between mb-4">
-                        <span class="text-sm text-gray-600">Overall Status</span>
+                        <span class="text-sm text-gray-600">{{ __('analytics.overall_status') }}</span>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $analytics['system_health']['status'] === 'healthy' ? 'bg-green-100 text-green-800' : ($analytics['system_health']['status'] === 'warning' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
-                            {{ ucfirst($analytics['system_health']['status']) }}
+                            {{ __('analytics.health_'.$analytics['system_health']['status']) }}
                         </span>
                     </div>
-                    <canvas id="systemHealthChart" width="400" height="200"></canvas>
+                    <canvas id="systemHealthChart" width="400" height="200" style="max-width:100%"></canvas>
                 </div>
             </div>
         </div>
@@ -131,20 +136,20 @@
             <!-- User Analytics -->
             <div class="bg-white rounded-lg shadow-sm border">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">User Analytics</h3>
+                    <h3 class="text-lg font-medium text-gray-900">{{ __('analytics.user_analytics') }}</h3>
                 </div>
                 <div class="p-6">
                     <div class="space-y-4">
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">New Users</span>
+                            <span class="text-sm text-gray-600">{{ __('analytics.new_users') }}</span>
                             <span class="text-sm font-medium text-gray-900">{{ $analytics['overview']['new_users'] }}</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Active Users</span>
+                            <span class="text-sm text-gray-600">{{ __('analytics.active_users') }}</span>
                             <span class="text-sm font-medium text-gray-900">{{ $analytics['overview']['active_users'] }}</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Total Users</span>
+                            <span class="text-sm text-gray-600">{{ __('analytics.total_users') }}</span>
                             <span class="text-sm font-medium text-gray-900">{{ $analytics['overview']['total_users'] }}</span>
                         </div>
                     </div>
@@ -154,20 +159,20 @@
             <!-- Content Analytics -->
             <div class="bg-white rounded-lg shadow-sm border">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">Content Analytics</h3>
+                    <h3 class="text-lg font-medium text-gray-900">{{ __('analytics.content_analytics') }}</h3>
                 </div>
                 <div class="p-6">
                     <div class="space-y-4">
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Published Posts</span>
+                            <span class="text-sm text-gray-600">{{ __('analytics.published_posts') }}</span>
                             <span class="text-sm font-medium text-gray-900">{{ $analytics['overview']['published_posts'] }}</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Total Events</span>
+                            <span class="text-sm text-gray-600">{{ __('analytics.total_events') }}</span>
                             <span class="text-sm font-medium text-gray-900">{{ $analytics['overview']['total_events'] }}</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Total Galleries</span>
+                            <span class="text-sm text-gray-600">{{ __('analytics.total_galleries') }}</span>
                             <span class="text-sm font-medium text-gray-900">{{ $analytics['overview']['total_galleries'] }}</span>
                         </div>
                     </div>
@@ -177,20 +182,20 @@
             <!-- Academic Analytics -->
             <div class="bg-white rounded-lg shadow-sm border">
                 <div class="px-6 py-4 border-b border-gray-200">
-                    <h3 class="text-lg font-medium text-gray-900">Academic Analytics</h3>
+                    <h3 class="text-lg font-medium text-gray-900">{{ __('analytics.academic_analytics') }}</h3>
                 </div>
                 <div class="p-6">
                     <div class="space-y-4">
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Active Courses</span>
+                            <span class="text-sm text-gray-600">{{ __('analytics.active_courses') }}</span>
                             <span class="text-sm font-medium text-gray-900">{{ $analytics['overview']['active_courses'] }}</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Pending Applications</span>
+                            <span class="text-sm text-gray-600">{{ __('analytics.pending_applications') }}</span>
                             <span class="text-sm font-medium text-gray-900">{{ $analytics['overview']['pending_applications'] }}</span>
                         </div>
                         <div class="flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Unread Inquiries</span>
+                            <span class="text-sm text-gray-600">{{ __('analytics.unread_inquiries') }}</span>
                             <span class="text-sm font-medium text-gray-900">{{ $analytics['overview']['unread_inquiries'] }}</span>
                         </div>
                     </div>
@@ -210,9 +215,9 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(userGrowthCtx, {
         type: 'line',
         data: {
-            labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+            labels: @json($weekLabels),
             datasets: [{
-                label: 'New Users',
+                label: @json(__('analytics.new_users')),
                 data: [12, 19, 3, 5],
                 borderColor: 'rgb(75, 192, 192)',
                 tension: 0.1
@@ -233,7 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
     new Chart(systemHealthCtx, {
         type: 'doughnut',
         data: {
-            labels: ['CPU', 'Memory', 'Disk', 'Network'],
+            labels: @json($healthLabels),
             datasets: [{
                 data: [65, 45, 30, 80],
                 backgroundColor: [

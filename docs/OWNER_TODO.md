@@ -80,7 +80,7 @@ production.
 |---|---|---|---|
 | ☐ | **Tax treatment of writer earnings** | Writer and student payouts stay off until an accountant confirms how sales, tips and rewards are taxed. | BACKLOG A9, WHATS_LEFT D1 |
 | ☐ | **A native reader for the Dhivehi and Arabic** | Every DV/AR string is a first pass. One example: the menu word `ސަލާމް` used for *Absences*. | BACKLOG A10, WHATS_LEFT D2 |
-| ☐ | **The old Blade screens** | Analytics, the Qur'an progress pages, e-learning and the old layouts are still English-only. Retire them or translate them; this is a navigation decision first. | BACKLOG C21, WHATS_LEFT D3 |
+| ☑ | **The old Blade screens** | Decided 2026-10-20 ("do all"): **translated**, not retired; retiring stays possible. Analytics and the old menu are done (STATUS §5td); the Qur'an progress pages and e-learning follow. | BACKLOG C21 |
 | ☐ | **Branch protection on `main`** | You said "keep this for later" (2026-10-03). Settings are in `docs/BRANCH_PROTECTION.md`; it needs a repo admin. | OWNER_ACTIONS 6 |
 | ☐ | **Linked separate logins** | Only if wanted, as its own track. | SIGN_IN_PLAN D7, WHATS_LEFT D4 |
 

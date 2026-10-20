@@ -19,7 +19,7 @@
 <nav x-data="{ open: false, adminOpen: false, userMenuOpen: false, workspaceOpen: false }"
      style="background:linear-gradient(135deg,#3D1219 0%,#7C2D37 100%);box-shadow:0 2px 12px rgba(0,0,0,.25);position:sticky;top:0;z-index:50;overflow:visible">
     {{-- Keyboard users land on the content, not on forty links (admin-panel layout audit, STATUS §5ht). --}}
-    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-[300] focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:text-brandMaroon-800">Skip to content</a>
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:start-2 focus:top-2 focus:z-[300] focus:rounded focus:bg-white focus:px-3 focus:py-2 focus:text-sm focus:text-brandMaroon-800">{{ __('nav.skip_to_content') }}</a>
 
     <div style="max-width:80rem;margin:0 auto;padding:0 1.25rem">
         <div style="display:flex;justify-content:space-between;align-items:center;height:3.75rem;gap:.75rem">
@@ -58,7 +58,7 @@
                 <a href="{{ route('dashboard') }}"
                    style="{{ $barLink }}{{ request()->routeIs('dashboard') ? 'background:rgba(255,255,255,.18);color:white' : 'color:rgba(255,255,255,.8)' }}"
                    onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='{{ request()->routeIs('dashboard') ? 'rgba(255,255,255,.18)' : 'transparent' }}'">
-                    Dashboard
+                    {{ __('common.dashboard') }}
                 </a>
                 @foreach($nav['primary'] as $item)
                 <a href="{{ $localize($item['href']) }}"
@@ -75,7 +75,7 @@
                             aria-expanded="false" :aria-expanded="adminOpen" aria-controls="nav-more-menu"
                             style="display:flex;align-items:center;gap:.3rem;padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;background:transparent;border:none;cursor:pointer;color:rgba(255,255,255,.8);transition:background .15s"
                             onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='transparent'">
-                        More
+                        {{ __('nav.more') }}
                         <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"/></svg>
                     </button>
                     <div x-show="adminOpen" x-transition x-cloak id="nav-more-menu"
@@ -98,7 +98,7 @@
                 <a href="{{ route('public.home') }}" target="_blank"
                    style="padding:.4rem .75rem;border-radius:.375rem;font-size:.8rem;font-weight:500;text-decoration:none;color:rgba(255,255,255,.6);transition:background .15s"
                    onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
-                    ↗ Website
+                    ↗ {{ __('public.Website') }}
                 </a>
                 @endauth
             </div>
@@ -132,7 +132,7 @@
                             <p style="font-size:.7rem;color:#6B7280;margin:.1rem 0 0">{{ $navUser->primaryRoleLabel() }}</p>
                             @endif
                         </div>
-                        <a href="{{ route('profile.edit') }}" style="{{ $menuItem }}" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">👤 My Profile</a>
+                        <a href="{{ route('profile.edit') }}" style="{{ $menuItem }}" onmouseover="this.style.background='#F9FAFB'" onmouseout="this.style.background='transparent'">👤 {{ __('nav.profile') }}</a>
                         @if(count($workspaces['list']) > 1)
                         <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
                         <span style="{{ $menuHead }}">{{ __('nav.workspaces') }}</span>
@@ -146,7 +146,7 @@
                         <div style="height:1px;background:#F3F4F6;margin:.25rem 0"></div>
                         <form method="POST" action="{{ route('logout') }}" style="margin:0">
                             @csrf
-                            <button type="submit" style="width:100%;display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#991B1B;text-decoration:none;background:none;border:none;cursor:pointer;text-align:start" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">🔒 Log Out</button>
+                            <button type="submit" style="width:100%;display:block;padding:.5rem .75rem;border-radius:.375rem;font-size:.8rem;color:#991B1B;text-decoration:none;background:none;border:none;cursor:pointer;text-align:start" onmouseover="this.style.background='#FEF2F2'" onmouseout="this.style.background='transparent'">🔒 {{ __('common.logout') }}</button>
                         </form>
                     </div>
                 </div>
@@ -158,7 +158,7 @@
                  they keep the menu button. --}}
             @auth
             <button @click="open=!open" class="sm:hidden" type="button"
-                    aria-label="Menu" aria-expanded="false" :aria-expanded="open" aria-controls="nav-mobile-menu"
+                    aria-label="{{ __('site.menu') }}" aria-expanded="false" :aria-expanded="open" aria-controls="nav-mobile-menu"
                     data-testid="shell-avatar"
                     style="width:2.25rem;height:2.25rem;border-radius:9999px;display:flex;align-items:center;justify-content:center;flex-shrink:0;border:none;cursor:pointer;color:white;font-weight:700;font-size:.875rem;background:rgba(255,255,255,.25)"
                     :style="{ background: open ? 'rgba(255,255,255,.4)' : 'rgba(255,255,255,.25)', boxShadow: open ? '0 0 0 2px white' : 'none' }">
@@ -166,7 +166,7 @@
             </button>
             @else
             <button @click="open=!open" class="sm:hidden" type="button"
-                    aria-label="Menu" aria-expanded="false" :aria-expanded="open" aria-controls="nav-mobile-menu"
+                    aria-label="{{ __('site.menu') }}" aria-expanded="false" :aria-expanded="open" aria-controls="nav-mobile-menu"
                     style="padding:.5rem;border-radius:.375rem;background:rgba(255,255,255,.12);border:none;cursor:pointer">
                 <svg style="width:1.25rem;height:1.25rem;stroke:white" fill="none" viewBox="0 0 24 24">
                     <path :class="{'hidden':open}" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
@@ -185,7 +185,7 @@
             <p style="color:rgba(255,255,255,.6);font-size:.72rem;margin:.15rem 0 0">{{ $navUser->primaryRoleLabel() ?? '' }}</p>
         </div>
 
-        <a href="{{ route('dashboard') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white hover:bg-white/10">Dashboard</a>
+        <a href="{{ route('dashboard') }}" class="block rounded px-3 py-2.5 text-[.85rem] text-white hover:bg-white/10">{{ __('common.dashboard') }}</a>
         @if(count($workspaces['list']) > 1)
         <span class="block px-3 pb-0.5 pt-3 text-[.65rem] font-semibold uppercase tracking-wider text-white/50" data-nav-section="workspaces">{{ __('nav.workspaces') }}</span>
         @foreach($workspaces['list'] as $workspace)
@@ -209,10 +209,10 @@
         @endforeach
 
         <div style="border-top:1px solid rgba(255,255,255,.1);margin:.75rem 0;padding-top:.75rem">
-            <a href="{{ route('profile.edit') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem">My Profile</a>
+            <a href="{{ route('profile.edit') }}" style="display:block;padding:.625rem .75rem;color:rgba(255,255,255,.85);font-size:.85rem;text-decoration:none;border-radius:.375rem">{{ __('nav.profile') }}</a>
             <form method="POST" action="{{ route('logout') }}">
                 @csrf
-                <button type="submit" style="width:100%;padding:.625rem .75rem;color:#FCA5A5;font-size:.85rem;background:none;border:none;cursor:pointer;text-align:start;border-radius:.375rem">Log Out</button>
+                <button type="submit" style="width:100%;padding:.625rem .75rem;color:#FCA5A5;font-size:.85rem;background:none;border:none;cursor:pointer;text-align:start;border-radius:.375rem">{{ __('common.logout') }}</button>
             </form>
         </div>
         @endauth

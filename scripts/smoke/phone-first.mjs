@@ -18,7 +18,7 @@
  *
  * Read-only: runs against staging as well as a local server.
  *
- * Environment: SMOKE_BASE_URL, SMOKE_STUDENT, SMOKE_PARENT, SMOKE_TEACHER,
+ * Environment: SMOKE_BASE_URL, SMOKE_STUDENT, SMOKE_PARENT, SMOKE_TEACHER, SMOKE_ADMIN,
  * SMOKE_PASSWORD, SMOKE_CHROMIUM.
  */
 import { chromium } from 'playwright';
@@ -38,6 +38,8 @@ const APP = {
     [process.env.SMOKE_STUDENT ?? 'student@akuru.edu.mv']: ['portal/absence-notes', 'portal/events'],
     [process.env.SMOKE_PARENT ?? 'parent@akuru.edu.mv']: ['portal/absence-notes', 'portal/events', 'academics/requests'],
     [process.env.SMOKE_TEACHER ?? 'teacher@akuru.edu.mv']: ['academics/plans', 'academics/materials', 'academics/behavior', 'substitutions/requests'],
+    // The old Blade screens, translated in OB1–OB3.
+    [process.env.SMOKE_ADMIN ?? 'superadmin@akuru.edu.mv']: ['analytics', 'analytics/reports'],
 };
 const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 
@@ -59,7 +61,10 @@ const visit = async (page, locale, path) => {
             return;
         }
         const seen = await page.evaluate(() => {
-            const width = window.innerWidth;
+            // The screen's own width: a phone zooms a page that is too wide out,
+            // so innerWidth grows with it and a check against it never fails
+            // (the analytics charts, 2026-10-20).
+            const width = document.documentElement.clientWidth;
             let culprit = null;
             if (document.documentElement.scrollWidth > width + 1) {
                 for (const el of document.querySelectorAll('body *')) {
