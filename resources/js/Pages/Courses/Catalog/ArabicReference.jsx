@@ -38,7 +38,7 @@ export default function ArabicReference({ letters, harakas, t = {} }) {
                 <FormErrors errors={letterForm.errors} />
             </form>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.arref_col_glyph || 'Glyph'}</th>
@@ -49,9 +49,9 @@ export default function ArabicReference({ letters, harakas, t = {} }) {
                     <tbody>
                         {letters.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2 text-xl">{row.arabic_character}</td>
-                                <td className="px-3 py-2">{row.key_name}</td>
-                                <td className="px-3 py-2">{row.display_name}</td>
+                                <td data-label={t.arref_col_glyph || 'Glyph'} className="px-3 py-2 text-xl">{row.arabic_character}</td>
+                                <td data-label={t.arref_key || 'Key'} className="px-3 py-2">{row.key_name}</td>
+                                <td data-label={t.arref_col_name || 'Name'} className="px-3 py-2">{row.display_name}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -72,7 +72,7 @@ export default function ArabicReference({ letters, harakas, t = {} }) {
                 <FormErrors errors={harakahForm.errors} />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.arref_col_symbol || 'Symbol'}</th>
@@ -83,9 +83,9 @@ export default function ArabicReference({ letters, harakas, t = {} }) {
                     <tbody>
                         {harakas.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2 text-xl">{row.symbol}</td>
-                                <td className="px-3 py-2">{row.key_name}</td>
-                                <td className="px-3 py-2">{row.display_name}</td>
+                                <td data-label={t.arref_col_symbol || 'Symbol'} className="px-3 py-2 text-xl">{row.symbol}</td>
+                                <td data-label={t.arref_key || 'Key'} className="px-3 py-2">{row.key_name}</td>
+                                <td data-label={t.arref_col_name || 'Name'} className="px-3 py-2">{row.display_name}</td>
                             </tr>
                         ))}
                     </tbody>

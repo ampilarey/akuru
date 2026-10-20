@@ -210,7 +210,7 @@ export default function Certificates({
             <FormErrors errors={refusals.unplaced} className="mb-4 rounded border border-red-200 bg-red-50 py-2 pe-3" />
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.cert_col_number || 'Number'}</th>
@@ -226,10 +226,10 @@ export default function Certificates({
                         )}
                         {issued.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.certificate_number}</td>
-                                <td className="px-3 py-2">{row.student_name}</td>
-                                <td className="px-3 py-2">{row.course_name || '—'}</td>
-                                <td className="px-3 py-2">{statusName(row.status)}</td>
+                                <td data-label={t.cert_col_number || 'Number'} className="px-3 py-2">{row.certificate_number}</td>
+                                <td data-label={t.cert_student || 'Student'} className="px-3 py-2">{row.student_name}</td>
+                                <td data-label={t.questions_course || 'Course'} className="px-3 py-2">{row.course_name || '—'}</td>
+                                <td data-label={t.assess_status || 'Status'} className="px-3 py-2">{statusName(row.status)}</td>
                                 <td className="px-3 py-2 text-end">
                                     <a className="text-sm text-[#7C2D37] hover:underline" href={`/catalog/certificates/${row.id}/download`}>{t.cert_open_html || 'Open HTML'}</a>
                                     {' · '}

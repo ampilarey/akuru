@@ -195,7 +195,7 @@ export default function Index({ years, terms, classes, subjects, rooms, examType
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.name || 'Name'}</th>
@@ -237,10 +237,10 @@ function ExamRow({ exam, statuses, subject, t }) {
 
     return (
         <tr className="border-t">
-            <td className="px-3 py-2">{exam.name}</td>
-            <td className="px-3 py-2">{exam.class_name} / {subject}</td>
-            <td className="px-3 py-2">{exam.exam_date || '—'}</td>
-            <td className="px-3 py-2">{statusName(exam.status)}</td>
+            <td data-label={t.name || 'Name'} className="px-3 py-2">{exam.name}</td>
+            <td data-label={t.exams_col_class_subject || 'Class / subject'} className="px-3 py-2">{exam.class_name} / {subject}</td>
+            <td data-label={t.date || 'Date'} className="px-3 py-2">{exam.exam_date || '—'}</td>
+            <td data-label={t.status || 'Status'} className="px-3 py-2">{statusName(exam.status)}</td>
             <td className="px-3 py-2">
                 <div className="flex flex-wrap items-center gap-2">
                     <select

@@ -58,7 +58,7 @@ export default function Show({ exam, rows, progress, t = {} }) {
                 />
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.student || 'Student'}</th>
@@ -105,12 +105,12 @@ function MarkRow({ exam, row, index, t }) {
 
     return (
         <tr className={`border-t ${row.anomaly ? 'bg-red-50' : ''}`}>
-            <td className="px-3 py-2">
+            <td data-label={t.student || 'Student'} className="px-3 py-2">
                 {row.name}
                 {row.student_number && <span className="block text-xs text-gray-500">{row.student_number}</span>}
                 {row.anomaly && <span className="block text-xs text-red-600">{t.marks_above_max || 'Above max'}</span>}
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.marks_col_marks || 'Marks'} className="px-3 py-2">
                 <input
                     ref={marksRef}
                     className="form-input w-24"
@@ -133,7 +133,7 @@ function MarkRow({ exam, row, index, t }) {
                 />
                 {refused && <span className="block text-xs text-red-600">{refused}</span>}
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.marks_col_absent || 'Absent'} className="px-3 py-2">
                 <input
                     type="checkbox"
                     aria-label={forPupil(t.marks_absent_for || 'Absent: :name')}
@@ -156,7 +156,7 @@ function MarkRow({ exam, row, index, t }) {
                     }}
                 />
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.marks_col_exempt || 'Exempt'} className="px-3 py-2">
                 <input
                     type="checkbox"
                     aria-label={forPupil(t.marks_exempt_for || 'Exempt: :name')}
@@ -179,7 +179,7 @@ function MarkRow({ exam, row, index, t }) {
                     }}
                 />
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.marks_col_remarks || 'Remarks'} className="px-3 py-2">
                 <input
                     className="form-input w-full"
                     aria-label={forPupil(t.marks_remarks_for || 'Remarks for :name')}

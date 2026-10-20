@@ -26,7 +26,7 @@ function SummaryTable({ t, title, rows, attendanceColumn = false }) {
             {rows.length === 0 && <p className="text-sm text-gray-500">{t.reports_none || 'Nothing in this view.'}</p>}
             {rows.length > 0 && (
                 <div className="overflow-x-auto">
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2 text-start">{t.reports_col_name || 'Name'}</th>
@@ -39,12 +39,12 @@ function SummaryTable({ t, title, rows, attendanceColumn = false }) {
                         <tbody>
                             {rows.map((row) => (
                                 <tr key={row.id} className="border-t">
-                                    <td className="px-3 py-2">{row.title}</td>
-                                    <td className="px-3 py-2 text-center">{row.enrolled}</td>
-                                    <td className="px-3 py-2 text-center">{row.completed}</td>
-                                    <td className="px-3 py-2 text-center">{row.average_progress}%</td>
+                                    <td data-label={t.reports_col_name || 'Name'} className="px-3 py-2">{row.title}</td>
+                                    <td data-label={t.completion_col_enrolled || 'Enrolled'} className="px-3 py-2 text-center">{row.enrolled}</td>
+                                    <td data-label={t.completion_col_completed || 'Completed'} className="px-3 py-2 text-center">{row.completed}</td>
+                                    <td data-label={t.completion_col_avg_progress || 'Avg progress'} className="px-3 py-2 text-center">{row.average_progress}%</td>
                                     {attendanceColumn && (
-                                        <td className="px-3 py-2 text-center">
+                                        <td data-label={t.completion_col_avg_attendance || 'Avg attendance'} className="px-3 py-2 text-center">
                                             {/* §24's "where applicable": null means the
                                                 offering schedules no sessions, and 0%
                                                 would read as "nobody turned up". */}

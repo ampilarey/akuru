@@ -139,7 +139,7 @@ export default function RecitationQueue({ rows, statuses, status, t = {}, q = {}
                 <a className="btn-secondary" href={`/teach/recitations?status=${status}&format=csv`}>{t.catalog_export || 'Export CSV'}</a>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.qt_col_student || 'Student'}</th>
@@ -158,12 +158,12 @@ export default function RecitationQueue({ rows, statuses, status, t = {}, q = {}
                         {rows.map((row) => (
                             <Fragment key={row.id}>
                                 <tr className="border-t">
-                                    <td className="px-3 py-2">{row.student?.name ?? '—'}</td>
-                                    <td className="px-3 py-2">{(locale === 'en' ? row.surah : row.surah_arabic || row.surah) ?? '—'}</td>
-                                    <td className="px-3 py-2">{range(row)}</td>
-                                    <td className="px-3 py-2">{row.submitted_at}</td>
-                                    <td className="px-3 py-2">{named(q, 'status_', row.status)}</td>
-                                    <td className="px-3 py-2">{row.mistake_count}</td>
+                                    <td data-label={t.qt_col_student || 'Student'} className="px-3 py-2">{row.student?.name ?? '—'}</td>
+                                    <td data-label={t.qt_col_surah || 'Surah'} className="px-3 py-2">{(locale === 'en' ? row.surah : row.surah_arabic || row.surah) ?? '—'}</td>
+                                    <td data-label={t.qt_col_ayahs || 'Ayahs'} className="px-3 py-2">{range(row)}</td>
+                                    <td data-label={t.qrec_col_submitted || 'Submitted'} className="px-3 py-2">{row.submitted_at}</td>
+                                    <td data-label={t.qt_col_status || 'Status'} className="px-3 py-2">{named(q, 'status_', row.status)}</td>
+                                    <td data-label={t.qt_col_mistakes || 'Mistakes'} className="px-3 py-2">{row.mistake_count}</td>
                                     <td className="px-3 py-2 text-end">
                                         <button type="button" className="btn-secondary" onClick={() => setOpenId(openId === row.id ? null : row.id)}>
                                             {openId === row.id ? (t.qt_close || 'Close') : (t.qt_review || 'Review')}

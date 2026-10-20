@@ -51,7 +51,7 @@ export default function Templates({ templates, sections, t = {} }) {
                 {form.errors.name && <span className="text-xs text-red-600 md:col-span-2">{form.errors.name}</span>}
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.name || 'Name'}</th>
@@ -65,9 +65,9 @@ export default function Templates({ templates, sections, t = {} }) {
                         )}
                         {templates.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.name}</td>
-                                <td className="px-3 py-2">{(row.sections || []).map(sectionName).join(t.list_separator || ', ')}</td>
-                                <td className="px-3 py-2">{row.active ? (t.yes || 'yes') : (t.no || 'no')}</td>
+                                <td data-label={t.name || 'Name'} className="px-3 py-2">{row.name}</td>
+                                <td data-label={t.templates_sections || 'Sections'} className="px-3 py-2">{(row.sections || []).map(sectionName).join(t.list_separator || ', ')}</td>
+                                <td data-label={t.templates_col_active || 'Active'} className="px-3 py-2">{row.active ? (t.yes || 'yes') : (t.no || 'no')}</td>
                             </tr>
                         ))}
                     </tbody>

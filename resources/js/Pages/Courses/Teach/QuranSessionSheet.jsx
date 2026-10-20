@@ -138,7 +138,7 @@ export default function QuranSessionSheet({ session, roster, surahs, options, t 
                 </span>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.qt_col_student || 'Student'}</th>
@@ -158,13 +158,13 @@ export default function QuranSessionSheet({ session, roster, surahs, options, t 
                         {roster.map((row) => (
                             <Fragment key={row.enrollment_id}>
                                 <tr className="border-t">
-                                    <td className="px-3 py-2">{row.student_name}</td>
-                                    <td className="px-3 py-2">{named(q, 'attendance_', row.status)}</td>
-                                    <td className="px-3 py-2">{named(q, 'result_', row.record?.new_result)}{row.record?.new_score != null ? ` (${row.record.new_score})` : ''}</td>
-                                    <td className="px-3 py-2">{named(q, 'result_', row.record?.recent_revision_result)}</td>
-                                    <td className="px-3 py-2">{named(q, 'result_', row.record?.old_revision_result)}</td>
-                                    <td className="px-3 py-2">{row.record?.mistake_count ?? '—'}</td>
-                                    <td className="px-3 py-2">{named(q, 'overall_', row.record?.overall_status)}</td>
+                                    <td data-label={t.qt_col_student || 'Student'} className="px-3 py-2">{row.student_name}</td>
+                                    <td data-label={t.qsheet_col_attendance || 'Attendance'} className="px-3 py-2">{named(q, 'attendance_', row.status)}</td>
+                                    <td data-label={t.qsheet_col_new || 'New'} className="px-3 py-2">{named(q, 'result_', row.record?.new_result)}{row.record?.new_score != null ? ` (${row.record.new_score})` : ''}</td>
+                                    <td data-label={t.qsheet_col_recent || 'Recent'} className="px-3 py-2">{named(q, 'result_', row.record?.recent_revision_result)}</td>
+                                    <td data-label={t.qsheet_col_old || 'Old'} className="px-3 py-2">{named(q, 'result_', row.record?.old_revision_result)}</td>
+                                    <td data-label={t.qt_col_mistakes || 'Mistakes'} className="px-3 py-2">{row.record?.mistake_count ?? '—'}</td>
+                                    <td data-label={t.qsheet_col_overall || 'Overall'} className="px-3 py-2">{named(q, 'overall_', row.record?.overall_status)}</td>
                                     <td className="px-3 py-2 text-end">
                                         <button type="button" className="btn-secondary" onClick={() => setOpenId(openId === row.enrollment_id ? null : row.enrollment_id)}>
                                             {openId === row.enrollment_id ? (t.qt_close || 'Close') : (row.record ? (t.qsheet_edit || 'Edit') : (t.qsheet_record || 'Record'))}

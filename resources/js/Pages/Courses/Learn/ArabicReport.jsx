@@ -8,7 +8,7 @@ export default function ArabicReport({ rows, student }) {
         <AppShell title={t.arabic_report_title || 'My Arabic skills'}>
             {!student && <p className="mb-4 text-sm text-gray-600">{t.no_profile || 'No student profile is linked to this account.'}</p>}
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.skills_col_activity || 'Activity'}</th>
@@ -23,11 +23,11 @@ export default function ArabicReport({ rows, student }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.activity_id} className="border-t">
-                                <td className="px-3 py-2">{row.title}</td>
+                                <td data-label={t.skills_col_activity || 'Activity'} className="px-3 py-2">{row.title}</td>
                                 {/* A skill is a code the server sends (slice CT7a). */}
-                                <td className="px-3 py-2">{row.skill ? (t[`skill_${row.skill}`] || row.skill) : '—'}</td>
-                                <td className="px-3 py-2">{row.attempts}</td>
-                                <td className="px-3 py-2">{row.average_score ?? '—'}</td>
+                                <td data-label={t.skills_col_skill || 'Skill'} className="px-3 py-2">{row.skill ? (t[`skill_${row.skill}`] || row.skill) : '—'}</td>
+                                <td data-label={t.skills_col_attempts || 'Attempts'} className="px-3 py-2">{row.attempts}</td>
+                                <td data-label={t.skills_col_average || 'Avg score'} className="px-3 py-2">{row.average_score ?? '—'}</td>
                             </tr>
                         ))}
                     </tbody>

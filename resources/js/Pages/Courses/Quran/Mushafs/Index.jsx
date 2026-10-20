@@ -15,7 +15,7 @@ export default function MushafIndex({ mushafs = [], can_manage = false, t = {} }
                 )}
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.mushaf_col_name || 'Name'}</th>
@@ -35,10 +35,10 @@ export default function MushafIndex({ mushafs = [], can_manage = false, t = {} }
                         )}
                         {mushafs.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.name}</td>
-                                <td className="px-3 py-2">{row.page_count ?? '—'}</td>
-                                <td className="px-3 py-2">{yesNo(row.is_active)}</td>
-                                <td className="px-3 py-2">{yesNo(row.locked)}</td>
+                                <td data-label={t.mushaf_col_name || 'Name'} className="px-3 py-2">{row.name}</td>
+                                <td data-label={t.mushaf_col_pages || 'Pages'} className="px-3 py-2">{row.page_count ?? '—'}</td>
+                                <td data-label={t.mushaf_col_active || 'Active'} className="px-3 py-2">{yesNo(row.is_active)}</td>
+                                <td data-label={t.mushaf_col_locked || 'Locked'} className="px-3 py-2">{yesNo(row.locked)}</td>
                                 <td className="px-3 py-2">
                                     <Link className="text-[#7C2D37] hover:underline" href={`/quran/mushafs/${row.id}`}>
                                         {t.mushaf_manage || 'Manage'}

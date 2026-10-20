@@ -98,7 +98,7 @@ export default function Index({ awards, students, issued, years, t = {} }) {
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.student || 'Student'}</th>
@@ -113,10 +113,10 @@ export default function Index({ awards, students, issued, years, t = {} }) {
                         )}
                         {issued.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.student_name}</td>
-                                <td className="px-3 py-2">{({ dv: row.award_dhivehi, ar: row.award_arabic }[locale]) || row.award}</td>
-                                <td className="px-3 py-2">{row.level ? levelName(row.level) : '—'}</td>
-                                <td className="px-3 py-2">{row.awarded_date}</td>
+                                <td data-label={t.student || 'Student'} className="px-3 py-2">{row.student_name}</td>
+                                <td data-label={t.awards_award || 'Award'} className="px-3 py-2">{({ dv: row.award_dhivehi, ar: row.award_arabic }[locale]) || row.award}</td>
+                                <td data-label={t.awards_level || 'Level'} className="px-3 py-2">{row.level ? levelName(row.level) : '—'}</td>
+                                <td data-label={t.date || 'Date'} className="px-3 py-2">{row.awarded_date}</td>
                             </tr>
                         ))}
                     </tbody>

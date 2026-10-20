@@ -21,7 +21,10 @@ export default function AttendanceSheet({ club, members = [], t = {} }) {
                     {t.clubs_leader || 'Leader'} ______________________  {t.clubs_term || 'Term'} ____________  {t.clubs_room || 'Room'} ____________
                 </p>
 
-                <table className="min-w-full border text-sm">
+                {/* A paper sheet of members by weeks: a grid, so on a phone it scrolls in
+                    its own box (docs/MOBILE_FIRST.md rule 5's exception). */}
+                <div className="overflow-x-auto">
+                <table className="min-w-full border text-sm" data-phone-scroll>
                     <thead>
                         <tr>
                             <th className="border px-2 py-1 text-start">{t.clubs_col_member || 'Member'}</th>
@@ -42,6 +45,7 @@ export default function AttendanceSheet({ club, members = [], t = {} }) {
                         ))}
                     </tbody>
                 </table>
+                </div>
 
                 {members.length === 0 && (
                     <p className="mt-4 text-sm text-gray-500">{t.clubs_nobody || 'Nobody has joined yet.'}</p>

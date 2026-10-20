@@ -76,7 +76,7 @@ function RubricMarker({ rubric, chosen, onChoose, outOf, t }) {
     return (
         <div className="mb-3 overflow-x-auto rounded border border-[#E6D9C5]" data-testid="rubric-marker">
             <p className="bg-[#F3EBE0] px-3 py-2 text-sm font-medium">{rubric.title}</p>
-            <table className="min-w-full text-sm">
+            <table className="table-stack min-w-full text-sm">
                 <tbody>
                     {rubric.criteria.map((criterion) => (
                         <tr key={criterion.id} className="border-t align-top">
@@ -169,7 +169,7 @@ function ReviewRow({ row, t = {} }) {
 function ReportTable({ rows, empty, t }) {
     return (
         <div className="overflow-x-auto rounded-lg border bg-white">
-            <table className="min-w-full text-sm">
+            <table className="table-stack min-w-full text-sm">
                 <thead className="bg-[#F3EBE0] text-start">
                     <tr>
                         <th className="px-3 py-2">{t.cert_student || 'Student'}</th>
@@ -186,12 +186,12 @@ function ReportTable({ rows, empty, t }) {
                     )}
                     {rows.map((row) => (
                         <tr key={`${row.kind}-${row.attempt_id}`} className="border-t">
-                            <td className="px-3 py-2">{row.student_name}</td>
-                            <td className="px-3 py-2">{row.course_title || '—'}</td>
-                            <td className="px-3 py-2">{row.title} <span className="text-xs uppercase text-gray-500">{kindName(t, row.kind)}</span></td>
-                            <td className="px-3 py-2">{row.score}/{row.max_score} ({row.percent}%)</td>
-                            <td className="px-3 py-2">{row.reason}</td>
-                            <td className="px-3 py-2">{row.recommendation}</td>
+                            <td data-label={t.cert_student || 'Student'} className="px-3 py-2">{row.student_name}</td>
+                            <td data-label={t.questions_course || 'Course'} className="px-3 py-2">{row.course_title || '—'}</td>
+                            <td data-label={t.review_col_item || 'Item'} className="px-3 py-2">{row.title} <span className="text-xs uppercase text-gray-500">{kindName(t, row.kind)}</span></td>
+                            <td data-label={t.activities_col_score || 'Score'} className="px-3 py-2">{row.score}/{row.max_score} ({row.percent}%)</td>
+                            <td data-label={t.review_col_reason || 'Reason'} className="px-3 py-2">{row.reason}</td>
+                            <td data-label={t.review_col_recommendation || 'Recommendation'} className="px-3 py-2">{row.recommendation}</td>
                         </tr>
                     ))}
                 </tbody>
