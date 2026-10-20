@@ -4983,6 +4983,37 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tt. The walks stop breaking each other (BP4, 2026-10-20)
+
+On a fresh seed `all.mjs` passed 98/102. Four walks passed alone and failed
+after others (KNOWN_ISSUES, 2026-10-20). The causes were in the harness:
+- **The pupil made a writer:** `library.mjs` made the seeded pupil
+  (`student@`) a writer, and `earnings`, `peer-review`, `writer-language` and
+  `library-office-language` wrote as them. The pupil stayed a writer, so
+  *My blog* showed the writer's page and `blog-start` found no start form.
+  `SmokeMarkerSeeder::smokeWriter()` now seeds an adult with no role,
+  `smoke-writer@`, and those five walks use it (`SMOKE_APPLICANT` still
+  overrides).
+- **The wallet course already bought:** `buy.mjs` enrols the pupil on
+  SMOKE-Wallet-Course, and an enrolled row has no discount-code box.
+  `course-screens-language` now uses the first priced row that has one,
+  falling back to SMOKE-Pay-Course.
+- **A stale marker:** `blog-posts` looked for the author page's
+  `author-blog`, which BL3a (#783) renamed when bloggers could order their
+  sections. It now reads `blog-section-latest` and runs to the end (22
+  steps, where it had stopped at 12).
+
+**Walked:** buy, library, peer-review, earnings, blog-start, blog-posts,
+blog-design, course-screens-language, writer-language and
+library-office-language, in `all.mjs` order on one fresh seed. Every one
+passed (`blog-posts` rerun with its fix on the same database): 13, 33, 18, 13, 12, 22, 17, 422, 18 and
+41 steps. Only the walk harness and the smoke seeder changed; no product
+code.
+
+**Tests:** `SmokeWriterSeedTest`: the walks' writer is seeded once, with no
+role and no writer profile; the seeded pupil is no writer; the seeder runs
+twice. The smoke-seeder and architecture tests pass.
+
 ## 5ts. Copyright reports, and a large wallet credit told (BP3, BACKLOG B11, 2026-10-20)
 
 Two of B11's four unbuilt notices had nothing behind them: no copyright
