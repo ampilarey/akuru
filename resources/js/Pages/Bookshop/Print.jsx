@@ -157,7 +157,7 @@ function Finishing({ t, finishing }) {
 }
 
 function Layouts({ t, layouts, sizes, products }) {
-    const blank = { name: '', print_kind: 'name_tags', sheet_size: 'a4', columns: 2, rows: 4, tag_w_mm: '', tag_h_mm: '', margin_top_mm: 0, margin_left_mm: 0, gutter_x_mm: 0, gutter_y_mm: 0, bleed_mm: 0, sheet_code: '', is_active: true, sort_order: 0 };
+    const blank = { name: '', print_kind: 'name_tags', shape: 'rect', sheet_size: 'a4', columns: 2, rows: 4, tag_w_mm: '', tag_h_mm: '', margin_top_mm: 0, margin_left_mm: 0, gutter_x_mm: 0, gutter_y_mm: 0, bleed_mm: 0, sheet_code: '', is_active: true, sort_order: 0 };
     const [editing, setEditing] = useState(null);
     const form = useForm(blank);
     const edit = (l) => { setEditing(l.id); form.setData({ ...l, sheet_code: l.sheet_code ?? '' }); };
@@ -176,7 +176,7 @@ function Layouts({ t, layouts, sizes, products }) {
                                 <td className="p-2" data-label={t.sheet_size} dir="ltr">{(l.sheet_size ?? 'a4').toUpperCase()}</td>
                                 <td className="p-2" data-label={t.product} dir="auto">{products.find((p) => p.kind === l.print_kind)?.title ?? l.print_kind}</td>
                                 <td className="p-2 sm:text-end" data-label={t.tags_per_sheet}>{l.tags} ({l.columns} × {l.rows})</td>
-                                <td className="p-2" data-label={t.tag_w} dir="ltr">{l.tag_w_mm} × {l.tag_h_mm} mm{l.bleed_mm > 0 ? ` + ${l.bleed_mm} mm` : ''}</td>
+                                <td className="p-2" data-label={t.tag_w} dir="ltr">{l.shape === 'circle' ? '◯ ' : ''}{l.tag_w_mm} × {l.tag_h_mm} mm{l.bleed_mm > 0 ? ` + ${l.bleed_mm} mm` : ''}</td>
                                 <td className="p-2" data-label={t.active}>{l.is_active ? t.active : t.retired}</td>
                                 <td className="table-actions p-2 text-end"><button type="button" className="text-blue-700 underline" onClick={() => edit(l)}>{t.edit}</button></td>
                             </tr>
@@ -187,6 +187,7 @@ function Layouts({ t, layouts, sizes, products }) {
             <form className="grid gap-2 sm:grid-cols-4" data-testid="print-layout-form" onSubmit={(e) => { e.preventDefault(); form.post(editing ? `/admin/bookshop/print/layouts/${editing}` : '/admin/bookshop/print/layouts', { preserveScroll: true, onSuccess: reset }); }}>
                 <label className="text-sm sm:col-span-2">{t.layout_name}<input className="form-input w-full" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} required data-testid="print-layout-name" /><Err>{form.errors.name}</Err></label>
                 <label className="text-sm sm:col-span-2">{t.product}<select className="form-input w-full" value={form.data.print_kind ?? 'name_tags'} onChange={(e) => form.setData('print_kind', e.target.value)} data-testid="print-layout-product">{products.map((p) => <option key={p.kind} value={p.kind}>{p.title}</option>)}</select></label>
+                <label className="text-sm sm:col-span-2">{t.shape}<select className="form-input w-full" value={form.data.shape ?? 'rect'} onChange={(e) => form.setData('shape', e.target.value)} data-testid="print-layout-shape">{['rect', 'circle'].map((s) => <option key={s} value={s}>{t[`shape_${s}`]}</option>)}</select></label>
                 <label className="text-sm sm:col-span-2">{t.sheet_size}<select className="form-input w-full" value={form.data.sheet_size ?? 'a4'} onChange={(e) => form.setData('sheet_size', e.target.value)} data-testid="print-layout-size">{sizes.map((s) => <option key={s} value={s}>{s.toUpperCase()}</option>)}</select></label>
                 {num('columns', t.columns, '1')}
                 {num('rows', t.rows, '1')}

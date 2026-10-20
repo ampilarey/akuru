@@ -24,7 +24,7 @@ function Row({ d, t, fonts, locale }) {
             <div className="flex justify-center rounded bg-gray-50 p-2" dir="ltr">
                 {d.source === 'upload'
                     ? <span className="flex h-24 w-32 items-center justify-center text-center text-xs text-gray-600" data-testid={`print-design-thumb-${d.id}`}>{t.upload_thumb}</span>
-                    : <TagCanvas design={design} fonts={fonts} row={row} scale={Math.min(1.8, 150 / design.tag.w)} testId={`print-design-thumb-${d.id}`} />}
+                    : <TagCanvas design={design} shape={d.shape} fonts={fonts} row={row} scale={Math.min(1.8, 150 / design.tag.w)} testId={`print-design-thumb-${d.id}`} />}
             </div>
             <div className="min-w-0 flex-1">
                 {editing ? (

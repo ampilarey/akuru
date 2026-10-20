@@ -4983,6 +4983,52 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tl. Stickers on sheets, round ones round (PP4, 2026-10-20)
+
+PRINT_PRODUCTS_PLAN PP4.
+- **Shape:** a layout is a rectangle or a circle
+  (`print_layouts.shape`; every layout before is a rectangle). A round
+  sticker prints as its circle, its bleed included, and shows as a circle
+  everywhere the customer and the office see it: the door's thumbnails, the
+  job page, *My designs*, the template list and both designers. The shape
+  belongs to the layout, so the design format is unchanged.
+- **Crop marks:** a round sticker has none. A kiss-cut follows the outline,
+  and marks would only be in the way.
+- **Shipped, off until priced:**
+  - four sticker layouts, each with a 2 mm bleed and 4 mm gutters:
+    - round 40 mm, 24 to an A4 and 54 to an A3;
+    - round 60 mm, 12 to an A4;
+    - labels 63 × 38 mm, 21 to an A4;
+  - *Kiss-cut (peel off the sheet)*, a finishing that leaves the sheet
+    whole;
+  - an A3 sticker sheet;
+  - three designs: a round name sticker, a big round sticker and a book
+    label.
+- The office makes a round layout with *Shape* on the layout form. The
+  CSV carries it.
+- Rolls stay parked (PD5).
+
+**Tests:** `PrintStickersTest` (4):
+- the layouts fit with their bleed; kiss-cut and the A3 sheet are off; the
+  designs pass the validator;
+- a round sticker renders 44 mm round with no marks, and a label keeps its
+  marks;
+- the office makes a round layout and is refused an unknown shape;
+- the door and the job tell the page which designs are round.
+
+Earlier counts were updated. `PrintProductsTest` and `print-products.mjs`
+set the sticker layouts aside to show the refusal.
+Whole suite 3318 passed; pint clean.
+With Chrome set, all eleven print walks pass.
+
+**Real print (local Chrome):** 24 round Dhivehi name stickers on one A4
+page, each a 44 mm circle, with no marks.
+
+**Walk:** `print-stickers.mjs` (new, in `all.mjs`), 9/9 at 390 × 844 under
+/dv. The Stickers door shows three designs, two drawn round. The round name
+sticker's job page draws it round with the typed Thaana name, priced from
+the sticker sheet. Nothing scrolls sideways.
+
 ## 5tk. Cards with a bleed (PP3, 2026-10-20)
 
 PRINT_PRODUCTS_PLAN PP3. Cards are cut from the sheet, so their artwork has

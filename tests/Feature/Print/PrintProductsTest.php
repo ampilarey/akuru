@@ -78,6 +78,8 @@ it('puts a product on sale only while the desk is on and it has a layout, and th
     pp2Desk();
     $office = printOffice();
     app()->setLocale('dv');
+    // Stickers' own layouts (PP4) retired, so it has none to print on.
+    PrintLayout::query()->where('print_kind', 'stickers')->update(['is_active' => false]);
 
     printWeb()->actingAs($office)->post(route('admin.bookshop.print.product', 'stickers'), ['on_sale' => true])
         ->assertSessionHasErrors(['product' => __('print.error_product_no_layout', ['product' => 'ސްޓިކަރު'], 'dv')]);

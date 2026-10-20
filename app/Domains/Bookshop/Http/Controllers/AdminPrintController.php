@@ -93,7 +93,7 @@ class AdminPrintController extends Controller
         abort_unless($request->user()?->can('bookshop.manage'), 403);
         $data = $request->validate([
             'name' => 'required|string|max:80', 'sheet_size' => 'nullable|in:'.implode(',', PrintSheet::codes()),
-            'print_kind' => 'nullable|in:'.implode(',', PrintProducts::kinds()),
+            'print_kind' => 'nullable|in:'.implode(',', PrintProducts::kinds()), 'shape' => 'nullable|in:'.implode(',', PrintLayout::SHAPES),
             'columns' => 'required|integer|min:1|max:20', 'rows' => 'required|integer|min:1|max:30',
             'tag_w_mm' => 'required|numeric|min:1|max:420', 'tag_h_mm' => 'required|numeric|min:1|max:420',
             'margin_top_mm' => 'nullable|numeric|min:0|max:100', 'margin_left_mm' => 'nullable|numeric|min:0|max:100',

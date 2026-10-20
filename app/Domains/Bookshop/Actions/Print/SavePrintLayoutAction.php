@@ -17,6 +17,7 @@ class SavePrintLayoutAction
         $layout->fill([
             'name' => trim((string) $data['name']),
             'print_kind' => PrintProducts::valid($data['print_kind'] ?? null) ? $data['print_kind'] : ($layout->print_kind ?? PrintProducts::DEFAULT),
+            'shape' => in_array($data['shape'] ?? null, PrintLayout::SHAPES, true) ? $data['shape'] : ($layout->shape ?? 'rect'),
             'sheet_size' => in_array($data['sheet_size'] ?? null, PrintSheet::codes(), true) ? $data['sheet_size'] : ($layout->sheet_size ?? PrintSheet::DEFAULT),
             'columns' => max(1, (int) ($data['columns'] ?? 1)),
             'rows' => max(1, (int) ($data['rows'] ?? 1)),

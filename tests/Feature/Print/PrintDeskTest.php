@@ -42,7 +42,7 @@ it('makes the Akuru vendor, the Print category and a draft product once, and see
     expect(PrintLayout::query()->where('print_kind', 'name_tags')->count())->toBe(5)
         ->and(PrintLayout::query()->get()->every(fn (PrintLayout $l) => $l->fitsSheet()))->toBeTrue()
         ->and(PrintLayout::query()->where('sheet_code', 'L7160')->first()->tagsPerSheet())->toBe(21)
-        ->and(PrintPaperOption::query()->count())->toBe(4)
+        ->and(PrintPaperOption::query()->where('sheet_size', 'a4')->count())->toBe(4)
         ->and(PrintPaperOption::query()->where('is_active', true)->exists())->toBeFalse()
         ->and(PrintSubjectSet::query()->count())->toBe(3)
         ->and(PrintSubjectSet::query()->first()->subjects[0]['dv'])->toBe('ދިވެހި');
@@ -55,7 +55,7 @@ it('opens the office for the Bookstore manager only, with every list and the rea
         ->assertInertia(fn (Assert $page) => $page->component('Bookshop/Print')
             ->where('settings.enabled', false)->where('can_enable', false)
             ->where('cannot_enable_because', __('print.error_enable_no_chrome'))
-            ->where('product.status', 'draft')->has('papers', 4)->has('layouts', 9)->has('subject_sets', 3)->has('finishing', 4)->has('t'));
+            ->where('product.status', 'draft')->has('papers', 5)->has('layouts', 13)->has('subject_sets', 3)->has('finishing', 5)->has('t'));
 });
 
 it('refuses to switch the service on without a Chrome, then without a priced paper, and puts the product on sale when it can', function () {

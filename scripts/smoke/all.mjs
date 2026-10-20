@@ -163,6 +163,7 @@ const WALKS = [
     { name: 'print-sizes', writes: true, asks: 'Can the office set up an A3 paper and layout, and does a job moved to that layout offer only the A3 paper — on a phone, in Dhivehi and English?' },
     { name: 'print-products', writes: true, asks: 'Can the office put Cards on sale beside name tags — refused Stickers without a layout, in Dhivehi — and does a customer find Cards on the print page and lose it when it comes off sale, on a phone?' },
     { name: 'print-cards', writes: true, asks: 'Can a customer find Akuru\'s five card designs and start a business card on a phone, asked for name, role, phone and email in Dhivehi, and see it priced?' },
+    { name: 'print-stickers', writes: true, asks: 'Does a customer find Akuru\'s sticker designs, the round ones drawn round, and start a round name sticker on a phone in Dhivehi, priced from the sticker sheet?' },
     { name: 'print-freeform', writes: true, asks: 'Can a customer design name tags freely in Arabic — a text and a rectangle drawn, Arabic typed, turned 12°, kept on reload — and see Chrome\'s proof of it?' },
     { name: 'print-upsell', writes: true, asks: 'Does a school book list offer the child\'s name tags in Dhivehi, with the grade\'s subjects chosen, can a design be ordered again at today\'s price, and does the office see print sales by paper and month?' },
     { name: 'pick-by-name', writes: true, asks: 'Does the office choose the pupil, the teacher and the account by name — on the behaviour, plan, fee adjustment and wallet credit forms — instead of typing an id?' },
