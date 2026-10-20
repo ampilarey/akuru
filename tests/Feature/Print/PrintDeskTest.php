@@ -55,7 +55,7 @@ it('opens the office for the Bookstore manager only, with every list and the rea
         ->assertInertia(fn (Assert $page) => $page->component('Bookshop/Print')
             ->where('settings.enabled', false)->where('can_enable', false)
             ->where('cannot_enable_because', __('print.error_enable_no_chrome'))
-            ->where('product.status', 'draft')->has('papers', 5)->has('layouts', 13)->has('subject_sets', 3)->has('finishing', 5)->has('t'));
+            ->where('product.status', 'draft')->has('papers', 6)->has('layouts', 18)->has('subject_sets', 3)->has('finishing', 5)->has('t'));
 });
 
 it('refuses to switch the service on without a Chrome, then without a priced paper, and puts the product on sale when it can', function () {

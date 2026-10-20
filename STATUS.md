@@ -4983,6 +4983,57 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tm. Photo prints (PP5, 2026-10-20)
+
+PRINT_PRODUCTS_PLAN PP5. A photo print is the customer's own picture, so it
+builds on the name-tag upload (NT5):
+- **Sizes:** five photo layouts, cut with crop marks and leaving room for
+  the printer's own margin:
+  - 4 × 6 in landscape, 2 to an A4;
+  - 4 × 6 in portrait, 4 to an A3;
+  - 5 × 7 in, 1 to an A4;
+  - A5, 1 to an A4;
+  - A4, 1 to an A3.
+
+  An A3 print would need a borderless printer and is not offered. An A3
+  glossy paper ships off and unpriced.
+- **Fill or fit:** *Fill the print*, the default, crops to the size. *Fit
+  the whole photo* leaves a white border. The choice is the upload's design
+  (`fit`) and survives a change of size. Resolution is judged by the side
+  that sets it: the stretched side when filling, the tight side when
+  fitting.
+- **Photo resolution:** warned under 150 dpi and refused under 72
+  (`PHOTO_WARN_DPI`, `PHOTO_REFUSE_DPI`). Name-tag uploads keep 300 and 150.
+- **One picture per print:** a PNG or a JPEG. A PDF is refused, and a
+  whole-sheet upload is not offered or accepted.
+- **The pages:** the photos door is the upload alone, with no designs and no
+  blank designer. The upload page has *Fill / Fit* and counts the prints the
+  sheets make.
+- **Changed from the plan:** priced per sheet like everything else (D15),
+  not per print. The page counts the prints instead.
+
+**Tests:** `PrintPhotosTest` (5):
+- five sizes fit, and the A3 paper is off;
+- a photo print starts on the photo sizes, filling, and its door has no
+  designs;
+- photo resolution and the side that sets it; name tags keep theirs;
+- a PNG or a JPEG only, as one picture per print, with fill or fit chosen
+  and refused in Dhivehi;
+- a filled photo renders as `cover`, a fitted one whole.
+
+Desk counts were updated. Whole suite 3323 passed; pint clean. With Chrome
+set, all twelve print walks pass.
+
+**Real print (local Chrome):** an upright photo on the 4 × 6 in landscape
+sheet. Filled, it covers the print and crops top and bottom. Fitted, it is
+whole between white borders.
+
+**Walk:** `print-photos.mjs` (new, in `all.mjs`), 12/12 at 390 × 844 under
+/dv. The door offers the upload alone. A 1800 × 1200 photo reads 300 dpi
+with nothing to warn and fills the print. Two prints are counted. Switched
+to fit, the job keeps it, priced from the glossy paper. Nothing scrolls
+sideways.
+
 ## 5tl. Stickers on sheets, round ones round (PP4, 2026-10-20)
 
 PRINT_PRODUCTS_PLAN PP4.

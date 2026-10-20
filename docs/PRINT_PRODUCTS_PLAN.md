@@ -124,6 +124,14 @@ what is printed.
 
 ### PP5 — Photo prints
 
+> **Built 2026-10-20 (STATUS §5tm)**, with these changes: **priced per
+> sheet, like everything else (D15), not per print** — the page counts the
+> prints a sheet makes, and a size printed one to a sheet is per print
+> anyway; one price list is kept. **A3 prints are not offered**: they need
+> a borderless printer or a bigger sheet. The sizes are 4 × 6 in (landscape
+> 2/A4, portrait 4/A3), 5 × 7 in, A5 and A4 (on A3). A photo is a PNG or a
+> JPEG, one picture per print; a PDF is refused.
+
 - Upload, size, *fill* or *fit*, dpi warning and refusal (PD6), per-print
   pricing, prints imposed on the fewest sheets for the queue.
 - Tests: a 4 × 6 photo at 100 dpi is warned, at 60 refused; ten 4 × 6

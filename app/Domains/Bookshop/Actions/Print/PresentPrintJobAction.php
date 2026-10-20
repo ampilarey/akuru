@@ -16,6 +16,7 @@ use App\Domains\Bookshop\Support\PrintJobEntry;
 use App\Domains\Bookshop\Support\PrintLine;
 use App\Domains\Bookshop\Support\PrintProducts;
 use App\Domains\Bookshop\Support\PrintSheet;
+use App\Domains\Bookshop\Support\PrintUpload;
 use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
 use App\Support\Contracts\PdfRasterizerInterface;
 use App\Support\Services\PrintFontFaces;
@@ -96,6 +97,8 @@ class PresentPrintJobAction
             'warnings' => $warnings,
             // NT5: a job from the customer's own artwork — what was read from it, and what stops it.
             'source' => (string) $job->source,
+            // PP5: how an uploaded picture meets its print — fill or fit.
+            'fit' => $job->isUpload() ? PrintUpload::fitOf($design) : null,
             'upload' => $job->isUpload() ? [
                 'has_file' => $job->upload_document_id !== null,
                 'kind' => $job->upload_kind,
