@@ -1,169 +1,79 @@
 @extends('layouts.app')
 
-@section('title', 'Quran Progress')
-@section('page-title', 'Quran Progress')
-
-@section('page-actions')
-@can('create_quran_progress')
-<a href="{{ route('quran-progress.create') }}" class="btn btn-primary">
-    <i class="fas fa-plus me-2"></i>
-    @if(app()->getLocale() === 'ar')
-        إضافة تقدم جديد
-    @elseif(app()->getLocale() === 'dv')
-        ތަފްސީލް އެހިގަނޑު
-    @else
-        Add Progress
-    @endif
-</a>
-@endcan
-@endsection
+@section('title', __('quran.qp_title'))
 
 @section('content')
+<div class="p-4">
+{{-- OB2 (STATUS §5te): in the page's language only — it printed all three side by
+     side with the Dhivehi wrong (*ރަގަޅު*, "good", for *Student*). Its heading and
+     Add sat in sections the layout never prints, behind permissions that do not
+     exist, so nobody could add, change or remove a record from here. --}}
 <div class="row">
     <div class="col-12">
+        <div class="mb-3 flex flex-wrap items-center justify-between gap-3">
+            <h1 class="h4 m-0">{{ __('quran.qp_records') }}</h1>
+            @can('manage_quran_progress')
+                <a href="{{ route('quran-progress.create') }}" class="btn btn-primary" data-testid="qp-add">
+                    <i class="fas fa-plus me-2" aria-hidden="true"></i>{{ __('quran.qp_add') }}
+                </a>
+            @endcan
+        </div>
+
+        @foreach(['success' => 'success', 'error' => 'danger'] as $key => $tone)
+            @if(session($key))
+                <div class="alert alert-{{ $tone }}" role="alert" data-testid="flash-{{ $key }}">{{ session($key) }}</div>
+            @endif
+        @endforeach
+
         <div class="card">
-            <div class="card-header">
-                <h6 class="m-0 font-weight-bold text-primary">
-                    @if(app()->getLocale() === 'ar')
-                        تقدم القرآن الكريم
-                    @elseif(app()->getLocale() === 'dv')
-                        ޤުރުއާން ތަފްސީލް
-                    @else
-                        Quran Progress Records
-                    @endif
-                </h6>
-            </div>
             <div class="card-body">
                 @if($progress->count() > 0)
                     <div class="table-responsive">
-                        <table class="table table-bordered">
+                        <table class="table table-bordered table-stack">
                             <thead>
                                 <tr>
-                                    <th>
-                                        @if(app()->getLocale() === 'ar')
-                                            الطالب
-                                        @elseif(app()->getLocale() === 'dv')
-                                            ރަގަޅު
-                                        @else
-                                            Student
-                                        @endif
-                                    </th>
-                                    <th>
-                                        @if(app()->getLocale() === 'ar')
-                                            السورة
-                                        @elseif(app()->getLocale() === 'dv')
-                                            ސޫރަތު
-                                        @else
-                                            Surah
-                                        @endif
-                                    </th>
-                                    <th>
-                                        @if(app()->getLocale() === 'ar')
-                                            النوع
-                                        @elseif(app()->getLocale() === 'dv')
-                                            ގަސް
-                                        @else
-                                            Type
-                                        @endif
-                                    </th>
-                                    <th>
-                                        @if(app()->getLocale() === 'ar')
-                                            الحالة
-                                        @elseif(app()->getLocale() === 'dv')
-                                            ހާލަތު
-                                        @else
-                                            Status
-                                        @endif
-                                    </th>
-                                    <th>
-                                        @if(app()->getLocale() === 'ar')
-                                            الدقة
-                                        @elseif(app()->getLocale() === 'dv')
-                                            ހަރުކާތް
-                                        @else
-                                            Accuracy
-                                        @endif
-                                    </th>
-                                    <th>
-                                        @if(app()->getLocale() === 'ar')
-                                            التاريخ
-                                        @elseif(app()->getLocale() === 'dv')
-                                            ތާރީޚު
-                                        @else
-                                            Date
-                                        @endif
-                                    </th>
-                                    <th>
-                                        @if(app()->getLocale() === 'ar')
-                                            الإجراءات
-                                        @elseif(app()->getLocale() === 'dv')
-                                            ކުރެވިދާނެ ކަމުތައް
-                                        @else
-                                            Actions
-                                        @endif
-                                    </th>
+                                    <th>{{ __('quran.qp_student') }}</th>
+                                    <th>{{ __('quran.qp_surah') }}</th>
+                                    <th>{{ __('quran.qp_type') }}</th>
+                                    <th>{{ __('quran.qp_status') }}</th>
+                                    <th>{{ __('quran.qp_accuracy') }}</th>
+                                    <th>{{ __('quran.qp_date') }}</th>
+                                    <th><span class="sr-only">{{ __('quran.qp_actions') }}</span></th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($progress as $record)
-                                <tr>
-                                    <td>
-                                        @if($record->student)
-                                            {{ $record->student->full_name }}
-                                        @else
-                                            N/A
-                                        @endif
-                                    </td>
-                                    <td>
+                                <tr data-testid="qp-row">
+                                    <td data-label="{{ __('quran.qp_student') }}">{{ $record->student?->full_name ?? '—' }}</td>
+                                    <td data-label="{{ __('quran.qp_surah') }}">
                                         <div>
                                             <strong>{{ $record->surah_name }}</strong>
-                                            <br>
-                                            <span class="arabic-text">{{ $record->surah_name_arabic }}</span>
+                                            <span class="arabic-text block" lang="ar" dir="rtl">{{ $record->surah_name_arabic }}</span>
                                         </div>
                                         @if($record->from_ayah && $record->to_ayah)
-                                            <small class="text-muted">Ayah {{ $record->from_ayah }}-{{ $record->to_ayah }}</small>
+                                            <small class="text-muted">{{ __('quran.qp_ayahs', ['from' => $record->from_ayah, 'to' => $record->to_ayah]) }}</small>
                                         @endif
                                     </td>
-                                    <td>
-                                        <span class="badge bg-info">
-                                            {{ ucfirst($record->type) }}
-                                        </span>
+                                    <td data-label="{{ __('quran.qp_type') }}">
+                                        <span class="badge bg-info">{{ __('quran.qp_type_'.$record->type) }}</span>
                                     </td>
-                                    <td>
+                                    <td data-label="{{ __('quran.qp_status') }}">
                                         <span class="badge bg-{{ $record->status === 'completed' ? 'success' : ($record->status === 'in_progress' ? 'warning' : 'danger') }}">
-                                            {{ ucfirst(str_replace('_', ' ', $record->status)) }}
+                                            {{ __('quran.qp_status_'.$record->status) }}
                                         </span>
                                     </td>
+                                    <td data-label="{{ __('quran.qp_accuracy') }}">{{ $record->accuracy_percentage !== null ? $record->accuracy_percentage.'%' : '—' }}</td>
+                                    <td data-label="{{ __('quran.qp_date') }}">{{ $record->created_at->translatedFormat('j M Y') }}</td>
                                     <td>
-                                        @if($record->accuracy_percentage)
-                                            <div class="progress" style="height: 20px;">
-                                                <div class="progress-bar" style="width: {{ $record->accuracy_percentage }}%">
-                                                    {{ $record->accuracy_percentage }}%
-                                                </div>
-                                            </div>
-                                        @else
-                                            <span class="text-muted">-</span>
-                                        @endif
-                                    </td>
-                                    <td>{{ $record->created_at->format('M d, Y') }}</td>
-                                    <td>
-                                        <div class="btn-group" role="group">
-                                            <a href="{{ route('quran-progress.show', $record) }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-eye"></i>
-                                            </a>
-                                            @can('edit_quran_progress')
-                                            <a href="{{ route('quran-progress.edit', $record) }}" class="btn btn-sm btn-outline-warning">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            @endcan
-                                            @can('delete_quran_progress')
-                                            <form action="{{ route('quran-progress.destroy', $record) }}" method="POST" style="display: inline;">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure?')">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            </form>
+                                        <div class="flex flex-wrap gap-2">
+                                            <a href="{{ route('quran-progress.show', $record) }}" class="btn btn-sm btn-outline-primary">{{ __('quran.qp_view') }}</a>
+                                            @can('manage_quran_progress')
+                                                <a href="{{ route('quran-progress.edit', $record) }}" class="btn btn-sm btn-outline-warning">{{ __('quran.qp_edit') }}</a>
+                                                <form action="{{ route('quran-progress.destroy', $record) }}" method="POST" class="inline">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm(@js(__('quran.qp_delete_confirm')))">{{ __('quran.qp_delete') }}</button>
+                                                </form>
                                             @endcan
                                         </div>
                                     </td>
@@ -173,21 +83,11 @@
                         </table>
                     </div>
                 @else
-                    <div class="text-center py-4">
-                        <i class="fas fa-quran fa-3x text-muted mb-3"></i>
-                        <p class="text-muted">
-                            @if(app()->getLocale() === 'ar')
-                                لا توجد سجلات تقدم
-                            @elseif(app()->getLocale() === 'dv')
-                                ތަފްސީލް ރެކޯޑް ނެތް
-                            @else
-                                No progress records found
-                            @endif
-                        </p>
-                    </div>
+                    <p class="text-muted py-4 text-center" data-testid="qp-none">{{ __('quran.qp_none') }}</p>
                 @endif
             </div>
         </div>
     </div>
+</div>
 </div>
 @endsection

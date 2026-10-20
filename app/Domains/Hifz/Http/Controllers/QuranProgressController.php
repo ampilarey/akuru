@@ -60,7 +60,7 @@ class QuranProgressController extends Controller
         QuranProgress::create($data);
 
         return redirect()->route('quran-progress.index')
-            ->with('success', 'Quran progress recorded successfully!');
+            ->with('success', __('quran.qp_saved'));
     }
 
     public function show(QuranProgress $quranProgress)
@@ -98,7 +98,7 @@ class QuranProgressController extends Controller
         $quranProgress->update($data);
 
         return redirect()->route('quran-progress.index')
-            ->with('success', 'Quran progress updated successfully!');
+            ->with('success', __('quran.qp_updated'));
     }
 
     public function destroy(QuranProgress $quranProgress)
@@ -106,7 +106,7 @@ class QuranProgressController extends Controller
         $quranProgress->delete();
 
         return redirect()->route('quran-progress.index')
-            ->with('success', 'Quran progress deleted successfully!');
+            ->with('success', __('quran.qp_deleted'));
     }
 
     /**
@@ -139,7 +139,7 @@ class QuranProgressController extends Controller
 
         $teacher = auth()->user()->teacher;
         if (! $teacher) {
-            return redirect()->back()->withErrors(['teacher' => 'Teacher profile required to record progress.']);
+            return redirect()->back()->withErrors(['teacher' => __('quran.qp_teacher_required')]);
         }
 
         // Set on the validated data rather than merged back into the request.
@@ -157,6 +157,6 @@ class QuranProgressController extends Controller
         QuranProgress::create($data);
 
         return redirect()->back()
-            ->with('success', 'Quran progress updated successfully!');
+            ->with('success', __('quran.qp_updated'));
     }
 }
