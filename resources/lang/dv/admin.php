@@ -1207,6 +1207,7 @@ return [
     // LT3 (STATUS §5pf): the Library office in three languages — its queues, the item form, the shelf's list, the reading alerts, what was saved and what was refused.
     'library_office_title' => 'ޑިޖިޓަލް ލައިބްރަރީގެ އޮފީސް',
     'library_office_reading_alerts' => 'ކިޔުމުގެ އިންޒާރުތައް',
+    'library_office_copyright' => 'ކޮޕީރައިޓް ރިޕޯޓުތައް',
     'library_office_settings' => 'ސެޓިންގްސް',
     'library_office_insights' => 'ތަފްސީލީ ތަޖުރިބާ',
     'library_office_promotions' => 'ޕްރޮމޯޝަންތައް',
@@ -1508,6 +1509,8 @@ return [
     // What the server says on it, and the names of its fields (slice CO1).
     'commerce_flash_deactivated' => 'ގިފްޓް ކާޑު ހުއްޓާލައިފި.',
     'commerce_flash_credited' => 'ވޮލެޓަށް ފައިސާ ވައްދައިފި.',
+    'commerce_alert_credit_title' => 'ބޮޑު އަދަދެއް ވޯލެޓަށް',
+    'commerce_alert_credit_body' => 'ޚުދު އަތުން :owner ގެ ވޯލެޓަށް :actor އިތުރުކުރީ MVR :amount.',
     'commerce_flash_discount_saved' => 'ޑިސްކައުންޓް ކޯޑު ރައްކާކޮށްފި.',
     'commerce_attr_amount' => 'އަދަދު',
     'commerce_attr_recipient_name' => 'ލިބޭ މީހާގެ ނަން',

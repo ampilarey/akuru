@@ -212,6 +212,41 @@
             @if($item['ai_use_declared'] ?? false)
                 <p class="mt-1">{{ __('public.The author declares that AI tools were used in preparing this work.') }}</p>
             @endif
+            {{-- BP3 (BACKLOG B11): anyone may say this work copies theirs; the office decides. --}}
+            @php($reportErrors = $errors->getBag('copyright'))
+            <details id="copyright-report" class="mt-3" data-testid="copyright-report" @if($reportErrors->any() || session('copyright_sent')) open @endif>
+                <summary class="cursor-pointer underline">{{ __('library_copyright.report_link') }}</summary>
+                @if(session('copyright_sent'))
+                    <p class="mt-2 rounded border border-green-200 bg-green-50 p-3 text-sm text-green-800" role="status" data-testid="copyright-sent">{{ session('copyright_sent') }}</p>
+                @else
+                    <form method="POST" action="{{ route('public.library.copyright', $item['slug']) }}#copyright-report" class="mt-2 grid grid-cols-1 gap-3 text-sm text-gray-700 sm:grid-cols-2">
+                        @csrf
+                        <p class="sm:col-span-2">{{ __('library_copyright.report_intro') }}</p>
+                        @if($reportErrors->any())
+                            <ul class="rounded border border-red-200 bg-red-50 p-3 text-red-700 sm:col-span-2" role="alert" data-testid="copyright-errors">
+                                @foreach($reportErrors->all() as $message)<li>{{ $message }}</li>@endforeach
+                            </ul>
+                        @endif
+                        <label class="block">{{ __('library_copyright.field_name') }}
+                            <input name="name" required maxlength="120" value="{{ old('name', auth()->user()?->name) }}" class="mt-1 block w-full rounded border-gray-300">
+                        </label>
+                        <label class="block">{{ __('library_copyright.field_email') }}
+                            <input name="email" type="email" required maxlength="190" dir="ltr" value="{{ old('email', auth()->user()?->email) }}" class="mt-1 block w-full rounded border-gray-300">
+                        </label>
+                        <label class="block sm:col-span-2">{{ __('library_copyright.field_work') }}
+                            <input name="work_claimed" required maxlength="300" value="{{ old('work_claimed') }}" class="mt-1 block w-full rounded border-gray-300">
+                        </label>
+                        <label class="block sm:col-span-2">{{ __('library_copyright.field_statement') }}
+                            <textarea name="statement" required maxlength="5000" rows="4" class="mt-1 block w-full rounded border-gray-300">{{ old('statement') }}</textarea>
+                        </label>
+                        <label class="flex items-start gap-2 sm:col-span-2">
+                            <input type="checkbox" name="good_faith" value="1" class="mt-1" @checked(old('good_faith'))>
+                            <span>{{ __('library_copyright.field_good_faith') }}</span>
+                        </label>
+                        <div class="sm:col-span-2"><button type="submit" class="btn-secondary" data-testid="copyright-send">{{ __('library_copyright.send') }}</button></div>
+                    </form>
+                @endif
+            </details>
         </footer>
     </article>
 

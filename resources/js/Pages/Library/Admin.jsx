@@ -472,6 +472,7 @@ export default function Admin({ items, categories, options, sales = [], queues =
                 {/* Wraps on a phone: six buttons in one row were 649 px wide and made Safari zoom the page out (STATUS §5jq). */}
                 <span className="flex flex-wrap gap-2">
                     <a className="btn-secondary" href="/admin/library/reading-alerts">{t.library_office_reading_alerts || 'Reading alerts'}</a>
+                    <a className="btn-secondary" href="/admin/library/copyright" data-testid="library-copyright-link">{t.library_office_copyright || 'Copyright reports'}</a>
                     <a className="btn-secondary" href="/admin/library/reviewers" data-testid="library-reviewers-link">{common.library_reviewers_link || 'Reviewers'}</a>
                     <a className="btn-secondary" href="/admin/library/settings" data-testid="library-settings-link">{t.library_office_settings || 'Settings'}</a>
                     <a className="btn-secondary" href="/admin/library/insights" data-testid="library-insights-link">{t.library_office_insights || 'Insights'}</a>

@@ -146,6 +146,7 @@ return [
     'my_blog' => 'مدونتي',
     'blog_posts' => 'تدوينات الطلاب',
     'blog_insights' => 'إحصاءات المدونات',
+    'library_copyright' => 'بلاغات حقوق النشر',
     'blog_tips' => 'إكراميات المدونات',
     'blog_comments' => 'تعليقات المدونات',
     'blog_pages' => 'تغييرات صفحات المدونات',

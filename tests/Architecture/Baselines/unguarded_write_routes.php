@@ -147,4 +147,5 @@ return [
     'shop/print/jobs/{job}/copy' => 'ShopPrintController@copy — READ: job() 404s unless the job is the caller\'s own; the copy is written to the caller.',
     'shop/print/jobs/{job}/name' => 'ShopPrintController@rename — auth; READ: job() 404s unless the job is the signed-in caller\'s own.',
     'shop/print/jobs/{job}/proof' => 'ShopPrintController@proof — auth; READ: job() 404s unless the job is the signed-in caller\'s own; throttled (it renders).',
+    'library/{slug}/copyright-report' => 'LibraryCopyrightController@store (BP3) — public on purpose: anyone whose work is copied may report it, signed in or not; only a published work; one open report per email per work; throttled 5 in 10 minutes; it changes nothing but adds an open report for the office.',
 ];

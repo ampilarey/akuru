@@ -468,6 +468,8 @@ final class NavigationMap
                     ['key' => 'blog_tips', 'href' => '/admin/library/tips'],
                     // BLOG_PLAN BL7: the blogs at a glance, and Featured this month.
                     ['key' => 'blog_insights', 'href' => '/admin/library/blog-insights'],
+                    // BACKLOG B11 (BP3): copyright reports from the public pages.
+                    ['key' => 'library_copyright', 'href' => '/admin/library/copyright'],
                 ]],
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
                 // COMMERCE_PARITY_PLAN P6a: the orders Akuru packs, and its charges.

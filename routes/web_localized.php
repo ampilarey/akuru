@@ -906,6 +906,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('earnings/export', [AdminLibraryController::class, 'exportEarnings'])->name('admin.library.earnings.export');
         Route::post('categories', [AdminLibraryController::class, 'storeCategory'])->name('admin.library.categories.store');
         Route::post('categories/{category}', [AdminLibraryController::class, 'updateCategory'])->name('admin.library.categories.update')->whereNumber('category');
+        // BP3 (BACKLOG B11): copyright reports — the list, a decision on each, the CSV.
+        Route::get('copyright/export', [\App\Domains\Library\Http\Controllers\AdminCopyrightReportsController::class, 'export'])->name('admin.library.copyright.export');
+        Route::get('copyright', [\App\Domains\Library\Http\Controllers\AdminCopyrightReportsController::class, 'index'])->name('admin.library.copyright');
+        Route::post('copyright/{report}', [\App\Domains\Library\Http\Controllers\AdminCopyrightReportsController::class, 'decide'])->name('admin.library.copyright.decide')->whereNumber('report');
         // L2b (§29 "suspicious activity", §30.3): the reading-abuse queue.
         Route::get('reading-alerts/export', [AdminLibraryController::class, 'exportReadingAlerts'])->name('admin.library.reading-alerts.export');
         Route::get('reading-alerts', [AdminLibraryController::class, 'readingAlerts'])->name('admin.library.reading-alerts');
