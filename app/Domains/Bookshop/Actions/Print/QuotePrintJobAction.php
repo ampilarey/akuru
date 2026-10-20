@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Actions\Print;
 use App\Domains\Bookshop\Models\PrintFinishingOption;
 use App\Domains\Bookshop\Models\PrintPaperOption;
 use App\Domains\Bookshop\Support\PrintDesk;
+use App\Domains\Bookshop\Support\PrintSheet;
 use App\Domains\Bookshop\Support\Tax;
 use Illuminate\Validation\ValidationException;
 
@@ -17,7 +18,8 @@ use Illuminate\Validation\ValidationException;
  *
  * Refuses, in the page's language: a paper that is not offered or has no
  * price for the chosen colour, a finishing that is not offered, fewer sheets
- * than the desk's minimum.
+ * than the desk's minimum, a paper of another sheet size than the layout's
+ * (PP1).
  */
 class QuotePrintJobAction
 {
@@ -25,12 +27,15 @@ class QuotePrintJobAction
      * @param  list<int>  $finishingIds
      * @return array{paper: array{id: int, name: string, price: float}, colour: bool, finishing: list<array{id: int, name: string, price: float, cuts_sheet: bool}>, per_sheet: float, sheets: int, subtotal: float, tier_percent: float, discount: float, total: float, unit_price: float, gst: float, currency: string, min_sheets: int}
      */
-    public function execute(?int $paperId, bool $colour, array $finishingIds, int $sheets, string $locale = 'en'): array
+    public function execute(?int $paperId, bool $colour, array $finishingIds, int $sheets, string $locale = 'en', ?string $sheetSize = null): array
     {
         $settings = PrintDesk::settings();
         $paper = $paperId === null ? null : PrintPaperOption::query()->where('is_active', true)->find($paperId);
         if ($paper === null) {
             throw ValidationException::withMessages(['paper' => __('print.error_job_paper')]);
+        }
+        if ($sheetSize !== null && $paper->sheet_size !== $sheetSize) {
+            throw ValidationException::withMessages(['paper' => __('print.error_job_paper_size', ['size' => PrintSheet::label($sheetSize)])]);
         }
         $paperPrice = (float) ($colour ? $paper->price_colour : $paper->price_bw);
         if ($paperPrice <= 0) {

@@ -3,9 +3,10 @@
 namespace App\Domains\Bookshop\Actions\Print;
 
 use App\Domains\Bookshop\Models\PrintLayout;
+use App\Domains\Bookshop\Support\PrintSheet;
 use Illuminate\Validation\ValidationException;
 
-/** NAME_TAGS_PLAN §4.5 (NT1): a layout — tags per A4 — which must fit the page; retired, never deleted. */
+/** NAME_TAGS_PLAN §4.5 (NT1): a layout — tags per sheet, on A4, A3 or A5 (PP1) — which must fit its sheet; retired, never deleted. */
 class SavePrintLayoutAction
 {
     /** @param  array<string, mixed>  $data */
@@ -14,6 +15,7 @@ class SavePrintLayoutAction
         $layout ??= new PrintLayout;
         $layout->fill([
             'name' => trim((string) $data['name']),
+            'sheet_size' => in_array($data['sheet_size'] ?? null, PrintSheet::codes(), true) ? $data['sheet_size'] : ($layout->sheet_size ?? PrintSheet::DEFAULT),
             'columns' => max(1, (int) ($data['columns'] ?? 1)),
             'rows' => max(1, (int) ($data['rows'] ?? 1)),
             'tag_w_mm' => round((float) ($data['tag_w_mm'] ?? 0), 2),
@@ -29,9 +31,10 @@ class SavePrintLayoutAction
         if ($layout->tag_w_mm < 10 || $layout->tag_h_mm < 10) {
             throw ValidationException::withMessages(['tag_w_mm' => __('print.error_layout_tag_size')]);
         }
-        if (! $layout->fitsA4()) {
+        if (! $layout->fitsSheet()) {
             [$w, $h] = $layout->footprint();
-            throw ValidationException::withMessages(['columns' => __('print.error_layout_fits', ['width' => $w, 'height' => $h])]);
+            [$pw, $ph] = $layout->sheetMm();
+            throw ValidationException::withMessages(['columns' => __('print.error_layout_fits', ['width' => $w, 'height' => $h, 'size' => PrintSheet::label($layout->sheet_size), 'page_w' => $pw, 'page_h' => $ph])]);
         }
         $layout->save();
 

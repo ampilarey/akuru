@@ -65,8 +65,8 @@ function Section({ title, list, children, exportUrl, t }) {
     );
 }
 
-function Papers({ t, papers, kinds }) {
-    const blank = { name: '', name_dv: '', name_ar: '', gsm: '', kind: 'plain', price_bw: '', price_colour: '', is_active: false, sort_order: 0 };
+function Papers({ t, papers, kinds, sizes }) {
+    const blank = { name: '', name_dv: '', name_ar: '', gsm: '', kind: 'plain', sheet_size: 'a4', price_bw: '', price_colour: '', is_active: false, sort_order: 0 };
     const [editing, setEditing] = useState(null);
     const form = useForm(blank);
     const edit = (p) => { setEditing(p.id); form.setData({ ...p, gsm: p.gsm ?? '', name_dv: p.name_dv ?? '', name_ar: p.name_ar ?? '' }); };
@@ -76,12 +76,13 @@ function Papers({ t, papers, kinds }) {
         <Section title={t.papers_heading} list="papers" exportUrl="/admin/bookshop/print/export?list=papers" t={t}>
             {papers.length === 0 ? <p className="text-sm text-gray-600">{t.papers_none}</p> : (
                 <table className="table-stack mb-3 min-w-full text-sm">
-                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.paper_name}</th><th className="p-2 text-start">{t.kind}</th><th className="p-2 text-end">{t.price_bw}</th><th className="p-2 text-end">{t.price_colour}</th><th className="p-2 text-start">{t.active}</th><th className="p-2" /></tr></thead>
+                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.paper_name}</th><th className="p-2 text-start">{t.kind}</th><th className="p-2 text-start">{t.sheet_size}</th><th className="p-2 text-end">{t.price_bw}</th><th className="p-2 text-end">{t.price_colour}</th><th className="p-2 text-start">{t.active}</th><th className="p-2" /></tr></thead>
                     <tbody>
                         {papers.map((p) => (
                             <tr key={p.id} className="border-t" data-testid={`print-paper-${p.id}`}>
                                 <td className="p-2" data-label={t.paper_name}><span dir="auto">{p.name}</span>{p.name_dv && <span className="block text-xs text-gray-600" dir="rtl">{p.name_dv}</span>}{p.gsm ? <span className="block text-xs text-gray-500">{p.gsm} gsm</span> : null}</td>
                                 <td className="p-2" data-label={t.kind}>{t[`kind_${p.kind}`]}</td>
+                                <td className="p-2" data-label={t.sheet_size} dir="ltr">{(p.sheet_size ?? 'a4').toUpperCase()}</td>
                                 <td className="p-2 sm:text-end" data-label={t.price_bw}>{p.price_bw}</td>
                                 <td className="p-2 sm:text-end" data-label={t.price_colour}>{p.price_colour}</td>
                                 <td className="p-2" data-label={t.active}>{p.is_active ? t.active : t.retired}</td>
@@ -97,6 +98,7 @@ function Papers({ t, papers, kinds }) {
                 <label className="text-sm">{t.name_ar}<input className="form-input w-full" dir="rtl" value={form.data.name_ar} onChange={(e) => form.setData('name_ar', e.target.value)} /></label>
                 <label className="text-sm">{t.gsm}<input type="number" min="40" max="600" className="form-input w-full" value={form.data.gsm} onChange={(e) => form.setData('gsm', e.target.value)} /></label>
                 <label className="text-sm">{t.kind}<select className="form-input w-full" value={form.data.kind} onChange={(e) => form.setData('kind', e.target.value)}>{kinds.map((k) => <option key={k} value={k}>{t[`kind_${k}`]}</option>)}</select></label>
+                <label className="text-sm">{t.sheet_size}<select className="form-input w-full" value={form.data.sheet_size ?? 'a4'} onChange={(e) => form.setData('sheet_size', e.target.value)} data-testid="print-paper-size">{sizes.map((s) => <option key={s} value={s}>{s.toUpperCase()}</option>)}</select></label>
                 <label className="text-sm">{t.sort_order}<input type="number" min="0" className="form-input w-full" value={form.data.sort_order} onChange={(e) => form.setData('sort_order', e.target.value)} /></label>
                 <label className="text-sm">{t.price_bw}<input type="number" step="0.01" min="0" className="form-input w-full" value={form.data.price_bw} onChange={(e) => form.setData('price_bw', e.target.value)} required data-testid="print-paper-price-bw" /><Err>{form.errors.price_bw}</Err></label>
                 <label className="text-sm">{t.price_colour}<input type="number" step="0.01" min="0" className="form-input w-full" value={form.data.price_colour} onChange={(e) => form.setData('price_colour', e.target.value)} required data-testid="print-paper-price-colour" /><Err>{form.errors.price_colour}</Err></label>
@@ -154,8 +156,8 @@ function Finishing({ t, finishing }) {
     );
 }
 
-function Layouts({ t, layouts }) {
-    const blank = { name: '', columns: 2, rows: 4, tag_w_mm: '', tag_h_mm: '', margin_top_mm: 0, margin_left_mm: 0, gutter_x_mm: 0, gutter_y_mm: 0, sheet_code: '', is_active: true, sort_order: 0 };
+function Layouts({ t, layouts, sizes }) {
+    const blank = { name: '', sheet_size: 'a4', columns: 2, rows: 4, tag_w_mm: '', tag_h_mm: '', margin_top_mm: 0, margin_left_mm: 0, gutter_x_mm: 0, gutter_y_mm: 0, sheet_code: '', is_active: true, sort_order: 0 };
     const [editing, setEditing] = useState(null);
     const form = useForm(blank);
     const edit = (l) => { setEditing(l.id); form.setData({ ...l, sheet_code: l.sheet_code ?? '' }); };
@@ -166,11 +168,12 @@ function Layouts({ t, layouts }) {
         <Section title={t.layouts_heading} list="layouts" exportUrl="/admin/bookshop/print/export?list=layouts" t={t}>
             {layouts.length === 0 ? <p className="text-sm text-gray-600">{t.layouts_none}</p> : (
                 <table className="table-stack mb-3 min-w-full text-sm">
-                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.layout_name}</th><th className="p-2 text-end">{t.tags_per_sheet}</th><th className="p-2 text-start">{t.tag_w} × {t.tag_h}</th><th className="p-2 text-start">{t.active}</th><th className="p-2" /></tr></thead>
+                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.layout_name}</th><th className="p-2 text-start">{t.sheet_size}</th><th className="p-2 text-end">{t.tags_per_sheet}</th><th className="p-2 text-start">{t.tag_w} × {t.tag_h}</th><th className="p-2 text-start">{t.active}</th><th className="p-2" /></tr></thead>
                     <tbody>
                         {layouts.map((l) => (
                             <tr key={l.id} className="border-t" data-testid={`print-layout-${l.id}`}>
                                 <td className="p-2" data-label={t.layout_name}>{l.name}{l.sheet_code && <span className="ms-1 text-xs text-gray-500" dir="ltr">{l.sheet_code}</span>}</td>
+                                <td className="p-2" data-label={t.sheet_size} dir="ltr">{(l.sheet_size ?? 'a4').toUpperCase()}</td>
                                 <td className="p-2 sm:text-end" data-label={t.tags_per_sheet}>{l.tags} ({l.columns} × {l.rows})</td>
                                 <td className="p-2" data-label={t.tag_w} dir="ltr">{l.tag_w_mm} × {l.tag_h_mm} mm</td>
                                 <td className="p-2" data-label={t.active}>{l.is_active ? t.active : t.retired}</td>
@@ -182,6 +185,7 @@ function Layouts({ t, layouts }) {
             )}
             <form className="grid gap-2 sm:grid-cols-4" data-testid="print-layout-form" onSubmit={(e) => { e.preventDefault(); form.post(editing ? `/admin/bookshop/print/layouts/${editing}` : '/admin/bookshop/print/layouts', { preserveScroll: true, onSuccess: reset }); }}>
                 <label className="text-sm sm:col-span-2">{t.layout_name}<input className="form-input w-full" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} required data-testid="print-layout-name" /><Err>{form.errors.name}</Err></label>
+                <label className="text-sm sm:col-span-2">{t.sheet_size}<select className="form-input w-full" value={form.data.sheet_size ?? 'a4'} onChange={(e) => form.setData('sheet_size', e.target.value)} data-testid="print-layout-size">{sizes.map((s) => <option key={s} value={s}>{s.toUpperCase()}</option>)}</select></label>
                 {num('columns', t.columns, '1')}
                 {num('rows', t.rows, '1')}
                 {num('tag_w_mm', t.tag_w)}
@@ -240,7 +244,7 @@ function SubjectSets({ t, sets }) {
     );
 }
 
-export default function Print({ t = {}, settings, can_enable: canEnable, cannot_enable_because: why, product, vendor, papers = [], finishing = [], layouts = [], subject_sets: sets = [], kinds = [] }) {
+export default function Print({ t = {}, settings, can_enable: canEnable, cannot_enable_because: why, product, vendor, papers = [], finishing = [], layouts = [], subject_sets: sets = [], kinds = [], sheet_sizes: sizes = ['a4'] }) {
     const { errors } = usePage().props;
 
     return (
@@ -250,9 +254,9 @@ export default function Print({ t = {}, settings, can_enable: canEnable, cannot_
             {vendor && <p className="mb-1 text-sm text-gray-600" data-testid="print-vendor">{fill(t.vendor_line, { name: vendor.name, slug: vendor.slug })}</p>}
             {product && <p className="mb-4 text-sm text-gray-600" data-testid="print-product">{fill(t.product_line, { title: product.title, status: product.status === 'active' ? t.status_active : t.status_draft })}</p>}
             <Settings t={t} settings={settings} canEnable={canEnable} why={why} />
-            <Papers t={t} papers={papers} kinds={kinds} />
+            <Papers t={t} papers={papers} kinds={kinds} sizes={sizes} />
             <Finishing t={t} finishing={finishing} />
-            <Layouts t={t} layouts={layouts} />
+            <Layouts t={t} layouts={layouts} sizes={sizes} />
             <SubjectSets t={t} sets={sets} />
         </AppShell>
     );

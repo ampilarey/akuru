@@ -14,6 +14,7 @@ use App\Domains\Bookshop\Support\PrintDesign;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintJobEntry;
 use App\Domains\Bookshop\Support\PrintLine;
+use App\Domains\Bookshop\Support\PrintSheet;
 use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
 use App\Support\Contracts\PdfRasterizerInterface;
 use App\Support\Services\PrintFontFaces;
@@ -126,9 +127,10 @@ class PresentPrintJobAction
 
         return [
             'layouts' => PrintLayout::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get()
-                ->map(fn (PrintLayout $l) => ['id' => $l->id, 'name' => $l->name, 'tags' => $l->tagsPerSheet(), 'tag_w_mm' => $l->tag_w_mm, 'tag_h_mm' => $l->tag_h_mm])->values()->all(),
+                ->map(fn (PrintLayout $l) => ['id' => $l->id, 'name' => $l->name, 'sheet_size' => $l->sheet_size, 'sheet_label' => PrintSheet::label($l->sheet_size), 'tags' => $l->tagsPerSheet(), 'tag_w_mm' => $l->tag_w_mm, 'tag_h_mm' => $l->tag_h_mm])->values()->all(),
+            // PP1: each paper names its sheet size; the page offers those of the chosen layout's size.
             'papers' => PrintPaperOption::query()->where('is_active', true)->where(fn ($q) => $q->where('price_bw', '>', 0)->orWhere('price_colour', '>', 0))->orderBy('sort_order')->orderBy('id')->get()
-                ->map(fn (PrintPaperOption $p) => ['id' => $p->id, 'name' => $p->nameIn($locale), 'gsm' => $p->gsm, 'price_bw' => (float) $p->price_bw, 'price_colour' => (float) $p->price_colour])->values()->all(),
+                ->map(fn (PrintPaperOption $p) => ['id' => $p->id, 'name' => $p->nameIn($locale), 'sheet_size' => $p->sheet_size, 'gsm' => $p->gsm, 'price_bw' => (float) $p->price_bw, 'price_colour' => (float) $p->price_colour])->values()->all(),
             'finishing_options' => PrintFinishingOption::query()->where('is_active', true)->where('price', '>', 0)->orderBy('sort_order')->orderBy('id')->get()
                 ->map(fn (PrintFinishingOption $f) => ['id' => $f->id, 'name' => $f->nameIn($locale), 'price' => (float) $f->price, 'cuts_sheet' => (bool) $f->cuts_sheet])->values()->all(),
             'subject_sets' => PrintSubjectSet::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get()

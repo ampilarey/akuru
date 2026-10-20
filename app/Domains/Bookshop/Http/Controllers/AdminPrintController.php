@@ -13,6 +13,7 @@ use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintLayout;
 use App\Domains\Bookshop\Models\PrintPaperOption;
 use App\Domains\Bookshop\Models\PrintSubjectSet;
+use App\Domains\Bookshop\Support\PrintSheet;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
@@ -55,7 +56,7 @@ class AdminPrintController extends Controller
         abort_unless($request->user()?->can('bookshop.manage'), 403);
         $data = $request->validate([
             'name' => 'required|string|max:120', 'name_dv' => 'nullable|string|max:120', 'name_ar' => 'nullable|string|max:120',
-            'gsm' => 'nullable|integer|min:40|max:600', 'kind' => 'required|string|max:20',
+            'gsm' => 'nullable|integer|min:40|max:600', 'kind' => 'required|string|max:20', 'sheet_size' => 'nullable|in:'.implode(',', PrintSheet::codes()),
             'price_bw' => 'required|numeric|min:0|max:10000', 'price_colour' => 'required|numeric|min:0|max:10000', 'is_active' => 'nullable|boolean', 'sort_order' => 'nullable|integer|min:0|max:1000',
         ]);
         app(SavePrintPaperAction::class)->execute($data, $paper === null ? null : PrintPaperOption::query()->findOrFail($paper));
@@ -79,8 +80,9 @@ class AdminPrintController extends Controller
     {
         abort_unless($request->user()?->can('bookshop.manage'), 403);
         $data = $request->validate([
-            'name' => 'required|string|max:80', 'columns' => 'required|integer|min:1|max:20', 'rows' => 'required|integer|min:1|max:30',
-            'tag_w_mm' => 'required|numeric|min:1|max:210', 'tag_h_mm' => 'required|numeric|min:1|max:297',
+            'name' => 'required|string|max:80', 'sheet_size' => 'nullable|in:'.implode(',', PrintSheet::codes()),
+            'columns' => 'required|integer|min:1|max:20', 'rows' => 'required|integer|min:1|max:30',
+            'tag_w_mm' => 'required|numeric|min:1|max:420', 'tag_h_mm' => 'required|numeric|min:1|max:420',
             'margin_top_mm' => 'nullable|numeric|min:0|max:100', 'margin_left_mm' => 'nullable|numeric|min:0|max:100',
             'gutter_x_mm' => 'nullable|numeric|min:0|max:50', 'gutter_y_mm' => 'nullable|numeric|min:0|max:50',
             'sheet_code' => 'nullable|string|max:40', 'is_active' => 'nullable|boolean', 'sort_order' => 'nullable|integer|min:0|max:1000',

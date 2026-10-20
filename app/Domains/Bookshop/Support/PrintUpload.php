@@ -74,7 +74,7 @@ final class PrintUpload
                 $refusals[] = ['key' => 'print.upload_pdf_pages', 'vars' => ['pages' => (int) $meta['pages'], 'sheets' => $sheets]];
             }
         } else {
-            [$wMm, $hMm] = $kind === 'sheet' || $layout === null ? [PrintLayout::PAGE_W, PrintLayout::PAGE_H] : [(float) $layout->tag_w_mm, (float) $layout->tag_h_mm];
+            [$wMm, $hMm] = $kind === 'sheet' || $layout === null ? PrintSheet::mm($layout?->sheet_size) : [(float) $layout->tag_w_mm, (float) $layout->tag_h_mm];
             $wPx = max(1, (int) $meta['w']);
             $hPx = max(1, (int) $meta['h']);
             // Fitted inside the box (contain): the side that fills it sets the resolution.
@@ -84,8 +84,9 @@ final class PrintUpload
             } elseif ($dpi < self::WARN_DPI) {
                 $warnings[] = ['key' => 'print.upload_dpi_low', 'vars' => ['dpi' => $dpi, 'good' => self::WARN_DPI]];
             }
-            if ($kind === 'sheet' && abs(($wPx / $hPx) / self::A4_RATIO - 1) > self::A4_TOLERANCE) {
-                $refusals[] = ['key' => 'print.upload_not_a4', 'vars' => []];
+            if ($kind === 'sheet' && abs(($wPx / $hPx) / ($wMm / $hMm) - 1) > self::A4_TOLERANCE) {
+                // Every sheet size has A4's shape (1:√2), so the one tolerance holds for all.
+                $refusals[] = ['key' => 'print.upload_not_a4', 'vars' => ['size' => PrintSheet::label($layout?->sheet_size)]];
             }
             if (! empty($meta['alpha'])) {
                 $warnings[] = ['key' => 'print.upload_transparent', 'vars' => []];
@@ -109,11 +110,13 @@ final class PrintUpload
         ];
     }
 
-    /** A whole A4 page as one cell — how a sheet upload is laid out. Not saved. */
-    public static function sheetLayout(): PrintLayout
+    /** A whole page of this sheet size as one cell — how a sheet upload is laid out. Not saved. */
+    public static function sheetLayout(?string $sheetSize = null): PrintLayout
     {
+        [$w, $h] = PrintSheet::mm($sheetSize);
+
         return new PrintLayout([
-            'name' => 'A4 sheet', 'columns' => 1, 'rows' => 1, 'tag_w_mm' => PrintLayout::PAGE_W, 'tag_h_mm' => PrintLayout::PAGE_H,
+            'name' => PrintSheet::label($sheetSize).' sheet', 'sheet_size' => $sheetSize ?? PrintSheet::DEFAULT, 'columns' => 1, 'rows' => 1, 'tag_w_mm' => $w, 'tag_h_mm' => $h,
             'margin_top_mm' => 0, 'margin_left_mm' => 0, 'gutter_x_mm' => 0, 'gutter_y_mm' => 0, 'sheet_code' => 'full', 'is_active' => true,
         ]);
     }

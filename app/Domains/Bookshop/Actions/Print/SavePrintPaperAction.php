@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Actions\Print;
 
 use App\Domains\Bookshop\Models\PrintPaperOption;
+use App\Domains\Bookshop\Support\PrintSheet;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -32,6 +33,8 @@ class SavePrintPaperAction
             'name_ar' => trim((string) ($data['name_ar'] ?? '')) ?: null,
             'gsm' => isset($data['gsm']) && $data['gsm'] !== '' ? (int) $data['gsm'] : null,
             'kind' => $kind,
+            // PP1: a paper is stock of one sheet size.
+            'sheet_size' => in_array($data['sheet_size'] ?? null, PrintSheet::codes(), true) ? $data['sheet_size'] : ($paper->sheet_size ?? PrintSheet::DEFAULT),
             'price_bw' => $bw,
             'price_colour' => $colour,
             'is_active' => $active,
