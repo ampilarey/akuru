@@ -74,10 +74,9 @@ wording, tip amounts and share, rewards, the tax treatment) are on
 
 ## 5. Later, on request (not planned)
 
-- **Print products beyond name tags**: other sheet sizes (A3), cards,
-  stickers by the roll, photo prints; vendors other than Akuru printing;
-  school bulk orders through quotes and credit with a *for a class* mode
-  (NAME_TAGS_PLAN §11).
+- **Print products beyond name tags**: planned 2026-10-20 in
+  `docs/PRINT_PRODUCTS_PLAN.md` (slices PP1–PP7, decisions with defaults;
+  stickers by the roll and other vendors printing parked).
 - **Library**:
   - ~~OCR for scanned PDFs (B1)~~ — built 2026-10-20, off until the host
     has Tesseract (STATUS §5tg, OWNER_TODO A and E).

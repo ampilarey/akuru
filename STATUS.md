@@ -4983,6 +4983,17 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5th. Print products beyond name tags — planned (2026-10-20)
+
+`docs/PRINT_PRODUCTS_PLAN.md`. The print desk was audited against the code
+first: it assumes A4 everywhere (layouts, designs, uploads), one price per
+paper with no size, one product (name tags) and one door, and Akuru as the
+only printer (F1–F9, with file and line). Eleven decisions with defaults
+(PD1–PD11) and seven slices: PP1 sheet sizes (A4, A3, A5, a price per
+size), PP2 print products and their doors, PP3 cards with bleed, PP4
+stickers on sheets, PP5 photo prints, PP6 names from a class and bulk
+quotes, PP7 other vendors printing (only when a vendor asks). Docs only.
+
 ## 5tg. Scanned Library PDFs read by text recognition — built, switched off (B1, 2026-10-20)
 
 **BACKLOG B1.** A scanned PDF (a book photographed or put through a copier)
