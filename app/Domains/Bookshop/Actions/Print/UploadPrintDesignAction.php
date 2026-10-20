@@ -44,6 +44,13 @@ class UploadPrintDesignAction
         if ($meta === null) {
             throw ValidationException::withMessages(['file' => __($this->rasterizer->enabled() ? 'print.upload_error_type_pdf' : 'print.upload_error_type')]);
         }
+        // PP5: a photo print is one picture per print — a PNG or a JPEG, never a whole sheet.
+        if ($job->printKind() === 'photos') {
+            if ($meta['type'] === 'pdf') {
+                throw ValidationException::withMessages(['file' => __('print.upload_error_photo_type')]);
+            }
+            $kind = 'tag';
+        }
         if ($meta['type'] === 'pdf') {
             // §5.6: a PDF only where this host can proof it; and only as whole sheets.
             if (! $this->rasterizer->enabled()) {

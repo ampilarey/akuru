@@ -37,6 +37,8 @@ export default function PrintDoor({ t = {}, kind: product = 'name_tags', product
                 ))}
                 {signedIn && <Link href={`/${locale}/my-designs`} className="ms-auto underline" data-testid="print-door-designs">{t.my_designs_title}</Link>}
             </div>
+            {/* PP5: a photo print is the customer's own picture — no designs, nothing to draw. */}
+            {product !== 'photos' && (
             <section className="mb-3 flex flex-wrap items-center gap-3 rounded-lg border border-dashed bg-white p-3" data-testid="print-door-freeform">
                 <div className="min-w-0 flex-1">
                     <h2 className="font-semibold">{t.freeform_door_heading}</h2>
@@ -44,16 +46,17 @@ export default function PrintDoor({ t = {}, kind: product = 'name_tags', product
                 </div>
                 <button type="button" className="btn-secondary" disabled={busy !== null} onClick={startFreeform} data-testid="print-door-freeform-start">{t.freeform_door_button}</button>
             </section>
+            )}
             <section className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-dashed bg-white p-3" data-testid="print-door-upload">
                 <div className="min-w-0 flex-1">
-                    <h2 className="font-semibold">{t.upload_door_heading}</h2>
-                    <p className="text-sm text-gray-600">{t.upload_door_body}</p>
+                    <h2 className="font-semibold">{product === 'photos' ? t.photo_door_heading : t.upload_door_heading}</h2>
+                    <p className="text-sm text-gray-600">{product === 'photos' ? t.photo_door_body : t.upload_door_body}</p>
                 </div>
                 {signedIn
                     ? <button type="button" className="btn-secondary" disabled={busy !== null} onClick={startUpload} data-testid="print-door-upload-start">{t.upload_door_button}</button>
                     : <a href={`/${locale}/login`} className="btn-secondary" data-testid="print-door-upload-sign-in">{t.upload_door_sign_in}</a>}
             </section>
-            {shown.length === 0 ? <p className="text-sm text-gray-600">{t.templates_none}</p> : (
+            {product === 'photos' ? null : shown.length === 0 ? <p className="text-sm text-gray-600">{t.templates_none}</p> : (
                 <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-testid="print-door-gallery">
                     {shown.map((tpl) => {
                         const design = normaliseDesign(tpl.design);

@@ -148,7 +148,7 @@ class ProofPrintJobAction
                 if ($layout === null) {
                     throw ValidationException::withMessages(['layout_id' => __('print.error_job_layout')]);
                 }
-                [$design, $rows] = [PrintUpload::design((float) $layout->tag_w_mm, (float) $layout->tag_h_mm), array_fill(0, max(1, (int) $job->sheets) * max(1, $layout->tagsPerSheet()), [])];
+                [$design, $rows] = [PrintUpload::design((float) $layout->tag_w_mm, (float) $layout->tag_h_mm, PrintUpload::fitOf((array) $job->design)), array_fill(0, max(1, (int) $job->sheets) * max(1, $layout->tagsPerSheet()), [])];
             }
             $options += ['upload' => $src, 'crop_marks' => $job->upload_kind === 'sheet' ? false : ($layout->sheet_code === null)];
             $file = $this->pdf->fromHtml($this->render->document($design, $layout, $rows, $options));

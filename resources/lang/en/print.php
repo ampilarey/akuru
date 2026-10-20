@@ -491,4 +491,13 @@ return [
     'shape' => 'Shape',
     'shape_rect' => 'Rectangle',
     'shape_circle' => 'Circle',
+    // PP5: photo prints.
+    'upload_fit' => 'How the photo meets the print',
+    'upload_fit_cover' => 'Fill the print (the edges may be cropped)',
+    'upload_fit_contain' => 'Fit the whole photo (a white border)',
+    'upload_error_fit' => 'Choose fill or fit.',
+    'upload_error_photo_type' => 'A photo print takes a PNG or a JPEG picture.',
+    'photo_prints_count' => ':count prints',
+    'photo_door_heading' => 'Print your photos',
+    'photo_door_body' => 'Upload a photo, choose its size and paper, and Akuru prints it.',
 ];

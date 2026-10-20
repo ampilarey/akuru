@@ -60,7 +60,8 @@ export default function PrintUploadJob(props) {
     const flush = () => { clearTimeout(timer.current); return send().then(() => inflight.current); };
     useEffect(() => () => clearTimeout(timer.current), []);
 
-    const sheetSize = layouts.find((l) => l.id === job.layout_id)?.sheet_size ?? 'a4';
+    const layout = layouts.find((l) => l.id === job.layout_id);
+    const sheetSize = layout?.sheet_size ?? 'a4';
     // PP1: a paper is stock of one sheet size; only the chosen layout's size is offered.
     const sheetPapers = papers.filter((p) => (p.sheet_size ?? 'a4') === sheetSize);
     const paper = papers.find((p) => p.id === job.paper_id);
@@ -104,13 +105,13 @@ export default function PrintUploadJob(props) {
                 <div className="space-y-4">
                     <section className="rounded-lg border bg-white p-4" data-testid="print-upload-file">
                         <h2 className="mb-1 font-semibold">{t.upload_heading}</h2>
-                        <p className="mb-3 text-sm text-gray-600">{t.upload_intro}</p>
+                        <p className="mb-3 text-sm text-gray-600">{door === 'photos' ? t.photo_door_body : t.upload_intro}</p>
                         <form onSubmit={sendFile} className="space-y-3 text-sm">
                             <fieldset disabled={!open} className="space-y-3">
-                                <div className="flex flex-wrap gap-3" role="radiogroup" aria-label={t.upload_kind}>
+                                {door !== 'photos' && <div className="flex flex-wrap gap-3" role="radiogroup" aria-label={t.upload_kind}>
                                     <label className="flex items-center gap-2"><input type="radio" name="upload_kind" checked={file.data.upload_kind === 'tag'} onChange={() => { file.setData('upload_kind', 'tag'); if (upload.has_file) change({ upload_kind: 'tag' }); }} data-testid="print-upload-kind-tag" /> {t.upload_kind_tag}</label>
                                     <label className="flex items-center gap-2"><input type="radio" name="upload_kind" checked={file.data.upload_kind === 'sheet'} onChange={() => { file.setData('upload_kind', 'sheet'); if (upload.has_file) change({ upload_kind: 'sheet' }); }} data-testid="print-upload-kind-sheet" /> {t.upload_kind_sheet}</label>
-                                </div>
+                                </div>}
                                 <label className="block">{upload.pdf ? t.upload_file_pdf : t.upload_file}
                                     <input type="file" accept={accept} className="mt-1 block w-full text-sm" onChange={(e) => file.setData('file', e.target.files?.[0] || null)} data-testid="print-upload-input" />
                                 </label>
@@ -140,6 +141,15 @@ export default function PrintUploadJob(props) {
                                 <label className="block">{t.layout}<select className="form-input w-full" value={job.layout_id ?? ''} onChange={(e) => change({ layout_id: Number(e.target.value) })} data-testid="print-layout">
                                     {layouts.map((l) => <option key={l.id} value={l.id}>{l.name} ({l.sheet_label}) — {fill(t.tags_each, { count: l.tags })} · {l.tag_w_mm} × {l.tag_h_mm} mm</option>)}
                                 </select></label>
+                            )}
+                            {door === 'photos' && (
+                                <div role="radiogroup" aria-label={t.upload_fit} data-testid="print-photo-fit">
+                                    <span className="block">{t.upload_fit}</span>
+                                    {['cover', 'contain'].map((f) => (
+                                        <label key={f} className="mt-1 flex items-center gap-2"><input type="radio" name="fit" checked={(job.fit || 'cover') === f} onChange={() => change({ fit: f }, { fit: f })} data-testid={`print-photo-fit-${f}`} /> {t[`upload_fit_${f}`]}</label>
+                                    ))}
+                                    {layout && <p className="mt-1 text-xs text-gray-600" data-testid="print-photo-count">{fill(t.photo_prints_count, { count: (job.sheets || 1) * (layout.tags || 1) })}</p>}
+                                </div>
                             )}
                             <div>
                                 <span className="block">{t.paper_name}</span>

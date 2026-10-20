@@ -481,4 +481,13 @@ return [
     'shape' => 'الشكل',
     'shape_rect' => 'مستطيل',
     'shape_circle' => 'دائرة',
+    // PP5: photo prints.
+    'upload_fit' => 'كيف تُطبع الصورة في المقاس',
+    'upload_fit_cover' => 'املأ المقاس (قد تُقص الحواف)',
+    'upload_fit_contain' => 'ضمّن الصورة كاملة (بإطار أبيض)',
+    'upload_error_fit' => 'اختر الملء أو التضمين.',
+    'upload_error_photo_type' => 'تقبل طباعة الصور صورة PNG أو JPEG.',
+    'photo_prints_count' => ':count صور مطبوعة',
+    'photo_door_heading' => 'اطبع صورك',
+    'photo_door_body' => 'ارفع صورة واختر مقاسها وورقها، وتطبعها أكورو.',
 ];

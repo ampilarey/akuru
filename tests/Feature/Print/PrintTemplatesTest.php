@@ -47,7 +47,7 @@ it('ships five active templates on the 2 × 4 layout, each asking for at least o
         ->assertInertia(fn (Assert $page) => $page->component('Bookshop/PrintTemplates')->has('templates', 13)->has('fonts.noto-sans-thaana')->has('font_css')->where('sample.name', __('print.sample_name'))
             ->where('templates.0.title', 'Plain')->where('templates.0.fields', ['name', 'class']));
     printWeb()->actingAs(printOffice())->get(route('admin.bookshop.print.templates.create'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('Bookshop/PrintTemplateDesigner')->where('template', null)->has('layouts', 13)->where('field_keys', PrintDesign::FIELD_KEYS)->where('max_elements', 60)->where('kinds', PrintTemplate::KINDS));
+        ->assertInertia(fn (Assert $page) => $page->component('Bookshop/PrintTemplateDesigner')->where('template', null)->has('layouts', 18)->where('field_keys', PrintDesign::FIELD_KEYS)->where('max_elements', 60)->where('kinds', PrintTemplate::KINDS));
 });
 
 it('refuses a broken design in the page\'s language and normalises a sound one', function () {

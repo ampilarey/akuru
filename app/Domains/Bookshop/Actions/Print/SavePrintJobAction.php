@@ -190,7 +190,8 @@ class SavePrintJobAction
             'finishing' => [],
             'sheets' => PrintDesk::settings()['min_sheets'],
             'entry' => ['mode' => 'same', 'row' => [], 'list' => [], 'subjects' => ['set_id' => null, 'items' => [], 'language' => 'en']],
-            'design' => PrintUpload::design((float) $layout->tag_w_mm, (float) $layout->tag_h_mm),
+            // PP5: a photo fills its print; an upload of tag artwork fits whole, as before.
+            'design' => PrintUpload::design((float) $layout->tag_w_mm, (float) $layout->tag_h_mm, $kind === 'photos' ? 'cover' : 'contain'),
             'source' => 'upload',
             'upload_kind' => 'tag',
             'status' => PrintJobStatus::Draft,
@@ -220,7 +221,7 @@ class SavePrintJobAction
             }
             if ($job->isUpload()) {
                 // NT5: the artwork fills the new tag.
-                $job->design = PrintUpload::design((float) $layout->tag_w_mm, (float) $layout->tag_h_mm);
+                $job->design = PrintUpload::design((float) $layout->tag_w_mm, (float) $layout->tag_h_mm, PrintUpload::fitOf((array) $job->design));
             } else {
                 // From the template when there is one, so a layout switched back and forth loses nothing to rounding;
                 // a free-form design (NT6) is the customer's own and scales from itself.
@@ -284,8 +285,16 @@ class SavePrintJobAction
             $job->entry = PrintJobEntry::normalise($data['entry'], PrintDesign::fieldKeys((array) $job->design), $settings['max_rows']);
             $job->print_subject_set_id = $job->entry['subjects']['set_id'] ?? null;
         }
+        if (array_key_exists('fit', $data) && $job->isUpload()) {
+            // PP5: fill the print (cropping) or fit the picture whole.
+            if (! in_array($data['fit'], PrintUpload::FITS, true)) {
+                throw ValidationException::withMessages(['fit' => __('print.upload_error_fit')]);
+            }
+            $layout = $job->layout ?? PrintLayout::query()->find($job->print_layout_id);
+            $job->design = PrintUpload::design((float) ($layout?->tag_w_mm ?? $job->design['tag']['w']), (float) ($layout?->tag_h_mm ?? $job->design['tag']['h']), $data['fit']);
+        }
         if (array_key_exists('upload_kind', $data) && $job->isUpload()) {
-            if (! in_array($data['upload_kind'], PrintUpload::KINDS, true)) {
+            if (! in_array($data['upload_kind'], PrintUpload::KINDS, true) || ($data['upload_kind'] === 'sheet' && $job->printKind() === 'photos')) {
                 throw ValidationException::withMessages(['upload_kind' => __('print.upload_error_kind')]);
             }
             $job->upload_kind = $data['upload_kind'];
@@ -374,7 +383,7 @@ class SavePrintJobAction
         $job->preflight = $job->isUpload()
             // NT5: the artwork's preflight, worked out again for the options as they are now.
             ? ($job->upload_meta === null ? ['dpi' => null, 'warnings' => [], 'refusals' => []]
-                : PrintUpload::preflight((array) $job->upload_meta, (string) $job->upload_kind, $layout, (bool) $job->colour, (int) $job->sheets))
+                : PrintUpload::preflight((array) $job->upload_meta, (string) $job->upload_kind, $layout, (bool) $job->colour, (int) $job->sheets, PrintUpload::fitOf((array) $job->design)))
             : ['warnings' => PrintJobEntry::warnings($entry, (array) $job->design)];
         $job->save();
 

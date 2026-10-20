@@ -20,6 +20,14 @@ final class PrintUpload
 
     public const REFUSE_DPI = 150;
 
+    /** PRINT_PRODUCTS_PLAN PD6: a photo is looked at from further away — warned under 150 dpi, refused under 72. */
+    public const PHOTO_WARN_DPI = 150;
+
+    public const PHOTO_REFUSE_DPI = 72;
+
+    /** PP5: how a picture meets its box — `cover` fills it (cropping), `contain` fits it whole (a white border). */
+    public const FITS = ['cover', 'contain'];
+
     /** A4 portrait, width over height, and how far a sheet upload may be from it. */
     public const A4_RATIO = 210 / 297;
 
@@ -62,7 +70,7 @@ final class PrintUpload
      * @param  array<string, mixed>  $meta  from inspect()
      * @return array{dpi: ?int, warnings: list<array{key: string, vars: array<string, int|string>}>, refusals: list<array{key: string, vars: array<string, int|string>}>}
      */
-    public static function preflight(array $meta, string $kind, ?PrintLayout $layout, bool $colour, int $sheets): array
+    public static function preflight(array $meta, string $kind, ?PrintLayout $layout, bool $colour, int $sheets, string $fit = 'contain'): array
     {
         $warnings = [];
         $refusals = [];
@@ -77,12 +85,17 @@ final class PrintUpload
             [$wMm, $hMm] = $kind === 'sheet' || $layout === null ? PrintSheet::mm($layout?->sheet_size) : [(float) $layout->tag_w_mm, (float) $layout->tag_h_mm];
             $wPx = max(1, (int) $meta['w']);
             $hPx = max(1, (int) $meta['h']);
-            // Fitted inside the box (contain): the side that fills it sets the resolution.
-            $dpi = (int) floor(25.4 / min($wMm / $wPx, $hMm / $hPx));
-            if ($dpi < self::REFUSE_DPI) {
-                $refusals[] = ['key' => 'print.upload_dpi_refused', 'vars' => ['dpi' => $dpi, 'min' => self::REFUSE_DPI]];
-            } elseif ($dpi < self::WARN_DPI) {
-                $warnings[] = ['key' => 'print.upload_dpi_low', 'vars' => ['dpi' => $dpi, 'good' => self::WARN_DPI]];
+            // Fitted inside the box (contain): the side that fills it sets the resolution;
+            // filling it (cover, PP5) stretches the other side further, so that one sets it.
+            $dpi = $fit === 'cover'
+                ? (int) floor(25.4 / max($wMm / $wPx, $hMm / $hPx))
+                : (int) floor(25.4 / min($wMm / $wPx, $hMm / $hPx));
+            $photo = $layout?->print_kind === 'photos';
+            [$warnAt, $refuseAt] = $photo ? [self::PHOTO_WARN_DPI, self::PHOTO_REFUSE_DPI] : [self::WARN_DPI, self::REFUSE_DPI];
+            if ($dpi < $refuseAt) {
+                $refusals[] = ['key' => 'print.upload_dpi_refused', 'vars' => ['dpi' => $dpi, 'min' => $refuseAt]];
+            } elseif ($dpi < $warnAt) {
+                $warnings[] = ['key' => 'print.upload_dpi_low', 'vars' => ['dpi' => $dpi, 'good' => $warnAt]];
             }
             if ($kind === 'sheet' && abs(($wPx / $hPx) / ($wMm / $hMm) - 1) > self::A4_TOLERANCE) {
                 // Every sheet size has A4's shape (1:√2), so the one tolerance holds for all.
@@ -99,14 +112,24 @@ final class PrintUpload
         return ['dpi' => $dpi, 'warnings' => $warnings, 'refusals' => $refusals];
     }
 
-    /** One element, the artwork, filling the tag — the design an upload prints with. @return array<string, mixed> */
-    public static function design(float $wMm, float $hMm): array
+    /** PP5: the fit an upload job's picture has (`cover` or `contain`). */
+    public static function fitOf(array $design): string
     {
+        $fit = $design['elements'][0]['fit'] ?? 'contain';
+
+        return in_array($fit, self::FITS, true) ? $fit : 'contain';
+    }
+
+    /** One element, the artwork, filling the tag — the design an upload prints with. @return array<string, mixed> */
+    public static function design(float $wMm, float $hMm, string $fit = 'contain'): array
+    {
+        $fit = in_array($fit, self::FITS, true) ? $fit : 'contain';
+
         return [
             'version' => 1,
             'tag' => ['w' => $wMm, 'h' => $hMm],
             'background' => ['color' => '#FFFFFF'],
-            'elements' => [['type' => 'image', 'upload' => true, 'media' => 0, 'x' => 0, 'y' => 0, 'w' => $wMm, 'h' => $hMm, 'rotate' => 0, 'fit' => 'contain']],
+            'elements' => [['type' => 'image', 'upload' => true, 'media' => 0, 'x' => 0, 'y' => 0, 'w' => $wMm, 'h' => $hMm, 'rotate' => 0, 'fit' => $fit]],
         ];
     }
 

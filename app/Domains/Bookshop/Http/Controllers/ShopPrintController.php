@@ -168,7 +168,7 @@ class ShopPrintController extends Controller
             'layout_id' => 'sometimes|nullable|integer', 'paper_id' => 'sometimes|nullable|integer', 'colour' => 'sometimes|boolean',
             'finishing' => 'sometimes|array|max:20', 'finishing.*' => 'integer', 'sheets' => 'sometimes|integer|min:1|max:500',
             'entry' => 'sometimes|array', 'scheme' => 'sometimes|nullable|string|max:40', 'font' => 'sometimes|nullable|string|max:40',
-            'name' => 'sometimes|nullable|string|max:120', 'upload_kind' => 'sometimes|string|in:tag,sheet', 'design' => 'sometimes|array',
+            'name' => 'sometimes|nullable|string|max:120', 'upload_kind' => 'sometimes|string|in:tag,sheet', 'fit' => 'sometimes|string|max:10', 'design' => 'sometimes|array',
         ]);
         $saved = app(SavePrintJobAction::class)->update($row, $data, app()->getLocale());
 
