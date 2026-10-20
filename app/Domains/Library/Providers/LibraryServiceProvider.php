@@ -9,12 +9,14 @@ use App\Domains\Library\Console\ImportWebsiteResearchCommand;
 use App\Domains\Library\Console\RemindReadersCommand;
 use App\Domains\Library\Console\RemindReviewersCommand;
 use App\Domains\Library\Console\SyncLibraryPagesCommand;
+use App\Domains\Library\Contracts\PageImageTextReader;
 use App\Domains\Library\Contracts\PdfPageTextExtractor;
 use App\Domains\Library\Listeners\GrantLibraryAccessOnPaymentConfirmed;
 use App\Domains\Library\Listeners\RecordTipOnPaymentConfirmed;
 use App\Domains\Library\Listeners\ReverseTipOnPaymentRefunded;
 use App\Domains\Library\Listeners\RevokeLibraryAccessOnPaymentRefunded;
 use App\Support\Pdf\PdfTextExtractor;
+use App\Support\Services\TesseractPageImageTextReader;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,6 +28,12 @@ class LibraryServiceProvider extends ServiceProvider
         // The binding is the pure-PHP parser because the hosts this runs on
         // have no rasteriser (no Imagick, no poppler, no ghostscript).
         $this->app->bind(PdfPageTextExtractor::class, PdfTextExtractor::class);
+        // B1: a scanned page's text, by Tesseract where one is configured (rule 4).
+        $this->app->singleton(PageImageTextReader::class, fn () => new TesseractPageImageTextReader(
+            config('library.ocr.tesseract_path'),
+            (string) config('library.ocr.languages', 'eng'),
+            (int) config('library.ocr.timeout', 40),
+        ));
     }
 
     public function boot(): void

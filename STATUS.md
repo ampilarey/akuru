@@ -4983,6 +4983,48 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tg. Scanned Library PDFs read by text recognition — built, switched off (B1, 2026-10-20)
+
+**BACKLOG B1.** A scanned PDF (a book photographed or put through a copier)
+has no text in it, so the reader had no pages and the uploader was told to
+type the book into the body. Now, where the host can do it, the scan is read
+by text recognition (OCR):
+- **The seam (rule 4):** `PageImageTextReader` in the Library domain, bound
+  to Tesseract (`TesseractPageImageTextReader`, a command with no SDK). The
+  page pictures come from Ghostscript, already behind
+  `PdfRasterizerInterface` since NT5.
+- **When:** a save finds a PDF page with no text, and the switch
+  `LIBRARY_OCR_ENABLED`, a Tesseract binary and Ghostscript are all there. A
+  page that had text keeps it; only the empty ones are read. Dhivehi, Arabic
+  and English (`eng+div+ara`).
+- **In the queue, a few pages at a time:** the host's worker lives 55 seconds
+  a minute, and one page takes Tesseract several seconds. So each run reads
+  three pages, writes them and queues the next (`RecogniseLibraryItemPagesJob`).
+  A 200-page book takes about an hour of minutes. At most 400 pages are read.
+- **Kept:** `library_items.ocr_media_file_id` names the PDF the pages were
+  read from. A later save (a title edit) keeps them instead of reading the
+  book again. A new PDF is read afresh. A body still wins.
+- **Said:** while it reads, *My writing* tells the writer *"Your PDF is a
+  scan, so text recognition is reading it…"* (EN/DV/AR). A scan with no
+  text found on any page keeps no pages, as before.
+- **Off by default**, and it stays off until the owner installs Tesseract
+  (OWNER_TODO A, E). With it off, nothing changes.
+
+**Tests:** `ScannedPdfRecognitionTest` (9; whole suite 3298 passed, pint clean), with a fake PDF, Ghostscript and
+Tesseract: nothing starts while it is off or without an engine; it is queued
+and announced; it reads three pages per run and keeps the typed ones; a
+re-save keeps the pages and a new PDF is read again; a run whose PDF was
+replaced stops; the body wins; no text means no pages; the binding is off
+without a binary. `PrivateMediaReadersAreScopedTest` lists the new reader of
+the PDF original.
+
+**Real run (local, 2026-10-20):** Tesseract 5.3.4 with `eng`, `div` and
+`ara`, Ghostscript, a two-page picture-only PDF (the pure-PHP reader found
+no text on either page): saved as a Library item with the switch on, both
+pages came back as text (*The Old Thaana Primer / Chapter one: the letters*,
+*Page two of the scanned book*), about a second a page at 300 dpi.
+Dhivehi recognition was not tried on a real scan (no Thaana font here).
+
 ## 5tf. E-learning in Dhivehi and Arabic — the old Blade screens are done (OB3, 2026-10-20)
 
 **BACKLOG C21's last item closes.** The e-learning portal, its three areas

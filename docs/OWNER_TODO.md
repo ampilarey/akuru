@@ -29,6 +29,7 @@ cd /home/akuruedu/akuru-institute && git pull origin main && composer install --
 | ☐ | **The Library policy pages** | `php artisan db:seed --class=LibraryPolicyPagesSeeder --force` | OWNER_ACTIONS 17 |
 | ☐ | **The Bookstore catalogue and policy pages** | `php artisan db:seed --class=BookshopCatalogueSeeder --force`, then `php artisan db:seed --class=BookshopPolicyPagesSeeder --force` | OWNER_ACTIONS 18 |
 | ☐ | **Uploaded pictures show** | If `public/storage` is missing, run `php artisan storage:link`. Blog banners and pictures need it. | BLOG_PLAN BL3 |
+| ☐ | **Text recognition for scanned PDFs** (only if wanted) | Install Tesseract with its English, Dhivehi and Arabic data (`tesseract --list-langs` should show `eng`, `div` and `ara`; on a shared host ask the hosting company). Ghostscript must be set too (`DOCUMENTS_GS_PATH`). Then switch it on (E below). | STATUS §5tg |
 | ☐ | **The leftover route cache** | `/en/catalog/courses` answered 404 once (2026-10-03). If `bootstrap/cache/routes-v7.php` exists, delete it, then run `php artisan route:clear`. | KNOWN_ISSUES, WHATS_LEFT O15 |
 
 ## B. In production's `.env`, then `php artisan config:cache`
@@ -72,6 +73,7 @@ production.
 | ☐ | **Referral credit** | `/admin/bookshop` → *Referral credit*: the credit to each side (default MVR 25) and the smallest first order (default MVR 100). Then **Turn referral credit on**. | OWNER_ACTIONS 21 |
 | ☐ | **Blog tips** | `/admin/library/settings`: the tip amounts and Akuru's share of each tip. | BLOG_PLAN D17 |
 | ☐ | **Featured-post rewards** | `/admin/library/settings`: on or off, and the most one reward may be. | BLOG_PLAN D12 |
+| ☐ | **Text recognition** (off) | In `.env`: `LIBRARY_OCR_TESSERACT_PATH=` the path `which tesseract` prints, and `LIBRARY_OCR_ENABLED=true`, then `php artisan config:cache`. Upload one scanned PDF in the Library: its pages should appear within minutes. For books saved before, run `php artisan library:sync-pages`. | STATUS §5tg |
 | ☐ | **Languages** (on by default) | `/admin/settings` → *Languages*: untick Dhivehi or Arabic to take it off the site until it is ready. Its addresses then open in English. Tick it again to bring it back unchanged. | STATUS §5su |
 
 ## F. Decisions only you can make
@@ -98,6 +100,6 @@ and it is planned and built one slice at a time like the rest.
 | What | What it would be | Detail |
 |---|---|---|
 | **Print products beyond name tags** | Other sheet sizes (A3), cards, stickers by the roll, photo prints. Vendors other than Akuru printing. School bulk orders through quotes and credit, with a *for a class* mode. | NAME_TAGS_PLAN §11, WHATS_LEFT §5 |
-| **OCR for scanned PDFs in the Library** | Today a scanned PDF gives no text, and the uploader is told to paste it. This would add page images and text recognition. Ghostscript is already on the host, behind `PdfRasterizerInterface`; an OCR engine or service would still be needed. Two-column PDFs and reversed right-to-left text could come in the same work. | BACKLOG B1, B2 |
+| ~~**OCR for scanned PDFs in the Library**~~ | Built 2026-10-20 and switched off: see A and E above. Two-column PDFs and reversed right-to-left text are still open. | BACKLOG B1, B2 |
 | **Translating the old Blade screens** | Analytics (41 strings), the Qur'an progress pages (49), e-learning (35) and the old layouts (17) are still English-only. They can be translated or retired. Decide *the old Blade screens* in F first (retire or translate); then it is built screen by screen. | BACKLOG C21, WHATS_LEFT D3 |
 | **Any parked item in the backlog** | Every idea raised and set aside, with why it was parked. Open rows have no strike-through. §B13 lists what was ruled out on purpose (DOI, subscriptions, offline reading, DRM, audiobooks and so on), so nobody asks twice. | `docs/BACKLOG.md` §B, §C |

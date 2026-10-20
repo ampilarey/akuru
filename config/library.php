@@ -37,6 +37,21 @@ return [
     // reviewer accepts, in the current review round, a research item needs
     // before it can be published. Never below 1 — there is no switch to
     // turn review off (the owner, 2026-09-29).
+    // BACKLOG B1 (STATUS §5tg): text recognition for scanned PDFs. OFF until
+    // the host has Tesseract (with its eng, div and ara data) and Ghostscript
+    // (DOCUMENTS_GS_PATH). Each queued run reads `pages_per_run` pages, so a
+    // run fits the host's 55-second worker; a book past `max_pages` is read
+    // that far only.
+    'ocr' => [
+        'enabled' => (bool) env('LIBRARY_OCR_ENABLED', false),
+        'tesseract_path' => env('LIBRARY_OCR_TESSERACT_PATH'),
+        'languages' => env('LIBRARY_OCR_LANGUAGES', 'eng+div+ara'),
+        'dpi' => (int) env('LIBRARY_OCR_DPI', 300),
+        'pages_per_run' => (int) env('LIBRARY_OCR_PAGES_PER_RUN', 3),
+        'max_pages' => (int) env('LIBRARY_OCR_MAX_PAGES', 400),
+        'timeout' => (int) env('LIBRARY_OCR_TIMEOUT', 40),
+    ],
+
     'research_reviews_required' => max(1, (int) env('LIBRARY_RESEARCH_REVIEWS_REQUIRED', 1)),
 
     /*

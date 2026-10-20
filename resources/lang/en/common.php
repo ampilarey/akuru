@@ -343,6 +343,7 @@ return [
     'library_flash_draft_updated' => 'Draft updated.',
     'library_pages_ready' => ':count reader page ready.|:count reader pages ready.',
     'library_pages_scan' => 'Your PDF has no readable text (a scan or pictures), so readers would see no pages — paste the text into the body.',
+    'library_pages_reading' => 'Your PDF is a scan, so text recognition is reading it. Its pages appear here in a few minutes.',
     'library_pages_none' => 'No reader pages yet — add a body or upload a PDF.',
     'library_flash_submitted' => 'Submitted for review.',
     'review_flash_declared' => 'Thank you. The paper is open to review.',

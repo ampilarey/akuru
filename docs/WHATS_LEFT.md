@@ -79,8 +79,8 @@ wording, tip amounts and share, rewards, the tax treatment) are on
   school bulk orders through quotes and credit with a *for a class* mode
   (NAME_TAGS_PLAN §11).
 - **Library**:
-  - OCR and page images for scanned PDFs (B1). Ghostscript, behind
-    `PdfRasterizerInterface` since NT5, would serve the rasterising.
+  - ~~OCR for scanned PDFs (B1)~~ — built 2026-10-20, off until the host
+    has Tesseract (STATUS §5tg, OWNER_TODO A and E).
   - Two-column and glyph-reversed PDFs (B2).
   - Private highlights, dropped by decision (B7, OWNER_ACTIONS 19).
   - The not-MVP list (B13).

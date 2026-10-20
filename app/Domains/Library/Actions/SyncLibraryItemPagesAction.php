@@ -3,6 +3,7 @@
 namespace App\Domains\Library\Actions;
 
 use App\Domains\Library\Contracts\PdfPageTextExtractor;
+use App\Domains\Library\Jobs\RecogniseLibraryItemPagesJob;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemPage;
 use App\Domains\Media\Actions\ReadPrivateMediaAction;
@@ -24,12 +25,17 @@ use Illuminate\Support\Facades\Log;
  * Replaces the page set idempotently and keeps `page_count` honest — the
  * number of pages the reader will actually serve, which for a scanned PDF
  * with no extractable text is none.
+ *
+ * B1 (STATUS §5tg): where text recognition is switched on, a PDF page with
+ * no text starts `RecogniseLibraryItemPagesJob`, which reads the scan a few
+ * pages at a time in the queue. Until the PDF is replaced, the pages it made
+ * are kept on every later save.
  */
 class SyncLibraryItemPagesAction
 {
     public const PAGE_BREAK = '<!-- pagebreak -->';
 
-    /** The source the pages came from on the last sync: 'body', 'pdf' or null. */
+    /** The source the pages came from on the last sync: 'body', 'pdf', 'ocr' or null. */
     public ?string $source = null;
 
     public function execute(LibraryItem $item): int
@@ -43,9 +49,21 @@ class SyncLibraryItemPagesAction
         if ($chunks !== []) {
             $this->source = 'body';
         } elseif ($item->pdf_media_file_id !== null) {
+            if ((int) $item->ocr_media_file_id === (int) $item->pdf_media_file_id) {
+                // Recognised, or being recognised, from this very PDF: keep it.
+                $this->source = 'ocr';
+
+                return (int) $item->page_count;
+            }
             $chunks = $this->pagesFromPdf((int) $item->pdf_media_file_id, (int) $item->id);
             $this->source = $chunks === [] ? null : 'pdf';
         }
+
+        $recognise = $item->pdf_media_file_id !== null && $this->source !== 'body'
+            && ($chunks === [] || in_array('', $chunks, true))
+            && RecogniseLibraryItemPagesAction::available();
+        $item->ocr_media_file_id = $recognise ? (int) $item->pdf_media_file_id : null;
+        $item->pages_recognised_at = null;
 
         LibraryItemPage::query()->where('library_item_id', $item->id)->delete();
         foreach ($chunks as $index => $chunk) {
@@ -59,7 +77,19 @@ class SyncLibraryItemPagesAction
         $item->page_count = count($chunks) ?: null;
         $item->save();
 
+        if ($recognise) {
+            RecogniseLibraryItemPagesJob::dispatch((int) $item->id, (int) $item->pdf_media_file_id);
+        }
+
         return count($chunks);
+    }
+
+    /** Whether text recognition is still reading this item's scanned PDF. */
+    public static function recognising(LibraryItem $item): bool
+    {
+        return $item->ocr_media_file_id !== null
+            && (int) $item->ocr_media_file_id === (int) $item->pdf_media_file_id
+            && $item->pages_recognised_at === null;
     }
 
     /**
@@ -91,10 +121,11 @@ class SyncLibraryItemPagesAction
             return [];
         }
 
-        return array_map(fn (string $text) => $this->toHtml($text), $texts);
+        return array_map(fn (string $text) => self::pageHtml($text), $texts);
     }
 
-    private function toHtml(string $text): string
+    /** One page's plain text as escaped paragraphs; an empty page stays empty. */
+    public static function pageHtml(string $text): string
     {
         $paragraphs = preg_split('/\n{2,}/', trim($text)) ?: [];
         $html = [];

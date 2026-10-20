@@ -91,6 +91,7 @@ class LibraryItem extends Model
             'pending_saved_at' => 'datetime',
             'readers_notified_at' => 'datetime',
             'featured_at' => 'datetime',
+            'pages_recognised_at' => 'datetime',
         ];
     }
 
