@@ -35,7 +35,7 @@ function parseList(text, keys) {
 }
 
 export default function PrintJob(props) {
-    const { t = {}, job: initial, layouts = [], papers = [], finishing_options: finishingOptions = [], subject_sets: subjectSets = [], fonts = {}, font_css: fontCss = '', images = {}, settings = {}, signed_in: signedIn = false, designer = null, door = 'name-tags', product_title: productTitle = '' } = props;
+    const { t = {}, job: initial, layouts = [], papers = [], finishing_options: finishingOptions = [], subject_sets: subjectSets = [], fonts = {}, font_css: fontCss = '', images = {}, settings = {}, signed_in: signedIn = false, designer = null, door = 'name-tags', product_title: productTitle = '', classes = [] } = props;
     const freeform = job0IsFreeform(initial);
     const { errors = {}, locale = 'en' } = usePage().props;
     const [job, setJob] = useState(initial);
@@ -89,6 +89,15 @@ export default function PrintJob(props) {
     const setRow = (key, value) => setEntry({ ...entry, row: { ...entry.row, [key]: value } });
     const setMode = (mode) => setEntry({ ...entry, mode, list: mode === 'list' ? parseList(listDraft, keys) : entry.list });
     const setList = (text) => { setListDraft(text); setEntry({ ...entry, list: parseList(text, keys) }); };
+    // PP6a: a class's names into the list, as if pasted — the office's classes, or a teacher's own.
+    const [classId, setClassId] = useState('');
+    const fromClass = () => {
+        if (!classId) return;
+        setProblem(null);
+        axios.get(`${base}/class-names`, { params: { class: classId }, headers: { Accept: 'application/json' } })
+            .then((res) => { setEntry({ ...entry, mode: 'list', list: res.data.rows }); setListDraft(listText(res.data.rows, keys)); })
+            .catch((err) => { const errs = err?.response?.data?.errors; setProblem(errs ? Object.values(errs).flat().join(' ') : String(err)); });
+    };
     const readCsv = (file) => { if (!file) return; const r = new FileReader(); r.onload = () => setList(String(r.result || '')); r.readAsText(file); };
     const subjects = entry.subjects || { set_id: null, items: [], language: 'en' };
     const chooseSet = (id) => {
@@ -197,6 +206,12 @@ export default function PrintJob(props) {
                             ) : (
                                 <div>
                                     <p className="mb-1 text-xs text-gray-600">{fill(t.list_hint, { columns: job.fields.filter((f) => f.key !== 'subject').map((f) => f.label).join(' · '), max: settings.max_rows })}</p>
+                                    {classes.length > 0 && (
+                                        <div className="mb-2 flex flex-wrap items-end gap-2" data-testid="print-from-class">
+                                            <label className="min-w-0 flex-1 text-sm">{t.from_class}<select className="form-input w-full" value={classId} onChange={(e) => setClassId(e.target.value)} data-testid="print-from-class-select"><option value="">—</option>{classes.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}</select></label>
+                                            <button type="button" className="btn-secondary text-sm" disabled={!classId || !open} onClick={fromClass} data-testid="print-from-class-fill">{t.from_class_fill}</button>
+                                        </div>
+                                    )}
                                     <textarea rows={8} className="form-input w-full font-mono text-sm" dir="auto" value={listDraft} onChange={(e) => setList(e.target.value)} data-testid="print-list" />
                                     <label className="mt-1 block text-xs">{t.list_csv}<input type="file" accept=".csv,.txt,text/csv,text/plain" className="block text-xs" onChange={(e) => readCsv(e.target.files?.[0])} data-testid="print-list-file" /></label>
                                 </div>

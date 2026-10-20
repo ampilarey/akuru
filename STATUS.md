@@ -4983,6 +4983,39 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tn. Names from a class, for the office and a class's teachers (PP6a, 2026-10-20)
+
+PRINT_PRODUCTS_PLAN PP6a (PD8). A teacher ordering name tags for a class
+typed thirty names, or pasted them from somewhere else.
+- **From a class** on the job page's list: the school office gets this
+  year's active classes; a teacher gets the classes they teach. The office
+  means the roles that open Academics' class directory. A parent or any
+  other customer has none, and the choice is not shown.
+- The names come from Academics' own actions (`ListClassesForYearAction`,
+  `ListClassesTaughtByUserAction`, `ListClassRosterAction`; rule 3). They
+  arrive in the list as if pasted, sorted, with the class where the design
+  prints one, so the autosave, the row limit and the sheets work as for any
+  list.
+- **Refused**, in the page's language: a class not the caller's, a class
+  with no pupils, a design with no name, and another person's job (not
+  found).
+- Only the name and the class leave Academics.
+
+**Tests:** `PrintClassNamesTest` (3):
+- the office gets this year's classes, a teacher their own, and a parent
+  and a guest none, and the job page says so;
+- a teacher gets their class's names, sorted, with the class;
+- refusals for another class, an empty class, and another person's job.
+
+Architecture tests are green. Whole suite 3326 passed; pint clean. With
+Chrome set, all thirteen print walks pass.
+
+**Walk:** `print-class.mjs` (new, in `all.mjs`), 7/7 at 390 × 844 under
+/dv. The local teacher finds *From a class* (ކްލާހަކުން) with their own
+class only, and fills the list with its 15 pupils. The job is saved with
+15 tags, each with the class. A parent has no such choice, and asking for
+the names anyway is refused. Nothing scrolls sideways.
+
 ## 5tm. Photo prints (PP5, 2026-10-20)
 
 PRINT_PRODUCTS_PLAN PP5. A photo print is the customer's own picture, so it
