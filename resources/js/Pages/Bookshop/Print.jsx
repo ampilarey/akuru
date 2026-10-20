@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useForm, usePage } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 
@@ -156,8 +156,8 @@ function Finishing({ t, finishing }) {
     );
 }
 
-function Layouts({ t, layouts, sizes }) {
-    const blank = { name: '', sheet_size: 'a4', columns: 2, rows: 4, tag_w_mm: '', tag_h_mm: '', margin_top_mm: 0, margin_left_mm: 0, gutter_x_mm: 0, gutter_y_mm: 0, sheet_code: '', is_active: true, sort_order: 0 };
+function Layouts({ t, layouts, sizes, products }) {
+    const blank = { name: '', print_kind: 'name_tags', sheet_size: 'a4', columns: 2, rows: 4, tag_w_mm: '', tag_h_mm: '', margin_top_mm: 0, margin_left_mm: 0, gutter_x_mm: 0, gutter_y_mm: 0, sheet_code: '', is_active: true, sort_order: 0 };
     const [editing, setEditing] = useState(null);
     const form = useForm(blank);
     const edit = (l) => { setEditing(l.id); form.setData({ ...l, sheet_code: l.sheet_code ?? '' }); };
@@ -168,12 +168,13 @@ function Layouts({ t, layouts, sizes }) {
         <Section title={t.layouts_heading} list="layouts" exportUrl="/admin/bookshop/print/export?list=layouts" t={t}>
             {layouts.length === 0 ? <p className="text-sm text-gray-600">{t.layouts_none}</p> : (
                 <table className="table-stack mb-3 min-w-full text-sm">
-                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.layout_name}</th><th className="p-2 text-start">{t.sheet_size}</th><th className="p-2 text-end">{t.tags_per_sheet}</th><th className="p-2 text-start">{t.tag_w} × {t.tag_h}</th><th className="p-2 text-start">{t.active}</th><th className="p-2" /></tr></thead>
+                    <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.layout_name}</th><th className="p-2 text-start">{t.sheet_size}</th><th className="p-2 text-start">{t.product}</th><th className="p-2 text-end">{t.tags_per_sheet}</th><th className="p-2 text-start">{t.tag_w} × {t.tag_h}</th><th className="p-2 text-start">{t.active}</th><th className="p-2" /></tr></thead>
                     <tbody>
                         {layouts.map((l) => (
                             <tr key={l.id} className="border-t" data-testid={`print-layout-${l.id}`}>
                                 <td className="p-2" data-label={t.layout_name}>{l.name}{l.sheet_code && <span className="ms-1 text-xs text-gray-500" dir="ltr">{l.sheet_code}</span>}</td>
                                 <td className="p-2" data-label={t.sheet_size} dir="ltr">{(l.sheet_size ?? 'a4').toUpperCase()}</td>
+                                <td className="p-2" data-label={t.product} dir="auto">{products.find((p) => p.kind === l.print_kind)?.title ?? l.print_kind}</td>
                                 <td className="p-2 sm:text-end" data-label={t.tags_per_sheet}>{l.tags} ({l.columns} × {l.rows})</td>
                                 <td className="p-2" data-label={t.tag_w} dir="ltr">{l.tag_w_mm} × {l.tag_h_mm} mm</td>
                                 <td className="p-2" data-label={t.active}>{l.is_active ? t.active : t.retired}</td>
@@ -185,6 +186,7 @@ function Layouts({ t, layouts, sizes }) {
             )}
             <form className="grid gap-2 sm:grid-cols-4" data-testid="print-layout-form" onSubmit={(e) => { e.preventDefault(); form.post(editing ? `/admin/bookshop/print/layouts/${editing}` : '/admin/bookshop/print/layouts', { preserveScroll: true, onSuccess: reset }); }}>
                 <label className="text-sm sm:col-span-2">{t.layout_name}<input className="form-input w-full" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} required data-testid="print-layout-name" /><Err>{form.errors.name}</Err></label>
+                <label className="text-sm sm:col-span-2">{t.product}<select className="form-input w-full" value={form.data.print_kind ?? 'name_tags'} onChange={(e) => form.setData('print_kind', e.target.value)} data-testid="print-layout-product">{products.map((p) => <option key={p.kind} value={p.kind}>{p.title}</option>)}</select></label>
                 <label className="text-sm sm:col-span-2">{t.sheet_size}<select className="form-input w-full" value={form.data.sheet_size ?? 'a4'} onChange={(e) => form.setData('sheet_size', e.target.value)} data-testid="print-layout-size">{sizes.map((s) => <option key={s} value={s}>{s.toUpperCase()}</option>)}</select></label>
                 {num('columns', t.columns, '1')}
                 {num('rows', t.rows, '1')}
@@ -244,7 +246,37 @@ function SubjectSets({ t, sets }) {
     );
 }
 
-export default function Print({ t = {}, settings, can_enable: canEnable, cannot_enable_because: why, product, vendor, papers = [], finishing = [], layouts = [], subject_sets: sets = [], kinds = [], sheet_sizes: sizes = ['a4'] }) {
+/** PP2: each print product, on sale or off, with the layouts and designs it has. */
+function Products({ t, products }) {
+    const [busy, setBusy] = useState(null);
+    const toggle = (p) => { setBusy(p.kind); router.post(`/admin/bookshop/print/products/${p.kind}`, { on_sale: !p.on_sale }, { preserveScroll: true, onFinish: () => setBusy(null) }); };
+
+    return (
+        <section className="mb-6 rounded-lg border bg-white p-4" data-testid="print-products">
+            <h2 className="mb-1 text-lg font-semibold">{t.products_heading}</h2>
+            <p className="mb-3 text-sm text-gray-600">{t.products_intro}</p>
+            <ul className="divide-y">
+                {products.map((p) => (
+                    <li key={p.kind} className="flex flex-wrap items-center gap-3 py-2" data-testid={`print-product-${p.kind}`} data-on-sale={p.on_sale ? 'yes' : 'no'}>
+                        <div className="min-w-0 flex-1">
+                            <p className="font-medium" dir="auto">{p.title}</p>
+                            <p className="text-xs text-gray-600">{fill(t.product_counts, { layouts: p.layouts, templates: p.templates })} · {p.on_sale ? t.status_active : t.status_draft}</p>
+                        </div>
+                        {p.kind === 'name_tags'
+                            ? <span className="text-xs text-gray-600">{t.product_with_desk}</span>
+                            : (
+                                <button type="button" className={p.on_sale ? 'btn-secondary text-sm' : 'btn-primary text-sm'} disabled={busy !== null} onClick={() => toggle(p)} data-testid={`print-product-${p.kind}-toggle`}>
+                                    {p.on_sale ? t.product_take_off : t.product_put_on}
+                                </button>
+                            )}
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
+export default function Print({ t = {}, settings, can_enable: canEnable, cannot_enable_because: why, product, vendor, papers = [], finishing = [], layouts = [], subject_sets: sets = [], kinds = [], sheet_sizes: sizes = ['a4'], products = [] }) {
     const { errors } = usePage().props;
 
     return (
@@ -254,9 +286,10 @@ export default function Print({ t = {}, settings, can_enable: canEnable, cannot_
             {vendor && <p className="mb-1 text-sm text-gray-600" data-testid="print-vendor">{fill(t.vendor_line, { name: vendor.name, slug: vendor.slug })}</p>}
             {product && <p className="mb-4 text-sm text-gray-600" data-testid="print-product">{fill(t.product_line, { title: product.title, status: product.status === 'active' ? t.status_active : t.status_draft })}</p>}
             <Settings t={t} settings={settings} canEnable={canEnable} why={why} />
+            <Products t={t} products={products} />
             <Papers t={t} papers={papers} kinds={kinds} sizes={sizes} />
             <Finishing t={t} finishing={finishing} />
-            <Layouts t={t} layouts={layouts} sizes={sizes} />
+            <Layouts t={t} layouts={layouts} sizes={sizes} products={products} />
             <SubjectSets t={t} sets={sets} />
         </AppShell>
     );

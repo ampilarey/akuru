@@ -13,6 +13,7 @@ use App\Domains\Bookshop\Models\PrintTemplate;
 use App\Domains\Bookshop\Support\PrintDesign;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintJobEntry;
+use App\Domains\Bookshop\Support\PrintProducts;
 use App\Domains\Bookshop\Support\PrintUpload;
 use Illuminate\Validation\ValidationException;
 
@@ -34,8 +35,10 @@ class SavePrintJobAction
         if ($template->status !== 'active') {
             throw ValidationException::withMessages(['template' => __('print.error_job_template')]);
         }
-        $layout = ($template->layout?->is_active ? $template->layout : null)
-            ?? PrintLayout::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->first();
+        // PP2: the template's product, and that product's layouts.
+        $kind = PrintProducts::valid($template->print_kind) ? $template->print_kind : PrintProducts::DEFAULT;
+        $layout = ($template->layout?->is_active && $template->layout->print_kind === $kind ? $template->layout : null)
+            ?? self::firstLayout($kind);
         if ($layout === null) {
             throw ValidationException::withMessages(['template' => __('print.error_job_layout')]);
         }
@@ -45,7 +48,7 @@ class SavePrintJobAction
         $job = PrintJob::query()->create([
             'user_id' => $userId,
             'cart_id' => $userId === null ? $cartId : null,
-            'product_id' => PrintDesk::product()?->id,
+            'product_id' => self::productId($kind),
             'print_template_id' => $template->id,
             'print_layout_id' => $layout->id,
             'print_paper_option_id' => $paper?->id,
@@ -71,6 +74,18 @@ class SavePrintJobAction
         return $job;
     }
 
+    /** PP2: the print product's id, made with the desk's other products if it is not yet. */
+    private static function productId(string $kind): ?int
+    {
+        return (PrintProducts::product($kind) ?? (PrintDesk::ensure() ? PrintProducts::product($kind) : null))?->id;
+    }
+
+    /** PP2: the first active layout of a print product. */
+    public static function firstLayout(string $kind): ?PrintLayout
+    {
+        return PrintLayout::query()->where('is_active', true)->where('print_kind', $kind)->orderBy('sort_order')->orderBy('id')->first();
+    }
+
     /** NT7: the active subject set a book list's grade names (its label in any language, or a label containing it). */
     public static function subjectSetFor(string $grade): ?PrintSubjectSet
     {
@@ -90,9 +105,9 @@ class SavePrintJobAction
      * desk's first layout and priced paper, one text that prints the name,
      * so a list of names works from the start.
      */
-    public function startFreeform(?int $userId, ?int $cartId, string $locale): PrintJob
+    public function startFreeform(?int $userId, ?int $cartId, string $locale, string $kind = PrintProducts::DEFAULT): PrintJob
     {
-        $layout = PrintLayout::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->first();
+        $layout = self::firstLayout($kind);
         if ($layout === null) {
             throw ValidationException::withMessages(['template' => __('print.error_job_layout')]);
         }
@@ -105,7 +120,7 @@ class SavePrintJobAction
         $job = PrintJob::query()->create([
             'user_id' => $userId,
             'cart_id' => $userId === null ? $cartId : null,
-            'product_id' => PrintDesk::product()?->id,
+            'product_id' => self::productId($kind),
             'print_layout_id' => $layout->id,
             'print_paper_option_id' => $paper?->id,
             'colour' => $paper === null || (float) $paper->price_colour > 0,
@@ -157,9 +172,9 @@ class SavePrintJobAction
      * layout and priced paper, no file yet. The upload comes next
      * (`UploadPrintDesignAction`).
      */
-    public function startUpload(int $userId, string $locale): PrintJob
+    public function startUpload(int $userId, string $locale, string $kind = PrintProducts::DEFAULT): PrintJob
     {
-        $layout = PrintLayout::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->first();
+        $layout = self::firstLayout($kind);
         if ($layout === null) {
             throw ValidationException::withMessages(['template' => __('print.error_job_layout')]);
         }
@@ -168,7 +183,7 @@ class SavePrintJobAction
 
         $job = PrintJob::query()->create([
             'user_id' => $userId,
-            'product_id' => PrintDesk::product()?->id,
+            'product_id' => self::productId($kind),
             'print_layout_id' => $layout->id,
             'print_paper_option_id' => $paper?->id,
             'colour' => $paper === null || (float) $paper->price_colour > 0,
@@ -199,7 +214,7 @@ class SavePrintJobAction
         $settings = PrintDesk::settings();
 
         if (array_key_exists('layout_id', $data) && (int) $data['layout_id'] !== (int) $job->print_layout_id) {
-            $layout = PrintLayout::query()->where('is_active', true)->find((int) $data['layout_id']);
+            $layout = PrintLayout::query()->where('is_active', true)->where('print_kind', $job->printKind())->find((int) $data['layout_id']);
             if ($layout === null) {
                 throw ValidationException::withMessages(['layout_id' => __('print.error_job_layout')]);
             }

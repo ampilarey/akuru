@@ -4983,6 +4983,51 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tj. Print products: name tags, cards, stickers, photo prints (PP2, 2026-10-20)
+
+PRINT_PRODUCTS_PLAN PP2. The desk sold one product, name tags, through one
+door. Now:
+- **Four products** (`PrintProducts`): name tags, cards, stickers and photo
+  prints, each a Bookstore product in *Print*, made by the desk as drafts.
+- **On sale:** name tags goes on and off with the desk's own switch, as
+  before. The others go on sale one by one from the desk's new *Print
+  products* list, only while the desk is on and only with an active layout
+  of their own (refused in the page's language). The desk switched off takes
+  them all off.
+- **Doors:** `/shop/print` lists what is open, as cards, starting on the
+  first phone screen. Each product has its own door (`/shop/print/cards`
+  …) with its own designs, and a blank design or upload starts on the
+  product it was started from. A product not on sale is not found, except
+  by the office, which sees every product, marked.
+- **Belonging:** a layout and a template belong to one product
+  (`print_kind`, default name tags; additive). A job is its product's: it
+  offers that product's layouts only, refuses another's, and goes into the
+  basket as that product. A print product is never added to the basket
+  without a design.
+- **Not done here:** per-product lead time and minimum (PD11) waits for the
+  slice that needs a different one. Cards, stickers and photos have no
+  layouts or designs yet; PP3–PP5 bring them.
+
+**Tests:** `PrintProductsTest` (5): four drafts made once; the list and
+the doors follow what is on sale, and the office sees all four; on sale
+only with the desk on and a layout, name tags refused (its switch), the
+desk off takes all off; a job from a cards design is a cards job on cards
+layouts, refusing a name-tag layout; a blank design starts on its product;
+a template keeps to its product's layouts; a print product refused bare
+in the basket. `PrintDeskTest` now expects four products; the two new
+public routes are declared in `public_routes.php`. Whole suite 3309
+passed; pint clean.
+
+**Walk:** `print-products.mjs` (new, in `all.mjs`), 13/13 at 390 × 844.
+Under /dv the office finds the four products, is refused Stickers without
+a layout, adds a cards layout and puts Cards on sale; the customer finds
+Cards (ކާޑު) on `/shop/print`, starting on the first screen, and opens its
+door; under /en it reads Cards; taken off sale, its door is gone. Nothing
+scrolls sideways.
+With Chrome set, the other print walks pass too: sizes 10/10, office 7/7,
+design 18/18, upload 10/10, order 15/15, freeform 9/9, templates 13/13,
+upsell 7/7.
+
 ## 5ti. Print on A4, A3 and A5 sheets (PP1, 2026-10-20)
 
 PRINT_PRODUCTS_PLAN PP1. Every print sheet was A4: layouts had to fit

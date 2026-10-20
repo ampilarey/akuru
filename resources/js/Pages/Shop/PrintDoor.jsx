@@ -9,26 +9,28 @@ import { normaliseDesign } from '../../Components/Print/design';
  * NAME_TAGS_PLAN §3.1–3.2 (NT3): the door to name tags — Akuru's designs,
  * each drawn from its own design with sample names, filtered by kind. A tap
  * starts a job from the design; a guest may design, and signs in for the
- * proof.
+ * proof. PP2: the same door serves every print product (`kind`), with that
+ * product's designs; the name/subject filter is name tags' own.
  */
-export default function PrintDoor({ t = {}, templates = [], fonts = {}, font_css: fontCss = '', sample = {}, enabled = true, signed_in: signedIn = false }) {
+export default function PrintDoor({ t = {}, kind: product = 'name_tags', product_title: productTitle = '', templates = [], fonts = {}, font_css: fontCss = '', sample = {}, enabled = true, signed_in: signedIn = false }) {
     const { errors = {}, locale = 'en' } = usePage().props;
     const [kind, setKind] = useState('all');
     const [busy, setBusy] = useState(null);
     const shown = useMemo(() => templates.filter((tpl) => kind === 'all' || tpl.kind === kind || tpl.kind === 'both'), [templates, kind]);
     const start = (id) => { setBusy(id); router.post(`/${locale}/shop/print/jobs`, { template: id }, { onFinish: () => setBusy(null) }); };
     // NT5: the customer's own artwork (an account keeps the file privately).
-    const startFreeform = () => { setBusy('freeform'); router.post(`/${locale}/shop/print/freeform`, {}, { onFinish: () => setBusy(null) }); };
-    const startUpload = () => { setBusy('upload'); router.post(`/${locale}/shop/print/uploads`, {}, { onFinish: () => setBusy(null) }); };
+    const startFreeform = () => { setBusy('freeform'); router.post(`/${locale}/shop/print/freeform`, { kind: product }, { onFinish: () => setBusy(null) }); };
+    const startUpload = () => { setBusy('upload'); router.post(`/${locale}/shop/print/uploads`, { kind: product }, { onFinish: () => setBusy(null) }); };
 
     return (
-        <AppShell title={t.door_title}>
+        <AppShell title={product === 'name_tags' ? t.door_title : productTitle}>
             <style>{fontCss}</style>
             <FormErrors errors={errors} className="mb-4" />
             {!enabled && <p className="mb-3 rounded bg-amber-50 p-2 text-sm text-amber-900" data-testid="print-door-office">{t.door_office_preview}</p>}
-            <p className="mb-2 text-gray-700">{t.door_intro}</p>
+            <p className="mb-2 text-gray-700">{product === 'name_tags' ? t.door_intro : (t.door_intro_product || '').replace(':product', productTitle)}</p>
             <div className="mb-4 flex flex-wrap items-center gap-2 text-sm">
-                {['all', 'name_tag', 'subject_tag'].map((k) => (
+                <Link href={`/${locale}/shop/print`} className="underline" data-testid="print-door-all-products">{t.all_products}</Link>
+                {product === 'name_tags' && ['all', 'name_tag', 'subject_tag'].map((k) => (
                     <button key={k} type="button" onClick={() => setKind(k)} aria-pressed={kind === k} className={`rounded-full border px-3 py-1 ${kind === k ? 'border-[#7C2D37] bg-[#7C2D37] text-white' : 'bg-white'}`} data-testid={`print-door-filter-${k}`}>
                         {k === 'all' ? t.filter_all : t[`kind_${k}`]}
                     </button>

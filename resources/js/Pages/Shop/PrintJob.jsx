@@ -35,7 +35,7 @@ function parseList(text, keys) {
 }
 
 export default function PrintJob(props) {
-    const { t = {}, job: initial, layouts = [], papers = [], finishing_options: finishingOptions = [], subject_sets: subjectSets = [], fonts = {}, font_css: fontCss = '', images = {}, settings = {}, signed_in: signedIn = false, designer = null } = props;
+    const { t = {}, job: initial, layouts = [], papers = [], finishing_options: finishingOptions = [], subject_sets: subjectSets = [], fonts = {}, font_css: fontCss = '', images = {}, settings = {}, signed_in: signedIn = false, designer = null, door = 'name-tags', product_title: productTitle = '' } = props;
     const freeform = job0IsFreeform(initial);
     const { errors = {}, locale = 'en' } = usePage().props;
     const [job, setJob] = useState(initial);
@@ -137,7 +137,7 @@ export default function PrintJob(props) {
             <style>{fontCss}</style>
             <FormErrors errors={errors} className="mb-4" />
             <div className="mb-3 flex flex-wrap items-center gap-2 text-sm">
-                <Link href={`/${locale}/shop/print/name-tags`} className="underline">← {t.door_title}</Link>
+                <Link href={`/${locale}/shop/print/${door}`} className="underline">← {door === 'name-tags' ? t.door_title : productTitle}</Link>
                 {signedIn && <Link href={`/${locale}/my-designs`} className="underline">{t.my_designs_title}</Link>}
                 <span className="ms-auto rounded bg-gray-100 px-2 py-0.5" data-testid="print-job-status">{t[`job_status_${job.status}`]}</span>
                 <span className="text-xs text-gray-500" data-testid="print-job-saved" aria-live="polite">{state === 'saving' ? t.saving : state === 'saved' ? t.saved : ''}</span>

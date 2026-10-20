@@ -1003,6 +1003,7 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('print', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'index'])->name('admin.bookshop.print');
         Route::get('print/export', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'export'])->name('admin.bookshop.print.export');
         Route::post('print/settings', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'settings'])->name('admin.bookshop.print.settings');
+        Route::post('print/products/{kind}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'product'])->name('admin.bookshop.print.product')->whereIn('kind', ['name_tags', 'cards', 'stickers', 'photos']);
         Route::post('print/papers/{paper?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'paper'])->name('admin.bookshop.print.paper')->whereNumber('paper');
         Route::post('print/finishing/{finishing?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'finishing'])->name('admin.bookshop.print.finishing')->whereNumber('finishing');
         Route::post('print/layouts/{layout?}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'layout'])->name('admin.bookshop.print.layout')->whereNumber('layout');

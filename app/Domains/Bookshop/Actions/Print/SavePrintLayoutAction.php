@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Actions\Print;
 
 use App\Domains\Bookshop\Models\PrintLayout;
+use App\Domains\Bookshop\Support\PrintProducts;
 use App\Domains\Bookshop\Support\PrintSheet;
 use Illuminate\Validation\ValidationException;
 
@@ -15,6 +16,7 @@ class SavePrintLayoutAction
         $layout ??= new PrintLayout;
         $layout->fill([
             'name' => trim((string) $data['name']),
+            'print_kind' => PrintProducts::valid($data['print_kind'] ?? null) ? $data['print_kind'] : ($layout->print_kind ?? PrintProducts::DEFAULT),
             'sheet_size' => in_array($data['sheet_size'] ?? null, PrintSheet::codes(), true) ? $data['sheet_size'] : ($layout->sheet_size ?? PrintSheet::DEFAULT),
             'columns' => max(1, (int) ($data['columns'] ?? 1)),
             'rows' => max(1, (int) ($data['rows'] ?? 1)),

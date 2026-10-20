@@ -89,6 +89,9 @@ Route::get('shop/c/{slug}', [\App\Domains\Bookshop\Http\Controllers\ShopControll
 // (their job rides on their basket); the proof, its approval and My designs need
 // an account. While the service is off only the Bookstore office may open these.
 Route::get('shop/print/name-tags', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'door'])->name('public.shop.print');
+// PRINT_PRODUCTS_PLAN PP2: every print product, and the door of each of the others.
+Route::get('shop/print', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'index'])->name('public.shop.print.index');
+Route::get('shop/print/{path}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'door'])->name('public.shop.print.kind')->whereIn('path', ['name-tags', 'cards', 'stickers', 'photos']);
 Route::post('shop/print/jobs', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'start'])->name('public.shop.print.start')->middleware('throttle:20,1,shop-print-start');
 Route::get('shop/print/jobs/{job}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'show'])->name('public.shop.print.job')->whereNumber('job');
 Route::post('shop/print/jobs/{job}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'save'])->name('public.shop.print.save')->whereNumber('job')->middleware('throttle:120,1,shop-print-save');

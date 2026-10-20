@@ -8,11 +8,13 @@ use App\Domains\Bookshop\Actions\Print\SavePrintLayoutAction;
 use App\Domains\Bookshop\Actions\Print\SavePrintPaperAction;
 use App\Domains\Bookshop\Actions\Print\SavePrintSettingsAction;
 use App\Domains\Bookshop\Actions\Print\SavePrintSubjectSetAction;
+use App\Domains\Bookshop\Actions\Print\SetPrintProductOnSaleAction;
 use App\Domains\Bookshop\Models\PrintFinishingOption;
 use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintLayout;
 use App\Domains\Bookshop\Models\PrintPaperOption;
 use App\Domains\Bookshop\Models\PrintSubjectSet;
+use App\Domains\Bookshop\Support\PrintProducts;
 use App\Domains\Bookshop\Support\PrintSheet;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
 use App\Http\Controllers\Controller;
@@ -51,6 +53,16 @@ class AdminPrintController extends Controller
         return back()->with('success', __('print.flash_settings_saved'));
     }
 
+    /** PP2: one print product on sale, or off. */
+    public function product(Request $request, string $kind): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['on_sale' => 'required|boolean']);
+        app(SetPrintProductOnSaleAction::class)->execute($kind, (bool) $data['on_sale']);
+
+        return back()->with('success', __($data['on_sale'] ? 'print.flash_product_on' : 'print.flash_product_off', ['product' => PrintProducts::title($kind, app()->getLocale())]));
+    }
+
     public function paper(Request $request, ?int $paper = null): RedirectResponse
     {
         abort_unless($request->user()?->can('bookshop.manage'), 403);
@@ -81,6 +93,7 @@ class AdminPrintController extends Controller
         abort_unless($request->user()?->can('bookshop.manage'), 403);
         $data = $request->validate([
             'name' => 'required|string|max:80', 'sheet_size' => 'nullable|in:'.implode(',', PrintSheet::codes()),
+            'print_kind' => 'nullable|in:'.implode(',', PrintProducts::kinds()),
             'columns' => 'required|integer|min:1|max:20', 'rows' => 'required|integer|min:1|max:30',
             'tag_w_mm' => 'required|numeric|min:1|max:420', 'tag_h_mm' => 'required|numeric|min:1|max:420',
             'margin_top_mm' => 'nullable|numeric|min:0|max:100', 'margin_left_mm' => 'nullable|numeric|min:0|max:100',

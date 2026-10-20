@@ -3,7 +3,9 @@
 namespace App\Domains\Bookshop\Actions\Print;
 
 use App\Domains\Bookshop\Enums\ProductStatus;
+use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Support\PrintDesk;
+use App\Domains\Bookshop\Support\PrintProducts;
 use App\Domains\Settings\Actions\SetSettingAction;
 use Illuminate\Validation\ValidationException;
 
@@ -44,6 +46,10 @@ class SavePrintSettingsAction
         [, $product] = PrintDesk::ensure();
         $product->status = $enabled ? ProductStatus::Active : ProductStatus::Draft;
         $product->save();
+        if (! $enabled) {
+            // PP2: the desk off takes every print product off sale.
+            Product::query()->whereIn('slug', array_column(PrintProducts::KINDS, 'slug'))->update(['status' => ProductStatus::Draft->value]);
+        }
 
         return PrintDesk::settings();
     }

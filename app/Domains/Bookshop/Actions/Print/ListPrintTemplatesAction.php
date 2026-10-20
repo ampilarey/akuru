@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Models\PrintImage;
 use App\Domains\Bookshop\Models\PrintLayout;
 use App\Domains\Bookshop\Models\PrintTemplate;
 use App\Domains\Bookshop\Support\PrintDesign;
+use App\Domains\Bookshop\Support\PrintProducts;
 use App\Domains\Media\Actions\ResolvePublicImageVariantAction;
 use App\Domains\Media\Actions\ResolvePublicMediaUrlAction;
 use App\Support\Services\PrintFontFaces;
@@ -24,7 +25,7 @@ class ListPrintTemplatesAction
     public function present(PrintTemplate $t): array
     {
         return [
-            'id' => $t->id, 'title' => $t->title, 'title_dv' => $t->title_dv, 'title_ar' => $t->title_ar, 'kind' => $t->kind,
+            'id' => $t->id, 'title' => $t->title, 'title_dv' => $t->title_dv, 'title_ar' => $t->title_ar, 'kind' => $t->kind, 'print_kind' => $t->print_kind,
             'print_layout_id' => $t->print_layout_id, 'layout' => $t->layout?->name, 'status' => $t->status, 'uses_count' => $t->uses_count,
             'sort_order' => $t->sort_order, 'fields' => PrintDesign::fieldKeys((array) $t->design), 'design' => $t->design,
             'updated_at' => $t->updated_at?->toDateString(),
@@ -39,7 +40,7 @@ class ListPrintTemplatesAction
 
         return [
             'layouts' => PrintLayout::query()->where('is_active', true)->orderBy('sort_order')->get()
-                ->map(fn (PrintLayout $l) => ['id' => $l->id, 'name' => $l->name, 'tag_w_mm' => $l->tag_w_mm, 'tag_h_mm' => $l->tag_h_mm, 'tags' => $l->tagsPerSheet()])->values()->all(),
+                ->map(fn (PrintLayout $l) => ['id' => $l->id, 'name' => $l->name, 'print_kind' => $l->print_kind, 'tag_w_mm' => $l->tag_w_mm, 'tag_h_mm' => $l->tag_h_mm, 'tags' => $l->tagsPerSheet()])->values()->all(),
             'fonts' => PrintFontFaces::faces(),
             'font_css' => PrintFontFaces::forBrowser(),
             'images' => PrintImage::query()->orderBy('sort_order')->orderBy('id')->get()->map(fn (PrintImage $i) => [
@@ -48,6 +49,8 @@ class ListPrintTemplatesAction
             ])->values()->all(),
             'field_keys' => PrintDesign::FIELD_KEYS,
             'kinds' => PrintTemplate::KINDS,
+            // PP2: the print products a template can belong to, named in the page's language.
+            'print_kinds' => collect(PrintProducts::kinds())->mapWithKeys(fn ($k) => [$k => PrintProducts::title($k, app()->getLocale())])->all(),
             'max_elements' => PrintDesign::MAX_ELEMENTS,
         ];
     }

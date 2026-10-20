@@ -248,6 +248,8 @@ return [
     'GET up' => 'Platform route with no per-person data.',
     // NAME_TAGS_PLAN NT3: name tags made to order — guests may design; the proof, approval and My designs need a sign-in.
     'GET shop/print/name-tags' => 'The name-tags door (NT3): Akuru\'s active templates. No personal data. 404 while the service is off, except to bookshop.manage.',
+    'GET shop/print' => 'The print products open to customers (PP2): their names and summaries. No personal data. Guarded in the handler: ShopPrintController::available() 404s while the desk is off, except to bookshop.manage.',
+    'GET shop/print/{path}' => 'One print product\'s door (PP2): its active templates. No personal data. Guarded in the handler: ShopPrintController::available() 404s unless PrintProducts::open() for that product, except to bookshop.manage.',
     'POST shop/print/jobs' => 'Start a print job from a template (NT3): on the caller\'s account or a guest\'s own basket by session token; throttled.',
     'GET shop/print/jobs/{job}' => 'One print job\'s page (NT3). ShopPrintController::job() 404s unless the job is the caller\'s own, or a guest\'s by their own basket.',
     'POST shop/print/jobs/{job}' => 'Autosave a print job (NT3). Same ownership check as its page; throttled.',
