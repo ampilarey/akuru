@@ -60,7 +60,7 @@ wording, tip amounts and share, rewards, the tax treatment) are on
 |---|---|---|
 | D1 | **Writer payouts** stay off until the tax and accounting treatment is confirmed. | BACKLOG A9 |
 | D2 | **Native review of the Dhivehi and Arabic** phrase books — first passes throughout. Among them, the menu word `ސަލާމް` for *Absences*, *Absence notes* and *Review notes*. | BACKLOG A10, C21 |
-| D3 | **Retire or translate the old Blade screens**: analytics (41 strings), the Qur'an progress pages (49), e-learning (35), the old layouts (17). An IA decision first. | BACKLOG C21 |
+| ~~D3~~ | ~~**Retire or translate the old Blade screens**~~ — **translated 2026-10-20** ("do all"; STATUS §5td–§5tf): analytics, the Qur'an progress pages, e-learning and the old menu read in the page's language, with five defects fixed on the way. | BACKLOG C21 |
 | D4 | **Linked separate logins** (SIGN_IN_PLAN D7, "later, as its own track"), if wanted. | SIGN_IN_PLAN |
 | D5 | **Sensitive-note readers**: kept as is (2026-09-25). Revisit only if the office asks. | BACKLOG C4 |
 

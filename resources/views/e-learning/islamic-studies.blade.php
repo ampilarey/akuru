@@ -1,84 +1,33 @@
 @extends('layouts.app')
 
-@section('title', 'Islamic Studies')
-@section('page-title', 'Islamic Studies')
+@section('title', __('elearning.islamic'))
 
 @section('content')
-<div class="row">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title mb-0">
-                    @if(app()->getLocale() === 'ar')
-                        الدراسات الإسلامية
-                    @elseif(app()->getLocale() === 'dv')
-                        އިސްލާމް ތައުލީމް
-                    @else
-                        Islamic Studies
-                    @endif
-                </h5>
-            </div>
-            <div class="card-body">
-                @if($islamicSubjects->count() > 0)
-                    <div class="row">
-                        @foreach($islamicSubjects as $subject)
-                            <div class="col-md-6 col-lg-4 mb-4">
-                                <div class="card h-100">
-                                    <div class="card-body">
-                                        <div class="text-center mb-3">
-                                            <i class="fas fa-mosque fa-3x text-warning"></i>
-                                        </div>
-                                        <h6 class="card-title">
-                                            @if(app()->getLocale() === 'ar' && $subject->name_arabic)
-                                                {{ $subject->name_arabic }}
-                                            @elseif(app()->getLocale() === 'dv' && $subject->name_dhivehi)
-                                                {{ $subject->name_dhivehi }}
-                                            @else
-                                                {{ $subject->name }}
-                                            @endif
-                                        </h6>
-                                        <p class="card-text text-muted">
-                                            @if(app()->getLocale() === 'ar' && $subject->description_arabic)
-                                                {{ Str::limit($subject->description_arabic, 100) }}
-                                            @elseif(app()->getLocale() === 'dv' && $subject->description_dhivehi)
-                                                {{ Str::limit($subject->description_dhivehi, 100) }}
-                                            @else
-                                                {{ Str::limit($subject->description, 100) }}
-                                            @endif
-                                        </p>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <span class="badge bg-warning text-dark">{{ $subject->code }}</span>
-                                            <a href="{{ route('e-learning.show', $subject) }}" class="btn btn-sm btn-outline-warning">
-                                                @if(app()->getLocale() === 'ar')
-                                                    عرض
-                                                @elseif(app()->getLocale() === 'dv')
-                                                    ބެލުމުން
-                                                @else
-                                                    View
-                                                @endif
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
+{{-- OB3 (STATUS §5tf): one area's subjects, in the page's language only. --}}
+@php
+    $locale = app()->getLocale();
+    $name = fn ($s) => match ($locale) { 'ar' => $s->name_arabic ?: $s->name, 'dv' => $s->name_dhivehi ?: $s->name, default => $s->name };
+    $about = fn ($s) => match ($locale) { 'ar' => $s->description_arabic ?: $s->description, 'dv' => $s->description_dhivehi ?: $s->description, default => $s->description };
+@endphp
+<div class="p-4">
+    <a href="{{ route('e-learning.index') }}" class="mb-2 inline-block text-sm text-brandMaroon-700 underline"><span class="rtl-flip" aria-hidden="true">←</span> {{ __('elearning.back') }}</a>
+    <h1 class="mb-4 text-2xl font-bold text-brandMaroon-900">{{ __('elearning.islamic') }}</h1>
+    @if($islamicSubjects->isEmpty())
+        <p class="rounded-lg border bg-white p-4 text-sm text-gray-600" data-phone-main>{{ __('elearning.none_islamic') }}</p>
+    @else
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" data-phone-main>
+            @foreach($islamicSubjects as $subject)
+                <div class="flex flex-col gap-2 rounded-lg border bg-white p-4" data-testid="el-subject">
+                    <i class="fas fa-mosque text-2xl text-brandMaroon-700" aria-hidden="true"></i>
+                    <h2 class="font-semibold text-gray-900">{{ $name($subject) }}</h2>
+                    <p class="text-sm text-gray-600">{{ \Illuminate\Support\Str::limit((string) $about($subject), 100) }}</p>
+                    <div class="mt-auto flex items-center justify-between gap-2">
+                        <span class="rounded bg-gray-100 px-2 py-0.5 text-xs" dir="ltr">{{ $subject->code }}</span>
+                        <a href="{{ route('e-learning.show', $subject) }}" class="text-sm text-brandMaroon-700 underline">{{ __('elearning.view') }}</a>
                     </div>
-                @else
-                    <div class="text-center py-5">
-                        <i class="fas fa-mosque fa-3x text-muted mb-3"></i>
-                        <h5 class="text-muted">
-                            @if(app()->getLocale() === 'ar')
-                                لا توجد دروس إسلامية متاحة
-                            @elseif(app()->getLocale() === 'dv')
-                                އިސްލާމް ދަރުސް ނެތް
-                            @else
-                                No Islamic studies available
-                            @endif
-                        </h5>
-                    </div>
-                @endif
-            </div>
+                </div>
+            @endforeach
         </div>
-    </div>
+    @endif
 </div>
 @endsection
