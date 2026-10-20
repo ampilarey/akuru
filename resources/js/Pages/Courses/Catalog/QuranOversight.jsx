@@ -1,3 +1,4 @@
+import { Children, cloneElement } from 'react';
 import AppShell from '../../../Layouts/AppShell';
 
 // A code the server sends, named from the `quran` book (slice CT5a).
@@ -8,7 +9,7 @@ function CountTable({ title, headers, rows, renderRow, emptyText }) {
         <div>
             <h2 className="mb-2 text-lg font-semibold">{title}</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>{headers.map((header) => <th key={header} className="px-3 py-2">{header}</th>)}</tr>
                     </thead>
@@ -16,7 +17,13 @@ function CountTable({ title, headers, rows, renderRow, emptyText }) {
                         {rows.length === 0 && (
                             <tr><td className="px-3 py-4 text-gray-500" colSpan={headers.length}>{emptyText}</td></tr>
                         )}
-                        {rows.map(renderRow)}
+                        {/* MF5: each cell is labelled by its column's header, so on a
+                            phone a row reads as a card (docs/MOBILE_FIRST.md rule 5). */}
+                        {rows.map((row) => {
+                            const tr = renderRow(row);
+
+                            return cloneElement(tr, {}, Children.map(tr.props.children, (td, i) => (td ? cloneElement(td, { 'data-label': headers[i] }) : td)));
+                        })}
                     </tbody>
                 </table>
             </div>

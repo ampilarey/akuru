@@ -29,7 +29,7 @@ export default function DeletedCourses({ courses = [], t = {} }) {
             </p>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.courses_deleted_col_course || 'Course'}</th>
@@ -49,15 +49,15 @@ export default function DeletedCourses({ courses = [], t = {} }) {
                         )}
                         {courses.map((course) => (
                             <tr key={course.id} className="border-t align-top">
-                                <td className="px-3 py-2">
+                                <td data-label={t.courses_deleted_col_course || 'Course'} className="px-3 py-2">
                                     {course.title}
                                     {/* Shown because a deleted course keeps its public address:
                                         creating a new course at the same one is refused, and the
                                         refusal points here. */}
                                     <p className="mt-1 font-mono text-xs text-gray-500" dir="ltr">/{course.slug}</p>
                                 </td>
-                                <td className="px-3 py-2">{course.category ?? '—'}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.courses_col_category || 'Category'} className="px-3 py-2">{course.category ?? '—'}</td>
+                                <td data-label={t.courses_deleted_col_holds || 'What it holds'} className="px-3 py-2">
                                     {Object.keys(course.holds).length === 0 ? (
                                         <span className="text-gray-400">{t.courses_deleted_nothing || 'nothing'}</span>
                                     ) : (
@@ -71,7 +71,7 @@ export default function DeletedCourses({ courses = [], t = {} }) {
                                         ))
                                     )}
                                 </td>
-                                <td className="px-3 py-2 whitespace-nowrap">{course.deleted_at}</td>
+                                <td data-label={t.courses_deleted_col_deleted || 'Deleted'} className="px-3 py-2 whitespace-nowrap">{course.deleted_at}</td>
                                 <td className="px-3 py-2 whitespace-nowrap">
                                     <button type="button" className="btn-secondary text-xs" onClick={() => restore(course)}>
                                         {t.courses_deleted_restore || 'Restore'}

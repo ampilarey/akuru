@@ -137,7 +137,7 @@ export default function Index({ years, classes, subjects, examTypes, schemes, re
                 <button type="submit" className="btn-primary" disabled={form.processing || sum !== 100}>{t.weights_save || 'Save scheme'}</button>
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.weights_col_scope || 'Scope'}</th>
@@ -147,8 +147,8 @@ export default function Index({ years, classes, subjects, examTypes, schemes, re
                     <tbody>
                         {schemes.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{scope(row)}</td>
-                                <td className="px-3 py-2 text-xs">{weightsOf(row)}</td>
+                                <td data-label={t.weights_col_scope || 'Scope'} className="px-3 py-2">{scope(row)}</td>
+                                <td data-label={t.weights_col_weights || 'Weights'} className="px-3 py-2 text-xs">{weightsOf(row)}</td>
                             </tr>
                         ))}
                     </tbody>

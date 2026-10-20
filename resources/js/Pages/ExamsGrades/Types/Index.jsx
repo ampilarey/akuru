@@ -62,7 +62,7 @@ export default function Index({ types, codes, t = {} }) {
                 <button type="submit" className="btn-primary" disabled={form.processing}>{t.types_create || 'Create type'}</button>
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.name || 'Name'}</th>
@@ -96,21 +96,21 @@ function TypeRow({ type, codes, codeName, t }) {
 
     return (
         <tr className="border-t align-top">
-            <td className="px-3 py-2">
+            <td data-label={t.name || 'Name'} className="px-3 py-2">
                 <input className="form-input w-full" aria-label={field(t.types_name_en_of || 'Name (EN): :name')} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                 <input className="form-input mt-1 w-full" dir="rtl" aria-label={field(t.types_name_ar_of || 'Name (AR): :name')} placeholder={t.name_ar || 'Name (AR)'} value={form.data.name_arabic} onChange={(e) => form.setData('name_arabic', e.target.value)} />
                 <input className="form-input mt-1 w-full" dir="rtl" aria-label={field(t.types_name_dv_of || 'Name (DV): :name')} placeholder={t.name_dv || 'Name (DV)'} value={form.data.name_dhivehi} onChange={(e) => form.setData('name_dhivehi', e.target.value)} />
                 {refused && <span className="mt-1 block text-xs text-red-600">{refused}</span>}
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.types_code || 'Code'} className="px-3 py-2">
                 <select className="form-input w-full" aria-label={field(t.types_code_of || 'Code: :name')} value={form.data.code} onChange={(e) => form.setData('code', e.target.value)}>
                     {codes.map((code) => <option key={code} value={code}>{codeName(code)}</option>)}
                 </select>
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.types_col_weight || 'Weight'} className="px-3 py-2">
                 <input className="form-input w-full" type="number" min="0" max="100" aria-label={field(t.types_weight_of || 'Weight: :name')} value={form.data.default_weight} onChange={(e) => form.setData('default_weight', e.target.value)} />
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.types_col_final || 'Final'} className="px-3 py-2">
                 <input type="checkbox" aria-label={field(t.types_final_of || 'Counts toward final: :name')} checked={form.data.counts_toward_final} onChange={(e) => form.setData('counts_toward_final', e.target.checked)} />
             </td>
             <td className="px-3 py-2">

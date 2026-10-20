@@ -56,7 +56,7 @@ export default function Index({ scales, types, t = {} }) {
                 <button type="submit" className="btn-primary" disabled={form.processing}>{t.scales_create || 'Create scale'}</button>
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.name || 'Name'}</th>
@@ -88,19 +88,19 @@ function ScaleRow({ scale, types, t }) {
 
     return (
         <tr className="border-t align-top">
-            <td className="px-3 py-2">
+            <td data-label={t.name || 'Name'} className="px-3 py-2">
                 <input className="form-input w-full" aria-label={field(t.scales_name_of || 'Name: :name')} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                 {refused && <span className="mt-1 block text-xs text-red-600">{refused}</span>}
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.type || 'Type'} className="px-3 py-2">
                 <select className="form-input w-full" aria-label={field(t.scales_type_of || 'Type: :name')} value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
                     {types.map((type) => <option key={type} value={type}>{t[`scale_type_${type}`] || type}</option>)}
                 </select>
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.scales_col_default || 'Default'} className="px-3 py-2">
                 <input type="checkbox" aria-label={field(t.scales_default_of || 'Default: :name')} checked={form.data.is_default} onChange={(e) => form.setData('is_default', e.target.checked)} />
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.scales_col_bands || 'Bands'} className="px-3 py-2">
                 <textarea className="form-input w-full font-mono text-xs" dir="ltr" rows={4} aria-label={field(t.scales_bands_of || 'Bands: :name')} value={form.data.bands} onChange={(e) => form.setData('bands', e.target.value)} />
             </td>
             <td className="px-3 py-2">

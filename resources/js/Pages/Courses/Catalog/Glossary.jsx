@@ -182,7 +182,7 @@ export default function Glossary({ rows, subjects = [], levels = [], t = {} }) {
                 {form.errors.term && <p className="md:col-span-3 text-sm text-red-600">{form.errors.term}</p>}
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.outline_term || 'Term'}</th>
@@ -199,18 +199,18 @@ export default function Glossary({ rows, subjects = [], levels = [], t = {} }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">
+                                <td data-label={t.outline_term || 'Term'} className="px-3 py-2">
                                     <span dir="ltr">{row.term}</span>
                                     {row.transliteration && <span className="ms-2 text-xs text-gray-500">{row.transliteration}</span>}
                                 </td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.glossary_col_translations || 'DV / AR'} className="px-3 py-2">
                                     <span dir="rtl">{row.term_dv || '—'}</span>
                                     {' / '}
                                     <span dir="rtl">{row.term_ar || '—'}</span>
                                 </td>
-                                <td className="px-3 py-2">{row.meaning_primary || '—'}</td>
-                                <td className="px-3 py-2">{(row.tags || []).join(', ') || '—'}</td>
-                                <td className="px-3 py-2 text-xs text-gray-600">
+                                <td data-label={t.glossary_col_meaning || 'Meaning'} className="px-3 py-2">{row.meaning_primary || '—'}</td>
+                                <td data-label={t.glossary_col_tags || 'Tags'} className="px-3 py-2">{(row.tags || []).join(', ') || '—'}</td>
+                                <td data-label={t.glossary_media || 'Media'} className="px-3 py-2 text-xs text-gray-600">
                                     {MEDIA_SLOTS.filter(({ slot }) => row[slot]).map(slotName).join(', ') || '—'}
                                 </td>
                                 <td className="px-3 py-2 text-end">

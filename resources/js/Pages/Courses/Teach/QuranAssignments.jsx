@@ -108,7 +108,7 @@ export default function QuranAssignments({ rows, targets, options, status, refer
             <CreateForm t={t} q={q} targets={targets} options={options} reference={reference} surahs={surahs} surahName={surahName} actOn={refusals.actOn} />
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.qt_col_student || 'Student'}</th>
@@ -126,12 +126,12 @@ export default function QuranAssignments({ rows, targets, options, status, refer
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.student?.name ?? '—'}</td>
-                                <td className="px-3 py-2">{named(q, 'assignment_type_', row.assignment_type)}</td>
-                                <td className="px-3 py-2">{(locale === 'en' ? row.surah : row.surah_arabic || row.surah) ?? '—'}</td>
-                                <td className="px-3 py-2">{row.start_ayah_number ? `${row.start_ayah_number}–${row.end_ayah_number ?? row.start_ayah_number}` : '—'}</td>
-                                <td className="px-3 py-2">{row.due_date ?? '—'}</td>
-                                <td className="px-3 py-2">{named(q, 'status_', row.status)}</td>
+                                <td data-label={t.qt_col_student || 'Student'} className="px-3 py-2">{row.student?.name ?? '—'}</td>
+                                <td data-label={t.qt_col_type || 'Type'} className="px-3 py-2">{named(q, 'assignment_type_', row.assignment_type)}</td>
+                                <td data-label={t.qt_col_surah || 'Surah'} className="px-3 py-2">{(locale === 'en' ? row.surah : row.surah_arabic || row.surah) ?? '—'}</td>
+                                <td data-label={t.qt_col_ayahs || 'Ayahs'} className="px-3 py-2">{row.start_ayah_number ? `${row.start_ayah_number}–${row.end_ayah_number ?? row.start_ayah_number}` : '—'}</td>
+                                <td data-label={t.qassign_col_due || 'Due'} className="px-3 py-2">{row.due_date ?? '—'}</td>
+                                <td data-label={t.qt_col_status || 'Status'} className="px-3 py-2">{named(q, 'status_', row.status)}</td>
                                 <td className="px-3 py-2 text-end">
                                     {row.status !== 'cancelled' && (
                                         <button

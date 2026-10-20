@@ -27,7 +27,7 @@ export default function Levels({ rows, t = {} }) {
                 <FormErrors errors={form.errors} />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.taxonomy_col_name || 'Name'}</th>
@@ -41,9 +41,9 @@ export default function Levels({ rows, t = {} }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{named(row)}</td>
-                                <td className="px-3 py-2 font-mono text-xs" dir="ltr">{row.slug}</td>
-                                <td className="px-3 py-2">{row.active ? (t.taxonomy_yes || 'yes') : (t.taxonomy_no || 'no')}</td>
+                                <td data-label={t.taxonomy_col_name || 'Name'} className="px-3 py-2">{named(row)}</td>
+                                <td data-label={t.taxonomy_col_address || 'Address'} className="px-3 py-2 font-mono text-xs" dir="ltr">{row.slug}</td>
+                                <td data-label={t.taxonomy_col_active || 'Active'} className="px-3 py-2">{row.active ? (t.taxonomy_yes || 'yes') : (t.taxonomy_no || 'no')}</td>
                             </tr>
                         ))}
                     </tbody>

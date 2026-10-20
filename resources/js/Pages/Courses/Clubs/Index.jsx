@@ -9,7 +9,7 @@ export default function Index({ clubs = [], t = {} }) {
             </p>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
                             <th className="px-3 py-2 text-start">{t.clubs_col_club || 'Club'}</th>
@@ -20,12 +20,12 @@ export default function Index({ clubs = [], t = {} }) {
                     <tbody>
                         {clubs.map((club) => (
                             <tr key={club.id} className="border-t">
-                                <td className="px-3 py-2">
+                                <td data-label={t.clubs_col_club || 'Club'} className="px-3 py-2">
                                     <Link href={`/academics/clubs/${club.id}`} className="text-[#7C2D37] underline">
                                         {club.title}
                                     </Link>
                                 </td>
-                                <td className="px-3 py-2 tabular-nums">{club.members}</td>
+                                <td data-label={t.clubs_col_members || 'Members'} className="px-3 py-2 tabular-nums">{club.members}</td>
                                 <td className="px-3 py-2">
                                     <Link href={`/academics/clubs/${club.id}/attendance-sheet`}
                                         className="text-xs text-[#7C2D37] underline">{t.clubs_sheet || 'Attendance sheet'}</Link>

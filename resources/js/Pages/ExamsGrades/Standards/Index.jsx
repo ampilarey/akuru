@@ -112,7 +112,7 @@ export default function Index({ subjects, terms, exams, topics = [], standards, 
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.standards_code || 'Code'}</th>
@@ -128,11 +128,11 @@ export default function Index({ subjects, terms, exams, topics = [], standards, 
                         )}
                         {coverage.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2 font-mono" dir="ltr">{row.code}</td>
-                                <td className="px-3 py-2">{titled(row)}</td>
-                                <td className="px-3 py-2">{row.exams_tagged}</td>
-                                <td className="px-3 py-2">{row.topics_tagged}</td>
-                                <td className="px-3 py-2">{row.covered ? (t.yes || 'yes') : (t.no || 'no')}</td>
+                                <td data-label={t.standards_code || 'Code'} className="px-3 py-2 font-mono" dir="ltr">{row.code}</td>
+                                <td data-label={t.standards_col_title || 'Title'} className="px-3 py-2">{titled(row)}</td>
+                                <td data-label={t.standards_col_exams || 'Exams'} className="px-3 py-2">{row.exams_tagged}</td>
+                                <td data-label={t.standards_col_topics || 'Topics'} className="px-3 py-2">{row.topics_tagged}</td>
+                                <td data-label={t.standards_col_covered || 'Covered'} className="px-3 py-2">{row.covered ? (t.yes || 'yes') : (t.no || 'no')}</td>
                             </tr>
                         ))}
                     </tbody>

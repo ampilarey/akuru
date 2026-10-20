@@ -154,7 +154,7 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
             </form>
             <FormErrors errors={refusals.unplaced} className="mb-4 rounded border border-red-200 bg-red-50 py-2 pe-3" />
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.catalog_col_title || 'Title'}</th>
@@ -171,15 +171,15 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                         {rows.map((row) => (
                             <Fragment key={row.id}>
                             <tr className="border-t">
-                                <td className="px-3 py-2">
+                                <td data-label={t.catalog_col_title || 'Title'} className="px-3 py-2">
                                     <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/outline`}>{row.title}</a>
                                     <a className="ms-3 text-xs text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/activities`}>{t.catalog_activities || 'Activities'}</a>
                                     <a className="ms-3 text-xs text-[#7C2D37] hover:underline" href={`/catalog/courses/${row.id}/rubrics`}>{t.rubrics || 'Rubrics'}</a>
                                     <a className="ms-3 text-xs text-[#7C2D37] hover:underline" href={`/learn/courses/${row.id}/forum`}>{t.forum || 'Forum'}</a>
                                 </td>
-                                <td className="px-3 py-2">{rowSubject(row)}</td>
-                                <td className="px-3 py-2">{workflowLabel(row.workflow_status)}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.catalog_col_subject || 'Subject'} className="px-3 py-2">{rowSubject(row)}</td>
+                                <td data-label={t.catalog_col_workflow || 'Workflow'} className="px-3 py-2">{workflowLabel(row.workflow_status)}</td>
+                                <td data-label={t.catalog_col_unlock || 'Unlock'} className="px-3 py-2">
                                     {row.workflow_status === 'draft' ? (
                                         <select
                                             className="form-input"
@@ -208,7 +208,7 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
                                         <span>{unlockModes.some((m) => m.value === row.unlock_mode) ? unlockLabel(unlockModes.find((m) => m.value === row.unlock_mode)) : row.unlock_mode}</span>
                                     )}
                                 </td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.catalog_col_actions || 'Actions'} className="px-3 py-2">
                                     {row.workflow_status === 'draft' && (
                                         <button type="button" className="btn-secondary" onClick={() => refusals.actOn(`course:${row.id}`, () => router.post(`/catalog/courses/${row.id}/transition`, { workflow_status: 'in_review' }, { preserveScroll: true }))}>{t.catalog_submit_review || 'Submit review'}</button>
                                     )}

@@ -36,7 +36,7 @@ export default function CompletionReports({
 
             <h2 className="mb-2 text-sm font-medium">{t.completion_by_offering || 'Offering completion'}</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.completion_offering || 'Offering'}</th>
@@ -52,11 +52,11 @@ export default function CompletionReports({
                         )}
                         {offering_summaries.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.title}</td>
-                                <td className="px-3 py-2">{row.enrolled}</td>
-                                <td className="px-3 py-2">{row.completed}</td>
-                                <td className="px-3 py-2">{row.average_progress}%</td>
-                                <td className="px-3 py-2">{row.average_attendance == null ? '—' : `${row.average_attendance}%`}</td>
+                                <td data-label={t.completion_offering || 'Offering'} className="px-3 py-2">{row.title}</td>
+                                <td data-label={t.completion_col_enrolled || 'Enrolled'} className="px-3 py-2">{row.enrolled}</td>
+                                <td data-label={t.completion_col_completed || 'Completed'} className="px-3 py-2">{row.completed}</td>
+                                <td data-label={t.completion_col_avg_progress || 'Avg progress'} className="px-3 py-2">{row.average_progress}%</td>
+                                <td data-label={t.completion_col_avg_attendance || 'Avg attendance'} className="px-3 py-2">{row.average_attendance == null ? '—' : `${row.average_attendance}%`}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -65,7 +65,7 @@ export default function CompletionReports({
 
             <h2 className="mb-2 text-sm font-medium">{t.completion_by_course || 'Course completion'}</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.completion_course || 'Course'}</th>
@@ -80,10 +80,10 @@ export default function CompletionReports({
                         )}
                         {course_summaries.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.title}</td>
-                                <td className="px-3 py-2">{row.enrolled}</td>
-                                <td className="px-3 py-2">{row.completed}</td>
-                                <td className="px-3 py-2">{row.average_progress}%</td>
+                                <td data-label={t.completion_course || 'Course'} className="px-3 py-2">{row.title}</td>
+                                <td data-label={t.completion_col_enrolled || 'Enrolled'} className="px-3 py-2">{row.enrolled}</td>
+                                <td data-label={t.completion_col_completed || 'Completed'} className="px-3 py-2">{row.completed}</td>
+                                <td data-label={t.completion_col_avg_progress || 'Avg progress'} className="px-3 py-2">{row.average_progress}%</td>
                             </tr>
                         ))}
                     </tbody>
@@ -92,7 +92,7 @@ export default function CompletionReports({
 
             <h2 className="mb-2 text-sm font-medium">{t.completion_roster || 'Roster'}</h2>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.completion_col_student || 'Student'}</th>
@@ -110,13 +110,13 @@ export default function CompletionReports({
                         )}
                         {rows.map((row) => (
                             <tr key={row.enrollment_id} className="border-t">
-                                <td className="px-3 py-2">{row.student_name}</td>
-                                <td className="px-3 py-2">{row.course_title}</td>
-                                <td className="px-3 py-2">{row.offering_title || '—'}</td>
-                                <td className="px-3 py-2">{row.progress_percentage}%</td>
-                                <td className="px-3 py-2">{row.attendance_percent == null ? '—' : `${row.attendance_percent}%`}</td>
-                                <td className="px-3 py-2">{row.lessons_completed}/{row.lessons_required}</td>
-                                <td className="px-3 py-2">{statusName(t, row.status)}</td>
+                                <td data-label={t.completion_col_student || 'Student'} className="px-3 py-2">{row.student_name}</td>
+                                <td data-label={t.completion_course || 'Course'} className="px-3 py-2">{row.course_title}</td>
+                                <td data-label={t.completion_offering || 'Offering'} className="px-3 py-2">{row.offering_title || '—'}</td>
+                                <td data-label={t.completion_col_progress || 'Progress'} className="px-3 py-2">{row.progress_percentage}%</td>
+                                <td data-label={t.completion_col_attendance || 'Attendance'} className="px-3 py-2">{row.attendance_percent == null ? '—' : `${row.attendance_percent}%`}</td>
+                                <td data-label={t.completion_col_lessons || 'Lessons'} className="px-3 py-2">{row.lessons_completed}/{row.lessons_required}</td>
+                                <td data-label={t.completion_col_status || 'Status'} className="px-3 py-2">{statusName(t, row.status)}</td>
                             </tr>
                         ))}
                     </tbody>

@@ -330,6 +330,13 @@ html[lang="dv"] body,
   .table-stack td[colspan] {
     display: block;
   }
+  /* MF5: a row headed by its own <th> (a rubric's criterion) reads that
+     heading first, then its cells stacked under it. */
+  .table-stack tbody th {
+    display: block;
+    width: 100%;
+    padding: 0.25rem 0;
+  }
   /* An action cell — Pay, Receipt, Book, Download — is one wrapping row of
      buttons under the card's lines, not a label–value pair. */
   .table-stack td.table-actions {

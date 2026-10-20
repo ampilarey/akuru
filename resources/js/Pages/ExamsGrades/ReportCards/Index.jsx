@@ -182,7 +182,7 @@ export default function Index({ classes, terms, cards, unpublished, classId, ter
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.student || 'Student'}</th>
@@ -199,14 +199,14 @@ export default function Index({ classes, terms, cards, unpublished, classId, ter
                         )}
                         {cards.map((card) => (
                             <tr key={card.id} className="border-t">
-                                <td className="px-3 py-2">{card.student_name}</td>
-                                <td className="px-3 py-2">{card.class_name}</td>
-                                <td className="px-3 py-2">{card.term_name}</td>
-                                <td className="px-3 py-2">{statusName(card.status)}</td>
-                                <td className="px-3 py-2" title={card.last_revision_reason || ''}>
+                                <td data-label={t.student || 'Student'} className="px-3 py-2">{card.student_name}</td>
+                                <td data-label={t.class || 'Class'} className="px-3 py-2">{card.class_name}</td>
+                                <td data-label={t.term || 'Term'} className="px-3 py-2">{card.term_name}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">{statusName(card.status)}</td>
+                                <td data-label={t.reportcards_col_revisions || 'Revisions'} className="px-3 py-2" title={card.last_revision_reason || ''}>
                                     {card.revisions ? `${card.revisions} — ${card.last_revision_reason}` : '—'}
                                 </td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.reportcards_col_document || 'Document'} className="px-3 py-2">
                                     {card.document_id ? <span className="flex flex-wrap gap-3">
                                         {pdf_available && <a className="text-[#7C2D37] underline" href={`/exams/report-cards/${card.id}/download?format=pdf`} data-testid={`report-card-pdf-${card.id}`}>{t.reportcards_pdf || 'PDF'}</a>}
                                         <a className="text-[#7C2D37] underline" href={`/exams/report-cards/${card.id}/download`}>{pdf_available ? (t.reportcards_web_page || 'Web page') : (t.reportcards_open_print || 'Open to print')}</a>

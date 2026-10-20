@@ -16,7 +16,7 @@ export default function QuranSessions({ sessions = [], scope = 'mine', look_back
             <p className="mb-4 text-sm text-gray-600">{hint.replace(':days', lookBack)}</p>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm" data-testid="quran-sessions">
+                <table className="table-stack min-w-full text-sm" data-testid="quran-sessions">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.qsessions_col_when || 'When'}</th>
@@ -38,10 +38,10 @@ export default function QuranSessions({ sessions = [], scope = 'mine', look_back
                         )}
                         {sessions.map((row) => (
                             <tr key={row.id} className="border-t" data-testid={`quran-session-${row.id}`}>
-                                <td className="px-3 py-2 whitespace-nowrap" dir="ltr">{row.when ?? '—'}</td>
-                                <td className="px-3 py-2">{row.title || '—'}</td>
-                                <td className="px-3 py-2">{row.course_title} · {row.offering_title}</td>
-                                <td className="px-3 py-2">{row.location_name || (row.online ? t.qsessions_online || 'Online' : '—')}</td>
+                                <td data-label={t.qsessions_col_when || 'When'} className="px-3 py-2 whitespace-nowrap" dir="ltr">{row.when ?? '—'}</td>
+                                <td data-label={t.qsessions_col_session || 'Session'} className="px-3 py-2">{row.title || '—'}</td>
+                                <td data-label={t.qsessions_col_halaqa || 'Halaqa'} className="px-3 py-2">{row.course_title} · {row.offering_title}</td>
+                                <td data-label={t.qsessions_col_place || 'Place'} className="px-3 py-2">{row.location_name || (row.online ? t.qsessions_online || 'Online' : '—')}</td>
                                 <td className="px-3 py-2 text-end">
                                     <Link className="btn-secondary" href={`/teach/quran-sessions/${row.id}`}>{t.qsessions_open || 'Open sheet'}</Link>
                                 </td>

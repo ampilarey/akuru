@@ -4983,6 +4983,35 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sz. Courses' and exams' tables read as cards on a phone (MF5, 2026-10-20)
+
+**docs/MOBILE_FIRST.md A5, second batch.** Every table on the 40 pages
+under `Courses/` and `ExamsGrades/` is now `table-stack` with each cell
+labelled from its column's heading, or a named grid.
+- 26 pages by the script (which now skips a table already stacked: run
+  twice, it had doubled the class on ten, caught and undone), and 7 with
+  rows in their own components, each confirmed to see `t`. The rest were
+  done by hand:
+  - **Qur'an oversight**: one shared `CountTable` labels each cell from its
+    `headers`, so its five count tables need no change at the call sites.
+  - **The gradebook**: a student's row becomes a card of their exams, extra
+    items, term %, grade, rank and competencies, each labelled by its own
+    name.
+  - **Completion reports and milestones**, including the columns shown only
+    when attendance is kept or the reader may decide.
+  - **Rubrics**, shown and being marked: each criterion's heading comes first,
+    with its levels stacked under it as full-width choices. `app.css` lets a
+    row's own `<th>` stack (`.table-stack tbody th`).
+- **Named grid:** the club attendance sheet is a paper sheet of members by
+  weeks. It is `data-phone-scroll`, in its own scrolling box.
+- The list holds 48, down from 88.
+
+**Tests:** `PhoneFirstStylesTest`, baseline 48. Whole suite locally: 3281
+passed; pint clean.
+
+**Walk:** `phone-first.mjs`, 108/108. Screenshots at 390 px: completion
+reports, the overview and the scales editor in Dhivehi.
+
 ## 5sy. The portal's and the school's tables read as cards on a phone (MF4, 2026-10-20)
 
 **docs/MOBILE_FIRST.md A5, first batch.** 27 Inertia pages under

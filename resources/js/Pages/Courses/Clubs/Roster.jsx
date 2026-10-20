@@ -45,7 +45,7 @@ export default function Roster({ club, members = [], t = {} }) {
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
                             <th className="px-3 py-2 text-start">{t.clubs_col_member || 'Member'}</th>
@@ -57,9 +57,9 @@ export default function Roster({ club, members = [], t = {} }) {
                     <tbody>
                         {members.map((member) => (
                             <tr key={member.enrollment_id} className="border-t">
-                                <td className="px-3 py-2">{member.name}</td>
-                                <td className="px-3 py-2">{member.student_number || '—'}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.clubs_col_member || 'Member'} className="px-3 py-2">{member.name}</td>
+                                <td data-label={t.clubs_col_number || 'Number'} className="px-3 py-2">{member.student_number || '—'}</td>
+                                <td data-label={t.clubs_col_on_roll || 'On the roll'} className="px-3 py-2">
                                     {member.on_roll
                                         ? <span className="text-xs text-gray-600">{t.clubs_pupil || 'Pupil'}</span>
                                         : <span className="rounded bg-amber-50 px-1 text-xs text-amber-800">{t.clubs_visitor || 'Visitor'}</span>}

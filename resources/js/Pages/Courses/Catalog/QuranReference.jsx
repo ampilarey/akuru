@@ -14,7 +14,7 @@ export default function QuranReference({ surahs = [], selected_surah = null, aya
                 <a className="btn-secondary" href={exportHref}>{t.catalog_export || 'Export CSV'}</a>
             </div>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">#</th>
@@ -26,18 +26,18 @@ export default function QuranReference({ surahs = [], selected_surah = null, aya
                     <tbody>
                         {surahs.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.index}</td>
-                                <td className="px-3 py-2" dir="rtl">
+                                <td data-label="#" className="px-3 py-2">{row.index}</td>
+                                <td data-label={t.qref_col_arabic || 'Arabic'} className="px-3 py-2" dir="rtl">
                                     <a className="text-[#7C2D37] hover:underline" href={`/catalog/quran?surah=${row.index}`}>
                                         {row.arabic_name}
                                     </a>
                                 </td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.qref_col_english || 'English'} className="px-3 py-2">
                                     <a className="text-[#7C2D37] hover:underline" href={`/catalog/quran?surah=${row.index}`}>
                                         {row.english_name}
                                     </a>
                                 </td>
-                                <td className="px-3 py-2">{row.ayah_count}</td>
+                                <td data-label={t.qt_col_ayahs || 'Ayahs'} className="px-3 py-2">{row.ayah_count}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -48,7 +48,7 @@ export default function QuranReference({ surahs = [], selected_surah = null, aya
                     <h2 className="border-b px-3 py-2 text-sm font-semibold">
                         {selected_surah.english_name} — {selected_surah.arabic_name}
                     </h2>
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">{t.qt_ayah || 'Ayah'}</th>
@@ -58,8 +58,8 @@ export default function QuranReference({ surahs = [], selected_surah = null, aya
                         <tbody>
                             {ayahs.map((row) => (
                                 <tr key={row.id} className="border-t">
-                                    <td className="px-3 py-2">{row.ayah_number}</td>
-                                    <td className="px-3 py-2 text-lg" dir="rtl">{row.text_uthmani}</td>
+                                    <td data-label={t.qt_ayah || 'Ayah'} className="px-3 py-2">{row.ayah_number}</td>
+                                    <td data-label={t.qref_col_text || 'Text'} className="px-3 py-2 text-lg" dir="rtl">{row.text_uthmani}</td>
                                 </tr>
                             ))}
                         </tbody>

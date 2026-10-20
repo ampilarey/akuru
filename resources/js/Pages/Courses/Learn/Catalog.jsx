@@ -94,7 +94,7 @@ export default function Catalog({ rows }) {
                 (slice CT6b-2a). */}
             <FormErrors errors={errors} className="mb-4" />
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.course || 'Course'}</th>
@@ -108,13 +108,13 @@ export default function Catalog({ rows }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">
+                                <td data-label={t.course || 'Course'} className="px-3 py-2">
                                     <p className="font-medium">{row.title}</p>
                                     {row.short_desc && <p className="text-xs text-gray-500">{row.short_desc}</p>}
                                     <Intakes row={row} t={t} />
                                 </td>
-                                <td className="px-3 py-2">{row.enrolled ? `${row.progress_percentage}%` : '—'}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.progress || 'Progress'} className="px-3 py-2">{row.enrolled ? `${row.progress_percentage}%` : '—'}</td>
+                                <td data-label={t.action || 'Action'} className="px-3 py-2">
                                     {row.enrolled ? (
                                         <a className="chip-link" href={`/learn/courses/${row.id}`}>{t.open || 'Open'}</a>
                                     ) : row.fee > 0 ? (

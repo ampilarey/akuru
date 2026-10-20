@@ -91,7 +91,7 @@ export default function QuranMilestones({ rows, targets, options, status, can_de
             <RecommendForm t={t} q={q} targets={targets} options={options} actOn={refusals.actOn} />
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.qt_col_student || 'Student'}</th>
@@ -109,12 +109,12 @@ export default function QuranMilestones({ rows, targets, options, status, can_de
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.student_name}</td>
-                                <td className="px-3 py-2">{row.program_name}</td>
-                                <td className="px-3 py-2">{named(q, 'milestone_type_', row.type)}</td>
-                                <td className="px-3 py-2">{detail(row)}</td>
-                                <td className="px-3 py-2">{named(q, 'status_', row.status)}</td>
-                                <td className="px-3 py-2">{row.note ?? '—'}</td>
+                                <td data-label={t.qt_col_student || 'Student'} className="px-3 py-2">{row.student_name}</td>
+                                <td data-label={t.qmile_col_program || 'Program'} className="px-3 py-2">{row.program_name}</td>
+                                <td data-label={t.qt_col_type || 'Type'} className="px-3 py-2">{named(q, 'milestone_type_', row.type)}</td>
+                                <td data-label={t.qmile_col_detail || 'Detail'} className="px-3 py-2">{detail(row)}</td>
+                                <td data-label={t.qt_col_status || 'Status'} className="px-3 py-2">{named(q, 'status_', row.status)}</td>
+                                <td data-label={t.qt_col_note || 'Note'} className="px-3 py-2">{row.note ?? '—'}</td>
                                 {can_decide && (
                                     <td className="px-3 py-2 text-end">
                                         {row.status === 'pending' && (

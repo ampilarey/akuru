@@ -195,7 +195,7 @@ export default function Rubrics({ course, rubrics = [], activities = [], assessm
                             </div>
                         </div>
                         <div className="overflow-x-auto">
-                            <table className="min-w-full text-sm">
+                            <table className="table-stack min-w-full text-sm">
                                 <tbody>
                                     {rubric.criteria.map((criterion) => (
                                         <tr key={criterion.id} className="border-t align-top">

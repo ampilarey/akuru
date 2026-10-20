@@ -83,6 +83,6 @@ Already phone-first, and the pattern the others follow: the Bookstore's
 | MF2 | A1–A3: the Library, Courses and Lending filters fold; their lists carry `data-phone-main` — **done 2026-10-20 (STATUS §5sw)** |
 | MF3 | A4, A6: records first, the form under *New …* on a phone (`PhoneFold`); the invisible buttons (`brandBlue` was never a colour; `BrandColoursExistTest`) — **done 2026-10-20 (STATUS §5sx)** |
 | MF4 | A5, first batch: the 27 `Portal/` and `Academics/` pages — **done 2026-10-20 (STATUS §5sy)**; 88 pages left |
-| MF5 | A5: `Courses/` (29) and `ExamsGrades/` (11) |
+| MF5 | A5: `Courses/` (29) and `ExamsGrades/` (11) — **done 2026-10-20 (STATUS §5sz)**; 48 pages left |
 | MF6 | A5: the rest — HR, Finance, Website, People and the others |
 | MF7 | A8: office pages put the list before the *new* form |

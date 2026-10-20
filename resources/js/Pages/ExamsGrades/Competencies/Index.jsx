@@ -56,7 +56,7 @@ export default function Index({ subjects, competencies, subjectId, t = {} }) {
                 <button type="submit" className="btn-primary" disabled={form.processing}>{t.competencies_create || 'Create competency'}</button>
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.name || 'Name'}</th>
@@ -69,8 +69,8 @@ export default function Index({ subjects, competencies, subjectId, t = {} }) {
                         )}
                         {competencies.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{named(row)}</td>
-                                <td className="px-3 py-2">{subjectName(row.subject_id)}</td>
+                                <td data-label={t.name || 'Name'} className="px-3 py-2">{named(row)}</td>
+                                <td data-label={t.subject || 'Subject'} className="px-3 py-2">{subjectName(row.subject_id)}</td>
                             </tr>
                         ))}
                     </tbody>

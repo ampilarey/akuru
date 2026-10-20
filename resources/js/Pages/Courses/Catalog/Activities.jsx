@@ -130,7 +130,7 @@ export default function Activities({ course, activities, patterns, skills = [], 
                 <FormErrors errors={form.errors} className="md:col-span-2" />
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.catalog_col_title || 'Title'}</th>
@@ -146,15 +146,15 @@ export default function Activities({ course, activities, patterns, skills = [], 
                         )}
                         {activities.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.title}</td>
-                                <td className="px-3 py-2">{patternName(row.pattern)}</td>
+                                <td data-label={t.catalog_col_title || 'Title'} className="px-3 py-2">{row.title}</td>
+                                <td data-label={t.activities_pattern || 'Pattern'} className="px-3 py-2">{patternName(row.pattern)}</td>
                                 {/* An author who leaves the type label blank is given
                                     the pattern's code (`SaveActivityAction`), which is
                                     named like the pattern; a label somebody typed is
                                     theirs and is shown as typed. */}
-                                <td className="px-3 py-2">{t[`pattern_${row.activity_type}`] || row.activity_type}</td>
-                                <td className="px-3 py-2">{row.max_score}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.activities_col_type || 'Type'} className="px-3 py-2">{t[`pattern_${row.activity_type}`] || row.activity_type}</td>
+                                <td data-label={t.activities_col_score || 'Score'} className="px-3 py-2">{row.max_score}</td>
+                                <td data-label={t.catalog_col_actions || 'Actions'} className="px-3 py-2">
                                     <button
                                         type="button"
                                         className="btn-secondary"

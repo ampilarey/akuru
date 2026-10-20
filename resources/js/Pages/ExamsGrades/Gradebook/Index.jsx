@@ -89,7 +89,7 @@ export default function Index({ years, terms, classes, subjects, exams, competen
             )}
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.student || 'Student'}</th>
@@ -107,25 +107,25 @@ export default function Index({ years, terms, classes, subjects, exams, competen
                         )}
                         {rows.map((row) => (
                             <tr key={row.student_id} className="border-t">
-                                <td className="px-3 py-2">{row.name}</td>
+                                <td data-label={t.student || 'Student'} className="px-3 py-2">{row.name}</td>
                                 {exams.map((exam) => {
                                     const mark = row.marks[exam.id] || {};
                                     return (
-                                        <td key={`${row.student_id}-${exam.id}`} className="px-3 py-2">
+                                        <td key={`${row.student_id}-${exam.id}`} data-label={exam.name} className="px-3 py-2">
                                             {mark.is_absent ? (t.gradebook_absent_short || 'Abs') : mark.is_exempt ? (t.gradebook_exempt_short || 'Ex') : (mark.marks ?? '—')}
                                         </td>
                                     );
                                 })}
                                 {extraItems.map((item) => (
-                                    <td key={`${row.student_id}-${item.key}`} className="px-3 py-2">
+                                    <td key={`${row.student_id}-${item.key}`} data-label={item.label} className="px-3 py-2">
                                         {gradeCell(row.items?.[item.key], t)}
                                     </td>
                                 ))}
-                                <td className="px-3 py-2">{row.term?.weighted_percent ?? '—'}</td>
-                                <td className="px-3 py-2">{row.term?.grade ?? '—'}</td>
-                                <td className="px-3 py-2">{row.term?.rank ?? '—'}</td>
+                                <td data-label={t.gradebook_term_percent || 'Term %'} className="px-3 py-2">{row.term?.weighted_percent ?? '—'}</td>
+                                <td data-label={t.gradebook_grade || 'Grade'} className="px-3 py-2">{row.term?.grade ?? '—'}</td>
+                                <td data-label={t.gradebook_rank || 'Rank'} className="px-3 py-2">{row.term?.rank ?? '—'}</td>
                                 {competencies.map((competency) => (
-                                    <td key={`${row.student_id}-c-${competency.id}`} className="px-3 py-2">
+                                    <td key={`${row.student_id}-c-${competency.id}`} data-label={competency.name} className="px-3 py-2">
                                         {row.competencies[competency.id] || '—'}
                                     </td>
                                 ))}

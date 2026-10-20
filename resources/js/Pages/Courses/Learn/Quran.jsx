@@ -212,7 +212,7 @@ export default function Quran({ student, submissions, progress, schedules, assig
 
             <h2 className="mb-2 text-lg font-semibold">{t.quran_assignments || 'My assignments'}</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.quran_col_type || 'Type'}</th>
@@ -229,12 +229,12 @@ export default function Quran({ student, submissions, progress, schedules, assig
                         )}
                         {assignments.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{named(q, 'assignment_type_', row.assignment_type)}</td>
-                                <td className="px-3 py-2">{surahOf(row)}</td>
-                                <td className="px-3 py-2">{range(row)}</td>
-                                <td className="px-3 py-2">{row.due_date ?? '—'}</td>
-                                <td className="px-3 py-2">{statusBadge(q, 'status_', row.status)}</td>
-                                <td className="px-3 py-2">{row.teacher ?? '—'}</td>
+                                <td data-label={t.quran_col_type || 'Type'} className="px-3 py-2">{named(q, 'assignment_type_', row.assignment_type)}</td>
+                                <td data-label={t.quran_col_surah || 'Surah'} className="px-3 py-2">{surahOf(row)}</td>
+                                <td data-label={t.quran_col_ayahs || 'Ayahs'} className="px-3 py-2">{range(row)}</td>
+                                <td data-label={t.quran_col_due || 'Due'} className="px-3 py-2">{row.due_date ?? '—'}</td>
+                                <td data-label={t.quran_col_status || 'Status'} className="px-3 py-2">{statusBadge(q, 'status_', row.status)}</td>
+                                <td data-label={t.quran_col_teacher || 'Teacher'} className="px-3 py-2">{row.teacher ?? '—'}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -243,7 +243,7 @@ export default function Quran({ student, submissions, progress, schedules, assig
 
             <h2 className="mb-2 text-lg font-semibold">{t.quran_progress || 'Memorization progress'}</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.quran_col_surah || 'Surah'}</th>
@@ -260,12 +260,12 @@ export default function Quran({ student, submissions, progress, schedules, assig
                         )}
                         {progress.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{surahOf(row)}</td>
-                                <td className="px-3 py-2">{range(row)}</td>
-                                <td className="px-3 py-2">{statusBadge(q, 'progress_', row.status)}</td>
-                                <td className="px-3 py-2">{row.strength_score ?? '—'}</td>
-                                <td className="px-3 py-2">{row.mistake_count ?? '—'}</td>
-                                <td className="px-3 py-2">{row.last_reviewed_at ?? '—'}</td>
+                                <td data-label={t.quran_col_surah || 'Surah'} className="px-3 py-2">{surahOf(row)}</td>
+                                <td data-label={t.quran_col_ayahs || 'Ayahs'} className="px-3 py-2">{range(row)}</td>
+                                <td data-label={t.quran_col_status || 'Status'} className="px-3 py-2">{statusBadge(q, 'progress_', row.status)}</td>
+                                <td data-label={t.quran_col_strength || 'Strength'} className="px-3 py-2">{row.strength_score ?? '—'}</td>
+                                <td data-label={t.quran_col_mistakes || 'Mistakes'} className="px-3 py-2">{row.mistake_count ?? '—'}</td>
+                                <td data-label={t.quran_col_last_reviewed || 'Last reviewed'} className="px-3 py-2">{row.last_reviewed_at ?? '—'}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -274,7 +274,7 @@ export default function Quran({ student, submissions, progress, schedules, assig
 
             <h2 className="mb-2 text-lg font-semibold">{t.quran_submissions || 'My recitation submissions'}</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.quran_col_surah || 'Surah'}</th>
@@ -293,13 +293,13 @@ export default function Quran({ student, submissions, progress, schedules, assig
                         )}
                         {submissions.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{surahOf(row)}</td>
-                                <td className="px-3 py-2">{range(row)}</td>
-                                <td className="px-3 py-2">{row.submitted_at}</td>
-                                <td className="px-3 py-2">{statusBadge(q, 'status_', row.status)}</td>
-                                <td className="px-3 py-2">{row.mistake_count}</td>
-                                <td className="px-3 py-2">{row.review_note ?? '—'}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.quran_col_surah || 'Surah'} className="px-3 py-2">{surahOf(row)}</td>
+                                <td data-label={t.quran_col_ayahs || 'Ayahs'} className="px-3 py-2">{range(row)}</td>
+                                <td data-label={t.quran_col_submitted || 'Submitted'} className="px-3 py-2">{row.submitted_at}</td>
+                                <td data-label={t.quran_col_status || 'Status'} className="px-3 py-2">{statusBadge(q, 'status_', row.status)}</td>
+                                <td data-label={t.quran_col_mistakes || 'Mistakes'} className="px-3 py-2">{row.mistake_count}</td>
+                                <td data-label={t.quran_col_teacher_note || 'Teacher note'} className="px-3 py-2">{row.review_note ?? '—'}</td>
+                                <td data-label={t.quran_col_listen || 'Listen'} className="px-3 py-2">
                                     <div className="grid gap-1">
                                         {row.has_audio && (
                                             <audio controls preload="none" className="h-8 w-52" src={`/recitations/${row.id}/audio/submission`}>
@@ -327,7 +327,7 @@ export default function Quran({ student, submissions, progress, schedules, assig
 
             <h2 className="mb-2 text-lg font-semibold">{t.quran_revision || 'Upcoming revision'}</h2>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.quran_col_date || 'Date'}</th>
@@ -344,12 +344,12 @@ export default function Quran({ student, submissions, progress, schedules, assig
                         )}
                         {schedules.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.scheduled_date}</td>
-                                <td className="px-3 py-2">{surahOf(row)}</td>
-                                <td className="px-3 py-2">{range(row)}</td>
-                                <td className="px-3 py-2">{named(q, 'frequency_', row.frequency)}</td>
-                                <td className="px-3 py-2">{statusBadge(q, 'revision_', row.status)}</td>
-                                <td className="px-3 py-2">{row.notes ?? '—'}</td>
+                                <td data-label={t.quran_col_date || 'Date'} className="px-3 py-2">{row.scheduled_date}</td>
+                                <td data-label={t.quran_col_surah || 'Surah'} className="px-3 py-2">{surahOf(row)}</td>
+                                <td data-label={t.quran_col_ayahs || 'Ayahs'} className="px-3 py-2">{range(row)}</td>
+                                <td data-label={t.quran_col_frequency || 'Frequency'} className="px-3 py-2">{named(q, 'frequency_', row.frequency)}</td>
+                                <td data-label={t.quran_col_status || 'Status'} className="px-3 py-2">{statusBadge(q, 'revision_', row.status)}</td>
+                                <td data-label={t.quran_col_notes || 'Notes'} className="px-3 py-2">{row.notes ?? '—'}</td>
                             </tr>
                         ))}
                     </tbody>
