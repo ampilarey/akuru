@@ -506,4 +506,6 @@ return [
     'error_class_not_yours' => 'You can print the names of your own classes only.',
     'error_class_no_name' => 'This design has no name to fill.',
     'error_class_empty' => 'This class has no pupils yet.',
+    // PP6b: Akuru's print quotes, from the print desk.
+    'quotes_link' => 'School quotes',
 ];

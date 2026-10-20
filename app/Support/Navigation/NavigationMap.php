@@ -477,6 +477,8 @@ final class NavigationMap
                     ['key' => 'print_templates', 'href' => '/admin/bookshop/print/templates'],
                     // NT4: the queue of paid jobs the desk prints.
                     ['key' => 'print_queue', 'href' => '/admin/bookshop/print/queue'],
+                    // PRINT_PRODUCTS_PLAN PP6b: Akuru's school quotes for print.
+                    ['key' => 'print_quotes', 'href' => '/admin/bookshop/print/quotes'],
                 ]],
                 // COMMERCE_PARITY_PLAN P7a: the problems customers report on orders.
                 ['key' => 'complaints', 'href' => '/admin/bookshop/complaints', 'can' => ['bookshop.manage']],

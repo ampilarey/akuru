@@ -7,7 +7,7 @@ import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
 // Each language's own name, written in it; the page names it in its own.
 const NATIVE = { dv: 'ދިވެހި', ar: 'العربية' };
 
-function Row({ group, item, locale, suggestAvailable, refusals, t }) {
+function Row({ group, item, locale, language, suggestAvailable, refusals, t }) {
     const [draft, setDraft] = useState(item.override ?? '');
     const [saving, setSaving] = useState(false);
     const [suggesting, setSuggesting] = useState(false);
@@ -231,6 +231,7 @@ export default function Translations({ groups = [], items = [], active_group, pa
                                     group={active_group}
                                     item={item}
                                     locale={locale}
+                                    language={language}
                                     suggestAvailable={Boolean(suggest_available)}
                                     refusals={refusals}
                                     t={t}

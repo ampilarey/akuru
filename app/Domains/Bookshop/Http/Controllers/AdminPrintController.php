@@ -9,11 +9,15 @@ use App\Domains\Bookshop\Actions\Print\SavePrintPaperAction;
 use App\Domains\Bookshop\Actions\Print\SavePrintSettingsAction;
 use App\Domains\Bookshop\Actions\Print\SavePrintSubjectSetAction;
 use App\Domains\Bookshop\Actions\Print\SetPrintProductOnSaleAction;
+use App\Domains\Bookshop\Actions\ResolveVendorScopeAction;
+use App\Domains\Bookshop\Actions\Vendor\VendorQuotesAction;
+use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\PrintFinishingOption;
 use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintLayout;
 use App\Domains\Bookshop\Models\PrintPaperOption;
 use App\Domains\Bookshop\Models\PrintSubjectSet;
+use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintProducts;
 use App\Domains\Bookshop\Support\PrintSheet;
 use App\Domains\Media\Actions\ReadGeneratedDocumentAction;
@@ -23,6 +27,7 @@ use App\Support\Inertia\Phrases;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response as HttpResponse;
+use Illuminate\Validation\Rule;
 use Inertia\Inertia;
 use Inertia\Response;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -51,6 +56,49 @@ class AdminPrintController extends Controller
         app(SavePrintSettingsAction::class)->execute($data);
 
         return back()->with('success', __('print.flash_settings_saved'));
+    }
+
+    /** PP6b: the office prices Akuru's own print quotes, acting for Akuru as it does on the orders Akuru packs. */
+    public function quotes(Request $request): Response
+    {
+        $scope = $this->akuruScope($request);
+        $status = $request->validate(['status' => ['nullable', 'string', Rule::in(VendorQuotesAction::STATUSES)]])['status'] ?? null;
+        $list = app(VendorQuotesAction::class)->list($scope, $status);
+
+        return Inertia::render('Bookshop/VendorQuotes', [
+            't' => Phrases::once('shop'),
+            'vendor' => ['name' => $scope->vendorName, 'slug' => $scope->vendorSlug, 'role' => $scope->role->value],
+            'quotes' => $list['quotes'], 'counts' => $list['counts'], 'statuses' => VendorQuotesAction::STATUSES, 'status' => $status,
+            'default_valid_days' => (int) config('bookshop.quotes.default_valid_days', 14),
+            'max_valid_days' => (int) config('bookshop.quotes.max_valid_days', 60),
+            'base' => '/admin/bookshop/print/quotes', 'office' => true,
+        ]);
+    }
+
+    public function quote(Request $request, int $quote): RedirectResponse
+    {
+        $scope = $this->akuruScope($request);
+        $data = $request->validate(['prices' => 'required|array|max:500', 'prices.*' => 'required|numeric|min:0|max:1000000', 'valid_days' => 'required|integer|min:1|max:365', 'note' => 'nullable|string|max:2000']);
+        app(VendorQuotesAction::class)->quote($scope, $quote, $data['prices'], (int) $data['valid_days'], $data['note'] ?? null);
+
+        return back()->with('success', __('shop.quote_sent_flash'));
+    }
+
+    public function declineQuote(Request $request, int $quote): RedirectResponse
+    {
+        $scope = $this->akuruScope($request);
+        $data = $request->validate(['note' => 'required|string|max:2000']);
+        app(VendorQuotesAction::class)->decline($scope, $quote, $data['note']);
+
+        return back()->with('success', __('shop.quote_declined_flash'));
+    }
+
+    private function akuruScope(Request $request): VendorScope
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        [$vendor] = PrintDesk::ensure();
+
+        return app(ResolveVendorScopeAction::class)->forOffice((int) $vendor->id, (int) $request->user()->id);
     }
 
     /** PP2: one print product on sale, or off. */

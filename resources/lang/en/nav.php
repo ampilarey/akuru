@@ -156,6 +156,7 @@ return [
     'blog_requests' => 'Blog requests',
     'print_templates' => 'Print templates',
     'print_queue' => 'Print queue',
+    'print_quotes' => 'School quotes for print',
     'complaints' => 'Problems reported',
     'sms_campaigns' => 'SMS offers',
     'shop_customers' => 'Customers',

@@ -367,6 +367,17 @@ html[lang="dv"] body,
     padding: 0.25rem 0.75rem;
     margin-inline-start: 0;
   }
+
+  /* A cell the page hides on a phone (`hidden sm:table-cell`) stays hidden.
+     The `display` rules above outrank Tailwind's `hidden`, and since MF6 put
+     every table here, such cells had come back (the notices table's
+     always-ticked "in the app"). Last in the block, matching labelled cells
+     too, so it wins over each of them. */
+  .table-stack td.hidden,
+  .table-stack td[data-label].hidden,
+  .table-stack th.hidden {
+    display: none;
+  }
 }
 /*
  * Under a thumb (docs/ADMIN_PANEL.md §7 M3 and M4, STATUS §5nq). The audit

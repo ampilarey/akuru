@@ -149,8 +149,9 @@ const labelled = await page.evaluate(() => {
 check('a new delivery method is nine labelled boxes, two to a row', labelled.boxes === 9 && labelled.named === 9 && labelled.cols === 2, `${labelled.named}/${labelled.boxes} labelled, ${labelled.cols} columns`);
 await page.click('[data-testid="jump-notices"]');
 await page.waitForTimeout(400);
-const noticeHeads = await page.evaluate(() => [...document.querySelectorAll('[data-testid="shop-notices"] th')].filter((th) => th.getBoundingClientRect().width > 0).length);
-check('the notices table drops its always-ticked "in the app" column on a phone', noticeHeads === 3, `${noticeHeads} columns showing`);
+// Since MF6 the table reads as cards on a phone (its head hidden), so the first row's cells are counted.
+const noticeCells = await page.evaluate(() => [...(document.querySelector('[data-testid="shop-notices"] tbody tr')?.querySelectorAll('td') ?? [])].filter((td) => td.getBoundingClientRect().width > 0).length);
+check('the notices table drops its always-ticked "in the app" column on a phone', noticeCells === 3, `${noticeCells} cells showing`);
 const small = await smallTargets('[data-testid="product-list"] .table-actions a, [data-testid="product-list"] .table-actions button');
 check('every Edit, Duplicate and View link on a product card is big enough for a thumb', small.length === 0, small.length ? small.slice(0, 4).join(' | ') : `${await count('[data-testid="product-list"] .table-actions a, [data-testid="product-list"] .table-actions button')} links, none under 32px`);
 

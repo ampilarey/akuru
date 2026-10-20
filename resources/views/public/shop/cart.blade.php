@@ -97,8 +97,9 @@
                 @if($signed_in && $unquoted > 0)
                     <details class="border-t px-4 py-3 text-sm" data-testid="quote-form-{{ $group['vendor']['slug'] }}">
                         <summary class="cursor-pointer font-medium text-brandMaroon-700">{{ __('shop.quote_ask', ['vendor' => $group['vendor']['name']]) }}</summary>
-                        @if($unquoted < (int) config('bookshop.quotes.min_quantity', 10))
-                            <p class="mt-2 text-gray-600">{{ __('shop.quote_min_note', ['min' => (int) config('bookshop.quotes.min_quantity', 10)]) }}</p>
+                        @php($quoteMin = \App\Domains\Bookshop\Actions\Shop\CustomerQuotesAction::minimumFor(auth()->id()))
+                        @if($unquoted < $quoteMin)
+                            <p class="mt-2 text-gray-600">{{ __('shop.quote_min_note', ['min' => $quoteMin]) }}</p>
                         @else
                             <form method="POST" action="{{ route('public.shop.quotes.store') }}" class="mt-3 grid gap-3 sm:grid-cols-2">
                                 @csrf

@@ -8,7 +8,9 @@ use App\Domains\Bookshop\Models\CartItem;
 use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\QuoteItem;
 use App\Domains\Bookshop\Models\QuoteRequest;
+use App\Domains\Bookshop\Models\ShopCreditAccount;
 use App\Domains\Bookshop\Models\Vendor;
+use App\Domains\Bookshop\Support\PrintLine;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -32,7 +34,7 @@ class CustomerQuotesAction
         $cart = Cart::query()->where('user_id', $userId)->first();
         $items = $cart === null ? collect() : $cart->items()->whereNull('quote_item_id')->with(['product', 'variant'])->get()
             ->filter(fn (CartItem $i) => $i->product !== null && (int) $i->product->vendor_id === (int) $vendor->id)->values();
-        $min = (int) config('bookshop.quotes.min_quantity', 10);
+        $min = self::minimumFor($userId);
         if ((int) $items->sum('quantity') < $min) {
             throw ValidationException::withMessages(['organisation' => __('shop.error_quote_min', ['min' => $min, 'vendor' => $vendor->name])]);
         }
@@ -51,12 +53,18 @@ class CustomerQuotesAction
             $total = 0.0;
             foreach ($items as $item) {
                 /** @var CartItem $item */
-                $price = (float) ($item->variant?->price ?? $item->product->price);
+                // PP6b: a print line is its approved job, at the price held with it; the line names the job.
+                $job = PrintLine::job($item);
+                if ($item->print_job_id !== null && ($job === null || ($why = PrintLine::blocker($job, (int) $item->quantity, $userId)) !== null)) {
+                    throw ValidationException::withMessages(['organisation' => __($why ?? 'print.error_cart_needs_design')]);
+                }
+                $price = $job !== null ? PrintLine::unit($job) : (float) ($item->variant?->price ?? $item->product->price);
                 QuoteItem::query()->create([
                     'quote_request_id' => $quote->id,
                     'product_id' => $item->product_id,
                     'product_variant_id' => $item->product_variant_id,
-                    'title' => $item->product->title,
+                    'print_job_id' => $job?->id,
+                    'title' => $job !== null ? $item->product->title.' — '.$job->name : $item->product->title,
                     'variant_name' => $item->variant?->name,
                     'sku' => $item->variant?->sku ?: $item->product->sku,
                     'quantity' => (int) $item->quantity,
@@ -73,6 +81,20 @@ class CustomerQuotesAction
             __('shop.notice_quote_requested_body', ['number' => $quote->number, 'organisation' => $quote->organisation]), '/vendor/quotes', 'quote_requested');
 
         return $quote;
+    }
+
+    /**
+     * How many items a quote must cover. PRINT_PRODUCTS_PLAN PD9: none for a
+     * customer with an open credit account — a school with terms asks for a
+     * price whatever the size.
+     */
+    public static function minimumFor(?int $userId): int
+    {
+        if ($userId !== null && ShopCreditAccount::query()->where('user_id', $userId)->where('status', 'active')->exists()) {
+            return 1;
+        }
+
+        return (int) config('bookshop.quotes.min_quantity', 10);
     }
 
     /**
@@ -108,11 +130,12 @@ class CustomerQuotesAction
                 if ($line->product_id === null) {
                     continue;
                 }
-                // The quote replaces the same product in the cart, never adds to it.
-                CartItem::query()->where('cart_id', $cart->id)->where('product_id', $line->product_id)->where('product_variant_id', $line->product_variant_id)->delete();
+                // The quote replaces the same product in the cart, never adds to it — a print line, its own job (PP6b).
+                $same = CartItem::query()->where('cart_id', $cart->id)->where('product_id', $line->product_id)->where('product_variant_id', $line->product_variant_id);
+                ($line->print_job_id !== null ? $same->where('print_job_id', $line->print_job_id) : $same->whereNull('print_job_id'))->delete();
                 CartItem::query()->create([
                     'cart_id' => $cart->id, 'product_id' => $line->product_id, 'product_variant_id' => $line->product_variant_id,
-                    'quantity' => $line->quantity, 'quote_item_id' => $line->id,
+                    'print_job_id' => $line->print_job_id, 'quantity' => $line->quantity, 'quote_item_id' => $line->id,
                 ]);
             }
             if ($quote->status === 'quoted') {
@@ -169,7 +192,7 @@ class CustomerQuotesAction
             'requested_at' => $q->created_at?->toDateTimeString(),
             'quoted_at' => $q->quoted_at?->toDateTimeString(),
             'items' => $q->items->map(fn (QuoteItem $i) => [
-                'id' => $i->id, 'title' => $i->title, 'variant' => $i->variant_name, 'sku' => $i->sku, 'quantity' => $i->quantity,
+                'id' => $i->id, 'title' => $i->title, 'variant' => $i->variant_name, 'print_job_id' => $i->print_job_id, 'sku' => $i->sku, 'quantity' => $i->quantity,
                 'list_price' => number_format((float) $i->list_price, 2, '.', ''),
                 'quoted_price' => $i->quoted_price !== null ? number_format((float) $i->quoted_price, 2, '.', '') : null,
             ])->values()->all(),

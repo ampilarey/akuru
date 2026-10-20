@@ -146,7 +146,15 @@ what is printed.
 > (`ListClassesTaughtByUserAction`). The names come through Academics'
 > own actions into the page's list, as if pasted, so the autosave and the
 > limits apply as to any list. Only the name, and the class where the design
-> prints one. **PP6b, print in bulk quotes**, is next.
+> prints one. **PP6b, print in bulk quotes — built 2026-10-20 (STATUS
+> §5to)**: a print job joins the Bookstore's own quotes (B9d) as a line
+> naming its job; the office prices Akuru's quotes from the print desk
+> (*School quotes*, acting for Akuru as on the orders it packs); an accepted
+> quote puts each job back at its line's price, held by the quote rather
+> than the approval's seven days. The Bookstore's quote minimum (10) applies,
+> sheets counting as items — **not the plan's 20 sheets** — and a customer
+> with an open credit account has none. The checkout's payment methods,
+> credit among them (P8c), are unchanged.
 
 - A class roster contract from People (names in the three languages, no
   other fields); the configurator's *From a class* for the office and a

@@ -54,10 +54,12 @@ class PresentCartAction
             $print = null;
             if ($item->print_job_id !== null) {
                 $job = PrintLine::job($item);
-                $blocker = PrintLine::blocker($job, (int) $item->quantity, $cart->user_id !== null ? (int) $cart->user_id : null)
+                // PP6b: or the school's quoted price, while its quote holds.
+                $quoted = PrintLine::quoted($item, $product);
+                $blocker = PrintLine::blocker($job, (int) $item->quantity, $cart->user_id !== null ? (int) $cart->user_id : null, $quoted !== null)
                     ?? (in_array($product->id, $forSale, true) ? null : 'print.error_cart_service_off');
-                $unitPrice = $job !== null ? PrintLine::unit($job) : 0.0;
-                $lineTotal = $job !== null ? PrintLine::total($job) : 0.0;
+                $unitPrice = $quoted ?? ($job !== null ? PrintLine::unit($job) : 0.0);
+                $lineTotal = $quoted !== null ? round($quoted * $item->quantity, 2) : ($job !== null ? PrintLine::total($job) : 0.0);
                 $listPrice = $unitPrice;
                 $print = ['job_id' => $item->print_job_id, 'name' => $job?->name, 'held_until' => $job !== null ? PrintLine::heldUntil($job)?->toDateString() : null, 'problem' => $blocker === null ? null : __($blocker)];
                 if ($blocker !== null) {
