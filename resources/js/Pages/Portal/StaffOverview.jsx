@@ -96,7 +96,7 @@ export default function StaffOverview({
                     <h2 className="text-sm font-medium">{labels.unfilled || t.overview_unfilled || 'Unfilled registers'}</h2>
                     {hrefs.unfilled && <Link href={hrefs.unfilled} className="text-sm text-[#7C2D37] underline">{t.overview_registers || 'Registers'}</Link>}
                 </div>
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{col.date}</th>
@@ -112,11 +112,11 @@ export default function StaffOverview({
                         )}
                         {unfilled.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.date}</td>
-                                <td className="px-3 py-2">{row.class_name}</td>
-                                <td className="px-3 py-2">{row.subject_name}</td>
-                                <td className="px-3 py-2">{row.period_name || '—'}</td>
-                                <td className="px-3 py-2">{t[`register_status_${row.status}`] || row.status}</td>
+                                <td data-label={col.date} className="px-3 py-2">{row.date}</td>
+                                <td data-label={col.class} className="px-3 py-2">{row.class_name}</td>
+                                <td data-label={col.subject} className="px-3 py-2">{row.subject_name}</td>
+                                <td data-label={col.period} className="px-3 py-2">{row.period_name || '—'}</td>
+                                <td data-label={col.status} className="px-3 py-2">{t[`register_status_${row.status}`] || row.status}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -128,7 +128,7 @@ export default function StaffOverview({
                     <h2 className="text-sm font-medium">{labels.ungraded || t.overview_ungraded || 'Ungraded exams'}</h2>
                     {hrefs.ungraded && <Link href={hrefs.ungraded} className="text-sm text-[#7C2D37] underline">{t.overview_exams || 'Exams'}</Link>}
                 </div>
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{col.exam}</th>
@@ -144,11 +144,11 @@ export default function StaffOverview({
                         )}
                         {ungraded.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.name}</td>
-                                <td className="px-3 py-2">{row.class_name}</td>
-                                <td className="px-3 py-2">{row.subject_name}</td>
-                                <td className="px-3 py-2">{row.exam_date}</td>
-                                <td className="px-3 py-2">{t[`exam_status_${row.status}`] || row.status}</td>
+                                <td data-label={col.exam} className="px-3 py-2">{row.name}</td>
+                                <td data-label={col.class} className="px-3 py-2">{row.class_name}</td>
+                                <td data-label={col.subject} className="px-3 py-2">{row.subject_name}</td>
+                                <td data-label={col.date} className="px-3 py-2">{row.exam_date}</td>
+                                <td data-label={col.status} className="px-3 py-2">{t[`exam_status_${row.status}`] || row.status}</td>
                             </tr>
                         ))}
                     </tbody>

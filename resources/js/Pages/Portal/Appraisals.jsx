@@ -31,7 +31,7 @@ export default function Appraisals({ staff, appraisals, observations, cpd, cpdSu
                 <>
                     <h2 className="mb-2 font-medium">{t.appraisals_heading || 'Appraisals'}</h2>
                     <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                        <table className="min-w-full text-sm">
+                        <table className="table-stack min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">{col.cycle}</th>
@@ -48,7 +48,7 @@ export default function Appraisals({ staff, appraisals, observations, cpd, cpdSu
                     </div>
                     <h2 className="mb-2 font-medium">{t.appraisals_observations || 'Shared observations'}</h2>
                     <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                        <table className="min-w-full text-sm">
+                        <table className="table-stack min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">{col.date}</th>
@@ -59,9 +59,9 @@ export default function Appraisals({ staff, appraisals, observations, cpd, cpdSu
                             <tbody>
                                 {observations.map((row) => (
                                     <tr key={row.id} className="border-t">
-                                        <td className="px-3 py-2">{row.date}</td>
-                                        <td className="px-3 py-2">{row.class_name || '—'}</td>
-                                        <td className="px-3 py-2">{row.summary}</td>
+                                        <td data-label={col.date} className="px-3 py-2">{row.date}</td>
+                                        <td data-label={col.class} className="px-3 py-2">{row.class_name || '—'}</td>
+                                        <td data-label={col.summary} className="px-3 py-2">{row.summary}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -72,7 +72,7 @@ export default function Appraisals({ staff, appraisals, observations, cpd, cpdSu
                         <p className="mb-2 text-sm text-gray-700" data-testid="cpd-summary">{cpdLine}</p>
                     )}
                     <div className="overflow-x-auto rounded-lg border bg-white">
-                        <table className="min-w-full text-sm">
+                        <table className="table-stack min-w-full text-sm">
                             <thead className="bg-[#F3EBE0] text-start">
                                 <tr>
                                     <th className="px-3 py-2">{col.title}</th>
@@ -83,9 +83,9 @@ export default function Appraisals({ staff, appraisals, observations, cpd, cpdSu
                             <tbody>
                                 {cpd.map((row) => (
                                     <tr key={row.id} className="border-t">
-                                        <td className="px-3 py-2">{row.title}</td>
-                                        <td className="px-3 py-2">{row.hours}</td>
-                                        <td className="px-3 py-2">{row.date}</td>
+                                        <td data-label={col.title} className="px-3 py-2">{row.title}</td>
+                                        <td data-label={col.hours} className="px-3 py-2">{row.hours}</td>
+                                        <td data-label={col.date} className="px-3 py-2">{row.date}</td>
                                     </tr>
                                 ))}
                             </tbody>
@@ -102,8 +102,8 @@ function AppraisalRow({ row, t }) {
 
     return (
         <tr className="border-t">
-            <td className="px-3 py-2">{row.cycle_name}</td>
-            <td className="px-3 py-2">{t[`appraisal_status_${row.status}`] || row.status}</td>
+            <td data-label={t.col_cycle || 'Cycle'} className="px-3 py-2">{row.cycle_name}</td>
+            <td data-label={t.col_status || 'Status'} className="px-3 py-2">{t[`appraisal_status_${row.status}`] || row.status}</td>
             <td className="px-3 py-2">
                 {row.status !== 'acknowledged' && (
                     <form

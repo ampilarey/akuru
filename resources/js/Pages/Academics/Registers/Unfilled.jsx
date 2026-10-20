@@ -46,7 +46,7 @@ export default function Unfilled({ yearId, years, unfilled, fillRates, planAdher
             </form>
 
             <section className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_date || 'Date'}</th>
@@ -60,11 +60,11 @@ export default function Unfilled({ yearId, years, unfilled, fillRates, planAdher
                     <tbody>
                         {unfilled.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.date}</td>
-                                <td className="px-3 py-2">{row.class_name}</td>
-                                <td className="px-3 py-2">{row.subject_name}</td>
-                                <td className="px-3 py-2">{row.period_name}</td>
-                                <td className="px-3 py-2 uppercase">{t[`register_status_${row.status}`] || row.status}</td>
+                                <td data-label={t.col_date || 'Date'} className="px-3 py-2">{row.date}</td>
+                                <td data-label={t.col_class || 'Class'} className="px-3 py-2">{row.class_name}</td>
+                                <td data-label={t.col_subject || 'Subject'} className="px-3 py-2">{row.subject_name}</td>
+                                <td data-label={t.col_period || 'Period'} className="px-3 py-2">{row.period_name}</td>
+                                <td data-label={t.col_status || 'Status'} className="px-3 py-2 uppercase">{t[`register_status_${row.status}`] || row.status}</td>
                                 <td className="px-3 py-2">
                                     <Link href={`/academics/registers/${row.id}`} className="text-[#7C2D37] underline">{t.open || 'Open'}</Link>
                                 </td>

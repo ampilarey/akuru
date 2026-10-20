@@ -52,7 +52,7 @@ export default function Wizard({ years, sourceYearId, targetYearId, sourceClasse
 
             {report && (
                 <div className="overflow-x-auto rounded-lg border bg-white">
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">{t.col_student || 'Student'}</th>
@@ -63,9 +63,9 @@ export default function Wizard({ years, sourceYearId, targetYearId, sourceClasse
                         <tbody>
                             {(report.outcomes || []).map((row) => (
                                 <tr key={row.student_id} className="border-t">
-                                    <td className="px-3 py-2">{row.student_name || row.student_id}</td>
-                                    <td className="px-3 py-2">{t[`promotion_outcome_${row.outcome}`] || row.outcome}</td>
-                                    <td className="px-3 py-2">{row.target_class_name || row.target_class_id || '—'}</td>
+                                    <td data-label={t.col_student || 'Student'} className="px-3 py-2">{row.student_name || row.student_id}</td>
+                                    <td data-label={t.promotion_col_outcome || 'Outcome'} className="px-3 py-2">{t[`promotion_outcome_${row.outcome}`] || row.outcome}</td>
+                                    <td data-label={t.promotion_col_target || 'Target class'} className="px-3 py-2">{row.target_class_name || row.target_class_id || '—'}</td>
                                 </tr>
                             ))}
                         </tbody>

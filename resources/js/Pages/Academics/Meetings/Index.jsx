@@ -118,7 +118,7 @@ export default function Index({ yearId, years = [], terms = [], teachers = [], c
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_when || 'When'}</th>
@@ -135,11 +135,11 @@ export default function Index({ yearId, years = [], terms = [], teachers = [], c
                         )}
                         {slots.map((slot) => (
                             <tr key={slot.id} className="border-t">
-                                <td className="px-3 py-2">{slot.date} {slot.start_time}–{slot.end_time}</td>
-                                <td className="px-3 py-2">{slot.teacher_name}</td>
-                                <td className="px-3 py-2">{slot.class_name || '—'}</td>
-                                <td className="px-3 py-2">{slot.booked}/{slot.capacity} {slot.bookings.map((row) => row.student_name).join(', ')}</td>
-                                <td className="px-3 py-2">{statusName(slot.status)}</td>
+                                <td data-label={t.col_when || 'When'} className="px-3 py-2">{slot.date} {slot.start_time}–{slot.end_time}</td>
+                                <td data-label={t.col_teacher || 'Teacher'} className="px-3 py-2">{slot.teacher_name}</td>
+                                <td data-label={t.col_class || 'Class'} className="px-3 py-2">{slot.class_name || '—'}</td>
+                                <td data-label={t.meetings_col_booked || 'Booked'} className="px-3 py-2">{slot.booked}/{slot.capacity} {slot.bookings.map((row) => row.student_name).join(', ')}</td>
+                                <td data-label={t.col_status || 'Status'} className="px-3 py-2">{statusName(slot.status)}</td>
                                 <td className="px-3 py-2 text-end">
                                     <button
                                         type="button"

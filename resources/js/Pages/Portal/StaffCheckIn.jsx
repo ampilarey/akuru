@@ -31,7 +31,7 @@ export default function StaffCheckIn({ enabled, staff, rows, t = {} }) {
                 </section>
             )}
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_date || 'Date'}</th>
@@ -46,10 +46,10 @@ export default function StaffCheckIn({ enabled, staff, rows, t = {} }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.date}</td>
-                                <td className="px-3 py-2">{t[`staff_attendance_${row.status}`] || row.status}</td>
-                                <td className="px-3 py-2">{t[`staff_attendance_source_${row.source}`] || row.source}</td>
-                                <td className="px-3 py-2">{row.check_in || '—'}</td>
+                                <td data-label={t.col_date || 'Date'} className="px-3 py-2">{row.date}</td>
+                                <td data-label={t.col_status || 'Status'} className="px-3 py-2">{t[`staff_attendance_${row.status}`] || row.status}</td>
+                                <td data-label={t.col_source || 'Source'} className="px-3 py-2">{t[`staff_attendance_source_${row.source}`] || row.source}</td>
+                                <td data-label={t.checkin_col_time || 'Check in'} className="px-3 py-2">{row.check_in || '—'}</td>
                             </tr>
                         ))}
                     </tbody>

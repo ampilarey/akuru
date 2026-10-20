@@ -10,7 +10,7 @@ export default function LeaveBalances({ staff, rows, t = {} }) {
             )}
             {staff && <p className="mb-4 text-sm text-gray-600">{staff.name}</p>}
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_type || 'Type'}</th>
@@ -25,10 +25,10 @@ export default function LeaveBalances({ staff, rows, t = {} }) {
                         )}
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.leave_type}</td>
-                                <td className="px-3 py-2">{row.entitled_days}</td>
-                                <td className="px-3 py-2">{row.carried_over_days}</td>
-                                <td className="px-3 py-2">{row.balance}</td>
+                                <td data-label={t.col_type || 'Type'} className="px-3 py-2">{row.leave_type}</td>
+                                <td data-label={t.leave_col_entitled || 'Entitled'} className="px-3 py-2">{row.entitled_days}</td>
+                                <td data-label={t.leave_col_carried || 'Carried'} className="px-3 py-2">{row.carried_over_days}</td>
+                                <td data-label={t.col_balance || 'Balance'} className="px-3 py-2">{row.balance}</td>
                             </tr>
                         ))}
                     </tbody>

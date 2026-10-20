@@ -18,13 +18,13 @@ function Slot({ slot, t }) {
 
     return (
         <tr className="border-t align-top">
-            <td className="px-3 py-2 whitespace-nowrap">
+            <td data-label={t.col_when || 'When'} className="px-3 py-2 whitespace-nowrap">
                 <span className="font-medium">{slot.date}</span>
                 <span className="block text-xs text-gray-600">{slot.start_time}–{slot.end_time}</span>
             </td>
-            <td className="px-3 py-2">{slot.class_name || '—'}</td>
-            <td className="px-3 py-2">{slot.room_name || '—'}</td>
-            <td className="px-3 py-2">
+            <td data-label={t.col_class || 'Class'} className="px-3 py-2">{slot.class_name || '—'}</td>
+            <td data-label={t.col_room || 'Room'} className="px-3 py-2">{slot.room_name || '—'}</td>
+            <td data-label={t.teach_meetings_who || 'Who is coming'} className="px-3 py-2">
                 {families.length === 0 && <span className="text-sm text-gray-500">{t.teach_meetings_nobody || 'Nobody booked yet.'}</span>}
                 {families.length > 0 && (
                     <ul className="space-y-1">
@@ -34,7 +34,7 @@ function Slot({ slot, t }) {
                     </ul>
                 )}
             </td>
-            <td className="px-3 py-2 text-xs text-gray-600">{slot.booked}/{slot.capacity}</td>
+            <td data-label={t.teach_meetings_seats || 'Seats'} className="px-3 py-2 text-xs text-gray-600">{slot.booked}/{slot.capacity}</td>
         </tr>
     );
 }
@@ -56,7 +56,7 @@ export default function Meetings({ teacher, slots = [], t = {} }) {
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2 text-start">{t.col_when || 'When'}</th>

@@ -12,10 +12,11 @@
  *    corrected for phones afterwards, and Tailwind's `max-sm:` … `max-2xl:`
  *    variants are the same thing inline. No new file may have one, and no
  *    file may have more than its baseline count.
- * 2. **Tables that stay tables on a phone.** An Inertia page's `<table>`
- *    must be `table-stack` (app.css: below `sm` each row becomes a card of
- *    label–value lines). The pages that are not yet are listed; the list may
- *    only shrink.
+ * 2. **Tables that stay tables on a phone.** Every `<table>` in an Inertia
+ *    page must be `table-stack` (app.css: below `sm` each row becomes a card
+ *    of label–value lines), or carry `data-phone-scroll` when it is a grid
+ *    that cards would scatter (a timetable), scrolling in its own box. The
+ *    pages with a table that is neither are listed; the list may only shrink.
  *
  * What only a browser can see — that the thing a page is for is on the first
  * phone screen, that nothing scrolls sideways — is `phone-first.mjs`.
@@ -69,7 +70,12 @@ it('stacks every new table into cards on a phone, and the old ones only get fewe
     $baseline = require __DIR__.'/Baselines/tables_not_stacked_on_phones.php';
     $current = array_values(array_filter(
         phoneFirstFiles(['resources/js/Pages'], ['.jsx']),
-        fn (string $path) => str_contains($source = (string) file_get_contents(base_path($path)), '<table') && ! str_contains($source, 'table-stack'),
+        // Per table (MF4): every <table> is `table-stack`, or says it must stay a
+        // grid that scrolls in its own box (`data-phone-scroll`, a timetable).
+        fn (string $path) => (bool) array_filter(
+            preg_match_all('/<table\b[^>]*>/', (string) file_get_contents(base_path($path)), $tags) ? $tags[0] : [],
+            fn (string $tag) => ! str_contains($tag, 'table-stack') && ! str_contains($tag, 'data-phone-scroll'),
+        ),
     ));
 
     expect(array_values(array_diff($current, $baseline)))->toBeEmpty(

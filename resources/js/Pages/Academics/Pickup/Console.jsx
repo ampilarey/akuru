@@ -4,15 +4,15 @@ import AppShell from '../../../Layouts/AppShell';
 function Row({ notice, t }) {
     return (
         <tr className="border-t align-top">
-            <td className="px-3 py-2">
+            <td data-label={t.pickup_col_child || 'Child'} className="px-3 py-2">
                 <p className="font-medium">{notice.student}</p>
                 {notice.student_number && <p className="text-xs text-gray-500">{notice.student_number}</p>}
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.pickup_col_adult || 'Adult'} className="px-3 py-2">
                 {notice.guardian}
                 {notice.note && <p className="text-xs text-gray-600">“{notice.note}”</p>}
             </td>
-            <td className="px-3 py-2 text-xs text-gray-600">
+            <td data-label={t.pickup_col_times || 'Times'} className="px-3 py-2 text-xs text-gray-600">
                 {notice.requested_at?.slice(11, 16)}
                 {notice.sent_at && <span className="block">{(t.pickup_sent_at || 'sent :time').replace(':time', notice.sent_at.slice(11, 16))}</span>}
                 {notice.collected_at && <span className="block">{(t.pickup_gone_at || 'gone :time').replace(':time', notice.collected_at.slice(11, 16))}</span>}
@@ -98,7 +98,7 @@ export default function Console({ date, is_open, waiting = [], left = [], t = {}
 
             <h2 className="mb-2 text-sm font-semibold">{(t.pickup_waiting || 'Waiting for departure (:count)').replace(':count', waiting.length)}</h2>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
                             <th className="px-3 py-2 text-start">{t.pickup_col_child || 'Child'}</th>
@@ -118,7 +118,7 @@ export default function Console({ date, is_open, waiting = [], left = [], t = {}
 
             <h2 className="mb-2 text-sm font-semibold">{(t.pickup_left || 'Left (:count)').replace(':count', left.length)}</h2>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <tbody>
                         {left.map((n) => (
                             <tr key={n.id} className="border-t">

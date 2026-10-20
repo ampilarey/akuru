@@ -41,7 +41,7 @@ export default function Index({ periods, t = {} }) {
             {form.errors.order && <p className="mb-2 text-sm text-red-600">{form.errors.order}</p>}
             {form.errors.end_time && <p className="mb-2 text-sm text-red-600">{form.errors.end_time}</p>}
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_order || 'Order'}</th>
@@ -83,24 +83,24 @@ function PeriodRow({ period, t }) {
 
     return (
         <tr className="border-t align-top">
-            <td className="px-3 py-2">
+            <td data-label={t.col_order || 'Order'} className="px-3 py-2">
                 <input className="form-input w-20" type="number" min="1" aria-label={label(t.col_order || 'Order')} value={form.data.order} onChange={(e) => form.setData('order', e.target.value)} />
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.col_name || 'Name'} className="px-3 py-2">
                 <input className="form-input w-full" aria-label={label(t.col_name || 'Name')} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                 {form.errors.name && <span className="text-xs text-red-600">{form.errors.name}</span>}
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.col_start || 'Start'} className="px-3 py-2">
                 <input className="form-input" type="time" aria-label={label(t.col_start || 'Start')} value={form.data.start_time} onChange={(e) => form.setData('start_time', e.target.value)} />
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.col_end || 'End'} className="px-3 py-2">
                 <input className="form-input" type="time" aria-label={label(t.col_end || 'End')} value={form.data.end_time} onChange={(e) => form.setData('end_time', e.target.value)} />
                 {form.errors.end_time && <span className="block text-xs text-red-600">{form.errors.end_time}</span>}
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.periods_break || 'Break'} className="px-3 py-2">
                 <input type="checkbox" aria-label={label(t.periods_break || 'Break')} checked={form.data.is_break} onChange={(e) => form.setData('is_break', e.target.checked)} />
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.col_active || 'Active'} className="px-3 py-2">
                 <input type="checkbox" aria-label={label(t.col_active || 'Active')} checked={form.data.is_active} onChange={(e) => form.setData('is_active', e.target.checked)} />
             </td>
             <td className="px-3 py-2">

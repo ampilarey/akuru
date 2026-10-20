@@ -257,7 +257,7 @@ export default function Show({
                         <p className="mb-2 text-sm font-semibold">{t.register_attendance || 'Attendance'}</p>
                         {errors?.attendance && <p className="mb-2 text-xs text-red-600">{errors.attendance}</p>}
                         <div className="overflow-x-auto">
-                            <table className="min-w-full text-sm">
+                            <table className="table-stack min-w-full text-sm">
                                 <thead className="bg-[#F3EBE0] text-start">
                                     <tr>
                                         <th className="px-2 py-1">{col.student}</th>
@@ -273,10 +273,10 @@ export default function Show({
                                         const row = grid[key] || { student_id: student.student_id, status: 'present', minutes_late: '' };
                                         return (
                                             <tr key={student.student_id} className="border-t">
-                                                <td className="px-2 py-1">{student.name}</td>
-                                                <td className="px-2 py-1">{student.student_number || '—'}</td>
-                                                <td className="px-2 py-1">{student.date_of_birth || '—'}</td>
-                                                <td className="px-2 py-1">
+                                                <td data-label={col.student} className="px-2 py-1">{student.name}</td>
+                                                <td data-label={col.number} className="px-2 py-1">{student.student_number || '—'}</td>
+                                                <td data-label={col.dob} className="px-2 py-1">{student.date_of_birth || '—'}</td>
+                                                <td data-label={col.status} className="px-2 py-1">
                                                     <select
                                                         className="form-input w-full"
                                                         aria-label={`${col.status}: ${student.name}`}
@@ -290,7 +290,7 @@ export default function Show({
                                                         {attendanceStatuses.map((status) => <option key={status} value={status}>{t[`attendance_status_${status}`] || status}</option>)}
                                                     </select>
                                                 </td>
-                                                <td className="px-2 py-1">
+                                                <td data-label={col.minutesLate} className="px-2 py-1">
                                                     <input
                                                         className="form-input w-20"
                                                         type="number"

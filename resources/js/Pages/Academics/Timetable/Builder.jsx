@@ -199,8 +199,11 @@ export default function Builder({
                 </div>
             </div>
 
+            {/* docs/MOBILE_FIRST.md rule 5's one exception: a timetable is a grid of
+                days by periods, which cards would scatter, so on a phone it scrolls
+                sideways inside its own box and the page does not. */}
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-xs">
+                <table className="min-w-full text-xs" data-phone-scroll>
                     <thead className="bg-[#F3EBE0]">
                         <tr>
                             <th className="px-2 py-2 text-start">{t.col_period || 'Period'}</th>
