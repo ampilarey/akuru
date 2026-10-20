@@ -52,6 +52,11 @@ class RenderPrintSheetAction
     {
         $this->upload = isset($options['upload']) && is_string($options['upload']) ? $options['upload'] : null;
         $perSheet = max(1, $layout->tagsPerSheet());
+        // PP3: with a bleed, each tag is drawn that much larger on every side,
+        // and what touches the trim runs on into the bleed, so the cut shows no white edge.
+        $bleed = max(0.0, (float) $layout->bleed_mm);
+        $tagW = (float) ($design['tag']['w'] ?? $layout->tag_w_mm);
+        $tagH = (float) ($design['tag']['h'] ?? $layout->tag_h_mm);
         $sheets = [];
         $images = [];
         foreach (array_chunk($rows === [] ? [[]] : array_values($rows), $perSheet) as $chunk) {
@@ -60,12 +65,12 @@ class RenderPrintSheetAction
                 $col = $i % $layout->columns;
                 $line = intdiv($i, $layout->columns);
                 $tags[] = [
-                    'x' => round($layout->margin_left_mm + $col * ($layout->tag_w_mm + $layout->gutter_x_mm), 2),
-                    'y' => round($layout->margin_top_mm + $line * ($layout->tag_h_mm + $layout->gutter_y_mm), 2),
-                    'w' => $layout->tag_w_mm,
-                    'h' => $layout->tag_h_mm,
+                    'x' => round($layout->margin_left_mm + $col * ($layout->tag_w_mm + $layout->gutter_x_mm) - $bleed, 2),
+                    'y' => round($layout->margin_top_mm + $line * ($layout->tag_h_mm + $layout->gutter_y_mm) - $bleed, 2),
+                    'w' => round($layout->tag_w_mm + 2 * $bleed, 2),
+                    'h' => round($layout->tag_h_mm + 2 * $bleed, 2),
                     'background' => $this->colour($design['background']['color'] ?? '#FFFFFF', $design),
-                    'elements' => $this->elements($design, $row, $images, (bool) ($options['browser'] ?? false)),
+                    'elements' => self::bleed($this->elements($design, $row, $images, (bool) ($options['browser'] ?? false)), $tagW, $tagH, $bleed),
                 ];
             }
             $sheets[] = $tags;
@@ -74,15 +79,98 @@ class RenderPrintSheetAction
         return $sheets;
     }
 
+    /**
+     * PP3: the elements moved in by the bleed, and a box or picture that
+     * touches a trim edge stretched out to the bleed edge — a band printed to
+     * the edge stays to the edge after the cut. Text, ellipses, lines and
+     * anything turned stay as drawn.
+     *
+     * @param  list<array<string, mixed>>  $elements
+     * @return list<array<string, mixed>>
+     */
+    public static function bleed(array $elements, float $w, float $h, float $bleed): array
+    {
+        if ($bleed <= 0) {
+            return $elements;
+        }
+        $edge = 0.01;
+
+        return array_map(function (array $el) use ($w, $h, $bleed, $edge) {
+            [$x, $y, $ew, $eh] = [(float) $el['x'], (float) $el['y'], (float) $el['w'], (float) $el['h']];
+            if (in_array($el['type'], ['rect', 'image'], true) && empty($el['rotate'])) {
+                if ($x <= $edge) {
+                    $ew += $bleed + $x;
+                    $x = -$bleed;
+                }
+                if ($y <= $edge) {
+                    $eh += $bleed + $y;
+                    $y = -$bleed;
+                }
+                if ($x + $ew >= $w - $edge) {
+                    $ew = $w + $bleed - $x;
+                }
+                if ($y + $eh >= $h - $edge) {
+                    $eh = $h + $bleed - $y;
+                }
+            }
+
+            return ['x' => round($x + $bleed, 2), 'y' => round($y + $bleed, 2), 'w' => round($ew, 2), 'h' => round($eh, 2)] + $el;
+        }, $elements);
+    }
+
+    /**
+     * PP3: crop marks for a layout with a bleed — at the sheet's outer edges
+     * only, in line with every cut, so no mark lands on a neighbour's bleed.
+     *
+     * @return list<array{x: float, y: float, w: float, h: float}>
+     */
+    public static function outerMarks(PrintLayout $layout): array
+    {
+        $bleed = (float) $layout->bleed_mm;
+        [$pw, $ph] = $layout->sheetMm();
+        $xs = [];
+        $ys = [];
+        for ($c = 0; $c < $layout->columns; $c++) {
+            $left = $layout->margin_left_mm + $c * ($layout->tag_w_mm + $layout->gutter_x_mm);
+            array_push($xs, $left, $left + $layout->tag_w_mm);
+        }
+        for ($r = 0; $r < $layout->rows; $r++) {
+            $top = $layout->margin_top_mm + $r * ($layout->tag_h_mm + $layout->gutter_y_mm);
+            array_push($ys, $top, $top + $layout->tag_h_mm);
+        }
+        [$gridW, $gridH] = $layout->footprint();
+        $marks = [];
+        $long = 4.0;
+        $gap = $bleed + 1.0;
+        foreach (array_unique($xs) as $x) {
+            // Above the first row and below the last, clear of the bleed.
+            $top = max(0.0, $layout->margin_top_mm - $gap - $long);
+            $marks[] = ['x' => round($x, 2), 'y' => round($top, 2), 'w' => 0.2, 'h' => round(max(0.0, $layout->margin_top_mm - $gap - $top), 2)];
+            $bottom = $gridH + $gap;
+            $marks[] = ['x' => round($x, 2), 'y' => round($bottom, 2), 'w' => 0.2, 'h' => round(max(0.0, min($long, $ph - $bottom)), 2)];
+        }
+        foreach (array_unique($ys) as $y) {
+            $left = max(0.0, $layout->margin_left_mm - $gap - $long);
+            $marks[] = ['x' => round($left, 2), 'y' => round($y, 2), 'w' => round(max(0.0, $layout->margin_left_mm - $gap - $left), 2), 'h' => 0.2];
+            $right = $gridW + $gap;
+            $marks[] = ['x' => round($right, 2), 'y' => round($y, 2), 'w' => round(max(0.0, min($long, $pw - $right)), 2), 'h' => 0.2];
+        }
+
+        return array_values(array_filter($marks, fn (array $m) => $m['w'] > 0 && $m['h'] > 0));
+    }
+
     /** @param  list<list<array<string, mixed>>>  $sheets */
     private function render(array $sheets, PrintLayout $layout, array $options): string
     {
+        $crop = (bool) ($options['crop_marks'] ?? ($layout->sheet_code === null));
+
         return $this->renderer->render('print-sheet', [
             'title' => (string) ($options['title'] ?? 'Print sheet'),
             'lang' => (string) ($options['lang'] ?? 'en'),
             'fontCss' => ! empty($options['browser']) ? PrintFontFaces::forBrowser() : PrintFontFaces::forFile(),
             'page' => ['w' => $layout->sheetMm()[0], 'h' => $layout->sheetMm()[1]],
-            'cropMarks' => (bool) ($options['crop_marks'] ?? ($layout->sheet_code === null)),
+            'cropMarks' => $crop && (float) $layout->bleed_mm <= 0,
+            'outerMarks' => $crop && (float) $layout->bleed_mm > 0 ? self::outerMarks($layout) : [],
             'watermark' => $options['watermark'] ?? null,
             'grayscale' => (bool) ($options['grayscale'] ?? false),
             'tags' => $sheets[0] ?? [],

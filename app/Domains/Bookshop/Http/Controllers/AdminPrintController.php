@@ -97,7 +97,7 @@ class AdminPrintController extends Controller
             'columns' => 'required|integer|min:1|max:20', 'rows' => 'required|integer|min:1|max:30',
             'tag_w_mm' => 'required|numeric|min:1|max:420', 'tag_h_mm' => 'required|numeric|min:1|max:420',
             'margin_top_mm' => 'nullable|numeric|min:0|max:100', 'margin_left_mm' => 'nullable|numeric|min:0|max:100',
-            'gutter_x_mm' => 'nullable|numeric|min:0|max:50', 'gutter_y_mm' => 'nullable|numeric|min:0|max:50',
+            'gutter_x_mm' => 'nullable|numeric|min:0|max:50', 'gutter_y_mm' => 'nullable|numeric|min:0|max:50', 'bleed_mm' => 'nullable|numeric|min:0|max:5',
             'sheet_code' => 'nullable|string|max:40', 'is_active' => 'nullable|boolean', 'sort_order' => 'nullable|integer|min:0|max:1000',
         ]);
         app(SavePrintLayoutAction::class)->execute($data, $layout === null ? null : PrintLayout::query()->findOrFail($layout));

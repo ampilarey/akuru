@@ -4983,6 +4983,55 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tk. Cards with a bleed (PP3, 2026-10-20)
+
+PRINT_PRODUCTS_PLAN PP3. Cards are cut from the sheet, so their artwork has
+to run past the cut, or a hair's misalignment leaves a white edge.
+- **Bleed:** a layout has a bleed (`print_layouts.bleed_mm`, 0 for name
+  tags as before). With one, the renderer draws each card that much larger
+  on every side. A box or picture that touches the cut runs on into the
+  bleed (`RenderPrintSheetAction::bleed`); text and everything else only
+  moves in. The office is refused a bleed the margins or the gutters cannot
+  hold, in its language.
+- **Crop marks:** with a bleed, they go at the sheet's edges only, in line
+  with every cut (`outerMarks`). Marks between cards would print on the
+  next card's bleed.
+- **Card layouts:** business cards 8 to an A4 and 18 to an A3, A6 place and
+  gift cards 2 to an A4, A5 invitations 1 to an A4, each with a 3 mm bleed
+  and 6 mm gutters. The plan's counts left no room for a bleed; the plan
+  says so.
+- **Card designs:** five ship active, made of text and shapes: business
+  card with a side band, a top band or centred, a place card and an
+  invitation. Three new fields, role, phone and email, are named in the
+  three languages. A phone or email sample is the same in every language.
+- The cards door no longer calls a card design a "name tag".
+
+**Tests:** `PrintCardsTest` (5):
+- the four layouts fit with their bleed, and name tags have none;
+- the five designs pass the validator, and the business card asks for name,
+  role, phone and email;
+- a band runs into the bleed while text only moves in;
+- a sheet draws each card 91 × 61 mm for an 85 × 55 cut, and its crop marks
+  sit on the sheet, clear of every card;
+- a bleed the gutters cannot hold is refused in Dhivehi;
+- a card's fields are named in Dhivehi.
+
+Earlier tests that counted every layout or template now count name tags'.
+Whole suite 3314 passed; pint clean. With Chrome set, every print walk
+passes (products 13/13, sizes 10/10, office 7/7, design 18/18, upload
+10/10, order 15/15, freeform 9/9, templates 13/13, upsell 7/7).
+
+**Real print (local Chrome):** a sheet of 8 Dhivehi business cards printed
+as one A4 page. Each band runs into its bleed, meeting the next card's in
+the 6 mm gutter, and the crop marks sit at the sheet edges, in line with
+every cut.
+
+**Walk:** `print-cards.mjs` (new, in `all.mjs`), 8/8 at 390 × 844 under
+/dv. The Cards door shows five designs; the customer starts the side-band
+business card, is asked for role, phone and email in Dhivehi, and types a
+Thaana name, which the card shows. The server prices it. Nothing scrolls
+sideways.
+
 ## 5tj. Print products: name tags, cards, stickers, photo prints (PP2, 2026-10-20)
 
 PRINT_PRODUCTS_PLAN PP2. The desk sold one product, name tags, through one

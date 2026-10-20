@@ -60,7 +60,8 @@ class ListPrintTemplatesAction
     {
         $row = [];
         foreach (PrintDesign::FIELD_KEYS as $key) {
-            $row[$key] = (string) __('print.sample_'.$key, [], $locale);
+            // PP3: a phone number and an address read the same in every language.
+            $row[$key] = PrintDesign::SAMPLE_FIXED[$key] ?? (string) __('print.sample_'.$key, [], $locale);
         }
 
         return $row;

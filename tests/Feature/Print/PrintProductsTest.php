@@ -68,7 +68,7 @@ it('lists what is on sale: name tags with the desk, the others once put on sale,
     printWeb()->actingAs($customer)->get(route('public.shop.print.index'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->has('products', 2)->where('products.1.kind', 'cards'));
     printWeb()->actingAs($customer)->get(route('public.shop.print.kind', 'cards'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('Shop/PrintDoor')->where('kind', 'cards')->has('templates', 1)->where('templates.0.title', 'Plain card'));
+        ->assertInertia(fn (Assert $page) => $page->component('Shop/PrintDoor')->where('kind', 'cards')->where('templates', fn ($templates) => collect($templates)->contains('title', 'Plain card') && collect($templates)->doesntContain('title', 'Plain')));
     // The name-tag door keeps its own designs.
     printWeb()->actingAs($customer)->get(route('public.shop.print'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->where('templates', fn ($templates) => collect($templates)->doesntContain('title', 'Plain card')));
@@ -105,7 +105,7 @@ it('starts a job from a cards design as a cards job, on cards layouts only', fun
         ->and($job->print_layout_id)->toBe($layout->id);
 
     printWeb()->actingAs($customer)->get(route('public.shop.print.job', $job->id))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->has('layouts', 1)->where('layouts.0.id', $layout->id)->where('door', 'cards')->where('product_title', 'Cards'));
+        ->assertInertia(fn (Assert $page) => $page->where('layouts', fn ($layouts) => collect($layouts)->contains('id', $layout->id) && collect($layouts)->doesntContain('name', 'A4 2 × 4 (8 tags)'))->where('door', 'cards')->where('product_title', 'Cards'));
     // A name-tag layout is not this job's to choose.
     $tagLayout = PrintLayout::query()->where('print_kind', 'name_tags')->where('is_active', true)->firstOrFail();
     printWeb()->actingAs($customer)->postJson(route('public.shop.print.save', $job->id), ['layout_id' => $tagLayout->id])->assertStatus(422);

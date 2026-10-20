@@ -26,7 +26,11 @@ final class PrintDesign
 
     public const MAX_ELEMENTS = 60;
 
-    public const FIELD_KEYS = ['name', 'class', 'school', 'subject', 'year'];
+    // PP3: a card's role, phone and email.
+    public const FIELD_KEYS = ['name', 'class', 'school', 'subject', 'year', 'role', 'phone', 'email'];
+
+    /** PP3: samples that are not words, so not in a phrase book. */
+    public const SAMPLE_FIXED = ['phone' => '+960 777 1234', 'email' => 'nadha@akuru.edu.mv'];
 
     /**
      * @param  array<string, mixed>  $raw

@@ -14,6 +14,7 @@
     $sheets    ?list    several sheets' tags in one document (the print PDF, NT3); else [$tags]
     $grayscale bool     a black-and-white job: the sheet is printed in grey (NT3)
     $cropMarks bool     draw marks in the gutters
+    $outerMarks list    PP3: with a bleed, the marks at the sheet's outer edges instead [{x, y, w, h} mm]
     $watermark ?string  diagonal text across the sheet (the customer's proof)
 --}}
 <!DOCTYPE html>
@@ -70,6 +71,9 @@
                 <div class="crop" style="left: {{ $cx }}mm; top: {{ $cy - 2 }}mm; width: 0.2mm; height: 4mm;"></div>
             @endforeach
         @endif
+    @endforeach
+    @foreach ($outerMarks ?? [] as $mark)
+        <div class="crop" style="left: {{ $mark['x'] }}mm; top: {{ $mark['y'] }}mm; width: {{ $mark['w'] }}mm; height: {{ $mark['h'] }}mm;"></div>
     @endforeach
     @if (! empty($watermark))
         <div class="watermark"><span>{{ $watermark }}</span></div>

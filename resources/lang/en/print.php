@@ -479,4 +479,12 @@ return [
     'error_template_layout_product' => 'This layout belongs to another print product.',
     'product_with_desk' => 'On and off with the print desk switch above.',
     'error_product_name_tags' => 'Name tags go on and off sale with the print desk switch.',
+    // PP3: cards — their fields and the bleed.
+    'field_role' => 'Role or title',
+    'field_phone' => 'Phone',
+    'field_email' => 'Email',
+    'sample_role' => 'Class teacher',
+    'bleed' => 'Bleed (mm)',
+    'bleed_help' => 'How far the artwork runs past the cut on every side. Cards: 3 mm. Needs margins at least this, and gutters twice it.',
+    'error_layout_bleed' => 'A :bleed mm bleed needs margins of at least :bleed mm and gaps between tags of at least :gutter mm.',
 ];

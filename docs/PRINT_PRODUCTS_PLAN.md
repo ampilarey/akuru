@@ -91,6 +91,15 @@ what is printed.
 
 ### PP3 — Cards
 
+> **Built 2026-10-20 (STATUS §5tk)**, with these corrections: the card
+> layouts are business cards **8 per A4** and **18 per A3**, A6 place and
+> gift cards **2 per A4** and A5 invitations **1 per A4** — with a 3 mm
+> bleed, the cards need 6 mm between them, so the plan's 10, 4 and 2 per A4
+> do not fit. With a bleed, crop marks go at the sheet's edges only, in line
+> with every cut. Cards gained three fields: role, phone and email. The
+> designer still draws the cut size; a box or picture placed against an edge
+> prints into the bleed.
+
 - Bleed (3 mm) in the design model and the renderer, with crop marks;
   card layouts (business card 10 per A4, 24 per A3; A6 4 per A4; A5 2 per
   A4); five Akuru card templates.

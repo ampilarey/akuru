@@ -41,9 +41,10 @@ function pp1Desk(): array
 it('reads every layout and paper made before as A4', function () {
     PrintDesk::ensure();
 
-    expect(PrintLayout::query()->pluck('sheet_size')->unique()->all())->toBe(['a4'])
+    $tags = PrintLayout::query()->where('print_kind', 'name_tags');
+    expect((clone $tags)->pluck('sheet_size')->unique()->all())->toBe(['a4'])
         ->and(PrintPaperOption::query()->pluck('sheet_size')->unique()->all())->toBe(['a4'])
-        ->and(PrintLayout::query()->get()->every(fn (PrintLayout $l) => $l->fitsSheet() && $l->sheetMm() === [210.0, 297.0]))->toBeTrue();
+        ->and((clone $tags)->get()->every(fn (PrintLayout $l) => $l->fitsSheet() && $l->sheetMm() === [210.0, 297.0]))->toBeTrue();
 });
 
 it('lets the office lay out an A3 sheet, and refuses the same grid on A4 in its language', function () {
