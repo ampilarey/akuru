@@ -316,7 +316,17 @@ check('the pupil hands in an assessment in Dhivehi and is told so in Dhivehi', B
 // made, so nothing is bought or held. The catalog read no errors before: the
 // button did nothing, and the reason was English.
 await pupil.goto(`${BASE}/dv/learn/catalog`, { waitUntil: 'networkidle' });
-const walletRow = pupil.locator('tr', { hasText: 'SMOKE-Wallet-Course' }).first();
+// `buy.mjs` enrols the pupil on SMOKE-Wallet-Course, and an enrolled row has
+// no code box; then the priced SMOKE-Pay-Course serves (BP4).
+let walletRow = null;
+for (const course of ['SMOKE-Wallet-Course', 'SMOKE-Pay-Course']) {
+    const row = pupil.locator('tr', { hasText: course }).first();
+    if (await row.getByLabel(learn.discount_code, { exact: true }).count()) {
+        walletRow = row;
+        break;
+    }
+}
+walletRow ??= pupil.locator('tr', { hasText: 'SMOKE-Wallet-Course' }).first();
 await walletRow.getByLabel(learn.discount_code, { exact: true }).fill('SMOKE-NO-SUCH-CODE');
 await walletRow.locator('button.btn-primary').first().click();
 const codeRefusal = (await pupil.locator('main ul[role="alert"]').first().textContent({ timeout: 10000 }).catch(() => null))?.trim() ?? null;

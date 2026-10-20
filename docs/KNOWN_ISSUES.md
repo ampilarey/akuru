@@ -167,7 +167,7 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ## Found running every walk on a fresh database (2026-10-20)
 
-### Four walks fail only after others in `all.mjs` — open (low; the harness, not the product)
+### Four walks fail only after others in `all.mjs` — **fixed (2026-10-20, STATUS §5tt)**
 
 On a fresh seed, `all.mjs` passes 98/102. `blog-start`, `blog-posts`,
 `blog-design` and `course-screens-language` each pass **alone** on a fresh
@@ -179,6 +179,19 @@ without its discount-code box after earlier walks have used the course.
 Not a product defect. The fix is in the harness: each blog walk needs its
 own pupil with a parent, or the library walks need to clean up after
 themselves.
+
+**Fixed in the harness (BP4):**
+- The five writer walks (`library`, `peer-review`, `earnings`,
+  `writer-language`, `library-office-language`) now use their own seeded
+  adult, `smoke-writer@`, so the pupil stays a pupil.
+- The catalog step in `course-screens-language` falls back to the priced
+  SMOKE-Pay-Course when `buy.mjs` has already enrolled the pupil on the
+  wallet course.
+- `blog-posts` had also been looking for an author-page marker that BL3a
+  renamed (`author-blog`, now `blog-section-latest`). The fix let the walk
+  run its last steps: 22/22 where it had stopped at 12.
+- The conflicting walks, run in `all.mjs` order on a fresh seed, all
+  pass.
 
 ## Found reading the sign-in pages (2026-10-11)
 

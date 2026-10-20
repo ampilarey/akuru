@@ -103,6 +103,7 @@ class SmokeMarkerSeeder extends Seeder
         $this->learnerIdentities($admin);
         $this->webParent();
         $this->accountHolder();
+        $this->smokeWriter();
         $this->recruitment();
         $this->requests($admin);
         $this->readerWallet();
@@ -888,6 +889,24 @@ class SmokeMarkerSeeder extends Seeder
                 ]);
             }
         }
+    }
+
+    /**
+     * BP4: the Library walks' writer — an adult with no role, who applies to
+     * write in `library.mjs` and is the writer in `earnings`, `peer-review`,
+     * `writer-language` and `library-office-language`. They used the seeded
+     * pupil (student@), who then stayed a writer, so *My blog* showed the
+     * writer's page and the blog walks after them failed (KNOWN_ISSUES,
+     * 2026-10-20). Made once; what the walks make of them stays.
+     */
+    private function smokeWriter(): void
+    {
+        $email = 'smoke-writer@akuru.edu.mv';
+        $userId = (int) DB::table('users')->where('email', $email)->value('id');
+        if ($userId === 0) {
+            $userId = (int) app(\App\Domains\Identity\Actions\CreateUserAction::class)->execute('SMOKE Writer', $email, 'password')['id'];
+        }
+        DB::table('users')->where('id', $userId)->update(['email_verified_at' => now()]);
     }
 
     /**
