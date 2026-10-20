@@ -62,11 +62,12 @@ try {
     await box.locator('input[name="work_claimed"]').fill('ނަޙްވު 2019');
     await box.locator('textarea[name="statement"]').fill('ދެވަނަ ބާބު އަޅުގަނޑުގެ ފޮތުން.');
     check('/dv the open form does not scroll sideways at 390 px', await sideways(reader) <= 1, `${await sideways(reader)} px`);
-    await Promise.all([reader.waitForLoadState('networkidle'), box.locator('[data-testid="copyright-send"]').click()]);
+    // Wait for the reload itself: the page is idle before it starts, so a load-state wait raced it.
+await Promise.all([reader.waitForNavigation({ waitUntil: 'networkidle' }), box.locator('[data-testid="copyright-send"]').click()]);
     const refused = reader.locator('[data-testid="copyright-errors"]');
     check('without the good-faith tick it is refused, said in the form, the form open again', await refused.count() === 1 && await box.evaluate((d) => d.open));
     await reader.locator('input[name="good_faith"]').check();
-    await Promise.all([reader.waitForLoadState('networkidle'), reader.locator('[data-testid="copyright-send"]').click()]);
+    await Promise.all([reader.waitForNavigation({ waitUntil: 'networkidle' }), reader.locator('[data-testid="copyright-send"]').click()]);
     check('with it, the reader is thanked', await reader.locator('[data-testid="copyright-sent"]').count() === 1);
     if (SHOTS) { await reader.locator('[data-testid="copyright-report"]').scrollIntoViewIfNeeded(); await reader.screenshot({ path: `${SHOTS}/bp3-sent-dv.png` }); }
     const id = tinker(`echo DB::table('library_copyright_reports')->where('email', '${EMAIL}')->value('id');`);
