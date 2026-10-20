@@ -132,7 +132,7 @@ export default function Index({ yearId, yearStart, yearEnd, years, types, days, 
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_date || 'Date'}</th>
@@ -149,11 +149,11 @@ export default function Index({ yearId, yearStart, yearEnd, years, types, days, 
                         )}
                         {days.map((day) => (
                             <tr key={day.id} className="border-t">
-                                <td className="px-3 py-2">{day.date}</td>
-                                <td className="px-3 py-2">{typeName(day.type)}</td>
-                                <td className="px-3 py-2">{title(day)}</td>
-                                <td className="px-3 py-2">{yesNo(day.affects_timetable)}</td>
-                                <td className="px-3 py-2">{yesNo(day.is_public)}</td>
+                                <td data-label={t.col_date || 'Date'} className="px-3 py-2">{day.date}</td>
+                                <td data-label={t.col_type || 'Type'} className="px-3 py-2">{typeName(day.type)}</td>
+                                <td data-label={t.col_title || 'Title'} className="px-3 py-2">{title(day)}</td>
+                                <td data-label={t.calendar_affects || 'Affects timetable'} className="px-3 py-2">{yesNo(day.affects_timetable)}</td>
+                                <td data-label={t.calendar_col_public || 'Shown to families'} className="px-3 py-2">{yesNo(day.is_public)}</td>
                                 <td className="px-3 py-2">
                                     <button type="button" className="text-sm text-red-700 underline" onClick={() => router.delete(`/academics/calendar/${day.id}`)}>{t.remove || 'Remove'}</button>
                                 </td>

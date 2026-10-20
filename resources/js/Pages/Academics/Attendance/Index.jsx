@@ -31,7 +31,7 @@ export default function Index({ filters, years, classes, statuses, rows, chronic
             </div>
 
             <section className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_date || 'Date'}</th>
@@ -44,11 +44,11 @@ export default function Index({ filters, years, classes, statuses, rows, chronic
                     <tbody>
                         {rows.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.date}</td>
-                                <td className="px-3 py-2">{row.student_name}</td>
-                                <td className="px-3 py-2">{row.class_name}</td>
-                                <td className="px-3 py-2 uppercase">{status(row.status)}</td>
-                                <td className="px-3 py-2">{t[`attendance_source_${row.source}`] || row.source}</td>
+                                <td data-label={t.col_date || 'Date'} className="px-3 py-2">{row.date}</td>
+                                <td data-label={t.col_student || 'Student'} className="px-3 py-2">{row.student_name}</td>
+                                <td data-label={t.col_class || 'Class'} className="px-3 py-2">{row.class_name}</td>
+                                <td data-label={t.col_status || 'Status'} className="px-3 py-2 uppercase">{status(row.status)}</td>
+                                <td data-label={t.col_source || 'Source'} className="px-3 py-2">{t[`attendance_source_${row.source}`] || row.source}</td>
                             </tr>
                         ))}
                     </tbody>
@@ -86,7 +86,7 @@ export default function Index({ filters, years, classes, statuses, rows, chronic
                             : (t.reports_no_tardy_rule || 'No tardy-to-absence rule is set, so no lateness is counted as absence.')}
                     </p>
                 </div>
-                <table className="w-full min-w-[46rem] text-sm">
+                <table className="table-stack w-full text-sm sm:min-w-[46rem]">
                     <thead className="bg-[#F9F4EE] text-start">
                         <tr>
                             <th className="p-2">{t.col_student || 'Student'}</th>
@@ -101,13 +101,13 @@ export default function Index({ filters, years, classes, statuses, rows, chronic
                     <tbody>
                         {tardies.map((row) => (
                             <tr key={row.student_id} className="border-t">
-                                <td className="p-2">{row.student_name}</td>
-                                <td className="p-2">{row.tardies}</td>
-                                <td className="p-2">{row.minutes_late}</td>
-                                <td className="p-2">{row.early_departures}</td>
-                                <td className="p-2">{row.absent_days}</td>
-                                {tardiesPerAbsence > 0 && <td className="p-2">{row.absences_from_tardies}</td>}
-                                {tardiesPerAbsence > 0 && <td className="p-2 font-semibold">{row.effective_absences}</td>}
+                                <td data-label={t.col_student || 'Student'} className="p-2">{row.student_name}</td>
+                                <td data-label={t.reports_col_late || 'Late'} className="p-2">{row.tardies}</td>
+                                <td data-label={t.reports_col_minutes || 'Minutes'} className="p-2">{row.minutes_late}</td>
+                                <td data-label={t.reports_col_left_early || 'Left early'} className="p-2">{row.early_departures}</td>
+                                <td data-label={t.reports_col_absent_days || 'Absent days'} className="p-2">{row.absent_days}</td>
+                                {tardiesPerAbsence > 0 && <td data-label={t.reports_col_from_lateness || 'From lateness'} className="p-2">{row.absences_from_tardies}</td>}
+                                {tardiesPerAbsence > 0 && <td data-label={t.reports_col_effective || 'Effective'} className="p-2 font-semibold">{row.effective_absences}</td>}
                             </tr>
                         ))}
                     </tbody>

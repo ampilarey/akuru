@@ -87,7 +87,7 @@ export default function Index({ yearId, years, types, categories, records, canMa
             </PhoneFold>
 
             <div className="overflow-x-auto rounded-lg border bg-white" data-phone-main>
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_date || 'Date'}</th>
@@ -108,12 +108,12 @@ export default function Index({ yearId, years, types, categories, records, canMa
                         )}
                         {records.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.date}</td>
-                                <td className="px-3 py-2">{row.student_name}</td>
-                                <td className="px-3 py-2">{typeName(row.type)}</td>
-                                <td className="px-3 py-2">{categoryName(row.category)}</td>
-                                <td className="px-3 py-2">{row.description}</td>
-                                <td className="px-3 py-2">{row.parent_visible ? (t.yes || 'Yes') : (t.no || 'No')}</td>
+                                <td data-label={t.col_date || 'Date'} className="px-3 py-2">{row.date}</td>
+                                <td data-label={t.col_student || 'Student'} className="px-3 py-2">{row.student_name}</td>
+                                <td data-label={t.col_type || 'Type'} className="px-3 py-2">{typeName(row.type)}</td>
+                                <td data-label={t.behavior_category || 'Category'} className="px-3 py-2">{categoryName(row.category)}</td>
+                                <td data-label={t.behavior_col_note || 'Note'} className="px-3 py-2">{row.description}</td>
+                                <td data-label={t.behavior_col_visible || 'Visible'} className="px-3 py-2">{row.parent_visible ? (t.yes || 'Yes') : (t.no || 'No')}</td>
                                 <td className="px-3 py-2">
                                     {canManage && (
                                         <button type="button" className="text-red-700 underline" onClick={() => router.delete(`/academics/behavior/${row.id}`)}>{t.delete || 'Delete'}</button>

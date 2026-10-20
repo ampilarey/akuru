@@ -99,7 +99,7 @@ export default function Index({ yearId, years, rooms, periods, bookings, t = {} 
                 </div>
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_date || 'Date'}</th>
@@ -142,17 +142,17 @@ function BookingRow({ booking, rooms, roomName, t }) {
 
     return (
         <tr className="border-t align-top">
-            <td className="px-3 py-2">
+            <td data-label={t.col_date || 'Date'} className="px-3 py-2">
                 <input className="form-input w-full" type="date" aria-label={label(t.date || 'Date')} value={form.data.date} onChange={(e) => form.setData('date', e.target.value)} />
                 {form.errors.date && <span className="text-xs text-red-600">{form.errors.date}</span>}
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.col_title || 'Title'} className="px-3 py-2">
                 <input className="form-input w-full" aria-label={label(t.title_en || 'Title (EN)')} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
                 {form.errors.title && <span className="text-xs text-red-600">{form.errors.title}</span>}
                 {form.errors.conflicts && <span className="block text-xs text-red-600">{form.errors.conflicts}</span>}
             </td>
-            <td className="px-3 py-2">{room ? roomName(room) : booking.room_id}</td>
-            <td className="px-3 py-2 text-xs text-gray-600">{booking.start_time}–{booking.end_time}</td>
+            <td data-label={t.col_room || 'Room'} className="px-3 py-2">{room ? roomName(room) : booking.room_id}</td>
+            <td data-label={t.col_time || 'Time'} className="px-3 py-2 text-xs text-gray-600">{booking.start_time}–{booking.end_time}</td>
             <td className="px-3 py-2">
                 <button type="button" className="btn-secondary me-2" disabled={form.processing} onClick={() => form.put(`/academics/bookings/${booking.id}`, { preserveScroll: true })}>{t.save || 'Save'}</button>
                 <button type="button" className="text-sm text-red-700 underline" onClick={() => router.delete(`/academics/bookings/${booking.id}`)}>{t.remove || 'Remove'}</button>

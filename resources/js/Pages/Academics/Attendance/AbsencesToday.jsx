@@ -93,7 +93,7 @@ export default function AbsencesToday({
                 </p>
             ) : (
                 <div className="overflow-x-auto rounded-lg border bg-white">
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">{t.col_student || 'Student'}</th>
@@ -109,18 +109,18 @@ export default function AbsencesToday({
                                     key={row.student_id}
                                     className={`border-t ${row.is_unexplained ? 'bg-[#FBF3F4]' : ''}`}
                                 >
-                                    <td className="px-3 py-2">
+                                    <td data-label={t.col_student || 'Student'} className="px-3 py-2">
                                         {row.student_name}
                                         {row.student_number && (
                                             <span className="block text-xs text-gray-500">{row.student_number}</span>
                                         )}
                                     </td>
-                                    <td className="px-3 py-2">{row.class_name}</td>
-                                    <td className="px-3 py-2">
+                                    <td data-label={t.col_class || 'Class'} className="px-3 py-2">{row.class_name}</td>
+                                    <td data-label={t.absences_col_periods || 'Periods'} className="px-3 py-2">
                                         {row.periods_missed}
                                         <span className="block text-xs text-gray-500">{row.periods.join(', ')}</span>
                                     </td>
-                                    <td className="px-3 py-2">
+                                    <td data-label={t.col_note || 'Note'} className="px-3 py-2">
                                         {row.is_unexplained ? (
                                             <span className="font-semibold text-[#7C2D37]">{t.absences_call_home || 'No note — call home'}</span>
                                         ) : (
@@ -134,7 +134,7 @@ export default function AbsencesToday({
                                             </>
                                         )}
                                     </td>
-                                    <td className="px-3 py-2">
+                                    <td data-label={t.absences_col_ring || 'Ring'} className="px-3 py-2">
                                         {row.emergency_contact ? (
                                             <>
                                                 <a

@@ -4983,6 +4983,35 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5sy. The portal's and the school's tables read as cards on a phone (MF4, 2026-10-20)
+
+**docs/MOBILE_FIRST.md A5, first batch.** 27 Inertia pages under
+`Portal/` and `Academics/` kept their tables on a phone: six or seven
+columns squeezed into 390 px, wrapping mid-word (*2026-␤10-17*) or cut off
+at the edge. Every one of their tables is now `table-stack` (app.css): below
+`sm` each row is a card, each cell a label–value line labelled from its
+column's own heading (`data-label`, the same phrase).
+- 19 pages were converted by a script that copies each `<th>`'s phrase onto
+  its column's `<td>`, and refuses a table it cannot map. The rest were done
+  by hand: rows built in a separate component, and columns shown only when a
+  rule is set.
+- **One exception, named:** the timetable builder is a grid of days by
+  periods, which cards would scatter. It carries `data-phone-scroll` and
+  scrolls sideways in its own box, never the page (rule 5).
+- `PhoneFirstStylesTest` now counts per table, not per file. That surfaced one
+  page with a table left out among stacked ones (`Bookshop/Vendor.jsx`),
+  which joins the list. The list holds 88, down from 114.
+
+**Tests:** `PhoneFirstStylesTest` (per table). Whole suite locally: 3281
+passed; pint clean.
+
+**Walk:** `phone-first.mjs`, 108/108. Screenshots at 390 px: behaviour
+records in English and Dhivehi, staff check-in, attendance reports, my
+meetings and rooms — rows as cards, mirrored right to left.
+
+**Noted, not in this slice:** office pages that put a *new* form above the
+list (rooms, periods and others) are A8, slice MF7.
+
 ## 5sx. Records before the form on a phone; the invisible substitution buttons (MF3, 2026-10-20)
 
 **docs/MOBILE_FIRST.md A4 and A6.**

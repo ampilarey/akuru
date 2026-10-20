@@ -69,7 +69,7 @@ export default function Index({ rooms, types, t = {} }) {
                 <button type="submit" className="btn-primary" disabled={form.processing}>{t.rooms_create || 'Create room'}</button>
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_name || 'Name'}</th>
@@ -113,29 +113,29 @@ function RoomRow({ room, types, typeName, t }) {
 
     return (
         <tr className="border-t align-top">
-            <td className="px-3 py-2">
+            <td data-label={t.col_name || 'Name'} className="px-3 py-2">
                 <input className="form-input w-full" aria-label={label(t.name_en || 'Name (EN)')} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
                 {form.errors.name && <span className="text-xs text-red-600">{form.errors.name}</span>}
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.rooms_col_names || 'Arabic and Dhivehi names'} className="px-3 py-2">
                 <input className="form-input mb-1 w-full" dir="rtl" placeholder={t.name_ar || 'Name (AR)'} aria-label={label(t.name_ar || 'Name (AR)')} value={form.data.name_arabic} onChange={(e) => form.setData('name_arabic', e.target.value)} />
                 <input className="form-input w-full" dir="rtl" placeholder={t.name_dv || 'Name (DV)'} aria-label={label(t.name_dv || 'Name (DV)')} value={form.data.name_dhivehi} onChange={(e) => form.setData('name_dhivehi', e.target.value)} />
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.rooms_building || 'Building'} className="px-3 py-2">
                 <input className="form-input w-full" aria-label={label(t.rooms_building || 'Building')} value={form.data.building} onChange={(e) => form.setData('building', e.target.value)} />
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.col_type || 'Type'} className="px-3 py-2">
                 <select className="form-input w-full" aria-label={label(t.col_type || 'Type')} value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
                     {types.map((type) => (
                         <option key={type} value={type}>{typeName(type)}</option>
                     ))}
                 </select>
             </td>
-            <td className="px-3 py-2">
+            <td data-label={t.col_capacity || 'Capacity'} className="px-3 py-2">
                 <input className="form-input w-full" type="number" min="1" aria-label={label(t.col_capacity || 'Capacity')} value={form.data.capacity} onChange={(e) => form.setData('capacity', e.target.value)} />
                 {form.errors.capacity && <span className="text-xs text-red-600">{form.errors.capacity}</span>}
             </td>
-            <td className="px-3 py-2 text-xs">
+            <td data-label={t.rooms_col_use || 'Use'} className="px-3 py-2 text-xs">
                 <label className="flex items-center gap-1">
                     <input type="checkbox" checked={form.data.bookable} onChange={(e) => form.setData('bookable', e.target.checked)} />
                     {t.rooms_bookable_flag || 'bookable'}

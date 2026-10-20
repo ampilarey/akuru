@@ -43,7 +43,7 @@ export default function Cards({ classes = [], class_id: classId = 0, pupils = []
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
                             <th className="px-3 py-2 text-start">{t.col_pupil || 'Pupil'}</th>
@@ -55,12 +55,12 @@ export default function Cards({ classes = [], class_id: classId = 0, pupils = []
                     <tbody>
                         {pupils.map((p) => (
                             <tr key={p.student_id} className="border-t">
-                                <td className="px-3 py-2">
+                                <td data-label={t.col_pupil || 'Pupil'} className="px-3 py-2">
                                     {p.name}
                                     {p.student_number && <span className="ms-2 text-xs text-gray-500">{p.student_number}</span>}
                                 </td>
-                                <td className="px-3 py-2 font-mono text-xs" dir="ltr">{p.card ? p.card.readable : <span className="text-gray-400">{t.cards_no_card || 'no card'}</span>}</td>
-                                <td className="px-3 py-2 text-xs text-gray-600">{p.card?.issued_at ?? '—'}</td>
+                                <td data-label={t.cards_col_code || 'Card code'} className="px-3 py-2 font-mono text-xs" dir="ltr">{p.card ? p.card.readable : <span className="text-gray-400">{t.cards_no_card || 'no card'}</span>}</td>
+                                <td data-label={t.cards_col_issued || 'Issued'} className="px-3 py-2 text-xs text-gray-600">{p.card?.issued_at ?? '—'}</td>
                                 <td className="px-3 py-2">
                                     {p.card && (
                                         <button

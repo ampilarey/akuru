@@ -56,7 +56,7 @@ export default function Index({ years, yearId, classes, teachers = [], t = {} })
                 {form.errors.class_teacher_id && <p className="md:col-span-6 text-sm text-red-600">{form.errors.class_teacher_id}</p>}
             </form>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.col_name || 'Name'}</th>
@@ -68,12 +68,12 @@ export default function Index({ years, yearId, classes, teachers = [], t = {} })
                     <tbody>
                         {classes.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">
+                                <td data-label={t.col_name || 'Name'} className="px-3 py-2">
                                     <Link href={`/academics/classes/${row.id}`} className="text-[#7C2D37] hover:underline">{row.name}</Link>
                                 </td>
-                                <td className="px-3 py-2">{row.section}</td>
-                                <td className="px-3 py-2">{row.capacity}</td>
-                                <td className="px-3 py-2">{row.class_teacher_name || '—'}</td>
+                                <td data-label={t.col_section || 'Section'} className="px-3 py-2">{row.section}</td>
+                                <td data-label={t.col_capacity || 'Capacity'} className="px-3 py-2">{row.capacity}</td>
+                                <td data-label={t.classes_teacher || 'Class teacher'} className="px-3 py-2">{row.class_teacher_name || '—'}</td>
                             </tr>
                         ))}
                     </tbody>

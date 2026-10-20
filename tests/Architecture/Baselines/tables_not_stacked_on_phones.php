@@ -3,35 +3,15 @@
 // CLAUDE.md "Phone-first" and docs/MOBILE_FIRST.md — see
 // tests/Architecture/PhoneFirstStylesTest.php.
 //
-// Inertia pages whose tables are not `table-stack` (app.css): on a phone
-// they stay six squeezed columns instead of a list of cards. The list may
+// Inertia pages with a table that is neither `table-stack` (app.css) nor
+// `data-phone-scroll`: on a phone it stays squeezed columns instead of a
+// list of cards. Counted per table since MF4. The list may
 // only SHRINK: give the table `table-stack` and each cell its `data-label`,
-// then delete the line. Count: 114 (2026-10-20).
+// then delete the line. Count: 88 (2026-10-20, after MF4: the portal and school pages).
 
 return [
-    'resources/js/Pages/Academics/AbsenceTypes/Index.jsx',
-    'resources/js/Pages/Academics/Announcements/Index.jsx',
-    'resources/js/Pages/Academics/Attendance/AbsencesToday.jsx',
-    'resources/js/Pages/Academics/Attendance/Daily.jsx',
-    'resources/js/Pages/Academics/Attendance/Index.jsx',
-    'resources/js/Pages/Academics/Behavior/Index.jsx',
-    'resources/js/Pages/Academics/Bookings/Index.jsx',
-    'resources/js/Pages/Academics/Calendar/Index.jsx',
-    'resources/js/Pages/Academics/Classes/Index.jsx',
-    'resources/js/Pages/Academics/Classes/Show.jsx',
-    'resources/js/Pages/Academics/FoundItems/Index.jsx',
-    'resources/js/Pages/Academics/Gate/Cards.jsx',
-    'resources/js/Pages/Academics/Gate/Console.jsx',
-    'resources/js/Pages/Academics/Meetings/Index.jsx',
-    'resources/js/Pages/Academics/Periods/Index.jsx',
-    'resources/js/Pages/Academics/Pickup/Console.jsx',
-    'resources/js/Pages/Academics/Promotion/Wizard.jsx',
-    'resources/js/Pages/Academics/Registers/Show.jsx',
-    'resources/js/Pages/Academics/Registers/Unfilled.jsx',
-    'resources/js/Pages/Academics/Rooms/Index.jsx',
-    'resources/js/Pages/Academics/Teach/Meetings.jsx',
-    'resources/js/Pages/Academics/Timetable/Builder.jsx',
     'resources/js/Pages/Bookshop/CommissionInvoice.jsx',
+    'resources/js/Pages/Bookshop/Vendor.jsx',
     'resources/js/Pages/Bookshop/VendorOrderPrint.jsx',
     'resources/js/Pages/Circulation/Index.jsx',
     'resources/js/Pages/Circulation/Title.jsx',
@@ -106,11 +86,6 @@ return [
     'resources/js/Pages/People/Staff/Show.jsx',
     'resources/js/Pages/People/Students/Index.jsx',
     'resources/js/Pages/People/Students/Show.jsx',
-    'resources/js/Pages/Portal/Appraisals.jsx',
-    'resources/js/Pages/Portal/LeaveBalances.jsx',
-    'resources/js/Pages/Portal/Payslips.jsx',
-    'resources/js/Pages/Portal/StaffCheckIn.jsx',
-    'resources/js/Pages/Portal/StaffOverview.jsx',
     'resources/js/Pages/PrayerTimes/Broadcasts.jsx',
     'resources/js/Pages/PrayerTimes/Groups.jsx',
     'resources/js/Pages/Pronunciation/Admin.jsx',

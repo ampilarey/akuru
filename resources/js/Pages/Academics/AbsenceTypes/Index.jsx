@@ -17,17 +17,17 @@ function Row({ type, t, locale }) {
     return (
         <>
             <tr className={`border-t ${type.is_active ? '' : 'opacity-60'}`}>
-                <td className="px-3 py-2">
+                <td data-label={t.types_col_reason || 'Reason'} className="px-3 py-2">
                     <p className="font-medium">{{ dv: type.name_dhivehi, ar: type.name_arabic }[locale] || type.name}</p>
                     <p className="text-xs text-gray-500">{type.code}</p>
                 </td>
-                <td className="px-3 py-2 text-sm">
+                <td data-label={t.types_col_on_approval || 'On approval'} className="px-3 py-2 text-sm">
                     {type.excuses_absence
                         ? <span className="text-emerald-700">{t.types_excuses || 'Excuses the register'}</span>
                         : <span className="text-gray-600">{t.types_stays_absent || 'Stays absent'}</span>}
                 </td>
-                <td className="px-3 py-2 text-sm">{type.requires_evidence ? (t.types_document_required || 'Document required') : '—'}</td>
-                <td className="px-3 py-2 text-sm">{type.is_active ? (t.types_offered || 'Offered') : (t.types_retired || 'Retired')}</td>
+                <td data-label={t.types_col_evidence || 'Evidence'} className="px-3 py-2 text-sm">{type.requires_evidence ? (t.types_document_required || 'Document required') : '—'}</td>
+                <td data-label={t.col_status || 'Status'} className="px-3 py-2 text-sm">{type.is_active ? (t.types_offered || 'Offered') : (t.types_retired || 'Retired')}</td>
                 <td className="px-3 py-2">
                     <button className="text-xs text-[#7C2D37] underline" onClick={() => setOpen(!open)}>{t.edit || 'Edit'}</button>
                 </td>
@@ -94,7 +94,7 @@ export default function Index({ types = [], t = {} }) {
             </p>
 
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
                             <th className="px-3 py-2 text-start">{t.types_col_reason || 'Reason'}</th>

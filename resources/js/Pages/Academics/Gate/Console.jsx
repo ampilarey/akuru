@@ -176,7 +176,7 @@ export default function Console({ date, q = '', matches = [], movements = [], in
 
             <h2 className="mb-2 text-sm font-semibold">{(t.gate_recorded_today || 'Recorded today (:count)').replace(':count', movements.filter((m) => !m.voided).length)}</h2>
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
                             <th className="px-3 py-2 text-start">{t.col_pupil || 'Pupil'}</th>
@@ -189,13 +189,13 @@ export default function Console({ date, q = '', matches = [], movements = [], in
                     <tbody>
                         {movements.map((m) => (
                             <tr key={m.id} className={`border-t ${m.voided ? 'text-gray-400 line-through' : ''}`}>
-                                <td className="px-3 py-2">
+                                <td data-label={t.col_pupil || 'Pupil'} className="px-3 py-2">
                                     {m.student}
                                     {m.student_number && <span className="ms-2 text-xs text-gray-500">{m.student_number}</span>}
                                 </td>
-                                <td className="px-3 py-2">{direction(m)}</td>
-                                <td className="px-3 py-2 text-xs text-gray-600" dir="ltr">{m.at?.slice(11, 16)}</td>
-                                <td className="px-3 py-2 text-xs text-gray-600">
+                                <td data-label={t.gate_direction || 'Direction'} className="px-3 py-2">{direction(m)}</td>
+                                <td data-label={t.col_time || 'Time'} className="px-3 py-2 text-xs text-gray-600" dir="ltr">{m.at?.slice(11, 16)}</td>
+                                <td data-label={t.gate_col_recorded || 'Recorded'} className="px-3 py-2 text-xs text-gray-600">
                                     {m.recorded_by ?? source(m)}
                                     {m.recorded_by && m.source && m.source !== 'manual' && ` · ${source(m)}`}
                                     {m.note && <span className="block">“{m.note}”</span>}

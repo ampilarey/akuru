@@ -123,7 +123,7 @@ export default function Index({ announcements = [], types = [], priorities = [],
             </form>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{t.notices_col_published || 'Published'}</th>
@@ -141,19 +141,19 @@ export default function Index({ announcements = [], types = [], priorities = [],
                         )}
                         {announcements.map((row) => (
                             <tr key={row.id} className="border-t align-top">
-                                <td className="px-3 py-2 whitespace-nowrap">{row.publish_date}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.notices_col_published || 'Published'} className="px-3 py-2 whitespace-nowrap">{row.publish_date}</td>
+                                <td data-label={t.col_title || 'Title'} className="px-3 py-2">
                                     <p className="font-medium">{inLocale(row, 'title')}</p>
                                     <p className="whitespace-pre-wrap text-xs text-gray-600">{inLocale(row, 'content')}</p>
                                 </td>
-                                <td className="px-3 py-2">{typeName(row.type)}</td>
-                                <td className="px-3 py-2">{priorityName(row.priority)}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.col_type || 'Type'} className="px-3 py-2">{typeName(row.type)}</td>
+                                <td data-label={t.notices_priority || 'Priority'} className="px-3 py-2">{priorityName(row.priority)}</td>
+                                <td data-label={t.notices_audience || 'Audience'} className="px-3 py-2">
                                     {row.target_audience.map(audienceName).join(', ')}
                                     {row.target_classes.length ? ` · ${(t.notices_classes_count || ':count class(es)').replace(':count', row.target_classes.length)}` : ''}
                                 </td>
-                                <td className="px-3 py-2">{row.expiry_date || '—'}</td>
-                                <td className="px-3 py-2">{row.author || '—'}</td>
+                                <td data-label={t.notices_col_expires || 'Expires'} className="px-3 py-2">{row.expiry_date || '—'}</td>
+                                <td data-label={t.notices_col_by || 'By'} className="px-3 py-2">{row.author || '—'}</td>
                             </tr>
                         ))}
                     </tbody>

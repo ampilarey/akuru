@@ -81,7 +81,7 @@ export default function Show({ classRoom, roster, q = '', candidates = [], teach
 
             {candidates.length > 0 && (
                 <div className="mb-4 overflow-x-auto rounded-lg border bg-white">
-                    <table className="min-w-full text-sm">
+                    <table className="table-stack min-w-full text-sm">
                         <thead className="bg-[#F3EBE0] text-start">
                             <tr>
                                 <th className="px-3 py-2">{col.choose}</th>
@@ -95,7 +95,7 @@ export default function Show({ classRoom, roster, q = '', candidates = [], teach
                         <tbody>
                             {candidates.map((row) => (
                                 <tr key={row.id} className="border-t">
-                                    <td className="px-3 py-2">
+                                    <td data-label={col.choose} className="px-3 py-2">
                                         <input
                                             type="radio"
                                             name="roster_candidate"
@@ -108,11 +108,11 @@ export default function Show({ classRoom, roster, q = '', candidates = [], teach
                                             }}
                                         />
                                     </td>
-                                    <td className="px-3 py-2">{row.name}</td>
-                                    <td className="px-3 py-2">{row.student_number || '—'}</td>
-                                    <td className="px-3 py-2">{row.date_of_birth || '—'}</td>
-                                    <td className="px-3 py-2">{row.national_id || '—'}</td>
-                                    <td className="px-3 py-2">{row.current_class || '—'}</td>
+                                    <td data-label={col.name} className="px-3 py-2">{row.name}</td>
+                                    <td data-label={col.number} className="px-3 py-2">{row.student_number || '—'}</td>
+                                    <td data-label={col.dob} className="px-3 py-2">{row.date_of_birth || '—'}</td>
+                                    <td data-label={t.classes_col_national_id || 'National ID'} className="px-3 py-2">{row.national_id || '—'}</td>
+                                    <td data-label={t.classes_col_current_class || 'Current class'} className="px-3 py-2">{row.current_class || '—'}</td>
                                 </tr>
                             ))}
                         </tbody>
@@ -144,7 +144,7 @@ export default function Show({ classRoom, roster, q = '', candidates = [], teach
             )}
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
                         <tr>
                             <th className="px-3 py-2">{col.name}</th>
@@ -156,10 +156,10 @@ export default function Show({ classRoom, roster, q = '', candidates = [], teach
                     <tbody>
                         {roster.map((row) => (
                             <tr key={row.id} className="border-t">
-                                <td className="px-3 py-2">{row.name}</td>
-                                <td className="px-3 py-2">{row.student_number}</td>
-                                <td className="px-3 py-2">{row.date_of_birth || '—'}</td>
-                                <td className="px-3 py-2">{t[`student_status_${row.status}`] || row.status}</td>
+                                <td data-label={col.name} className="px-3 py-2">{row.name}</td>
+                                <td data-label={col.number} className="px-3 py-2">{row.student_number}</td>
+                                <td data-label={col.dob} className="px-3 py-2">{row.date_of_birth || '—'}</td>
+                                <td data-label={t.col_status || 'Status'} className="px-3 py-2">{t[`student_status_${row.status}`] || row.status}</td>
                             </tr>
                         ))}
                     </tbody>

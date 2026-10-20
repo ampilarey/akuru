@@ -128,7 +128,7 @@ export default function Index({ items = [], filters = {}, t = {} }) {
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
-                <table className="min-w-full text-sm">
+                <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0]">
                         <tr>
                             <th className="px-3 py-2 text-start">{t.found_col_item || 'Item'}</th>
@@ -140,7 +140,7 @@ export default function Index({ items = [], filters = {}, t = {} }) {
                     <tbody>
                         {items.map((item) => (
                             <tr key={item.id} className="border-t align-top">
-                                <td className="px-3 py-2">
+                                <td data-label={t.found_col_item || 'Item'} className="px-3 py-2">
                                     <p className="font-medium">{item.title}</p>
                                     {item.description && <p className="text-xs text-gray-600">{item.description}</p>}
                                     {item.has_photo && (
@@ -148,12 +148,12 @@ export default function Index({ items = [], filters = {}, t = {} }) {
                                             className="text-xs text-[#7C2D37] underline">{t.found_photo || 'Photo'}</a>
                                     )}
                                 </td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.found_col_found || 'Found'} className="px-3 py-2">
                                     {item.found_at}
                                     {item.location && <span className="block text-xs text-gray-500">{item.location}</span>}
                                 </td>
-                                <td className="px-3 py-2">{item.held_at || '—'}</td>
-                                <td className="px-3 py-2">
+                                <td data-label={t.found_held_at || 'Held at'} className="px-3 py-2">{item.held_at || '—'}</td>
+                                <td data-label={t.status || 'Status'} className="px-3 py-2">
                                     {item.status === 'returned' ? (
                                         <span className="text-xs text-gray-600">
                                             {item.returned_to
