@@ -1,6 +1,7 @@
 import { router, useForm, usePage } from '@inertiajs/react';
 import { Fragment, useState } from 'react';
 import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 
 /**
@@ -124,34 +125,37 @@ export default function Index({ rows, subjects, canPublish, unlockModes = [], de
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/catalog/courses/export">{t.catalog_export || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/catalog/courses', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
-            >
-                <input className="form-input" placeholder={t.catalog_new_title || 'Title'} aria-label={t.catalog_new_title || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-                <select className="form-input" aria-label={t.catalog_col_subject || 'Subject'} value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
-                    {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subjectName(subject)}</option>)}
-                </select>
-                <select className="form-input" aria-label={t.catalog_language || 'Language'} value={form.data.language} onChange={(e) => form.setData('language', e.target.value)}>
-                    <option value="en">{t.outline_lang_en || 'English'}</option>
-                    <option value="dv">{t.outline_lang_dv || 'Dhivehi'}</option>
-                    <option value="ar">{t.outline_lang_ar || 'Arabic'}</option>
-                    <option value="mixed">{t.catalog_language_mixed || 'Mixed'}</option>
-                </select>
-                {/* SPEC §26 "Admin must be able to configure unlock rules."
-                    Unlock was hardcoded sequential for every course, so "All
-                    lessons open" — the first rule §26 lists — could not be
-                    chosen at all. */}
-                <select className="form-input" aria-label={t.catalog_unlock_rule || 'Unlock rule'} value={form.data.unlock_mode} onChange={(e) => form.setData('unlock_mode', e.target.value)}>
-                    {unlockModes.map((mode) => <option key={mode.value} value={mode.value}>{unlockLabel(mode)}</option>)}
-                </select>
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.catalog_save_draft || 'Save draft'}</button>
-                {form.errors.title && <span className="text-xs text-red-600">{form.errors.title}</span>}
-                <FormErrors errors={form.errors} except={['title']} className="md:col-span-5" />
-            </form>
+            <PhoneFold forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/catalog/courses', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
+                >
+                    <input className="form-input" placeholder={t.catalog_new_title || 'Title'} aria-label={t.catalog_new_title || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+                    <select className="form-input" aria-label={t.catalog_col_subject || 'Subject'} value={form.data.subject_id} onChange={(e) => form.setData('subject_id', e.target.value)}>
+                        {subjects.map((subject) => <option key={subject.id} value={subject.id}>{subjectName(subject)}</option>)}
+                    </select>
+                    <select className="form-input" aria-label={t.catalog_language || 'Language'} value={form.data.language} onChange={(e) => form.setData('language', e.target.value)}>
+                        <option value="en">{t.outline_lang_en || 'English'}</option>
+                        <option value="dv">{t.outline_lang_dv || 'Dhivehi'}</option>
+                        <option value="ar">{t.outline_lang_ar || 'Arabic'}</option>
+                        <option value="mixed">{t.catalog_language_mixed || 'Mixed'}</option>
+                    </select>
+                    {/* SPEC §26 "Admin must be able to configure unlock rules."
+                        Unlock was hardcoded sequential for every course, so "All
+                        lessons open" — the first rule §26 lists — could not be
+                        chosen at all. */}
+                    <select className="form-input" aria-label={t.catalog_unlock_rule || 'Unlock rule'} value={form.data.unlock_mode} onChange={(e) => form.setData('unlock_mode', e.target.value)}>
+                        {unlockModes.map((mode) => <option key={mode.value} value={mode.value}>{unlockLabel(mode)}</option>)}
+                    </select>
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.catalog_save_draft || 'Save draft'}</button>
+                    {form.errors.title && <span className="text-xs text-red-600">{form.errors.title}</span>}
+                    <FormErrors errors={form.errors} except={['title']} className="md:col-span-5" />
+                </form>
+            </PhoneFold>
             <FormErrors errors={refusals.unplaced} className="mb-4 rounded border border-red-200 bg-red-50 py-2 pe-3" />
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">

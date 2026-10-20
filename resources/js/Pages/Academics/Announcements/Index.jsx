@@ -1,4 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
@@ -42,85 +43,88 @@ export default function Index({ announcements = [], types = [], priorities = [],
 
     return (
         <AppShell title={t.notices_title || 'Announcements'}>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/announcements', { preserveScroll: true, onSuccess: () => form.reset() });
-                }}
-                className="mb-6 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
-            >
-                <h2 className="font-semibold md:col-span-3">{t.notices_new || 'New notice'}</h2>
-                <label className="block text-sm">
-                    <span className="mb-1 block text-gray-600">{t.title || 'Title'}</span>
-                    <input className="form-input w-full" aria-label={t.title || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-                </label>
-                <label className="block text-sm" dir="rtl">
-                    <span className="mb-1 block text-gray-600">{t.notices_title_dv || 'Title (Dhivehi)'}</span>
-                    <input className="form-input w-full" aria-label={t.notices_title_dv || 'Title (Dhivehi)'} value={form.data.title_dhivehi} onChange={(e) => form.setData('title_dhivehi', e.target.value)} />
-                </label>
-                <label className="block text-sm" dir="rtl">
-                    <span className="mb-1 block text-gray-600">{t.notices_title_ar || 'Title (Arabic)'}</span>
-                    <input className="form-input w-full" aria-label={t.notices_title_ar || 'Title (Arabic)'} value={form.data.title_arabic} onChange={(e) => form.setData('title_arabic', e.target.value)} />
-                </label>
-                <label className="block text-sm md:col-span-3">
-                    <span className="mb-1 block text-gray-600">{t.notices_notice || 'Notice'}</span>
-                    <textarea className="form-input w-full" rows={4} aria-label={t.notices_notice || 'Notice'} value={form.data.content} onChange={(e) => form.setData('content', e.target.value)} />
-                </label>
-                <label className="block text-sm md:col-span-3" dir="rtl">
-                    <span className="mb-1 block text-gray-600">{t.notices_text_dv || 'Notice in Dhivehi (optional)'}</span>
-                    <textarea className="form-input w-full" rows={2} aria-label={t.notices_text_dv || 'Notice in Dhivehi (optional)'} value={form.data.content_dhivehi} onChange={(e) => form.setData('content_dhivehi', e.target.value)} />
-                </label>
-                <label className="block text-sm md:col-span-3" dir="rtl">
-                    <span className="mb-1 block text-gray-600">{t.notices_text_ar || 'Notice in Arabic (optional)'}</span>
-                    <textarea className="form-input w-full" rows={2} aria-label={t.notices_text_ar || 'Notice in Arabic (optional)'} value={form.data.content_arabic} onChange={(e) => form.setData('content_arabic', e.target.value)} />
-                </label>
-                <label className="block text-sm">
-                    <span className="mb-1 block text-gray-600">{t.type || 'Type'}</span>
-                    <select className="form-input w-full" aria-label={t.type || 'Type'} value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
-                        {types.map((type) => <option key={type} value={type}>{typeName(type)}</option>)}
-                    </select>
-                </label>
-                <label className="block text-sm">
-                    <span className="mb-1 block text-gray-600">{t.notices_priority || 'Priority'}</span>
-                    <select className="form-input w-full" aria-label={t.notices_priority || 'Priority'} value={form.data.priority} onChange={(e) => form.setData('priority', e.target.value)}>
-                        {priorities.map((priority) => <option key={priority} value={priority}>{priorityName(priority)}</option>)}
-                    </select>
-                </label>
-                <div className="text-sm">
-                    <span className="mb-1 block text-gray-600">{t.notices_audience || 'Audience'}</span>
-                    <div className="flex flex-wrap gap-3">
-                        {audiences.map((audience) => (
-                            <label key={audience} className="inline-flex items-center gap-1">
-                                <input type="checkbox" checked={form.data.target_audience.includes(audience)} onChange={() => toggle('target_audience', audience)} />
-                                {audienceName(audience)}
-                            </label>
-                        ))}
+            <PhoneFold label={t.notices_publish || 'Publish notice'} forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/announcements', { preserveScroll: true, onSuccess: () => form.reset() });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
+                >
+                    <h2 className="font-semibold md:col-span-3">{t.notices_new || 'New notice'}</h2>
+                    <label className="block text-sm">
+                        <span className="mb-1 block text-gray-600">{t.title || 'Title'}</span>
+                        <input className="form-input w-full" aria-label={t.title || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+                    </label>
+                    <label className="block text-sm" dir="rtl">
+                        <span className="mb-1 block text-gray-600">{t.notices_title_dv || 'Title (Dhivehi)'}</span>
+                        <input className="form-input w-full" aria-label={t.notices_title_dv || 'Title (Dhivehi)'} value={form.data.title_dhivehi} onChange={(e) => form.setData('title_dhivehi', e.target.value)} />
+                    </label>
+                    <label className="block text-sm" dir="rtl">
+                        <span className="mb-1 block text-gray-600">{t.notices_title_ar || 'Title (Arabic)'}</span>
+                        <input className="form-input w-full" aria-label={t.notices_title_ar || 'Title (Arabic)'} value={form.data.title_arabic} onChange={(e) => form.setData('title_arabic', e.target.value)} />
+                    </label>
+                    <label className="block text-sm md:col-span-3">
+                        <span className="mb-1 block text-gray-600">{t.notices_notice || 'Notice'}</span>
+                        <textarea className="form-input w-full" rows={4} aria-label={t.notices_notice || 'Notice'} value={form.data.content} onChange={(e) => form.setData('content', e.target.value)} />
+                    </label>
+                    <label className="block text-sm md:col-span-3" dir="rtl">
+                        <span className="mb-1 block text-gray-600">{t.notices_text_dv || 'Notice in Dhivehi (optional)'}</span>
+                        <textarea className="form-input w-full" rows={2} aria-label={t.notices_text_dv || 'Notice in Dhivehi (optional)'} value={form.data.content_dhivehi} onChange={(e) => form.setData('content_dhivehi', e.target.value)} />
+                    </label>
+                    <label className="block text-sm md:col-span-3" dir="rtl">
+                        <span className="mb-1 block text-gray-600">{t.notices_text_ar || 'Notice in Arabic (optional)'}</span>
+                        <textarea className="form-input w-full" rows={2} aria-label={t.notices_text_ar || 'Notice in Arabic (optional)'} value={form.data.content_arabic} onChange={(e) => form.setData('content_arabic', e.target.value)} />
+                    </label>
+                    <label className="block text-sm">
+                        <span className="mb-1 block text-gray-600">{t.type || 'Type'}</span>
+                        <select className="form-input w-full" aria-label={t.type || 'Type'} value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
+                            {types.map((type) => <option key={type} value={type}>{typeName(type)}</option>)}
+                        </select>
+                    </label>
+                    <label className="block text-sm">
+                        <span className="mb-1 block text-gray-600">{t.notices_priority || 'Priority'}</span>
+                        <select className="form-input w-full" aria-label={t.notices_priority || 'Priority'} value={form.data.priority} onChange={(e) => form.setData('priority', e.target.value)}>
+                            {priorities.map((priority) => <option key={priority} value={priority}>{priorityName(priority)}</option>)}
+                        </select>
+                    </label>
+                    <div className="text-sm">
+                        <span className="mb-1 block text-gray-600">{t.notices_audience || 'Audience'}</span>
+                        <div className="flex flex-wrap gap-3">
+                            {audiences.map((audience) => (
+                                <label key={audience} className="inline-flex items-center gap-1">
+                                    <input type="checkbox" checked={form.data.target_audience.includes(audience)} onChange={() => toggle('target_audience', audience)} />
+                                    {audienceName(audience)}
+                                </label>
+                            ))}
+                        </div>
                     </div>
-                </div>
-                <label className="block text-sm">
-                    <span className="mb-1 block text-gray-600">{t.notices_publish_on || 'Publish on'}</span>
-                    <input className="form-input w-full" type="date" aria-label={t.notices_publish_on || 'Publish on'} value={form.data.publish_date} onChange={(e) => form.setData('publish_date', e.target.value)} />
-                </label>
-                <label className="block text-sm">
-                    <span className="mb-1 block text-gray-600">{t.notices_expires || 'Expires (optional)'}</span>
-                    <input className="form-input w-full" type="date" aria-label={t.notices_expires || 'Expires (optional)'} value={form.data.expiry_date} onChange={(e) => form.setData('expiry_date', e.target.value)} />
-                </label>
-                <div className="text-sm">
-                    <span className="mb-1 block text-gray-600">{t.notices_classes || 'Only these classes (optional)'}</span>
-                    <div className="flex max-h-28 flex-wrap gap-2 overflow-y-auto">
-                        {classes.map((c) => (
-                            <label key={c.id} className="inline-flex items-center gap-1">
-                                <input type="checkbox" checked={form.data.target_classes.includes(c.id)} onChange={() => toggle('target_classes', c.id)} />
-                                {c.label}
-                            </label>
-                        ))}
+                    <label className="block text-sm">
+                        <span className="mb-1 block text-gray-600">{t.notices_publish_on || 'Publish on'}</span>
+                        <input className="form-input w-full" type="date" aria-label={t.notices_publish_on || 'Publish on'} value={form.data.publish_date} onChange={(e) => form.setData('publish_date', e.target.value)} />
+                    </label>
+                    <label className="block text-sm">
+                        <span className="mb-1 block text-gray-600">{t.notices_expires || 'Expires (optional)'}</span>
+                        <input className="form-input w-full" type="date" aria-label={t.notices_expires || 'Expires (optional)'} value={form.data.expiry_date} onChange={(e) => form.setData('expiry_date', e.target.value)} />
+                    </label>
+                    <div className="text-sm">
+                        <span className="mb-1 block text-gray-600">{t.notices_classes || 'Only these classes (optional)'}</span>
+                        <div className="flex max-h-28 flex-wrap gap-2 overflow-y-auto">
+                            {classes.map((c) => (
+                                <label key={c.id} className="inline-flex items-center gap-1">
+                                    <input type="checkbox" checked={form.data.target_classes.includes(c.id)} onChange={() => toggle('target_classes', c.id)} />
+                                    {c.label}
+                                </label>
+                            ))}
+                        </div>
                     </div>
-                </div>
-                <div className="md:col-span-3">
-                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.notices_publish || 'Publish notice'}</button>
-                </div>
-                <FormErrors errors={form.errors} />
-            </form>
+                    <div className="md:col-span-3">
+                        <button type="submit" className="btn-primary" disabled={form.processing}>{t.notices_publish || 'Publish notice'}</button>
+                    </div>
+                    <FormErrors errors={form.errors} />
+                </form>
+            </PhoneFold>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">

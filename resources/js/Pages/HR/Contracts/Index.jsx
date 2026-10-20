@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 
 /**
@@ -26,26 +27,29 @@ export default function Index({ staff, types, rows, t = {} }) {
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/hr/contracts/export">{t.export_csv || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/hr/contracts', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
-            >
-                <select className="form-input" aria-label={t.staff_member || 'Staff member'} value={form.data.staff_profile_id} onChange={(e) => form.setData('staff_profile_id', e.target.value)}>
-                    {staff.map((row) => <option key={row.id} value={row.id}>{row.first_name} {row.last_name}</option>)}
-                </select>
-                <select className="form-input" aria-label={t.type || 'Type'} value={form.data.contract_type} onChange={(e) => form.setData('contract_type', e.target.value)}>
-                    {types.map((type) => <option key={type} value={type}>{typeName(type)}</option>)}
-                </select>
-                <input type="date" className="form-input" aria-label={t.contracts_start || 'Start'} value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} />
-                <input type="date" className="form-input" aria-label={t.contracts_end || 'End'} value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} />
-                <input className="form-input" aria-label={t.contracts_salary || 'Basic salary'} placeholder={t.contracts_salary || 'Basic salary'} value={form.data.basic_salary} onChange={(e) => form.setData('basic_salary', e.target.value)} />
-                <input className="form-input" aria-label={t.contracts_hours || 'Hours / week'} placeholder={t.contracts_hours || 'Hours / week'} value={form.data.working_hours_per_week} onChange={(e) => form.setData('working_hours_per_week', e.target.value)} />
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.contracts_save || 'Save contract'}</button>
-                {refused && <span className="text-xs text-red-600 md:col-span-4">{refused}</span>}
-            </form>
+            <PhoneFold forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/hr/contracts', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
+                >
+                    <select className="form-input" aria-label={t.staff_member || 'Staff member'} value={form.data.staff_profile_id} onChange={(e) => form.setData('staff_profile_id', e.target.value)}>
+                        {staff.map((row) => <option key={row.id} value={row.id}>{row.first_name} {row.last_name}</option>)}
+                    </select>
+                    <select className="form-input" aria-label={t.type || 'Type'} value={form.data.contract_type} onChange={(e) => form.setData('contract_type', e.target.value)}>
+                        {types.map((type) => <option key={type} value={type}>{typeName(type)}</option>)}
+                    </select>
+                    <input type="date" className="form-input" aria-label={t.contracts_start || 'Start'} value={form.data.start_date} onChange={(e) => form.setData('start_date', e.target.value)} />
+                    <input type="date" className="form-input" aria-label={t.contracts_end || 'End'} value={form.data.end_date} onChange={(e) => form.setData('end_date', e.target.value)} />
+                    <input className="form-input" aria-label={t.contracts_salary || 'Basic salary'} placeholder={t.contracts_salary || 'Basic salary'} value={form.data.basic_salary} onChange={(e) => form.setData('basic_salary', e.target.value)} />
+                    <input className="form-input" aria-label={t.contracts_hours || 'Hours / week'} placeholder={t.contracts_hours || 'Hours / week'} value={form.data.working_hours_per_week} onChange={(e) => form.setData('working_hours_per_week', e.target.value)} />
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.contracts_save || 'Save contract'}</button>
+                    {refused && <span className="text-xs text-red-600 md:col-span-4">{refused}</span>}
+                </form>
+            </PhoneFold>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

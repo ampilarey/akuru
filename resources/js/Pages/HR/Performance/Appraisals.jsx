@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
@@ -30,22 +31,25 @@ export default function Appraisals({ years, staff, cycles, rows, statuses, t = {
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/hr/appraisals/export">{t.export_csv || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    cycleForm.post('/hr/appraisals/cycles', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
-            >
-                <input className="form-input" aria-label={t.appraisals_cycle_name || 'Cycle name'} placeholder={t.appraisals_cycle_name || 'Cycle name'} value={cycleForm.data.name} onChange={(e) => cycleForm.setData('name', e.target.value)} />
-                <select className="form-input" aria-label={t.year || 'Year'} value={cycleForm.data.academic_year_id} onChange={(e) => cycleForm.setData('academic_year_id', e.target.value)}>
-                    {years.map((year) => <option key={year.id} value={year.id}>{year.name}</option>)}
-                </select>
-                <input type="date" className="form-input" aria-label={t.appraisals_opens || 'Opens'} value={cycleForm.data.opens_at} onChange={(e) => cycleForm.setData('opens_at', e.target.value)} />
-                <input type="date" className="form-input" aria-label={t.appraisals_closes || 'Closes'} value={cycleForm.data.closes_at} onChange={(e) => cycleForm.setData('closes_at', e.target.value)} />
-                <button type="submit" className="btn-secondary" disabled={cycleForm.processing}>{t.appraisals_open_cycle || 'Open cycle'}</button>
-                <FormErrors errors={cycleForm.errors} className="md:col-span-4" />
-            </form>
+            <PhoneFold label={t.appraisals_open_cycle || 'Open cycle'} forceOpen={Object.keys(cycleForm.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        cycleForm.post('/hr/appraisals/cycles', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
+                >
+                    <input className="form-input" aria-label={t.appraisals_cycle_name || 'Cycle name'} placeholder={t.appraisals_cycle_name || 'Cycle name'} value={cycleForm.data.name} onChange={(e) => cycleForm.setData('name', e.target.value)} />
+                    <select className="form-input" aria-label={t.year || 'Year'} value={cycleForm.data.academic_year_id} onChange={(e) => cycleForm.setData('academic_year_id', e.target.value)}>
+                        {years.map((year) => <option key={year.id} value={year.id}>{year.name}</option>)}
+                    </select>
+                    <input type="date" className="form-input" aria-label={t.appraisals_opens || 'Opens'} value={cycleForm.data.opens_at} onChange={(e) => cycleForm.setData('opens_at', e.target.value)} />
+                    <input type="date" className="form-input" aria-label={t.appraisals_closes || 'Closes'} value={cycleForm.data.closes_at} onChange={(e) => cycleForm.setData('closes_at', e.target.value)} />
+                    <button type="submit" className="btn-secondary" disabled={cycleForm.processing}>{t.appraisals_open_cycle || 'Open cycle'}</button>
+                    <FormErrors errors={cycleForm.errors} className="md:col-span-4" />
+                </form>
+            </PhoneFold>
             <form
                 onSubmit={(e) => {
                     e.preventDefault();

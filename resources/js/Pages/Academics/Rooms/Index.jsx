@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 
 function Field({ label, error, children }) {
@@ -33,41 +34,44 @@ export default function Index({ rooms, types, t = {} }) {
                     {t.export_csv || 'Export CSV'}
                 </a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/academics/rooms', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
-            >
-                <Field label={t.name_en || 'Name (EN)'} error={form.errors.name}>
-                    <input className="form-input w-full" aria-label={t.name_en || 'Name (EN)'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
-                </Field>
-                <Field label={t.name_ar || 'Name (AR)'}>
-                    <input className="form-input w-full" dir="rtl" aria-label={t.name_ar || 'Name (AR)'} value={form.data.name_arabic} onChange={(e) => form.setData('name_arabic', e.target.value)} />
-                </Field>
-                <Field label={t.name_dv || 'Name (DV)'}>
-                    <input className="form-input w-full" dir="rtl" aria-label={t.name_dv || 'Name (DV)'} value={form.data.name_dhivehi} onChange={(e) => form.setData('name_dhivehi', e.target.value)} />
-                </Field>
-                <Field label={t.rooms_building || 'Building'}>
-                    <input className="form-input w-full" aria-label={t.rooms_building || 'Building'} value={form.data.building} onChange={(e) => form.setData('building', e.target.value)} />
-                </Field>
-                <Field label={t.capacity || 'Capacity'} error={form.errors.capacity}>
-                    <input className="form-input w-full" type="number" min="1" aria-label={t.capacity || 'Capacity'} value={form.data.capacity} onChange={(e) => form.setData('capacity', e.target.value)} />
-                </Field>
-                <Field label={t.type || 'Type'} error={form.errors.type}>
-                    <select className="form-input w-full" aria-label={t.type || 'Type'} value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
-                        {types.map((type) => (
-                            <option key={type} value={type}>{typeName(type)}</option>
-                        ))}
-                    </select>
-                </Field>
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.data.bookable} onChange={(e) => form.setData('bookable', e.target.checked)} />
-                    {t.rooms_bookable || 'Bookable'}
-                </label>
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.rooms_create || 'Create room'}</button>
-            </form>
+            <PhoneFold label={t.rooms_create || 'Create room'} forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/academics/rooms', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
+                >
+                    <Field label={t.name_en || 'Name (EN)'} error={form.errors.name}>
+                        <input className="form-input w-full" aria-label={t.name_en || 'Name (EN)'} value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} />
+                    </Field>
+                    <Field label={t.name_ar || 'Name (AR)'}>
+                        <input className="form-input w-full" dir="rtl" aria-label={t.name_ar || 'Name (AR)'} value={form.data.name_arabic} onChange={(e) => form.setData('name_arabic', e.target.value)} />
+                    </Field>
+                    <Field label={t.name_dv || 'Name (DV)'}>
+                        <input className="form-input w-full" dir="rtl" aria-label={t.name_dv || 'Name (DV)'} value={form.data.name_dhivehi} onChange={(e) => form.setData('name_dhivehi', e.target.value)} />
+                    </Field>
+                    <Field label={t.rooms_building || 'Building'}>
+                        <input className="form-input w-full" aria-label={t.rooms_building || 'Building'} value={form.data.building} onChange={(e) => form.setData('building', e.target.value)} />
+                    </Field>
+                    <Field label={t.capacity || 'Capacity'} error={form.errors.capacity}>
+                        <input className="form-input w-full" type="number" min="1" aria-label={t.capacity || 'Capacity'} value={form.data.capacity} onChange={(e) => form.setData('capacity', e.target.value)} />
+                    </Field>
+                    <Field label={t.type || 'Type'} error={form.errors.type}>
+                        <select className="form-input w-full" aria-label={t.type || 'Type'} value={form.data.type} onChange={(e) => form.setData('type', e.target.value)}>
+                            {types.map((type) => (
+                                <option key={type} value={type}>{typeName(type)}</option>
+                            ))}
+                        </select>
+                    </Field>
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.data.bookable} onChange={(e) => form.setData('bookable', e.target.checked)} />
+                        {t.rooms_bookable || 'Bookable'}
+                    </label>
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.rooms_create || 'Create room'}</button>
+                </form>
+            </PhoneFold>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

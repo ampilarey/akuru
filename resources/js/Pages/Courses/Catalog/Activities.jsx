@@ -1,4 +1,5 @@
 import { router, useForm, usePage } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
@@ -60,75 +61,78 @@ export default function Activities({ course, activities, patterns, skills = [], 
                 <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${course.id}/outline`}>{t.nav_outline || 'Outline'}</a>
                 <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${course.id}/activities/export`}>{t.catalog_export || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post(`/catalog/courses/${course.id}/activities`, { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-2"
-            >
-                <input className="form-input" placeholder={t.catalog_new_title || 'Title'} aria-label={t.catalog_new_title || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-                <select
-                    className="form-input"
-                    aria-label={t.activities_pattern || 'Pattern'}
-                    value={form.data.pattern}
-                    onChange={(e) => {
-                        const pattern = e.target.value;
-                        form.setData({
-                            ...form.data,
-                            pattern,
-                            data: SAMPLE_DATA[pattern] || form.data.data,
-                        });
+            <PhoneFold forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post(`/catalog/courses/${course.id}/activities`, { preserveScroll: true });
                     }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-2"
                 >
-                    {patterns.map((pattern) => <option key={pattern} value={pattern}>{patternName(pattern)}</option>)}
-                </select>
-                <input className="form-input" placeholder={t.activities_activity_type || 'Activity type label'} aria-label={t.activities_activity_type || 'Activity type label'} value={form.data.activity_type} onChange={(e) => form.setData('activity_type', e.target.value)} />
-                <select className="form-input" aria-label={t.activities_skill || 'Skill'} value={form.data.skill} onChange={(e) => form.setData('skill', e.target.value)}>
-                    <option value="">{t.activities_no_skill || 'No skill tag'}</option>
-                    {skills.map((skill) => <option key={skill} value={skill}>{t[`skill_${skill}`] || skill}</option>)}
-                </select>
-                <select className="form-input" aria-label={t.activities_letter || 'Letter'} value={form.data.letter_id} onChange={(e) => form.setData('letter_id', e.target.value)}>
-                    <option value="">{t.activities_any_letter || 'Any letter'}</option>
-                    {letters.map((letter) => <option key={letter.id} value={letter.id}>{letter.arabic_character} {letter.display_name}</option>)}
-                </select>
-                <select className="form-input" aria-label={t.activities_harakah || 'Harakah'} value={form.data.harakah_id} onChange={(e) => form.setData('harakah_id', e.target.value)}>
-                    <option value="">{t.activities_any_harakah || 'Any harakah'}</option>
-                    {harakas.map((row) => <option key={row.id} value={row.id}>{row.symbol} {row.display_name}</option>)}
-                </select>
-                <select className="form-input" aria-label={t.activities_surah || 'Surah'} value={form.data.surah_id} onChange={(e) => form.setData('surah_id', e.target.value)}>
-                    <option value="">{t.activities_no_range || 'No recitation range'}</option>
-                    {surahs.map((row) => <option key={row.id} value={row.id}>{row.index}. {surahName(row)}</option>)}
-                </select>
-                <input className="form-input" type="number" min="1" placeholder={t.activities_ayah_start || 'Ayah start'} aria-label={t.activities_ayah_start || 'Ayah start'} value={form.data.ayah_start} onChange={(e) => form.setData('ayah_start', e.target.value)} />
-                <input className="form-input" type="number" min="1" placeholder={t.activities_ayah_end || 'Ayah end'} aria-label={t.activities_ayah_end || 'Ayah end'} value={form.data.ayah_end} onChange={(e) => form.setData('ayah_end', e.target.value)} />
-                <input className="form-input" type="number" min="1" placeholder={t.activities_max_score || 'Max score'} aria-label={t.activities_max_score || 'Max score'} value={form.data.max_score} onChange={(e) => form.setData('max_score', e.target.value)} />
-                <textarea className="form-input md:col-span-2 min-h-32 font-mono text-xs" dir="ltr" aria-label={t.activities_content || 'Activity content (JSON)'} value={form.data.data} onChange={(e) => form.setData('data', e.target.value)} />
-                {form.data.pattern === 'teacher_marked' && (
-                    /* §36 "Play audio/voice submissions · View uploaded files". The kind
-                       was already storable; until this slice nothing read it, so saying
-                       what the choices are was pointless. Now it decides what the
-                       student is shown and what the reviewer can play. */
-                    <p className="md:col-span-2 text-xs text-gray-600">
-                        <code>submission_kind</code>: <code>written</code> ({t.activities_kind_written || 'text box'}),
-                        {' '}<code>file</code> ({t.activities_kind_file || 'image, PDF, document or audio upload'}),
-                        {' '}<code>audio</code> ({t.activities_kind_audio || 'recording only — the reviewer plays it'}),
-                        {' '}<code>canvas</code> ({t.activities_kind_canvas || 'handwriting — the student draws, the reviewer sees the image'}).
-                    </p>
-                )}
-                <textarea className="form-input md:col-span-2 min-h-24 font-mono text-xs" dir="ltr" aria-label={t.activities_settings || 'Settings (JSON)'} value={form.data.settings} onChange={(e) => form.setData('settings', e.target.value)} />
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.data.is_required} onChange={(e) => form.setData('is_required', e.target.checked)} />
-                    {t.outline_required || 'Required'}
-                </label>
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.activities_save || 'Save activity'}</button>
-                {/* Every refusal, not a hand-picked three. The server also refuses
-                    under `settings` (a recitation range outside its surah, an
-                    unknown surah or letter) and `activity_type`; until the Qur'an A
-                    walk those came back to a silent form with the typed values
-                    still in the boxes — indistinguishable from a save (STATUS §5fm). */}
-                <FormErrors errors={form.errors} className="md:col-span-2" />
-            </form>
+                    <input className="form-input" placeholder={t.catalog_new_title || 'Title'} aria-label={t.catalog_new_title || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+                    <select
+                        className="form-input"
+                        aria-label={t.activities_pattern || 'Pattern'}
+                        value={form.data.pattern}
+                        onChange={(e) => {
+                            const pattern = e.target.value;
+                            form.setData({
+                                ...form.data,
+                                pattern,
+                                data: SAMPLE_DATA[pattern] || form.data.data,
+                            });
+                        }}
+                    >
+                        {patterns.map((pattern) => <option key={pattern} value={pattern}>{patternName(pattern)}</option>)}
+                    </select>
+                    <input className="form-input" placeholder={t.activities_activity_type || 'Activity type label'} aria-label={t.activities_activity_type || 'Activity type label'} value={form.data.activity_type} onChange={(e) => form.setData('activity_type', e.target.value)} />
+                    <select className="form-input" aria-label={t.activities_skill || 'Skill'} value={form.data.skill} onChange={(e) => form.setData('skill', e.target.value)}>
+                        <option value="">{t.activities_no_skill || 'No skill tag'}</option>
+                        {skills.map((skill) => <option key={skill} value={skill}>{t[`skill_${skill}`] || skill}</option>)}
+                    </select>
+                    <select className="form-input" aria-label={t.activities_letter || 'Letter'} value={form.data.letter_id} onChange={(e) => form.setData('letter_id', e.target.value)}>
+                        <option value="">{t.activities_any_letter || 'Any letter'}</option>
+                        {letters.map((letter) => <option key={letter.id} value={letter.id}>{letter.arabic_character} {letter.display_name}</option>)}
+                    </select>
+                    <select className="form-input" aria-label={t.activities_harakah || 'Harakah'} value={form.data.harakah_id} onChange={(e) => form.setData('harakah_id', e.target.value)}>
+                        <option value="">{t.activities_any_harakah || 'Any harakah'}</option>
+                        {harakas.map((row) => <option key={row.id} value={row.id}>{row.symbol} {row.display_name}</option>)}
+                    </select>
+                    <select className="form-input" aria-label={t.activities_surah || 'Surah'} value={form.data.surah_id} onChange={(e) => form.setData('surah_id', e.target.value)}>
+                        <option value="">{t.activities_no_range || 'No recitation range'}</option>
+                        {surahs.map((row) => <option key={row.id} value={row.id}>{row.index}. {surahName(row)}</option>)}
+                    </select>
+                    <input className="form-input" type="number" min="1" placeholder={t.activities_ayah_start || 'Ayah start'} aria-label={t.activities_ayah_start || 'Ayah start'} value={form.data.ayah_start} onChange={(e) => form.setData('ayah_start', e.target.value)} />
+                    <input className="form-input" type="number" min="1" placeholder={t.activities_ayah_end || 'Ayah end'} aria-label={t.activities_ayah_end || 'Ayah end'} value={form.data.ayah_end} onChange={(e) => form.setData('ayah_end', e.target.value)} />
+                    <input className="form-input" type="number" min="1" placeholder={t.activities_max_score || 'Max score'} aria-label={t.activities_max_score || 'Max score'} value={form.data.max_score} onChange={(e) => form.setData('max_score', e.target.value)} />
+                    <textarea className="form-input md:col-span-2 min-h-32 font-mono text-xs" dir="ltr" aria-label={t.activities_content || 'Activity content (JSON)'} value={form.data.data} onChange={(e) => form.setData('data', e.target.value)} />
+                    {form.data.pattern === 'teacher_marked' && (
+                        /* §36 "Play audio/voice submissions · View uploaded files". The kind
+                           was already storable; until this slice nothing read it, so saying
+                           what the choices are was pointless. Now it decides what the
+                           student is shown and what the reviewer can play. */
+                        <p className="md:col-span-2 text-xs text-gray-600">
+                            <code>submission_kind</code>: <code>written</code> ({t.activities_kind_written || 'text box'}),
+                            {' '}<code>file</code> ({t.activities_kind_file || 'image, PDF, document or audio upload'}),
+                            {' '}<code>audio</code> ({t.activities_kind_audio || 'recording only — the reviewer plays it'}),
+                            {' '}<code>canvas</code> ({t.activities_kind_canvas || 'handwriting — the student draws, the reviewer sees the image'}).
+                        </p>
+                    )}
+                    <textarea className="form-input md:col-span-2 min-h-24 font-mono text-xs" dir="ltr" aria-label={t.activities_settings || 'Settings (JSON)'} value={form.data.settings} onChange={(e) => form.setData('settings', e.target.value)} />
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.data.is_required} onChange={(e) => form.setData('is_required', e.target.checked)} />
+                        {t.outline_required || 'Required'}
+                    </label>
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.activities_save || 'Save activity'}</button>
+                    {/* Every refusal, not a hand-picked three. The server also refuses
+                        under `settings` (a recitation range outside its surah, an
+                        unknown surah or letter) and `activity_type`; until the Qur'an A
+                        walk those came back to a silent form with the typed values
+                        still in the boxes — indistinguishable from a save (STATUS §5fm). */}
+                    <FormErrors errors={form.errors} className="md:col-span-2" />
+                </form>
+            </PhoneFold>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

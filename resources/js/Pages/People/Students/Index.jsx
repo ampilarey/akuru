@@ -1,4 +1,5 @@
 import { useForm, Link } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
@@ -96,153 +97,156 @@ export default function Index({
                 </a>
             </form>
 
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    createForm.post('/people/students');
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
-            >
-                <h2 className="md:col-span-3 font-semibold">{t.students_add || 'Add student'}</h2>
-                <FormErrors errors={createForm.errors} className="md:col-span-3" />
-                <label className="text-xs text-gray-500">
-                    {t.first_name || 'First name'}
-                    <input
-                        className="form-input mt-1 w-full"
-                        value={createForm.data.first_name}
-                        onChange={(e) => createForm.setData('first_name', e.target.value)}
-                    />
-                </label>
-                <label className="text-xs text-gray-500">
-                    {t.middle_name || 'Middle name'}
-                    <input
-                        className="form-input mt-1 w-full"
-                        value={createForm.data.middle_name}
-                        onChange={(e) => createForm.setData('middle_name', e.target.value)}
-                    />
-                </label>
-                <label className="text-xs text-gray-500">
-                    {t.last_name || 'Last name'}
-                    <input
-                        className="form-input mt-1 w-full"
-                        value={createForm.data.last_name}
-                        onChange={(e) => createForm.setData('last_name', e.target.value)}
-                    />
-                </label>
-                <label className="text-xs text-gray-500">
-                    {t.date_of_birth || 'Date of birth'}
-                    <input
-                        type="date"
-                        className="form-input mt-1 w-full"
-                        value={createForm.data.date_of_birth}
-                        onChange={(e) => createForm.setData('date_of_birth', e.target.value)}
-                    />
-                </label>
-                <label className="text-xs text-gray-500">
-                    {t.gender || 'Gender'}
-                    <select
-                        className="form-input mt-1 w-full"
-                        value={createForm.data.gender}
-                        onChange={(e) => createForm.setData('gender', e.target.value)}
-                    >
-                        <option value="">{t.gender_choose || 'Select'}</option>
-                        <option value="female">{t.gender_female || 'Female'}</option>
-                        <option value="male">{t.gender_male || 'Male'}</option>
-                    </select>
-                </label>
-                <label className="text-xs text-gray-500">
-                    {t.student_number_optional || 'Student number (optional)'}
-                    <input
-                        className="form-input mt-1 w-full"
-                        placeholder={t.student_number_hint || 'Leave blank for course-only'}
-                        value={createForm.data.student_id}
-                        onChange={(e) => createForm.setData('student_id', e.target.value)}
-                    />
-                </label>
-                <label className="text-xs text-gray-500">
-                    {t.school_optional || 'School (optional)'}
-                    <select
-                        className="form-input mt-1 w-full"
-                        value={createForm.data.school_id}
-                        onChange={(e) => createForm.setData('school_id', e.target.value)}
-                    >
-                        <option value="">{t.none || 'None'}</option>
-                        {schools.map((school) => (
-                            <option key={school.id} value={school.id}>{school.name}</option>
-                        ))}
-                    </select>
-                </label>
-                <label className="text-xs text-gray-500">
-                    {t.class_optional || 'Class (optional)'}
-                    <select
-                        className="form-input mt-1 w-full"
-                        value={createForm.data.class_id}
-                        onChange={(e) => createForm.setData('class_id', e.target.value)}
-                    >
-                        <option value="">{t.none || 'None'}</option>
-                        {classes.map((room) => (
-                            <option key={room.id} value={room.id}>{room.label}</option>
-                        ))}
-                    </select>
-                </label>
-                <label className="text-xs text-gray-500">
-                    {t.admission_date_optional || 'Admission date (optional)'}
-                    <input
-                        type="date"
-                        className="form-input mt-1 w-full"
-                        value={createForm.data.admission_date}
-                        onChange={(e) => createForm.setData('admission_date', e.target.value)}
-                    />
-                </label>
-                <label className="text-xs text-gray-500">
-                    {t.status || 'Status'}
-                    <select
-                        className="form-input mt-1 w-full"
-                        value={createForm.data.status}
-                        onChange={(e) => createForm.setData('status', e.target.value)}
-                    >
-                        {statuses.map((status) => (
-                            <option key={status} value={status}>{statusName(status)}</option>
-                        ))}
-                    </select>
-                </label>
-                <label className="text-xs text-gray-500">
-                    {t.guardian_optional || 'Guardian (optional)'}
-                    <select
-                        className="form-input mt-1 w-full"
-                        value={createForm.data.guardian_id}
-                        onChange={(e) => createForm.setData('guardian_id', e.target.value)}
-                    >
-                        <option value="">{t.none || 'None'}</option>
-                        {guardians.map((guardian) => (
-                            <option key={guardian.id} value={guardian.id}>{guardian.name}</option>
-                        ))}
-                    </select>
-                </label>
-                <label className="text-xs text-gray-500">
-                    {t.relationship || 'Relationship'}
-                    <select
-                        className="form-input mt-1 w-full"
-                        value={createForm.data.guardian_relationship}
-                        onChange={(e) => createForm.setData('guardian_relationship', e.target.value)}
-                    >
-                        {relationships.map((rel) => (
-                            <option key={rel} value={rel}>{relationshipName(rel)}</option>
-                        ))}
-                    </select>
-                </label>
-                <label className="flex items-end gap-2 text-sm">
-                    <input
-                        type="checkbox"
-                        checked={createForm.data.is_primary}
-                        onChange={(e) => createForm.setData('is_primary', e.target.checked)}
-                    />
-                    {t.primary_guardian || 'Primary guardian'}
-                </label>
-                <div className="md:col-span-3">
-                    <button type="submit" className="btn-primary" disabled={createForm.processing}>{t.students_add || 'Add student'}</button>
-                </div>
-            </form>
+            <PhoneFold label={t.students_add || 'Add student'} forceOpen={Object.keys(createForm.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        createForm.post('/people/students');
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
+                >
+                    <h2 className="md:col-span-3 font-semibold">{t.students_add || 'Add student'}</h2>
+                    <FormErrors errors={createForm.errors} className="md:col-span-3" />
+                    <label className="text-xs text-gray-500">
+                        {t.first_name || 'First name'}
+                        <input
+                            className="form-input mt-1 w-full"
+                            value={createForm.data.first_name}
+                            onChange={(e) => createForm.setData('first_name', e.target.value)}
+                        />
+                    </label>
+                    <label className="text-xs text-gray-500">
+                        {t.middle_name || 'Middle name'}
+                        <input
+                            className="form-input mt-1 w-full"
+                            value={createForm.data.middle_name}
+                            onChange={(e) => createForm.setData('middle_name', e.target.value)}
+                        />
+                    </label>
+                    <label className="text-xs text-gray-500">
+                        {t.last_name || 'Last name'}
+                        <input
+                            className="form-input mt-1 w-full"
+                            value={createForm.data.last_name}
+                            onChange={(e) => createForm.setData('last_name', e.target.value)}
+                        />
+                    </label>
+                    <label className="text-xs text-gray-500">
+                        {t.date_of_birth || 'Date of birth'}
+                        <input
+                            type="date"
+                            className="form-input mt-1 w-full"
+                            value={createForm.data.date_of_birth}
+                            onChange={(e) => createForm.setData('date_of_birth', e.target.value)}
+                        />
+                    </label>
+                    <label className="text-xs text-gray-500">
+                        {t.gender || 'Gender'}
+                        <select
+                            className="form-input mt-1 w-full"
+                            value={createForm.data.gender}
+                            onChange={(e) => createForm.setData('gender', e.target.value)}
+                        >
+                            <option value="">{t.gender_choose || 'Select'}</option>
+                            <option value="female">{t.gender_female || 'Female'}</option>
+                            <option value="male">{t.gender_male || 'Male'}</option>
+                        </select>
+                    </label>
+                    <label className="text-xs text-gray-500">
+                        {t.student_number_optional || 'Student number (optional)'}
+                        <input
+                            className="form-input mt-1 w-full"
+                            placeholder={t.student_number_hint || 'Leave blank for course-only'}
+                            value={createForm.data.student_id}
+                            onChange={(e) => createForm.setData('student_id', e.target.value)}
+                        />
+                    </label>
+                    <label className="text-xs text-gray-500">
+                        {t.school_optional || 'School (optional)'}
+                        <select
+                            className="form-input mt-1 w-full"
+                            value={createForm.data.school_id}
+                            onChange={(e) => createForm.setData('school_id', e.target.value)}
+                        >
+                            <option value="">{t.none || 'None'}</option>
+                            {schools.map((school) => (
+                                <option key={school.id} value={school.id}>{school.name}</option>
+                            ))}
+                        </select>
+                    </label>
+                    <label className="text-xs text-gray-500">
+                        {t.class_optional || 'Class (optional)'}
+                        <select
+                            className="form-input mt-1 w-full"
+                            value={createForm.data.class_id}
+                            onChange={(e) => createForm.setData('class_id', e.target.value)}
+                        >
+                            <option value="">{t.none || 'None'}</option>
+                            {classes.map((room) => (
+                                <option key={room.id} value={room.id}>{room.label}</option>
+                            ))}
+                        </select>
+                    </label>
+                    <label className="text-xs text-gray-500">
+                        {t.admission_date_optional || 'Admission date (optional)'}
+                        <input
+                            type="date"
+                            className="form-input mt-1 w-full"
+                            value={createForm.data.admission_date}
+                            onChange={(e) => createForm.setData('admission_date', e.target.value)}
+                        />
+                    </label>
+                    <label className="text-xs text-gray-500">
+                        {t.status || 'Status'}
+                        <select
+                            className="form-input mt-1 w-full"
+                            value={createForm.data.status}
+                            onChange={(e) => createForm.setData('status', e.target.value)}
+                        >
+                            {statuses.map((status) => (
+                                <option key={status} value={status}>{statusName(status)}</option>
+                            ))}
+                        </select>
+                    </label>
+                    <label className="text-xs text-gray-500">
+                        {t.guardian_optional || 'Guardian (optional)'}
+                        <select
+                            className="form-input mt-1 w-full"
+                            value={createForm.data.guardian_id}
+                            onChange={(e) => createForm.setData('guardian_id', e.target.value)}
+                        >
+                            <option value="">{t.none || 'None'}</option>
+                            {guardians.map((guardian) => (
+                                <option key={guardian.id} value={guardian.id}>{guardian.name}</option>
+                            ))}
+                        </select>
+                    </label>
+                    <label className="text-xs text-gray-500">
+                        {t.relationship || 'Relationship'}
+                        <select
+                            className="form-input mt-1 w-full"
+                            value={createForm.data.guardian_relationship}
+                            onChange={(e) => createForm.setData('guardian_relationship', e.target.value)}
+                        >
+                            {relationships.map((rel) => (
+                                <option key={rel} value={rel}>{relationshipName(rel)}</option>
+                            ))}
+                        </select>
+                    </label>
+                    <label className="flex items-end gap-2 text-sm">
+                        <input
+                            type="checkbox"
+                            checked={createForm.data.is_primary}
+                            onChange={(e) => createForm.setData('is_primary', e.target.checked)}
+                        />
+                        {t.primary_guardian || 'Primary guardian'}
+                    </label>
+                    <div className="md:col-span-3">
+                        <button type="submit" className="btn-primary" disabled={createForm.processing}>{t.students_add || 'Add student'}</button>
+                    </div>
+                </form>
+            </PhoneFold>
 
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">

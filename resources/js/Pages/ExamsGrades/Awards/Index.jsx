@@ -1,4 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 
 const LEVELS = ['school', 'class'];
@@ -40,23 +41,26 @@ export default function Index({ awards, students, issued, years, t = {} }) {
                 <a className="btn-secondary" href="/exams/awards/export">{t.export_csv || 'Export CSV'}</a>
             </div>
 
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    award.post('/exams/awards', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
-            >
-                <input className="form-input" aria-label={t.title_en || 'Title (EN)'} placeholder={t.title_en || 'Title (EN)'} value={award.data.title} onChange={(e) => award.setData('title', e.target.value)} />
-                <input className="form-input" dir="rtl" aria-label={t.title_dv || 'Title (DV)'} placeholder={t.title_dv || 'Title (DV)'} value={award.data.title_dhivehi} onChange={(e) => award.setData('title_dhivehi', e.target.value)} />
-                <input className="form-input" dir="rtl" aria-label={t.title_ar || 'Title (AR)'} placeholder={t.title_ar || 'Title (AR)'} value={award.data.title_arabic} onChange={(e) => award.setData('title_arabic', e.target.value)} />
-                <select className="form-input" aria-label={t.awards_level || 'Level'} value={award.data.level} onChange={(e) => award.setData('level', e.target.value)}>
-                    {LEVELS.map((level) => <option key={level} value={level}>{levelName(level)}</option>)}
-                </select>
-                <input className="form-input md:col-span-3" aria-label={t.awards_description || 'Description'} placeholder={t.awards_description || 'Description'} value={award.data.description} onChange={(e) => award.setData('description', e.target.value)} />
-                <button type="submit" className="btn-primary" disabled={award.processing}>{t.awards_create || 'Create award'}</button>
-                {awardRefused && <p className="text-sm text-red-600 md:col-span-4">{awardRefused}</p>}
-            </form>
+            <PhoneFold label={t.awards_create || 'Create award'} forceOpen={Object.keys(award.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        award.post('/exams/awards', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
+                >
+                    <input className="form-input" aria-label={t.title_en || 'Title (EN)'} placeholder={t.title_en || 'Title (EN)'} value={award.data.title} onChange={(e) => award.setData('title', e.target.value)} />
+                    <input className="form-input" dir="rtl" aria-label={t.title_dv || 'Title (DV)'} placeholder={t.title_dv || 'Title (DV)'} value={award.data.title_dhivehi} onChange={(e) => award.setData('title_dhivehi', e.target.value)} />
+                    <input className="form-input" dir="rtl" aria-label={t.title_ar || 'Title (AR)'} placeholder={t.title_ar || 'Title (AR)'} value={award.data.title_arabic} onChange={(e) => award.setData('title_arabic', e.target.value)} />
+                    <select className="form-input" aria-label={t.awards_level || 'Level'} value={award.data.level} onChange={(e) => award.setData('level', e.target.value)}>
+                        {LEVELS.map((level) => <option key={level} value={level}>{levelName(level)}</option>)}
+                    </select>
+                    <input className="form-input md:col-span-3" aria-label={t.awards_description || 'Description'} placeholder={t.awards_description || 'Description'} value={award.data.description} onChange={(e) => award.setData('description', e.target.value)} />
+                    <button type="submit" className="btn-primary" disabled={award.processing}>{t.awards_create || 'Create award'}</button>
+                    {awardRefused && <p className="text-sm text-red-600 md:col-span-4">{awardRefused}</p>}
+                </form>
+            </PhoneFold>
 
             <form
                 onSubmit={(e) => {

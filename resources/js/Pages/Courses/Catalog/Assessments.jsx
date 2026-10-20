@@ -1,4 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors, { useRowRefusals } from '../../../Components/FormErrors';
 
@@ -53,53 +54,56 @@ export default function Assessments({ course, assessments, questions, types, t =
                 <a className="text-[#7C2D37] hover:underline" href={`/catalog/questions`}>{t.nav_question_bank || 'Question bank'}</a>
                 <a className="text-[#7C2D37] hover:underline" href={`/catalog/courses/${course.id}/assessments/export`}>{t.catalog_export || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post(`/catalog/courses/${course.id}/assessments`, { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
-            >
-                <input className="form-input" placeholder={t.catalog_new_title || 'Title'} aria-label={t.catalog_new_title || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-                <select className="form-input" aria-label={t.assess_type || 'Assessment type'} value={form.data.assessment_type} onChange={(e) => form.setData('assessment_type', e.target.value)}>
-                    {/* §19's eleven types, now served from the enum that owns
-                        them rather than a hardcoded controller array. */}
-                    {types.map((type) => (
-                        typeof type === 'string'
-                            ? <option key={type} value={type}>{typeName(type)}</option>
-                            : <option key={type.value} value={type.value}>{typeName(type.value, type.label)}</option>
-                    ))}
-                </select>
-                <select className="form-input" aria-label={t.assess_status || 'Status'} value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
-                    <option value="draft">{t.status_draft || 'draft'}</option>
-                    <option value="published">{t.status_published || 'published'}</option>
-                </select>
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.data.show_correct_answers} onChange={(e) => form.setData('show_correct_answers', e.target.checked)} />
-                    {t.assess_show_answers || 'Show correct answers'}
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.data.randomize_questions} onChange={(e) => form.setData('randomize_questions', e.target.checked)} />
-                    {t.assess_randomize || 'Randomize'}
-                </label>
-                {/* §19 "Show/hide correct answers" has a sibling: whether the
-                    student sees the mark at all. It was posted as a hardcoded
-                    true with no control, and read by nothing. */}
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.data.show_results} onChange={(e) => form.setData('show_results', e.target.checked)} />
-                    {t.assess_show_mark || 'Show the mark to the student'}
-                </label>
-                {/* §19 "Teacher marking". Without this an assessment waited for
-                    a human only if some question could not be auto-scored — so
-                    a speaking or writing paper made of multiple-choice
-                    questions was graded and finalised by nobody. */}
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.data.requires_teacher_marking} onChange={(e) => form.setData('requires_teacher_marking', e.target.checked)} />
-                    {t.assess_teacher_marking || 'Needs teacher marking'}
-                </label>
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.assess_save || 'Save assessment'}</button>
-                <FormErrors errors={form.errors} />
-            </form>
+            <PhoneFold forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post(`/catalog/courses/${course.id}/assessments`, { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-3"
+                >
+                    <input className="form-input" placeholder={t.catalog_new_title || 'Title'} aria-label={t.catalog_new_title || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+                    <select className="form-input" aria-label={t.assess_type || 'Assessment type'} value={form.data.assessment_type} onChange={(e) => form.setData('assessment_type', e.target.value)}>
+                        {/* §19's eleven types, now served from the enum that owns
+                            them rather than a hardcoded controller array. */}
+                        {types.map((type) => (
+                            typeof type === 'string'
+                                ? <option key={type} value={type}>{typeName(type)}</option>
+                                : <option key={type.value} value={type.value}>{typeName(type.value, type.label)}</option>
+                        ))}
+                    </select>
+                    <select className="form-input" aria-label={t.assess_status || 'Status'} value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
+                        <option value="draft">{t.status_draft || 'draft'}</option>
+                        <option value="published">{t.status_published || 'published'}</option>
+                    </select>
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.data.show_correct_answers} onChange={(e) => form.setData('show_correct_answers', e.target.checked)} />
+                        {t.assess_show_answers || 'Show correct answers'}
+                    </label>
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.data.randomize_questions} onChange={(e) => form.setData('randomize_questions', e.target.checked)} />
+                        {t.assess_randomize || 'Randomize'}
+                    </label>
+                    {/* §19 "Show/hide correct answers" has a sibling: whether the
+                        student sees the mark at all. It was posted as a hardcoded
+                        true with no control, and read by nothing. */}
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.data.show_results} onChange={(e) => form.setData('show_results', e.target.checked)} />
+                        {t.assess_show_mark || 'Show the mark to the student'}
+                    </label>
+                    {/* §19 "Teacher marking". Without this an assessment waited for
+                        a human only if some question could not be auto-scored — so
+                        a speaking or writing paper made of multiple-choice
+                        questions was graded and finalised by nobody. */}
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.data.requires_teacher_marking} onChange={(e) => form.setData('requires_teacher_marking', e.target.checked)} />
+                        {t.assess_teacher_marking || 'Needs teacher marking'}
+                    </label>
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.assess_save || 'Save assessment'}</button>
+                    <FormErrors errors={form.errors} />
+                </form>
+            </PhoneFold>
             <form
                 onSubmit={(e) => {
                     e.preventDefault();

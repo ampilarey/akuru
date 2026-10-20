@@ -1,4 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
@@ -32,31 +33,34 @@ export default function Postings({ rows, statuses, t = {} }) {
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/hr/postings/export">{t.export_csv || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/hr/postings', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
-            >
-                <input className="form-input" aria-label={t.title_en || 'Title (EN)'} placeholder={t.title_en || 'Title (EN)'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-                <input className="form-input" dir="rtl" aria-label={t.title_dv || 'Title (DV)'} placeholder={t.title_dv || 'Title (DV)'} value={form.data.title_dhivehi} onChange={(e) => form.setData('title_dhivehi', e.target.value)} />
-                <input className="form-input" dir="rtl" aria-label={t.title_ar || 'Title (AR)'} placeholder={t.title_ar || 'Title (AR)'} value={form.data.title_arabic} onChange={(e) => form.setData('title_arabic', e.target.value)} />
-                <input className="form-input" aria-label={t.department || 'Department'} placeholder={t.department || 'Department'} value={form.data.department} onChange={(e) => form.setData('department', e.target.value)} />
-                <select className="form-input" aria-label={t.postings_employment || 'Kind of work'} value={form.data.employment_type} onChange={(e) => form.setData('employment_type', e.target.value)}>
-                    {EMPLOYMENT.map((kind) => <option key={kind} value={kind}>{t[`employment_${kind}`] || kind}</option>)}
-                </select>
-                <select className="form-input" aria-label={t.status || 'Status'} value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
-                    {statuses.map((status) => <option key={status} value={status}>{statusName(status)}</option>)}
-                </select>
-                <input type="date" className="form-input" aria-label={t.postings_closes || 'Closes'} value={form.data.closes_at} onChange={(e) => form.setData('closes_at', e.target.value)} />
-                <label className="flex items-center gap-2 text-sm">
-                    <input type="checkbox" checked={form.data.public} onChange={(e) => form.setData('public', e.target.checked)} />
-                    {t.postings_public || 'Public'}
-                </label>
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.postings_save || 'Save posting'}</button>
-                <FormErrors errors={form.errors} className="md:col-span-4" />
-            </form>
+            <PhoneFold forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/hr/postings', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
+                >
+                    <input className="form-input" aria-label={t.title_en || 'Title (EN)'} placeholder={t.title_en || 'Title (EN)'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+                    <input className="form-input" dir="rtl" aria-label={t.title_dv || 'Title (DV)'} placeholder={t.title_dv || 'Title (DV)'} value={form.data.title_dhivehi} onChange={(e) => form.setData('title_dhivehi', e.target.value)} />
+                    <input className="form-input" dir="rtl" aria-label={t.title_ar || 'Title (AR)'} placeholder={t.title_ar || 'Title (AR)'} value={form.data.title_arabic} onChange={(e) => form.setData('title_arabic', e.target.value)} />
+                    <input className="form-input" aria-label={t.department || 'Department'} placeholder={t.department || 'Department'} value={form.data.department} onChange={(e) => form.setData('department', e.target.value)} />
+                    <select className="form-input" aria-label={t.postings_employment || 'Kind of work'} value={form.data.employment_type} onChange={(e) => form.setData('employment_type', e.target.value)}>
+                        {EMPLOYMENT.map((kind) => <option key={kind} value={kind}>{t[`employment_${kind}`] || kind}</option>)}
+                    </select>
+                    <select className="form-input" aria-label={t.status || 'Status'} value={form.data.status} onChange={(e) => form.setData('status', e.target.value)}>
+                        {statuses.map((status) => <option key={status} value={status}>{statusName(status)}</option>)}
+                    </select>
+                    <input type="date" className="form-input" aria-label={t.postings_closes || 'Closes'} value={form.data.closes_at} onChange={(e) => form.setData('closes_at', e.target.value)} />
+                    <label className="flex items-center gap-2 text-sm">
+                        <input type="checkbox" checked={form.data.public} onChange={(e) => form.setData('public', e.target.checked)} />
+                        {t.postings_public || 'Public'}
+                    </label>
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.postings_save || 'Save posting'}</button>
+                    <FormErrors errors={form.errors} className="md:col-span-4" />
+                </form>
+            </PhoneFold>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

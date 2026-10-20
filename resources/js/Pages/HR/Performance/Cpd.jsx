@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
@@ -21,23 +22,26 @@ export default function Cpd({ staff, rows, summary = [], t = {} }) {
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/hr/cpd/export">{t.export_csv || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/hr/cpd', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
-            >
-                <select className="form-input" aria-label={t.staff_member || 'Staff member'} value={form.data.staff_profile_id} onChange={(e) => form.setData('staff_profile_id', e.target.value)}>
-                    {staff.map((row) => <option key={row.id} value={row.id}>{row.first_name} {row.last_name}</option>)}
-                </select>
-                <input className="form-input" aria-label={t.cpd_course || 'Title'} placeholder={t.cpd_course || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
-                <input className="form-input" aria-label={t.cpd_provider || 'Provider'} placeholder={t.cpd_provider || 'Provider'} value={form.data.provider} onChange={(e) => form.setData('provider', e.target.value)} />
-                <input className="form-input" aria-label={t.cpd_hours || 'Hours'} placeholder={t.cpd_hours || 'Hours'} value={form.data.hours} onChange={(e) => form.setData('hours', e.target.value)} />
-                <input type="date" className="form-input" aria-label={t.date || 'Date'} value={form.data.date} onChange={(e) => form.setData('date', e.target.value)} />
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.cpd_save || 'Save CPD'}</button>
-                <FormErrors errors={form.errors} className="md:col-span-5" />
-            </form>
+            <PhoneFold forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/hr/cpd', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
+                >
+                    <select className="form-input" aria-label={t.staff_member || 'Staff member'} value={form.data.staff_profile_id} onChange={(e) => form.setData('staff_profile_id', e.target.value)}>
+                        {staff.map((row) => <option key={row.id} value={row.id}>{row.first_name} {row.last_name}</option>)}
+                    </select>
+                    <input className="form-input" aria-label={t.cpd_course || 'Title'} placeholder={t.cpd_course || 'Title'} value={form.data.title} onChange={(e) => form.setData('title', e.target.value)} />
+                    <input className="form-input" aria-label={t.cpd_provider || 'Provider'} placeholder={t.cpd_provider || 'Provider'} value={form.data.provider} onChange={(e) => form.setData('provider', e.target.value)} />
+                    <input className="form-input" aria-label={t.cpd_hours || 'Hours'} placeholder={t.cpd_hours || 'Hours'} value={form.data.hours} onChange={(e) => form.setData('hours', e.target.value)} />
+                    <input type="date" className="form-input" aria-label={t.date || 'Date'} value={form.data.date} onChange={(e) => form.setData('date', e.target.value)} />
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.cpd_save || 'Save CPD'}</button>
+                    <FormErrors errors={form.errors} className="md:col-span-5" />
+                </form>
+            </PhoneFold>
             <div className="mb-4">
                 <div className="mb-2 flex items-center justify-between">
                     <h2 className="font-medium">{t.cpd_hours_per_staff || 'Hours per staff member'}</h2>

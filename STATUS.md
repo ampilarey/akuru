@@ -4983,6 +4983,44 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tb. Office pages list their records before the new form on a phone (MF7, 2026-10-20)
+
+**docs/MOBILE_FIRST.md A8 — the audit's last finding.** Walking MF4–MF6 at
+390 px showed office pages putting a whole *new* form above their list.
+Rooms, years, invoices, leave balances and students made a phone scroll past
+a form before the first record.
+- **34 pages fold that form under one button** (`PhoneFold`, MF3), with
+  their records right under it:
+  - Academics: announcements, periods, rooms, years.
+  - Courses: activities, Arabic reference, assessments, the catalogue,
+    audiences, levels, subjects, the forum and club rosters.
+  - Exams: awards, competencies, report-card templates, scales and types.
+  - Finance: fee items and invoices.
+  - Forms.
+  - HR: attendance, contracts, leave types, appraisals, CPD, observations,
+    applications, postings and leave balances (both its forms).
+  - Sessions, staff and students.
+- **The button's label** is the form's own phrase when it opens something
+  (*Create room*, *Generate drafts*, *Add student*). When the form's button
+  only says *Save …*, it reads the shell's new *Add new*, in EN/DV/AR
+  (`nav.add_new`, shared once).
+- **`RecordsBeforeFormsTest` (new, CI) holds the habit.** A page whose posting
+  form comes before its list without a fold fails, unless it is listed in
+  `Baselines/forms_before_lists.php` with why: 24 kept on purpose, where the
+  form is the page (the register, settings, the message composer), a single
+  button or one field, or an editor a row loads into.
+
+**Tests:** `RecordsBeforeFormsTest` (2). Whole suite locally: 3283 passed;
+pint clean.
+
+**Walk:** `phone-first.mjs`, 108/108. Screenshots at 390 px: rooms, invoices,
+leave balances, students and years — one button, then the records.
+
+**With MF7 the 2026-10-20 audit is closed:** A1–A8 are done or held by a
+check, and the habit is CLAUDE.md's definition of done plus three CI tests
+(`PhoneFirstStylesTest`, `RecordsBeforeFormsTest`, `BrandColoursExistTest`)
+and one walk (`phone-first.mjs`).
+
 ## 5ta. Every table in the app reads as cards on a phone (MF6, 2026-10-20)
 
 **docs/MOBILE_FIRST.md A5, last batch — done.** The remaining 48 pages (HR,

@@ -1,4 +1,5 @@
 import { useForm, usePage } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
@@ -13,19 +14,22 @@ export default function Audiences({ rows, t = {} }) {
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/catalog/audiences/export">{t.catalog_export || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    form.post('/catalog/audiences', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
-            >
-                <input className="form-input" placeholder={t.taxonomy_name_en || 'Name (EN)'} aria-label={t.taxonomy_name_en || 'Name (EN)'} dir="ltr" value={form.data.name_en} onChange={(e) => form.setData('name_en', e.target.value)} />
-                <input className="form-input" placeholder={t.taxonomy_name_dv || 'Name (DV)'} aria-label={t.taxonomy_name_dv || 'Name (DV)'} dir="rtl" value={form.data.name_dv} onChange={(e) => form.setData('name_dv', e.target.value)} />
-                <input className="form-input" placeholder={t.taxonomy_name_ar || 'Name (AR)'} aria-label={t.taxonomy_name_ar || 'Name (AR)'} dir="rtl" value={form.data.name_ar} onChange={(e) => form.setData('name_ar', e.target.value)} />
-                <button type="submit" className="btn-primary" disabled={form.processing}>{t.taxonomy_save_audience || 'Save audience'}</button>
-                <FormErrors errors={form.errors} />
-            </form>
+            <PhoneFold forceOpen={Object.keys(form.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        form.post('/catalog/audiences', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
+                >
+                    <input className="form-input" placeholder={t.taxonomy_name_en || 'Name (EN)'} aria-label={t.taxonomy_name_en || 'Name (EN)'} dir="ltr" value={form.data.name_en} onChange={(e) => form.setData('name_en', e.target.value)} />
+                    <input className="form-input" placeholder={t.taxonomy_name_dv || 'Name (DV)'} aria-label={t.taxonomy_name_dv || 'Name (DV)'} dir="rtl" value={form.data.name_dv} onChange={(e) => form.setData('name_dv', e.target.value)} />
+                    <input className="form-input" placeholder={t.taxonomy_name_ar || 'Name (AR)'} aria-label={t.taxonomy_name_ar || 'Name (AR)'} dir="rtl" value={form.data.name_ar} onChange={(e) => form.setData('name_ar', e.target.value)} />
+                    <button type="submit" className="btn-primary" disabled={form.processing}>{t.taxonomy_save_audience || 'Save audience'}</button>
+                    <FormErrors errors={form.errors} />
+                </form>
+            </PhoneFold>
             <div className="overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

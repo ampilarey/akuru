@@ -263,4 +263,6 @@ return [
     'my_lending' => 'އަހަރެންގެ ދޫކުރުން',
     'lending_shelf' => 'ދަރަންޏަށް ނުވަތަ ގެންދެވޭ ފޮތްތައް',
     'workspace_lending' => 'ފޮތް ދޫކުރުން',
+    // docs/MOBILE_FIRST.md rule 4 (MF7): the phone button that opens a page's new form.
+    'add_new' => 'އައުކޮށް އިތުރުކުރޭ',
 ];

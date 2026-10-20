@@ -1,4 +1,5 @@
 import { router, useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 
 function Field({ label, error, children }) {
@@ -89,33 +90,36 @@ export default function Index({ years, t = {} }) {
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/academics/years/export">{t.export_csv || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    yearForm.post('/academics/years', {
-                        onSuccess: () => yearForm.reset(),
-                    });
-                }}
-                className="mb-6 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
-            >
-                <Field label={t.years_year_name || 'Year name'} error={yearForm.errors.name}>
-                    <input className="form-input w-full" aria-label={t.years_year_name || 'Year name'} placeholder="2026-2027" value={yearForm.data.name} onChange={(e) => yearForm.setData('name', e.target.value)} />
-                </Field>
-                <Field label={t.starts || 'Starts'} error={yearForm.errors.start_date}>
-                    <input className="form-input w-full" type="date" aria-label={t.starts || 'Starts'} value={yearForm.data.start_date} onChange={(e) => yearForm.setData('start_date', e.target.value)} />
-                </Field>
-                <Field label={t.ends || 'Ends'} error={yearForm.errors.end_date}>
-                    <input className="form-input w-full" type="date" aria-label={t.ends || 'Ends'} value={yearForm.data.end_date} onChange={(e) => yearForm.setData('end_date', e.target.value)} />
-                </Field>
-                {/* The controller has validated `description` since the screen
-                    shipped; the form carried the key with nowhere to type it. */}
-                <Field label={t.years_description || 'Description (optional)'} error={yearForm.errors.description}>
-                    <input className="form-input w-full" aria-label={t.years_description || 'Description (optional)'} value={yearForm.data.description} onChange={(e) => yearForm.setData('description', e.target.value)} />
-                </Field>
-                <div className="md:col-span-4">
-                    <button type="submit" className="btn-primary" disabled={yearForm.processing}>{t.years_create || 'Create year'}</button>
-                </div>
-            </form>
+            <PhoneFold label={t.years_create || 'Create year'} forceOpen={Object.keys(yearForm.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        yearForm.post('/academics/years', {
+                            onSuccess: () => yearForm.reset(),
+                        });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-4"
+                >
+                    <Field label={t.years_year_name || 'Year name'} error={yearForm.errors.name}>
+                        <input className="form-input w-full" aria-label={t.years_year_name || 'Year name'} placeholder="2026-2027" value={yearForm.data.name} onChange={(e) => yearForm.setData('name', e.target.value)} />
+                    </Field>
+                    <Field label={t.starts || 'Starts'} error={yearForm.errors.start_date}>
+                        <input className="form-input w-full" type="date" aria-label={t.starts || 'Starts'} value={yearForm.data.start_date} onChange={(e) => yearForm.setData('start_date', e.target.value)} />
+                    </Field>
+                    <Field label={t.ends || 'Ends'} error={yearForm.errors.end_date}>
+                        <input className="form-input w-full" type="date" aria-label={t.ends || 'Ends'} value={yearForm.data.end_date} onChange={(e) => yearForm.setData('end_date', e.target.value)} />
+                    </Field>
+                    {/* The controller has validated `description` since the screen
+                        shipped; the form carried the key with nowhere to type it. */}
+                    <Field label={t.years_description || 'Description (optional)'} error={yearForm.errors.description}>
+                        <input className="form-input w-full" aria-label={t.years_description || 'Description (optional)'} value={yearForm.data.description} onChange={(e) => yearForm.setData('description', e.target.value)} />
+                    </Field>
+                    <div className="md:col-span-4">
+                        <button type="submit" className="btn-primary" disabled={yearForm.processing}>{t.years_create || 'Create year'}</button>
+                    </div>
+                </form>
+            </PhoneFold>
 
             {years.map((year) => <YearCard key={year.id} year={year} t={t} />)}
         </AppShell>

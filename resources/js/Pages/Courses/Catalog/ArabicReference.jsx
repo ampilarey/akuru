@@ -1,4 +1,5 @@
 import { useForm } from '@inertiajs/react';
+import PhoneFold from '../../../Components/PhoneFold';
 import AppShell from '../../../Layouts/AppShell';
 import FormErrors from '../../../Components/FormErrors';
 
@@ -23,20 +24,23 @@ export default function ArabicReference({ letters, harakas, t = {} }) {
             <div className="mb-4 flex justify-end">
                 <a className="btn-secondary" href="/catalog/arabic/export">{t.catalog_export || 'Export CSV'}</a>
             </div>
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    letterForm.post('/catalog/arabic/letters', { preserveScroll: true });
-                }}
-                className="mb-4 grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
-            >
-                <input className="form-input" dir="ltr" placeholder={t.arref_key || 'Key'} aria-label={t.arref_key || 'Key'} value={letterForm.data.key_name} onChange={(e) => letterForm.setData('key_name', e.target.value)} />
-                <input className="form-input" dir="rtl" placeholder="ا" aria-label={t.arref_letter_glyph || 'Letter'} value={letterForm.data.arabic_character} onChange={(e) => letterForm.setData('arabic_character', e.target.value)} />
-                <input className="form-input" placeholder={t.arref_display_name || 'Display name'} aria-label={t.arref_display_name || 'Display name'} value={letterForm.data.display_name} onChange={(e) => letterForm.setData('display_name', e.target.value)} />
-                <input className="form-input" type="number" aria-label={t.arref_order || 'Order'} value={letterForm.data.sort_order} onChange={(e) => letterForm.setData('sort_order', e.target.value)} />
-                <button type="submit" className="btn-primary" disabled={letterForm.processing}>{t.arref_save_letter || 'Save letter'}</button>
-                <FormErrors errors={letterForm.errors} />
-            </form>
+            <PhoneFold forceOpen={Object.keys(letterForm.errors).length > 0}>
+                {/* docs/MOBILE_FIRST.md rule 4 (MF7): on a phone the form folds under one button, so the list starts on the first screen. */}
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        letterForm.post('/catalog/arabic/letters', { preserveScroll: true });
+                    }}
+                    className="grid gap-3 rounded-lg border bg-white p-4 md:grid-cols-5"
+                >
+                    <input className="form-input" dir="ltr" placeholder={t.arref_key || 'Key'} aria-label={t.arref_key || 'Key'} value={letterForm.data.key_name} onChange={(e) => letterForm.setData('key_name', e.target.value)} />
+                    <input className="form-input" dir="rtl" placeholder="ا" aria-label={t.arref_letter_glyph || 'Letter'} value={letterForm.data.arabic_character} onChange={(e) => letterForm.setData('arabic_character', e.target.value)} />
+                    <input className="form-input" placeholder={t.arref_display_name || 'Display name'} aria-label={t.arref_display_name || 'Display name'} value={letterForm.data.display_name} onChange={(e) => letterForm.setData('display_name', e.target.value)} />
+                    <input className="form-input" type="number" aria-label={t.arref_order || 'Order'} value={letterForm.data.sort_order} onChange={(e) => letterForm.setData('sort_order', e.target.value)} />
+                    <button type="submit" className="btn-primary" disabled={letterForm.processing}>{t.arref_save_letter || 'Save letter'}</button>
+                    <FormErrors errors={letterForm.errors} />
+                </form>
+            </PhoneFold>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white">
                 <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

@@ -259,4 +259,6 @@ return [
     'my_lending' => 'إعاراتي',
     'lending_shelf' => 'كتب للاستعارة أو الاحتفاظ',
     'workspace_lending' => 'الإعارة',
+    // docs/MOBILE_FIRST.md rule 4 (MF7): the phone button that opens a page's new form.
+    'add_new' => 'إضافة جديد',
 ];
