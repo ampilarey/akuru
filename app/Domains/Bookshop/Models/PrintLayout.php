@@ -13,13 +13,13 @@ class PrintLayout extends Model
 
     public const PAGE_H = 297.0;
 
-    protected $fillable = ['name', 'print_kind', 'sheet_size', 'columns', 'rows', 'tag_w_mm', 'tag_h_mm', 'margin_top_mm', 'margin_left_mm', 'gutter_x_mm', 'gutter_y_mm', 'sheet_code', 'is_active', 'sort_order'];
+    protected $fillable = ['name', 'print_kind', 'sheet_size', 'columns', 'rows', 'tag_w_mm', 'tag_h_mm', 'margin_top_mm', 'margin_left_mm', 'gutter_x_mm', 'gutter_y_mm', 'bleed_mm', 'sheet_code', 'is_active', 'sort_order'];
 
     protected function casts(): array
     {
         return [
             'columns' => 'integer', 'rows' => 'integer',
-            'tag_w_mm' => 'float', 'tag_h_mm' => 'float', 'margin_top_mm' => 'float', 'margin_left_mm' => 'float', 'gutter_x_mm' => 'float', 'gutter_y_mm' => 'float',
+            'tag_w_mm' => 'float', 'tag_h_mm' => 'float', 'margin_top_mm' => 'float', 'margin_left_mm' => 'float', 'gutter_x_mm' => 'float', 'gutter_y_mm' => 'float', 'bleed_mm' => 'float',
             'is_active' => 'boolean',
         ];
     }
@@ -48,7 +48,21 @@ class PrintLayout extends Model
     {
         [$w, $h] = $this->footprint();
         [$pw, $ph] = $this->sheetMm();
+        $bleed = (float) $this->bleed_mm;
 
-        return $w <= $pw + 0.01 && $h <= $ph + 0.01;
+        return $w + $bleed <= $pw + 0.01 && $h + $bleed <= $ph + 0.01;
+    }
+
+    /** PP3: room for the bleed — the margins at least the bleed, and the gutters twice it, so no tag's bleed runs onto another. */
+    public function roomForBleed(): bool
+    {
+        $bleed = (float) $this->bleed_mm;
+        if ($bleed <= 0) {
+            return true;
+        }
+
+        return $this->margin_left_mm + 0.01 >= $bleed && $this->margin_top_mm + 0.01 >= $bleed
+            && ($this->columns < 2 || $this->gutter_x_mm + 0.01 >= 2 * $bleed)
+            && ($this->rows < 2 || $this->gutter_y_mm + 0.01 >= 2 * $bleed);
     }
 }

@@ -35,17 +35,19 @@ function nt2Design(array $elements = [], array $more = []): array
 }
 
 it('ships five active templates on the 2 × 4 layout, each asking for at least one field, and lists them for the office only', function () {
-    expect(PrintTemplate::query()->count())->toBe(5)
-        ->and(PrintTemplate::query()->where('status', 'active')->count())->toBe(5)
-        ->and(PrintTemplate::query()->get()->every(fn (PrintTemplate $t) => PrintDesign::fieldKeys((array) $t->design) !== [] && $t->layout?->tagsPerSheet() === 8))->toBeTrue()
+    // Name tags' five; PP3's cards are in PrintCardsTest.
+    $tags = PrintTemplate::query()->where('print_kind', 'name_tags');
+    expect((clone $tags)->count())->toBe(5)
+        ->and((clone $tags)->where('status', 'active')->count())->toBe(5)
+        ->and((clone $tags)->get()->every(fn (PrintTemplate $t) => PrintDesign::fieldKeys((array) $t->design) !== [] && $t->layout?->tagsPerSheet() === 8))->toBeTrue()
         ->and(PrintTemplate::query()->where('kind', 'subject_tag')->first()->titleIn('dv'))->toMatch('/\p{Thaana}/u');
 
     printWeb()->actingAs(User::factory()->create())->get(route('admin.bookshop.print.templates'))->assertForbidden();
     printWeb()->actingAs(printOffice())->get(route('admin.bookshop.print.templates'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('Bookshop/PrintTemplates')->has('templates', 5)->has('fonts.noto-sans-thaana')->has('font_css')->where('sample.name', __('print.sample_name'))
+        ->assertInertia(fn (Assert $page) => $page->component('Bookshop/PrintTemplates')->has('templates', 10)->has('fonts.noto-sans-thaana')->has('font_css')->where('sample.name', __('print.sample_name'))
             ->where('templates.0.title', 'Plain')->where('templates.0.fields', ['name', 'class']));
     printWeb()->actingAs(printOffice())->get(route('admin.bookshop.print.templates.create'))->assertOk()
-        ->assertInertia(fn (Assert $page) => $page->component('Bookshop/PrintTemplateDesigner')->where('template', null)->has('layouts', 5)->where('field_keys', PrintDesign::FIELD_KEYS)->where('max_elements', 60)->where('kinds', PrintTemplate::KINDS));
+        ->assertInertia(fn (Assert $page) => $page->component('Bookshop/PrintTemplateDesigner')->where('template', null)->has('layouts', 9)->where('field_keys', PrintDesign::FIELD_KEYS)->where('max_elements', 60)->where('kinds', PrintTemplate::KINDS));
 });
 
 it('refuses a broken design in the page\'s language and normalises a sound one', function () {
@@ -111,7 +113,7 @@ it('saves a template from the designer, changes it, moves it draft → active �
     $design['elements'][] = ['id' => 'name', 'type' => 'text', 'x' => 4, 'y' => 24, 'w' => 87, 'h' => 16, 'text' => '{name}', 'font' => 'amiri', 'size' => 20, 'color' => '#FFFFFF', 'field' => 'name'];
     $post(['title' => 'Crest 2028'] + $meta + ['design' => json_encode($design)], $template->id)->assertSessionHasNoErrors();
     $template->refresh();
-    expect($template->title)->toBe('Crest 2028')->and(PrintDesign::fieldKeys($template->design))->toBe(['name'])->and(PrintTemplate::query()->count())->toBe(6);
+    expect($template->title)->toBe('Crest 2028')->and(PrintDesign::fieldKeys($template->design))->toBe(['name'])->and(PrintTemplate::query()->count())->toBe(11);
     $status('active')->assertSessionHasNoErrors()->assertSessionHas('success', __('print.flash_template_status', [], 'ar'));
     expect($template->fresh()->status)->toBe('active');
     $status('retired')->assertSessionHasNoErrors();

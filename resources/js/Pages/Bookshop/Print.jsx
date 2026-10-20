@@ -157,7 +157,7 @@ function Finishing({ t, finishing }) {
 }
 
 function Layouts({ t, layouts, sizes, products }) {
-    const blank = { name: '', print_kind: 'name_tags', sheet_size: 'a4', columns: 2, rows: 4, tag_w_mm: '', tag_h_mm: '', margin_top_mm: 0, margin_left_mm: 0, gutter_x_mm: 0, gutter_y_mm: 0, sheet_code: '', is_active: true, sort_order: 0 };
+    const blank = { name: '', print_kind: 'name_tags', sheet_size: 'a4', columns: 2, rows: 4, tag_w_mm: '', tag_h_mm: '', margin_top_mm: 0, margin_left_mm: 0, gutter_x_mm: 0, gutter_y_mm: 0, bleed_mm: 0, sheet_code: '', is_active: true, sort_order: 0 };
     const [editing, setEditing] = useState(null);
     const form = useForm(blank);
     const edit = (l) => { setEditing(l.id); form.setData({ ...l, sheet_code: l.sheet_code ?? '' }); };
@@ -176,7 +176,7 @@ function Layouts({ t, layouts, sizes, products }) {
                                 <td className="p-2" data-label={t.sheet_size} dir="ltr">{(l.sheet_size ?? 'a4').toUpperCase()}</td>
                                 <td className="p-2" data-label={t.product} dir="auto">{products.find((p) => p.kind === l.print_kind)?.title ?? l.print_kind}</td>
                                 <td className="p-2 sm:text-end" data-label={t.tags_per_sheet}>{l.tags} ({l.columns} × {l.rows})</td>
-                                <td className="p-2" data-label={t.tag_w} dir="ltr">{l.tag_w_mm} × {l.tag_h_mm} mm</td>
+                                <td className="p-2" data-label={t.tag_w} dir="ltr">{l.tag_w_mm} × {l.tag_h_mm} mm{l.bleed_mm > 0 ? ` + ${l.bleed_mm} mm` : ''}</td>
                                 <td className="p-2" data-label={t.active}>{l.is_active ? t.active : t.retired}</td>
                                 <td className="table-actions p-2 text-end"><button type="button" className="text-blue-700 underline" onClick={() => edit(l)}>{t.edit}</button></td>
                             </tr>
@@ -196,6 +196,7 @@ function Layouts({ t, layouts, sizes, products }) {
                 {num('margin_left_mm', t.margin_left)}
                 {num('gutter_x_mm', t.gutter_x)}
                 {num('gutter_y_mm', t.gutter_y)}
+                <label className="text-sm">{t.bleed}<input type="number" step="0.5" min="0" max="5" className="form-input w-full" value={form.data.bleed_mm ?? 0} onChange={(e) => form.setData('bleed_mm', e.target.value)} data-testid="print-layout-bleed" /><span className="block text-xs text-gray-500">{t.bleed_help}</span><Err>{form.errors.bleed_mm}</Err></label>
                 <label className="text-sm">{t.sheet_code}<input className="form-input w-full" dir="ltr" value={form.data.sheet_code} onChange={(e) => form.setData('sheet_code', e.target.value)} /></label>
                 <label className="text-sm">{t.sort_order}<input type="number" min="0" className="form-input w-full" value={form.data.sort_order} onChange={(e) => form.setData('sort_order', e.target.value)} /></label>
                 <label className="flex items-center gap-2 self-end pb-2 text-sm sm:col-span-2"><input type="checkbox" checked={form.data.is_active} onChange={(e) => form.setData('is_active', e.target.checked)} /> {t.active}</label>
