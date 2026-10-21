@@ -197,11 +197,13 @@ said from the `learn` book.
 work page drew a broken image and logged a 404. The seeder writes it now.
 A test-data fault, not the product's.
 
-### `/profile` is in English — open (HP2)
+### `/profile` is in English — **fixed (2026-10-21, STATUS §5tw)**
 
 The account's own page has no Dhivehi or Arabic: its name and email, the
 password change and deleting the account. It is the old Blade profile,
 reached from everyone's *Me* menu.
+Now in all three languages from the `account` book. Its heading is an
+`h1`, and the password fields are named when a change is refused.
 
 ### A notification is in the language of whoever sent it — open (HP3, a decision)
 

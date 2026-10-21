@@ -200,3 +200,45 @@ it('shows a subject by its name in the page\'s language, and lets a student with
     test()->withoutLocalizationMiddleware()->actingAs(User::query()->findOrFail($student->user_id)->assignRole('student'))
         ->get("/e-learning/{$subject->id}")->assertForbidden();
 });
+
+/*
+ * HP2 (STATUS §5tw): the account's own page, /profile, found in English by the
+ * household audit — the name and email, the password, deleting the account.
+ */
+function hp2Views(): array
+{
+    return [
+        'profile/edit.blade.php',
+        'profile/partials/update-profile-information-form.blade.php',
+        'profile/partials/update-password-form.blade.php',
+        'profile/partials/delete-user-form.blade.php',
+    ];
+}
+
+it('prints no English of the profile page\'s own', function () {
+    expect(obPrintsNoEnglish(hp2Views()))->toBe([]);
+    foreach (obKeysIn(hp2Views(), 'account') as $key) {
+        foreach (['en', 'dv', 'ar'] as $locale) {
+            expect(__($key, [], $locale))->not->toBe($key, "{$key} in {$locale}");
+        }
+    }
+});
+
+it('shows the profile in Dhivehi and Arabic, and says a wrong password in the page\'s language with the field named', function () {
+    $user = User::factory()->create(['email_verified_at' => null]);
+
+    foreach (['dv', 'ar'] as $locale) {
+        app()->setLocale($locale);
+        test()->withoutLocalizationMiddleware()->actingAs($user)->get('/profile')->assertOk()
+            ->assertSee(__('account.profile_title', [], $locale))
+            ->assertSee(__('account.profile_password_title', [], $locale))
+            ->assertSee(__('account.profile_unverified', [], $locale))
+            ->assertSee(__('account.profile_delete_button', [], $locale))
+            ->assertDontSee('Profile Information')->assertDontSee('Update Password')->assertDontSee('Delete Account');
+    }
+
+    app()->setLocale('dv');
+    test()->withoutLocalizationMiddleware()->actingAs($user)->from('/profile')
+        ->put('/password', ['current_password' => '', 'password' => 'new-password-1', 'password_confirmation' => 'new-password-1'])
+        ->assertSessionHasErrorsIn('updatePassword', ['current_password' => __('validation.required', ['attribute' => 'މިހާރުގެ ޕާސްވޯޑް'], 'dv')]);
+});

@@ -21,8 +21,9 @@ class ProfileTest extends TestCase
 
         $response
             ->assertOk()
-            ->assertSee('Profile Information', false)
-            ->assertSee('Update Password', false);
+            // HP2: the page's words are the account book's now.
+            ->assertSee(__('account.profile_info_title'), false)
+            ->assertSee(__('account.profile_password_title'), false);
     }
 
     public function test_profile_information_can_be_updated(): void

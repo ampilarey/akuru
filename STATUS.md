@@ -4983,6 +4983,34 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tw. The account's own page in Dhivehi and Arabic (HP2, 2026-10-21)
+
+`/profile`, under everyone's *Me* menu, was the old Blade profile with 22
+English strings: the name and email, the email confirmation, the password
+change, and deleting the account.
+- **Words:** every string now comes from the `account` book (`profile_*`,
+  in EN, DV and AR). The password fields reuse the set-password page's
+  words.
+- **Heading:** the page's heading is an `h1`. The page had none.
+- **Delete button:** it says *Delete my account*, not the section's title.
+- **Email field:** it runs left to right.
+- **Field names:** a refused password change names its fields in the
+  page's language. The Dhivehi and Arabic `validation` books gain
+  `current_password` and `password_confirmation`.
+
+**Tests:** `ProfileTest` reads the new words. `OldScreensSpeakThreeLanguagesTest` gains two:
+- the four views print no English of their own, and every key they use
+  exists in all three languages;
+- the page reads Dhivehi and Arabic, and an empty current password is
+  refused naming *މިހާރުގެ ޕާސްވޯޑް*.
+
+The phrase-book and parity tests pass. Whole suite 3343: the first run failed only `ProfileTest`, which pinned the old English; it passes now. Pint is clean.
+
+**Walked** at 390 px under /dv and /ar as the parent: the `h1` reads
+*އަހަރެންގެ ޕްރޮފައިލް* / *ملفي الشخصي*, there is no Latin text but the
+person's own name and email, and nothing scrolls sideways. The
+household walk's earlier check of the page passed.
+
 ## 5tv. The household's pages on a phone (HP1, 2026-10-21)
 
 A fresh audit of what a family sees. The seeded parent and pupil signed in
