@@ -508,4 +508,17 @@ return [
     'error_class_empty' => 'This class has no pupils yet.',
     // PP6b: Akuru's print quotes, from the print desk.
     'quotes_link' => 'School quotes',
+    // PP7a (PD10): shops the office approves to print.
+    'shops_heading' => 'Shops that print',
+    'shops_intro' => 'A shop you approve here prints on its own papers at its own prices, from the same designs. Its print sales are its own orders, at its commission. Customers choose who prints their job.',
+    'shops_none' => 'No other shop is open yet.',
+    'shops_prints' => 'Prints',
+    'shops_does_not' => 'Does not print',
+    'shops_papers' => ':count papers priced',
+    'shops_approve' => 'Approve to print',
+    'shops_stop' => 'Stop printing',
+    'flash_shop_prints' => 'The shop may print now.',
+    'flash_shop_stopped' => 'The shop no longer prints. Jobs already ordered are still theirs to finish.',
+    'error_vendor_print_akuru' => 'Akuru always prints.',
+    'error_vendor_print_inactive' => 'Only an open shop can be approved to print.',
 ];

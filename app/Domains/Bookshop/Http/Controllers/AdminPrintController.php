@@ -2,6 +2,7 @@
 
 namespace App\Domains\Bookshop\Http\Controllers;
 
+use App\Domains\Bookshop\Actions\Print\ApproveVendorPrintAction;
 use App\Domains\Bookshop\Actions\Print\ListPrintDeskAction;
 use App\Domains\Bookshop\Actions\Print\SavePrintFinishingAction;
 use App\Domains\Bookshop\Actions\Print\SavePrintLayoutAction;
@@ -17,6 +18,7 @@ use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintLayout;
 use App\Domains\Bookshop\Models\PrintPaperOption;
 use App\Domains\Bookshop\Models\PrintSubjectSet;
+use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintProducts;
 use App\Domains\Bookshop\Support\PrintSheet;
@@ -43,6 +45,16 @@ class AdminPrintController extends Controller
         abort_unless($request->user()?->can('bookshop.manage'), 403);
 
         return Inertia::render('Bookshop/Print', ['t' => Phrases::once('print'), ...app(ListPrintDeskAction::class)->execute()]);
+    }
+
+    /** PP7a: approve a shop to print, or stop it. */
+    public function shop(Request $request, int $vendor): RedirectResponse
+    {
+        abort_unless($request->user()?->can('bookshop.manage'), 403);
+        $data = $request->validate(['print_enabled' => 'required|boolean']);
+        app(ApproveVendorPrintAction::class)->execute(Vendor::query()->findOrFail($vendor), (bool) $data['print_enabled']);
+
+        return back()->with('success', __($data['print_enabled'] ? 'print.flash_shop_prints' : 'print.flash_shop_stopped'));
     }
 
     public function settings(Request $request): RedirectResponse
@@ -119,7 +131,7 @@ class AdminPrintController extends Controller
             'gsm' => 'nullable|integer|min:40|max:600', 'kind' => 'required|string|max:20', 'sheet_size' => 'nullable|in:'.implode(',', PrintSheet::codes()),
             'price_bw' => 'required|numeric|min:0|max:10000', 'price_colour' => 'required|numeric|min:0|max:10000', 'is_active' => 'nullable|boolean', 'sort_order' => 'nullable|integer|min:0|max:1000',
         ]);
-        app(SavePrintPaperAction::class)->execute($data, $paper === null ? null : PrintPaperOption::query()->findOrFail($paper));
+        app(SavePrintPaperAction::class)->execute($data, $paper === null ? null : PrintPaperOption::query()->ofPrinter(null)->findOrFail($paper));
 
         return back()->with('success', __('print.flash_paper_saved'));
     }
@@ -131,7 +143,7 @@ class AdminPrintController extends Controller
             'name' => 'required|string|max:120', 'name_dv' => 'nullable|string|max:120', 'name_ar' => 'nullable|string|max:120',
             'price' => 'required|numeric|min:0|max:10000', 'cuts_sheet' => 'nullable|boolean', 'is_active' => 'nullable|boolean', 'sort_order' => 'nullable|integer|min:0|max:1000',
         ]);
-        app(SavePrintFinishingAction::class)->execute($data, $finishing === null ? null : PrintFinishingOption::query()->findOrFail($finishing));
+        app(SavePrintFinishingAction::class)->execute($data, $finishing === null ? null : PrintFinishingOption::query()->ofPrinter(null)->findOrFail($finishing));
 
         return back()->with('success', __('print.flash_finishing_saved'));
     }

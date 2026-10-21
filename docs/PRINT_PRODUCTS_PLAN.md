@@ -165,10 +165,28 @@ what is printed.
 - Tests: a teacher sees their own classes only; a parent has no *From a
   class*; a quoted job orders at the quoted price, never the list price.
 
-### PP7 — Other vendors printing (only when a vendor asks; PD10)
+### PP7 — Other vendors printing (PD10; built on the owner's word, 2026-10-21)
 
-- A vendor's own print desk (papers, prices, layouts) and queue on
-  `/vendor`; their print sales earn like any other sale.
+The owner said "Complete all" with PP7 named as the last item, which is the
+ask PD10 waited for. Defaults, each the smallest that works:
+
+| # | Choice | Default |
+|---|---|---|
+| PD10a | Who may print | A shop the office **approves for print** on the print desk (`vendors.print_enabled`), and only while the shop is active. Akuru always prints. |
+| PD10b | What a printing shop sets | Its **own papers and finishings, with its own prices** (`vendor_id` on both; Akuru's stay unowned). The desk's settings — lead days, the minimum, quantity breaks, the watermark — and the template catalogue and layouts stay the office's, shared by every printer. |
+| PD10c | The products | Each print product a shop prints is **its own product** under that shop (slug `<print product>--<shop>`), so its sales are the shop's orders, its delivery is the shop's, and it **earns like any other sale**, at the shop's commission. |
+| PD10d | Who prints a job | The customer chooses on the job page: **Akuru, or an approved shop** that has a priced paper of the job's sheet size. Akuru first. Changing printer moves the job to that printer's first paper and clears finishings it does not offer. |
+| PD10e | Proof and file | Made here by this server's Chrome as now; the printing shop downloads the print file from its own queue. |
+
+Slices:
+- **PP7a:** papers and finishings gain an owner; the office's approve
+  switch; a shop's print products made when approved; every paper and
+  finishing lookup reads the printer's own.
+- **PP7b:** `/vendor/print` — the shop's papers and finishings with
+  prices, and its queue of paid print orders with each print file.
+- **PP7c:** the printer choice on the job page, priced from the chosen
+  printer's papers; a walk end to end, a school ordering name tags from a
+  shop.
 
 ## 4. What the owner owns
 

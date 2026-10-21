@@ -25,12 +25,15 @@ class ListPrintDeskAction
             'can_enable' => $why === null,
             'cannot_enable_because' => $why === null ? null : __($why),
             'product' => $product === null ? null : ['slug' => $product->slug, 'title' => $product->title, 'status' => $product->status->value],
+            // PP7a: the shops the office may approve to print.
+            'shops' => ApproveVendorPrintAction::shops(),
             'vendor' => ($v = PrintDesk::vendor()) === null ? null : ['name' => $v->name, 'slug' => $v->slug],
-            'papers' => PrintPaperOption::query()->orderBy('sort_order')->orderBy('id')->get()->map(fn (PrintPaperOption $p) => [
+            // PP7a: Akuru's own; a printing shop keeps its own on /vendor/print.
+            'papers' => PrintPaperOption::query()->ofPrinter(null)->orderBy('sort_order')->orderBy('id')->get()->map(fn (PrintPaperOption $p) => [
                 'id' => $p->id, 'name' => $p->name, 'name_dv' => $p->name_dv, 'name_ar' => $p->name_ar, 'gsm' => $p->gsm, 'kind' => $p->kind, 'sheet_size' => $p->sheet_size,
                 'price_bw' => (string) $p->price_bw, 'price_colour' => (string) $p->price_colour, 'is_active' => $p->is_active, 'sort_order' => $p->sort_order,
             ])->values()->all(),
-            'finishing' => PrintFinishingOption::query()->orderBy('sort_order')->orderBy('id')->get()->map(fn (PrintFinishingOption $f) => [
+            'finishing' => PrintFinishingOption::query()->ofPrinter(null)->orderBy('sort_order')->orderBy('id')->get()->map(fn (PrintFinishingOption $f) => [
                 'id' => $f->id, 'name' => $f->name, 'name_dv' => $f->name_dv, 'name_ar' => $f->name_ar, 'price' => (string) $f->price,
                 'cuts_sheet' => $f->cuts_sheet, 'is_active' => $f->is_active, 'sort_order' => $f->sort_order,
             ])->values()->all(),

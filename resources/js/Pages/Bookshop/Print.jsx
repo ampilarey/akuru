@@ -278,7 +278,34 @@ function Products({ t, products }) {
     );
 }
 
-export default function Print({ t = {}, settings, can_enable: canEnable, cannot_enable_because: why, product, vendor, papers = [], finishing = [], layouts = [], subject_sets: sets = [], kinds = [], sheet_sizes: sizes = ['a4'], products = [] }) {
+/** PP7a (PD10a): the shops the office has approved to print, on their own papers and prices. */
+function Shops({ t, shops }) {
+    const [busy, setBusy] = useState(null);
+    const toggle = (shop) => { setBusy(shop.id); router.post(`/admin/bookshop/print/shops/${shop.id}`, { print_enabled: !shop.print_enabled }, { preserveScroll: true, onFinish: () => setBusy(null) }); };
+
+    return (
+        <section className="mb-6 rounded-lg border bg-white p-4" data-testid="print-shops">
+            <h2 className="mb-1 text-lg font-semibold">{t.shops_heading}</h2>
+            <p className="mb-3 text-sm text-gray-600">{t.shops_intro}</p>
+            {shops.length === 0 && <p className="text-sm text-gray-600">{t.shops_none}</p>}
+            <ul className="divide-y">
+                {shops.map((shop) => (
+                    <li key={shop.id} className="flex flex-wrap items-center gap-3 py-2" data-testid={`print-shop-${shop.slug}`} data-print={shop.print_enabled ? 'yes' : 'no'}>
+                        <div className="min-w-0 flex-1">
+                            <p className="font-medium" dir="auto">{shop.name}</p>
+                            <p className="text-xs text-gray-600">{shop.print_enabled ? t.shops_prints : t.shops_does_not} · {fill(t.shops_papers, { count: shop.papers })}</p>
+                        </div>
+                        <button type="button" className={shop.print_enabled ? 'btn-secondary text-sm' : 'btn-primary text-sm'} disabled={busy !== null} onClick={() => toggle(shop)} data-testid={`print-shop-${shop.slug}-toggle`}>
+                            {shop.print_enabled ? t.shops_stop : t.shops_approve}
+                        </button>
+                    </li>
+                ))}
+            </ul>
+        </section>
+    );
+}
+
+export default function Print({ t = {}, settings, can_enable: canEnable, cannot_enable_because: why, product, vendor, papers = [], finishing = [], layouts = [], subject_sets: sets = [], kinds = [], sheet_sizes: sizes = ['a4'], products = [], shops = [] }) {
     const { errors } = usePage().props;
 
     return (
@@ -289,6 +316,7 @@ export default function Print({ t = {}, settings, can_enable: canEnable, cannot_
             {product && <p className="mb-4 text-sm text-gray-600" data-testid="print-product">{fill(t.product_line, { title: product.title, status: product.status === 'active' ? t.status_active : t.status_draft })}</p>}
             <Settings t={t} settings={settings} canEnable={canEnable} why={why} />
             <Products t={t} products={products} />
+            <Shops t={t} shops={shops} />
             <Papers t={t} papers={papers} kinds={kinds} sizes={sizes} />
             <Finishing t={t} finishing={finishing} />
             <Layouts t={t} layouts={layouts} sizes={sizes} products={products} />

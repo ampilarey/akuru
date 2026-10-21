@@ -235,7 +235,7 @@ class SavePrintJobAction
             // PP1: a paper is stock of one size; on a layout of another size the job moves to that size's first paper.
             $paper = $job->print_paper_option_id === null ? null : PrintPaperOption::query()->find($job->print_paper_option_id);
             if ($paper === null || $paper->sheet_size !== $layout->sheet_size) {
-                $paper = PrintPaperOption::firstFor($layout->sheet_size);
+                $paper = PrintPaperOption::firstFor($layout->sheet_size, $job->printerId());
                 $job->print_paper_option_id = $paper?->id;
                 $job->colour = $paper === null || (float) $paper->price_colour > 0;
             }
@@ -368,7 +368,7 @@ class SavePrintJobAction
             $job->sheets = PrintJobEntry::sheets($entry, $layout, (int) $job->sheets);
         }
         try {
-            $quote = $this->quote->execute($job->print_paper_option_id, (bool) $job->colour, (array) $job->finishing, (int) $job->sheets, $locale, $layout?->sheet_size);
+            $quote = $this->quote->execute($job->print_paper_option_id, (bool) $job->colour, (array) $job->finishing, (int) $job->sheets, $locale, $layout?->sheet_size, $job->printerId());
             $job->price_breakdown = $quote;
             $job->price_per_sheet = $quote['unit_price'];
             $job->price_total = $quote['total'];

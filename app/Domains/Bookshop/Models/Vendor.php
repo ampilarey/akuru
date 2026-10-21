@@ -15,6 +15,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 class Vendor extends Model
 {
     protected $fillable = [
+        // PP7a: the office has approved the shop to print.
+        'print_enabled',
         'name',
         'slug',
         'code',
@@ -58,6 +60,7 @@ class Vendor extends Model
         return [
             'status' => VendorStatus::class,
             'gst_registered' => 'boolean',
+            'print_enabled' => 'boolean',
             'trusted' => 'boolean',
             'akuru_handling_fee' => 'decimal:2',
             'commission_rate' => 'decimal:2',

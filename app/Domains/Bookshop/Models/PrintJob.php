@@ -46,6 +46,15 @@ class PrintJob extends Model
         return PrintProducts::kindOfSlug($slug) ?? PrintProducts::DEFAULT;
     }
 
+    /**
+     * PP7a: who prints the job — null for Akuru, or the shop whose print
+     * product it is.
+     */
+    public function printerId(): ?int
+    {
+        return PrintProducts::printerOfProduct($this->product_id);
+    }
+
     public function isUpload(): bool
     {
         return $this->source === 'upload';

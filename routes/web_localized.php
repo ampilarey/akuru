@@ -1007,6 +1007,8 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::get('print', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'index'])->name('admin.bookshop.print');
         Route::get('print/export', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'export'])->name('admin.bookshop.print.export');
         Route::post('print/settings', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'settings'])->name('admin.bookshop.print.settings');
+        // PP7a: the office approves a shop to print, or stops it.
+        Route::post('print/shops/{vendor}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'shop'])->name('admin.bookshop.print.shop')->whereNumber('vendor');
         // PRINT_PRODUCTS_PLAN PP6b: Akuru's own print quotes, priced by the office.
         Route::get('print/quotes', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'quotes'])->name('admin.bookshop.print.quotes');
         Route::post('print/quotes/{quote}', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'quote'])->name('admin.bookshop.print.quotes.quote')->whereNumber('quote');

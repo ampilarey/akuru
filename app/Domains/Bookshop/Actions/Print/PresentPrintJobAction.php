@@ -120,7 +120,7 @@ class PresentPrintJobAction
     }
 
     /** @return array<string, mixed> the lists a job's page chooses from */
-    public function choices(string $locale, array $design, string $kind = PrintProducts::DEFAULT): array
+    public function choices(string $locale, array $design, string $kind = PrintProducts::DEFAULT, ?int $printerId = null): array
     {
         $media = [];
         foreach ((array) ($design['elements'] ?? []) as $el) {
@@ -135,9 +135,10 @@ class PresentPrintJobAction
             'layouts' => PrintLayout::query()->where('is_active', true)->where('print_kind', $kind)->orderBy('sort_order')->orderBy('id')->get()
                 ->map(fn (PrintLayout $l) => ['id' => $l->id, 'name' => $l->name, 'shape' => $l->shape, 'sheet_size' => $l->sheet_size, 'sheet_label' => PrintSheet::label($l->sheet_size), 'tags' => $l->tagsPerSheet(), 'tag_w_mm' => $l->tag_w_mm, 'tag_h_mm' => $l->tag_h_mm])->values()->all(),
             // PP1: each paper names its sheet size; the page offers those of the chosen layout's size.
-            'papers' => PrintPaperOption::query()->where('is_active', true)->where(fn ($q) => $q->where('price_bw', '>', 0)->orWhere('price_colour', '>', 0))->orderBy('sort_order')->orderBy('id')->get()
+            // PP7a: the papers and finishings of the job's printer.
+            'papers' => PrintPaperOption::query()->ofPrinter($printerId)->where('is_active', true)->where(fn ($q) => $q->where('price_bw', '>', 0)->orWhere('price_colour', '>', 0))->orderBy('sort_order')->orderBy('id')->get()
                 ->map(fn (PrintPaperOption $p) => ['id' => $p->id, 'name' => $p->nameIn($locale), 'sheet_size' => $p->sheet_size, 'gsm' => $p->gsm, 'price_bw' => (float) $p->price_bw, 'price_colour' => (float) $p->price_colour])->values()->all(),
-            'finishing_options' => PrintFinishingOption::query()->where('is_active', true)->where('price', '>', 0)->orderBy('sort_order')->orderBy('id')->get()
+            'finishing_options' => PrintFinishingOption::query()->ofPrinter($printerId)->where('is_active', true)->where('price', '>', 0)->orderBy('sort_order')->orderBy('id')->get()
                 ->map(fn (PrintFinishingOption $f) => ['id' => $f->id, 'name' => $f->nameIn($locale), 'price' => (float) $f->price, 'cuts_sheet' => (bool) $f->cuts_sheet])->values()->all(),
             'subject_sets' => PrintSubjectSet::query()->where('is_active', true)->orderBy('sort_order')->orderBy('id')->get()
                 ->map(fn (PrintSubjectSet $s) => ['id' => $s->id, 'label' => $s->labelIn($locale), 'subjects' => $s->subjects])->values()->all(),
