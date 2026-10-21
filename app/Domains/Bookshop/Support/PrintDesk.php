@@ -82,7 +82,7 @@ final class PrintDesk
         if (! app(PdfConverterInterface::class)->enabled() || ! app(PageImageInterface::class)->enabled()) {
             return 'print.error_enable_no_chrome';
         }
-        if (! PrintPaperOption::query()->where('is_active', true)->where(fn ($q) => $q->where('price_bw', '>', 0)->orWhere('price_colour', '>', 0))->exists()) {
+        if (! PrintPaperOption::query()->ofPrinter(null)->where('is_active', true)->where(fn ($q) => $q->where('price_bw', '>', 0)->orWhere('price_colour', '>', 0))->exists()) {
             return 'print.error_enable_no_paper';
         }
 

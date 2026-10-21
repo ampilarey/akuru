@@ -498,4 +498,17 @@ return [
     'error_class_empty' => 'لا يوجد طلاب في هذا الصف بعد.',
     // PP6b: Akuru's print quotes, from the print desk.
     'quotes_link' => 'عروض أسعار المدارس',
+    // PP7a (PD10): shops the office approves to print.
+    'shops_heading' => 'متاجر تطبع',
+    'shops_intro' => 'المتجر الذي توافق عليه هنا يطبع على أوراقه وبأسعاره، من التصاميم نفسها. مبيعات الطباعة لديه طلباته هو، بعمولته. يختار العميل من يطبع عمله.',
+    'shops_none' => 'لا يوجد متجر آخر مفتوح بعد.',
+    'shops_prints' => 'يطبع',
+    'shops_does_not' => 'لا يطبع',
+    'shops_papers' => ':count من الأوراق مسعّرة',
+    'shops_approve' => 'الموافقة على الطباعة',
+    'shops_stop' => 'إيقاف الطباعة',
+    'flash_shop_prints' => 'يمكن للمتجر الطباعة الآن.',
+    'flash_shop_stopped' => 'لم يعد المتجر يطبع. الأعمال المطلوبة سابقًا يكملها هو.',
+    'error_vendor_print_akuru' => 'أكورو تطبع دائمًا.',
+    'error_vendor_print_inactive' => 'لا يمكن الموافقة على الطباعة إلا لمتجر مفتوح.',
 ];

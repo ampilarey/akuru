@@ -151,7 +151,7 @@ class ShopPrintController extends Controller
         return Inertia::render($row->isUpload() ? 'Shop/PrintUploadJob' : 'Shop/PrintJob', [
             't' => Phrases::once('print'),
             'job' => $present->job($row, app()->getLocale()),
-            ...$present->choices(app()->getLocale(), (array) $row->design, $row->printKind()),
+            ...$present->choices(app()->getLocale(), (array) $row->design, $row->printKind(), $row->printerId()),
             'product_title' => PrintProducts::title($row->printKind(), app()->getLocale()),
             'door' => PrintProducts::KINDS[$row->printKind()]['path'],
             // NT6: the designer's library, field names and limits, for a free-form design.

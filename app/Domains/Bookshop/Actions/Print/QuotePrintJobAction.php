@@ -27,10 +27,11 @@ class QuotePrintJobAction
      * @param  list<int>  $finishingIds
      * @return array{paper: array{id: int, name: string, price: float}, colour: bool, finishing: list<array{id: int, name: string, price: float, cuts_sheet: bool}>, per_sheet: float, sheets: int, subtotal: float, tier_percent: float, discount: float, total: float, unit_price: float, gst: float, currency: string, min_sheets: int}
      */
-    public function execute(?int $paperId, bool $colour, array $finishingIds, int $sheets, string $locale = 'en', ?string $sheetSize = null): array
+    public function execute(?int $paperId, bool $colour, array $finishingIds, int $sheets, string $locale = 'en', ?string $sheetSize = null, ?int $printerId = null): array
     {
         $settings = PrintDesk::settings();
-        $paper = $paperId === null ? null : PrintPaperOption::query()->where('is_active', true)->find($paperId);
+        // PP7a: only the printer's own papers and finishings price its jobs.
+        $paper = $paperId === null ? null : PrintPaperOption::query()->ofPrinter($printerId)->where('is_active', true)->find($paperId);
         if ($paper === null) {
             throw ValidationException::withMessages(['paper' => __('print.error_job_paper')]);
         }
@@ -45,7 +46,7 @@ class QuotePrintJobAction
         $finishing = [];
         $ids = array_values(array_unique(array_map('intval', $finishingIds)));
         if ($ids !== []) {
-            $rows = PrintFinishingOption::query()->where('is_active', true)->whereIn('id', $ids)->orderBy('sort_order')->orderBy('id')->get();
+            $rows = PrintFinishingOption::query()->ofPrinter($printerId)->where('is_active', true)->whereIn('id', $ids)->orderBy('sort_order')->orderBy('id')->get();
             if ($rows->count() !== count($ids)) {
                 throw ValidationException::withMessages(['finishing' => __('print.error_job_finishing')]);
             }

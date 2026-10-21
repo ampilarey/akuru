@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Support;
 
 use App\Domains\Bookshop\Enums\ProductStatus;
 use App\Domains\Bookshop\Models\Product;
+use App\Domains\Bookshop\Models\Vendor;
 
 /**
  * PRINT_PRODUCTS_PLAN PP2 (PD3): what the print desk sells. Each is a
@@ -64,9 +65,51 @@ final class PrintProducts
         return self::valid($kind) ? Product::query()->where('slug', self::KINDS[$kind]['slug'])->first() : null;
     }
 
-    /** The kind a product is, or null for anything not printed to order. */
+    /**
+     * PP7a: a shop's own copy of a print product, slug `<print product>--<shop>`,
+     * so its sales are the shop's orders and earn at its commission. Made
+     * the first time it is wanted; on sale while the shop is approved to print.
+     */
+    public static function productFor(string $kind, Vendor $vendor): ?Product
+    {
+        if (! self::valid($kind)) {
+            return null;
+        }
+        if ($vendor->kind === 'akuru') {
+            return self::product($kind);
+        }
+        $meta = self::KINDS[$kind];
+        $slug = $meta['slug'].'--'.$vendor->slug;
+        $base = self::product($kind) ?? (PrintDesk::ensure() ? self::product($kind) : null);
+
+        return Product::query()->where('slug', $slug)->first() ?? Product::query()->create([
+            'vendor_id' => $vendor->id,
+            'product_category_id' => $base?->product_category_id,
+            'slug' => $slug,
+            ...collect($meta)->only(['title', 'title_dv', 'title_ar', 'summary', 'summary_dv', 'summary_ar'])->all(),
+            'price' => 0, 'currency' => 'MVR', 'tax_class' => 'standard', 'track_stock' => false, 'stock' => 0,
+            'status' => $vendor->print_enabled ? 'active' : 'draft', 'visibility' => 'shop',
+        ]);
+    }
+
+    /** PP7a: who prints what a product sells — null for Akuru (or anything else), a shop's id for its copy. */
+    public static function printerOfProduct(?int $productId): ?int
+    {
+        if ($productId === null) {
+            return null;
+        }
+        $product = Product::query()->whereKey($productId)->first(['id', 'slug', 'vendor_id']);
+        if ($product === null || ! str_contains((string) $product->slug, '--') || self::kindOfSlug($product->slug) === null) {
+            return null;
+        }
+
+        return (int) $product->vendor_id;
+    }
+
+    /** The kind a product is, or null for anything not printed to order — a shop's copy too (PP7a). */
     public static function kindOfSlug(?string $slug): ?string
     {
+        $slug = $slug === null ? null : explode('--', $slug, 2)[0];
         foreach (self::KINDS as $kind => $meta) {
             if ($meta['slug'] === $slug) {
                 return $kind;

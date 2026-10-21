@@ -4983,6 +4983,51 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5uh. Other shops print: the office approves, papers have an owner (PP7a, 2026-10-21)
+
+PD10 held PP7 until a vendor asked. The owner's "Complete all", with PP7
+named as the last item, is that ask. PRINT_PRODUCTS_PLAN §PP7 now carries
+the defaults (PD10a–e) and the three sub-slices.
+- **Papers and finishings have an owner:** `vendor_id` on both tables,
+  additive. Akuru's stay unowned, so nothing that exists changes. A scope
+  `ofPrinter($id)` reads a printer's own.
+- **A shop approved to print** (`vendors.print_enabled`): the office's
+  print desk has a *Shops that print* section, each active shop with
+  *Approve to print* or *Stop printing*.
+  - `ApproveVendorPrintAction` gives the shop its own copy of each print
+    product (slug `<print product>--<shop>`), on sale while it prints and
+    draft once stopped. So the shop's print sales are its own orders, at
+    its commission.
+  - Akuru, and a shop that is not open, are refused.
+- **Who prints a job is its product:** `PrintProducts::printerOfProduct`
+  and `PrintJob::printerId()`. `kindOfSlug` reads a shop's copy too.
+- **Pricing and lists filter by printer:**
+  - pricing (`QuotePrintJobAction`) and a job's paper on a layout change
+    read the job's printer's papers and finishings only;
+  - so do the job page's lists;
+  - the office's desk lists, edits, and counts towards switching print on
+    only Akuru's own (a shop's paper is a 404 there).
+- **Not yet:** a shop sets its papers and sees its queue in PP7b; a
+  customer chooses the printer in PP7c. Until then, new jobs are Akuru's,
+  as before.
+
+**Tests:** `VendorsPrintTest` (4):
+- approve makes the four products, each the shop's and its kind's, and
+  stop takes them off sale (403 for a stranger);
+- Akuru and a suspended shop are refused;
+- a shop's job is priced from its papers and finishings only, and Akuru's
+  from Akuru's;
+- the office's desk lists Akuru's papers and the shops, and cannot edit a
+  shop's paper.
+
+The Print and Bookshop suites pass (342).
+
+**Walk:** `print-shops.mjs` (new, in `all.mjs`), at 390 px under /dv: the
+office approves Fitrah from the desk, its four products go on sale, then it
+stops printing. 5/5.
+
+Whole suite 3361 passed; pint clean. The migration is additive (`migrate --force` in the pull).
+
 ## 5ug. Email and SMS in the reader's language (LA1, 2026-10-21)
 
 ADR-044 said the inbox in the page's language (§5tx–§5tz). Email and SMS
