@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Actions\Orders;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Models\Order;
+use App\Support\Said;
 
 /**
  * COMMERCE_PARITY_PLAN P8d: on a pre-order's release date the buyer is told
@@ -26,10 +27,10 @@ class ReleasePreordersAction
                 if (Order::query()->whereKey($order->id)->whereNull('preorder_released_at')->update(['preorder_released_at' => now()]) === 0) {
                     return;
                 }
-                $notify->execute((int) $order->user_id, __('shop.notice_preorder_released_title', ['number' => $order->number]),
-                    __('shop.notice_preorder_released_body', ['number' => $order->number]), '/my-orders/'.$order->number, 'order_progress');
-                $notify->vendor((int) $order->vendor_id, __('shop.notice_preorder_vendor_title', ['number' => $order->number]),
-                    __('shop.notice_preorder_vendor_body', ['number' => $order->number]), '/vendor/orders');
+                $notify->execute((int) $order->user_id, Said::of('shop.notice_preorder_released_title', ['number' => $order->number]),
+                    Said::of('shop.notice_preorder_released_body', ['number' => $order->number]), '/my-orders/'.$order->number, 'order_progress');
+                $notify->vendor((int) $order->vendor_id, Said::of('shop.notice_preorder_vendor_title', ['number' => $order->number]),
+                    Said::of('shop.notice_preorder_vendor_body', ['number' => $order->number]), '/vendor/orders');
                 $count++;
             });
 

@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\OrderComplaint;
 use App\Domains\Media\Actions\ReadPrivateMediaAction;
 use App\Domains\Media\Actions\StorePrivateMediaAction;
+use App\Support\Said;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 
@@ -37,8 +38,8 @@ class OrderComplaintAction
         ]);
 
         $notify = app(NotifyBookshopUserAction::class);
-        $title = __('shop.notice_complaint_title', ['number' => $order->number]);
-        $message = __('shop.notice_complaint_body', ['number' => $order->number, 'kind' => __('shop.complaint_kind_'.$kind)]);
+        $title = Said::of('shop.notice_complaint_title', ['number' => $order->number]);
+        $message = Said::of('shop.notice_complaint_body', ['number' => $order->number, 'kind' => Said::of('shop.complaint_kind_'.$kind)]);
         $notify->office($title, $message, '/admin/bookshop/complaints', 'complaint');
         $notify->vendor((int) $order->vendor_id, $title, $message, '/vendor/orders', 'complaint');
 
@@ -58,7 +59,7 @@ class OrderComplaintAction
         ]);
         app(NotifyBookshopUserAction::class)->execute(
             (int) $complaint->user_id,
-            __('shop.notice_complaint_reply_title', ['number' => $complaint->order->number]),
+            Said::of('shop.notice_complaint_reply_title', ['number' => $complaint->order->number]),
             trim($reply),
             '/my-orders/'.$complaint->order->number,
             'complaint_reply',

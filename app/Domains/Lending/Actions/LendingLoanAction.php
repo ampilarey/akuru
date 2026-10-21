@@ -11,6 +11,7 @@ use App\Domains\Lending\Models\Lender;
 use App\Domains\Lending\Models\LendingBook;
 use App\Domains\Lending\Models\LendingLoan;
 use App\Domains\Lending\Support\LendingPresenter;
+use App\Support\Said;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -66,7 +67,7 @@ class LendingLoanAction
             ]);
         });
         $borrower = $this->person($borrowerUserId);
-        app(NotifyLendingUserAction::class)->execute((int) $loan->lender->user_id, __('lending.notice_requested_title'), __('lending.notice_requested_body', ['name' => $borrower['name'] ?? '', 'title' => $loan->book->title]), '/my-lending#lending', 'requested');
+        app(NotifyLendingUserAction::class)->execute((int) $loan->lender->user_id, Said::of('lending.notice_requested_title'), Said::of('lending.notice_requested_body', ['name' => $borrower['name'] ?? '', 'title' => $loan->book->title]), '/my-lending#lending', 'requested');
 
         return $loan;
     }
@@ -93,9 +94,9 @@ class LendingLoanAction
         });
         $lender = $this->person($lenderUserId);
         $body = $loan->due_on === null
-            ? __('lending.notice_accepted_give_body', ['title' => $loan->book->title, 'name' => $loan->lender->display_name, 'phone' => $lender['phone'] ?? '—'])
-            : __('lending.notice_accepted_body', ['title' => $loan->book->title, 'name' => $loan->lender->display_name, 'phone' => $lender['phone'] ?? '—', 'due' => $loan->due_on->toDateString()]);
-        app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, __('lending.notice_accepted_title'), $body, '/my-lending#borrowing', 'accepted');
+            ? Said::of('lending.notice_accepted_give_body', ['title' => $loan->book->title, 'name' => $loan->lender->display_name, 'phone' => $lender['phone'] ?? '—'])
+            : Said::of('lending.notice_accepted_body', ['title' => $loan->book->title, 'name' => $loan->lender->display_name, 'phone' => $lender['phone'] ?? '—', 'due' => $loan->due_on->toDateString()]);
+        app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, Said::of('lending.notice_accepted_title'), $body, '/my-lending#borrowing', 'accepted');
 
         return $loan;
     }
@@ -112,7 +113,7 @@ class LendingLoanAction
 
             return $loan->refresh();
         });
-        app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, __('lending.notice_declined_title'), __('lending.notice_declined_body', ['title' => $loan->book->title, 'note' => $note]), '/my-lending#borrowing', 'declined');
+        app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, Said::of('lending.notice_declined_title'), Said::of('lending.notice_declined_body', ['title' => $loan->book->title, 'note' => $note]), '/my-lending#borrowing', 'declined');
 
         return $loan;
     }
@@ -129,7 +130,7 @@ class LendingLoanAction
             return $loan->refresh();
         });
         $borrower = $this->person($borrowerUserId);
-        app(NotifyLendingUserAction::class)->execute((int) $loan->lender->user_id, __('lending.notice_cancelled_title'), __('lending.notice_cancelled_body', ['name' => $borrower['name'] ?? '', 'title' => $loan->book->title]), '/my-lending#lending', 'cancelled');
+        app(NotifyLendingUserAction::class)->execute((int) $loan->lender->user_id, Said::of('lending.notice_cancelled_title'), Said::of('lending.notice_cancelled_body', ['name' => $borrower['name'] ?? '', 'title' => $loan->book->title]), '/my-lending#lending', 'cancelled');
 
         return $loan;
     }
@@ -150,9 +151,9 @@ class LendingLoanAction
             return $loan->refresh();
         });
         if ($loan->status === LoanStatus::Given) {
-            app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, __('lending.notice_given_title'), __('lending.notice_given_body', ['title' => $loan->book->title, 'name' => $loan->lender->display_name]), '/my-lending#borrowing', 'given');
+            app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, Said::of('lending.notice_given_title'), Said::of('lending.notice_given_body', ['title' => $loan->book->title, 'name' => $loan->lender->display_name]), '/my-lending#borrowing', 'given');
         } else {
-            app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, __('lending.notice_out_title'), __('lending.notice_out_body', ['title' => $loan->book->title, 'due' => $loan->due_on?->toDateString() ?? '']), '/my-lending#borrowing', 'out');
+            app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, Said::of('lending.notice_out_title'), Said::of('lending.notice_out_body', ['title' => $loan->book->title, 'due' => $loan->due_on?->toDateString() ?? '']), '/my-lending#borrowing', 'out');
         }
 
         return $loan;
@@ -167,7 +168,7 @@ class LendingLoanAction
 
             return $loan->refresh();
         });
-        app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, __('lending.notice_returned_title'), __('lending.notice_returned_body', ['title' => $loan->book->title]), '/my-lending#borrowing', 'returned');
+        app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, Said::of('lending.notice_returned_title'), Said::of('lending.notice_returned_body', ['title' => $loan->book->title]), '/my-lending#borrowing', 'returned');
 
         return $loan;
     }
@@ -215,7 +216,7 @@ class LendingLoanAction
     private function declineQuietly(LendingLoan $loan, string $note): void
     {
         $loan->update(['status' => LoanStatus::Declined->value, 'decided_at' => now(), 'note' => $note]);
-        app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, __('lending.notice_declined_title'), __('lending.notice_declined_body', ['title' => $loan->book->title, 'note' => $note]), '/my-lending#borrowing', 'declined');
+        app(NotifyLendingUserAction::class)->execute((int) $loan->borrower_user_id, Said::of('lending.notice_declined_title'), Said::of('lending.notice_declined_body', ['title' => $loan->book->title, 'note' => $note]), '/my-lending#borrowing', 'declined');
     }
 
     /**

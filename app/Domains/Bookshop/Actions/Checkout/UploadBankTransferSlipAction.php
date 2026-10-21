@@ -9,6 +9,7 @@ use App\Domains\Bookshop\Enums\SlipStatus;
 use App\Domains\Bookshop\Models\BankTransferSlip;
 use App\Domains\Bookshop\Models\BookshopCheckout;
 use App\Domains\Media\Actions\StorePrivateMediaAction;
+use App\Support\Said;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 
@@ -47,8 +48,8 @@ class UploadBankTransferSlipAction
         $checkout->reservations()->update(['expires_at' => $until]);
 
         app(NotifyBookshopUserAction::class)->office(
-            __('shop.notice_slip_title'),
-            __('shop.notice_slip_body', ['number' => $checkout->number]),
+            Said::of('shop.notice_slip_title'),
+            Said::of('shop.notice_slip_body', ['number' => $checkout->number]),
             '/admin/bookshop',
             'slip_received',
         );

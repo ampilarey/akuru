@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Actions\Vendor;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\ProductQuestion;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -49,7 +50,7 @@ class VendorQuestionsAction
         $first = $question->answered_at === null;
         $question->update(['answer' => mb_substr($text, 0, 2000), 'answered_at' => $question->answered_at ?? now(), 'answered_by' => $scope->userId]);
         if ($first) {
-            app(NotifyBookshopUserAction::class)->execute((int) $question->user_id, __('shop.notice_question_answered_title'), __('shop.notice_question_answered_body', ['vendor' => $scope->vendorName, 'title' => (string) $question->product?->title]), '/shop/products/'.$question->product?->slug.'#questions');
+            app(NotifyBookshopUserAction::class)->execute((int) $question->user_id, Said::of('shop.notice_question_answered_title'), Said::of('shop.notice_question_answered_body', ['vendor' => $scope->vendorName, 'title' => (string) $question->product?->title]), '/shop/products/'.$question->product?->slug.'#questions');
         }
 
         return $question;

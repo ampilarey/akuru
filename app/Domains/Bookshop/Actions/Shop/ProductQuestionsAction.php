@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Actions\Shop;
 
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Models\ProductQuestion;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -56,7 +57,7 @@ class ProductQuestionsAction
             'question' => mb_substr($text, 0, 1000),
             'status' => ProductQuestion::PUBLISHED,
         ]);
-        app(NotifyBookshopUserAction::class)->vendor((int) $product->vendor_id, __('shop.notice_question_title'), __('shop.notice_question_body', ['title' => $product->title]), '/vendor/reviews#questions', 'question');
+        app(NotifyBookshopUserAction::class)->vendor((int) $product->vendor_id, Said::of('shop.notice_question_title'), Said::of('shop.notice_question_body', ['title' => $product->title]), '/vendor/reviews#questions', 'question');
 
         return $question;
     }

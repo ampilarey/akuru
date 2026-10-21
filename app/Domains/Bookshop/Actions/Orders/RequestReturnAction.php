@@ -9,6 +9,7 @@ use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\OrderEvent;
 use App\Domains\Bookshop\Models\OrderReturn;
 use App\Domains\Bookshop\Support\OrderView;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -57,13 +58,13 @@ class RequestReturnAction
         $order = $return->order;
         app(NotifyBookshopUserAction::class)->vendor(
             (int) $order->vendor_id,
-            __('shop.notice_return_requested_title'),
-            __('shop.notice_return_requested_body', ['number' => $order->number]),
+            Said::of('shop.notice_return_requested_title'),
+            Said::of('shop.notice_return_requested_body', ['number' => $order->number]),
             '/vendor/orders',
             'return_requested',
         );
         // COMMERCE_PARITY_PLAN P5: and the office.
-        app(NotifyBookshopUserAction::class)->office(__('shop.notice_return_requested_title'), __('shop.notice_return_requested_body', ['number' => $order->number]), '/admin/bookshop', 'return_requested');
+        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_return_requested_title'), Said::of('shop.notice_return_requested_body', ['number' => $order->number]), '/admin/bookshop', 'return_requested');
 
         return $return;
     }

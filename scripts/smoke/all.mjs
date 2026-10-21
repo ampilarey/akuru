@@ -29,7 +29,7 @@
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
  *   node scripts/smoke/all.mjs --read     the twenty-one that only look
- *   node scripts/smoke/all.mjs --write    the 135 that change data
+ *   node scripts/smoke/all.mjs --write    the 136 that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
  * A writing run against a host whose name does not look synthetic asks for
@@ -246,6 +246,7 @@ const WALKS = [
     { name: 'used-books', writes: true, asks: 'Can a shop sell old and used books from the short form?' },
     { name: 'lending', writes: true, asks: 'Can people lend books to each other, checked by the office?' },
     { name: 'gift', writes: true, asks: 'Can a signed-in reader find the Library and buy someone a gift card?' },
+    { name: 'notice-language', writes: true, asks: 'Does a notice read in the family\'s language, whoever sent it?' },
     { name: 'copyright', writes: true, asks: 'Can a reader report a Library work that copies theirs, and the office decide it?' },
     { name: 'account-language', writes: true, asks: 'Do linked accounts and a teacher\'s schedule read in Dhivehi and Arabic?' },
     { name: 'bookstore-language', writes: true, reseed: true, asks: 'Does the Bookstore read in Dhivehi and Arabic, to its last words?' },

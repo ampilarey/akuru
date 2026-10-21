@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Actions\Shop\CustomerQuotesAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\QuoteItem;
 use App\Domains\Bookshop\Models\QuoteRequest;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -73,8 +74,8 @@ class VendorQuotesAction
             return $quote->refresh();
         });
 
-        app(NotifyBookshopUserAction::class)->execute((int) $quote->user_id, __('shop.notice_quote_ready_title'),
-            __('shop.notice_quote_ready_body', ['number' => $quote->number, 'vendor' => $scope->vendorName, 'amount' => $quote->currency.' '.number_format((float) $quote->quoted_total, 2), 'date' => $quote->valid_until?->toDateString()]),
+        app(NotifyBookshopUserAction::class)->execute((int) $quote->user_id, Said::of('shop.notice_quote_ready_title'),
+            Said::of('shop.notice_quote_ready_body', ['number' => $quote->number, 'vendor' => $scope->vendorName, 'amount' => $quote->currency.' '.number_format((float) $quote->quoted_total, 2), 'date' => $quote->valid_until?->toDateString()]),
             '/my-quotes/'.$quote->number, 'quote_ready');
 
         return $quote;
@@ -90,8 +91,8 @@ class VendorQuotesAction
             throw ValidationException::withMessages(['quote' => __('shop.error_quote_decided')]);
         }
         $quote->update(['status' => 'declined', 'declined_at' => now(), 'vendor_note' => trim($note)]);
-        app(NotifyBookshopUserAction::class)->execute((int) $quote->user_id, __('shop.notice_quote_declined_title'),
-            __('shop.notice_quote_declined_body', ['number' => $quote->number, 'vendor' => $scope->vendorName, 'note' => trim($note)]), '/my-quotes/'.$quote->number, 'quote_ready');
+        app(NotifyBookshopUserAction::class)->execute((int) $quote->user_id, Said::of('shop.notice_quote_declined_title'),
+            Said::of('shop.notice_quote_declined_body', ['number' => $quote->number, 'vendor' => $scope->vendorName, 'note' => trim($note)]), '/my-quotes/'.$quote->number, 'quote_ready');
 
         return $quote->refresh();
     }

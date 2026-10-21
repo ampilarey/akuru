@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Actions\Vendor;
 use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\ProductReview;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -56,7 +57,7 @@ class VendorReviewsAction
         $first = $review->vendor_reply === null;
         $review->update(['vendor_reply' => mb_substr($text, 0, 2000), 'replied_at' => now(), 'replied_by' => $scope->userId]);
         if ($first) {
-            app(NotifyBookshopUserAction::class)->execute((int) $review->user_id, __('shop.notice_review_reply_title'), __('shop.notice_review_reply_body', ['vendor' => $scope->vendorName]), '/shop/products/'.$review->product?->slug.'#reviews');
+            app(NotifyBookshopUserAction::class)->execute((int) $review->user_id, Said::of('shop.notice_review_reply_title'), Said::of('shop.notice_review_reply_body', ['vendor' => $scope->vendorName]), '/shop/products/'.$review->product?->slug.'#reviews');
         }
 
         return $review;

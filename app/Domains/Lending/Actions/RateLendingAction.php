@@ -5,6 +5,7 @@ namespace App\Domains\Lending\Actions;
 use App\Domains\Lending\Models\Lender;
 use App\Domains\Lending\Models\LendingLoan;
 use App\Domains\Lending\Models\LendingRating;
+use App\Support\Said;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Validation\ValidationException;
 
@@ -42,7 +43,7 @@ class RateLendingAction
             'stars' => $stars,
             'comment' => $comment,
         ]);
-        app(NotifyLendingUserAction::class)->execute($aboutUserId, __('lending.notice_rated_title'), __('lending.notice_rated_body', ['title' => $loan->book->title, 'stars' => $stars]), $isBorrower ? '/my-lending#lending' : '/my-lending#borrowing', 'rated');
+        app(NotifyLendingUserAction::class)->execute($aboutUserId, Said::of('lending.notice_rated_title'), Said::of('lending.notice_rated_body', ['title' => $loan->book->title, 'stars' => $stars]), $isBorrower ? '/my-lending#lending' : '/my-lending#borrowing', 'rated');
 
         return $rating;
     }

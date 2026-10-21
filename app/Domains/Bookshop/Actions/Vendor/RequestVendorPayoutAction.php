@@ -11,6 +11,7 @@ use App\Domains\Bookshop\Models\VendorBankDetail;
 use App\Domains\Bookshop\Models\VendorEarning;
 use App\Domains\Bookshop\Models\VendorPayout;
 use App\Domains\Bookshop\Support\VendorIdentity;
+use App\Support\Said;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -68,7 +69,7 @@ class RequestVendorPayoutAction
             return $payout;
         });
 
-        app(NotifyBookshopUserAction::class)->office(__('shop.notice_payout_requested_title'), __('shop.notice_payout_requested_body', ['vendor' => $scope->vendorName, 'amount' => $payout->currency.' '.number_format((float) $payout->amount, 2)]), '/admin/bookshop');
+        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_payout_requested_title'), Said::of('shop.notice_payout_requested_body', ['vendor' => $scope->vendorName, 'amount' => $payout->currency.' '.number_format((float) $payout->amount, 2)]), '/admin/bookshop');
 
         return $payout;
     }

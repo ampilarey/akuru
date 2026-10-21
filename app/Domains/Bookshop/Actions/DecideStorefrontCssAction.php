@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Actions;
 
 use App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction;
 use App\Domains\Bookshop\Models\VendorStorefront;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -38,7 +39,7 @@ class DecideStorefrontCssAction
             'custom_css_note' => null, 'custom_css_reviewed_at' => now(), 'custom_css_reviewed_by' => $byUserId,
         ]);
         app(ResolveStorefrontAction::class)->forget($vendorId);
-        app(NotifyBookshopUserAction::class)->vendor($vendorId, __('shop.notice_css_approved_title'), __('shop.notice_css_approved_body'), '/vendor/storefront');
+        app(NotifyBookshopUserAction::class)->vendor($vendorId, Said::of('shop.notice_css_approved_title'), Said::of('shop.notice_css_approved_body'), '/vendor/storefront');
 
         return $storefront->refresh();
     }
@@ -50,7 +51,7 @@ class DecideStorefrontCssAction
         }
         $storefront = $this->pending($vendorId);
         $storefront->update(['custom_css_status' => 'declined', 'custom_css_note' => trim($note), 'custom_css_reviewed_at' => now(), 'custom_css_reviewed_by' => $byUserId]);
-        app(NotifyBookshopUserAction::class)->vendor($vendorId, __('shop.notice_css_declined_title'), __('shop.notice_css_declined_body', ['note' => trim($note)]), '/vendor/storefront');
+        app(NotifyBookshopUserAction::class)->vendor($vendorId, Said::of('shop.notice_css_declined_title'), Said::of('shop.notice_css_declined_body', ['note' => trim($note)]), '/vendor/storefront');
 
         return $storefront->refresh();
     }
@@ -65,7 +66,7 @@ class DecideStorefrontCssAction
         $storefront->update(['custom_css' => null, 'custom_css_note' => trim($note), 'custom_css_reviewed_at' => now(), 'custom_css_reviewed_by' => $byUserId,
             'custom_css_status' => $storefront->custom_css_status === 'pending' ? 'pending' : 'taken_down']);
         app(ResolveStorefrontAction::class)->forget($vendorId);
-        app(NotifyBookshopUserAction::class)->vendor($vendorId, __('shop.notice_css_taken_down_title'), __('shop.notice_css_declined_body', ['note' => trim($note)]), '/vendor/storefront');
+        app(NotifyBookshopUserAction::class)->vendor($vendorId, Said::of('shop.notice_css_taken_down_title'), Said::of('shop.notice_css_declined_body', ['note' => trim($note)]), '/vendor/storefront');
 
         return $storefront->refresh();
     }

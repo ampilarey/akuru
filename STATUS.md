@@ -4983,6 +4983,51 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tx. A notice in the reader's language: the way, and the shops (HP3a, 2026-10-21)
+
+A notice was written once, in the sender's language. The nightly cart
+reminder read "Still thinking it over?" to a family reading Dhivehi. The
+owner said to decide the open items ("based on ur thinking complete all").
+**ADR-044:** the notice looks its words up when it is read. A language kept
+on the account (§5pf's other half) waits until email and SMS to families
+are live.
+- **`App\Support\Said`:** `Said::of('book.key', [...])` keeps a phrase's
+  key and values. A value can be a `Said`, and `Said::join()` keeps a
+  sentence with the lines a case adds. It reads as text wherever a string
+  is wanted.
+- **`SendUserNotificationAction`** takes `string|Said` and keeps a phrase in
+  `data['said']`. The row's text stays in the sender's language, for the
+  push and for older readers.
+- **`ListUserNotificationsAction`**, the inbox's one reader, says a kept
+  phrase in the page's language. A row without one, or whose key has gone,
+  shows as written.
+- **The Library, Bookstore and Lending notifiers** take `string|Said`. Email
+  and SMS still leave in the sender's language.
+- **Senders moved:** every Bookstore and Lending notice, 88 phrases in 35
+  files:
+  - `__('shop.notice_…')` / `__('lending.notice_…')` → `Said::of`;
+  - the paid and credit-payment notices' added sentences → `Said::join`;
+  - a complaint's kind → a `Said`.
+- **The notification list** marks each row `data-notification`.
+
+The Library's notices (HP3b, several English with no key) and the school's
+(HP3c) are next.
+
+**Tests:** `NoticesSpeakTheReadersLanguageTest` (3):
+- `Said` says itself, its nested values and its joins, and is stored and
+  restored;
+- a cart reminder sent in English reads in Dhivehi and Arabic in the inbox
+  and on the portal page;
+- an older plain row shows as written.
+
+The Bookstore, Lending, Notifications and Print suites pass (436).
+
+**Walk:** `notice-language.mjs`, new and in `all.mjs`. A reminder is sent in
+English. On a 390 px phone the parent reads it in Dhivehi under /dv and in
+Arabic under /ar. 3/3.
+
+Whole suite 3346 passed; pint clean.
+
 ## 5tw. The account's own page in Dhivehi and Arabic (HP2, 2026-10-21)
 
 `/profile`, under everyone's *Me* menu, was the old Blade profile with 22

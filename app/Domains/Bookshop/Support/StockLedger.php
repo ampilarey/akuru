@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductVariant;
 use App\Domains\Bookshop\Models\StockMovement;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -69,8 +70,8 @@ final class StockLedger
         $title = $product->title.($variant !== null ? ' ('.$variant->name.')' : '');
         DB::afterCommit(fn () => app(NotifyBookshopUserAction::class)->vendor(
             $vendorId,
-            __('shop.notice_low_stock_title'),
-            $stock === 0 ? __('shop.notice_sold_out_body', ['title' => $title]) : __('shop.notice_low_stock_body', ['title' => $title, 'stock' => $stock]),
+            Said::of('shop.notice_low_stock_title'),
+            $stock === 0 ? Said::of('shop.notice_sold_out_body', ['title' => $title]) : Said::of('shop.notice_low_stock_body', ['title' => $title, 'stock' => $stock]),
             '/vendor/stock',
             'low_stock',
         ));

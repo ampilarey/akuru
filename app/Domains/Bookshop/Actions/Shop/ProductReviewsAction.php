@@ -9,6 +9,7 @@ use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductReview;
 use App\Domains\Bookshop\Models\ReviewVote;
 use App\Domains\Bookshop\Support\Merchandise;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -124,9 +125,9 @@ class ProductReviewsAction
         Merchandise::refreshRating((int) $product->id);
 
         $notify = app(NotifyBookshopUserAction::class);
-        $notify->vendor((int) $product->vendor_id, __('shop.notice_review_title'), __('shop.notice_review_body', ['title' => $product->title, 'rating' => $rating]), '/vendor/reviews', 'review');
+        $notify->vendor((int) $product->vendor_id, Said::of('shop.notice_review_title'), Said::of('shop.notice_review_body', ['title' => $product->title, 'rating' => $rating]), '/vendor/reviews', 'review');
         if ($premoderate) {
-            $notify->office(__('shop.notice_review_pending_title'), __('shop.notice_review_body', ['title' => $product->title, 'rating' => $rating]), '/admin/bookshop');
+            $notify->office(Said::of('shop.notice_review_pending_title'), Said::of('shop.notice_review_body', ['title' => $product->title, 'rating' => $rating]), '/admin/bookshop');
         }
 
         return $review;

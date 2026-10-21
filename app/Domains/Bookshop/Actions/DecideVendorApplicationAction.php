@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Actions;
 
 use App\Domains\Bookshop\Models\VendorApplication;
 use App\Domains\Identity\Actions\IdentityVerificationAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -103,7 +104,7 @@ class DecideVendorApplicationAction
         app(NotifyBookshopUserAction::class)->execute(
             (int) $application->user_id,
             __($approve ? 'shop.notice_application_approved_title' : 'shop.notice_application_declined_title'),
-            $approve ? __('shop.notice_application_approved_body', ['shop' => $application->shop_name]) : __('shop.notice_application_declined_body', ['note' => (string) $note]),
+            $approve ? Said::of('shop.notice_application_approved_body', ['shop' => $application->shop_name]) : Said::of('shop.notice_application_declined_body', ['note' => (string) $note]),
             $approve ? '/vendor' : '/vendor/apply',
         );
 

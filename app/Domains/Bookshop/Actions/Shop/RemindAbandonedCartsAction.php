@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Models\BookshopCheckout;
 use App\Domains\Bookshop\Models\Cart;
 use App\Domains\Bookshop\Models\CartItem;
+use App\Support\Said;
 
 /**
  * Abandoned-cart reminders (BOOKSHOP_PLAN B9 "later, on request", slice
@@ -46,8 +47,8 @@ class RemindAbandonedCartsAction
             $shops = $items->map(fn (CartItem $i) => $i->product->vendor?->name)->filter()->unique()->values()->all();
             app(NotifyBookshopUserAction::class)->execute(
                 (int) $cart->user_id,
-                __('shop.notice_cart_reminder_title'),
-                __('shop.notice_cart_reminder_body', ['count' => (int) $items->sum('quantity'), 'shops' => implode(', ', $shops)]),
+                Said::of('shop.notice_cart_reminder_title'),
+                Said::of('shop.notice_cart_reminder_body', ['count' => (int) $items->sum('quantity'), 'shops' => implode(', ', $shops)]),
                 '/shop/cart',
                 'cart_reminder',
             );

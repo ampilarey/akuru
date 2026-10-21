@@ -17,6 +17,7 @@ use App\Domains\Bookshop\Models\OrderReturn;
 use App\Domains\Bookshop\Support\AkuruFulfilment;
 use App\Domains\Bookshop\Support\OrderView;
 use App\Domains\Bookshop\Support\Restock;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -80,8 +81,8 @@ class FulfilVendorOrderAction
             $key = $to === 'delivered' && $order->isCollection() ? 'collected' : $to;
             app(NotifyBookshopUserAction::class)->execute(
                 (int) $order->user_id,
-                __('shop.notice_'.$key.'_title', ['number' => $order->number]),
-                __('shop.notice_'.$key.'_body', ['number' => $order->number, 'vendor' => $scope->vendorName, 'tracking' => $order->tracking_note ?? '']),
+                Said::of('shop.notice_'.$key.'_title', ['number' => $order->number]),
+                Said::of('shop.notice_'.$key.'_body', ['number' => $order->number, 'vendor' => $scope->vendorName, 'tracking' => $order->tracking_note ?? '']),
                 '/my-orders/'.$order->number,
                 'order_progress',
             );

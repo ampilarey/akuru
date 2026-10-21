@@ -5,6 +5,7 @@ namespace App\Domains\Lending\Actions;
 use App\Domains\Lending\Enums\LendingBookStatus;
 use App\Domains\Lending\Models\Lender;
 use App\Domains\Lending\Models\LendingBook;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -19,7 +20,7 @@ class ModerateLendingAction
         $note = $this->note($note, required: true);
         $lender = Lender::query()->whereKey($lenderId)->firstOrFail();
         $lender->update(['status' => Lender::PAUSED, 'office_paused' => true, 'office_note' => $note]);
-        app(NotifyLendingUserAction::class)->execute((int) $lender->user_id, __('lending.notice_office_paused_title'), __('lending.notice_office_paused_body', ['note' => $note]), '/my-lending#lender', 'office_paused');
+        app(NotifyLendingUserAction::class)->execute((int) $lender->user_id, Said::of('lending.notice_office_paused_title'), Said::of('lending.notice_office_paused_body', ['note' => $note]), '/my-lending#lender', 'office_paused');
 
         return $lender->refresh();
     }
@@ -28,7 +29,7 @@ class ModerateLendingAction
     {
         $lender = Lender::query()->whereKey($lenderId)->firstOrFail();
         $lender->update(['status' => Lender::ACTIVE, 'office_paused' => false, 'office_note' => null]);
-        app(NotifyLendingUserAction::class)->execute((int) $lender->user_id, __('lending.notice_office_resumed_title'), __('lending.notice_office_resumed_body'), '/my-lending#lender', 'office_resumed');
+        app(NotifyLendingUserAction::class)->execute((int) $lender->user_id, Said::of('lending.notice_office_resumed_title'), Said::of('lending.notice_office_resumed_body'), '/my-lending#lender', 'office_resumed');
 
         return $lender->refresh();
     }
@@ -41,7 +42,7 @@ class ModerateLendingAction
             throw ValidationException::withMessages(['book' => __('lending.error_book_on_loan')]);
         }
         $book->update(['status' => LendingBookStatus::Removed->value, 'office_note' => $note]);
-        app(NotifyLendingUserAction::class)->execute((int) $book->lender->user_id, __('lending.notice_office_removed_title'), __('lending.notice_office_removed_body', ['title' => $book->title, 'note' => $note]), '/my-lending#books', 'office_removed');
+        app(NotifyLendingUserAction::class)->execute((int) $book->lender->user_id, Said::of('lending.notice_office_removed_title'), Said::of('lending.notice_office_removed_body', ['title' => $book->title, 'note' => $note]), '/my-lending#books', 'office_removed');
 
         return $book->refresh();
     }

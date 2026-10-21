@@ -6,6 +6,7 @@ use App\Domains\Lending\Mail\LendingNoticeMail;
 use App\Domains\Notifications\Actions\RecordSmsReceiptAction;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
@@ -18,7 +19,7 @@ use Illuminate\Support\Facades\Mail;
  */
 class NotifyLendingUserAction
 {
-    public function execute(int $userId, string $title, string $message, ?string $href = null, string $event = 'lending'): void
+    public function execute(int $userId, string|Said $title, string|Said $message, ?string $href = null, string $event = 'lending'): void
     {
         if (! $this->inApp($userId, $title, $message, $href)) {
             return;
@@ -33,7 +34,7 @@ class NotifyLendingUserAction
         }
     }
 
-    private function inApp(int $userId, string $title, string $message, ?string $href): bool
+    private function inApp(int $userId, string|Said $title, string|Said $message, ?string $href): bool
     {
         try {
             return app(SendUserNotificationAction::class)->execute($userId, $title, $message, ['category' => 'lending', 'href' => $href]) !== null;
@@ -42,8 +43,10 @@ class NotifyLendingUserAction
         }
     }
 
-    private function email(string $address, string $name, string $title, string $message, ?string $href): void
+    private function email(string $address, string $name, string|Said $title, string|Said $message, ?string $href): void
     {
+        // Email and SMS leave now, in the sender's language (ADR-044).
+        [$title, $message] = [(string) $title, (string) $message];
         $link = $href !== null ? url($href) : null;
         DB::afterCommit(function () use ($address, $name, $title, $message, $link): void {
             try {
@@ -54,8 +57,10 @@ class NotifyLendingUserAction
         });
     }
 
-    private function sms(string $phone, string $title, string $message, string $event): void
+    private function sms(string $phone, string|Said $title, string|Said $message, string $event): void
     {
+        // Email and SMS leave now, in the sender's language (ADR-044).
+        [$title, $message] = [(string) $title, (string) $message];
         $body = mb_substr('Akuru: '.$title.'. '.$message, 0, (int) config('lending.notices.sms_max_length', 300));
         DB::afterCommit(function () use ($phone, $body, $event): void {
             try {

@@ -89,6 +89,7 @@ export default function Notifications({ notifications = [], categories = {}, pre
                 {notifications.map((item) => (
                     <li
                         key={item.id}
+                        data-notification={item.id}
                         className={`rounded-lg border p-3 ${item.is_read ? 'bg-white' : 'border-[#7C2D37] bg-[#FDFBF8]'}`}
                     >
                         <div className="flex flex-wrap items-baseline justify-between gap-2">

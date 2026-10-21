@@ -3,6 +3,7 @@
 namespace App\Domains\Notifications\Actions;
 
 use App\Domains\Notifications\Models\UserNotification;
+use App\Support\Said;
 use Illuminate\Support\Collection;
 
 /**
@@ -37,8 +38,10 @@ class ListUserNotificationsAction
                 return [
                     'id' => (int) $row->id,
                     'category' => (string) $row->category,
-                    'title' => (string) $row->title,
-                    'message' => (string) $row->message,
+                    // Said in the reader's language when the sender kept the
+                    // phrase (HP3, ADR-044); otherwise the words it was sent in.
+                    'title' => Said::fromArray($data['said']['title'] ?? null)?->in() ?? (string) $row->title,
+                    'message' => Said::fromArray($data['said']['message'] ?? null)?->in() ?? (string) $row->message,
                     'is_read' => $row->read_at !== null,
                     'created_at' => $row->created_at?->toIso8601String(),
                     // Notifications that point somewhere are worth far more

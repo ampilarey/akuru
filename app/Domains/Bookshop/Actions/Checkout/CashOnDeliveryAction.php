@@ -18,6 +18,7 @@ use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Commerce\Actions\RecordDiscountRedemptionAction;
 use App\Domains\Settings\Actions\SetSettingAction;
 use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -132,11 +133,11 @@ class CashOnDeliveryAction
         }
 
         $notify = app(NotifyBookshopUserAction::class);
-        $notify->execute((int) $placed->user_id, __('shop.notice_cod_placed_title'), __('shop.notice_cod_placed_body', ['number' => $placed->number, 'amount' => $placed->currency.' '.number_format((float) $placed->total, 2)]), '/my-orders', 'order_paid');
+        $notify->execute((int) $placed->user_id, Said::of('shop.notice_cod_placed_title'), Said::of('shop.notice_cod_placed_body', ['number' => $placed->number, 'amount' => $placed->currency.' '.number_format((float) $placed->total, 2)]), '/my-orders', 'order_paid');
         foreach ($placed->orders as $order) {
             // B9e: a cash order counts as the funnel's last step when placed.
             app(RecordShopEventAction::class)->paid($order);
-            $notify->vendor((int) $order->vendor_id, __('shop.notice_vendor_cod_order_title'), __('shop.notice_vendor_cod_order_body', ['number' => $order->number, 'amount' => $order->currency.' '.number_format((float) $order->total, 2)]), '/vendor/orders', 'new_order');
+            $notify->vendor((int) $order->vendor_id, Said::of('shop.notice_vendor_cod_order_title'), Said::of('shop.notice_vendor_cod_order_body', ['number' => $order->number, 'amount' => $order->currency.' '.number_format((float) $order->total, 2)]), '/vendor/orders', 'new_order');
         }
 
         return $placed;
