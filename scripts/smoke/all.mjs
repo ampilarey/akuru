@@ -48,7 +48,7 @@
  * `Indian/Maldives` — the school's day, not the walker's (STATUS §5fz).
  */
 import { execFileSync, spawn } from 'node:child_process';
-import { existsSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 
@@ -363,11 +363,34 @@ const results = [];
 // runs again first (it runs twice, and in under a second: STATUS §5tu). On any
 // other host run `php artisan db:seed --class=SmokeMarkerSeeder` there before
 // each of them, or run them by name one at a time.
+//
+// SW1 (STATUS §5uf): against staging. A walk that sets up or checks its data
+// with `artisan tinker` would read *this* machine's database while it browses
+// the other host, so on any host but a local one it is skipped, and says why.
+// A `reseed` walk runs there only when SMOKE_RESEED_CMD is given: a command
+// that reseeds that host (`ssh staging "cd … && php artisan db:seed
+// --class=SmokeMarkerSeeder --force"`). Never point either at production.
 const LOCAL = /^https?:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(BASE);
+const RESEED = process.env.SMOKE_RESEED_CMD ?? null;
+const readsLocalDatabase = (walk) => /'tinker'|execFileSync\('php'/.test(readFileSync(join(HERE, `${walk.name}.mjs`), 'utf8'));
+const skipped = [];
 for (const walk of selected) {
     process.stdout.write(`  ${walk.name.padEnd(13)} … `);
-    if (walk.reseed && LOCAL) {
-        execFileSync('php', ['artisan', 'db:seed', '--class=SmokeMarkerSeeder', '--force', '-q'], { cwd: join(HERE, '..', '..'), stdio: 'ignore' });
+    const skip = LOCAL ? null
+        : readsLocalDatabase(walk) ? 'reads the local database (tinker): local only'
+            : walk.reseed && !RESEED ? 'needs the Bookstore reseeded first: set SMOKE_RESEED_CMD'
+                : null;
+    if (skip !== null) {
+        skipped.push({ walk, reason: skip });
+        console.log(`skip  ${skip}`);
+        continue;
+    }
+    if (walk.reseed) {
+        if (LOCAL) {
+            execFileSync('php', ['artisan', 'db:seed', '--class=SmokeMarkerSeeder', '--force', '-q'], { cwd: join(HERE, '..', '..'), stdio: 'ignore' });
+        } else {
+            execFileSync(RESEED, { shell: true, stdio: 'ignore' });
+        }
     }
     const result = await run(walk);
     results.push(result);
@@ -385,6 +408,9 @@ for (const result of failed) {
 
 console.log(`\n${'═'.repeat(72)}`);
 console.log(`${results.length - failed.length}/${results.length} walks passed against ${BASE}.`);
+if (skipped.length > 0) {
+    console.log(`${skipped.length} skipped on this host (they need the local database or a reseed): ${skipped.map((entry) => entry.walk.name).join(', ')}`);
+}
 
 if (failed.length > 0) {
     console.log(`Failed: ${failed.map((result) => result.walk.name).join(', ')}`);

@@ -92,7 +92,7 @@ production.
 
 | ☐ | What | How | Detail |
 |---|---|---|---|
-| ☐ | **Walk staging** | On `test.akuru.edu.mv` only, never on production: `php artisan db:seed --class=SmokeMarkerSeeder`, then `SMOKE_BASE_URL=https://test.akuru.edu.mv node scripts/smoke/all.mjs`. Paste the summary to the agent, which records it in STATUS. | OWNER_ACTIONS 7 |
+| ☐ | **Walk staging** | On `test.akuru.edu.mv` only, never on production. On the staging host, once: `php artisan db:seed --class=SmokeMarkerSeeder --force`. Then, from a computer with this repo, Node and Playwright: `SMOKE_BASE_URL=https://test.akuru.edu.mv SMOKE_I_KNOW_THIS_WRITES=yes SMOKE_RESEED_CMD='ssh <staging> "cd <app folder> && php artisan db:seed --class=SmokeMarkerSeeder --force"' node scripts/smoke/all.mjs`. About 100 of the 160 walks run there. The 58 that check their data through the local database are skipped and say so. Leave out `SMOKE_RESEED_CMD` and the 17 shop walks that need a reseed are skipped too. Also set `BOOKSHOP_BANK_ACCOUNT_NUMBER` in staging's `.env` for the checkout walk. Paste the summary to the agent, which records it in STATUS. | OWNER_ACTIONS 7, STATUS §5uf |
 
 ## H. The agent can still build these — only if you ask (not planned)
 
