@@ -165,7 +165,27 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
-## Found auditing the school's pages on a phone (2026-10-21)
+## Found auditing the shop owner's and the Institute office's pages on a phone (2026-10-21)
+
+The seeded vendor and super admin opened every page their shell offers:
+15 and about 90 pages, under /dv and /ar, at 390 px (`office-phone.mjs`).
+Every page answered and read right to left, and none scrolled sideways
+or raised an error.
+
+### Small text links across some thirty admin pages, and a table that was not stacked — **fixed (2026-10-21, STATUS §5uc)**
+
+- **Small targets:**
+  - section links ("Leads →"), *Export CSV*, back links, *Withdraw*,
+    *Edit* and *Save* were 16–20 px underlined lines;
+  - the editor's toolbar buttons were 20 px wide;
+  - a file picker was 22 px;
+  - shop and Lending breadcrumbs were 21 px.
+- **Tables:** the ID-card queue (`Components/IdentityCard.jsx`, on the
+  Bookstore and Library offices) and the rubric result were desk tables
+  on a phone. The phone-first test read only `Pages/`, so it never saw
+  them.
+
+
 
 The seeded teacher and headmaster opened every page their shell offers: 43
 and 117 pages, under /dv and /ar, at 390 px (`staff-phone.mjs`). All read

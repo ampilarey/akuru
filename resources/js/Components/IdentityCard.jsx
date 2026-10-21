@@ -94,18 +94,18 @@ export function IdentityChecks({ rows = [], l, title }) {
             <h2 className="mb-2 font-semibold">{title ?? l.id_checks_title}</h2>
             {rows.length === 0 ? <p className="text-sm text-gray-500">{l.id_checks_none}</p> : (
                 <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
+                    <table className="table-stack w-full text-sm">
                         <thead><tr className="text-start text-gray-500"><th className="p-2 text-start">{l.id_person}</th><th className="p-2 text-start">{l.id_card}</th><th className="p-2 text-start">{l.id_state}</th><th className="p-2" /></tr></thead>
                         <tbody>
                             {rows.map((row) => (
                                 <tr key={row.id} className="border-t align-top" data-identity-row={row.id} data-identity-status={row.status}>
-                                    <td className="p-2"><div className="font-medium" dir="auto">{row.name}</div><div className="text-xs text-gray-500" dir="ltr">{row.phone || row.email}</div><div className="text-xs text-gray-500">{row.submitted_at}</div></td>
-                                    <td className="p-2">
+                                    <td className="p-2" data-label={l.id_person}><div className="font-medium" dir="auto">{row.name}</div><div className="text-xs text-gray-500" dir="ltr">{row.phone || row.email}</div><div className="text-xs text-gray-500">{row.submitted_at}</div></td>
+                                    <td className="p-2" data-label={l.id_card}>
                                         <a href={row.front_url} target="_blank" rel="noreferrer" className="me-2 text-blue-700 underline" data-testid={`identity-front-${row.id}`}>{l.id_front}</a>
                                         {row.back_url && <a href={row.back_url} target="_blank" rel="noreferrer" className="text-blue-700 underline" data-testid={`identity-back-${row.id}`}>{l.id_back}</a>}
                                     </td>
-                                    <td className="p-2"><IdentityStatus status={row.status} l={l} />{row.note && <div className="text-xs text-gray-600">{row.note}</div>}</td>
-                                    <td className="p-2">{row.status === 'pending' ? <DecideRow row={row} l={l} /> : <span className="text-xs text-gray-500">{row.decided_at}</span>}</td>
+                                    <td className="p-2" data-label={l.id_state}><IdentityStatus status={row.status} l={l} />{row.note && <div className="text-xs text-gray-600">{row.note}</div>}</td>
+                                    <td className="table-actions p-2">{row.status === 'pending' ? <DecideRow row={row} l={l} /> : <span className="text-xs text-gray-500">{row.decided_at}</span>}</td>
                                 </tr>
                             ))}
                         </tbody>

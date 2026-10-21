@@ -10,13 +10,13 @@ export default function RubricResult({ scores, t = {} }) {
     return (
         <div className="mb-4 overflow-x-auto rounded-lg border bg-white" data-testid="rubric-result">
             <p className="bg-[#F3EBE0] px-3 py-2 text-sm font-medium">{t.rubric_result || 'How it was marked'} · {scores.title}</p>
-            <table className="min-w-full text-sm">
+            <table className="table-stack min-w-full text-sm">
                 <tbody>
                     {scores.criteria.map((criterion) => (
                         <tr key={criterion.id} className="border-t">
-                            <th className="px-3 py-2 text-start font-medium">{criterion.title}</th>
+                            <td className="px-3 py-2 text-start font-medium">{criterion.title}</td>
                             <td className="px-3 py-2">{criterion.level}</td>
-                            <td className="px-3 py-2 text-end text-gray-600">{criterion.points} / {criterion.max_points}</td>
+                            <td className="px-3 py-2 text-gray-600 sm:text-end">{criterion.points} / {criterion.max_points}</td>
                         </tr>
                     ))}
                 </tbody>

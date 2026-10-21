@@ -69,7 +69,9 @@ it('adds no desktop-first CSS: no new max-width media query, no max-* variant', 
 it('stacks every new table into cards on a phone, and the old ones only get fewer', function () {
     $baseline = require __DIR__.'/Baselines/tables_not_stacked_on_phones.php';
     $current = array_values(array_filter(
-        phoneFirstFiles(['resources/js/Pages'], ['.jsx']),
+        // AD1: the shared components too — the ID-card queue's table, drawn
+        // on two office pages, was a desk table on a phone.
+        phoneFirstFiles(['resources/js/Pages', 'resources/js/Components'], ['.jsx']),
         // Per table (MF4): every <table> is `table-stack`, or says it must stay a
         // grid that scrolls in its own box (`data-phone-scroll`, a timetable).
         fn (string $path) => (bool) array_filter(

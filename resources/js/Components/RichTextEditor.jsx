@@ -69,7 +69,7 @@ function ToolbarButton({ active, onClick, title, children, testId }) {
             aria-pressed={Boolean(active)}
             onMouseDown={(e) => e.preventDefault()}
             onClick={onClick}
-            className={`rounded px-2 py-1 text-sm ${active ? 'bg-[#7C2D37] text-white' : 'bg-[#F3EBE0] text-[#7C2D37] hover:bg-[#e9dcc9]'}`}
+            className={`min-h-[2rem] min-w-[2rem] rounded px-2 py-1 text-sm ${active ? 'bg-[#7C2D37] text-white' : 'bg-[#F3EBE0] text-[#7C2D37] hover:bg-[#e9dcc9]'}`}
             data-testid={testId}
         >
             {children}
