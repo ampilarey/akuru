@@ -1,4 +1,4 @@
-# What is left — one list (2026-10-18)
+# What is left — one list (2026-10-21)
 
 Everything still to do on the platform, in one place, as of `main` after
 the name tags plan, BH1 and the print-draft clean-up (STATUS §5ru–§5rx).
@@ -52,7 +52,7 @@ wording, tip amounts and share, rewards, the tax treatment) are on
 | O12 | **Verify Fitrah's ID card**, and any writer approved before P2. | OWNER_ACTIONS 25 |
 | O13 | **The print desk**: Chrome is in place; enter the real price list, papers and finishing, then switch it on and place one test order. | OWNER_ACTIONS 26, NAME_TAGS_PLAN §14 |
 | O14 | ~~**Ghostscript**~~ — **done 2026-10-12**: `/bin/gs` (9.27). | OWNER_ACTIONS 27 |
-| O15 | **`/en/catalog/courses` answered 404** on production (2026-10-03), not reproduced. Check for a leftover `bootstrap/cache/routes-v7.php` on the host. | KNOWN_ISSUES |
+| O15 | **`/en/catalog/courses` answered 404** on production (2026-10-03), not reproduced. Since 2026-10-21 `/admin/settings` says so in red if a cached route file is on the host (STATUS §5ul). | KNOWN_ISSUES |
 
 ## 3. Decisions and reviews only the owner can give
 
@@ -61,7 +61,8 @@ wording, tip amounts and share, rewards, the tax treatment) are on
 | D1 | **Writer payouts** stay off until the tax and accounting treatment is confirmed. | BACKLOG A9 |
 | D2 | **Native review of the Dhivehi and Arabic** phrase books — first passes throughout. Among them, ސަލާމް ނޯޓް for *Absence notes* and ސަލާމް ބެލުން for *Review notes* (leave-note wording, kept); *Absences* now reads ހާޒިރުނުވުންތައް (STATUS §5tq). | BACKLOG A10, C21 |
 | ~~D3~~ | ~~**Retire or translate the old Blade screens**~~ — **translated 2026-10-20** ("do all"; STATUS §5td–§5tf): analytics, the Qur'an progress pages, e-learning and the old menu read in the page's language, with five defects fixed on the way. | BACKLOG C21 |
-| D4 | **Linked separate logins** (SIGN_IN_PLAN D7, "later, as its own track"), if wanted. | SIGN_IN_PLAN |
+| ~~D4~~ | ~~**Linked separate logins**~~ — **already built** (E7, 2026-09-11): `/account/linked` links a second login by its password and switches between them; checked 2026-10-21. | SIGN_IN_PLAN |
+| ~~D6~~ | ~~**Leave in calendar or working days**~~ — **decided 2026-10-21** (ADR-045, STATUS §5um): working days; `HR_LEAVE_COUNTS=calendar` switches back. | KNOWN_ISSUES |
 | D5 | **Sensitive-note readers**: kept as is (2026-09-25). Revisit only if the office asks. | BACKLOG C4 |
 
 ## 4. Waiting on a condition (do not build before it)
@@ -81,7 +82,8 @@ wording, tip amounts and share, rewards, the tax treatment) are on
 - **Library**:
   - ~~OCR for scanned PDFs (B1)~~ — built 2026-10-20, off until the host
     has Tesseract (STATUS §5tg, OWNER_TODO A and E).
-  - Two-column and glyph-reversed PDFs (B2).
+  - ~~Two-column and glyph-reversed PDFs (B2)~~ — built 2026-10-20 (STATUS §5tr).
+  - ~~Bundles (B4, §19)~~ — built 2026-10-21 (STATUS §5un, ADR-046).
   - Private highlights, dropped by decision (B7, OWNER_ACTIONS 19).
   - The not-MVP list (B13).
 - Everything else raised and parked is in `docs/BACKLOG.md` §C.
