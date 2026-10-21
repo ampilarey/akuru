@@ -43,6 +43,9 @@ class LibraryServiceProvider extends ServiceProvider
         // L3 (§43.5): the webhook-confirmed payment event is the only path
         // from money to a library access grant; a full refund revokes it.
         Event::listen(PaymentConfirmed::class, GrantLibraryAccessOnPaymentConfirmed::class);
+        // B4d: a bundle's purchases, on the same webhook.
+        Event::listen(PaymentConfirmed::class, \App\Domains\Library\Listeners\GrantLibraryBundleOnPaymentConfirmed::class);
+        Event::listen(PaymentRefunded::class, \App\Domains\Library\Listeners\RevokeLibraryBundleOnPaymentRefunded::class);
         Event::listen(PaymentRefunded::class, RevokeLibraryAccessOnPaymentRefunded::class);
         // B11b: the office hears of a Library card payment the bank refused.
         Event::listen(PaymentFailed::class, TellOfficeOfFailedLibraryPayment::class);

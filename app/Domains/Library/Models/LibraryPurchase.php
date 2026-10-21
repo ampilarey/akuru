@@ -10,6 +10,7 @@ class LibraryPurchase extends Model
     protected $fillable = [
         'user_id',
         'library_item_id',
+        'library_bundle_id',
         'payment_id',
         'amount',
         'currency',

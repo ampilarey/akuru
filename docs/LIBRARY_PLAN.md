@@ -180,6 +180,8 @@ Campaign features: name, description, start/end, banner, applicable items/catego
 
 Later phase — Arabic Beginner Bundle, Qur'an Reading Starter Pack, Teacher Resource Bundle, Research Article Pack, buy-3-get-1. Not MVP unless trivial.
 
+> **Built 2026-10-21 (B4d, STATUS §5un, ADR-046):** the office makes a bundle of 2–20 paid works at a price below their total (`/admin/library/bundles`, with sales, revenue and CSV). Readers find it on the offers page and buy it on `/library/bundles/{slug}` by card (granted on the webhook) or wallet. Each work becomes its own purchase, its share of the price by list price, so each writer earns on theirs. A full refund takes it all back. No code or campaign applies on top. Buy-3-get-1 is a bundle of four at three's price.
+
 ## 20. Free Access Coupons
 
 Admin codes (e.g. `FREE-QURAN-ARTICLE`, `TEACHER-FREE-ACCESS`, `STUDENT-GIFT`) for selected students, review copies, promotions, course students, competition winners. Carefully tracked.

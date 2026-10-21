@@ -263,6 +263,7 @@ const WALKS = [
     { name: 'library-desk-language', writes: true, asks: 'Does the library desk read in Dhivehi and Arabic?' },
     { name: 'people-language', writes: true, asks: 'Do the office\'s people screens read in Dhivehi and Arabic?' },
     { name: 'promotions-language', writes: true, asks: 'Do the Library\'s promotion campaigns read in Dhivehi and Arabic?' },
+    { name: 'library-bundles', writes: true, asks: 'Can a reader buy a Library bundle from the wallet, and the office make one — on a phone, in Dhivehi?' },
     { name: 'register-language', writes: true, asks: 'Does the course registration read in Dhivehi and Arabic?' },
     { name: 'system-language', writes: true, asks: 'Do the system screens read in Dhivehi and Arabic?' },
 ];

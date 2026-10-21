@@ -888,6 +888,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B14 (LIBRARY_PLAN §29): the Library over a period.
         Route::get('insights/export', [\App\Domains\Library\Http\Controllers\AdminLibraryInsightsController::class, 'export'])->name('admin.library.insights.export');
         Route::get('insights', [\App\Domains\Library\Http\Controllers\AdminLibraryInsightsController::class, 'index'])->name('admin.library.insights');
+        // LIBRARY_PLAN §19 (B4d): bundles.
+        Route::get('bundles/export', [\App\Domains\Library\Http\Controllers\AdminLibraryBundlesController::class, 'export'])->name('admin.library.bundles.export');
+        Route::get('bundles', [\App\Domains\Library\Http\Controllers\AdminLibraryBundlesController::class, 'index'])->name('admin.library.bundles');
+        Route::post('bundles/{bundle?}', [\App\Domains\Library\Http\Controllers\AdminLibraryBundlesController::class, 'store'])->name('admin.library.bundles.store')->whereNumber('bundle');
         // B4 (LIBRARY_PLAN §18): promotion campaigns.
         Route::get('promotions/export', [\App\Domains\Library\Http\Controllers\AdminLibraryPromotionsController::class, 'export'])->name('admin.library.promotions.export');
         Route::get('promotions', [\App\Domains\Library\Http\Controllers\AdminLibraryPromotionsController::class, 'index'])->name('admin.library.promotions');

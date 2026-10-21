@@ -208,6 +208,8 @@ return [
     'library_tip' => \App\Domains\Library\Models\LibraryTip::class,
     'library_bookmark' => \App\Domains\Library\Models\LibraryBookmark::class,
     'library_category' => \App\Domains\Library\Models\LibraryCategory::class,
+    // B4d: a bundle is a payable (BML's payable_type).
+    'library_bundle' => \App\Domains\Library\Models\LibraryBundle::class,
     'library_item' => \App\Domains\Library\Models\LibraryItem::class,
     'library_item_author' => \App\Domains\Library\Models\LibraryItemAuthor::class,
     'library_item_page' => \App\Domains\Library\Models\LibraryItemPage::class,

@@ -3,6 +3,7 @@
 namespace App\Domains\Library\Http\Controllers;
 
 use App\Domains\Library\Actions\ResolveLibraryAccessAction;
+use App\Domains\Library\Actions\StartLibraryBundleCheckoutAction;
 use App\Domains\Library\Actions\StartLibraryCheckoutAction;
 use App\Domains\Library\Models\LibraryItem;
 use App\Http\Controllers\Controller;
@@ -42,6 +43,27 @@ class LibraryCheckoutController extends Controller
         return redirect()
             ->route('public.library.show', $slug)
             ->with('error', $result['error'] ?? __('public.Payment could not be started.'));
+    }
+
+    /** B4d (STATUS §5un): buy a bundle; by card the grants wait for the webhook. */
+    public function bundleCheckout(Request $request, string $slug)
+    {
+        abort_unless($request->user() !== null, 403);
+        $data = $request->validate(['pay_with_wallet' => 'nullable|boolean']);
+        $result = app(StartLibraryBundleCheckoutAction::class)->execute(
+            $slug,
+            (int) $request->user()->id,
+            route('public.library.bundle', ['slug' => $slug, 'paid' => 1]),
+            (bool) ($data['pay_with_wallet'] ?? false),
+        );
+        if ($result['paid_with_wallet']) {
+            return redirect()->route('public.library.bundle', $slug)->with('success', __('public.bundle_flash_bought'));
+        }
+        if ($result['redirect_url'] !== null) {
+            return redirect()->away($result['redirect_url']);
+        }
+
+        return redirect()->route('public.library.bundle', $slug)->with('error', $result['error'] ?? __('public.Payment could not be started.'));
     }
 
     public function paymentReturn(Request $request, string $slug)

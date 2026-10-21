@@ -270,4 +270,7 @@ return [
     'workspace_lending' => 'Lending',
     // docs/MOBILE_FIRST.md rule 4 (MF7): the phone button that opens a page's new form.
     'add_new' => 'Add new',
+
+    // B4d: Library bundles.
+    'library_bundles' => 'Bundles',
 ];

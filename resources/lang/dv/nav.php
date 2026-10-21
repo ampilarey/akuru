@@ -267,4 +267,7 @@ return [
     'workspace_lending' => 'ފޮތް ދޫކުރުން',
     // docs/MOBILE_FIRST.md rule 4 (MF7): the phone button that opens a page's new form.
     'add_new' => 'އައުކޮށް އިތުރުކުރޭ',
+
+    // B4d: Library bundles.
+    'library_bundles' => 'ބަންޑަލްތައް',
 ];

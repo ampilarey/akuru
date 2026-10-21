@@ -219,6 +219,9 @@ return [
     // BLOG_PLAN BL2b: the blogs' front, in the same public Blade zone as the
     // shelf and the author page it links to.
     'public/library/blogs.blade.php',
+    // LIBRARY_PLAN §19 (B4d): one bundle's page, in the same public Blade
+    // zone as the offers page that lists it and the shelf its works open on.
+    'public/library/bundle.blade.php',
     'public/library/index.blade.php',
     'public/library/my.blade.php',
     'public/library/payment-return.blade.php',

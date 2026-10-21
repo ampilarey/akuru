@@ -263,4 +263,7 @@ return [
     'workspace_lending' => 'الإعارة',
     // docs/MOBILE_FIRST.md rule 4 (MF7): the phone button that opens a page's new form.
     'add_new' => 'إضافة جديد',
+
+    // B4d: Library bundles.
+    'library_bundles' => 'الحزم',
 ];

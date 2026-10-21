@@ -802,4 +802,15 @@ return [
     'follow_flash_stopped' => 'Done.',
     'follow_error_no_blog' => 'There is no such blog.',
     'follow_error_self' => 'This is your own blog.',
+
+    // B4d: Library bundles (LIBRARY_PLAN §19).
+    'bundle_heading' => 'Bundles',
+    'bundle_meta' => ':count works together at one price.',
+    'bundle_saving' => 'You save :amount on these :count works.',
+    'bundle_in_it' => 'In this bundle (:count)',
+    'bundle_have_all' => 'You have every work in this bundle.',
+    'bundle_some_owned' => 'You already have :count of these. The bundle is sold whole, at its price.',
+    'bundle_error_not_on_sale' => 'This bundle is not on sale now.',
+    'bundle_error_have_all' => 'You already have every work in this bundle.',
+    'bundle_flash_bought' => 'Bundle bought. Every work in it is in My Library.',
 ];

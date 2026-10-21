@@ -12,7 +12,23 @@
     </nav>
     <h1 class="mb-6 text-3xl font-bold text-brandMaroon-900">{{ __('public.Current offers') }}</h1>
 
-    @if(count($promotions) === 0)
+    {{-- B4d (§19): bundles on sale — several works at one price. --}}
+    @if(count($bundles) > 0)
+        <section class="mb-8" data-testid="offer-bundles">
+            <h2 class="mb-3 text-xl font-semibold text-brandMaroon-900">{{ __('public.bundle_heading') }}</h2>
+            <div class="grid gap-3 sm:grid-cols-2">
+                @foreach($bundles as $bundle)
+                    <a href="{{ route('public.library.bundle', $bundle['slug']) }}" class="block rounded-lg border bg-white p-4 hover:shadow-md" data-bundle="{{ $bundle['slug'] }}">
+                        <span class="block font-semibold text-brandMaroon-900" data-office-words>{{ $bundle['title'] }}</span>
+                        <span class="mt-1 block text-sm text-gray-600">{{ __('public.bundle_in_it', ['count' => count($bundle['items'])]) }}</span>
+                        <span class="mt-1 block text-sm"><s class="text-gray-400">{{ number_format($bundle['list_total'], 2) }}</s> <span class="font-semibold text-red-800">{{ $bundle['currency'] }} {{ number_format($bundle['price'], 2) }}</span></span>
+                    </a>
+                @endforeach
+            </div>
+        </section>
+    @endif
+
+    @if(count($promotions) === 0 && count($bundles) === 0)
         <p class="text-gray-500" data-testid="no-offers">{{ __('public.No offers are running right now.') }}</p>
     @endif
 
