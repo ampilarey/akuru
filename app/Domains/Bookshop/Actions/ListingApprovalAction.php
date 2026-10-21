@@ -9,6 +9,7 @@ use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Support\ShopPresenter;
 use App\Domains\Media\Actions\ResolvePublicImageVariantAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -103,10 +104,10 @@ class ListingApprovalAction
     {
         $shop = (string) Vendor::query()->whereKey($vendorId)->value('name');
         app(NotifyBookshopUserAction::class)->office(
-            __('shop.notice_listing_submitted_title'),
+            Said::of('shop.notice_listing_submitted_title'),
             $title !== null
-                ? __('shop.notice_listing_submitted_body', ['vendor' => $shop, 'title' => $title])
-                : __('shop.notice_listings_submitted_body', ['vendor' => $shop, 'count' => $count]),
+                ? Said::of('shop.notice_listing_submitted_body', ['vendor' => $shop, 'title' => $title])
+                : Said::of('shop.notice_listings_submitted_body', ['vendor' => $shop, 'count' => $count]),
             '/admin/bookshop#listings'
         );
     }
@@ -169,8 +170,8 @@ class ListingApprovalAction
             (int) $product->vendor_id,
             __($approve ? 'shop.notice_listing_approved_title' : 'shop.notice_listing_declined_title'),
             $approve
-                ? __('shop.notice_listing_approved_body', ['title' => $product->title])
-                : __('shop.notice_listing_declined_body', ['title' => $product->title, 'note' => $note]),
+                ? Said::of('shop.notice_listing_approved_body', ['title' => $product->title])
+                : Said::of('shop.notice_listing_declined_body', ['title' => $product->title, 'note' => $note]),
             '/vendor#products',
             'listing_decided'
         );

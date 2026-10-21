@@ -11,6 +11,7 @@ use App\Domains\Bookshop\Models\QuoteRequest;
 use App\Domains\Bookshop\Models\ShopCreditAccount;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Support\PrintLine;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -77,8 +78,8 @@ class CustomerQuotesAction
             return $quote->refresh();
         });
 
-        app(NotifyBookshopUserAction::class)->vendor((int) $vendor->id, __('shop.notice_quote_requested_title'),
-            __('shop.notice_quote_requested_body', ['number' => $quote->number, 'organisation' => $quote->organisation]), '/vendor/quotes', 'quote_requested');
+        app(NotifyBookshopUserAction::class)->vendor((int) $vendor->id, Said::of('shop.notice_quote_requested_title'),
+            Said::of('shop.notice_quote_requested_body', ['number' => $quote->number, 'organisation' => $quote->organisation]), '/vendor/quotes', 'quote_requested');
 
         return $quote;
     }

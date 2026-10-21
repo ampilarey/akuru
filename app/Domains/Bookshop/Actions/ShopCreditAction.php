@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Models\OrderRefund;
 use App\Domains\Bookshop\Models\ShopCreditAccount;
 use App\Domains\Bookshop\Models\ShopCreditEntry;
 use App\Domains\Identity\Actions\ResolveUserByIdentifierAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -124,9 +125,11 @@ class ShopCreditAction
         $account = ShopCreditAccount::query()->findOrFail($accountId);
         app(NotifyBookshopUserAction::class)->execute(
             (int) $account->user_id,
-            __('shop.notice_credit_payment_title'),
-            __('shop.notice_credit_payment_body', ['amount' => 'MVR '.number_format($amount, 2), 'owed' => 'MVR '.$this->figures($account)['owed']])
-                .((float) $this->figures($account)['in_credit'] > 0 ? ' '.__('shop.notice_credit_in_credit', ['amount' => 'MVR '.$this->figures($account)['in_credit']]) : ''),
+            Said::of('shop.notice_credit_payment_title'),
+            Said::join([
+                Said::of('shop.notice_credit_payment_body', ['amount' => 'MVR '.number_format($amount, 2), 'owed' => 'MVR '.$this->figures($account)['owed']]),
+                (float) $this->figures($account)['in_credit'] > 0 ? Said::of('shop.notice_credit_in_credit', ['amount' => 'MVR '.$this->figures($account)['in_credit']]) : null,
+            ]),
             '/my-orders',
         );
 

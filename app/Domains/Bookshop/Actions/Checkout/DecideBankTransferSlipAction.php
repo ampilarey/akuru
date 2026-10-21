@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Enums\SlipStatus;
 use App\Domains\Bookshop\Models\BankTransferSlip;
 use App\Domains\Finance\Actions\RecordManualPaymentAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -52,8 +53,8 @@ class DecideBankTransferSlipAction
         } else {
             app(NotifyBookshopUserAction::class)->execute(
                 (int) $checkout->user_id,
-                __('shop.notice_slip_rejected_title'),
-                __('shop.notice_slip_rejected_body', ['number' => $checkout->number, 'note' => trim((string) $note)]),
+                Said::of('shop.notice_slip_rejected_title'),
+                Said::of('shop.notice_slip_rejected_body', ['number' => $checkout->number, 'note' => trim((string) $note)]),
                 '/shop/checkout/'.$checkout->number,
                 'slip_decided',
             );

@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Actions;
 
 use App\Domains\Bookshop\Models\StorefrontTheme;
 use App\Domains\Bookshop\Support\CustomCss;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -41,7 +42,7 @@ class DecideStorefrontThemeAction
         }
         $theme->update(['status' => 'published', 'custom_css' => $css, 'name' => trim((string) $name) ?: $theme->name, 'reviewed_by' => $byUserId, 'reviewed_at' => now(), 'review_note' => null]);
         if ($theme->source_vendor_id !== null) {
-            app(NotifyBookshopUserAction::class)->vendor((int) $theme->source_vendor_id, __('shop.notice_theme_published_title'), __('shop.notice_theme_published_body', ['name' => $theme->name]), '/vendor/storefront');
+            app(NotifyBookshopUserAction::class)->vendor((int) $theme->source_vendor_id, Said::of('shop.notice_theme_published_title'), Said::of('shop.notice_theme_published_body', ['name' => $theme->name]), '/vendor/storefront');
         }
 
         return $theme->refresh();
@@ -55,7 +56,7 @@ class DecideStorefrontThemeAction
         $theme = StorefrontTheme::query()->where('status', 'submitted')->findOrFail($themeId);
         $theme->update(['status' => 'declined', 'reviewed_by' => $byUserId, 'reviewed_at' => now(), 'review_note' => trim($note)]);
         if ($theme->source_vendor_id !== null) {
-            app(NotifyBookshopUserAction::class)->vendor((int) $theme->source_vendor_id, __('shop.notice_theme_declined_title'), __('shop.notice_css_declined_body', ['note' => trim($note)]), '/vendor/storefront');
+            app(NotifyBookshopUserAction::class)->vendor((int) $theme->source_vendor_id, Said::of('shop.notice_theme_declined_title'), Said::of('shop.notice_css_declined_body', ['note' => trim($note)]), '/vendor/storefront');
         }
 
         return $theme->refresh();

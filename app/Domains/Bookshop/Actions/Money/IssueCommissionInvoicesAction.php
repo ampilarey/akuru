@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Models\VendorCommissionInvoice;
 use App\Domains\Bookshop\Models\VendorEarning;
+use App\Support\Said;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
@@ -67,7 +68,7 @@ class IssueCommissionInvoicesAction
             });
             if ($invoice !== null) {
                 $issued[] = $invoice;
-                app(NotifyBookshopUserAction::class)->vendor($vendor->id, __('shop.notice_invoice_title'), __('shop.notice_invoice_body', ['number' => $invoice->number, 'amount' => $invoice->currency.' '.number_format((float) $invoice->total, 2)]), '/vendor/money', 'invoice');
+                app(NotifyBookshopUserAction::class)->vendor($vendor->id, Said::of('shop.notice_invoice_title'), Said::of('shop.notice_invoice_body', ['number' => $invoice->number, 'amount' => $invoice->currency.' '.number_format((float) $invoice->total, 2)]), '/vendor/money', 'invoice');
             }
         }
 

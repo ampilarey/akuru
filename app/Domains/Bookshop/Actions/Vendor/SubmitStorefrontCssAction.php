@@ -7,6 +7,7 @@ use App\Domains\Bookshop\Actions\Shop\ResolveStorefrontAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\VendorStorefront;
 use App\Domains\Bookshop\Support\CustomCss;
+use App\Support\Said;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Validation\ValidationException;
 
@@ -59,7 +60,7 @@ class SubmitStorefrontCssAction
             'custom_css_pending' => $result['css'], 'custom_css_status' => 'pending', 'custom_css_note' => null,
             'custom_css_submitted_at' => now(), 'custom_css_reviewed_at' => null, 'custom_css_reviewed_by' => null,
         ]);
-        app(NotifyBookshopUserAction::class)->office(__('shop.notice_css_submitted_title'), __('shop.notice_css_submitted_body', ['vendor' => $scope->vendorName]), '/admin/bookshop');
+        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_css_submitted_title'), Said::of('shop.notice_css_submitted_body', ['vendor' => $scope->vendorName]), '/admin/bookshop');
 
         return $storefront->refresh();
     }

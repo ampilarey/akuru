@@ -9,6 +9,7 @@ use App\Domains\Bookshop\Models\StockAlert;
 use App\Domains\Bookshop\Models\WishlistItem;
 use App\Domains\Bookshop\Support\ShopPresenter;
 use App\Domains\Bookshop\Support\Stock;
+use App\Support\Said;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Validation\ValidationException;
 
@@ -116,8 +117,8 @@ class CustomerListsAction
         foreach ($waiting as $alert) {
             app(NotifyBookshopUserAction::class)->execute(
                 (int) $alert->user_id,
-                __('shop.notice_back_in_stock_title'),
-                __('shop.notice_back_in_stock_body', ['title' => $product->title, 'vendor' => $product->vendor->name]),
+                Said::of('shop.notice_back_in_stock_title'),
+                Said::of('shop.notice_back_in_stock_body', ['title' => $product->title, 'vendor' => $product->vendor->name]),
                 '/shop/products/'.$product->slug,
                 'back_in_stock',
             );

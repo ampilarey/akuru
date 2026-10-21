@@ -18,6 +18,7 @@ use App\Domains\Bookshop\Models\Product;
 use App\Domains\Bookshop\Models\ProductVariant;
 use App\Domains\Bookshop\Support\StockLedger;
 use App\Domains\Commerce\Actions\RecordDiscountRedemptionAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -131,28 +132,31 @@ class MarkCheckoutPaidAction
         $first = $checkout->orders->first();
         $notify->execute(
             (int) $checkout->user_id,
-            __('shop.notice_paid_title'),
+            Said::of('shop.notice_paid_title'),
             // COMMERCE_PARITY_PLAN P8: the receipt first, by a link that opens without signing in, then the tracking link.
-            __('shop.notice_paid_body', ['number' => $checkout->number]).' '.__('shop.notice_paid_receipt', ['link' => app(CheckoutReceiptAction::class)->link($checkout)])
-                .($first !== null ? ' '.__('shop.notice_paid_track', ['link' => route('public.shop.track', ['number' => $first->number])]) : ''),
+            Said::join([
+                Said::of('shop.notice_paid_body', ['number' => $checkout->number]),
+                Said::of('shop.notice_paid_receipt', ['link' => app(CheckoutReceiptAction::class)->link($checkout)]),
+                $first !== null ? Said::of('shop.notice_paid_track', ['link' => route('public.shop.track', ['number' => $first->number])]) : null,
+            ]),
             '/my-orders',
             'order_paid',
         );
         // COMMERCE_PARITY_PLAN P5: and the office, by its own address and number too.
         $notify->office(
-            __('shop.notice_office_paid_title'),
-            __('shop.notice_office_paid_body', ['number' => $checkout->number, 'amount' => $checkout->currency.' '.number_format((float) $checkout->total, 2), 'shops' => $checkout->orders->count()]),
+            Said::of('shop.notice_office_paid_title'),
+            Said::of('shop.notice_office_paid_body', ['number' => $checkout->number, 'amount' => $checkout->currency.' '.number_format((float) $checkout->total, 2), 'shops' => $checkout->orders->count()]),
             '/admin/bookshop',
             'order_paid',
         );
         foreach ($checkout->orders as $order) {
             // B9e: the last step of the shop's funnel, and what it sold.
             app(RecordShopEventAction::class)->paid($order);
-            $notify->vendor((int) $order->vendor_id, __('shop.notice_vendor_order_title'), __('shop.notice_vendor_order_body', ['number' => $order->number]), '/vendor/orders', 'new_order');
+            $notify->vendor((int) $order->vendor_id, Said::of('shop.notice_vendor_order_title'), Said::of('shop.notice_vendor_order_body', ['number' => $order->number]), '/vendor/orders', 'new_order');
         }
         foreach ($attention as $order) {
-            $notify->vendor((int) $order->vendor_id, __('shop.notice_attention_title'), __('shop.notice_attention_body', ['number' => $order->number]), '/vendor');
-            $notify->office(__('shop.notice_attention_title'), __('shop.notice_attention_body', ['number' => $order->number]), '/admin/bookshop');
+            $notify->vendor((int) $order->vendor_id, Said::of('shop.notice_attention_title'), Said::of('shop.notice_attention_body', ['number' => $order->number]), '/vendor');
+            $notify->office(Said::of('shop.notice_attention_title'), Said::of('shop.notice_attention_body', ['number' => $order->number]), '/admin/bookshop');
         }
     }
 }

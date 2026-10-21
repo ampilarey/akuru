@@ -9,6 +9,7 @@ use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\OrderEvent;
 use App\Domains\Bookshop\Support\Restock;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -63,12 +64,12 @@ class CancelOrderAction
 
         $notify = app(NotifyBookshopUserAction::class);
         if ($byCustomer) {
-            $notify->vendor((int) $order->vendor_id, __('shop.notice_customer_cancelled_title'), __('shop.notice_customer_cancelled_body', ['number' => $order->number, 'reason' => $reason]), '/vendor/orders', 'customer_cancelled');
+            $notify->vendor((int) $order->vendor_id, Said::of('shop.notice_customer_cancelled_title'), Said::of('shop.notice_customer_cancelled_body', ['number' => $order->number, 'reason' => $reason]), '/vendor/orders', 'customer_cancelled');
         } else {
-            $notify->execute((int) $order->user_id, __('shop.notice_vendor_cancelled_title'), __('shop.notice_vendor_cancelled_body', ['number' => $order->number, 'reason' => $reason]), '/my-orders/'.$order->number, 'order_cancelled');
+            $notify->execute((int) $order->user_id, Said::of('shop.notice_vendor_cancelled_title'), Said::of('shop.notice_vendor_cancelled_body', ['number' => $order->number, 'reason' => $reason]), '/my-orders/'.$order->number, 'order_cancelled');
         }
         // COMMERCE_PARITY_PLAN P5: a paid order undone is the office's to know too.
-        $notify->office(__('shop.notice_office_cancelled_title'), __('shop.notice_office_cancelled_body', ['number' => $order->number, 'reason' => $reason]), '/admin/bookshop', 'order_cancelled');
+        $notify->office(Said::of('shop.notice_office_cancelled_title'), Said::of('shop.notice_office_cancelled_body', ['number' => $order->number, 'reason' => $reason]), '/admin/bookshop', 'order_cancelled');
 
         return $order;
     }

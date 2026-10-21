@@ -6,6 +6,7 @@ use App\Domains\Library\Mail\LibraryNoticeMail;
 use App\Domains\Notifications\Actions\RecordSmsReceiptAction;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
@@ -35,7 +36,7 @@ use Illuminate\Support\Facades\Mail;
  */
 class NotifyLibraryUserAction
 {
-    public function execute(int $userId, string $title, string $message, ?string $href = null, ?string $event = null): void
+    public function execute(int $userId, string|Said $title, string|Said $message, ?string $href = null, ?string $event = null): void
     {
         if (! $this->inApp($userId, $title, $message, $href)) {
             return;
@@ -63,7 +64,7 @@ class NotifyLibraryUserAction
      * for a blog's new posts by email. Not an office switch: the reader's own
      * choice, and a reader who switched library notices off gets neither.
      */
-    public function withEmail(int $userId, string $title, string $message, ?string $href = null): void
+    public function withEmail(int $userId, string|Said $title, string|Said $message, ?string $href = null): void
     {
         if ($this->inApp($userId, $title, $message, $href)) {
             $this->email($this->person($userId), $title, $message, $href);
@@ -76,7 +77,7 @@ class NotifyLibraryUserAction
      * office's own address and number from the settings screen, as the two
      * switches allow; none set, in the app only.
      */
-    public function office(string $title, string $message, ?string $href = null, ?string $event = null): void
+    public function office(string|Said $title, string|Said $message, ?string $href = null, ?string $event = null): void
     {
         $userModel = config('auth.providers.users.model');
         try {
@@ -101,7 +102,7 @@ class NotifyLibraryUserAction
         }
     }
 
-    private function inApp(int $userId, string $title, string $message, ?string $href): bool
+    private function inApp(int $userId, string|Said $title, string|Said $message, ?string $href): bool
     {
         try {
             return app(SendUserNotificationAction::class)->execute($userId, $title, $message, [
@@ -115,8 +116,10 @@ class NotifyLibraryUserAction
     }
 
     /** @param  array{name?: string, email?: ?string, phone?: ?string}  $person */
-    private function email(array $person, string $title, string $message, ?string $href): void
+    private function email(array $person, string|Said $title, string|Said $message, ?string $href): void
     {
+        // Email and SMS leave now, in the sender's language (ADR-044).
+        [$title, $message] = [(string) $title, (string) $message];
         $address = trim((string) ($person['email'] ?? ''));
         if ($address === '' || ! filter_var($address, FILTER_VALIDATE_EMAIL)) {
             return;
@@ -131,8 +134,10 @@ class NotifyLibraryUserAction
         });
     }
 
-    private function sms(string $phone, string $title, string $message, string $event): void
+    private function sms(string $phone, string|Said $title, string|Said $message, string $event): void
     {
+        // Email and SMS leave now, in the sender's language (ADR-044).
+        [$title, $message] = [(string) $title, (string) $message];
         $body = mb_substr('Akuru Library: '.$title.'. '.$message, 0, (int) config('library.notices.sms_max_length', 300));
         DB::afterCommit(function () use ($phone, $body, $event): void {
             try {

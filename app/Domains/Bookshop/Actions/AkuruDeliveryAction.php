@@ -14,6 +14,7 @@ use App\Domains\Identity\Actions\CreateUserAction;
 use App\Domains\Identity\Actions\ResolveUserByIdentifierAction;
 use App\Domains\Media\Actions\ReadPrivateMediaAction;
 use App\Domains\Media\Actions\StorePrivateMediaAction;
+use App\Support\Said;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -102,11 +103,11 @@ class AkuruDeliveryAction
         // push is on (#551), and by SMS where the office allows it; a driver it was taken from is told too.
         $notify = app(NotifyBookshopUserAction::class);
         $where = collect([$order->address_snapshot['island'] ?? null, $order->address_snapshot['atoll'] ?? null])->filter()->implode(', ');
-        $notify->execute((int) $driver->user_id, __('shop.notice_driver_assigned_title', ['number' => $order->number]),
-            __('shop.notice_driver_assigned_body', ['number' => $order->number, 'where' => $where ?: '—']), '/deliveries', 'driver_assigned');
+        $notify->execute((int) $driver->user_id, Said::of('shop.notice_driver_assigned_title', ['number' => $order->number]),
+            Said::of('shop.notice_driver_assigned_body', ['number' => $order->number, 'where' => $where ?: '—']), '/deliveries', 'driver_assigned');
         if ($previous !== null && $previous->user_id !== null) {
-            $notify->execute((int) $previous->user_id, __('shop.notice_driver_unassigned_title', ['number' => $order->number]),
-                __('shop.notice_driver_unassigned_body', ['number' => $order->number]), '/deliveries');
+            $notify->execute((int) $previous->user_id, Said::of('shop.notice_driver_unassigned_title', ['number' => $order->number]),
+                Said::of('shop.notice_driver_unassigned_body', ['number' => $order->number]), '/deliveries');
         }
 
         return $delivery;

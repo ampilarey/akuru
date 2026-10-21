@@ -6,6 +6,7 @@ use App\Domains\Bookshop\Actions\NotifyBookshopUserAction;
 use App\Domains\Bookshop\Actions\Shop\ResolveShopHostAction;
 use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Models\Vendor;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -37,7 +38,7 @@ class RequestVendorHostAction
         }
         $vendor->update(['custom_host' => $host, 'custom_host_status' => 'requested', 'custom_host_requested_at' => now(), 'custom_host_approved_at' => null]);
         ResolveShopHostAction::forget($old);
-        app(NotifyBookshopUserAction::class)->office(__('shop.notice_host_requested_title'), __('shop.notice_host_requested_body', ['vendor' => $vendor->name, 'host' => $host]), '/admin/bookshop');
+        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_host_requested_title'), Said::of('shop.notice_host_requested_body', ['vendor' => $vendor->name, 'host' => $host]), '/admin/bookshop');
 
         return $vendor->refresh();
     }

@@ -11,6 +11,7 @@ use App\Domains\Bookshop\Models\Order;
 use App\Domains\Bookshop\Models\OrderRefund;
 use App\Domains\Commerce\Actions\CreditWalletAction;
 use App\Domains\Finance\Actions\RefundPaymentAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -149,7 +150,7 @@ class RefundOrderAction
         if ($refund->status === RefundStatus::Done) {
             $notify->execute(
                 (int) $order->user_id,
-                __('shop.notice_refund_done_title'),
+                Said::of('shop.notice_refund_done_title'),
                 __($refund->destination === 'card' ? 'shop.notice_refund_card_body' : 'shop.notice_refund_wallet_body', ['amount' => $amount, 'number' => $order->number]),
                 '/my-orders/'.$order->number,
                 'refund',
@@ -157,6 +158,6 @@ class RefundOrderAction
 
             return;
         }
-        $notify->office(__('shop.notice_refund_pending_title'), __('shop.notice_refund_pending_body', ['amount' => $amount, 'number' => $order->number]), '/admin/bookshop');
+        $notify->office(Said::of('shop.notice_refund_pending_title'), Said::of('shop.notice_refund_pending_body', ['amount' => $amount, 'number' => $order->number]), '/admin/bookshop');
     }
 }

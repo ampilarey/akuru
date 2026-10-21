@@ -8,6 +8,7 @@ use App\Domains\Bookshop\Models\VendorMember;
 use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Settings\Actions\SetSettingAction;
 use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
+use App\Support\Said;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 
@@ -100,8 +101,8 @@ class ApplyToSellAction
         ]);
 
         app(NotifyBookshopUserAction::class)->office(
-            __('shop.notice_application_title'),
-            __('shop.notice_application_body', ['shop' => $application->shop_name, 'island' => $application->island]),
+            Said::of('shop.notice_application_title'),
+            Said::of('shop.notice_application_body', ['shop' => $application->shop_name, 'island' => $application->island]),
             '/admin/bookshop',
         );
 

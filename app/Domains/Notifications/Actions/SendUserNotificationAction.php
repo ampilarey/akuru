@@ -4,6 +4,7 @@ namespace App\Domains\Notifications\Actions;
 
 use App\Domains\Notifications\Models\UserNotification;
 use App\Domains\Notifications\Support\PushChannel;
+use App\Support\Said;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -17,11 +18,22 @@ use Illuminate\Support\Facades\Log;
 class SendUserNotificationAction
 {
     /**
+     * A title or message given as a `Said` keeps its phrase, so the inbox says
+     * it in the reader's language (HP3, ADR-044); the row's text is the
+     * sender's language, for the push and for rows read before this.
+     *
      * @param  array<string, mixed>  $data
      */
-    public function execute(int $userId, string $title, string $message, array $data = []): ?UserNotification
+    public function execute(int $userId, string|Said $title, string|Said $message, array $data = []): ?UserNotification
     {
         $category = $data['category'] ?? 'hr';
+        $said = array_filter([
+            'title' => $title instanceof Said ? $title->toArray() : null,
+            'message' => $message instanceof Said ? $message->toArray() : null,
+        ]);
+        if ($said !== []) {
+            $data['said'] = $said;
+        }
 
         if (! app(ResolveNotificationPreferencesAction::class)->allows($userId, $category)) {
             return null;
@@ -31,8 +43,8 @@ class SendUserNotificationAction
             'user_id' => $userId,
             'type' => 'in_app',
             'category' => $category,
-            'title' => $title,
-            'message' => $message,
+            'title' => (string) $title,
+            'message' => (string) $message,
             'data' => $data,
             'status' => 'sent',
             'sent_at' => now(),

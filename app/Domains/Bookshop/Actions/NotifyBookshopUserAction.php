@@ -10,6 +10,7 @@ use App\Domains\Notifications\Actions\RecordSmsReceiptAction;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Domains\Settings\Contracts\SettingsRepositoryInterface;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
@@ -36,7 +37,7 @@ class NotifyBookshopUserAction
 {
     public const SETTING_PREFIX = 'bookshop_notices_';
 
-    public function execute(int $userId, string $title, string $message, ?string $href = null, ?string $event = null): void
+    public function execute(int $userId, string|Said $title, string|Said $message, ?string $href = null, ?string $event = null): void
     {
         if (! $this->inApp($userId, $title, $message, $href)) {
             return;
@@ -57,7 +58,7 @@ class NotifyBookshopUserAction
     }
 
     /** Every member of a vendor, owners first; by email or SMS as the shop chose (B8). */
-    public function vendor(int $vendorId, string $title, string $message, ?string $href = null, ?string $event = null): void
+    public function vendor(int $vendorId, string|Said $title, string|Said $message, ?string $href = null, ?string $event = null): void
     {
         $ids = VendorMember::query()->where('vendor_id', $vendorId)
             ->orderByRaw('case when role = ? then 0 else 1 end', [VendorMemberRole::Owner->value])
@@ -86,7 +87,7 @@ class NotifyBookshopUserAction
      * office's own address and number (set on `/admin/bookshop`), as the
      * office's two switches allow. No address or number set: in the app only.
      */
-    public function office(string $title, string $message, ?string $href = null, ?string $event = null): void
+    public function office(string|Said $title, string|Said $message, ?string $href = null, ?string $event = null): void
     {
         $userModel = config('auth.providers.users.model');
         try {
@@ -194,7 +195,7 @@ class NotifyBookshopUserAction
         ];
     }
 
-    private function inApp(int $userId, string $title, string $message, ?string $href): bool
+    private function inApp(int $userId, string|Said $title, string|Said $message, ?string $href): bool
     {
         try {
             return app(SendUserNotificationAction::class)->execute($userId, $title, $message, ['category' => 'shop', 'href' => $href]) !== null;
@@ -204,14 +205,18 @@ class NotifyBookshopUserAction
         }
     }
 
-    private function email(int $userId, string $title, string $message, ?string $href): void
+    private function email(int $userId, string|Said $title, string|Said $message, ?string $href): void
     {
+        // Email and SMS leave now, in the sender's language (ADR-044).
+        [$title, $message] = [(string) $title, (string) $message];
         $person = $this->person($userId);
         $this->emailTo(trim((string) ($person['email'] ?? '')), (string) ($person['name'] ?? ''), $title, $message, $href);
     }
 
-    private function emailTo(string $address, string $name, string $title, string $message, ?string $href): void
+    private function emailTo(string $address, string $name, string|Said $title, string|Said $message, ?string $href): void
     {
+        // Email and SMS leave now, in the sender's language (ADR-044).
+        [$title, $message] = [(string) $title, (string) $message];
         if ($address === '' || ! filter_var($address, FILTER_VALIDATE_EMAIL)) {
             return;
         }
@@ -225,8 +230,10 @@ class NotifyBookshopUserAction
         });
     }
 
-    private function sms(string $phone, string $title, string $message, string $event): void
+    private function sms(string $phone, string|Said $title, string|Said $message, string $event): void
     {
+        // Email and SMS leave now, in the sender's language (ADR-044).
+        [$title, $message] = [(string) $title, (string) $message];
         $body = mb_substr('Akuru Bookstore: '.$title.'. '.$message, 0, (int) config('bookshop.notices.sms_max_length', 300));
         DB::afterCommit(function () use ($phone, $body, $event): void {
             try {

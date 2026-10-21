@@ -5,6 +5,7 @@ namespace App\Domains\Bookshop\Actions;
 use App\Domains\Bookshop\Actions\Shop\ResolveShopHostAction;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Support\HostDns;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -54,7 +55,7 @@ class DecideVendorHostAction
         }
         $vendor->update(['custom_host_status' => 'active', 'custom_host_approved_at' => now()]);
         ResolveShopHostAction::forget($vendor->custom_host);
-        app(NotifyBookshopUserAction::class)->vendor((int) $vendor->id, __('shop.notice_host_active_title'), __('shop.notice_host_active_body', ['host' => $vendor->custom_host]), '/vendor');
+        app(NotifyBookshopUserAction::class)->vendor((int) $vendor->id, Said::of('shop.notice_host_active_title'), Said::of('shop.notice_host_active_body', ['host' => $vendor->custom_host]), '/vendor');
 
         return $vendor->refresh();
     }

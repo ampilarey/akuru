@@ -8,6 +8,7 @@ use App\Domains\Bookshop\Models\StorefrontTheme;
 use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Models\VendorStorefront;
 use App\Domains\Bookshop\Support\Theme;
+use App\Support\Said;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -81,7 +82,7 @@ class StorefrontGalleryAction
             'source_vendor_id' => $scope->vendorId,
             'submitted_by' => $scope->userId,
         ]);
-        app(NotifyBookshopUserAction::class)->office(__('shop.notice_theme_offered_title'), __('shop.notice_theme_offered_body', ['vendor' => $scope->vendorName, 'name' => $theme->name]), '/admin/bookshop');
+        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_theme_offered_title'), Said::of('shop.notice_theme_offered_body', ['vendor' => $scope->vendorName, 'name' => $theme->name]), '/admin/bookshop');
 
         return $theme;
     }
