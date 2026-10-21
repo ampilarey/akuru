@@ -46,7 +46,7 @@ export default function Enrollments({ enrollments = [], pagination, total = 0, c
                     <Link href="/admin/enrollments/payments" className="underline" data-testid="enrolments-payments-link">{t.enrolments_tab_payments || 'Payments →'}</Link>
                 </nav>
                 <p className="text-gray-600" data-testid="enrolments-total">{(t.enrolments_total || ':count enrolments').replace(':count', total)}</p>
-                <a href={`/admin/enrollments/export${query ? `?${query}` : ''}`} className="ms-auto underline" data-testid="export-csv">{t.enrolments_export || 'Export CSV'}</a>
+                <a href={`/admin/enrollments/export${query ? `?${query}` : ''}`} className="ms-auto inline-block py-1.5 underline" data-testid="export-csv">{t.enrolments_export || 'Export CSV'}</a>
             </div>
             <form onSubmit={submit} className="mb-4 flex flex-wrap items-end gap-2 rounded-lg border bg-white p-3" data-testid="enrolments-filter">
                 <label className="text-xs text-gray-600">

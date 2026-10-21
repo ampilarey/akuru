@@ -4983,6 +4983,50 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ub. The school's pages on a phone (TD1, 2026-10-21)
+
+The household audit (§5tv), as the school's own people. The seeded teacher
+and headmaster opened every page their shell offers: 43 and 117 pages,
+under /dv and /ar, at 390 px. All read right to left, and none scrolled
+sideways. What it found (KNOWN_ISSUES, 2026-10-21):
+- **Three links that refused:**
+  - The timetable builder in the School menu now carries the office's
+    roles (the route's own gate). The teacher home's *Timetable* tile goes
+    to the teacher's own lessons on that page (`#lessons`), and to the
+    builder for the office.
+  - Custom fields asks for `custom_fields.manage`, the permission its
+    controller checks.
+  - *My meetings* shows staff with no teacher record an empty page,
+    CSV too, as *My schedule* does, instead of a 403. Anyone who is not
+    staff is still refused (`TeacherSeesOwnMeetingsTest`).
+- **Thumb-sized:**
+  - **Width:** the phone rule that makes a cell's link or button 44 px
+    tall now also gives it 44 px of width. A one-word action in Thaana was
+    22 px wide.
+  - **Height:** padding on the timetable's *Remove*, the work page's two
+    buttons and *Close term*. The same goes for the gate's links, both
+    admissions CSV links and the absences, reviews, reports and report-card
+    links. The schedule's *Attendance*, the school home's chips and *Staff
+    overview*, the overview's links and the offering's certificate fold
+    also get padding.
+- **The household walk** counts a grid that scrolls in its own box
+  (`data-phone-scroll`, the timetable) as the phone-first test does.
+
+**Walks:**
+- `staff-phone.mjs` is new and in `all.mjs`. It runs `household.mjs` as the
+  teacher and the headmaster. 4/4 (it began at 2/4, with 30 faults).
+- `household.mjs` as the parent and the pupil: still 5/5.
+
+**Tests:** `StaffMenuOffersOnlyWhatOpensTest` (3):
+- the teacher's menu holds neither link, and every `/academics` and
+  `/people` page it offers answers 200;
+- the office's menu holds the builder, and custom fields only with its
+  permission;
+- the tile goes where each may go;
+- *My meetings* and its CSV answer an unlinked headmaster.
+
+Whole suite 3354. The first run's one failure was a non-staff user let in; the gate now keeps staff only, and it passes. Pint is clean.
+
 ## 5ua. A discount used, and a payment that went wrong (B11b, 2026-10-21)
 
 LIBRARY_PLAN §41 had two Library notices left, held for want of an answer

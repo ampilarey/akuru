@@ -46,8 +46,7 @@ export default function Meetings({ teacher, slots = [], t = {} }) {
         <AppShell title={t.teach_meetings_title || 'My meetings'}>
             <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <p className="text-sm text-gray-600">
-                    {teacher?.name}
-                    {' · '}
+                    {teacher?.name && <>{teacher.name}{' · '}</>}
                     {(t.teach_meetings_upcoming || 'Upcoming slots: :count').replace(':count', slots.length)}
                     {' · '}
                     {(t.teach_meetings_booked || 'Booked: :count').replace(':count', bookedCount)}

@@ -126,7 +126,10 @@ class ComposeTeacherHomeAction
             [
                 'key' => 'timetable',
                 'label' => __('nav.timetable'),
-                'href' => '/academics/timetable',
+                // The builder is the office's (its route is role-gated); a
+                // teacher was sent to a 403 (the school audit, TD1). Theirs is
+                // the week on this page.
+                'href' => array_intersect($roleNames, ['super_admin', 'admin', 'headmaster', 'supervisor']) !== [] ? '/academics/timetable' : '/portal/teacher#lessons',
                 'badge' => null,
                 'status' => ($todayPeriods['is_school_day'] ?? true) === false
                     ? $this->closedNote($todayPeriods)

@@ -165,7 +165,7 @@ export default function AbsencesToday({
             )}
 
             <p className="mt-4 text-sm text-gray-600">
-                <Link href="/academics/absence-notes" className="text-[#7C2D37] underline">{t.absences_review_notes || 'Review absence notes'}</Link>
+                <Link href="/academics/absence-notes" className="inline-block py-1.5 text-[#7C2D37] underline">{t.absences_review_notes || 'Review absence notes'}</Link>
             </p>
         </AppShell>
     );

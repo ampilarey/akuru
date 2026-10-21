@@ -209,7 +209,7 @@ export default function Index({ classes, terms, cards, unpublished, classId, ter
                                 <td data-label={t.reportcards_col_document || 'Document'} className="px-3 py-2">
                                     {card.document_id ? <span className="flex flex-wrap gap-3">
                                         {pdf_available && <a className="text-[#7C2D37] underline" href={`/exams/report-cards/${card.id}/download?format=pdf`} data-testid={`report-card-pdf-${card.id}`}>{t.reportcards_pdf || 'PDF'}</a>}
-                                        <a className="text-[#7C2D37] underline" href={`/exams/report-cards/${card.id}/download`}>{pdf_available ? (t.reportcards_web_page || 'Web page') : (t.reportcards_open_print || 'Open to print')}</a>
+                                        <a className="inline-block py-1.5 text-[#7C2D37] underline" href={`/exams/report-cards/${card.id}/download`}>{pdf_available ? (t.reportcards_web_page || 'Web page') : (t.reportcards_open_print || 'Open to print')}</a>
                                     </span> : '—'}
                                 </td>
                             </tr>

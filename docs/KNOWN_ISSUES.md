@@ -165,7 +165,31 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
-## Found auditing the household's pages on a phone (2026-10-21)
+## Found auditing the school's pages on a phone (2026-10-21)
+
+The seeded teacher and headmaster opened every page their shell offers: 43
+and 117 pages, under /dv and /ar, at 390 px (`staff-phone.mjs`). All read
+right to left, and none scrolled sideways.
+
+### Three menu links refused the person they were offered to — **fixed (2026-10-21, STATUS §5ub)**
+
+- **The timetable builder** (`/academics/timetable`) is gated to the
+  office's roles. It was in the teacher's menu, and the teacher's home
+  tile linked to it: a 403.
+- **Custom fields** (`/people/custom-fields`) needs `custom_fields.manage`.
+  It was offered to the headmaster, who lacks it.
+- ***My meetings*** refused staff with no teacher record, a headmaster for
+  one, though *My schedule* shows them an empty page.
+
+### Small targets on 18 school pages — **fixed (2026-10-21, STATUS §5ub)**
+
+- **Width:** a one-word action in a table cell (Thaana *Open*, *Delete*,
+  *Forum*) was 44 px tall but 21–23 px wide.
+- **Height:** the timetable's *Remove* was 16 px. Back, export and section
+  links, the school home's chips and the overview's links were 14–20 px
+  tall.
+
+
 
 The seeded parent and pupil opened every page their shell offers: 39 and
 35 pages, each under /dv and /ar, at 390 px (`household.mjs`).

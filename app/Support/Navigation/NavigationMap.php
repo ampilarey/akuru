@@ -152,6 +152,9 @@ final class NavigationMap
     public static function groups(): array
     {
         $staff = self::STAFF;
+        // The school office's own screens, gated by role on the route; a
+        // teacher was offered them and refused (the school audit, TD1).
+        $office = ['super_admin', 'admin', 'headmaster', 'supervisor'];
         $family = self::FAMILY;
         // Pages whose gate is in the controller rather than on the route: the
         // hint mirrors it, any one of the abilities admits.
@@ -164,7 +167,7 @@ final class NavigationMap
                 ['key' => 'years', 'href' => '/academics/years'],
                 ['key' => 'rooms', 'href' => '/academics/rooms'],
                 ['key' => 'periods', 'href' => '/academics/periods'],
-                ['key' => 'timetable', 'href' => '/academics/timetable'],
+                ['key' => 'timetable', 'href' => '/academics/timetable', 'roles' => $office],
                 ['key' => 'bookings', 'href' => '/academics/bookings'],
                 ['key' => 'meetings', 'href' => '/academics/meetings'],
                 ['key' => 'calendar', 'href' => '/academics/calendar'],
@@ -180,7 +183,7 @@ final class NavigationMap
             ['key' => 'people', 'items' => [
                 ['key' => 'students', 'href' => '/people/students'],
                 ['key' => 'staff', 'href' => '/people/staff'],
-                ['key' => 'custom_fields', 'href' => '/people/custom-fields'],
+                ['key' => 'custom_fields', 'href' => '/people/custom-fields', 'can' => ['custom_fields.manage']],
                 ['key' => 'sensitive_info', 'href' => '/people/sensitive'],
             ]],
             ['key' => 'day_loop', 'items' => [

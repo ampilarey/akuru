@@ -81,7 +81,7 @@ function ScanPanel({ t }) {
             {camera && <QrCameraScanner onCode={submit} onClose={() => setCamera(false)} />}
             <p className="mt-2 text-xs text-gray-500">
                 {t.gate_no_card || 'No card? Find the pupil by name below. Cards are issued and printed on'}{' '}
-                <Link href="/academics/gate/cards" className="text-[#7C2D37] underline">{t.cards_title || 'Gate cards'}</Link>.
+                <Link href="/academics/gate/cards" className="inline-block py-1.5 text-[#7C2D37] underline">{t.cards_title || 'Gate cards'}</Link>.
             </p>
         </div>
     );

@@ -88,7 +88,7 @@ export default function WorkspaceHome({ t, workspace, parts, today = { tiles: []
                     </ul>
                     {today.more && (
                         <p className="mt-3 text-sm">
-                            <Open hard={today.more.hard} href={today.more.href} className="font-semibold text-[#7C2D37] hover:underline" data-testid="today-more">{today.more.label} →</Open>
+                            <Open hard={today.more.hard} href={today.more.href} className="inline-block py-1.5 font-semibold text-[#7C2D37] hover:underline" data-testid="today-more">{today.more.label} →</Open>
                         </p>
                     )}
                 </section>
@@ -135,7 +135,7 @@ export default function WorkspaceHome({ t, workspace, parts, today = { tiles: []
                                                         <li key={child.key} className={rows ? 'sm:contents' : undefined}>
                                                             <Open hard={child.hard} href={child.href} className={rows
                                                                 ? 'flex min-h-[2.75rem] items-center rounded-lg bg-[#F3EBE0] px-3 text-sm font-medium text-[#7C2D37] hover:bg-[#E6D9C8] sm:inline-flex sm:min-h-[2rem] sm:rounded-full sm:px-2.5 sm:text-xs'
-                                                                : 'inline-block rounded-full bg-[#F3EBE0] px-2.5 py-0.5 text-xs font-medium text-[#7C2D37] hover:bg-[#E6D9C8]'} data-testid={`child-${child.key}`}>
+                                                                : 'inline-block rounded-full bg-[#F3EBE0] px-2.5 py-1.5 text-xs font-medium text-[#7C2D37] hover:bg-[#E6D9C8]'} data-testid={`child-${child.key}`}>
                                                                 {child.label}
                                                             </Open>
                                                         </li>

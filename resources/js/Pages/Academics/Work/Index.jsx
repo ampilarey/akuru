@@ -107,7 +107,7 @@ function ReassignRow({ work, matches, q, onSearch, t }) {
 
     return (
         <>
-            <button className="text-xs text-[#7C2D37] underline" onClick={() => setOpen(!open)}>
+            <button className="py-2 text-xs text-[#7C2D37] underline" onClick={() => setOpen(!open)}>
                 {t.work_wrong_pupil || 'Wrong pupil?'}
             </button>
             {open && (
@@ -124,7 +124,7 @@ function ReassignRow({ work, matches, q, onSearch, t }) {
                         {matches.map((child) => (
                             <li key={child.id}>
                                 <button
-                                    className="text-xs text-[#7C2D37] underline"
+                                    className="py-2 text-xs text-[#7C2D37] underline"
                                     onClick={() =>
                                         router.post(`/academics/work/${work.id}/reassign`, { student_id: child.id }, { preserveScroll: true })
                                     }
@@ -187,14 +187,14 @@ export default function Index({ q = '', matches = [], work = [], t = {} }) {
                         <div className="mt-2 flex flex-wrap items-center gap-3">
                             {item.hidden ? (
                                 <button
-                                    className="text-xs text-[#7C2D37] underline"
+                                    className="py-2 text-xs text-[#7C2D37] underline"
                                     onClick={() => router.post(`/academics/work/${item.id}/restore`, {}, { preserveScroll: true })}
                                 >
                                     {t.work_show_again || 'Show families again'}
                                 </button>
                             ) : (
                                 <button
-                                    className="text-xs text-[#7C2D37] underline"
+                                    className="py-2 text-xs text-[#7C2D37] underline"
                                     onClick={() => router.post(`/academics/work/${item.id}/hide`, {}, { preserveScroll: true })}
                                 >
                                     {t.work_hide || 'Hide from families'}

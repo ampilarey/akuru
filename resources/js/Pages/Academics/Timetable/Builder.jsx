@@ -251,7 +251,7 @@ export default function Builder({
                                                             : (t.timetable_cover_needed || 'Cover needed')}</div>}
                                                         <button
                                                             type="button"
-                                                            className="no-print text-[11px] text-red-700 underline"
+                                                            className="no-print inline-block min-h-[1.75rem] px-1 text-[11px] text-red-700 underline sm:min-h-0 sm:px-0"
                                                             onClick={() => router.delete(`/academics/timetable/${entry.id}?academic_year_id=${yearId}&class_id=${classId}&view=${view}`)}
                                                         >
                                                             {t.remove || 'Remove'}
