@@ -3,6 +3,7 @@ import axios from 'axios';
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
+import PrinterChoice from '../../Components/Print/PrinterChoice';
 
 /**
  * NAME_TAGS_PLAN §3.4, §5.5, §5.6 (NT5): a job from the customer's own
@@ -19,7 +20,7 @@ const money = (n) => (Number(n) || 0).toFixed(2);
 const csrf = () => document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
 export default function PrintUploadJob(props) {
-    const { t = {}, job: initial, layouts = [], papers = [], finishing_options: finishingOptions = [], settings = {}, door = 'name-tags', product_title: productTitle = '' } = props;
+    const { t = {}, job: initial, layouts = [], papers = [], finishing_options: finishingOptions = [], printers = [], settings = {}, door = 'name-tags', product_title: productTitle = '' } = props;
     const { errors = {}, locale = 'en' } = usePage().props;
     const [job, setJob] = useState(initial);
     useEffect(() => setJob(initial), [initial]);
@@ -151,6 +152,7 @@ export default function PrintUploadJob(props) {
                                     {layout && <p className="mt-1 text-xs text-gray-600" data-testid="print-photo-count">{fill(t.photo_prints_count, { count: (job.sheets || 1) * (layout.tags || 1) })}</p>}
                                 </div>
                             )}
+                            <PrinterChoice t={t} printers={printers} printer={job.printer} sheetSize={sheetSize} base={base} open={open} flush={flush} />
                             <div>
                                 <span className="block">{t.paper_name}</span>
                                 {sheetPapers.length === 0 ? <p className="text-amber-800">{t.no_papers}</p> : sheetPapers.map((p) => (

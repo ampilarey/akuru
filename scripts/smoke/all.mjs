@@ -171,6 +171,7 @@ const WALKS = [
     { name: 'print-quote', writes: true, asks: 'Can a school ask Akuru for a price on its name tags from the basket, the office price them under the print desk, and the school pay the quoted price — on a phone, in Dhivehi?' },
     { name: 'print-shops', writes: true, asks: 'Can the office approve a shop to print, and stop it?' },
     { name: 'vendor-print', writes: true, asks: 'Can a printing shop keep its own print desk — its papers and its own print orders?' },
+    { name: 'print-printer', writes: true, asks: 'Can a customer have a shop print their name tags — choose the shop, pay, and the shop print them — on a phone, in Dhivehi?' },
     { name: 'print-freeform', writes: true, asks: 'Can a customer design name tags freely in Arabic — a text and a rectangle drawn, Arabic typed, turned 12°, kept on reload — and see Chrome\'s proof of it?' },
     { name: 'print-upsell', writes: true, asks: 'Does a school book list offer the child\'s name tags in Dhivehi, with the grade\'s subjects chosen, can a design be ordered again at today\'s price, and does the office see print sales by paper and month?' },
     { name: 'pick-by-name', writes: true, asks: 'Does the office choose the pupil, the teacher and the account by name — on the behaviour, plan, fee adjustment and wallet credit forms — instead of typing an id?' },

@@ -254,6 +254,7 @@ return [
     'POST shop/print/jobs' => 'Start a print job from a template (NT3): on the caller\'s account or a guest\'s own basket by session token; throttled.',
     'GET shop/print/jobs/{job}' => 'One print job\'s page (NT3). ShopPrintController::job() 404s unless the job is the caller\'s own, or a guest\'s by their own basket.',
     'POST shop/print/jobs/{job}' => 'Autosave a print job (NT3). Same ownership check as its page; throttled.',
+    'POST shop/print/jobs/{job}/printer' => 'Choose who prints a job (PP7c): Akuru or an approved shop. Same ownership check as its page (job() 404s otherwise); throttled.',
     'POST shop/print/freeform' => 'Start a blank free-form design (NT6): on the caller\'s account or a guest\'s own basket by session token; throttled.',
     'POST shop/print/jobs/{job}/designer' => 'Open a template job in the free-form designer (NT6). Same ownership check as its page; throttled.',
     'POST shop/print/jobs/{job}/copy' => 'Copy a print job to change it (NT3). Same ownership check; the copy is the caller\'s; throttled.',

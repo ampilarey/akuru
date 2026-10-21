@@ -4,12 +4,14 @@ namespace App\Domains\Bookshop\Actions\Print;
 
 use App\Domains\Academics\Actions\ResolveAcademicYearForDateAction;
 use App\Domains\Bookshop\Enums\PrintJobStatus;
+use App\Domains\Bookshop\Enums\VendorStatus;
 use App\Domains\Bookshop\Models\PrintImage;
 use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintLayout;
 use App\Domains\Bookshop\Models\PrintPaperOption;
 use App\Domains\Bookshop\Models\PrintSubjectSet;
 use App\Domains\Bookshop\Models\PrintTemplate;
+use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Support\PrintDesign;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintJobEntry;
@@ -346,6 +348,42 @@ class SavePrintJobAction
             throw ValidationException::withMessages(['job' => __('print.error_job_in_order')]);
         }
         $job->delete();
+    }
+
+    /**
+     * PRINT_PRODUCTS_PLAN PP7c (PD10d): who prints the job — Akuru (null) or
+     * a shop the office approved, with a priced paper of the job's sheet
+     * size. The job moves to that printer's product and first paper of the
+     * size; finishings belong to a printer, so they are cleared.
+     */
+    public function printer(PrintJob $job, ?int $vendorId, string $locale): PrintJob
+    {
+        $this->open($job);
+        $kind = $job->printKind();
+        $vendorId = $vendorId ?: null;
+        if ($vendorId !== null && $vendorId === PrintDesk::vendor()?->id) {
+            $vendorId = null;
+        }
+        if ($vendorId === null) {
+            $product = PrintProducts::product($kind);
+        } else {
+            $vendor = Vendor::query()->whereKey($vendorId)->where('print_enabled', true)->where('status', VendorStatus::Active->value)->first();
+            $product = $vendor === null ? null : PrintProducts::productFor($kind, $vendor);
+        }
+        if ($product === null) {
+            throw ValidationException::withMessages(['printer' => __('print.error_printer')]);
+        }
+        $layout = $job->layout ?? PrintLayout::query()->find($job->print_layout_id);
+        $paper = PrintPaperOption::firstFor($layout?->sheet_size ?? 'a4', $vendorId);
+        if ($paper === null) {
+            throw ValidationException::withMessages(['printer' => __('print.error_printer_no_paper')]);
+        }
+        $job->product_id = $product->id;
+        $job->print_paper_option_id = $paper->id;
+        $job->colour = (float) $paper->price_colour > 0;
+        $job->finishing = [];
+
+        return $this->price($job, $locale);
     }
 
     public function open(PrintJob $job): void

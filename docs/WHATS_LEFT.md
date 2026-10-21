@@ -75,8 +75,9 @@ wording, tip amounts and share, rewards, the tax treatment) are on
 ## 5. Later, on request (not planned)
 
 - **Print products beyond name tags**: planned 2026-10-20 in
-  `docs/PRINT_PRODUCTS_PLAN.md` (slices PP1–PP7, decisions with defaults;
-  stickers by the roll and other vendors printing parked).
+  `docs/PRINT_PRODUCTS_PLAN.md`; slices PP1–PP7 built by 2026-10-21, other
+  shops printing included (STATUS §5uh–§5uj). Stickers by the roll stay
+  parked (PD5).
 - **Library**:
   - ~~OCR for scanned PDFs (B1)~~ — built 2026-10-20, off until the host
     has Tesseract (STATUS §5tg, OWNER_TODO A and E).

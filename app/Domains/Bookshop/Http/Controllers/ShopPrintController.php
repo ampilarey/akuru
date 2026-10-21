@@ -189,6 +189,16 @@ class ShopPrintController extends Controller
         return response()->json(['job' => app(PresentPrintJobAction::class)->job($saved->fresh(), app()->getLocale())]);
     }
 
+    /** PP7c: the printer chosen; the page reloads with that printer's papers. */
+    public function printer(Request $request, int $job): RedirectResponse
+    {
+        $this->available($request);
+        $data = $request->validate(['printer' => 'nullable|integer']);
+        app(SavePrintJobAction::class)->printer($this->job($request, $job), isset($data['printer']) ? (int) $data['printer'] : null, app()->getLocale());
+
+        return back();
+    }
+
     public function proof(Request $request, int $job): RedirectResponse
     {
         $this->available($request);

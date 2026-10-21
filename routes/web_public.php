@@ -95,6 +95,8 @@ Route::get('shop/print/{path}', [\App\Domains\Bookshop\Http\Controllers\ShopPrin
 Route::post('shop/print/jobs', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'start'])->name('public.shop.print.start')->middleware('throttle:20,1,shop-print-start');
 Route::get('shop/print/jobs/{job}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'show'])->name('public.shop.print.job')->whereNumber('job');
 Route::post('shop/print/jobs/{job}', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'save'])->name('public.shop.print.save')->whereNumber('job')->middleware('throttle:120,1,shop-print-save');
+// PRINT_PRODUCTS_PLAN PP7c: who prints the job — Akuru or a shop the office approved.
+Route::post('shop/print/jobs/{job}/printer', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'printer'])->name('public.shop.print.printer')->whereNumber('job')->middleware('throttle:30,1,shop-print-printer');
 // NT6: the free-form designer — a blank design, and a template job opened in it.
 Route::post('shop/print/freeform', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'startFreeform'])->name('public.shop.print.freeform')->middleware('throttle:20,1,shop-print-freeform');
 Route::post('shop/print/jobs/{job}/designer', [\App\Domains\Bookshop\Http\Controllers\ShopPrintController::class, 'openDesigner'])->name('public.shop.print.designer')->whereNumber('job')->middleware('throttle:20,1,shop-print-designer');
