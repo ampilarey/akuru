@@ -4983,6 +4983,26 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5uk. A quote for a shop's print job goes to the shop (C26, 2026-10-21)
+
+PP7c parked C26, believing a quote on a shop's print job would reach the
+office's quote desk. The owner said to complete all that can be completed,
+so it was checked against the code first. It already works:
+- A quote request is made per shop, from that shop's lines in the basket
+  (`CustomerQuotesAction::request`).
+- A shop's print job is sold under the shop's own copy of the product
+  (PP7a), so its line is the shop's.
+- The shop prices it on `/vendor/quotes`, and the office's print quotes
+  (`/admin/bookshop/print/quotes`) list Akuru's only.
+
+No code changed. **Test:** `PrintPrinterChoiceTest` gains one:
+- the quote is the shop's and names the job;
+- the office's print quotes are empty and the shop's list has it;
+- the shop's price of 1.50 a sheet makes 18.00 for twelve;
+- accepted, the basket line is held at 1.50.
+
+5/5 in that file.
+
 ## 5uj. The customer chooses who prints (PP7c, 2026-10-21)
 
 PRINT_PRODUCTS_PLAN §PP7, PD10d. This is the last of PP7, so other shops
@@ -5037,8 +5057,8 @@ Nothing scrolls sideways. 14/14. The other job-page walks also pass:
 `print-order` 15/15, `print-design` 18/18, `print-upload` 10/10,
 `print-photos` 12/12, `print-sizes` 10/10 and `print-quote` 9/9.
 
-**Not changed:** a quote request (PP6b) for a shop's job still goes to the
-office's quote desk (BACKLOG C26).
+**Quotes:** a quote request (PP6b) for a shop's job goes to the shop, as
+checked in §5uk (BACKLOG C26).
 
 The new route is declared in both route baselines: guest-reachable, behind
 the job's own ownership check. The whole suite has 3367 tests, all passing;

@@ -136,3 +136,31 @@ it('orders from the shop: the order is the shop\'s, delivered its way, and on it
     expect(collect(app(PrintProductionAction::class)->queue(false, 'en', $shop->id))->pluck('id')->all())->toBe([$job->id])
         ->and(app(PrintProductionAction::class)->queue())->toBe([]);
 });
+
+it('sends a quote for a shop\'s print job to the shop, not the office (BACKLOG C26)', function () {
+    [$shop] = pp7cDesk();
+    $owner = User::factory()->create();
+    \App\Domains\Bookshop\Models\VendorMember::query()->create(['vendor_id' => $shop->id, 'user_id' => $owner->id, 'role' => 'owner', 'agreement_accepted_at' => now()]);
+    $school = User::factory()->create();
+    $save = app(SavePrintJobAction::class);
+    $job = $save->printer(pp7cJob($school), $shop->id, 'en');
+    $job = $save->update($job, ['sheets' => 12], 'en');
+    $proof = app(ProofPrintJobAction::class);
+    $job = $proof->approve($proof->proof($job, $school->id, 'en'), 'en');
+    printWeb()->actingAs($school)->post(route('public.shop.print.cart', $job->id))->assertSessionHasNoErrors();
+
+    $quote = app(\App\Domains\Bookshop\Actions\Shop\CustomerQuotesAction::class)->request($school->id, $shop->slug, ['organisation' => 'Hiriya School']);
+    $line = $quote->items()->sole();
+    expect($quote->vendor_id)->toBe($shop->id)->and($line->print_job_id)->toBe($job->id);
+
+    // Not on the office's print quotes; on the shop's own.
+    printWeb()->actingAs(printOffice())->get(route('admin.bookshop.print.quotes'))->assertInertia(fn (Assert $page) => $page->has('quotes', 0));
+    printWeb()->actingAs($owner)->get(route('vendor.quotes.index'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('quotes.0.items.0.print_job_id', $job->id));
+    printWeb()->actingAs($owner)->post(route('vendor.quotes.quote', $quote->id), ['prices' => [$line->id => 1.50], 'valid_days' => 14])->assertSessionHasNoErrors();
+    expect((float) $quote->fresh()->quoted_total)->toBe(18.0);
+
+    app(\App\Domains\Bookshop\Actions\Shop\CustomerQuotesAction::class)->accept($school->id, $quote->number);
+    $item = \App\Domains\Bookshop\Models\CartItem::query()->where('print_job_id', $job->id)->sole();
+    expect($item->quote_item_id)->toBe($line->id)->and(\App\Domains\Bookshop\Support\PrintLine::quoted($item, $item->product))->toBe(1.5);
+});
