@@ -4983,6 +4983,26 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ue. Every walk again, 160 of them, and what the full run's data showed (FR1, 2026-10-21)
+
+`all.mjs` on a fresh seed, every walk, after the day's slices (§5tv–§5ud):
+158/160 in 66 minutes. The two that failed were the new phone walks.
+Run after the others, they find what those walks made: products to look
+at, substitution requests, a shop's order history. So they opened pages
+that a bare seed leaves empty:
+- **Substitution requests** (`/substitutions/requests`, Blade) was a desk
+  table on a phone. It now stacks, each cell named from the
+  `substitutions` book, the actions in a row.
+- **Small targets:**
+  - a product page's shop name and *Visit the shop* get padding;
+  - so do the vendor's order *History* fold, the stock page's *Columns*
+    fold and an offering's re-pin fold.
+
+**Walks:** on the same database the full run left, `office-phone` 4/4 and
+`staff-phone` 4/4. The other 158 passed in the full run.
+
+Whole suite 3354 passed; pint clean.
+
 ## 5ud. A Library writer's and an adult reader's pages on a phone (LW1, 2026-10-21)
 
 The last of the phone audits (§5tv, §5ub, §5uc). The writer (`library.mjs`

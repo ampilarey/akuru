@@ -244,7 +244,7 @@ function OrderCard({ order, t, open, onToggle }) {
                     )}
                     <Message order={order} t={t} />
                     <details>
-                        <summary className="cursor-pointer text-gray-600">{t.history}</summary>
+                        <summary className="cursor-pointer py-2 text-gray-600">{t.history}</summary>
                         <ul className="mt-1">{order.events.map((e, idx) => <li key={idx}>{e.at} · {t[`event_${e.type}`] || e.type}{e.note ? ` — ${e.note}` : ''}</li>)}</ul>
                     </details>
                 </div>

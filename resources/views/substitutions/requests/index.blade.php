@@ -77,7 +77,7 @@
         <div class="bg-white rounded-lg shadow-md overflow-hidden">
             @if($requests->count() > 0)
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="table-stack min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-start text-xs font-medium text-gray-500 uppercase tracking-wider">{{ __('substitutions.col_when') }}</th>
@@ -91,7 +91,7 @@
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($requests as $request)
                             <tr class="hover:bg-gray-50" data-testid="request-row" data-status="{{ $request->status }}">
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 sm:whitespace-nowrap" data-label="{{ __('substitutions.col_when') }}">
                                     <div class="text-sm font-medium text-gray-900">
                                         {{ $request->date->translatedFormat('j M Y') }}
                                     </div>
@@ -102,12 +102,12 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 sm:whitespace-nowrap" data-label="{{ __('substitutions.col_absent') }}">
                                     <div class="text-sm font-medium text-gray-900">
                                         {{ $request->absentTeacher->user->name ?? '—' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 sm:whitespace-nowrap" data-label="{{ __('substitutions.col_subject_class') }}">
                                     <div class="text-sm font-medium text-gray-900">
                                         {{ $request->subject->name ?? '—' }}
                                     </div>
@@ -115,12 +115,12 @@
                                         {{ $request->classroom->name ?? '—' }}
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 sm:whitespace-nowrap" data-label="{{ __('substitutions.col_status') }}">
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $statusColors[$request->status] ?? 'bg-gray-100 text-gray-800' }}">
                                         {{ in_array($request->status, $statuses, true) ? __('substitutions.status_'.$request->status) : $request->status }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
+                                <td class="px-6 py-4 sm:whitespace-nowrap" data-label="{{ __('substitutions.col_substitute') }}">
                                     @if($request->assignment)
                                         <div class="text-sm font-medium text-gray-900">
                                             {{ $request->assignment->substituteTeacher->user->name ?? '—' }}
@@ -132,7 +132,7 @@
                                         <span class="text-sm text-gray-400">{{ __('substitutions.not_assigned') }}</span>
                                     @endif
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-end text-sm font-medium">
+                                <td class="table-actions px-6 py-4 text-sm font-medium sm:whitespace-nowrap sm:text-end">
                                     <div class="flex justify-end gap-2">
                                         @if($request->status === 'open' && auth()->user()->hasRole('teacher') && !$request->assignment)
                                             <form method="POST" action="{{ route('substitutions.requests.take', $request) }}" class="inline">

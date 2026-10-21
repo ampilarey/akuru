@@ -328,7 +328,7 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
                                     <FormErrors errors={refusals.errorsFor(`offering:${row.id}`)} className="mt-1" />
                                     {(row.repin_events || []).length > 0 && (
                                         <details className="mt-1 text-xs text-gray-600">
-                                            <summary className="cursor-pointer">
+                                            <summary className="cursor-pointer py-2">
                                                 {row.repin_events.length === 1
                                                     ? (t.offerings_repins_one || '1 re-pin')
                                                     : (t.offerings_repins_many || ':count re-pins').replace(':count', row.repin_events.length)}
