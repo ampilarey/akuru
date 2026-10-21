@@ -7,6 +7,7 @@ use App\Domains\Courses\Models\Course;
 use App\Domains\Courses\Models\CourseForumPost;
 use App\Domains\Courses\Models\CourseForumTopic;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -39,7 +40,7 @@ class PostToForumAction
         ]);
 
         $recipients = array_diff(app(ListForumAction::class)->teacherIds((int) $course->id), [$userId]);
-        $this->notify($recipients, __('forum.notice_topic_title', ['course' => $course->title]), (string) $topic->title, $course, $topic);
+        $this->notify($recipients, Said::of('forum.notice_topic_title', ['course' => $course->title]), (string) $topic->title, $course, $topic);
 
         return $topic;
     }
@@ -65,7 +66,7 @@ class PostToForumAction
 
         $earlier = CourseForumPost::query()->where('topic_id', $topic->id)->where('id', '<', $post->id)->pluck('user_id')->all();
         $recipients = array_diff(array_unique(array_map('intval', array_filter([$topic->user_id, ...$earlier]))), [$userId]);
-        $this->notify($recipients, __('forum.notice_reply_title', ['topic' => $topic->title]), Str::limit((string) $post->body, 140), $course, $topic);
+        $this->notify($recipients, Said::of('forum.notice_reply_title', ['topic' => $topic->title]), Str::limit((string) $post->body, 140), $course, $topic);
 
         return $post;
     }
@@ -73,7 +74,7 @@ class PostToForumAction
     /**
      * @param  array<int, int>  $userIds
      */
-    private function notify(array $userIds, string $title, string $message, Course $course, CourseForumTopic $topic): void
+    private function notify(array $userIds, string|Said $title, string $message, Course $course, CourseForumTopic $topic): void
     {
         $href = route('courses.forum.topic', ['course' => $course->id, 'topic' => $topic->id], false);
         foreach (array_slice(array_values($userIds), 0, 200) as $userId) {

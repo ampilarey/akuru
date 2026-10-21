@@ -205,7 +205,7 @@ reached from everyone's *Me* menu.
 Now in all three languages from the `account` book. Its heading is an
 `h1`, and the password fields are named when a change is refused.
 
-### A notification is in the language of whoever sent it — **decided (ADR-044); Bookstore and Lending fixed (2026-10-21, STATUS §5tx); the Library fixed (STATUS §5ty); the school (HP3c) next**
+### A notification is in the language of whoever sent it — **fixed (2026-10-21, ADR-044, STATUS §5tx–§5tz)** for the in-app notice. Email and SMS still leave in the sender's language. That needs a language kept on the account, and waits until those channels reach families
 
 A notice is written once, when it is sent, in that request's language. A
 cart reminder from the nightly job reads "Still thinking it over?" to a

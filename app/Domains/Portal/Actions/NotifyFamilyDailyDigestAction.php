@@ -9,6 +9,7 @@ use App\Domains\Academics\Actions\ResolveNotificationSettingsAction;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
 use App\Domains\People\Actions\ListGuardianChildrenAction;
 use App\Domains\People\Actions\ResolveStudentForUserAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -58,8 +59,8 @@ class NotifyFamilyDailyDigestAction
 
             app(SendUserNotificationAction::class)->execute(
                 $userId,
-                trans('notifications.family_digest.title', ['date' => $summary['date']]),
-                trans('notifications.family_digest.body', [
+                Said::of('notifications.family_digest.title', ['date' => $summary['date']]),
+                Said::of('notifications.family_digest.body', [
                     'lessons' => $summary['lessons_line'],
                     'homework' => $summary['homework'],
                     'notices' => $summary['notices'],
@@ -82,7 +83,7 @@ class NotifyFamilyDailyDigestAction
     /**
      * Null when there is genuinely nothing worth an evening message.
      *
-     * @return ?array{date: string, lessons_line: string, homework: int, notices: int}
+     * @return ?array{date: string, lessons_line: Said, homework: int, notices: int}
      */
     private function summaryFor(int $userId): ?array
     {
@@ -115,8 +116,8 @@ class NotifyFamilyDailyDigestAction
         return [
             'date' => $tomorrow,
             'lessons_line' => $periods === []
-                ? trans('notifications.family_digest.no_lessons')
-                : trans('notifications.family_digest.lessons', [
+                ? Said::of('notifications.family_digest.no_lessons')
+                : Said::of('notifications.family_digest.lessons', [
                     'count' => count($periods),
                     'first' => trim(($first['subject'] ?? '').' '.($first['starts_at'] ?? '')),
                 ]),

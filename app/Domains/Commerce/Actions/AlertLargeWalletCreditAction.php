@@ -3,6 +3,7 @@
 namespace App\Domains\Commerce\Actions;
 
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
+use App\Support\Said;
 
 /**
  * BP3 (BACKLOG B11): a large wallet credit made by hand is told to every
@@ -27,7 +28,7 @@ class AlertLargeWalletCreditAction
         $owner = $userModel::query()->find($walletUserId)?->name ?? '#'.$walletUserId;
         $told = 0;
         foreach ($ids as $id) {
-            $told += app(SendUserNotificationAction::class)->execute((int) $id, __('admin.commerce_alert_credit_title'), __('admin.commerce_alert_credit_body', [
+            $told += app(SendUserNotificationAction::class)->execute((int) $id, Said::of('admin.commerce_alert_credit_title'), Said::of('admin.commerce_alert_credit_body', [
                 'actor' => $actor, 'amount' => number_format($amount, 2), 'owner' => $owner,
             ]), ['category' => 'finance', 'href' => '/admin/commerce']) ? 1 : 0;
         }

@@ -5,6 +5,7 @@ namespace App\Domains\Academics\Actions;
 use App\Domains\Academics\Enums\SchoolRequestStatus;
 use App\Domains\Academics\Models\SchoolRequest;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
+use App\Support\Said;
 
 /**
  * S2 spec: "leave request decision (teacher)".
@@ -38,12 +39,12 @@ class NotifyRequestDecisionAction
 
         app(SendUserNotificationAction::class)->execute(
             $requesterId,
-            trans('notifications.request.decision_title', [
-                'status' => trans('notifications.request.status.'.$status),
+            Said::of('notifications.request.decision_title', [
+                'status' => Said::of('notifications.request.status.'.$status),
             ]),
-            trans('notifications.request.decision_body', [
+            Said::of('notifications.request.decision_body', [
                 'type' => str_replace('_', ' ', $type),
-                'status' => trans('notifications.request.status.'.$status),
+                'status' => Said::of('notifications.request.status.'.$status),
                 'notes' => (string) ($request->review_notes ?? ''),
             ]),
             [

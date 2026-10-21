@@ -5,6 +5,7 @@ namespace App\Domains\Commerce\Actions;
 use App\Domains\Commerce\Models\GiftCard;
 use App\Domains\Commerce\Models\GiftCardTransaction;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -71,7 +72,7 @@ class RedeemGiftCardAction
 
             // LIBRARY_PLAN §41 reader: gift card redeemed, wallet credited.
             try {
-                app(SendUserNotificationAction::class)->execute($userId, 'Gift card redeemed', 'MVR '.number_format($balance, 2).' was added to your wallet.', [
+                app(SendUserNotificationAction::class)->execute($userId, Said::of('notifications.gift_card.redeemed_title'), Said::of('notifications.gift_card.redeemed_body', ['amount' => number_format($balance, 2)]), [
                     'category' => 'library',
                     'href' => '/my-wallet',
                 ]);

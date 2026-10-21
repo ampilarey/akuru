@@ -5,6 +5,7 @@ namespace App\Domains\HR\Actions;
 use App\Domains\HR\Models\DocumentExpiryNotice;
 use App\Domains\Identity\Actions\ListUserIdsWithPermissionAction;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
+use App\Support\Said;
 
 class NotifyExpiringDocumentsAction
 {
@@ -34,8 +35,8 @@ class NotifyExpiringDocumentsAction
                     continue;
                 }
 
-                $title = 'Document expiring in '.$horizon.' days';
-                $message = trim(($document['title'] ?: $document['document_type']).' expires on '.$document['expires_at']);
+                $title = Said::of('notifications.hr.expiring_title', ['days' => $horizon]);
+                $message = Said::of('notifications.hr.expiring_body', ['document' => (string) ($document['title'] ?: $document['document_type']), 'date' => (string) $document['expires_at']]);
                 $recipients = $hrUsers;
                 if (! empty($document['user_id'])) {
                     $recipients[] = (int) $document['user_id'];

@@ -3,6 +3,7 @@
 namespace App\Domains\Academics\Actions;
 
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 
@@ -47,8 +48,8 @@ class NotifyUnfilledRegistersAction
             $count = $registers->count();
             app(SendUserNotificationAction::class)->execute(
                 $userId,
-                trans('notifications.registers.unfilled_title'),
-                trans('notifications.registers.unfilled_body', ['count' => $count]),
+                Said::of('notifications.registers.unfilled_title'),
+                Said::of('notifications.registers.unfilled_body', ['count' => $count]),
                 [
                     'category' => 'academics',
                     'unfilled_count' => $count,

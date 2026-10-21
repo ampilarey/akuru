@@ -84,6 +84,14 @@ it('reports expiring documents and notifies each horizon only once', function ()
         ->and(DocumentExpiryNotice::query()->where('document_id', $document['id'])->count())->toBe(3)
         ->and(UserNotification::query()->where('title', 'like', 'Document expiring%')->count())->toBeGreaterThan(0);
 
+    // HP3c: the notice keeps its phrase, so it reads in the reader's language.
+    $notice = UserNotification::query()->where('title', 'like', 'Document expiring%')->orderBy('id')->firstOrFail();
+    app()->setLocale('dv');
+    $shown = app(\App\Domains\Notifications\Actions\ListUserNotificationsAction::class)->execute((int) $notice->user_id)->firstWhere('id', $notice->id);
+    expect($shown['title'])->toBe(__('notifications.hr.expiring_title', ['days' => $notice->data['horizon_days']], 'dv'))
+        ->and($shown['message'])->toContain('Work permit');
+    app()->setLocale('en');
+
     $this->withoutLocalizationMiddleware()
         ->actingAs($admin)
         ->get(route('hr.compliance.index'))
