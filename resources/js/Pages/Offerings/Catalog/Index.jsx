@@ -212,7 +212,7 @@ export default function Index({ rows, courses, modes, statuses = [], assessments
                 <FormErrors errors={form.errors} except={['status', ...RULE_NUMBERS.map(([key]) => `certificate_rules.${key}`)]} className="mt-2" />
 
                 <details className="mt-3 rounded border bg-[#FAF7F2] p-3" open={Boolean(ruleSummary(editing?.certificate_rules, t))}>
-                    <summary className="cursor-pointer text-sm font-medium">
+                    <summary className="cursor-pointer py-1.5 text-sm font-medium">
                         {t.offerings_rules || 'Certificate rules for this offering'}
                     </summary>
                     <p className="mt-2 text-xs text-gray-600">

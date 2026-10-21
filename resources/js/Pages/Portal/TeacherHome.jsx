@@ -96,7 +96,7 @@ export default function TeacherHome({
                 </p>
             )}
 
-            <section className="mb-6 rounded-lg border bg-white p-4">
+            <section id="lessons" className="mb-6 scroll-mt-4 rounded-lg border bg-white p-4">
                 <h2 className="mb-2 text-sm font-semibold">{(t.teacher_today || 'Today · :date').replace(':date', today.date)}</h2>
                 <Periods day={today} t={t} locale={locale} emptyLabel={t.teacher_no_lessons || 'No lessons on your timetable today.'} />
             </section>

@@ -69,7 +69,7 @@ export default function Payments({ payments = [], pagination, total = 0, filters
                     <span className="font-semibold text-[#7C2D37]">{t.payments_tab_payments || 'Payments'}</span>
                 </nav>
                 <p className="text-gray-600" data-testid="payments-total">{(t.payments_total || ':count payments').replace(':count', total)}</p>
-                <a href={`/admin/enrollments/payments/export${query ? `?${query}` : ''}`} className="ms-auto underline" data-testid="export-csv">{t.payments_export || 'Export CSV'}</a>
+                <a href={`/admin/enrollments/payments/export${query ? `?${query}` : ''}`} className="ms-auto inline-block py-1.5 underline" data-testid="export-csv">{t.payments_export || 'Export CSV'}</a>
             </div>
             {firstError && <p className="mb-4 rounded bg-red-50 p-3 text-red-700" data-testid="payments-error">✗ {firstError}</p>}
 

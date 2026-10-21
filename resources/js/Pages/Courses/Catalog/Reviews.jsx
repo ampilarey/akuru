@@ -228,7 +228,7 @@ export default function Reviews({
                 <p className="mb-4 flex flex-wrap gap-3 text-sm" data-testid="review-forums">
                     <span className="text-gray-600">{t.forums || 'Course forums'}:</span>
                     {courses.map((course) => (
-                        <a key={course.id} className="text-[#7C2D37] hover:underline" href={`/learn/courses/${course.id}/forum`}>{course.title}</a>
+                        <a key={course.id} className="inline-block py-1.5 text-[#7C2D37] hover:underline" href={`/learn/courses/${course.id}/forum`}>{course.title}</a>
                     ))}
                 </p>
             )}

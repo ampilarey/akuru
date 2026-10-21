@@ -408,6 +408,13 @@ html[lang="dv"] body,
     align-items: center;
     min-height: 2.75rem;
   }
+  /* The school audit (TD1): a one-word action in a cell — Thaana's *Open*,
+     *Delete*, *Forum* — was 44px tall and 22px wide. */
+  td > a,
+  td > button {
+    justify-content: center;
+    min-width: 2.75rem;
+  }
   input[type=checkbox],
   input[type=radio] {
     width: 1.5rem;

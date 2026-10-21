@@ -37,9 +37,9 @@ export default function Cards({ classes = [], class_id: classId = 0, pupils = []
                     </a>
                 )}
                 {pupils.length > 0 && (
-                    <a className="text-sm text-[#7C2D37] underline" href={`/academics/gate/cards/export?class_id=${classId}`}>{t.export_csv || 'Export CSV'}</a>
+                    <a className="inline-block py-1.5 text-sm text-[#7C2D37] underline" href={`/academics/gate/cards/export?class_id=${classId}`}>{t.export_csv || 'Export CSV'}</a>
                 )}
-                <Link href="/academics/gate" className="text-sm text-[#7C2D37] underline">{t.cards_back || 'Back to the gate'}</Link>
+                <Link href="/academics/gate" className="inline-block py-1.5 text-sm text-[#7C2D37] underline">{t.cards_back || 'Back to the gate'}</Link>
             </div>
 
             <div className="overflow-x-auto rounded-lg border bg-white">

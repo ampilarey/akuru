@@ -29,7 +29,7 @@ class TeachMeetingController extends Controller
 
         return Inertia::render('Academics/Teach/Meetings', [
             'teacher' => $teacher,
-            'slots' => app(ListTeacherMeetingsAction::class)->execute($teacher['id']),
+            'slots' => $teacher === null ? [] : app(ListTeacherMeetingsAction::class)->execute($teacher['id']),
             't' => Phrases::once('academics'),
         ]);
     }
@@ -37,7 +37,7 @@ class TeachMeetingController extends Controller
     public function export(Request $request): StreamedResponse
     {
         $teacher = $this->teacher($request);
-        $slots = app(ListTeacherMeetingsAction::class)->execute($teacher['id']);
+        $slots = $teacher === null ? [] : app(ListTeacherMeetingsAction::class)->execute($teacher['id']);
 
         return response()->streamDownload(function () use ($slots): void {
             $handle = fopen('php://output', 'w');
@@ -60,13 +60,19 @@ class TeachMeetingController extends Controller
     }
 
     /**
-     * @return array{id: int, name: string}
+     * The signed-in person's teacher record, or none. *My meetings* is in every
+     * staff member's menu; a headmaster with no teacher record was refused
+     * with a 403 from it (the school audit, TD1). Now they see no slots, as
+     * *My schedule* does. Anyone who is not staff is still refused.
+     *
+     * @return array{id: int, name: string}|null
      */
-    private function teacher(Request $request): array
+    private function teacher(Request $request): ?array
     {
         abort_unless($request->user() !== null, 403);
         $teacher = app(ResolveTeacherForUserAction::class)->execute((int) $request->user()->id);
-        abort_if($teacher === null, 403);
+        // Staff without a teacher record see an empty page; anyone else is refused.
+        abort_if($teacher === null && ! $request->user()->hasAnyRole(['super_admin', 'admin', 'headmaster', 'supervisor', 'teacher']), 403);
 
         return $teacher;
     }

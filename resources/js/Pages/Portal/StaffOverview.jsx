@@ -15,7 +15,7 @@ function SummaryCard({ label, value, href, openLabel }) {
             <p className="text-xs uppercase tracking-wide text-gray-500">{label}</p>
             <p className="mt-1 text-2xl font-semibold text-[#7C2D37]">{value}</p>
             {href && (
-                <Link href={href} className="mt-2 inline-block text-sm text-[#7C2D37] underline">
+                <Link href={href} className="mt-2 inline-block min-w-[2.75rem] py-1.5 text-sm text-[#7C2D37] underline">
                     {openLabel}
                 </Link>
             )}
@@ -94,7 +94,7 @@ export default function StaffOverview({
             <section className="mb-6 overflow-x-auto rounded-lg border bg-white">
                 <div className="flex items-center justify-between px-3 py-2">
                     <h2 className="text-sm font-medium">{labels.unfilled || t.overview_unfilled || 'Unfilled registers'}</h2>
-                    {hrefs.unfilled && <Link href={hrefs.unfilled} className="text-sm text-[#7C2D37] underline">{t.overview_registers || 'Registers'}</Link>}
+                    {hrefs.unfilled && <Link href={hrefs.unfilled} className="inline-block py-1.5 text-sm text-[#7C2D37] underline">{t.overview_registers || 'Registers'}</Link>}
                 </div>
                 <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">
@@ -126,7 +126,7 @@ export default function StaffOverview({
             <section className="mb-6 overflow-x-auto rounded-lg border bg-white">
                 <div className="flex items-center justify-between px-3 py-2">
                     <h2 className="text-sm font-medium">{labels.ungraded || t.overview_ungraded || 'Ungraded exams'}</h2>
-                    {hrefs.ungraded && <Link href={hrefs.ungraded} className="text-sm text-[#7C2D37] underline">{t.overview_exams || 'Exams'}</Link>}
+                    {hrefs.ungraded && <Link href={hrefs.ungraded} className="inline-block py-1.5 text-sm text-[#7C2D37] underline">{t.overview_exams || 'Exams'}</Link>}
                 </div>
                 <table className="table-stack min-w-full text-sm">
                     <thead className="bg-[#F3EBE0] text-start">

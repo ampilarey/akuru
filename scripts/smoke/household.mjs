@@ -66,7 +66,7 @@ try {
                     return {
                         dir: doc.getAttribute('dir'),
                         sideways: doc.scrollWidth - doc.clientWidth,
-                        unstacked: [...main.querySelectorAll('table')].filter((t) => !t.classList.contains('table-stack') && !t.closest('[data-wide-ok]')).length,
+                        unstacked: [...main.querySelectorAll('table')].filter((t) => !t.classList.contains('table-stack') && !t.hasAttribute('data-phone-scroll')).length,
                         tiny: [...main.querySelectorAll('a, button, select, textarea, summary, input:not([type=checkbox]):not([type=radio]):not([type=hidden])')].filter((el) => {
                             const r = el.getBoundingClientRect();
                             return r.width > 0 && r.height > 0 && (r.height < 24 || r.width < 24) && getComputedStyle(el).visibility !== 'hidden';

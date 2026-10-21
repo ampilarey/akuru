@@ -136,9 +136,9 @@ export default function Reports({
             </div>
 
             <div className="mt-4 flex flex-wrap gap-3 text-sm">
-                <a className="text-[#7C2D37] hover:underline" href="/catalog/reports/completions">{t.reports_link_completions || 'Per-student completions'}</a>
-                <a className="text-[#7C2D37] hover:underline" href="/catalog/reviews">{t.reports_link_reviews || 'Review queue'}</a>
-                <a className="text-[#7C2D37] hover:underline" href="/catalog/certificates">{t.reports_link_certificates || 'Certificates'}</a>
+                <a className="inline-block py-1.5 text-[#7C2D37] hover:underline" href="/catalog/reports/completions">{t.reports_link_completions || 'Per-student completions'}</a>
+                <a className="inline-block py-1.5 text-[#7C2D37] hover:underline" href="/catalog/reviews">{t.reports_link_reviews || 'Review queue'}</a>
+                <a className="inline-block py-1.5 text-[#7C2D37] hover:underline" href="/catalog/certificates">{t.reports_link_certificates || 'Certificates'}</a>
             </div>
 
             {/* §33's tenth report is its own deferral. Saying so beats an

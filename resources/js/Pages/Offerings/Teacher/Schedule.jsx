@@ -15,7 +15,7 @@ export default function Schedule({ sessions = [], t = {} }) {
                         <p className="text-sm text-gray-600">
                             {[row.course_title, when(row.starts_at), row.location_name].filter(Boolean).join(' · ')}
                         </p>
-                        <a className="text-sm text-[#7C2D37] hover:underline" href={`/catalog/offerings/${row.course_offering_id}/sessions/${row.id}/attendance`}>
+                        <a className="inline-block min-w-[2.75rem] py-2 text-sm text-[#7C2D37] hover:underline" href={`/catalog/offerings/${row.course_offering_id}/sessions/${row.id}/attendance`}>
                             {t.sessions_attendance || 'Attendance'}
                         </a>
                     </li>

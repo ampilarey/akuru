@@ -43,7 +43,7 @@ function YearCard({ year, t }) {
                 {year.terms.map((term) => (
                     <li key={term.id} className="flex justify-between border-t py-1">
                         <span>{term.name} ({t[`term_status_${term.status}`] || term.status})</span>
-                        <button type="button" className="text-[#7C2D37] hover:underline" onClick={() => router.post(`/academics/years/${year.id}/terms/${term.id}/close`)}>
+                        <button type="button" className="py-1.5 text-[#7C2D37] hover:underline" onClick={() => router.post(`/academics/years/${year.id}/terms/${term.id}/close`)}>
                             {t.years_close_term || 'Close term'}
                         </button>
                     </li>
