@@ -65,7 +65,8 @@ function Section({ title, list, children, exportUrl, t }) {
     );
 }
 
-function Papers({ t, papers, kinds, sizes }) {
+/** Shared with a printing shop's desk (PP7b), which passes its own `base`. */
+export function Papers({ t, papers, kinds, sizes, base = '/admin/bookshop/print' }) {
     const blank = { name: '', name_dv: '', name_ar: '', gsm: '', kind: 'plain', sheet_size: 'a4', price_bw: '', price_colour: '', is_active: false, sort_order: 0 };
     const [editing, setEditing] = useState(null);
     const form = useForm(blank);
@@ -73,7 +74,7 @@ function Papers({ t, papers, kinds, sizes }) {
     const reset = () => { setEditing(null); form.setData(blank); form.clearErrors(); };
 
     return (
-        <Section title={t.papers_heading} list="papers" exportUrl="/admin/bookshop/print/export?list=papers" t={t}>
+        <Section title={t.papers_heading} list="papers" exportUrl={`${base}/export?list=papers`} t={t}>
             {papers.length === 0 ? <p className="text-sm text-gray-600">{t.papers_none}</p> : (
                 <table className="table-stack mb-3 min-w-full text-sm">
                     <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.paper_name}</th><th className="p-2 text-start">{t.kind}</th><th className="p-2 text-start">{t.sheet_size}</th><th className="p-2 text-end">{t.price_bw}</th><th className="p-2 text-end">{t.price_colour}</th><th className="p-2 text-start">{t.active}</th><th className="p-2" /></tr></thead>
@@ -92,7 +93,7 @@ function Papers({ t, papers, kinds, sizes }) {
                     </tbody>
                 </table>
             )}
-            <form className="grid gap-2 sm:grid-cols-3" data-testid="print-paper-form" onSubmit={(e) => { e.preventDefault(); form.post(editing ? `/admin/bookshop/print/papers/${editing}` : '/admin/bookshop/print/papers', { preserveScroll: true, onSuccess: reset }); }}>
+            <form className="grid gap-2 sm:grid-cols-3" data-testid="print-paper-form" onSubmit={(e) => { e.preventDefault(); form.post(editing ? `${base}/papers/${editing}` : `${base}/papers`, { preserveScroll: true, onSuccess: reset }); }}>
                 <label className="text-sm">{t.paper_name}<input className="form-input w-full" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} required data-testid="print-paper-name" /><Err>{form.errors.name}</Err></label>
                 <label className="text-sm">{t.name_dv}<input className="form-input w-full" dir="rtl" value={form.data.name_dv} onChange={(e) => form.setData('name_dv', e.target.value)} data-testid="print-paper-name-dv" /></label>
                 <label className="text-sm">{t.name_ar}<input className="form-input w-full" dir="rtl" value={form.data.name_ar} onChange={(e) => form.setData('name_ar', e.target.value)} /></label>
@@ -112,7 +113,7 @@ function Papers({ t, papers, kinds, sizes }) {
     );
 }
 
-function Finishing({ t, finishing }) {
+export function Finishing({ t, finishing, base = '/admin/bookshop/print' }) {
     const blank = { name: '', name_dv: '', name_ar: '', price: '', cuts_sheet: false, is_active: false, sort_order: 0 };
     const [editing, setEditing] = useState(null);
     const form = useForm(blank);
@@ -120,7 +121,7 @@ function Finishing({ t, finishing }) {
     const reset = () => { setEditing(null); form.setData(blank); form.clearErrors(); };
 
     return (
-        <Section title={t.finishing_heading} list="finishing" exportUrl="/admin/bookshop/print/export?list=finishing" t={t}>
+        <Section title={t.finishing_heading} list="finishing" exportUrl={`${base}/export?list=finishing`} t={t}>
             {finishing.length === 0 ? <p className="text-sm text-gray-600">{t.finishing_none}</p> : (
                 <table className="table-stack mb-3 min-w-full text-sm">
                     <thead className="bg-gray-50"><tr><th className="p-2 text-start">{t.finishing_name}</th><th className="p-2 text-end">{t.price_per_sheet}</th><th className="p-2 text-start">{t.cuts_sheet}</th><th className="p-2 text-start">{t.active}</th><th className="p-2" /></tr></thead>
@@ -137,7 +138,7 @@ function Finishing({ t, finishing }) {
                     </tbody>
                 </table>
             )}
-            <form className="grid gap-2 sm:grid-cols-3" onSubmit={(e) => { e.preventDefault(); form.post(editing ? `/admin/bookshop/print/finishing/${editing}` : '/admin/bookshop/print/finishing', { preserveScroll: true, onSuccess: reset }); }}>
+            <form className="grid gap-2 sm:grid-cols-3" onSubmit={(e) => { e.preventDefault(); form.post(editing ? `${base}/finishing/${editing}` : `${base}/finishing`, { preserveScroll: true, onSuccess: reset }); }}>
                 <label className="text-sm">{t.finishing_name}<input className="form-input w-full" value={form.data.name} onChange={(e) => form.setData('name', e.target.value)} required /><Err>{form.errors.name}</Err></label>
                 <label className="text-sm">{t.name_dv}<input className="form-input w-full" dir="rtl" value={form.data.name_dv} onChange={(e) => form.setData('name_dv', e.target.value)} /></label>
                 <label className="text-sm">{t.name_ar}<input className="form-input w-full" dir="rtl" value={form.data.name_ar} onChange={(e) => form.setData('name_ar', e.target.value)} /></label>

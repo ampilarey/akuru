@@ -2041,4 +2041,7 @@ return [
     'print_sales_paper' => 'Paper',
     'print_sales_jobs' => 'Jobs',
     'print_sales_sheets' => 'Sheets',
+
+    // PP7b: a printing shop's own desk.
+    'print_desk_title' => 'Print desk',
 ];

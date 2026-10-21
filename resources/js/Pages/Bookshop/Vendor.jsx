@@ -750,7 +750,7 @@ function ProductList({ products, t, onEdit, selected, setSelected }) {
 }
 
 export default function Vendor({ t, vendor, memberships = [], agreement_url, products = [], products_page = null, members = [], delivery_methods = [], delivery_kinds = [], shop_settings = null, discount_codes = [], notice_settings = null, newsletter = null, readiness = null, options, filters, identity = null, id_l = {} }) {
-    const { flash = {}, errors } = usePage().props;
+    const { flash = {}, errors, vendor_prints: vendorPrints } = usePage().props;
     const [editing, setEditing] = useState(null);
     const [search, setSearch] = useState(filters.q || '');
     const [status, setStatus] = useState(filters.status || '');
@@ -788,6 +788,7 @@ export default function Vendor({ t, vendor, memberships = [], agreement_url, pro
                             <a href="/vendor/stock" className="btn-secondary justify-center sm:justify-start" data-testid="open-stock">{t.stock_title}</a>
                             <a href="/vendor/quotes" className="btn-secondary justify-center sm:justify-start" data-testid="open-quotes">{t.quotes_title}</a>
                             <a href="/vendor/insights" className="btn-secondary justify-center sm:justify-start" data-testid="open-insights">{t.insights_title}</a>
+                            {vendorPrints && <a href="/vendor/print" className="btn-secondary justify-center sm:justify-start" data-testid="open-print">{t.print_desk_title}</a>}
                         </span>
                     )}
                 </div>

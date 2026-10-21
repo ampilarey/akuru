@@ -2036,4 +2036,7 @@ return [
     'print_sales_paper' => 'ކަރުދާހުގެ ބާވަތް',
     'print_sales_jobs' => 'ޕްރިންޓް ޖޮބްތައް',
     'print_sales_sheets' => 'ޕްރިންޓްކުރި ޝީޓު',
+
+    // PP7b: a printing shop's own desk.
+    'print_desk_title' => 'ޕްރިންޓް ޑެސްކް',
 ];

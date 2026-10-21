@@ -147,6 +147,9 @@ class HandleInertiaRequests extends Middleware
             // bar for their roles and the *More* groups, with every link they
             // could only be refused left out (docs/APPSHELL_NAV_IA.md). Read
             // off each route's own guard, so it cannot drift from the gates.
+            // PP7b: a shop the office approves to print gets a Print desk link
+            // on its pages. Only looked up on the shop's own pages.
+            'vendor_prints' => $this->vendorPrints($request),
             'nav' => app(\App\Support\Navigation\BuildNavigationAction::class)->execute($request->user(), $locale, $workspaces['active']),
             'flash' => [
                 'success' => $request->session()->get('success'),
@@ -162,6 +165,19 @@ class HandleInertiaRequests extends Middleware
                 'temporary_password' => $request->session()->get('temporary_password'),
             ],
         ];
+    }
+
+    private function vendorPrints(Request $request): bool
+    {
+        if ($request->user() === null || ! preg_match('#^((en|dv|ar)/)?vendor(/|$)#', $request->path())) {
+            return false;
+        }
+        $scope = app(\App\Domains\Bookshop\Actions\ResolveVendorScopeAction::class)->execute(
+            (int) $request->user()->id,
+            $request->session()->get(\App\Domains\Bookshop\Http\Controllers\VendorPortalController::SESSION_VENDOR),
+        );
+
+        return $scope !== null && (bool) \App\Domains\Bookshop\Models\Vendor::query()->whereKey($scope->vendorId)->value('print_enabled');
     }
 
     /**

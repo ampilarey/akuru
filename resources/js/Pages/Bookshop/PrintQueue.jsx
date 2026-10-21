@@ -13,10 +13,11 @@ import FormErrors from '../../Components/FormErrors';
 const fill = (s, vars) => Object.entries(vars).reduce((out, [k, v]) => out.split(`:${k}`).join(String(v ?? '')), s || '');
 const badge = { ordered: 'bg-amber-100 text-amber-900', printing: 'bg-blue-100 text-blue-900', finished: 'bg-green-100 text-green-900', cancelled: 'bg-gray-100 text-gray-700' };
 
-function Job({ t, row }) {
+/** One job on the queue — shared with a printing shop's desk (PP7b), which passes its own `base`. */
+export function Job({ t, row, base = '/admin/bookshop/print' }) {
     const [ask, setAsk] = useState(null);
     const [text, setText] = useState('');
-    const post = (step, data = {}) => router.post(`/admin/bookshop/print/jobs/${row.id}/${step}`, data, { preserveScroll: true, onSuccess: () => { setAsk(null); setText(''); } });
+    const post = (step, data = {}) => router.post(`${base}/jobs/${row.id}/${step}`, data, { preserveScroll: true, onSuccess: () => { setAsk(null); setText(''); } });
 
     return (
         <li className="rounded-lg border bg-white p-3" data-testid={`queue-job-${row.id}`}>
@@ -36,7 +37,7 @@ function Job({ t, row }) {
             </dl>
             {row.reprints > 0 && <p className="mt-1 text-xs text-gray-600">{fill(t.queue_reprints, { count: row.reprints })}</p>}
             <div className="mt-3 flex flex-wrap gap-2">
-                {row.file && <a href={`/admin/bookshop/print/jobs/${row.id}/file`} className="btn-secondary text-sm" data-testid={`queue-file-${row.id}`}>{t.queue_print_file}</a>}
+                {row.file && <a href={`${base}/jobs/${row.id}/file`} className="btn-secondary text-sm" data-testid={`queue-file-${row.id}`}>{t.queue_print_file}</a>}
                 {row.status === 'ordered' && <button type="button" className="btn-primary text-sm" onClick={() => post('start')} data-testid={`queue-start-${row.id}`}>{t.queue_start}</button>}
                 {row.status === 'printing' && <button type="button" className="btn-primary text-sm" onClick={() => post('finish')} data-testid={`queue-finish-${row.id}`}>{t.queue_finish}</button>}
                 {['printing', 'finished'].includes(row.status) && <button type="button" className="btn-secondary text-sm" onClick={() => setAsk('reprint')} data-testid={`queue-reprint-${row.id}`}>{t.queue_reprint}</button>}
