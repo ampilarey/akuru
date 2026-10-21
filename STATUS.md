@@ -4983,6 +4983,40 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ug. Email and SMS in the reader's language (LA1, 2026-10-21)
+
+ADR-044 said the inbox in the page's language (§5tx–§5tz). Email and SMS
+leave when sent, so they went in the sender's language, often English from
+the office or a nightly job. The owner said "All" to building the other
+half of §5pf.
+- **`users.locale`:** additive and nullable. `RememberAccountLanguage`
+  (web group, after the workspace) writes the language a signed-in person
+  opens a page in, when it changes and on a GET only.
+- **The Library, Bookstore and Lending notifiers:**
+  - each person's email and SMS is written in their language
+    (`Said::say($value, $locale)`), and the queued mail carries that
+    `locale`, so its frame reads in it too;
+  - an account with no language gets the sender's;
+  - office addresses and numbers get the sender's.
+- **SMS prefixes:** *Akuru Library* and *Akuru Bookstore* now come from the
+  phrase books (`library_notices.sms_prefix`, `shop.bookshop_title`).
+- **An invoice's SMS** to a guardian with an account is in the guardian's
+  language.
+
+ADR-044 is updated, and KNOWN_ISSUES' entry is closed for email and SMS too.
+
+**Tests:** `EmailAndSmsInTheReadersLanguageTest` (3):
+- opening a page in dv then ar keeps each, and a form sent does not;
+- a Library email from an English context reaches a Dhivehi reader in
+  Dhivehi, the mail's locale `dv`;
+- a Lending SMS reaches an Arabic reader in Arabic, and an account with no
+  language in English.
+
+**Walk:** `notice-language.mjs` also checks, in a real browser, that opening
+`/dv` then `/ar` leaves the account keeping each. 7/7.
+
+Whole suite 3357 passed; pint clean. The migration is additive: run `php artisan migrate --force` with the pull (it is in the pull command).
+
 ## 5uf. Walking staging in one command (SW1, 2026-10-21)
 
 The owner's last checklist item is to walk staging (OWNER_TODO, OWNER_ACTIONS

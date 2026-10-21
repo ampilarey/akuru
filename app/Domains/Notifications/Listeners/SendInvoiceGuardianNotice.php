@@ -44,7 +44,9 @@ class SendInvoiceGuardianNotice
         $contacts = app(ListFinanciallyResponsibleContactsAction::class)->execute($studentId);
         foreach ($contacts as $contact) {
             if (! empty($contact['phone'])) {
-                $this->sms->sendSms((string) $contact['phone'], (string) $message, [
+                // LA1: in the guardian's own language when their account keeps one.
+                $locale = empty($contact['user_id']) ? null : config('auth.providers.users.model')::query()->whereKey($contact['user_id'])->value('locale');
+                $this->sms->sendSms((string) $contact['phone'], $message->in($locale), [
                     'type' => 'finance',
                     'reference' => 'invoice_'.$data['kind'].'_'.$data['invoice_id'],
                 ]);

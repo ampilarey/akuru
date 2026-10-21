@@ -110,4 +110,6 @@ return [
     'payment_failed_title' => 'لم يكتمل دفع في المكتبة',
     'payment_failed_body' => '«:title»: لم يكتمل دفع :name بالبطاقة بمبلغ :amount روفية. لم يُمنح شيء؛ يمكنه المحاولة مجددًا.',
     'payment_not_started_body' => '«:title»: تعذّر بدء دفع :name بالبطاقة بمبلغ :amount روفية لدى البنك. لم يُمنح شيء.',
+    // LA1: the name an SMS starts with, in the recipient's language.
+    'sms_prefix' => 'مكتبة أكورو',
 ];

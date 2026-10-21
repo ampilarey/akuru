@@ -46,7 +46,14 @@ The in-app notice looks its words up when it is read.
 - A value that must be said in the reader's language must be a `Said`
   itself. A plain string value, such as a name, a number or a link, stays as
   given.
-- **Not decided:** email and SMS in the reader's language. That would need
-  a language kept on the account, which is the other half of §5pf's choice.
-  It waits until SMS and email to families are live and someone asks for
-  it.
+- **Email and SMS, added 2026-10-21 (LA1, STATUS §5ug):**
+  - The account keeps a language, `users.locale`: the one its person last
+    opened a page in, written by `RememberAccountLanguage`.
+  - An email or SMS to a person is written in it, the mail's own frame too
+    (a queued mailable's `locale`). An account with none gets the sender's
+    language.
+  - Office addresses and numbers get the sender's language.
+
+  So §5pf's two halves are both taken: the inbox says a notice in the
+  page's language, and the channels that leave at once say it in the
+  person's.

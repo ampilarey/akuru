@@ -30,6 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // Opening a workspace's home makes it the active one (STATUS §5id).
             // Before the Inertia shell shares its props, which read the choice.
             \App\Http\Middleware\RememberWorkspace::class,
+            // LA1: the language a signed-in person reads in, for their email and SMS.
+            \App\Http\Middleware\RememberAccountLanguage::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \App\Http\Middleware\SecurityHeaders::class,
             \App\Http\Middleware\ConvertEnroll403ToRedirect::class,
