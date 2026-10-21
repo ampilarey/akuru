@@ -198,6 +198,8 @@ return [
         'language' => 'ބަސް',
         'email' => 'އީމެއިލް',
         'password' => 'ޕާސްވޯޑް',
+        'current_password' => 'މިހާރުގެ ޕާސްވޯޑް',
+        'password_confirmation' => 'ޕާސްވޯޑް ކަށަވަރުކުރުން',
         'phone' => 'ފޯނު ނަންބަރު',
         'national_id' => 'އައިޑީ ކާޑު ނަންބަރު',
         'date' => 'ތާރީޚު',

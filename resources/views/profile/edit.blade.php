@@ -1,8 +1,8 @@
 <x-app-layout>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Profile') }}
-        </h2>
+        <h1 class="font-semibold text-xl text-gray-800 leading-tight">
+            {{ __('account.profile_title') }}
+        </h1>
     </x-slot>
 
     <div class="py-12">
@@ -32,9 +32,9 @@
             @else
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
                 <div class="max-w-xl">
-                    <h2 class="text-lg font-medium text-gray-900">{{ __('Delete Account') }}</h2>
+                    <h2 class="text-lg font-medium text-gray-900">{{ __('account.profile_delete_title') }}</h2>
                     <p class="mt-1 text-sm text-gray-600">
-                        {{ __('Super admin accounts cannot be deleted — removing the last one would lock everybody out of the platform. Remove the super_admin role first, and only while another super admin exists.') }}
+                        {{ __('account.profile_delete_super_admin') }}
                     </p>
                 </div>
             </div>
