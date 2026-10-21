@@ -2036,4 +2036,7 @@ return [
     'print_sales_paper' => 'نوع الورق',
     'print_sales_jobs' => 'المهام',
     'print_sales_sheets' => 'الأوراق المطبوعة',
+
+    // PP7b: a printing shop's own desk.
+    'print_desk_title' => 'مكتب الطباعة',
 ];

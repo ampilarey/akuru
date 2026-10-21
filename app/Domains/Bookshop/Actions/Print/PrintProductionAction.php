@@ -4,6 +4,7 @@ namespace App\Domains\Bookshop\Actions\Print;
 
 use App\Domains\Bookshop\Actions\ResolveVendorScopeAction;
 use App\Domains\Bookshop\Actions\Vendor\FulfilVendorOrderAction;
+use App\Domains\Bookshop\DTOs\VendorScope;
 use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Enums\PrintJobStatus;
 use App\Domains\Bookshop\Models\Order;
@@ -11,6 +12,7 @@ use App\Domains\Bookshop\Models\OrderEvent;
 use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\PrintJob;
 use App\Domains\Bookshop\Models\PrintJobReprint;
+use App\Domains\Bookshop\Support\AkuruFulfilment;
 use App\Domains\Bookshop\Support\PrintDesk;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -61,6 +63,15 @@ class PrintProductionAction
     {
         return PrintJob::query()->whereIn('id', OrderItem::query()->where('order_id', $order->id)->whereNotNull('print_job_id')->pluck('print_job_id'))
             ->whereNotIn('status', [PrintJobStatus::Finished->value, PrintJobStatus::Cancelled->value])->exists();
+    }
+
+    /**
+     * PP7b: is the job on one of this printer's orders? A shop takes the
+     * queue's steps, and downloads the print file, only for its own.
+     */
+    public static function belongsTo(int $jobId, int $vendorId): bool
+    {
+        return OrderItem::query()->where('print_job_id', $jobId)->whereHas('order', fn ($q) => $q->where('vendor_id', $vendorId))->exists();
     }
 
     public function start(int $jobId, int $byUserId): PrintJob
@@ -142,9 +153,12 @@ class PrintProductionAction
      *
      * @return list<array<string, mixed>>
      */
-    public function queue(bool $all = false, string $locale = 'en'): array
+    public function queue(bool $all = false, string $locale = 'en', ?int $vendorId = null): array
     {
+        // PP7b: each printer's own — the office's desk Akuru's orders, a shop's desk its own.
+        $vendorId ??= PrintDesk::vendor()?->id;
         $lines = OrderItem::query()->whereNotNull('print_job_id')->with(['order', 'printJob.paper'])
+            ->whereHas('order', fn ($q) => $q->where('vendor_id', $vendorId))
             ->whereHas('printJob', fn ($q) => $all ? $q : $q->whereIn('status', self::QUEUE))
             ->whereHas('order', fn ($q) => $all ? $q : $q->whereNotIn('status', ['delivered', 'cancelled', 'expired', 'pending_payment']))
             ->orderBy('id')->limit(500)->get();
@@ -221,6 +235,10 @@ class PrintProductionAction
     private function advance(Order $order, string $to, int $byUserId): void
     {
         $scope = app(ResolveVendorScopeAction::class)->forOffice((int) $order->vendor_id, $byUserId);
+        // PP7b: a printing shop moves its own order; the office only what Akuru packs.
+        if (! AkuruFulfilment::takesStep($order, $to)) {
+            $scope = new VendorScope($scope->vendorId, $byUserId, $scope->role, $scope->vendorName, $scope->vendorSlug, true, $scope->paused);
+        }
         app(FulfilVendorOrderAction::class)->advance($scope, (int) $order->id, $to);
     }
 }

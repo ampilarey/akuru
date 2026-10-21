@@ -1104,6 +1104,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         // B8: duplicate a product, act on a selection, the stock page and the product sheet.
         Route::post('products/{product}/duplicate', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'duplicate'])->name('vendor.products.duplicate')->whereNumber('product');
         Route::post('products/bulk', [\App\Domains\Bookshop\Http\Controllers\VendorProductController::class, 'bulk'])->name('vendor.products.bulk');
+        // PP7b: a shop approved to print keeps its own print desk.
+        Route::get('print', [\App\Domains\Bookshop\Http\Controllers\VendorPrintController::class, 'index'])->name('vendor.print.index');
+        Route::get('print/export', [\App\Domains\Bookshop\Http\Controllers\VendorPrintController::class, 'export'])->name('vendor.print.export');
+        Route::post('print/papers/{paper?}', [\App\Domains\Bookshop\Http\Controllers\VendorPrintController::class, 'paper'])->name('vendor.print.paper')->whereNumber('paper');
+        Route::post('print/finishing/{finishing?}', [\App\Domains\Bookshop\Http\Controllers\VendorPrintController::class, 'finishing'])->name('vendor.print.finishing')->whereNumber('finishing');
+        Route::post('print/jobs/{job}/{step}', [\App\Domains\Bookshop\Http\Controllers\VendorPrintController::class, 'step'])->name('vendor.print.jobs.step')->whereNumber('job')->whereIn('step', ['start', 'finish', 'reprint', 'problem']);
+        Route::get('print/jobs/{job}/file', [\App\Domains\Bookshop\Http\Controllers\VendorPrintController::class, 'file'])->name('vendor.print.jobs.file')->whereNumber('job');
         Route::get('stock', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'index'])->name('vendor.stock.index');
         Route::post('stock/adjust', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'adjust'])->name('vendor.stock.adjust');
         Route::post('stock/import', [\App\Domains\Bookshop\Http\Controllers\VendorStockController::class, 'preview'])->name('vendor.stock.import');

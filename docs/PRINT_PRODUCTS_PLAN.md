@@ -179,11 +179,12 @@ ask PD10 waited for. Defaults, each the smallest that works:
 | PD10e | Proof and file | Made here by this server's Chrome as now; the printing shop downloads the print file from its own queue. |
 
 Slices:
-- **PP7a:** papers and finishings gain an owner; the office's approve
+- **PP7a** (built 2026-10-21, STATUS §5uh): papers and finishings gain an owner; the office's approve
   switch; a shop's print products made when approved; every paper and
   finishing lookup reads the printer's own.
-- **PP7b:** `/vendor/print` — the shop's papers and finishings with
-  prices, and its queue of paid print orders with each print file.
+- **PP7b** (built 2026-10-21, STATUS §5ui): `/vendor/print`, the shop's
+  papers and finishings with prices, and its queue of paid print orders
+  with each print file.
 - **PP7c:** the printer choice on the job page, priced from the chosen
   printer's papers; a walk end to end, a school ordering name tags from a
   shop.

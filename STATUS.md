@@ -4983,6 +4983,62 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ui. A printing shop's own print desk (PP7b, 2026-10-21)
+
+PRINT_PRODUCTS_PLAN §PP7, PD10b and PD10e: a shop keeps its own papers and
+its own print orders.
+- **`/vendor/print`** (`VendorPrintController`, thin; behind the shop's
+  membership and the Vendor Agreement, like its other pages):
+  - its queue of paid print orders first (`data-phone-main`), with each
+    job's print file and the four steps. Show all and CSV as on the
+    office's queue.
+  - its papers and finishings at its own prices, and their CSVs. These are
+    the office's own forms (`Papers`, `Finishing`, `Job`, now exported),
+    pointed at `/vendor/print`.
+  - A shop not yet approved is told so, and can set its papers up
+    meanwhile.
+- **Each printer's own:**
+  - `PrintProductionAction::queue()` takes the printer. The office's queue
+    stays Akuru's orders.
+  - A shop's step or file on a job that is not on one of its orders is a
+    404 (`belongsTo`).
+  - A shop's paper or finishing is found through its own scope, so Akuru's
+    and another shop's are a 404.
+- **Found in the test:** a print step moved its order through the office's
+  scope. That was right for Akuru's orders, but Fulfil refused it for a
+  shop's ("Akuru does not pack this order"). Now the office's scope is used
+  only for a step Akuru takes (`AkuruFulfilment::takesStep`), and the
+  shop's own otherwise.
+- **The link:** a *Print desk* link sits among the shop's pages and on its
+  home, only once the office approves it. It reads a shared
+  `vendor_prints`, looked up on `/vendor` pages only.
+
+**Tests:** `VendorPrintDeskTest` (2):
+- own papers and finishings, saved with the shop's id; Akuru's and another
+  shop's are a 404; the notice and the link before and after approval; the
+  papers CSV is the shop's alone.
+- each printer's queue: the office sees Akuru's job and the shop its own;
+  a step works on its own job (the order moves) and is a 404 on another
+  shop's or Akuru's; the file likewise; each shop's CSV is its own.
+
+**Walk:** `vendor-print.mjs` (new, in `all.mjs` after `print-shops`), at
+390 px as the seeded shop's owner:
+- under /dv, before approval: told so, no link, queue first, nothing
+  sideways, tables stacked;
+- adds a paper, which is saved as Fitrah's;
+- once approved: the notice goes, the link shows (current) and on the
+  home; the queue is empty and its own;
+- under /en, left to right with nothing sideways.
+
+10/10. Also `vendor-mobile` 27/27, `print-shops` 5/5 and `print-office`
+8/8. `vendor` passes 32/32 after its reseed, as in `all.mjs`.
+
+`PrivateMediaReadersAreScopedTest` pins the shop's controller as a reader
+of a job's print file, scoped by `belongsTo`. The whole suite has 3363 tests,
+all passing; pint is clean. No migration.
+
+**Not yet:** a customer chooses the printer in PP7c.
+
 ## 5uh. Other shops print: the office approves, papers have an owner (PP7a, 2026-10-21)
 
 PD10 held PP7 until a vendor asked. The owner's "Complete all", with PP7

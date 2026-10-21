@@ -1,8 +1,11 @@
+import { usePage } from '@inertiajs/react';
+
 /**
  * The shop's other pages, thumb-sized. On a phone they sit in two columns
  * under the heading — a sideways row ran off the screen (the owner's
  * screenshot, 2026-10-02) and the rest of the links could not be reached.
- * The page you are on is filled in.
+ * The page you are on is filled in. The print desk shows only to a shop the
+ * office has approved to print (PP7b).
  */
 const LINKS = [
     ['/vendor', 'portal_title', 'nav-home', 'home'],
@@ -14,13 +17,16 @@ const LINKS = [
     ['/vendor/stock', 'stock_title', 'open-stock', 'stock'],
     ['/vendor/quotes', 'quotes_title', 'open-quotes', 'quotes'],
     ['/vendor/insights', 'insights_title', 'open-insights', 'insights'],
+    ['/vendor/print', 'print_desk_title', 'open-print', 'print'],
 ];
 
 export default function VendorNav({ t, current }) {
+    const { vendor_prints: prints } = usePage().props;
+
     return (
         <nav className="mb-4 min-w-0" aria-label={t.on_this_page} data-testid="vendor-subnav">
             <ul className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                {LINKS.map(([href, key, testid, id]) => (
+                {LINKS.filter(([, , , id]) => id !== 'print' || prints).map(([href, key, testid, id]) => (
                     <li key={id} className="min-w-0">
                         <a
                             href={href}

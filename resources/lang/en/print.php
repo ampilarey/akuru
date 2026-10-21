@@ -521,4 +521,9 @@ return [
     'flash_shop_stopped' => 'The shop no longer prints. Jobs already ordered are still theirs to finish.',
     'error_vendor_print_akuru' => 'Akuru always prints.',
     'error_vendor_print_inactive' => 'Only an open shop can be approved to print.',
+
+    // PP7b: a printing shop's own desk.
+    'vendor_print_intro' => 'Your papers and finishings at your own prices, and the print orders customers place with you. Print from each job\'s print file and mark each step.',
+    'vendor_print_not_approved' => 'The office has not approved your shop to print yet. You can set up your papers now; customers can choose you once the office approves.',
+    'vendor_print_queue' => 'Your print orders',
 ];

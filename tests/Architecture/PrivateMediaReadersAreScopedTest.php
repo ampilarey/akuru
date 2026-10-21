@@ -174,6 +174,10 @@ it('pins every caller that can read a generated document', function () {
         // NT5: the customer's artwork, read off the job's own `upload_document_id`
         // only to proof it — the caller already holds the job (job() 404s otherwise).
         'app/Domains/Bookshop/Actions/Print/ProofPrintJobAction.php',
+        // PP7b: a printing shop's print file, read off the job's own
+        // `print_document_id` — only for a job on one of that shop's orders
+        // (`PrintProductionAction::belongsTo`, 404 otherwise).
+        'app/Domains/Bookshop/Http/Controllers/VendorPrintController.php',
     ];
 
     $callers = [];
