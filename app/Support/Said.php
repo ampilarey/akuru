@@ -54,6 +54,15 @@ final class Said implements JsonSerializable, Stringable
         return (string) __($this->key, $params, $locale);
     }
 
+    /**
+     * A notice's words in a given language: a phrase said in it, plain words
+     * as they are (LA1, the email and SMS to a person in their language).
+     */
+    public static function say(string|self $value, ?string $locale = null): string
+    {
+        return $value instanceof self ? $value->in($locale) : $value;
+    }
+
     public function __toString(): string
     {
         return $this->in();

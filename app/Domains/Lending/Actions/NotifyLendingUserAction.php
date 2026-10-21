@@ -26,11 +26,11 @@ class NotifyLendingUserAction
         }
         $person = $this->person($userId);
         if (config('lending.notices.email') && filter_var((string) ($person['email'] ?? ''), FILTER_VALIDATE_EMAIL)) {
-            $this->email((string) $person['email'], (string) ($person['name'] ?? ''), $title, $message, $href);
+            $this->email((string) $person['email'], (string) ($person['name'] ?? ''), $title, $message, $href, $person['locale'] ?? null);
         }
         $phone = trim((string) ($person['phone'] ?? ''));
         if (config('lending.notices.sms') && $phone !== '') {
-            $this->sms($phone, $title, $message, $event);
+            $this->sms($phone, $title, $message, $event, $person['locale'] ?? null);
         }
     }
 
@@ -43,24 +43,26 @@ class NotifyLendingUserAction
         }
     }
 
-    private function email(string $address, string $name, string|Said $title, string|Said $message, ?string $href): void
+    private function email(string $address, string $name, string|Said $title, string|Said $message, ?string $href, ?string $locale = null): void
     {
-        // Email and SMS leave now, in the sender's language (ADR-044).
-        [$title, $message] = [(string) $title, (string) $message];
+        // In the recipient's language when the account keeps one (LA1);
+        // otherwise the sender's (ADR-044).
+        [$title, $message] = [Said::say($title, $locale), Said::say($message, $locale)];
         $link = $href !== null ? url($href) : null;
-        DB::afterCommit(function () use ($address, $name, $title, $message, $link): void {
+        DB::afterCommit(function () use ($address, $name, $title, $message, $link, $locale): void {
             try {
-                Mail::to($address)->queue(new LendingNoticeMail($name, $title, $message, $link));
+                Mail::to($address)->locale($locale ?? app()->getLocale())->queue(new LendingNoticeMail($name, $title, $message, $link));
             } catch (\Throwable) {
                 // The in-app notice stands.
             }
         });
     }
 
-    private function sms(string $phone, string|Said $title, string|Said $message, string $event): void
+    private function sms(string $phone, string|Said $title, string|Said $message, string $event, ?string $locale = null): void
     {
-        // Email and SMS leave now, in the sender's language (ADR-044).
-        [$title, $message] = [(string) $title, (string) $message];
+        // In the recipient's language when the account keeps one (LA1);
+        // otherwise the sender's (ADR-044).
+        [$title, $message] = [Said::say($title, $locale), Said::say($message, $locale)];
         $body = mb_substr('Akuru: '.$title.'. '.$message, 0, (int) config('lending.notices.sms_max_length', 300));
         DB::afterCommit(function () use ($phone, $body, $event): void {
             try {
@@ -78,13 +80,13 @@ class NotifyLendingUserAction
     }
 
     /**
-     * @return array{name?: string, email?: ?string, phone?: ?string}
+     * @return array{name?: string, email?: ?string, phone?: ?string, locale?: ?string}
      */
     private function person(int $userId): array
     {
         $userModel = config('auth.providers.users.model');
-        $row = $userModel::query()->whereKey($userId)->first(['id', 'name', 'email', 'phone']);
+        $row = $userModel::query()->whereKey($userId)->first(['id', 'name', 'email', 'phone', 'locale']);
 
-        return $row === null ? [] : ['name' => (string) $row->name, 'email' => $row->email, 'phone' => $row->phone];
+        return $row === null ? [] : ['name' => (string) $row->name, 'email' => $row->email, 'phone' => $row->phone, 'locale' => $row->locale];
     }
 }

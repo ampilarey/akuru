@@ -52,6 +52,8 @@ try {
         check(`/${locale} the parent reads it in their language, not in English`, text.includes(wanted) && !text.includes(english), wanted);
         const nudge = await page.locator(`[data-notification="${libraryId}"]`).innerText().catch(() => '');
         const nudgeWanted = say('library_notices.continue_title', locale);
+        // LA1: the page opened is the language kept on the account, for their email and SMS.
+        check(`/${locale} the account now keeps ${locale} for the parent's email and SMS`, tinker(`echo DB::table('users')->where('id', ${userId})->value('locale');`) === locale);
         check(`/${locale} and the Library's nudge too`, nudge.includes(nudgeWanted) && !nudge.includes(say('library_notices.continue_title', 'en')), nudgeWanted);
     }
 } finally {

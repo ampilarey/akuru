@@ -50,9 +50,9 @@ class NotifyBookshopUserAction
             $this->email($userId, $title, $message, $href);
         }
         if ($office['customer_sms']) {
-            $phone = $this->person($userId)['phone'] ?? null;
-            if ($phone) {
-                $this->sms($phone, $title, $message, $event);
+            $person = $this->person($userId);
+            if ($person['phone'] ?? null) {
+                $this->sms($person['phone'], $title, $message, $event, $person['locale'] ?? null);
             }
         }
     }
@@ -207,34 +207,35 @@ class NotifyBookshopUserAction
 
     private function email(int $userId, string|Said $title, string|Said $message, ?string $href): void
     {
-        // Email and SMS leave now, in the sender's language (ADR-044).
-        [$title, $message] = [(string) $title, (string) $message];
         $person = $this->person($userId);
-        $this->emailTo(trim((string) ($person['email'] ?? '')), (string) ($person['name'] ?? ''), $title, $message, $href);
+        // In the recipient's language when the account keeps one (LA1).
+        $this->emailTo(trim((string) ($person['email'] ?? '')), (string) ($person['name'] ?? ''), $title, $message, $href, $person['locale'] ?? null);
     }
 
-    private function emailTo(string $address, string $name, string|Said $title, string|Said $message, ?string $href): void
+    private function emailTo(string $address, string $name, string|Said $title, string|Said $message, ?string $href, ?string $locale = null): void
     {
-        // Email and SMS leave now, in the sender's language (ADR-044).
-        [$title, $message] = [(string) $title, (string) $message];
+        // In the recipient's language when the account keeps one (LA1);
+        // otherwise the sender's (ADR-044).
+        [$title, $message] = [Said::say($title, $locale), Said::say($message, $locale)];
         if ($address === '' || ! filter_var($address, FILTER_VALIDATE_EMAIL)) {
             return;
         }
         $link = $href !== null ? url($href) : null;
-        DB::afterCommit(function () use ($address, $name, $title, $message, $link): void {
+        DB::afterCommit(function () use ($address, $name, $title, $message, $link, $locale): void {
             try {
-                Mail::to($address)->queue(new BookshopNoticeMail($name, $title, $message, $link));
+                Mail::to($address)->locale($locale ?? app()->getLocale())->queue(new BookshopNoticeMail($name, $title, $message, $link));
             } catch (\Throwable) {
                 // The in-app notice stands; a mail failure never fails the order.
             }
         });
     }
 
-    private function sms(string $phone, string|Said $title, string|Said $message, string $event): void
+    private function sms(string $phone, string|Said $title, string|Said $message, string $event, ?string $locale = null): void
     {
-        // Email and SMS leave now, in the sender's language (ADR-044).
-        [$title, $message] = [(string) $title, (string) $message];
-        $body = mb_substr('Akuru Bookstore: '.$title.'. '.$message, 0, (int) config('bookshop.notices.sms_max_length', 300));
+        // In the recipient's language when the account keeps one (LA1);
+        // otherwise the sender's (ADR-044).
+        [$title, $message] = [Said::say($title, $locale), Said::say($message, $locale)];
+        $body = mb_substr(__('shop.bookshop_title', [], $locale).': '.$title.'. '.$message, 0, (int) config('bookshop.notices.sms_max_length', 300));
         DB::afterCommit(function () use ($phone, $body, $event): void {
             try {
                 $result = app(SmsSenderInterface::class)->sendSms($phone, $body, ['type' => 'bookshop', 'reference' => 'bookshop_'.$event]);
@@ -251,13 +252,13 @@ class NotifyBookshopUserAction
     }
 
     /**
-     * @return array{name?: string, email?: ?string, phone?: ?string}
+     * @return array{name?: string, email?: ?string, phone?: ?string, locale?: ?string}
      */
     private function person(int $userId): array
     {
         $userModel = config('auth.providers.users.model');
-        $row = $userModel::query()->whereKey($userId)->first(['id', 'name', 'email', 'phone']);
+        $row = $userModel::query()->whereKey($userId)->first(['id', 'name', 'email', 'phone', 'locale']);
 
-        return $row === null ? [] : ['name' => (string) $row->name, 'email' => $row->email, 'phone' => $row->phone];
+        return $row === null ? [] : ['name' => (string) $row->name, 'email' => $row->email, 'phone' => $row->phone, 'locale' => $row->locale];
     }
 }

@@ -110,4 +110,6 @@ return [
     'payment_failed_title' => 'ލައިބްރަރީގެ ފައިސާ ދެއްކުމެއް ނުނިމުނު',
     'payment_failed_body' => '“:title”: :name ކާޑުން ދެއްކި MVR :amount ނުނިމުނު. އެއްވެސް އެއްޗެއް ދީފައެއް ނުވޭ؛ އަލުން މަސައްކަތް ކުރެވޭނެ.',
     'payment_not_started_body' => '“:title”: :name ކާޑުން ދައްކަން ފެށި MVR :amount ބޭންކުގައި ފެށިއެއް ނުދިޔަ. އެއްވެސް އެއްޗެއް ދީފައެއް ނުވޭ.',
+    // LA1: the name an SMS starts with, in the recipient's language.
+    'sms_prefix' => 'އަކުރު ލައިބްރަރީ',
 ];

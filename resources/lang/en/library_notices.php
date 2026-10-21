@@ -110,4 +110,6 @@ return [
     'payment_failed_title' => 'A Library payment did not go through',
     'payment_failed_body' => '“:title”: :name’s card payment of MVR :amount did not go through. Nothing was granted; they can try again.',
     'payment_not_started_body' => '“:title”: :name’s card payment of MVR :amount could not start at the bank. Nothing was granted.',
+    // LA1: the name an SMS starts with, in the recipient's language.
+    'sms_prefix' => 'Akuru Library',
 ];
