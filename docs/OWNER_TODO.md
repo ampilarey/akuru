@@ -1,4 +1,4 @@
-# What the owner has to do — one checklist (2026-10-18)
+# What the owner has to do — one checklist (2026-10-21)
 
 Every planned slice is built and merged. What is left **cannot be done from
 an agent session**: it needs the server, a password, a bank or phone
@@ -32,7 +32,7 @@ cd /home/akuruedu/akuru-institute && git pull origin main && composer install --
 | ☐ | **Text recognition for scanned PDFs** (only if wanted) | Install Tesseract with its English, Dhivehi and Arabic data (`tesseract --list-langs` should show `eng`, `div` and `ara`; on a shared host ask the hosting company). Ghostscript must be set too (`DOCUMENTS_GS_PATH`). Then switch it on (E below). | STATUS §5tg |
 | ☐ | **Reread the Library's PDFs once** | After the pull that brings two-column reading (2026-10-20): `php artisan library:sync-pages --all`. Books saved before are read again, column by column. | STATUS §5tr |
 | ☐ | **Who reads copyright reports** | Reports that a Library work copies someone's own arrive on `/admin/library/copyright` (2026-10-20), and in the app of everyone with the Library office's permission. Decide who answers them, and how fast. Upholding one takes the work off the shelf and tells its writer. | STATUS §5ts |
-| ☐ | **The leftover route cache** | `/en/catalog/courses` answered 404 once (2026-10-03). If `bootstrap/cache/routes-v7.php` exists, delete it, then run `php artisan route:clear`. | KNOWN_ISSUES, WHATS_LEFT O15 |
+| ☐ | **The leftover route cache** | `/en/catalog/courses` answered 404 once (2026-10-03). Since 2026-10-21 `/admin/settings` says so in red if a cached route file is on the host; *Clear all caches* removes it. If the 404 comes back, note the address and the account. | KNOWN_ISSUES, WHATS_LEFT O15, STATUS §5ul |
 
 ## B. In production's `.env`, then `php artisan config:cache`
 
@@ -56,6 +56,8 @@ production.
 | ☐ | **Fitrah's ID card** | Fitrah's owner uploads both sides on `/vendor` (*Verify your identity*). Check them on `/admin/bookshop` → *Identity cards*, then press **Verified**. Do the same on `/admin/library` for any writer approved before 2026-09-30. | OWNER_ACTIONS 25 |
 | ☐ | **Invite Fitrah** | After reading the Vendor Agreement (D below): *Admin → Akuru Bookstore*, with the details in `docs/vendors/FITRAH.md`. Send Inaaya the one-time password the screen shows, and the sign-in address. | OWNER_ACTIONS 18 |
 | ☐ | **The print desk** | `/admin/bookshop/print`: enter the real papers, the colour and black-and-white prices per sheet, the finishing, the quantity tiers, the smallest order and the lead days. Look at the five templates. Switch the desk on, then place one test order yourself: approve the proof, pay, and print it from the queue. | OWNER_ACTIONS 26 |
+| ☐ | **Other shops printing** (only if wanted) | `/admin/bookshop/print` → *Shops that print* → *Approve to print*. The shop then prices its own papers on `/vendor/print`, and customers can choose it on a design's page. | STATUS §5uh–§5uj |
+| ☐ | **Library bundles** (only if wanted) | `/admin/library/bundles`: pick two or more paid works, a price below their total, and switch it on. It shows on the offers page. | STATUS §5un, ADR-046 |
 | ☐ | **Who checks the blogs** | Decide who in the office works the post and comment queues on `/admin/library` and how quickly. *Blog insights* shows how old each queue is. | BLOG_PLAN §14.5 |
 
 ## D. Read and rewrite (your words, not the agent's)
@@ -86,7 +88,8 @@ production.
 | ☐ | **A native reader for the Dhivehi and Arabic** | Every DV/AR string is a first pass. The menu's *Absences* now reads ހާޒިރުނުވުންތައް, as its page does (2026-10-20, STATUS §5tq); please confirm ސަލާމް ނޯޓް for a parent's *absence note* and ސަލާމް ބެލުން for *Review notes* — leave-note wording, kept. | BACKLOG A10, WHATS_LEFT D2 |
 | ☑ | **The old Blade screens** | Decided 2026-10-20 ("do all"): **translated**, not retired; retiring stays possible. All done: analytics and the old menu (§5td), the Qur'an progress pages (§5te), e-learning (§5tf). | BACKLOG C21 |
 | ☐ | **Branch protection on `main`** | You said "keep this for later" (2026-10-03). Settings are in `docs/BRANCH_PROTECTION.md`; it needs a repo admin. | OWNER_ACTIONS 6 |
-| ☐ | **Linked separate logins** | Only if wanted, as its own track. | SIGN_IN_PLAN D7, WHATS_LEFT D4 |
+| ☑ | **Linked separate logins** | Already built (E7, 2026-09-11): *My account → Linked accounts* (`/account/linked`) links a second login by its password, both ways, and switches between them. Checked 2026-10-21; the plans had listed it as missing. | SIGN_IN_PLAN D7, WHATS_LEFT D4 |
+| ☑ | **Leave counted in working days** | Decided 2026-10-21 by best practice (ADR-045): weekends and the calendar's holidays are not leave. If staff contracts count calendar days, set `HR_LEAVE_COUNTS=calendar` in `.env`. | KNOWN_ISSUES, STATUS §5um |
 
 ## G. The proof it all works on the real host
 
@@ -96,12 +99,12 @@ production.
 
 ## H. The agent can still build these — only if you ask (not planned)
 
-None of these is started, and none is needed for go-live. Say which one,
-and it is planned and built one slice at a time like the rest.
+Everything planned is built, the print products (PP1–PP7) and the Library's
+bundles, two-column PDFs and OCR included. What is left waits on something
+only you can supply:
 
-| What | What it would be | Detail |
+| What | Why it waits | Detail |
 |---|---|---|
-| **Print products beyond name tags** | **Planned 2026-10-20**, being built PP1–PP6. PP1 is built: add A3 or A5 papers and layouts on `/admin/bookshop/print` (a paper is one size, with its own prices). PP2 is built: the desk lists four print products; cards, stickers and photo prints go on sale one by one once each has a layout (their layouts and designs come in PP3–PP5). PP3 is built: cards have four layouts and five designs; price a card paper, then put Cards on sale. PP4 is built: stickers have four layouts (three round) and three designs; price the sticker sheet and *Kiss-cut*, then put Stickers on sale. PP5 is built: five photo sizes; price the glossy photo paper, then put Photo prints on sale. PP6a is built: on a name-tag design, the office and a class's teachers fill the list *From a class*. PP6b is built: schools ask for a price on print from the basket; price them on the print desk under *School quotes*. Each decision has a default you can change: A4, A3 and A5; a price per size; cards, stickers on sheets and photo prints; names from a class for staff; quotes from 20 sheets. Parked until you say: stickers by the roll, folded cards, other vendors printing. | `docs/PRINT_PRODUCTS_PLAN.md` §2, §4 |
-| ~~**OCR for scanned PDFs in the Library**~~ | Built 2026-10-20 and switched off: see A and E above. Two-column PDFs and reversed right-to-left text are still open. | BACKLOG B1, B2 |
-| **Translating the old Blade screens** | Analytics (41 strings), the Qur'an progress pages (49), e-learning (35) and the old layouts (17) are still English-only. They can be translated or retired. Decide *the old Blade screens* in F first (retire or translate); then it is built screen by screen. | BACKLOG C21, WHATS_LEFT D3 |
-| **Any parked item in the backlog** | Every idea raised and set aside, with why it was parked. Open rows have no strike-through. §B13 lists what was ruled out on purpose (DOI, subscriptions, offline reading, DRM, audiobooks and so on), so nobody asks twice. | `docs/BACKLOG.md` §B, §C |
+| **Stickers by the roll, folded cards** | Only if Akuru buys a roll printer, or prints both sides. | PRINT_PRODUCTS_PLAN PD4, PD5 |
+| **Paid themes between shops** | Money moving from one shop to another is a decision of its own. | BOOKSHOP_PLAN, BACKLOG C7 |
+| **Anything in the backlog's open rows** | Open rows have no strike-through. §B13 lists what was ruled out on purpose (DOI, subscriptions, offline reading, DRM, audiobooks and so on). | `docs/BACKLOG.md` |

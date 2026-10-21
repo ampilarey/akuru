@@ -140,7 +140,7 @@ Defaults are what the plan builds unless the owner says otherwise.
 | D4 | Tile-grid homes: in this plan or later? | **In this plan, last** (ID5). It is the EduPage look the owner asked for, and it is cosmetic until ID1–ID4 make the menus right. |
 | D5 | The website's *My Portal* button: to the shell, or to the old portal? | **To the shell** (`/dashboard`). |
 | D6 | The mobile app's start address: the website, or the person's workspace? | **The workspace** (`/dashboard`, which is the sign-in page when signed out). The app is the portal; the website is one tap away in the Me group. |
-| D7 | Linked *separate* logins (EduPage's *Logout / add user*, E7's `linked_accounts`)? | **Later, as its own track.** Workspaces already cover a parent-teacher, a pupil-writer, a parent-learner on one login; separate logins linked need both credentials and a security design. |
+| D7 | Linked *separate* logins (EduPage's *Logout / add user*, E7's `linked_accounts`)? | **Later, as its own track.** Workspaces already cover a parent-teacher, a pupil-writer, a parent-learner on one login; separate logins linked need both credentials and a security design. **Correction 2026-10-21:** E7 had already built it (2026-09-11) — `/account/linked` links a second login by its password, both ways, logged in `account_link_events`, and switches between them. Nothing is left to build. |
 
 ## 5. The slices
 

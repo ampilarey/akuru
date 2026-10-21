@@ -4983,6 +4983,32 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5uo. What is left, brought up to date (2026-10-21)
+
+After the owner's "complete all that can be completed", the lists that say
+what remains were checked against the code.
+- **Linked separate logins** (WHATS_LEFT D4, SIGN_IN_PLAN D7, OWNER_TODO
+  F) were listed as a later track, but E7 built them on 2026-09-11:
+  - `/account/linked` links a second login by its password, both ways,
+    every attempt logged;
+  - the session rotates on each switch.
+
+  `LinkedAccountsTest` has 14 passing and `account-language` walks 18/18.
+  The three documents now say so.
+- **OWNER_TODO H** listed print products as being built and the Blade
+  screens as untranslated. Both are done. It now names only what waits on
+  the owner: stickers by the roll and folded cards (a printer), and paid
+  themes (money between shops).
+- **Also recorded in WHATS_LEFT and OWNER_TODO:**
+  - O15's red line on System Settings (§5ul);
+  - leave in working days (§5um);
+  - bundles (§5un);
+  - two-column PDFs (§5tr, already built);
+  - two optional office steps: approving a shop to print, and making a
+    bundle.
+
+No code changed.
+
 ## 5un. Library bundles (B4d, LIBRARY_PLAN §19, ADR-046, 2026-10-21)
 
 BACKLOG B4 left bundles as "not MVP unless trivial". The owner asked for
