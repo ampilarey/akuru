@@ -3,6 +3,7 @@
 namespace App\Domains\Library\Providers;
 
 use App\Domains\Finance\Events\PaymentConfirmed;
+use App\Domains\Finance\Events\PaymentFailed;
 use App\Domains\Finance\Events\PaymentRefunded;
 use App\Domains\Library\Console\GrowBlogStudentsUpCommand;
 use App\Domains\Library\Console\ImportWebsiteResearchCommand;
@@ -15,6 +16,7 @@ use App\Domains\Library\Listeners\GrantLibraryAccessOnPaymentConfirmed;
 use App\Domains\Library\Listeners\RecordTipOnPaymentConfirmed;
 use App\Domains\Library\Listeners\ReverseTipOnPaymentRefunded;
 use App\Domains\Library\Listeners\RevokeLibraryAccessOnPaymentRefunded;
+use App\Domains\Library\Listeners\TellOfficeOfFailedLibraryPayment;
 use App\Support\Pdf\PdfTextExtractor;
 use App\Support\Services\TesseractPageImageTextReader;
 use Illuminate\Support\Facades\Event;
@@ -42,6 +44,8 @@ class LibraryServiceProvider extends ServiceProvider
         // from money to a library access grant; a full refund revokes it.
         Event::listen(PaymentConfirmed::class, GrantLibraryAccessOnPaymentConfirmed::class);
         Event::listen(PaymentRefunded::class, RevokeLibraryAccessOnPaymentRefunded::class);
+        // B11b: the office hears of a Library card payment the bank refused.
+        Event::listen(PaymentFailed::class, TellOfficeOfFailedLibraryPayment::class);
         // BLOG_PLAN BL6a: a tip is paid on the webhook, and reversed on a refund.
         Event::listen(PaymentConfirmed::class, RecordTipOnPaymentConfirmed::class);
         Event::listen(PaymentRefunded::class, ReverseTipOnPaymentRefunded::class);

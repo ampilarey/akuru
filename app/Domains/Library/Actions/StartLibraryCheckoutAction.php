@@ -8,6 +8,7 @@ use App\Domains\Commerce\Actions\ResolveDiscountAction;
 use App\Domains\Finance\Actions\InitiatePayablePaymentAction;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryPurchase;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -127,6 +128,12 @@ class StartLibraryCheckoutAction
         if ($initiated['redirect_url'] === null) {
             $purchase->status = 'failed';
             app(RecordDiscountRedemptionAction::class)->releaseAbandoned('library_purchase', [$purchase->id]);
+            // B11b: a payment the bank would not even start is the office's to know.
+            app(NotifyLibraryUserAction::class)->office(
+                Said::of('library_notices.payment_failed_title'),
+                Said::of('library_notices.payment_not_started_body', ['title' => $item->title, 'name' => (string) (config('auth.providers.users.model')::query()->find($userId)?->name ?? '—'), 'amount' => number_format((float) $amount, 2)]),
+                '/admin/library',
+            );
         }
         $purchase->save();
 

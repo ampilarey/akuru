@@ -59,7 +59,12 @@ class RecordWriterEarningForPurchaseAction
         // §41: the writer hears about the sale, in their share.
         app(NotifyLibraryUserAction::class)->execute(
             (int) $writer->user_id,
-            Said::of('library_notices.sale_title'), Said::of('library_notices.sale_body', ['title' => $item->title, 'paid' => number_format($paid, 2), 'share' => number_format($writerAmount, 2)]),
+            Said::of('library_notices.sale_title'),
+            // B11b: and a discount that reduced it, so the share adds up.
+            Said::join([
+                Said::of('library_notices.sale_body', ['title' => $item->title, 'paid' => number_format($paid, 2), 'share' => number_format($writerAmount, 2)]),
+                $redemption !== null && $discountAmount > 0 ? Said::of('library_notices.discount_applied', ['amount' => number_format($discountAmount, 2)]) : null,
+            ]),
             '/write',
             'new_sale',
         );

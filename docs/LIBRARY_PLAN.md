@@ -324,6 +324,8 @@ Full DOI, journal issue/volume system, complex peer review, subscriptions, offli
 
 > **Built 2026-09-25 (STATUS §5go), in-app:** writer — application decision, submission received, changes requested, rejected, published, new sale, payout decided; reader — purchase ready, gift card redeemed; admin — new writer application, new submission. Not built: new content published to readers, continue-reading reminder, discount used, payment issue, large wallet adjustment, suspicious activity (reading alerts have their own admin screen), copyright complaint. Email/SMS channels for these: not built (in-app only).
 
+> **The last two built 2026-10-21 (B11b, STATUS §5ua):** *discount used* — the reader's purchase notice says what the discount saved, and the writer's sale notice says a discount applied, so the share adds up; *payment issue* — the office hears of a card payment the bank refused (`PaymentFailed`, new in Finance) or would not start. Every §41 notice is built; all are said in the reader's language (ADR-044).
+
 ## 42. Admin Settings
 
 Default commission, minimum payout, allowed file types, max upload size, preview page limit, watermark text, session/device limit, refund policy, writer approval required, research review required, paid content on/off, free-content login on/off, gift cards on/off, wallet on/off, discount codes on/off, max gift card amount, gift card expiry rule, wallet credit expiry, discount combinability, **discounts-on-gift-cards (recommended: OFF)**, default funding source.

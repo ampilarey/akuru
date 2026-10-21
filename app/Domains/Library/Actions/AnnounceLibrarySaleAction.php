@@ -2,6 +2,7 @@
 
 namespace App\Domains\Library\Actions;
 
+use App\Domains\Commerce\Actions\ResolveRedemptionFundingSourceAction;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryPurchase;
 use App\Support\Said;
@@ -21,10 +22,16 @@ class AnnounceLibrarySaleAction
         if ($item === null) {
             return;
         }
+        $saved = (float) (app(ResolveRedemptionFundingSourceAction::class)->execute('library_purchase', (int) $purchase->id)['amount_discounted'] ?? 0);
         $notify = app(NotifyLibraryUserAction::class);
         $notify->execute(
             (int) $purchase->user_id,
-            Said::of('library_notices.purchase_ready_title'), Said::of('library_notices.purchase_ready_body', ['title' => $item->title]),
+            Said::of('library_notices.purchase_ready_title'),
+            // B11b: a discount used is said with the purchase it reduced.
+            Said::join([
+                Said::of('library_notices.purchase_ready_body', ['title' => $item->title]),
+                $saved > 0 ? Said::of('library_notices.discount_saved', ['amount' => number_format($saved, 2)]) : null,
+            ]),
             '/library/'.$item->slug.'/read',
             'purchase_ready',
         );

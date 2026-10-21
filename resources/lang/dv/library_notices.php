@@ -104,4 +104,10 @@ return [
     'review_assigned_body' => '“:title” ރިވިއުކުރުމަށް ތިބާއަށް އެދިއްޖެ (ބުރު :round)، ނިންމަންޖެހެނީ :due ގައި.',
     'continue_title' => 'އަލުން ކިޔަން ފަށާނަންތަ؟',
     'continue_body' => 'ތިބާ ހުރީ “:title” ގެ :page ވަނަ ޞަފްޙާގައި.',
+    // B11b (BACKLOG B11, STATUS §5ua): a discount used, and a payment that went wrong.
+    'discount_saved' => 'ޑިސްކައުންޓަކުން ތިބާއަށް MVR :amount ސޭވްވެއްޖެ.',
+    'discount_applied' => 'މި ވިއްކުމަށް MVR :amount ގެ ޑިސްކައުންޓެއް ލިބިފައި.',
+    'payment_failed_title' => 'ލައިބްރަރީގެ ފައިސާ ދެއްކުމެއް ނުނިމުނު',
+    'payment_failed_body' => '“:title”: :name ކާޑުން ދެއްކި MVR :amount ނުނިމުނު. އެއްވެސް އެއްޗެއް ދީފައެއް ނުވޭ؛ އަލުން މަސައްކަތް ކުރެވޭނެ.',
+    'payment_not_started_body' => '“:title”: :name ކާޑުން ދައްކަން ފެށި MVR :amount ބޭންކުގައި ފެށިއެއް ނުދިޔަ. އެއްވެސް އެއްޗެއް ދީފައެއް ނުވޭ.',
 ];
