@@ -78,6 +78,9 @@ class ResolveIntegrationStatusAction
             'bml_configured' => $bmlConfigured,
             'bml_webhook_ready' => $bmlWebhookReady,
             'configuration_cached' => app()->configurationIsCached(),
+            // KNOWN_ISSUES (2026-10-03): a cached route file is never deployed here, and a
+            // leftover one answers 404 for routes added since. Said, so the office sees it.
+            'routes_cached' => is_file(app()->getCachedRoutesPath()),
             'links' => $links,
         ];
     }

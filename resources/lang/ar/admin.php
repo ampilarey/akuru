@@ -244,6 +244,7 @@ return [
     'system_settings_cache_management' => 'إدارة الذاكرة المؤقتة',
     'system_settings_cache_help' => 'مسح كل الذاكرة المؤقتة (التطبيق، العروض، المسارات، الإعدادات). آمن في أي وقت.',
     'system_settings_cache_cached' => 'الإعدادات مخزّنة مؤقتاً على هذا المضيف؛ يُعاد بناؤها ولا تُترك معطّلة.',
+    'system_settings_routes_cached' => 'المسارات مخزّنة مؤقتاً على هذا المضيف، وهذا لا يُنشر هنا أبداً: الصفحات المضافة بعده تُرجع 404. اضغط مسح كل ذاكرات التخزين المؤقت، فهو يزيل ذاكرة المسارات.',
     'system_settings_clear_caches' => 'مسح كل الذاكرة المؤقتة',
     'system_settings_cleared' => 'تم مسح كل الذاكرة المؤقتة.',
     'system_settings_languages' => 'اللغات',
