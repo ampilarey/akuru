@@ -4983,6 +4983,34 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5um. Leave is counted in working days (ADR-045, 2026-10-21)
+
+KNOWN_ISSUES left this open since 2026-09-13: leave was counted in calendar
+days, so a week's leave across a weekend cost seven days of entitlement. The
+owner said to decide by best practice, so ADR-045 records the choice.
+- **`CountLeaveDaysAction`** counts working days. It leaves out Friday and
+  Saturday, and the school calendar's holidays and closures in the
+  academic years the leave touches.
+  - Its `dates()` names the days.
+  - A half day on a day off is nothing.
+  - A leave only on days off is refused.
+- **`ApproveStaffLeaveAction`** writes *on leave* attendance on those days
+  only. Payroll's unpaid deduction reads those rows, so it follows.
+- **`config/hr.php`** holds the weekend and `HR_LEAVE_COUNTS`.
+  `calendar` restores the old count.
+
+**Tests:** in `LeaveManagementTest`:
+- the existing unpaid-leave test now expects 7 days for 1–10 August 2026,
+  not 10;
+- a new test covers a week with a holiday (4 days), half days on a
+  Monday and a Friday, a weekend-only leave refused, and the calendar
+  switch (7).
+
+The HR suite has 44 passing.
+
+**Walks:** `requests` 23/23, `hr` 27/27 and `hr-language` 93/93. No screen
+changed. Pint is clean.
+
 ## 5ul. System Settings warns of a cached route file (O15, 2026-10-21)
 
 KNOWN_ISSUES has the open 2026-10-03 report: `/en/catalog/courses` answered

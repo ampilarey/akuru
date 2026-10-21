@@ -1218,6 +1218,9 @@ unpaid leave gives Aishath Shifa gross **10,000.00**, net **9,072.73** on
 entitlement on days nobody works. The system knows its holidays —
 `calendar_days` and `AutoFillHolidayStaffAttendanceAction` — but no spec says
 whether leave is counted in calendar or working days, so this was not changed.
+**Decided 2026-10-21 (ADR-045, STATUS §5um):** leave is counted in working
+days. The weekend and the calendar's holidays are left out, and
+`HR_LEAVE_COUNTS=calendar` switches back.
 
 ### Two percent fee adjustments billed a family minus 200 — **fixed (2026-09-13)**
 
