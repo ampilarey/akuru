@@ -4983,6 +4983,31 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ul. System Settings warns of a cached route file (O15, 2026-10-21)
+
+KNOWN_ISSUES has the open 2026-10-03 report: `/en/catalog/courses` answered
+404 to the owner on production. The code was read again:
+- The route answers 403, not 404, to a person without the role.
+- The controller answers 403 without `courses.manage`.
+- A leftover route cache is cleared by every pull (`route:clear`).
+
+What the code can add:
+- **System Settings** shows a red alert (`routes-cached`) when the host has
+  a cached route file. It reads the file itself, since Laravel remembers the
+  flag from boot. Pages added after such a file answer 404, which is the
+  likeliest cause.
+- **The fix is one click:** *Clear all caches* already runs `route:clear`.
+
+**Test:** `IntegrationStatusBadgesTest` gains one: false normally; true
+with a route file at the path Laravel reads (for this process only).
+
+**Walks:** `admin-mobile` 13/13 and `admin` 43/43. The red line itself was
+not walked: showing it needs a real cached route file, and `route:cache` is
+not run here.
+
+The phrase is in EN, DV and AR. Pint is clean. KNOWN_ISSUES now says what
+to look at if the 404 is seen again.
+
 ## 5uk. A quote for a shop's print job goes to the shop (C26, 2026-10-21)
 
 PP7c parked C26, believing a quote on a shop's print job would reach the

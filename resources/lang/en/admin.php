@@ -245,6 +245,7 @@ return [
     'system_settings_cache_management' => 'Cache management',
     'system_settings_cache_help' => 'Clear all caches (application, views, routes, config). Safe to run at any time.',
     'system_settings_cache_cached' => 'The configuration is cached on this host; it is rebuilt, not left off.',
+    'system_settings_routes_cached' => 'The routes are cached on this host. This is never deployed here: pages added since answer 404. Press Clear all caches, which removes the route cache.',
     'system_settings_clear_caches' => 'Clear all caches',
     'system_settings_cleared' => 'All caches cleared successfully.',
     'system_settings_languages' => 'Languages',

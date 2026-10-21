@@ -751,6 +751,18 @@ cache (`route:cache` is never to be run there, but a leftover
 public site's `courses` route under a different host. Until it is seen again
 the catalogue is reachable from the School workspace's Catalog group.
 
+**Looked at again 2026-10-21 (STATUS §5ul).** Nothing in the code answers
+404 there: the route needs a role (403 otherwise), and the controller checks
+`courses.manage` (403). Two findings:
+- **A leftover route cache cannot outlive a pull:** the pull line has run
+  `route:clear` since 2026-10-03.
+- **System Settings now says so in red** (*The routes are cached on this
+  host…*) if a cached route file is ever there. *Clear all caches* removes
+  it.
+
+If the 404 is seen again, the owner should note the full address and the
+account, and look at System Settings.
+
 ## Found by the admin-panel performance and phone audit (2026-10-02)
 
 The record is `docs/ADMIN_PANEL.md` §7 (P1–P8, M1–M9); the plan is BACKLOG

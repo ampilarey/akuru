@@ -137,3 +137,18 @@ it('falls back to the config default for tardies per absence', function () {
         ->and(app(\App\Domains\Academics\Actions\ResolveAttendanceSettingsAction::class)->execute()['tardies_per_absence'])
         ->toBe(3);
 });
+
+it('says so when the routes are cached, which this host never deploys (KNOWN_ISSUES 2026-10-03)', function () {
+    settingsPage([])->assertInertia(fn (Assert $page) => $page->where('routes_cached', false)->has('t.system_settings_routes_cached'));
+
+    // A cached route file at the path Laravel reads, for this process only.
+    $file = storage_path('framework/testing-routes-cache.php');
+    file_put_contents($file, '<?php');
+    $_SERVER['APP_ROUTES_CACHE'] = $file;
+    try {
+        expect(app(\App\Domains\Settings\Actions\ResolveIntegrationStatusAction::class)->execute()['routes_cached'])->toBeTrue();
+    } finally {
+        unset($_SERVER['APP_ROUTES_CACHE']);
+        @unlink($file);
+    }
+});

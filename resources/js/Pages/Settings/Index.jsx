@@ -57,7 +57,7 @@ function Languages({ languages, t }) {
     );
 }
 
-export default function Index({ settings, sms_configured, bml_configured, configuration_cached, languages = {}, links = [], t = {} }) {
+export default function Index({ settings, sms_configured, bml_configured, configuration_cached, routes_cached = false, languages = {}, links = [], t = {} }) {
     const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—');
     const configured = (on) => (on ? t.system_settings_configured || 'Configured' : t.system_settings_not_configured || 'Not configured');
     const tone = (on) => (on ? 'text-green-800' : 'text-amber-800');
@@ -99,6 +99,7 @@ export default function Index({ settings, sms_configured, bml_configured, config
 
             <Languages languages={languages} t={t} />
 
+            {routes_cached && <p className="mb-4 rounded border border-red-300 bg-red-50 p-3 text-sm text-red-800" role="alert" data-testid="routes-cached">{t.system_settings_routes_cached}</p>}
             <div className="mb-6 rounded-lg border bg-white" data-testid="cache-management">
                 <h2 className="border-b px-4 py-3 text-sm font-semibold">{t.system_settings_cache_management || 'Cache management'}</h2>
                 <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-4">
