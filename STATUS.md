@@ -4983,6 +4983,33 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5uf. Walking staging in one command (SW1, 2026-10-21)
+
+The owner's last checklist item is to walk staging (OWNER_TODO, OWNER_ACTIONS
+7). `all.mjs` could be pointed at another host, but did not know which of
+its 160 walks belong there:
+- **Local database:** 58 walks set up or check their data with
+  `artisan tinker`. Against staging they would read this machine's database
+  while browsing the other host. On any host but a local one, they are now
+  skipped with that reason.
+- **Reseed:** the 17 walks marked `reseed` need the Bookstore reseeded
+  first (§5tu). On a remote host they run only when `SMOKE_RESEED_CMD` is
+  given, a shell command that reseeds that host (an `ssh` to staging).
+  Without it they are skipped, saying so.
+- **Summary:** the summary names what was skipped. A skip is not a failure,
+  so the exit code still reflects only failures.
+
+So 85 walks run against staging as they are, and 102 with the reseed
+command. OWNER_TODO's *Walk staging* row has the exact command.
+Production stays off limits; the smoke seeder never runs there.
+
+**Checked:** against a host that does not exist:
+- `blog-posts` is skipped (tinker);
+- `cod` is skipped (no reseed command);
+- `fonts` runs, and fails only because the host is unreachable.
+
+Locally nothing changes: the last full run's 160 walks run as before.
+
 ## 5ue. Every walk again, 160 of them, and what the full run's data showed (FR1, 2026-10-21)
 
 `all.mjs` on a fresh seed, every walk, after the day's slices (§5tv–§5ud):
