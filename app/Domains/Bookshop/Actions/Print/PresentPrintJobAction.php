@@ -3,6 +3,7 @@
 namespace App\Domains\Bookshop\Actions\Print;
 
 use App\Domains\Bookshop\Enums\PrintJobStatus;
+use App\Domains\Bookshop\Enums\VendorStatus;
 use App\Domains\Bookshop\Models\OrderItem;
 use App\Domains\Bookshop\Models\PrintFinishingOption;
 use App\Domains\Bookshop\Models\PrintJob;
@@ -10,6 +11,7 @@ use App\Domains\Bookshop\Models\PrintLayout;
 use App\Domains\Bookshop\Models\PrintPaperOption;
 use App\Domains\Bookshop\Models\PrintSubjectSet;
 use App\Domains\Bookshop\Models\PrintTemplate;
+use App\Domains\Bookshop\Models\Vendor;
 use App\Domains\Bookshop\Support\PrintDesign;
 use App\Domains\Bookshop\Support\PrintDesk;
 use App\Domains\Bookshop\Support\PrintJobEntry;
@@ -82,6 +84,8 @@ class PresentPrintJobAction
             'font' => PrintDesign::fieldFont($design),
             'entry' => $job->entry,
             'layout_id' => $job->print_layout_id,
+            // PP7c: who prints it — null for Akuru.
+            'printer' => $job->printerId(),
             'paper_id' => $job->print_paper_option_id,
             'colour' => (bool) $job->colour,
             'finishing' => array_map('intval', (array) $job->finishing),
@@ -145,7 +149,28 @@ class PresentPrintJobAction
             'fonts' => PrintFontFaces::faces(),
             'font_css' => PrintFontFaces::forBrowser(),
             'images' => array_filter($media),
+            // PP7c: who may print it — Akuru first, then each approved shop, with the sheet sizes each has a priced paper of.
+            'printers' => $this->printers(),
             'settings' => ['min_sheets' => $settings['min_sheets'], 'max_rows' => $settings['max_rows'], 'lead_days' => $settings['lead_days'], 'tiers' => $settings['tiers']],
+        ];
+    }
+
+    /**
+     * @return list<array{id: ?int, slug: string, name: string, sizes: list<string>}>
+     */
+    public function printers(): array
+    {
+        $sizes = fn (?int $id) => PrintPaperOption::query()->ofPrinter($id)->where('is_active', true)
+            ->where(fn ($q) => $q->where('price_bw', '>', 0)->orWhere('price_colour', '>', 0))
+            ->distinct()->pluck('sheet_size')->map(fn ($s) => (string) ($s ?? 'a4'))->values()->all();
+        $akuru = PrintDesk::vendor();
+        $shops = Vendor::query()->where('print_enabled', true)->where('status', VendorStatus::Active->value)
+            ->when($akuru !== null, fn ($q) => $q->whereKeyNot($akuru->id))->orderBy('name')->get(['id', 'slug', 'name']);
+
+        return [
+            ['id' => null, 'slug' => 'akuru', 'name' => (string) ($akuru?->name ?? 'Akuru'), 'sizes' => $sizes(null)],
+            ...$shops->map(fn (Vendor $v) => ['id' => (int) $v->id, 'slug' => (string) $v->slug, 'name' => (string) $v->name, 'sizes' => $sizes((int) $v->id)])
+                ->filter(fn (array $p) => $p['sizes'] !== [])->values()->all(),
         ];
     }
 

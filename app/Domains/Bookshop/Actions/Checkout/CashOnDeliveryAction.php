@@ -90,7 +90,8 @@ class CashOnDeliveryAction
         if ($print && ! PrintDesk::settings()['cash_allowed']) {
             return __('print.error_cod_print');
         }
-        if (! $print && ! in_array($deliveryKind, (array) config('bookshop.cod.delivery_kinds'), true)) {
+        // PP7c: a shop's print order meets the shop's own cash rule; Akuru's own two deliveries take it.
+        if ((! $print || $vendor->kind !== 'akuru') && ! in_array($deliveryKind, (array) config('bookshop.cod.delivery_kinds'), true)) {
             return __('shop.error_cod_delivery', ['vendor' => $vendor->name]);
         }
         if ($vendor->cod_max !== null && $orderTotal > (float) $vendor->cod_max) {

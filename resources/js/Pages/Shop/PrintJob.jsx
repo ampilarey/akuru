@@ -4,6 +4,7 @@ import { Fragment, Suspense, lazy, useCallback, useEffect, useMemo, useRef, useS
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 import TagCanvas from '../../Components/Print/TagCanvas';
+import PrinterChoice from '../../Components/Print/PrinterChoice';
 import { normaliseDesign, withFields } from '../../Components/Print/design';
 
 // NT6: the free-form designer is the Bookstore's largest piece; it loads only on a free-form design (risk R5).
@@ -35,7 +36,7 @@ function parseList(text, keys) {
 }
 
 export default function PrintJob(props) {
-    const { t = {}, job: initial, layouts = [], papers = [], finishing_options: finishingOptions = [], subject_sets: subjectSets = [], fonts = {}, font_css: fontCss = '', images = {}, settings = {}, signed_in: signedIn = false, designer = null, door = 'name-tags', product_title: productTitle = '', classes = [] } = props;
+    const { t = {}, job: initial, layouts = [], papers = [], finishing_options: finishingOptions = [], printers = [], subject_sets: subjectSets = [], fonts = {}, font_css: fontCss = '', images = {}, settings = {}, signed_in: signedIn = false, designer = null, door = 'name-tags', product_title: productTitle = '', classes = [] } = props;
     const freeform = job0IsFreeform(initial);
     const { errors = {}, locale = 'en' } = usePage().props;
     const [job, setJob] = useState(initial);
@@ -277,6 +278,7 @@ export default function PrintJob(props) {
                             <label className="block">{t.layout}<select className="form-input w-full" value={job.layout_id ?? ''} onChange={(e) => change({ layout_id: Number(e.target.value) })} data-testid="print-layout">
                                 {layouts.map((l) => <option key={l.id} value={l.id}>{l.name} ({l.sheet_label}) — {fill(t.tags_each, { count: l.tags })}</option>)}
                             </select></label>
+                            <PrinterChoice t={t} printers={printers} printer={job.printer} sheetSize={sheetSize} base={base} open={open} flush={flush} />
                             <div>
                                 <span className="block">{t.paper_name}</span>
                                 {sheetPapers.length === 0 ? <p className="text-amber-800">{t.no_papers}</p> : sheetPapers.map((p) => (

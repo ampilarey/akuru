@@ -41,7 +41,7 @@ what is printed.
 | PD7 | Proof | **Mandatory for every product**, watermarked, never downloaded (NAME_TAGS D6 carries over). |
 | PD8 | For a class | The office, and a teacher for the classes they teach, can fill a name list **from a class**. The names come from People through a contract (rule 3). A parent or other customer cannot pull a class list; they paste or upload names as today. |
 | PD9 | Bulk quotes | A print job of **20 sheets or more**, or one from a customer with an active credit account, can **ask for a quote** instead of checking out. It joins a `QuoteRequest`; the office prices it; an accepted quote becomes an order on the account's credit (P8c). |
-| PD10 | Other vendors printing | **Not yet.** Akuru prints (D1). The slice is written (PP7) but built only when a vendor asks to print through the Bookstore. |
+| PD10 | Other vendors printing | **Built 2026-10-21** (PP7a–c, the owner's "Complete all"): a shop the office approves prints its own orders. Akuru still prints by default (D1). |
 | PD11 | Lead time and minimum | **Per product**, set by the office; the desk's settings are the default. |
 
 ## 3. Slices, in order (one PR each, walked in a browser, at 390 px, in English and Dhivehi)
@@ -185,9 +185,9 @@ Slices:
 - **PP7b** (built 2026-10-21, STATUS §5ui): `/vendor/print`, the shop's
   papers and finishings with prices, and its queue of paid print orders
   with each print file.
-- **PP7c:** the printer choice on the job page, priced from the chosen
-  printer's papers; a walk end to end, a school ordering name tags from a
-  shop.
+- **PP7c** (built 2026-10-21, STATUS §5uj): the printer choice on the job
+  page, priced from the chosen printer's papers; a walk end to end, a
+  customer ordering name tags from a shop.
 
 ## 4. What the owner owns
 

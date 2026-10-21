@@ -526,4 +526,10 @@ return [
     'vendor_print_intro' => 'Your papers and finishings at your own prices, and the print orders customers place with you. Print from each job\'s print file and mark each step.',
     'vendor_print_not_approved' => 'The office has not approved your shop to print yet. You can set up your papers now; customers can choose you once the office approves.',
     'vendor_print_queue' => 'Your print orders',
+
+    // PP7c: who prints a job.
+    'printer_heading' => 'Printed by',
+    'printer_intro' => 'Akuru, or a shop the office approves to print. Each has its own papers and prices; changing moves you to its first paper.',
+    'error_printer' => 'Choose a printer from the list.',
+    'error_printer_no_paper' => 'That printer has no paper of this sheet size. Choose another, or another layout.',
 ];

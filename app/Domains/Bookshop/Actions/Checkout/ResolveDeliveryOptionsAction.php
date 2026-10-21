@@ -50,7 +50,8 @@ class ResolveDeliveryOptionsAction
 
         $rows = $this->akuru($vendor, $rows);
         if ($print) {
-            $rows = $this->print($rows);
+            // PP7c: a shop that prints delivers its own print orders, ready in the desk's lead time.
+            $rows = $vendor->kind === 'akuru' ? $this->print($rows) : $this->printLead($rows);
         }
 
         // B7 (§6.5 "spend MVR X, get free delivery"): the shop-wide threshold
@@ -141,6 +142,13 @@ class ResolveDeliveryOptionsAction
         }
 
         return array_map(fn (array $r) => ['handling_days' => $lead, 'note' => (string) __('print.ready_in_days', ['days' => $lead])] + $r, $kept);
+    }
+
+    private function printLead(array $rows): array
+    {
+        $lead = max(1, PrintDesk::settings()['lead_days']);
+
+        return array_map(fn (array $r) => ['handling_days' => max($lead, (int) $r['handling_days']), 'note' => (string) __('print.ready_in_days', ['days' => $lead])] + $r, $rows);
     }
 
     private function name(VendorDeliveryMethod $m): string

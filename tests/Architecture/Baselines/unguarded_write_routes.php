@@ -138,6 +138,7 @@ return [
     // aborts 404 unless it is the signed-in caller's (user_id) or, for a guest, rides on the caller's own basket (ResolvesCart).
     'shop/print/jobs' => 'ShopPrintController@start — starts a job on the caller\'s own account, or a guest\'s own basket (ResolvesCart); the template must be active; throttled; 404 while the service is off unless bookshop.manage.',
     'shop/print/jobs/{job}' => 'ShopPrintController@save / @destroy — READ: job() 404s unless the job is the caller\'s (or rides on the guest\'s own basket); throttled.',
+    'shop/print/jobs/{job}/printer' => 'ShopPrintController@printer (PP7c) — READ: job() 404s unless the job is the caller\'s (or rides on the guest\'s own basket); the shop must be approved and open; throttled.',
     'shop/print/jobs/{job}/approve' => 'ShopPrintController@approve — auth; READ: job() 404s unless the job is the signed-in caller\'s own.',
     'shop/print/freeform' => 'ShopPrintController@startFreeform (NT6) — starts a blank free-form job on the caller\'s own account, or a guest\'s own basket (ResolvesCart); throttled; 404 while the service is off unless bookshop.manage.',
     'shop/print/jobs/{job}/designer' => 'ShopPrintController@openDesigner (NT6) — READ: job() 404s unless the job is the caller\'s (or rides on the guest\'s own basket); only an open job changes; throttled.',

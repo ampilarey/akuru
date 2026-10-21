@@ -4983,6 +4983,67 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5uj. The customer chooses who prints (PP7c, 2026-10-21)
+
+PRINT_PRODUCTS_PLAN §PP7, PD10d. This is the last of PP7, so other shops
+printing is built end to end.
+- **On the job page** (both the template page and the artwork page), under
+  *Printed by* (`PrinterChoice`): Akuru first, then each shop the office
+  approved that has a priced paper of the layout's sheet size. Shown only
+  when there is more than one.
+- **Choosing** (`SavePrintJobAction::printer`, `POST
+  /shop/print/jobs/{job}/printer`) saves what is typed first, then moves
+  the job:
+  - to the printer's product (the shop's own copy, PP7a);
+  - to the printer's first paper of the size;
+  - with its finishings cleared, since they belong to a printer;
+  - priced again.
+
+  The page reloads with that printer's papers and finishings. It is
+  refused for a shop not approved or not open, for a shop with no paper of
+  the size, and for a job no longer open.
+- **The order is the shop's:** the basket line is the job's product, so
+  checkout makes it the shop's order, at its commission.
+  - **Delivery:** a shop's print order is offered the shop's own
+    deliveries, each ready in no less than the desk's lead time. Akuru's
+    two-delivery rule stays for Akuru's own print.
+  - **Cash:** a shop's print order meets the shop's own cash rule as well
+    as the desk's switch.
+- **Printing:** the paid job lands on the shop's `/vendor/print` (PP7b),
+  not the office's.
+
+**Tests:** `PrintPrinterChoiceTest` (4):
+- Akuru first, the approved shop with its sizes, and not an approved shop
+  without papers;
+- the move to the shop (product, paper, finishings cleared, 6.00) and back
+  (9.00);
+- refusals: not approved, no paper of the size, approved job;
+- the order from the shop: its own deliveries with the lead time, the
+  wallet, the order is the shop's, and the job on its queue, not the
+  office's.
+
+**Walk:** `print-printer.mjs` (new, in `all.mjs` after `vendor-print`;
+needs `DOCUMENTS_CHROME_PATH` like the other proof walks), at 390 px:
+- under /dv, the customer sees Akuru first, then Fitrah; choosing Fitrah
+  offers only Fitrah's paper, at 4.00 for two sheets;
+- once proofed by the real Chrome, the design goes in the basket; the
+  checkout offers Fitrah's deliveries, not Akuru's courier; it is paid from
+  the wallet; the order is Fitrah's;
+- Fitrah's owner finds the job on `/dv/vendor/print`, downloads the print
+  file and starts it (the job printing, the order processing);
+- under /en, left to right.
+
+Nothing scrolls sideways. 14/14. The other job-page walks also pass:
+`print-order` 15/15, `print-design` 18/18, `print-upload` 10/10,
+`print-photos` 12/12, `print-sizes` 10/10 and `print-quote` 9/9.
+
+**Not changed:** a quote request (PP6b) for a shop's job still goes to the
+office's quote desk (BACKLOG C26).
+
+The new route is declared in both route baselines: guest-reachable, behind
+the job's own ownership check. The whole suite has 3367 tests, all passing;
+pint is clean. No migration.
+
 ## 5ui. A printing shop's own print desk (PP7b, 2026-10-21)
 
 PRINT_PRODUCTS_PLAN §PP7, PD10b and PD10e: a shop keeps its own papers and
