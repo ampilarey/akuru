@@ -106,7 +106,7 @@ function Import({ t, preview, expired, columns, limits }) {
                 </span>
             </div>
             <p className="mb-2 text-sm text-gray-600">{fill(t.import_hint, { rows: limits.rows, kb: limits.kilobytes })}</p>
-            <details className="mb-3 text-xs text-gray-500"><summary className="cursor-pointer">{t.import_columns}</summary><p className="mt-1 font-mono">{columns.join(', ')}</p><p className="mt-1">{t.import_rules}</p></details>
+            <details className="mb-3 text-xs text-gray-500"><summary className="cursor-pointer py-2">{t.import_columns}</summary><p className="mt-1 font-mono">{columns.join(', ')}</p><p className="mt-1">{t.import_rules}</p></details>
             {expired && <p className="mb-3 rounded bg-amber-50 p-2 text-sm text-amber-900" data-testid="import-expired">{t.import_expired}</p>}
             <form className="flex flex-col gap-2 rounded border bg-white p-3 sm:flex-row sm:flex-wrap sm:items-center" onSubmit={(e) => { e.preventDefault(); form.post('/vendor/stock/import', { forceFormData: true }); }}>
                 <input type="file" accept=".csv,text/csv" className="block w-full max-w-full text-sm sm:w-auto" onChange={(e) => form.setData('file', e.target.files?.[0] || null)} required data-testid="import-file" />
