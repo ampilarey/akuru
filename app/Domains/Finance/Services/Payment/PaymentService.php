@@ -7,6 +7,7 @@ use App\Domains\Courses\Models\CourseEnrollment;
 use App\Domains\Finance\Actions\RecordInvoiceReceiptAction;
 use App\Domains\Finance\Contracts\PaymentProviderInterface;
 use App\Domains\Finance\Events\PaymentConfirmed;
+use App\Domains\Finance\Events\PaymentFailed;
 use App\Domains\Finance\Models\Payment;
 use App\Domains\Finance\Models\PaymentItem;
 use App\Domains\Identity\Models\User;
@@ -183,6 +184,7 @@ class PaymentService
                 foreach ($payment->items as $item) {
                     $item->enrollment?->update(['payment_status' => 'required']);
                 }
+                event(new PaymentFailed($payment->fresh()));
             } elseif (in_array($providerStatus, ['expired'], true)) {
                 $payment->update(['status' => 'expired']);
             }
@@ -309,6 +311,7 @@ class PaymentService
                     foreach ($payment->items as $item) {
                         $item->enrollment?->update(['payment_status' => 'required']);
                     }
+                    event(new PaymentFailed($payment->fresh()));
                 }
             }
         });

@@ -4983,6 +4983,43 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ua. A discount used, and a payment that went wrong (B11b, 2026-10-21)
+
+LIBRARY_PLAN §41 had two Library notices left, held for want of an answer
+on who should hear them. The owner said "based on ur thinking complete all",
+and the plan names the readers itself.
+- **Discount used:** a discount on a Library purchase now shows in two
+  notices:
+  - the reader's *Your purchase is ready* adds *You saved MVR …*;
+  - the writer's *New sale* adds *A discount of MVR … applied to this sale*,
+    so the share adds up.
+
+  The amount comes from Commerce's `ResolveRedemptionFundingSourceAction`,
+  and is added with `Said::join`.
+- **Payment issue:**
+  - Finance fires a new `PaymentFailed` event where the bank's answer
+    marks a payment failed: on return and by webhook. Nothing about access
+    or money moves on it (rule 12).
+  - The Library's `TellOfficeOfFailedLibraryPayment` tells the office which
+    work, whose card and how much.
+  - A card payment that could not even start tells the office too.
+
+  These are in-app, plus the office's own email and SMS when its switches
+  say so.
+- **Phrases:** five new `library_notices` phrases, in EN, DV and AR.
+
+BACKLOG B11 and LIBRARY_PLAN §41 are complete.
+
+**Tests:** `LibraryDiscountAndPaymentNoticesTest` (4):
+- a SAVE10 card purchase says the saving to the reader (in Dhivehi too)
+  and the discount to the writer;
+- without a code, neither says a discount;
+- a refused webhook leaves the payment failed, grants nothing and tells
+  the office;
+- a payment that cannot start tells the office.
+
+Whole suite 3351 passed; pint clean.
+
 ## 5tz. The school's notices in the reader's language (HP3c, 2026-10-21)
 
 The last senders.

@@ -104,4 +104,10 @@ return [
     'review_assigned_body' => 'You have been asked to peer-review “:title” (round :round), due :due.',
     'continue_title' => 'Pick it back up?',
     'continue_body' => 'You were on page :page of “:title”.',
+    // B11b (BACKLOG B11, STATUS §5ua): a discount used, and a payment that went wrong.
+    'discount_saved' => 'You saved MVR :amount with a discount.',
+    'discount_applied' => 'A discount of MVR :amount applied to this sale.',
+    'payment_failed_title' => 'A Library payment did not go through',
+    'payment_failed_body' => '“:title”: :name’s card payment of MVR :amount did not go through. Nothing was granted; they can try again.',
+    'payment_not_started_body' => '“:title”: :name’s card payment of MVR :amount could not start at the bank. Nothing was granted.',
 ];

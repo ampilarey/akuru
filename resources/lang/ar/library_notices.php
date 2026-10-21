@@ -104,4 +104,10 @@ return [
     'review_assigned_body' => 'طُلب منك مراجعة «:title» (الجولة :round)، والموعد :due.',
     'continue_title' => 'هل تعود إليه؟',
     'continue_body' => 'كنت في الصفحة :page من «:title».',
+    // B11b (BACKLOG B11, STATUS §5ua): a discount used, and a payment that went wrong.
+    'discount_saved' => 'وفّرت :amount روفية بخصم.',
+    'discount_applied' => 'طُبّق خصم بقيمة :amount روفية على هذا البيع.',
+    'payment_failed_title' => 'لم يكتمل دفع في المكتبة',
+    'payment_failed_body' => '«:title»: لم يكتمل دفع :name بالبطاقة بمبلغ :amount روفية. لم يُمنح شيء؛ يمكنه المحاولة مجددًا.',
+    'payment_not_started_body' => '«:title»: تعذّر بدء دفع :name بالبطاقة بمبلغ :amount روفية لدى البنك. لم يُمنح شيء.',
 ];
