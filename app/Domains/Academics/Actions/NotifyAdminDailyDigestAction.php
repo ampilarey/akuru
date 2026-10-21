@@ -6,6 +6,7 @@ use App\Domains\Academics\Enums\AttendanceStatus;
 use App\Domains\Academics\Models\ClassAttendance;
 use App\Domains\Identity\Actions\ListUserIdsWithPermissionAction;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -46,8 +47,8 @@ class NotifyAdminDailyDigestAction
 
             app(SendUserNotificationAction::class)->execute(
                 (int) $userId,
-                trans('notifications.digest.title', ['date' => $today]),
-                trans('notifications.digest.body', ['absent' => $absent, 'unfilled' => $unfilled]),
+                Said::of('notifications.digest.title', ['date' => $today]),
+                Said::of('notifications.digest.body', ['absent' => $absent, 'unfilled' => $unfilled]),
                 [
                     'category' => 'academics',
                     'date' => $today,

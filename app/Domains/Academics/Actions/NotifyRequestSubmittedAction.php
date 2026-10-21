@@ -6,6 +6,7 @@ use App\Domains\Academics\Models\SchoolRequest;
 use App\Domains\Identity\Actions\ListUserIdsWithPermissionAction;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
 use App\Support\PersonName;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -53,8 +54,8 @@ class NotifyRequestSubmittedAction
         foreach ($recipients->map(fn ($id) => (int) $id)->unique()->reject(fn (int $id) => $id === $requesterId) as $userId) {
             app(SendUserNotificationAction::class)->execute(
                 $userId,
-                trans('notifications.request.submitted_title', ['name' => $requesterName]),
-                trans('notifications.request.submitted_body', [
+                Said::of('notifications.request.submitted_title', ['name' => $requesterName]),
+                Said::of('notifications.request.submitted_body', [
                     'type' => str_replace('_', ' ', $type),
                     'regarding' => $regarding ?? $requesterName,
                     'reason' => (string) $request->reason,

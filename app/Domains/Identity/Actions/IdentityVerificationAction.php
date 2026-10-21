@@ -6,6 +6,7 @@ use App\Domains\Identity\Models\IdentityVerification;
 use App\Domains\Media\Actions\ReadPrivateMediaAction;
 use App\Domains\Media\Actions\StorePrivateMediaAction;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
+use App\Support\Said;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -205,8 +206,8 @@ class IdentityVerificationAction
                 return $row;
             }
             $hrefs = ['vendor' => '/vendor', 'writer' => '/write', 'learner' => '/my-learning', 'lender' => '/my-lending'];
-            $title = __($verified ? 'account.id_decided_title_verified' : 'account.id_decided_title_rejected');
-            $body = __($verified ? 'account.id_decided_body_verified' : 'account.id_decided_body_rejected', ['note' => (string) $note]);
+            $title = Said::of($verified ? 'account.id_decided_title_verified' : 'account.id_decided_title_rejected');
+            $body = Said::of($verified ? 'account.id_decided_body_verified' : 'account.id_decided_body_rejected', ['note' => (string) $note]);
             DB::afterCommit(function () use ($row, $title, $body, $hrefs) {
                 try {
                     app(SendUserNotificationAction::class)->execute((int) $row->user_id, $title, $body, ['category' => 'account', 'href' => $hrefs[$row->purpose] ?? '/dashboard']);

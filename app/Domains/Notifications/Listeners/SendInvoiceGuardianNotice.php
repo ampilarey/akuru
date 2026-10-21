@@ -7,6 +7,7 @@ use App\Domains\Finance\Events\InvoiceReminderDue;
 use App\Domains\Notifications\Contracts\SmsSenderInterface;
 use App\Domains\Notifications\Models\UserNotification;
 use App\Domains\People\Actions\ListFinanciallyResponsibleContactsAction;
+use App\Support\Said;
 
 class SendInvoiceGuardianNotice
 {
@@ -16,8 +17,8 @@ class SendInvoiceGuardianNotice
     {
         $this->notify(
             $event->studentId,
-            'Invoice '.$event->invoiceNumber,
-            "Akuru Institute: invoice {$event->invoiceNumber} for {$event->studentName} is {$event->totalAmount} MVR, due {$event->dueDate}.",
+            Said::of('notifications.invoice.issued_title', ['number' => $event->invoiceNumber]),
+            Said::of('notifications.invoice.issued_body', ['number' => $event->invoiceNumber, 'name' => $event->studentName, 'amount' => $event->totalAmount, 'due' => $event->dueDate]),
             ['invoice_id' => $event->invoiceId, 'kind' => 'issued'],
         );
     }
@@ -26,8 +27,8 @@ class SendInvoiceGuardianNotice
     {
         $this->notify(
             $event->studentId,
-            'Invoice reminder '.$event->invoiceNumber,
-            "Akuru Institute: invoice {$event->invoiceNumber} for {$event->studentName} has {$event->balance} MVR unpaid (due {$event->dueDate}).",
+            Said::of('notifications.invoice.reminder_title', ['number' => $event->invoiceNumber]),
+            Said::of('notifications.invoice.reminder_body', ['number' => $event->invoiceNumber, 'name' => $event->studentName, 'amount' => $event->balance, 'due' => $event->dueDate]),
             ['invoice_id' => $event->invoiceId, 'kind' => 'reminder'],
         );
     }
@@ -35,12 +36,15 @@ class SendInvoiceGuardianNotice
     /**
      * @param  array<string, mixed>  $data
      */
-    private function notify(int $studentId, string $title, string $message, array $data): void
+    private function notify(int $studentId, Said $title, Said $message, array $data): void
     {
+        // The in-app row keeps the phrase for the reader's language (ADR-044);
+        // the SMS leaves now, in the sender's.
+        $data['said'] = ['title' => $title->toArray(), 'message' => $message->toArray()];
         $contacts = app(ListFinanciallyResponsibleContactsAction::class)->execute($studentId);
         foreach ($contacts as $contact) {
             if (! empty($contact['phone'])) {
-                $this->sms->sendSms((string) $contact['phone'], $message, [
+                $this->sms->sendSms((string) $contact['phone'], (string) $message, [
                     'type' => 'finance',
                     'reference' => 'invoice_'.$data['kind'].'_'.$data['invoice_id'],
                 ]);
@@ -50,8 +54,8 @@ class SendInvoiceGuardianNotice
                     'user_id' => $contact['user_id'],
                     'type' => 'in_app',
                     'category' => 'payment',
-                    'title' => $title,
-                    'message' => $message,
+                    'title' => (string) $title,
+                    'message' => (string) $message,
                     'data' => $data,
                     'status' => 'delivered',
                     'delivered_at' => now(),

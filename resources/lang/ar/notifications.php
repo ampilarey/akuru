@@ -48,4 +48,19 @@ return [
             'incident' => 'حادثة',
         ],
     ],
+    // HP3c (ADR-044, STATUS §5tz): notices that were English sentences in code.
+    'invoice' => [
+        'issued_title' => 'فاتورة :number',
+        'issued_body' => 'معهد أكورو: الفاتورة :number لـ:name بمبلغ :amount روفية، مستحقة في :due.',
+        'reminder_title' => 'تذكير بالفاتورة :number',
+        'reminder_body' => 'معهد أكورو: على الفاتورة :number لـ:name مبلغ :amount روفية غير مدفوع (مستحقة في :due).',
+    ],
+    'hr' => [
+        'expiring_title' => 'وثيقة تنتهي خلال :days يومًا',
+        'expiring_body' => 'تنتهي :document في :date',
+    ],
+    'gift_card' => [
+        'redeemed_title' => 'استُخدمت بطاقة الهدية',
+        'redeemed_body' => 'أُضيف :amount روفية إلى محفظتك.',
+    ],
 ];

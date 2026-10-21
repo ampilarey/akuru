@@ -4983,6 +4983,38 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tz. The school's notices in the reader's language (HP3c, 2026-10-21)
+
+The last senders.
+- **The six school notifiers move to `Said`:** the admin and family
+  digests, request submitted and decided, substitution assigned and
+  unfilled registers. A request's state and the family digest's lessons
+  line are said in the same language as the sentence around them.
+- **New keys** in the `notifications` book (EN/DV/AR) for notices that
+  were English sentences in code:
+  - an invoice issued and its reminder (the in-app row keeps the phrase;
+    the SMS leaves in the sender's language);
+  - an HR document about to expire;
+  - a gift card redeemed.
+- **Already keyed, now kept:** the large wallet credit alert (§5ts), a
+  course forum's topic and reply, and an ID card decision.
+- **Left as written, being people's own words:**
+  - a message's subject and preview;
+  - the old `NotificationService`, which sends what staff type.
+
+Every notice the app writes itself is now said in the reader's language in
+the inbox. KNOWN_ISSUES' entry is closed for the in-app notice. Email and
+SMS in the reader's language wait for a language kept on the account
+(ADR-044).
+
+**Tests:**
+- `NoticesSpeakTheReadersLanguageTest` +1: a request decision with its
+  state nested, and the new keys exist in DV and AR.
+- `ContractsComplianceTest`: an expiring document's notice reads in
+  Dhivehi.
+- Whole suite 3346 passed before these two were added; both pass.
+- Pint clean.
+
 ## 5ty. The Library's notices in the reader's language (HP3b, 2026-10-21)
 
 The Digital Library sent 42 notices as English sentences built in code,

@@ -4,6 +4,7 @@ namespace App\Domains\Academics\Actions;
 
 use App\Domains\Academics\Models\SubstitutionAssignment;
 use App\Domains\Notifications\Actions\SendUserNotificationAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -32,8 +33,8 @@ class NotifySubstituteAssignedAction
 
         app(SendUserNotificationAction::class)->execute(
             $userId,
-            trans('notifications.substitution.assigned_title'),
-            trans('notifications.substitution.assigned_body', [
+            Said::of('notifications.substitution.assigned_title'),
+            Said::of('notifications.substitution.assigned_body', [
                 'date' => (string) ($date ?? ''),
             ]),
             [

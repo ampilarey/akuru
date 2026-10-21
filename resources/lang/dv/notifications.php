@@ -48,4 +48,19 @@ return [
             'incident' => 'ހާދިސާ',
         ],
     ],
+    // HP3c (ADR-044, STATUS §5tz): notices that were English sentences in code.
+    'invoice' => [
+        'issued_title' => 'އިންވޮއިސް :number',
+        'issued_body' => 'އަކުރު އިންސްޓިޓިއުޓް: :name ގެ އިންވޮއިސް :number ގެ އަދަދަކީ :amount ރުފިޔާ، ދައްކަންޖެހެނީ :due ގައި.',
+        'reminder_title' => 'އިންވޮއިސް :number ހަނދާންކޮށްދިނުން',
+        'reminder_body' => 'އަކުރު އިންސްޓިޓިއުޓް: :name ގެ އިންވޮއިސް :number ގައި :amount ރުފިޔާ ނުދައްކާ ހުރި (ދައްކަންޖެހެނީ :due ގައި).',
+    ],
+    'hr' => [
+        'expiring_title' => ':days ދުވަހުން މުއްދަތު ހަމަވާ ލިޔުމެއް',
+        'expiring_body' => ':document ގެ މުއްދަތު ހަމަވަނީ :date ގައި',
+    ],
+    'gift_card' => [
+        'redeemed_title' => 'ގިފްޓް ކާޑު ބޭނުންކުރެވިއްޖެ',
+        'redeemed_body' => 'MVR :amount ތިބާގެ ވޮލެޓަށް އެއްކުރެވިއްޖެ.',
+    ],
 ];

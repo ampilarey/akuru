@@ -46,4 +46,19 @@ return [
             'incident' => 'incident',
         ],
     ],
+    // HP3c (ADR-044, STATUS §5tz): notices that were English sentences in code.
+    'invoice' => [
+        'issued_title' => 'Invoice :number',
+        'issued_body' => 'Akuru Institute: invoice :number for :name is :amount MVR, due :due.',
+        'reminder_title' => 'Invoice reminder :number',
+        'reminder_body' => 'Akuru Institute: invoice :number for :name has :amount MVR unpaid (due :due).',
+    ],
+    'hr' => [
+        'expiring_title' => 'Document expiring in :days days',
+        'expiring_body' => ':document expires on :date',
+    ],
+    'gift_card' => [
+        'redeemed_title' => 'Gift card redeemed',
+        'redeemed_body' => 'MVR :amount was added to your wallet.',
+    ],
 ];

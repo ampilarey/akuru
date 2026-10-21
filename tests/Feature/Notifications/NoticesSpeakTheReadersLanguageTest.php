@@ -62,3 +62,16 @@ it('shows a notice sent as plain words as it was written', function () {
     app()->setLocale('dv');
     expect(app(ListUserNotificationsAction::class)->execute($family->id)->sole())->toMatchArray(['title' => 'Written before', 'message' => 'As it was']);
 });
+
+it('says a school request\'s decision with its state in the same language (HP3c)', function () {
+    $said = Said::of('notifications.request.decision_title', ['status' => Said::of('notifications.request.status.approved')]);
+    $back = Said::fromArray($said->toArray());
+
+    expect($back?->in('dv'))->toBe(__('notifications.request.decision_title', ['status' => __('notifications.request.status.approved', [], 'dv')], 'dv'))
+        ->and($back?->in('ar'))->not->toBe($back?->in('en'));
+    foreach (['invoice.issued_title', 'invoice.reminder_body', 'hr.expiring_title', 'gift_card.redeemed_body'] as $key) {
+        foreach (['dv', 'ar'] as $locale) {
+            expect(__('notifications.'.$key, [], $locale))->not->toBe(__('notifications.'.$key, [], 'en'), "{$key} in {$locale}");
+        }
+    }
+});
