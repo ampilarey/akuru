@@ -97,7 +97,7 @@ export default function Notifications({ notifications = [], categories = {}, pre
                                 {/* A notification that points somewhere is worth
                                     far more than one that only announces. */}
                                 {item.href
-                                    ? <a className="inline-block py-1.5 text-[#7C2D37] hover:underline" href={item.href}>{item.title}</a>
+                                    ? <a className="inline-block min-w-[2.75rem] py-1.5 text-[#7C2D37] hover:underline" href={item.href}>{item.title}</a>
                                     : item.title}
                             </p>
                             <span className="text-xs text-gray-500">{when(item.created_at)}</span>

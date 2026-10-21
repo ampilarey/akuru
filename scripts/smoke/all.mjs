@@ -28,7 +28,7 @@
  * nobody should discover it by pointing the runner at a live school.
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
- *   node scripts/smoke/all.mjs --read     the twenty-three that only look
+ *   node scripts/smoke/all.mjs --read     the twenty-four that only look
  *   node scripts/smoke/all.mjs --write    the 136 that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
@@ -130,6 +130,7 @@ const WALKS = [
     { name: 'pickup', writes: true, asks: 'Does a child get handed over, and only to the adult who asked?' },
     { name: 'meetings', writes: true, asks: 'Does a teacher find out who booked a meeting with them?' },
     { name: 'library', writes: true, asks: 'Can somebody become a writer and get something published?' },
+    { name: 'library-phone', writes: false, asks: 'Does every page a Library writer or an adult reader opens work on a phone, in Dhivehi and Arabic?' },
     { name: 'peer-review', writes: true, asks: 'Does the research peer-review gate refuse, and can it be satisfied?' },
     { name: 'earnings', writes: true, asks: 'Does a sale become the writer\'s money, and does the payout gate say why not?' },
     { name: 'money', writes: true, asks: 'Can the school take money without a gateway, and give it back?' },

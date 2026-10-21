@@ -91,7 +91,7 @@
         @if(!empty($item['toc']))
             {{-- §8.8: the table of contents, one line per entry as the writer typed it. --}}
             <details class="mb-6 rounded border bg-gray-50 p-4" open data-testid="toc">
-                <summary class="cursor-pointer text-sm font-semibold text-gray-800">{{ __('public.Contents') }}</summary>
+                <summary class="cursor-pointer py-2 text-sm font-semibold text-gray-800">{{ __('public.Contents') }}</summary>
                 <ol class="mt-2 list-decimal ps-5 text-sm text-gray-700">
                     @foreach(preg_split('/\r?\n/', $item['toc']) as $line)
                         @if(trim($line) !== '')
