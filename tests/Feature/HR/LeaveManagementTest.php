@@ -66,8 +66,30 @@ it('rejects over-balance paid leave and lets unpaid bypass the check', function 
         'to_date' => '2026-08-10',
     ]);
 
-    expect($result['days'])->toBe(10.0)
-        ->and(StaffAttendance::query()->where('status', StaffAttendanceStatus::OnLeave->value)->count())->toBe(10);
+    // STATUS §5um: working days — 1–10 August 2026 is ten days, two Fridays and Saturdays among them (seven are worked).
+    expect($result['days'])->toBe(7.0)
+        ->and(StaffAttendance::query()->where('status', StaffAttendanceStatus::OnLeave->value)->count())->toBe(7);
+});
+
+it('counts leave in working days: no weekend, no school holiday, and calendar days when switched (§5um)', function () {
+    $year = makeYear(['is_current' => true, 'status' => 'active', 'start_date' => '2026-01-01', 'end_date' => '2026-12-31']);
+    \Illuminate\Support\Facades\DB::table('calendar_days')->insert(['academic_year_id' => $year->id, 'date' => '2026-08-04', 'type' => 'holiday', 'title' => 'A holiday', 'created_at' => now(), 'updated_at' => now()]);
+    $count = app(\App\Domains\HR\Actions\CountLeaveDaysAction::class);
+
+    // Sun 2 to Sat 8 August: Fri 7 and Sat 8 are the weekend, Tue 4 a holiday.
+    expect($count->dates('2026-08-02', '2026-08-08'))->toBe(['2026-08-02', '2026-08-03', '2026-08-05', '2026-08-06'])
+        ->and($count->execute('2026-08-02', '2026-08-08'))->toBe(4.0)
+        // A half day on a working day is half a day; on a Friday it is nothing.
+        ->and($count->execute('2026-08-03', '2026-08-03', true))->toBe(0.5)
+        ->and($count->execute('2026-08-07', '2026-08-07', true))->toBe(0.0);
+
+    // A leave wholly on a weekend is refused: it takes no days.
+    $staff = makeStaffProfile();
+    expect(fn () => app(ApproveStaffLeaveAction::class)->execute(['staff_profile_id' => $staff->id, 'leave_type_id' => leaveType('unpaid')->id, 'from_date' => '2026-08-07', 'to_date' => '2026-08-08']))
+        ->toThrow(ValidationException::class);
+
+    config(['hr.leave_counts' => 'calendar']);
+    expect($count->execute('2026-08-02', '2026-08-08'))->toBe(7.0);
 });
 
 it('caps carry-over at the leave type maximum', function () {

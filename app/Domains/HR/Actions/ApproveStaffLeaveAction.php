@@ -73,13 +73,12 @@ class ApproveStaffLeaveAction
                 isset($data['request_id']) ? (int) $data['request_id'] : null,
             );
 
-            $start = Carbon::parse($from, 'Indian/Maldives')->startOfDay();
-            $end = Carbon::parse($to, 'Indian/Maldives')->startOfDay();
-            for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
+            // STATUS §5um: the days the leave takes — a weekend or a holiday inside it is not leave.
+            foreach (app(CountLeaveDaysAction::class)->dates($from, $to) as $date) {
                 $this->writer->record(new StaffAttendanceDTO(
                     staffProfileId: (int) $data['staff_profile_id'],
                     academicYearId: (int) $year['id'],
-                    date: $date->toDateString(),
+                    date: $date,
                     status: StaffAttendanceStatus::OnLeave,
                     source: StaffAttendanceSource::Manual,
                     markedBy: isset($data['marked_by']) ? (int) $data['marked_by'] : null,
