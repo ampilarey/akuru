@@ -4,6 +4,7 @@ namespace App\Domains\Library\Actions;
 
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -38,8 +39,7 @@ class PublishLibraryItemAction
         if ($publish && $item->writer?->user_id) {
             app(NotifyLibraryUserAction::class)->execute(
                 (int) $item->writer->user_id,
-                'Published',
-                '"'.$item->title.'" is now on the library shelf.',
+                Said::of('library_notices.published_title'), Said::of('library_notices.on_shelf_body', ['title' => $item->title]),
                 '/library/'.$item->slug,
                 'published',
             );

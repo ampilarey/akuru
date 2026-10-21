@@ -4983,6 +4983,30 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ty. The Library's notices in the reader's language (HP3b, 2026-10-21)
+
+The Digital Library sent 42 notices as English sentences built in code,
+with no phrase key: submissions, decisions, sales, payouts, peer review,
+reading alerts, blogs, comments, consent, growing up at 18, reminders.
+- **Phrase book:** a new `library_notices` book in EN, DV and AR. Every
+  Library notice is now a `Said`:
+  - a decision with the office's note says the note; with none, it says its
+    own default sentence;
+  - a reading alert names its signal from the office's words, not its code;
+  - a payout's note and a featured post's reward are added with
+    `Said::join`.
+- **Copyright and ID card:** the two copyright notices (§5ts) and the ID
+  card notice move from `__` to `Said`.
+- **Quoting:** titles are quoted “thus”, which reads in Thaana and Arabic
+  as it does in English.
+
+**Tests:** `LibraryNotificationsTest` reads the new words, keeps the
+phrase, and names the alert's signal. The English titles are as before, so
+the other Library tests stand. Whole suite 3346 passed; pint clean.
+
+**Walk:** `notice-language.mjs` sends a Library reading nudge too. The
+parent reads both notices in Dhivehi and Arabic. 5/5.
+
 ## 5tx. A notice in the reader's language: the way, and the shops (HP3a, 2026-10-21)
 
 A notice was written once, in the sender's language. The nightly cart

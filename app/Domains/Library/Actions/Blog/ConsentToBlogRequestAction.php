@@ -7,6 +7,7 @@ use App\Domains\Library\Enums\BlogRequestStatus;
 use App\Domains\Library\Models\BlogRequest;
 use App\Domains\People\Actions\ListConsentingGuardiansAction;
 use App\Domains\People\Actions\RecordConsentAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -49,12 +50,12 @@ class ConsentToBlogRequestAction
         $notify = app(NotifyLibraryUserAction::class);
         $notify->execute(
             (int) $request->user_id,
-            $agree ? 'Your parent agreed to your blog' : 'Your parent said not now',
-            $agree ? 'The office will look at your blog request next.' : 'Your blog request will not go ahead. You may ask again later.',
+            Said::of('library_notices.'.($agree ? 'consent_agreed_title' : 'consent_refused_title')),
+            Said::of('library_notices.'.($agree ? 'consent_agreed_body' : 'consent_refused_body')),
             '/my-blog',
         );
         if ($agree) {
-            $notify->office('New blog request', "{$request->pen_name} asked to start a blog, and a parent agreed.", '/admin/library/blog-requests');
+            $notify->office(Said::of('library_notices.blog_request_title'), Said::of('library_notices.blog_request_agreed_body', ['name' => $request->pen_name]), '/admin/library/blog-requests');
         }
 
         return $request;

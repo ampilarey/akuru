@@ -8,6 +8,7 @@ use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\WriterEarning;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -64,8 +65,11 @@ class FeaturePostAction
         if ($feature) {
             app(NotifyLibraryUserAction::class)->execute(
                 (int) $item->writer->user_id,
-                'Your post is featured this month',
-                '"'.$item->title.'" is featured on the blogs.'.($reward ? ' Akuru rewards it with MVR '.number_format($reward, 2).'.' : ''),
+                Said::of('library_notices.featured_title'),
+                Said::join([
+                    Said::of('library_notices.featured_body', ['title' => $item->title]),
+                    $reward ? Said::of('library_notices.featured_reward', ['amount' => number_format($reward, 2)]) : null,
+                ]),
                 '/library/'.$item->slug,
             );
         }

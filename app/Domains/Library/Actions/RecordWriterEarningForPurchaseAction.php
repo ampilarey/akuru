@@ -7,6 +7,7 @@ use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryPurchase;
 use App\Domains\Library\Models\WriterEarning;
 use App\Domains\Library\Models\WriterProfile;
+use App\Support\Said;
 
 /**
  * L6 (§21–§23): one earning per PAID sale of a writer's item — called from
@@ -58,8 +59,7 @@ class RecordWriterEarningForPurchaseAction
         // §41: the writer hears about the sale, in their share.
         app(NotifyLibraryUserAction::class)->execute(
             (int) $writer->user_id,
-            'New sale',
-            '"'.$item->title.'" sold for MVR '.number_format($paid, 2).'. Your share: MVR '.number_format($writerAmount, 2).'.',
+            Said::of('library_notices.sale_title'), Said::of('library_notices.sale_body', ['title' => $item->title, 'paid' => number_format($paid, 2), 'share' => number_format($writerAmount, 2)]),
             '/write',
             'new_sale',
         );

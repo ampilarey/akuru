@@ -6,6 +6,7 @@ use App\Domains\Commerce\Actions\CreditWalletAction;
 use App\Domains\Library\Models\WriterEarning;
 use App\Domains\Library\Models\WriterPayout;
 use App\Domains\Library\Models\WriterProfile;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -49,8 +50,8 @@ class DecideWriterPayoutAction
                     if ((int) $payout->wallet_user_id !== (int) WriterProfile::query()->whereKey($payout->writer_id)->value('user_id')) {
                         app(NotifyLibraryUserAction::class)->execute(
                             (int) $payout->wallet_user_id,
-                            'Blog earnings in your wallet',
-                            'MVR '.number_format((float) $payout->amount, 2).' earned by '.$writerName.'\'s blog is now in your Akuru wallet.',
+                            Said::of('library_notices.blog_wallet_title'),
+                            Said::of('library_notices.blog_wallet_body', ['amount' => number_format((float) $payout->amount, 2), 'writer' => $writerName]),
                             '/my-wallet',
                             'payout_decided',
                         );
@@ -67,8 +68,11 @@ class DecideWriterPayoutAction
             if ($writerUserId) {
                 app(NotifyLibraryUserAction::class)->execute(
                     (int) $writerUserId,
-                    $paid ? 'Payout paid' : 'Payout not paid',
-                    'MVR '.number_format((float) $payout->amount, 2).($paid ? ' has been paid out.' : ' was not paid out; the earnings are available again.').($note !== null && trim($note) !== '' ? ' '.trim($note) : ''),
+                    Said::of('library_notices.'.($paid ? 'payout_paid_title' : 'payout_unpaid_title')),
+                    Said::join([
+                        Said::of('library_notices.'.($paid ? 'payout_paid_body' : 'payout_unpaid_body'), ['amount' => number_format((float) $payout->amount, 2)]),
+                        $note !== null && trim($note) !== '' ? trim($note) : null,
+                    ]),
                     '/write',
                     'payout_decided',
                 );

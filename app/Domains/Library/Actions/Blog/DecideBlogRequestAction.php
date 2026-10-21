@@ -8,6 +8,7 @@ use App\Domains\Library\Enums\BlogRequestStatus;
 use App\Domains\Library\Models\BlogRequest;
 use App\Domains\Library\Models\WriterProfile;
 use App\Domains\People\Actions\HasActiveConsentAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -80,8 +81,8 @@ class DecideBlogRequestAction
 
         app(NotifyLibraryUserAction::class)->execute(
             (int) $request->user_id,
-            $approve ? 'Your blog is ready' : 'Your blog request was not approved',
-            $approve ? "\"{$request->blog_title}\" is set up. Open My blog to see it." : $request->decision_note,
+            Said::of('library_notices.'.($approve ? 'blog_ready_title' : 'blog_refused_title')),
+            $approve ? Said::of('library_notices.blog_ready_body', ['title' => $request->blog_title]) : (string) $request->decision_note,
             '/my-blog',
             'blog_request_decided',
         );

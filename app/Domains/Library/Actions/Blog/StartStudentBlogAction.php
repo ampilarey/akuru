@@ -8,6 +8,7 @@ use App\Domains\Library\Models\BlogRequest;
 use App\Domains\Library\Models\WriterProfile;
 use App\Domains\People\Actions\ListConsentingGuardiansAction;
 use App\Domains\People\Actions\ResolveStudentAgeForUserAction;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -68,14 +69,14 @@ class StartStudentBlogAction
             foreach (app(ListConsentingGuardiansAction::class)->execute($student['student_id']) as $guardianUserId) {
                 $notify->execute(
                     $guardianUserId,
-                    'Your child asked to start a blog',
-                    "{$student['first_name']} would like to start a blog on Akuru as \"{$penName}\". Nothing is published until you agree and the office approves.",
+                    Said::of('library_notices.blog_consent_title'),
+                    Said::of('library_notices.blog_consent_body', ['name' => $student['first_name'], 'pen' => $penName]),
                     "/portal/children/{$student['student_id']}/blog",
                     'blog_consent_asked',
                 );
             }
         } else {
-            $notify->office('New blog request', "{$penName} asked to start a blog.", '/admin/library/blog-requests');
+            $notify->office(Said::of('library_notices.blog_request_title'), Said::of('library_notices.blog_request_body', ['name' => $penName]), '/admin/library/blog-requests');
         }
 
         return $request;

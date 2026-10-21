@@ -4,6 +4,7 @@ namespace App\Domains\Library\Actions\Blog;
 
 use App\Domains\Library\Actions\NotifyLibraryUserAction;
 use App\Domains\Library\Models\LibraryComment;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -36,8 +37,8 @@ class ModerateCommentAction
         if ($decision !== 'hide') {
             app(NotifyLibraryUserAction::class)->execute(
                 (int) $comment->user_id,
-                $decision === 'publish' ? 'Your comment is published' : 'Your comment was not published',
-                '"'.$comment->item?->title.'": '.($note ?? 'readers can see your comment now.'),
+                Said::of('library_notices.'.($decision === 'publish' ? 'comment_published_title' : 'comment_refused_title')),
+                Said::of('library_notices.about_item', ['title' => (string) $comment->item?->title, 'comment' => $note ?? Said::of('library_notices.comment_published_default')]),
                 '/library/'.$comment->item?->slug,
             );
         }
@@ -52,7 +53,7 @@ class ModerateCommentAction
             throw ValidationException::withMessages(['comment' => __('blog.error_comment_not_reportable')]);
         }
         $comment->fill(['status' => 'reported', 'report_count' => $comment->report_count + 1])->save();
-        app(NotifyLibraryUserAction::class)->office('A blog comment was reported', 'A reader reported a comment; it is off the page until you decide.', '/admin/library/comments?status=reported');
+        app(NotifyLibraryUserAction::class)->office(Said::of('library_notices.comment_reported_title'), Said::of('library_notices.comment_reported_body'), '/admin/library/comments?status=reported');
 
         return $comment;
     }

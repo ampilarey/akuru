@@ -9,6 +9,7 @@ use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
 use App\Domains\Library\Models\LibraryReviewAssignment;
 use App\Domains\Library\Models\WriterProfile;
+use App\Support\Said;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 
@@ -83,10 +84,10 @@ class SubmitLibraryItemForReviewAction
 
         // §41: the writer hears it arrived; the office hears there is work.
         $notify = app(NotifyLibraryUserAction::class);
-        $notify->execute($userId, 'Submission received', '"'.$item->title.'" is in the editorial queue. You will hear when it is reviewed.', '/write');
-        $notify->office('New library submission', $profile->display_name.' submitted "'.$item->title.'" for review.', '/admin/library');
+        $notify->execute($userId, Said::of('library_notices.submission_received_title'), Said::of('library_notices.submission_received_body', ['title' => $item->title]), '/write');
+        $notify->office(Said::of('library_notices.office_submission_title'), Said::of('library_notices.office_submission_body', ['name' => $profile->display_name, 'title' => $item->title]), '/admin/library');
         foreach ($reopened as $reviewerId) {
-            $notify->execute((int) $reviewerId, 'Revised research to review', '"'.$item->title.'" is back from the writer for round '.$item->review_round.'.', '/review');
+            $notify->execute((int) $reviewerId, Said::of('library_notices.revised_research_title'), Said::of('library_notices.revised_research_body', ['title' => $item->title, 'round' => $item->review_round]), '/review');
         }
 
         return $item->refresh();

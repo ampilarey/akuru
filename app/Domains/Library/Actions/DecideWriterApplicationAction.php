@@ -5,6 +5,7 @@ namespace App\Domains\Library\Actions;
 use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Library\Models\WriterApplication;
 use App\Domains\Library\Models\WriterProfile;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -64,10 +65,10 @@ class DecideWriterApplicationAction
             // §41: the applicant hears the decision, and the reason if given.
             app(NotifyLibraryUserAction::class)->execute(
                 (int) $application->user_id,
-                $approve ? 'You are now an Akuru writer' : 'Writer application not accepted',
+                Said::of('library_notices.'.($approve ? 'writer_approved_title' : 'writer_declined_title')),
                 $approve
-                    ? 'Your application was approved. Open the writer portal to start a draft.'
-                    : ($note !== null && trim($note) !== '' ? trim($note) : 'Your application was not accepted this time.'),
+                    ? Said::of('library_notices.writer_approved_body')
+                    : ($note !== null && trim($note) !== '' ? trim($note) : Said::of('library_notices.writer_declined_body')),
                 '/write',
                 'writer_application_decided',
             );

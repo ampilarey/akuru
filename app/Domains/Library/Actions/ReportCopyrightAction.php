@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ResolveAcademicYearForDateAction;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryCopyrightReport;
 use App\Domains\Library\Models\LibraryItem;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -40,8 +41,7 @@ class ReportCopyrightAction
         ]);
 
         app(NotifyLibraryUserAction::class)->office(
-            __('library_copyright.notice_new_title'),
-            __('library_copyright.notice_new_body', ['title' => (string) $item->title, 'name' => $report->name]),
+            Said::of('library_copyright.notice_new_title'), Said::of('library_copyright.notice_new_body', ['title' => (string) $item->title, 'name' => $report->name]),
             '/admin/library/copyright',
         );
 

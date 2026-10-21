@@ -2,8 +2,9 @@
  * Does a notice read in the family's language, whoever sent it? (HP3,
  * ADR-044, STATUS §5tx.)
  *
- * A cart reminder is sent to the seeded parent the way the nightly job sends
- * it, in English (tinker, so local only). On a 390 px phone the parent opens
+ * A cart reminder and a Library reading nudge (HP3b) are sent to the seeded
+ * parent the way the nightly jobs send them, in English (tinker, so local
+ * only). On a 390 px phone the parent opens
  * their notifications under /dv and /ar: the reminder reads in Dhivehi, then
  * in Arabic, not in the words it was sent in. The notice is removed after.
  *
@@ -29,6 +30,7 @@ const check = (step, ok, detail = '') => results.push([step, ok, detail]);
 
 const userId = tinker(`echo DB::table('users')->where('email', '${PARENT}')->value('id');`);
 const id = tinker(`app()->setLocale('en'); app(\\App\\Domains\\Bookshop\\Actions\\NotifyBookshopUserAction::class)->execute(${userId}, \\App\\Support\\Said::of('shop.notice_cart_reminder_title'), \\App\\Support\\Said::of('shop.notice_cart_reminder_body', ['count' => 1, 'shops' => 'Fitrah']), '/shop/cart'); echo DB::table('user_notifications')->where('user_id', ${userId})->max('id');`);
+const libraryId = tinker(`app()->setLocale('en'); app(\\App\\Domains\\Library\\Actions\\NotifyLibraryUserAction::class)->execute(${userId}, \\App\\Support\\Said::of('library_notices.continue_title'), \\App\\Support\\Said::of('library_notices.continue_body', ['page' => 4, 'title' => 'SMOKE-Primer']), '/library'); echo DB::table('user_notifications')->where('user_id', ${userId})->max('id');`);
 const browser = await chromium.launch({
     args: ['--no-first-run', '--disable-background-networking'],
     ...(process.env.SMOKE_CHROMIUM ? { executablePath: process.env.SMOKE_CHROMIUM } : {}),
@@ -48,10 +50,13 @@ try {
         const text = await page.locator(`[data-notification="${id}"]`).innerText().catch(() => '');
         const wanted = say('shop.notice_cart_reminder_title', locale);
         check(`/${locale} the parent reads it in their language, not in English`, text.includes(wanted) && !text.includes(english), wanted);
+        const nudge = await page.locator(`[data-notification="${libraryId}"]`).innerText().catch(() => '');
+        const nudgeWanted = say('library_notices.continue_title', locale);
+        check(`/${locale} and the Library's nudge too`, nudge.includes(nudgeWanted) && !nudge.includes(say('library_notices.continue_title', 'en')), nudgeWanted);
     }
 } finally {
     await browser.close();
-    tinker(`DB::table('user_notifications')->where('id', ${Number(id) || 0})->delete(); echo 'ok';`);
+    tinker(`DB::table('user_notifications')->whereIn('id', [${Number(id) || 0}, ${Number(libraryId) || 0}])->delete(); echo 'ok';`);
 }
 let passed = 0;
 for (const [step, ok, detail] of results) {

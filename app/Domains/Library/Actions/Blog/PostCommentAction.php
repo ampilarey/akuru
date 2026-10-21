@@ -7,6 +7,7 @@ use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryComment;
 use App\Domains\Library\Models\LibraryItem;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -45,7 +46,7 @@ class PostCommentAction
         $comment = LibraryComment::query()->create([
             'library_item_id' => $item->id, 'user_id' => $userId, 'parent_id' => $parentId, 'body' => $text, 'status' => 'pending',
         ]);
-        app(NotifyLibraryUserAction::class)->office('A blog comment to check', 'A comment on "'.$item->title.'" waits for checking.', '/admin/library/comments');
+        app(NotifyLibraryUserAction::class)->office(Said::of('library_notices.comment_to_check_title'), Said::of('library_notices.comment_to_check_body', ['title' => $item->title]), '/admin/library/comments');
 
         return $comment;
     }

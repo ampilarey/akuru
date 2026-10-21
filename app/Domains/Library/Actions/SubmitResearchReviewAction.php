@@ -6,6 +6,7 @@ use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
 use App\Domains\Library\Models\LibraryReviewAssignment;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -72,22 +73,25 @@ class SubmitResearchReviewAction
         if ($item->writer?->user_id) {
             $notify->execute(
                 (int) $item->writer->user_id,
-                match ($recommendation) {
-                    'accept' => 'A peer reviewer accepted your research',
-                    'revise' => 'A peer reviewer asked for revisions',
-                    default => 'A peer reviewer recommended not publishing',
-                },
-                '"'.$item->title.'":'.($said !== '' ? $said : ' no comment was left.').($recommendation === 'revise' ? ' Revise the draft and submit it again.' : ''),
+                Said::of('library_notices.'.match ($recommendation) {
+                    'accept' => 'research_accepted_title',
+                    'revise' => 'research_revise_title',
+                    default => 'research_rejected_title',
+                }),
+                Said::join([
+                    Said::of('library_notices.about_item', ['title' => $item->title, 'comment' => $said !== '' ? trim($said) : Said::of('library_notices.research_no_comment')]),
+                    $recommendation === 'revise' ? Said::of('library_notices.research_revise_again') : null,
+                ]),
                 '/write',
             );
         }
 
         $gate = app(AssertResearchReviewedAction::class);
         if ($recommendation === 'accept' && $gate->acceptsInRound($item) >= $gate->required()) {
-            $notify->office('Research ready to publish', '"'.$item->title.'" has the peer-review accepts it needs.', '/admin/library');
+            $notify->office(Said::of('library_notices.research_ready_title'), Said::of('library_notices.research_ready_body', ['title' => $item->title]), '/admin/library');
         }
         if ($recommendation === 'reject') {
-            $notify->office('A reviewer recommended rejecting', '"'.$item->title.'": decide it in the submissions queue.', '/admin/library');
+            $notify->office(Said::of('library_notices.research_reject_title'), Said::of('library_notices.research_reject_body', ['title' => $item->title]), '/admin/library');
         }
 
         return $assignment->refresh();

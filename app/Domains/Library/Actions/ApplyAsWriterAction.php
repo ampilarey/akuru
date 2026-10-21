@@ -6,6 +6,7 @@ use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Domains\Library\Models\WriterApplication;
 use App\Domains\Library\Models\WriterProfile;
 use App\Domains\Media\Actions\StorePublicMediaAction;
+use App\Support\Said;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Validation\ValidationException;
 
@@ -73,8 +74,7 @@ class ApplyAsWriterAction
 
         // §41: the office hears there is an application to decide.
         app(NotifyLibraryUserAction::class)->office(
-            'New writer application',
-            $application->display_name.' applied to write for the library.',
+            Said::of('library_notices.application_title'), Said::of('library_notices.application_body', ['name' => $application->display_name]),
             '/admin/library',
         );
 

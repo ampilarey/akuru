@@ -7,6 +7,7 @@ use App\Domains\Library\Actions\ResolveLibrarySettingAction;
 use App\Domains\Library\Models\LibraryTip;
 use App\Domains\Library\Models\WriterEarning;
 use App\Domains\Library\Models\WriterProfile;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -56,8 +57,7 @@ class RecordTipPaidAction
             if ($writer?->user_id) {
                 app(NotifyLibraryUserAction::class)->execute(
                     (int) $writer->user_id,
-                    'You received a tip',
-                    'A reader tipped MVR '.number_format((float) $earning->gross_amount, 2).'. Your share: MVR '.number_format((float) $earning->writer_amount, 2).'.',
+                    Said::of('library_notices.tip_title'), Said::of('library_notices.tip_body', ['gross' => number_format((float) $earning->gross_amount, 2), 'share' => number_format((float) $earning->writer_amount, 2)]),
                     '/my-blog',
                     'new_sale',
                 );

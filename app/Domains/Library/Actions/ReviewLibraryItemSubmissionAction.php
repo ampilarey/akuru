@@ -6,6 +6,7 @@ use App\Domains\Library\Actions\Blog\DecidePostChangeAction;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -71,8 +72,7 @@ class ReviewLibraryItemSubmissionAction
         if ($decision !== 'approved' && $item->writer?->user_id) {
             app(NotifyLibraryUserAction::class)->execute(
                 (int) $item->writer->user_id,
-                $decision === 'rejected' ? 'Submission not accepted' : 'Changes requested',
-                '"'.$item->title.'": '.($comment !== null && trim($comment) !== '' ? trim($comment) : ($decision === 'rejected' ? 'the editor did not accept it.' : 'the editor asked for changes.')),
+                Said::of('library_notices.'.($decision === 'rejected' ? 'submission_rejected_title' : 'submission_changes_title')), Said::of('library_notices.about_item', ['title' => $item->title, 'comment' => $comment !== null && trim($comment) !== '' ? trim($comment) : Said::of('library_notices.'.($decision === 'rejected' ? 'editor_rejected' : 'editor_changes'))]),
                 '/write',
                 'submission_decided',
             );

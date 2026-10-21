@@ -4,6 +4,7 @@ namespace App\Domains\Library\Actions;
 
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryPurchase;
+use App\Support\Said;
 
 /**
  * COMMERCE_PARITY_PLAN P5 (the owner: "SMS and email to vendor, customer
@@ -23,14 +24,12 @@ class AnnounceLibrarySaleAction
         $notify = app(NotifyLibraryUserAction::class);
         $notify->execute(
             (int) $purchase->user_id,
-            'Your purchase is ready',
-            'Payment confirmed for "'.$item->title.'". You can read it now.',
+            Said::of('library_notices.purchase_ready_title'), Said::of('library_notices.purchase_ready_body', ['title' => $item->title]),
             '/library/'.$item->slug.'/read',
             'purchase_ready',
         );
         $notify->office(
-            'A Digital Library sale',
-            '"'.$item->title.'" sold for '.($purchase->currency ?: 'MVR').' '.number_format((float) $purchase->amount, 2).'.',
+            Said::of('library_notices.office_sale_title'), Said::of('library_notices.office_sale_body', ['title' => $item->title, 'currency' => $purchase->currency ?: 'MVR', 'amount' => number_format((float) $purchase->amount, 2)]),
             '/admin/library',
             'new_sale',
         );

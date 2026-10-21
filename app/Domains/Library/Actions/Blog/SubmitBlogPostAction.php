@@ -10,6 +10,7 @@ use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
 use App\Domains\Library\Models\WriterProfile;
 use App\Domains\People\Actions\ResolveStudentAgeForUserAction;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -87,9 +88,9 @@ class SubmitBlogPostAction
 
         $notify = app(NotifyLibraryUserAction::class);
         if ($teacher !== null) {
-            $notify->execute($teacher, 'A student\'s post to check', $profile->display_name.' sent "'.$item->title.'" for you to check.', '/teach/blog-posts');
+            $notify->execute($teacher, Said::of('library_notices.teacher_post_title'), Said::of('library_notices.teacher_post_body', ['name' => $profile->display_name, 'title' => $item->title]), '/teach/blog-posts');
         } else {
-            $notify->office('New blog post to check', $profile->display_name.' sent "'.$item->title.'" for checking.', '/admin/library');
+            $notify->office(Said::of('library_notices.office_post_title'), Said::of('library_notices.office_post_body', ['name' => $profile->display_name, 'title' => $item->title]), '/admin/library');
         }
 
         return $item->refresh();
