@@ -122,21 +122,21 @@
             {{ __('shop.sold_by') }} <span class="font-medium">{{ $order['receipt']['vendor_legal_name'] }}</span> · {{ __('shop.at_akuru') }}
             @if($order['receipt']['tax_shown'] && $order['receipt']['vendor_tin'])<span class="block" data-testid="vendor-tin">{{ __('shop.vendor_tin_label') }}: {{ $order['receipt']['vendor_tin'] }}</span>@endif
         </p>
-        <table class="mb-3 w-full text-sm">
+        <table class="table-stack mb-3 w-full text-sm">
             <thead class="border-b text-start text-gray-500">
                 <tr><th class="py-1 text-start">{{ __('shop.product_title') }}</th><th class="py-1 text-end">{{ __('shop.quantity') }}</th><th class="py-1 text-end">{{ __('shop.price') }}</th><th class="py-1 text-end">{{ __('shop.line_total') }}</th></tr>
             </thead>
             <tbody>
                 @foreach($order['items'] as $item)
                     <tr class="border-b" data-testid="order-item">
-                        <td class="py-1" dir="auto">{{ $item['title'] }}@if($item['variant']) <span class="text-gray-500">({{ $item['variant'] }})</span>@endif @if($item['sku'])<span class="block text-xs text-gray-400">{{ $item['sku'] }}</span>@endif
+                        <td class="py-1" dir="auto" data-label="{{ __('shop.product_title') }}">{{ $item['title'] }}@if($item['variant']) <span class="text-gray-500">({{ $item['variant'] }})</span>@endif @if($item['sku'])<span class="block text-xs text-gray-400">{{ $item['sku'] }}</span>@endif
                             @if($item['print'] ?? null)<a href="{{ route('public.shop.print.job', $item['print']['job_id']) }}" class="block text-xs text-brandMaroon-700 underline" data-testid="order-print-design">{{ __('print.order_see_design') }}</a>@if($item['print']['status'])<span class="block text-xs text-gray-600" data-testid="order-print-status">{{ __('print.job_status_'.$item['print']['status']) }}</span>@endif
                                 <form method="POST" action="{{ route('public.shop.print.copy', $item['print']['job_id']) }}" class="inline">@csrf<input type="hidden" name="again" value="1"><button type="submit" class="text-xs text-brandMaroon-700 underline" data-testid="order-print-again">{{ __('print.order_again') }}</button></form>
                             @endif
                             @if($item['review_url'] ?? null)<a href="{{ $item['review_url'] }}" class="block text-xs text-brandMaroon-700 underline" data-testid="write-review">{{ __('shop.write_review') }}</a>@endif</td>
-                        <td class="py-1 text-end">{{ $item['quantity'] }}</td>
-                        <td class="py-1 text-end">{{ $item['unit_price'] }}</td>
-                        <td class="py-1 text-end">{{ $item['line_total'] }}</td>
+                        <td class="py-1 sm:text-end" data-label="{{ __('shop.quantity') }}">{{ $item['quantity'] }}</td>
+                        <td class="py-1 sm:text-end" data-label="{{ __('shop.price') }}">{{ $item['unit_price'] }}</td>
+                        <td class="py-1 sm:text-end" data-label="{{ __('shop.line_total') }}">{{ $item['line_total'] }}</td>
                     </tr>
                 @endforeach
             </tbody>

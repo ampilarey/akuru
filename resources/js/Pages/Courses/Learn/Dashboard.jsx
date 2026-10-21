@@ -31,7 +31,7 @@ function AssessmentRow({ row, t }) {
     return (
         <li className="flex flex-wrap items-center justify-between gap-2 border-t py-2 text-sm">
             <span>
-                <a className="text-[#7C2D37] hover:underline" href={`/learn/assessments/${row.id}`}>{row.title}</a>
+                <a className="inline-block py-1.5 text-[#7C2D37] hover:underline" href={`/learn/assessments/${row.id}`}>{row.title}</a>
                 <span className="ms-2 text-gray-600">{status}</span>
             </span>
             <span className="text-gray-700">
@@ -71,7 +71,7 @@ export default function Dashboard({ student, enrollments, waiting = [], upcoming
                             </li>
                         ))}
                     </ul>
-                    <a className="mt-2 inline-block text-sm text-[#7C2D37] hover:underline" href="/my-enrollments">{t.waiting_details || 'Enrolments and payments'}</a>
+                    <a className="mt-2 inline-block py-1.5 text-sm text-[#7C2D37] hover:underline" href="/my-enrollments">{t.waiting_details || 'Enrolments and payments'}</a>
                 </section>
             )}
             {upcoming_sessions.length > 0 && (
@@ -101,11 +101,11 @@ export default function Dashboard({ student, enrollments, waiting = [], upcoming
                                     {row.completion_date ? ` · ${row.completion_date}` : ''}
                                 </span>
                                 {row.downloadable && (
-                                    <a className="text-[#7C2D37] hover:underline" href={`/learn/certificates/${row.id}`}>
+                                    <a className="inline-block py-1.5 text-[#7C2D37] hover:underline" href={`/learn/certificates/${row.id}`}>
                                         {t.open_certificate || 'Open'}
                                     </a>
                                 )}
-                                <a className="text-[#7C2D37] hover:underline" href={row.verify_url}>
+                                <a className="inline-block py-1.5 text-[#7C2D37] hover:underline" href={row.verify_url}>
                                     {t.verify || 'Verify'} {row.certificate_number}
                                 </a>
                             </li>

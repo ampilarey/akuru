@@ -9,10 +9,10 @@
         <h1 class="text-3xl md:text-4xl font-bold text-brandMaroon-900 mb-2 md:mb-3">{{ __('public.Akuru Digital Library') }}</h1>
         <p class="text-lg md:text-xl text-brandGray-700">{{ __('public.Books, articles and research from Akuru Institute') }}</p>
         <p class="mt-3 text-sm text-brandGray-600">
-            <a href="{{ route('public.gift-cards.index') }}" class="text-brandMaroon-700 hover:underline">{{ __('public.Gift cards') }}</a>
+            <a href="{{ route('public.gift-cards.index') }}" class="inline-block py-1.5 text-brandMaroon-700 hover:underline">{{ __('public.Gift cards') }}</a>
             @auth
-                · <a href="{{ route('public.library.my') }}" class="text-brandMaroon-700 hover:underline">{{ __('public.My Library') }}</a>
-                · <a href="{{ route('public.wallet') }}" class="text-brandMaroon-700 hover:underline">{{ __('public.My Wallet') }}</a>
+                · <a href="{{ route('public.library.my') }}" class="inline-block py-1.5 text-brandMaroon-700 hover:underline">{{ __('public.My Library') }}</a>
+                · <a href="{{ route('public.wallet') }}" class="inline-block py-1.5 text-brandMaroon-700 hover:underline">{{ __('public.My Wallet') }}</a>
             @endauth
         </p>
     </div>
@@ -277,12 +277,12 @@
 
         {{-- The plan's required pages (LIBRARY_PLAN "Required pages"), where a reader looks for them. --}}
         <p class="mt-10 text-xs text-gray-500" data-testid="library-policies">
-            <a href="{{ route('public.page.show', 'reader-terms') }}" class="hover:underline">{{ __('public.Reader Terms') }}</a>
-            · <a href="{{ route('public.page.show', 'copyright-policy') }}" class="hover:underline">{{ __('public.Copyright Policy') }}</a>
-            · <a href="{{ route('public.page.show', 'gift-card-terms') }}" class="hover:underline">{{ __('public.Gift Card Terms') }}</a>
-            · <a href="{{ route('public.page.show', 'wallet-terms') }}" class="hover:underline">{{ __('public.Wallet Terms') }}</a>
-            · <a href="{{ route('public.refunds') }}" class="hover:underline">{{ __('public.Refund Policy') }}</a>
-            · <a href="{{ route('public.page.show', 'publishing-terms') }}" class="hover:underline">{{ __('public.Publishing Terms') }}</a>
+            <a href="{{ route('public.page.show', 'reader-terms') }}" class="inline-block py-1.5 hover:underline">{{ __('public.Reader Terms') }}</a>
+            · <a href="{{ route('public.page.show', 'copyright-policy') }}" class="inline-block py-1.5 hover:underline">{{ __('public.Copyright Policy') }}</a>
+            · <a href="{{ route('public.page.show', 'gift-card-terms') }}" class="inline-block py-1.5 hover:underline">{{ __('public.Gift Card Terms') }}</a>
+            · <a href="{{ route('public.page.show', 'wallet-terms') }}" class="inline-block py-1.5 hover:underline">{{ __('public.Wallet Terms') }}</a>
+            · <a href="{{ route('public.refunds') }}" class="inline-block py-1.5 hover:underline">{{ __('public.Refund Policy') }}</a>
+            · <a href="{{ route('public.page.show', 'publishing-terms') }}" class="inline-block py-1.5 hover:underline">{{ __('public.Publishing Terms') }}</a>
         </p>
     </div>
 </section>

@@ -4983,6 +4983,52 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5tv. The household's pages on a phone (HP1, 2026-10-21)
+
+A fresh audit of what a family sees. The seeded parent and pupil signed in
+at 390 × 844, and every link their shell offers was opened under /dv and
+/ar: 39 pages for the parent and 35 for the pupil. Each page answered and
+read right to left, and none scrolled sideways. The six findings are in
+KNOWN_ISSUES (2026-10-21). This slice fixes four:
+- ***Children's learning*** says the relationship (ބައްޕަ, not FATHER)
+  and the enrolment's state from the `learn` book, and marks its list
+  `data-phone-main`.
+- **The wallet, an order's receipt and a quote** stack into labelled cards
+  (`table-stack`).
+- **Thumb-sized links** (padding only):
+  - e-learning's *View*;
+  - the notifications' titles, *Mark read*, *Remove* and the two folds;
+  - the Library's header and policy links;
+  - the wallet's links;
+  - the Learn dashboard's links;
+  - the wishlist's breadcrumb;
+  - *Not now* on the password page;
+  - the profile's re-send button.
+- **The seeded work photo** is written by `SmokeMarkerSeeder`. It used to
+  point at no file.
+
+Left for their own slices:
+- **HP2:** `/profile` in Dhivehi and Arabic.
+- **HP3:** notifications in the reader's language, which needs the §5pf
+  decision.
+
+**Walk:** `household.mjs` is new and is in `all.mjs`. For both people and
+every page, in dv and ar, it checks:
+- the page answers 200;
+- it reads `rtl`;
+- nothing scrolls sideways;
+- there are no 4xx/5xx or script errors;
+- every table stacks;
+- no control is under 24 px.
+
+It also checks that *Children's learning* says its words in Dhivehi.
+5/5. An order page checked at 390 px reads as stacked, labelled lines.
+
+**Tests:** `HouseholdPhonePagesTest`: the wallet's stacked, labelled
+ledger; the seeded photo exists and the family's photo route answers 200.
+
+Whole suite 3341 passed; pint clean.
+
 ## 5tu. Every walk in the one runner (WA1–WA2, 2026-10-20)
 
 `all.mjs` gates a deploy, but it held 102 of the 155 walk scripts. The other

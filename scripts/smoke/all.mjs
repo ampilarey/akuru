@@ -28,7 +28,7 @@
  * nobody should discover it by pointing the runner at a live school.
  *
  *   node scripts/smoke/all.mjs            every walk (the default)
- *   node scripts/smoke/all.mjs --read     the twenty that only look
+ *   node scripts/smoke/all.mjs --read     the twenty-one that only look
  *   node scripts/smoke/all.mjs --write    the 135 that change data
  *   node scripts/smoke/all.mjs learn review     just those, by name
  *
@@ -211,6 +211,7 @@ const WALKS = [
     { name: 'phone-targets', writes: false, asks: 'Is every tap target in the admin panel big enough for a thumb?' },
     { name: 'once-props', writes: false, asks: 'Do the phrase books travel once, not on every visit?' },
     { name: 'fonts', writes: false, asks: 'Are the fonts self-hosted, with no third party asked for a face?' },
+    { name: 'household', writes: false, asks: 'Does every page a family opens work on a phone, in Dhivehi and Arabic?' },
     { name: 'admin-hub', writes: false, asks: 'Do the School office and the Institute open on today\'s numbers, then the workspace in parts?' },
     { name: 'admin', writes: true, asks: 'Can the two people who run the admin panel reach what they run, and nothing else?' },
     { name: 'workspaces', writes: true, asks: 'Does a person with three workspaces switch between them, one job at a time?' },

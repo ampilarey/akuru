@@ -270,6 +270,9 @@ class SmokeMarkerSeeder extends Seeder
         DB::table('student_work')->where('title', 'SMOKE-Work')->delete();
         DB::table('media_files')->where('original_name', 'SMOKE-Work.jpg')->delete();
 
+        // The photo itself, one white pixel: the row pointed at a file that was
+        // never written, so the family's work page drew a broken image (HP1).
+        Storage::disk('local')->put('smoke/work.jpg', base64_decode('/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAABAAEBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA='));
         $mediaId = DB::table('media_files')->insertGetId([
             'disk' => 'local', 'path' => 'smoke/work.jpg', 'original_name' => 'SMOKE-Work.jpg',
             'mime' => 'image/jpeg', 'size' => 1024, 'uploaded_by' => $admin?->id,

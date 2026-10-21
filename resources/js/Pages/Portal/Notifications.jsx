@@ -29,7 +29,7 @@ export default function Notifications({ notifications = [], categories = {}, pre
 
             {Object.keys(categories).length > 0 && (
                 <details className="mb-4 rounded-lg border bg-white p-4">
-                    <summary className="cursor-pointer text-sm font-medium">{t.notifications_reach_title || 'What reaches me'}</summary>
+                    <summary className="cursor-pointer py-2 text-sm font-medium">{t.notifications_reach_title || 'What reaches me'}</summary>
                     <form
                         onSubmit={(e) => {
                             e.preventDefault();
@@ -59,7 +59,7 @@ export default function Notifications({ notifications = [], categories = {}, pre
 
             {/* SPEC §50 (STATUS §5jr): the phones the mobile app registered for push. */}
             <details className="mb-4 rounded-lg border bg-white p-4" data-testid="devices">
-                <summary className="cursor-pointer text-sm font-medium">{t.devices_title || 'Your phones'}</summary>
+                <summary className="cursor-pointer py-2 text-sm font-medium">{t.devices_title || 'Your phones'}</summary>
                 <p className="mt-2 text-xs text-gray-500">{t.devices_hint || 'The Akuru app registers each phone you sign in on, so notifications reach it. Remove a phone you no longer use.'}</p>
                 {devices.length === 0 && <p className="mt-2 text-sm text-gray-600" data-testid="devices-none">{t.devices_none || 'No phone has registered yet. Sign in on the Akuru app and it will appear here.'}</p>}
                 <ul className="mt-2 divide-y">
@@ -73,7 +73,7 @@ export default function Notifications({ notifications = [], categories = {}, pre
                                     {' · '}{device.last_seen_at ? (t.devices_last_seen || 'Last seen :when').replace(':when', when(device.last_seen_at)) : (t.devices_never_seen || 'Never seen')}
                                 </span>
                             </span>
-                            <button type="button" className="text-xs text-red-700 hover:underline" onClick={() => router.delete(`/account/devices/${device.id}`, { preserveScroll: true })} data-testid="device-remove">{t.devices_remove || 'Remove'}</button>
+                            <button type="button" className="min-h-[32px] py-2 text-xs text-red-700 hover:underline" onClick={() => router.delete(`/account/devices/${device.id}`, { preserveScroll: true })} data-testid="device-remove">{t.devices_remove || 'Remove'}</button>
                         </li>
                     ))}
                 </ul>
@@ -96,7 +96,7 @@ export default function Notifications({ notifications = [], categories = {}, pre
                                 {/* A notification that points somewhere is worth
                                     far more than one that only announces. */}
                                 {item.href
-                                    ? <a className="text-[#7C2D37] hover:underline" href={item.href}>{item.title}</a>
+                                    ? <a className="inline-block py-1.5 text-[#7C2D37] hover:underline" href={item.href}>{item.title}</a>
                                     : item.title}
                             </p>
                             <span className="text-xs text-gray-500">{when(item.created_at)}</span>
@@ -108,7 +108,7 @@ export default function Notifications({ notifications = [], categories = {}, pre
                         {!item.is_read && (
                             <button
                                 type="button"
-                                className="mt-2 text-xs text-[#7C2D37] hover:underline"
+                                className="mt-1 min-h-[32px] py-2 text-xs text-[#7C2D37] hover:underline"
                                 onClick={() => markRead(item.id)}
                             >
                                 {t.notifications_mark_read || 'Mark read'}
