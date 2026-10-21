@@ -147,10 +147,22 @@ class PublicLibraryController extends Controller
         $items = app(ListLibraryItemsAction::class);
 
         return view('public.library.promotions', [
+            // B4d: bundles on sale, beside the campaigns.
+            'bundles' => app(\App\Domains\Library\Actions\ListLibraryBundlesAction::class)->onSale(app()->getLocale()),
             'promotions' => array_map(fn (array $campaign) => $campaign + [
                 'items' => array_slice($items->execute(['campaign' => $campaign['slug']]), 0, 8),
             ], $campaigns),
         ]);
+    }
+
+    /** LIBRARY_PLAN §19 (B4d): one bundle — its works, what it saves, and the way to buy it. */
+    public function bundle(Request $request, string $slug)
+    {
+        $bundle = \App\Domains\Library\Models\LibraryBundle::query()->where('slug', $slug)->firstOrFail();
+        $shown = app(\App\Domains\Library\Actions\ListLibraryBundlesAction::class)->present($bundle, app()->getLocale(), $request->user()?->id);
+        abort_unless($shown['on_sale'] || $shown['owned_count'] > 0, 404);
+
+        return view('public.library.bundle', ['bundle' => $shown, 'paid' => $request->boolean('paid')]);
     }
 
     /** BLOG_PLAN BL2b: the latest posts and the blogs that wrote them. */

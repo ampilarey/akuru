@@ -477,6 +477,7 @@ export default function Admin({ items, categories, options, sales = [], queues =
                     <a className="btn-secondary" href="/admin/library/settings" data-testid="library-settings-link">{t.library_office_settings || 'Settings'}</a>
                     <a className="btn-secondary" href="/admin/library/insights" data-testid="library-insights-link">{t.library_office_insights || 'Insights'}</a>
                     <a className="btn-secondary" href="/admin/library/promotions" data-testid="library-promotions-link">{t.library_office_promotions || 'Promotions'}</a>
+                    <a className="btn-secondary" href="/admin/library/bundles" data-testid="library-bundles-link">{t.library_office_bundles}</a>
                     <a className="btn-secondary" href="/admin/library/earnings/export">{t.library_office_earnings_csv || 'Earnings CSV'}</a>
                     <a className="btn-secondary" href="/admin/library?format=csv">{t.library_office_export_csv || 'Export CSV'}</a>
                 </span>

@@ -757,4 +757,15 @@ return [
     'follow_flash_stopped' => 'ނިމިއްޖެ.',
     'follow_error_no_blog' => 'މިފަދަ ބްލޮގެއް ނެތް.',
     'follow_error_self' => 'މިއީ ތިބާގެ އަމިއްލަ ބްލޮގު.',
+
+    // B4d: Library bundles (LIBRARY_PLAN §19).
+    'bundle_heading' => 'ބަންޑަލްތައް',
+    'bundle_meta' => ':count ޕޮތް އެއް އަގަކަށް އެކުގައި.',
+    'bundle_saving' => 'މި :count ޕޮތުން :amount ސޭވްވާނެ.',
+    'bundle_in_it' => 'މި ބަންޑަލްގައި (:count)',
+    'bundle_have_all' => 'މި ބަންޑަލްގެ ހުރިހާ ޕޮތެއް ތިޔަ ފަރާތުގައި އެބަހުއްޓެވެ.',
+    'bundle_some_owned' => 'މީގެ :count ޕޮތް ކުރިން ތިޔަ ފަރާތުގައި ހުރި. ބަންޑަލް ވިއްކަނީ މުޅިން، އޭގެ އަގުގައި.',
+    'bundle_error_not_on_sale' => 'މި ބަންޑަލް މިހާރު ވިއްކަމުން ނުދޭ.',
+    'bundle_error_have_all' => 'މި ބަންޑަލްގެ ހުރިހާ ޕޮތެއް ކުރިން ތިޔަ ފަރާތުގައި ހުރި.',
+    'bundle_flash_bought' => 'ބަންޑަލް ގަނެވިއްޖެ. އޭގެ ހުރިހާ ޕޮތެއް މައި ލައިބްރަރީގައި.',
 ];

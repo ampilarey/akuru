@@ -757,4 +757,15 @@ return [
     'follow_flash_stopped' => 'تم.',
     'follow_error_no_blog' => 'لا توجد مدونة كهذه.',
     'follow_error_self' => 'هذه مدونتك.',
+
+    // B4d: Library bundles (LIBRARY_PLAN §19).
+    'bundle_heading' => 'الحزم',
+    'bundle_meta' => ':count أعمال معًا بسعر واحد.',
+    'bundle_saving' => 'توفّر :amount على هذه الأعمال الـ :count.',
+    'bundle_in_it' => 'في هذه الحزمة (:count)',
+    'bundle_have_all' => 'لديك كل أعمال هذه الحزمة.',
+    'bundle_some_owned' => 'لديك :count منها من قبل. تُباع الحزمة كاملة بسعرها.',
+    'bundle_error_not_on_sale' => 'هذه الحزمة ليست معروضة للبيع الآن.',
+    'bundle_error_have_all' => 'لديك كل أعمال هذه الحزمة من قبل.',
+    'bundle_flash_bought' => 'اشتريت الحزمة. كل أعمالها في مكتبتي.',
 ];

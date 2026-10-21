@@ -4983,6 +4983,73 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5un. Library bundles (B4d, LIBRARY_PLAN §19, ADR-046, 2026-10-21)
+
+BACKLOG B4 left bundles as "not MVP unless trivial". The owner asked for
+everything that can be completed, deciding by best practice, so ADR-046
+records the design.
+- **Data (additive):** `library_bundles` (titles in three languages, price,
+  on sale, an optional end) and `library_bundle_items`. Also
+  `library_purchases.library_bundle_id` and the morph alias
+  `library_bundle`.
+- **The office** (`/admin/library/bundles`, Inertia, gated with the Library
+  office; in the menu and on the office's buttons):
+  - the bundles come first, with list total, price, works, state, sales
+    and revenue;
+  - then the form: titles, price, the works picked from the paid published
+    ones with their total, on sale, an end date;
+  - change one; CSV.
+  - `SaveLibraryBundleAction` refuses fewer than 2 or more than 20 works,
+    any that is not paid and published, and a price not below their total.
+- **Readers:**
+  - the offers page (`/library/promotions`) lists bundles on sale;
+  - `/library/bundles/{slug}` (public Blade zone, baseline entry) shows the
+    struck total, what it saves and the works, with the buy box first on a
+    phone;
+  - it says which works the reader already has, and when they have them
+    all.
+- **Buying** (`StartLibraryBundleCheckoutAction`): one purchase per work,
+  its share by list price, the last taking the rounding.
+  - **By wallet:** one debit, every grant, in one transaction. Then each
+    writer's earning and the sale notices.
+  - **By card:** one BML payment (`library_bundle`). The purchases wait for
+    the webhook (`GrantLibraryBundleOnPaymentConfirmed`); the return page
+    says it is confirming and grants nothing.
+  - **Refund:** a full refund revokes every grant and refunds every earning
+    (`RevokeLibraryBundleOnPaymentRefunded`).
+  - **Refused payment:** the office hears of a card the bank refused or that
+    would not start.
+  - No code or campaign applies on top.
+
+**Tests:** `LibraryBundlesTest` (5):
+- what a bundle may hold;
+- the split (75 / 37.50 / 37.50, and the rounding);
+- the wallet sale: one debit, three grants, three earnings, the page
+  saying they have it all, and a second buy refused;
+- the card sale: nothing granted before the webhook or on the return page,
+  three after it, and three revoked and refunded by a full refund;
+- the lists and the office's gate, change and CSV.
+
+`LibraryCommerceCheckoutTest` still passes.
+
+**Walk:** `library-bundles.mjs` (new, in `all.mjs`), at 390 px:
+- under /dv, the offers page lists the bundle; its page shows the struck
+  total and the saving, with the buy box first and nothing sideways;
+- paid from the wallet, both works are the reader's (two purchases making
+  the price, two grants);
+- the office's list shows it on sale with one sale, the table stacked, the
+  list before the form, nothing sideways;
+- under /en, left to right.
+
+11/11. Also `promotions-language` 15/15, `library-office-language` 41/41,
+`library-public-language` 81/81, `library-phone` 4/4 and `nav` 14/14.
+
+The menu tests count the new link (`WorkspacesTest`, `AdminHubTest`). Both
+new public routes are declared in the route baseline: the page is public
+content, and the checkout is guarded in the handler, with access from the
+webhook. The whole suite has 3375 tests, all passing; pint is clean. The
+migration is additive.
+
 ## 5um. Leave is counted in working days (ADR-045, 2026-10-21)
 
 KNOWN_ISSUES left this open since 2026-09-13: leave was counted in calendar

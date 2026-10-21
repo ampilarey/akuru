@@ -459,6 +459,8 @@ final class NavigationMap
                 ['key' => 'library_office', 'href' => '/admin/library', 'children' => [
                     ['key' => 'library_insights', 'href' => '/admin/library/insights'],
                     ['key' => 'library_promotions', 'href' => '/admin/library/promotions'],
+                    // LIBRARY_PLAN §19 (B4d): bundles.
+                    ['key' => 'library_bundles', 'href' => '/admin/library/bundles'],
                     ['key' => 'library_reviewers', 'href' => '/admin/library/reviewers'],
                     ['key' => 'library_settings', 'href' => '/admin/library/settings'],
                     // BLOG_PLAN BL1: students' requests to start a blog.

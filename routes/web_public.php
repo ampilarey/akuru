@@ -200,6 +200,9 @@ Route::post('library/authors/{slug}/tip', [\App\Domains\Library\Http\Controllers
 Route::post('library/authors/{slug}/follow', [\App\Domains\Library\Http\Controllers\BlogFollowController::class, 'follow'])->name('public.library.author.follow')->middleware('throttle:30,1,blog-follow');
 // B4 (§8.5): the offers running now.
 Route::get('library/promotions', [PublicLibraryController::class, 'promotions'])->name('public.library.promotions');
+// LIBRARY_PLAN §19 (B4d): bundles — several works at one price; paid on the webhook, never the return URL.
+Route::get('library/bundles/{slug}', [PublicLibraryController::class, 'bundle'])->name('public.library.bundle');
+Route::post('library/bundles/{slug}/checkout', [LibraryCheckoutController::class, 'bundleCheckout'])->name('public.library.bundle.checkout')->middleware(['throttle:10,1,library-checkout', 'customer_password']);
 Route::get('my-library', [LibraryReaderController::class, 'myLibrary'])->name('public.library.my');
 Route::get('my-wallet', [WalletController::class, 'show'])->name('public.wallet');
 Route::post('my-wallet/redeem', [WalletController::class, 'redeem'])->name('public.wallet.redeem')->middleware('throttle:10,1,wallet-redeem');
