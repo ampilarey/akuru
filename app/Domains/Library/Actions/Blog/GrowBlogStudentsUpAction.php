@@ -5,6 +5,7 @@ namespace App\Domains\Library\Actions\Blog;
 use App\Domains\Library\Actions\NotifyLibraryUserAction;
 use App\Domains\Library\Models\WriterProfile;
 use App\Domains\People\Actions\ResolveStudentAgeForUserAction;
+use App\Support\Said;
 
 /**
  * BLOG_PLAN BL7 (D15): a student blogger who has turned 18 becomes a full
@@ -29,9 +30,9 @@ class GrowBlogStudentsUpAction
             $parent = $profile->guardian_user_id;
             $profile->forceFill(['kind' => 'writer', 'guardian_user_id' => null, 'guardian_consented_at' => null, 'show_photo' => true])->save();
             $moved++;
-            $notify->execute((int) $profile->user_id, 'Your blog is a writer\'s blog now', 'You are 18: your blog, posts, followers and earnings stay yours, and the writer portal is open to you.', '/write');
+            $notify->execute((int) $profile->user_id, Said::of('library_notices.grown_up_title'), Said::of('library_notices.grown_up_body'), '/write');
             if ($parent !== null) {
-                $notify->execute((int) $parent, 'Your child\'s blog is theirs now', $profile->display_name.'\'s blog moved to their own care at 18. Your consent for it has ended.', '/portal/children');
+                $notify->execute((int) $parent, Said::of('library_notices.grown_up_parent_title'), Said::of('library_notices.grown_up_parent_body', ['name' => $profile->display_name]), '/portal/children');
             }
         }
 

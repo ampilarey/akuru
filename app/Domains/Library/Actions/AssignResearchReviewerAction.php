@@ -6,6 +6,7 @@ use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryReviewAssignment;
+use App\Support\Said;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
@@ -63,8 +64,8 @@ class AssignResearchReviewerAction
         if ($fresh) {
             app(NotifyLibraryUserAction::class)->execute(
                 (int) $reviewer->id,
-                'Research to review',
-                'You have been asked to peer-review "'.$item->title.'" (round '.$round.'), due '.$due->timezone('Indian/Maldives')->toDateString().'.',
+                Said::of('library_notices.review_assigned_title'),
+                Said::of('library_notices.review_assigned_body', ['title' => $item->title, 'round' => $round, 'due' => $due->timezone('Indian/Maldives')->toDateString()]),
                 '/review',
                 'review_assigned',
             );

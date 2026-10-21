@@ -85,7 +85,9 @@ it('reminds a reader who left a book a week ago, once, with the page — and not
     foreach ([$idle, $longAgoReminded] as $reminded) {
         $note = UserNotification::query()->where('user_id', $reminded->user_id)->firstOrFail();
         expect($note->title)->toBe('Pick it back up?')
-            ->and($note->message)->toContain('page 4 of "Sun letters"')
+            ->and($note->message)->toContain('page 4 of “Sun letters”')
+            // HP3b: the phrase is kept, so the inbox says it in the reader's language.
+            ->and($note->data['said']['message']['key'])->toBe('library_notices.continue_body')
             ->and($note->data['href'])->toBe('/library/'.$book->slug.'/read?page=4')
             ->and($reminded->fresh()->reminded_at)->not->toBeNull();
     }
@@ -114,5 +116,6 @@ it('tells the office once when a reading alert is raised', function () {
     $notes = UserNotification::query()->where('user_id', $office->id)->where('title', 'Reading alert')->get();
     expect($notes)->toHaveCount(1)
         ->and($notes->first()->data['href'])->toBe('/admin/library/reading-alerts')
-        ->and($notes->first()->message)->toContain('rapid pages');
+        // HP3b: the signal by its name, not its code.
+        ->and($notes->first()->message)->toContain(__('admin.library_alerts_signal_rapid_pages'));
 });

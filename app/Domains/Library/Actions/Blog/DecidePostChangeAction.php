@@ -6,6 +6,7 @@ use App\Domains\Library\Actions\NotifyLibraryUserAction;
 use App\Domains\Library\Actions\SyncLibraryItemPagesAction;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -48,12 +49,12 @@ class DecidePostChangeAction
         if ($item->writer?->user_id) {
             app(NotifyLibraryUserAction::class)->execute(
                 (int) $item->writer->user_id,
-                match ($decision) {
-                    'approved' => 'Your edit is live',
-                    'changes_requested' => 'Changes asked for your edit',
-                    default => 'Your edit was not accepted',
-                },
-                '"'.$item->title.'": '.($comment ?? ($decision === 'approved' ? 'readers now see the new text.' : 'the post stays as it was.')),
+                Said::of('library_notices.'.match ($decision) {
+                    'approved' => 'edit_live_title',
+                    'changes_requested' => 'edit_changes_title',
+                    default => 'edit_refused_title',
+                }),
+                Said::of('library_notices.about_item', ['title' => $item->title, 'comment' => $comment ?? Said::of('library_notices.'.($decision === 'approved' ? 'edit_live_default' : 'edit_kept_default'))]),
                 '/my-blog',
                 'post_decided',
             );

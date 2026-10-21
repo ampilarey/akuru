@@ -5,6 +5,7 @@ namespace App\Domains\Library\Actions;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryReviewAssignment;
+use App\Support\Said;
 
 /**
  * RESEARCH_ARTICLES_PLAN R3b: a reviewer with an open report hears about it
@@ -49,11 +50,11 @@ class RemindReviewersAction
                 if ($assignment->reminded_at !== null && $assignment->reminded_at->greaterThanOrEqualTo($dueDay)) {
                     continue;
                 }
-                $title = 'Peer review due today';
-                $message = 'Your review of "'.$item->title.'" is due today.';
+                $title = Said::of('library_notices.review_due_today_title');
+                $message = Said::of('library_notices.review_due_today_body', ['title' => $item->title]);
             } elseif ($assignment->reminded_at === null) {
-                $title = 'Peer review due soon';
-                $message = 'Your review of "'.$item->title.'" is due on '.$dueDay->toDateString().'.';
+                $title = Said::of('library_notices.review_due_soon_title');
+                $message = Said::of('library_notices.review_due_soon_body', ['title' => $item->title, 'due' => $dueDay->toDateString()]);
             } else {
                 continue;
             }

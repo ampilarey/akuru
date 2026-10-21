@@ -7,6 +7,7 @@ use App\Domains\Library\Models\WriterProfile;
 use App\Domains\Library\Support\BlogPage;
 use App\Domains\Media\Actions\ReadPrivateMediaAction;
 use App\Domains\Media\Actions\StoreGeneratedPublicImageAction;
+use App\Support\Said;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -60,8 +61,8 @@ class DecideBlogPageAction
 
         app(NotifyLibraryUserAction::class)->execute(
             (int) $profile->user_id,
-            $approve ? 'Your blog page is updated' : 'Your blog page changes were not approved',
-            $approve ? 'Readers now see your new page.' : $note,
+            Said::of('library_notices.'.($approve ? 'page_updated_title' : 'page_refused_title')),
+            $approve ? Said::of('library_notices.page_updated_body') : (string) $note,
             '/my-blog/design',
             'post_decided',
         );

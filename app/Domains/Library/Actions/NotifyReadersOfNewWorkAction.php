@@ -6,6 +6,7 @@ use App\Domains\Library\Models\LibraryFollow;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryPurchase;
 use App\Domains\Library\Models\LibraryReadingProgress;
+use App\Support\Said;
 
 /**
  * B11 (LIBRARY_PLAN §41 "new content published, to readers", STATUS §5iu).
@@ -48,8 +49,8 @@ class NotifyReadersOfNewWorkAction
         $writer = $item->writer?->display_name ?? 'A writer you read';
         $notify = app(NotifyLibraryUserAction::class);
         foreach ($readers as $userId) {
-            $title = 'New from '.$writer;
-            $message = '"'.$item->title.'" is now on the library shelf.';
+            $title = Said::of('library_notices.new_work_title', ['writer' => $writer]);
+            $message = Said::of('library_notices.on_shelf_body', ['title' => $item->title]);
             if ($followers[$userId] ?? false) {
                 $notify->withEmail($userId, $title, $message, '/library/'.$item->slug);
             } else {

@@ -20,6 +20,7 @@ use App\Domains\Library\Enums\LibraryContentType;
 use App\Domains\Library\Enums\LibraryDelivery;
 use App\Domains\Library\Models\LibraryItem;
 use App\Http\Controllers\Controller;
+use App\Support\Said;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -99,7 +100,7 @@ class WriterPortalController extends Controller
     {
         $request->validate(IdentityVerificationAction::fileRules());
         app(IdentityVerificationAction::class)->submit((int) $request->user()->id, 'writer', $request->file('id_front'), $request->file('id_back'));
-        app(NotifyLibraryUserAction::class)->office(__('account.id_notice_title'), __('account.id_notice_body', ['name' => (string) $request->user()->name]), '/admin/library#identity');
+        app(NotifyLibraryUserAction::class)->office(Said::of('account.id_notice_title'), Said::of('account.id_notice_body', ['name' => (string) $request->user()->name]), '/admin/library#identity');
 
         return back()->with('success', __('account.id_sent_flash'));
     }

@@ -6,6 +6,7 @@ use App\Domains\Academics\Actions\ResolveAcademicYearForDateAction;
 use App\Domains\Library\Enums\LibraryReadingSignal;
 use App\Domains\Library\Models\LibraryReadingAlert;
 use App\Domains\Library\Models\LibraryReadingEvent;
+use App\Support\Said;
 
 /**
  * LIBRARY_PLAN §9.2 / §30.3 — the three patterns, evaluated against the event
@@ -164,8 +165,8 @@ class DetectLibraryReadingAbuseAction
         // B11 (§41 "suspicious activity to admins"): a new alert is worth a
         // word to the office, once — a widened one above is the same alert.
         app(NotifyLibraryUserAction::class)->office(
-            'Reading alert',
-            'A reader tripped the "'.str_replace('_', ' ', $signal->value).'" signal ('.$observed.' against '.$threshold.'). Open the queue to review it.',
+            Said::of('library_notices.alert_title'),
+            Said::of('library_notices.alert_body', ['signal' => Said::of('admin.library_alerts_signal_'.$signal->value), 'observed' => $observed, 'threshold' => $threshold]),
             '/admin/library/reading-alerts',
         );
 

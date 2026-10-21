@@ -6,6 +6,7 @@ use App\Domains\Library\Actions\NotifyLibraryUserAction;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryItem;
 use App\Domains\Library\Models\LibraryItemReview;
+use App\Support\Said;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -59,17 +60,17 @@ class TeacherReviewBlogPostAction
 
         $notify = app(NotifyLibraryUserAction::class);
         if ($decision === 'approved') {
-            $notify->office('New blog post to check', '"'.$item->title.'" was checked by the class teacher and waits for the office.', '/admin/library');
+            $notify->office(Said::of('library_notices.office_post_title'), Said::of('library_notices.office_post_checked_body', ['title' => $item->title]), '/admin/library');
         }
         if ($item->writer?->user_id) {
             $notify->execute(
                 (int) $item->writer->user_id,
-                match ($decision) {
-                    'approved' => 'Your teacher checked your post',
-                    'changes_requested' => 'Your teacher asked for changes',
-                    'rejected' => 'Your post was not accepted',
-                },
-                '"'.$item->title.'": '.($comment ?? 'it goes on to the Library office.'),
+                Said::of('library_notices.'.match ($decision) {
+                    'approved' => 'teacher_checked_title',
+                    'changes_requested' => 'teacher_changes_title',
+                    'rejected' => 'post_refused_title',
+                }),
+                Said::of('library_notices.about_item', ['title' => $item->title, 'comment' => $comment ?? Said::of('library_notices.goes_to_office')]),
                 '/my-blog',
                 'post_decided',
             );

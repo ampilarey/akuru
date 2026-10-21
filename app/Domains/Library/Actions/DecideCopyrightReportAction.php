@@ -5,6 +5,7 @@ namespace App\Domains\Library\Actions;
 use App\Domains\Library\Enums\LibraryItemStatus;
 use App\Domains\Library\Models\LibraryCopyrightReport;
 use App\Domains\Library\Models\WriterProfile;
+use App\Support\Said;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -39,8 +40,7 @@ class DecideCopyrightReportAction
                 if ($writerUserId !== null) {
                     app(NotifyLibraryUserAction::class)->execute(
                         (int) $writerUserId,
-                        __('library_copyright.notice_upheld_title'),
-                        __('library_copyright.notice_upheld_body', ['title' => (string) $item->title, 'note' => trim($note)]),
+                        Said::of('library_copyright.notice_upheld_title'), Said::of('library_copyright.notice_upheld_body', ['title' => (string) $item->title, 'note' => trim($note)]),
                         '/write',
                     );
                 }

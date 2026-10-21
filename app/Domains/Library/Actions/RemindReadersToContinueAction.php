@@ -3,6 +3,7 @@
 namespace App\Domains\Library\Actions;
 
 use App\Domains\Library\Models\LibraryReadingProgress;
+use App\Support\Said;
 
 /**
  * B11 (LIBRARY_PLAN §41 "continue-reading reminder", STATUS §5iu).
@@ -40,8 +41,7 @@ class RemindReadersToContinueAction
         foreach ($rows as $row) {
             $notify->execute(
                 (int) $row->user_id,
-                'Pick it back up?',
-                'You were on page '.(int) $row->current_page.' of "'.$row->item->title.'".',
+                Said::of('library_notices.continue_title'), Said::of('library_notices.continue_body', ['page' => (int) $row->current_page, 'title' => $row->item->title]),
                 '/library/'.$row->item->slug.'/read?page='.max(1, (int) $row->current_page),
             );
             $row->forceFill(['reminded_at' => now()])->save();
