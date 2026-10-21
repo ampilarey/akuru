@@ -49,7 +49,7 @@ export default function SetPassword({ t = {}, needs_current_password = true, sto
                     <button type="submit" disabled={form.processing} className="rounded-md bg-[#7C2D37] px-4 py-2 text-sm font-semibold text-white hover:bg-[#5A1F28] disabled:opacity-60">
                         {t.password_save}
                     </button>
-                    <Link href="/dashboard" className="text-sm text-gray-600 underline">{t.password_later}</Link>
+                    <Link href="/dashboard" className="inline-block py-2 text-sm text-gray-600 underline">{t.password_later}</Link>
                 </div>
             </form>
         </AppShell>

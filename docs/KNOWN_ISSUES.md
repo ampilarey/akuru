@@ -165,7 +165,52 @@ a question with a default, so "do nothing" is always a legible choice.
 
 ---
 
-## Found running every walk on a fresh database (2026-10-20)
+## Found auditing the household's pages on a phone (2026-10-21)
+
+The seeded parent and pupil opened every page their shell offers: 39 and
+35 pages, each under /dv and /ar, at 390 px (`household.mjs`).
+- **What held:** every page answered, read right to left, and nothing
+  scrolled sideways.
+- **What didn't:** the six findings below.
+
+### *Children's learning* printed codes — **fixed (2026-10-21, STATUS §5tv)**
+
+A child's relationship read FATHER and an enrolment's state read
+`active`, the database's own words, in every language. Both are now
+said from the `learn` book.
+
+### Three ledgers did not stack, and some links were too small for a thumb — **fixed (2026-10-21, STATUS §5tv)**
+
+- **Tables:** the wallet's transactions, an order's receipt lines and a
+  quote's lines were plain tables on a phone.
+- **Small links:**
+  - e-learning's *View*, 15 px wide;
+  - *Mark read*, 16 px tall;
+  - the Library's policy row and header links;
+  - the Learn dashboard's links;
+  - the wishlist's breadcrumb;
+  - *Not now* on the password page.
+
+### The seeded work photo had no file — **fixed (2026-10-21, STATUS §5tv)**
+
+`SmokeMarkerSeeder` recorded a photo but never wrote it, so the family's
+work page drew a broken image and logged a 404. The seeder writes it now.
+A test-data fault, not the product's.
+
+### `/profile` is in English — open (HP2)
+
+The account's own page has no Dhivehi or Arabic: its name and email, the
+password change and deleting the account. It is the old Blade profile,
+reached from everyone's *Me* menu.
+
+### A notification is in the language of whoever sent it — open (HP3, a decision)
+
+A notice is written once, when it is sent, in that request's language. A
+cart reminder from the nightly job reads "Still thinking it over?" to a
+family that reads Dhivehi. STATUS §5pf named the choice on 2026-10-08:
+- a language kept on the account; or
+- the notice's own words looked up when it is read.
+
 
 ### 53 walks were never in `all.mjs`, and 22 of them failed — **fixed (2026-10-20, STATUS §5tu)**
 

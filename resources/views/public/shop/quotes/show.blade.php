@@ -40,17 +40,17 @@
     @endif
 
     <section class="mb-4 overflow-x-auto rounded-lg border bg-white">
-        <table class="w-full text-sm" data-testid="quote-lines">
+        <table class="table-stack w-full text-sm" data-testid="quote-lines">
             <thead class="bg-gray-50 text-start text-xs uppercase text-gray-500">
                 <tr><th class="p-3 text-start">{{ __('shop.quote_item') }}</th><th class="p-3 text-end">{{ __('shop.quantity') }}</th><th class="p-3 text-end">{{ __('shop.quote_list_price') }}</th><th class="p-3 text-end">{{ __('shop.quote_quoted_price') }}</th></tr>
             </thead>
             <tbody class="divide-y">
                 @foreach($quote['items'] as $item)
                     <tr>
-                        <td class="p-3" dir="auto">{{ $item['title'] }}@if($item['variant'])<span class="block text-xs text-gray-500">{{ $item['variant'] }}</span>@endif</td>
-                        <td class="p-3 text-end">{{ $item['quantity'] }}</td>
-                        <td class="p-3 text-end">{{ $quote['currency'] }} {{ $item['list_price'] }}</td>
-                        <td class="p-3 text-end font-semibold">{{ $item['quoted_price'] ? $quote['currency'].' '.$item['quoted_price'] : '—' }}</td>
+                        <td class="p-3" dir="auto" data-label="{{ __('shop.quote_item') }}">{{ $item['title'] }}@if($item['variant'])<span class="block text-xs text-gray-500">{{ $item['variant'] }}</span>@endif</td>
+                        <td class="p-3 sm:text-end" data-label="{{ __('shop.quantity') }}">{{ $item['quantity'] }}</td>
+                        <td class="p-3 sm:text-end" data-label="{{ __('shop.quote_list_price') }}">{{ $quote['currency'] }} {{ $item['list_price'] }}</td>
+                        <td class="p-3 font-semibold sm:text-end" data-label="{{ __('shop.quote_quoted_price') }}">{{ $item['quoted_price'] ? $quote['currency'].' '.$item['quoted_price'] : '—' }}</td>
                     </tr>
                 @endforeach
             </tbody>

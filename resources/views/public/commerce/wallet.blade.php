@@ -18,10 +18,10 @@
         </form>
     </div>
     <p class="mb-6 text-sm text-gray-600">
-        <a href="{{ route('public.gift-cards.index') }}" class="text-brandMaroon-700 hover:underline" data-testid="buy-gift-card">{{ __('public.Buy a gift card') }}</a>
-        · <a href="{{ route('public.library.my') }}" class="hover:underline">{{ __('public.My Library') }}</a>
-        · <a href="{{ route('public.library.index') }}" class="hover:underline">{{ __('public.Digital Library') }}</a>
-        · <a href="{{ route('public.page.show', 'wallet-terms') }}" class="hover:underline">{{ __('public.Wallet Terms') }}</a>
+        <a href="{{ route('public.gift-cards.index') }}" class="inline-block py-1.5 text-brandMaroon-700 hover:underline" data-testid="buy-gift-card">{{ __('public.Buy a gift card') }}</a>
+        · <a href="{{ route('public.library.my') }}" class="inline-block py-1.5 hover:underline">{{ __('public.My Library') }}</a>
+        · <a href="{{ route('public.library.index') }}" class="inline-block py-1.5 hover:underline">{{ __('public.Digital Library') }}</a>
+        · <a href="{{ route('public.page.show', 'wallet-terms') }}" class="inline-block py-1.5 hover:underline">{{ __('public.Wallet Terms') }}</a>
     </p>
     {{-- The layout says the thanks once; this page said it a second time (slice FL1). --}}
     @error('code')
@@ -47,7 +47,7 @@
 
     <h2 class="text-xl font-semibold mb-3">{{ __('public.Transactions') }}</h2>
     <div class="overflow-x-auto rounded-lg border bg-white">
-        <table class="min-w-full text-sm">
+        <table class="table-stack min-w-full text-sm">
             <thead class="bg-brandBeige-100">
                 <tr>
                     <th class="px-3 py-2 text-start">{{ __('public.Date') }}</th>
@@ -63,14 +63,14 @@
                 @endif
                 @foreach($wallet['transactions'] as $row)
                     <tr class="border-t">
-                        <td class="px-3 py-2">{{ $row['created_at'] }}</td>
+                        <td class="px-3 py-2" data-label="{{ __('public.Date') }}">{{ $row['created_at'] }}</td>
                         {{-- LT6: a row's kind and where its money came from, in the page's
                              language; a source with no name of its own reads as its code. --}}
                         @php($sourceKey = 'public.wallet_source_'.$row['source_type'])
-                        <td class="px-3 py-2 {{ $row['type'] === 'credit' ? 'text-green-700' : 'text-red-700' }}" data-testid="wallet-type">{{ Lang::has('public.wallet_type_'.$row['type']) ? __('public.wallet_type_'.$row['type']) : $row['type'] }}</td>
-                        <td class="px-3 py-2" data-testid="wallet-source">{{ Lang::has($sourceKey) ? __($sourceKey) : str_replace('_', ' ', $row['source_type']) }}</td>
-                        <td class="px-3 py-2">{{ $row['type'] === 'credit' ? '+' : '−' }}{{ $row['amount'] }}</td>
-                        <td class="px-3 py-2">{{ $row['balance_after'] }}</td>
+                        <td class="px-3 py-2 {{ $row['type'] === 'credit' ? 'text-green-700' : 'text-red-700' }}" data-label="{{ __('public.Type') }}" data-testid="wallet-type">{{ Lang::has('public.wallet_type_'.$row['type']) ? __('public.wallet_type_'.$row['type']) : $row['type'] }}</td>
+                        <td class="px-3 py-2" data-label="{{ __('public.Source') }}" data-testid="wallet-source">{{ Lang::has($sourceKey) ? __($sourceKey) : str_replace('_', ' ', $row['source_type']) }}</td>
+                        <td class="px-3 py-2" data-label="{{ __('public.Amount') }}">{{ $row['type'] === 'credit' ? '+' : '−' }}{{ $row['amount'] }}</td>
+                        <td class="px-3 py-2" data-label="{{ __('public.Balance') }}">{{ $row['balance_after'] }}</td>
                     </tr>
                 @endforeach
             </tbody>

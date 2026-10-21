@@ -55,7 +55,7 @@
                             <td data-label="{{ __('elearning.subject') }}" class="px-3 py-2 font-semibold">{{ $name($subject) }}</td>
                             <td data-label="{{ __('elearning.type') }}" class="px-3 py-2">{{ $typeName($subject->type) }}</td>
                             <td data-label="{{ __('elearning.description') }}" class="px-3 py-2 text-gray-600">{{ \Illuminate\Support\Str::limit((string) $about($subject), 80) }}</td>
-                            <td class="px-3 py-2"><a href="{{ route('e-learning.show', $subject) }}" class="text-brandMaroon-700 underline">{{ __('elearning.view') }}</a></td>
+                            <td class="px-3 py-2"><a href="{{ route('e-learning.show', $subject) }}" class="inline-block min-w-[44px] py-2 text-center text-brandMaroon-700 underline">{{ __('elearning.view') }}</a></td>
                         </tr>
                     @endforeach
                 </tbody>

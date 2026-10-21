@@ -6,8 +6,8 @@
 @section('content')
 <div class="container mx-auto max-w-6xl px-4 py-8">
     <nav class="mb-3 text-sm text-gray-500">
-        <a href="{{ route('public.shop.index') }}" class="hover:text-brandMaroon-600">{{ __('shop.bookshop_title') }}</a> ›
-        <a href="{{ route('public.shop.orders') }}" class="hover:text-brandMaroon-600">{{ __('nav.my_orders') }}</a>
+        <a href="{{ route('public.shop.index') }}" class="inline-block py-1.5 hover:text-brandMaroon-600">{{ __('shop.bookshop_title') }}</a> ›
+        <a href="{{ route('public.shop.orders') }}" class="inline-block py-1.5 hover:text-brandMaroon-600">{{ __('nav.my_orders') }}</a>
     </nav>
     <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
         <h1 class="text-2xl font-bold text-brandMaroon-900" data-testid="wishlist-heading">{{ __('shop.wishlist_title') }}</h1>
