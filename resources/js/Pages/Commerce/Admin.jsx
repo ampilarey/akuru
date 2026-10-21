@@ -162,7 +162,7 @@ export default function Admin({ gift_cards, gift_card_orders = [], discount_code
                 code went (masked — the code itself is never stored). */}
             <div className="mb-2 flex items-center justify-between">
                 <h2 className="text-lg font-semibold">{t.commerce_purchases_heading || 'Gift card purchases'}</h2>
-                <a className="text-sm text-[#7C2D37] hover:underline" href="/admin/commerce/gift-card-orders/export" data-testid="gift-card-orders-export">{t.ft_export || 'Export CSV'}</a>
+                <a className="inline-block py-1.5 text-sm text-[#7C2D37] hover:underline" href="/admin/commerce/gift-card-orders/export" data-testid="gift-card-orders-export">{t.ft_export || 'Export CSV'}</a>
             </div>
             <div className="mb-6 overflow-x-auto rounded-lg border bg-white" data-testid="gift-card-orders">
                 <table className="table-stack min-w-full text-sm">

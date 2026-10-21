@@ -11,7 +11,8 @@
  *   php artisan db:seed --class=SmokeMarkerSeeder
  *   node scripts/smoke/household.mjs
  *
- * Environment: SMOKE_BASE_URL, SMOKE_PARENT, SMOKE_STUDENT, SMOKE_PASSWORD, SMOKE_CHROMIUM.
+ * Environment: SMOKE_BASE_URL, SMOKE_PARENT, SMOKE_STUDENT, SMOKE_PASSWORD, SMOKE_CHROMIUM,
+ * SMOKE_MIN_PAGES (how many pages a menu must offer; 20).
  */
 import { chromium } from 'playwright';
 
@@ -53,7 +54,7 @@ try {
             .map((h) => h.replace(base, '').split('#')[0])
             .filter((h) => h && !/\.(pdf|csv)$|\/export/.test(h)), BASE)]
             .map((h) => h.replace(/^\/(en|dv|ar)(?=\/|$)/, '') || '/'))].sort();
-        check(`${who}: the shell offers their pages`, paths.length >= 20, `${paths.length} pages`);
+        check(`${who}: the shell offers their pages`, paths.length >= Number(process.env.SMOKE_MIN_PAGES ?? 20), `${paths.length} pages`);
 
         const faults = [];
         for (const path of paths) {

@@ -408,6 +408,26 @@ html[lang="dv"] body,
     align-items: center;
     min-height: 2.75rem;
   }
+  /* The office audit (AD1): an underlined text link or button — a section
+     link, Export CSV, a back link, Withdraw, Edit — was a 16–20px line under
+     a thumb, across some thirty admin pages. A file picker was 22px. */
+  a.underline,
+  button.underline,
+  summary.underline {
+    display: inline-block;
+    padding-block: 0.375rem;
+  }
+  button.underline {
+    min-width: 2.75rem;
+  }
+  input[type=file] {
+    min-height: 2.75rem;
+  }
+  /* A page's breadcrumb (the shop's, Lending's): small grey links. */
+  main nav.text-sm a {
+    display: inline-block;
+    padding-block: 0.375rem;
+  }
   /* The school audit (TD1): a one-word action in a cell — Thaana's *Open*,
      *Delete*, *Forum* — was 44px tall and 22px wide. */
   td > a,

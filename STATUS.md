@@ -4983,6 +4983,39 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5uc. The shop owner's and the Institute office's pages on a phone (AD1, 2026-10-21)
+
+The phone audit (§5tv, §5ub), as the seeded vendor and super admin: 15 and
+about 90 pages, under /dv and /ar, at 390 px. There were no refusals,
+errors or sideways scrolling. It found small targets on about thirty pages
+and two desk tables (KNOWN_ISSUES, 2026-10-21).
+- **One rule in the phone block of `app.css`:**
+  - an underlined link, button or fold (`a.underline`, `button.underline`,
+    `summary.underline`) gets 6 px of padding above and below, and a button
+    44 px of width;
+  - a file picker gets 44 px of height;
+  - a page's breadcrumb links (`main nav.text-sm a`) get the same padding.
+
+  These cover the admin panel's section links, *Export CSV*, back links,
+  *Withdraw*, *Edit* and *Save*, and the shop and Lending breadcrumbs.
+- **One by one:** the rich-text editor's toolbar buttons are 32 px, and
+  Commerce's gift-card CSV link gets padding.
+- **Stacked:** the ID-card queue (`Components/IdentityCard.jsx`, on the
+  Bookstore and Library offices) and the rubric result
+  (`Components/RubricResult.jsx`). `PhoneFirstStylesTest` now reads
+  `Components/` as well as `Pages/`.
+- **The household walk's floor:** the number of pages a menu must offer is
+  a setting (`SMOKE_MIN_PAGES`). A shop owner's menu offers 15.
+
+**Walks:**
+- `office-phone.mjs` is new and in `all.mjs`: the vendor and the super
+  admin. 4/4; it began at 1/4.
+- `staff-phone.mjs` 4/4 and `household.mjs` 5/5 still pass.
+- The admin panel's courses list and the print templates checked at
+  390 px: the section links wrap in rows with room around them.
+
+**Tests:** `PhoneFirstStylesTest` reads the shared components, and passes with both stacked. Whole suite 3354 passed; pint clean.
+
 ## 5ub. The school's pages on a phone (TD1, 2026-10-21)
 
 The household audit (§5tv), as the school's own people. The seeded teacher
