@@ -4983,6 +4983,26 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ud. A Library writer's and an adult reader's pages on a phone (LW1, 2026-10-21)
+
+The last of the phone audits (§5tv, §5ub, §5uc). The writer (`library.mjs`
+makes them one) and the seeded adult learner opened every page their shell
+offers: 16 and 20 pages, under /dv and /ar, at 390 px. Every page answered
+and read right to left. Nothing scrolled sideways, and there were no
+errors. Two small targets:
+- the *Contents* fold on a work's page was 20 px tall; it gets padding;
+- a notification titled in one short word, such as Arabic *نُشر*, was a
+  20 px wide link; it gets 44 px of width.
+
+**Walk:** `library-phone.mjs` is new and in `all.mjs`, after `library`. 4/4.
+
+With it, every kind of person the seed holds has been walked, every page,
+in Dhivehi and Arabic, at 390 px: a parent and a pupil, a teacher and the
+headmaster, a shop owner and the Institute's office, a writer and an adult
+reader. The four walks hold it.
+
+Whole suite unchanged (3354); pint clean.
+
 ## 5uc. The shop owner's and the Institute office's pages on a phone (AD1, 2026-10-21)
 
 The phone audit (§5tv, §5ub), as the seeded vendor and super admin: 15 and
