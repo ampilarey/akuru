@@ -4983,6 +4983,39 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5uq. Security update: Laravel and thirteen other packages (SEC1, 2026-10-29)
+
+`composer audit` found 43 advisories in 14 installed packages, found while
+adding the backups' storage adapter:
+- **Laravel 12.62:** a *critical* TokenGuard authentication bypass. The app
+  serves `routes/api.php`.
+- **`mtdowling/jmespath.php`:** a *critical* code injection.
+- **Highs:** guzzle, commonmark, phpseclib, symfony/http-foundation,
+  symfony/yaml and google/protobuf.
+
+The fix: `composer update` of those packages with their dependencies,
+within the existing constraints. No major version moves.
+- `laravel/framework` 12.70.2;
+- guzzle 7.16.1, psr7 2.13.2;
+- commonmark 2.10.4;
+- phpseclib 3.0.57;
+- jmespath 2.9.2;
+- the Symfony 7.4 line at 7.4.22.
+
+`composer.lock` only.
+
+**Left, by design:** `firebase/php-jwt` 6 (*low*, "weak encryption"). The
+fix is 7.0, but google/auth, kreait/firebase-php and laravel/socialite all
+require ^6. It comes with their next releases.
+
+**Checked:**
+- the whole suite: 3375 tests, all passing;
+- walks: `logout` 8/8, `two-factor` 19/19, `checkout` 49/49,
+  `library-bundles` 11/11, `print-order` 15/15, `admin` 43/43,
+  `household` 5/5 and `account-language` 18/18.
+
+The pull's `composer install` brings it to the server.
+
 ## 5up-0. The full walk run after the PP7 and bundles slices (2026-10-29)
 
 All 164 walks (`all.mjs`) were run on a fresh seed, after PP7a–c, C26, O15,
