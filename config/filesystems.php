@@ -60,6 +60,22 @@ return [
             'report' => false,
         ],
 
+        // BK1 (STATUS §5up, docs/deployment.md): the copy of the nightly
+        // backup kept off this server, on any S3-compatible store
+        // (Backblaze B2, Wasabi, AWS S3). Used once BACKUP_DISK=backups.
+        'backups' => [
+            'driver' => 's3',
+            'key' => env('BACKUP_S3_KEY'),
+            'secret' => env('BACKUP_S3_SECRET'),
+            'region' => env('BACKUP_S3_REGION', 'us-east-1'),
+            'bucket' => env('BACKUP_S3_BUCKET'),
+            'endpoint' => env('BACKUP_S3_ENDPOINT'),
+            'use_path_style_endpoint' => env('BACKUP_S3_PATH_STYLE', false),
+            'root' => env('BACKUP_S3_ROOT', 'akuru'),
+            'throw' => true,
+            'report' => false,
+        ],
+
     ],
 
     /*

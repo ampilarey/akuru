@@ -39,6 +39,11 @@ Schedule::command('lending:remind')->dailyAt('08:45')->timezone('Indian/Maldives
 // BOOKSHOP_PLAN B9e: the catalogue to the search server, only while one is chosen.
 Schedule::command('bookshop:search-sync')->hourly()->when(fn () => config('bookshop.search.driver') === 'meilisearch');
 
+// SPEC "Backups" (BK1, docs/deployment.md): the database and the uploaded
+// files, encrypted, every night, here and off-site; 7 daily, 4 weekly, 6 monthly kept.
+Schedule::command('akuru:backup')->dailyAt((string) config('backup.at', '03:00'))->timezone('Indian/Maldives')
+    ->withoutOverlapping(120)->when(fn () => (bool) config('backup.enabled', true));
+
 // Scheduler heartbeat — used to verify cron is running
 Schedule::command('akuru:scheduler-heartbeat')->everyMinute();
 
