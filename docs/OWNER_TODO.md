@@ -32,6 +32,7 @@ cd /home/akuruedu/akuru-institute && git pull origin main && composer install --
 | ☐ | **Text recognition for scanned PDFs** (only if wanted) | Install Tesseract with its English, Dhivehi and Arabic data (`tesseract --list-langs` should show `eng`, `div` and `ara`; on a shared host ask the hosting company). Ghostscript must be set too (`DOCUMENTS_GS_PATH`). Then switch it on (E below). | STATUS §5tg |
 | ☐ | **Reread the Library's PDFs once** | After the pull that brings two-column reading (2026-10-20): `php artisan library:sync-pages --all`. Books saved before are read again, column by column. | STATUS §5tr |
 | ☐ | **Who reads copyright reports** | Reports that a Library work copies someone's own arrive on `/admin/library/copyright` (2026-10-20), and in the app of everyone with the Library office's permission. Decide who answers them, and how fast. Upholding one takes the work off the shelf and tells its writer. | STATUS §5ts |
+| ☐ | **Backups: check one restore** | After the pull that brings backups (2026-10-29), run `php artisan akuru:backup` once, then make an empty database in cPanel and follow *Restore → Check a backup* in `docs/deployment.md`. A backup counts only once a restore has worked. | STATUS §5up |
 | ☐ | **The leftover route cache** | `/en/catalog/courses` answered 404 once (2026-10-03). Since 2026-10-21 `/admin/settings` says so in red if a cached route file is on the host; *Clear all caches* removes it. If the 404 comes back, note the address and the account. | KNOWN_ISSUES, WHATS_LEFT O15, STATUS §5ul |
 
 ## B. In production's `.env`, then `php artisan config:cache`
@@ -39,6 +40,7 @@ cd /home/akuruedu/akuru-institute && git pull origin main && composer install --
 | ☐ | What | How | Detail |
 |---|---|---|---|
 | ☐ | **SMS live** | Set `SMS_LIVE=true`, `SMS_USE_DHIRAAGU=true`, `DHIRAAGU_SMS_USERNAME` and `DHIRAAGU_SMS_PASSWORD`. Open `/en/sign-in`, give your own number and check the code arrives. Then set a password and sign in again; this time it should ask for the password. Each message costs Dhiraagu's rate. | OWNER_ACTIONS 24 |
+| ☐ | **Backups off the server** | Make a bucket at an S3-compatible store (Backblaze B2 is the cheapest), then set `BACKUP_DISK=backups`, `BACKUP_S3_KEY`, `BACKUP_S3_SECRET`, `BACKUP_S3_BUCKET`, `BACKUP_S3_ENDPOINT` (and `BACKUP_S3_REGION`). Also set `BACKUP_PASSPHRASE` to a long passphrase and **save a copy in your password manager**: no backup opens without it. Until then the copies stay on the same server as the data, encrypted with `APP_KEY`. | docs/deployment.md, STATUS §5up |
 | ☐ | **Rotate the exposed SMS key** | In the Dhiraagu account, replace the key that was partly exposed. Put only the new one in `.env`. | OWNER_ACTIONS 24 |
 | ☐ | **The blog writing guidelines address** | First write the page (item D below). Then set `LIBRARY_BLOG_GUIDELINES_URL=/page/<its slug>`. *My blog* shows the link once this is set. | BLOG_PLAN §6, §14.1 |
 

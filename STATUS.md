@@ -4983,6 +4983,80 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5up. Nightly backups, encrypted, with a tested restore (BK1, 2026-10-29)
+
+SPEC "Backups" asks for four things: a nightly database backup, a backup of
+the media and private files, a retention policy, and a restore procedure
+that has been tested ("a backup is not considered valid unless…"). None
+existed, and there was no `docs/deployment.md`. The owner chose backups as
+the next feature.
+- **`php artisan akuru:backup`**, run nightly at 03:00 Maldives time by the
+  scheduler (`withoutOverlapping`, `BACKUP_ENABLED`):
+  - `mysqldump --single-transaction` of the whole database, gzipped as it
+    streams;
+  - `tar` of `storage/app` (the uploaded and private files), without the
+    backups themselves;
+  - a manifest;
+  - all bundled into one `akuru-YYYYMMDD-HHMMSS.akb`.
+
+  The database password goes in mysqldump's environment, never on its
+  command line.
+- **Encrypted** (`BackupCipher`): libsodium secretstream
+  (XChaCha20-Poly1305) in 1 MB chunks. The key is stretched from
+  `BACKUP_PASSPHRASE` (else `APP_KEY`) by Argon2id with a fresh salt. A
+  wrong passphrase, a cut file or an altered one is refused, not
+  half-restored.
+- **Where:** on this server (`storage/app/backups`, 0600). Off it through
+  `BackupStoreInterface` (rule 4): `DiskBackupStore` on the new `backups`
+  disk, any S3-compatible store (`league/flysystem-aws-s3-v3` added), once
+  `BACKUP_DISK=backups` is set. A failed off-site copy leaves the run
+  *partial*, with why. The local copy stands.
+- **Retention:** the newest 7 daily, the newest of each of 4 weeks and 6
+  months (`BackupNames::toDelete`), here and off-site.
+- **Every run is a `backup_runs` row** (new table, additive): status,
+  sizes, tables, off-site, what was removed, the error.
+- **Restore** (`akuru:backup-restore <name>`):
+  - `--into=<database>` restores into another database;
+  - `--into-live` restores the live database, and on production only
+    after typing its name;
+  - `--files=<folder>` restores the files into a folder.
+
+  It fetches the copy from off-site when it is gone from here.
+  `akuru:backup-list` lists the copies.
+- **`docs/deployment.md`** is new. It covers the pull, what is backed up
+  and when, where, retention, the passphrase, the restore steps (a check
+  into a scratch database, and bringing the live site back), and the usual
+  failures.
+
+**Found by the real run:** backing up the development database (359
+tables, 884 MB of files) made a 457 MB copy. Restored into a scratch
+database, it matched: 359 tables, 32 users, 39 wallet rows, 1 Library
+purchase. But unpacking the files filled this container's disk, and the
+cipher's writes were not checked. Every write now must land whole, or the
+run stops with *the disk may be full*. A test writes to `/dev/full`.
+
+**Tests:** `BackupRestoreTest` (5), the restore SPEC asks to be tested, on
+every CI run:
+- a real backup of the test database and a folder of files, restored into
+  a scratch database and another folder: the same table count, a row
+  written before the backup (on a second connection, since the test's own
+  transaction is invisible to a dump), the file, the backups folder left
+  out, and nothing readable in the encrypted file;
+- the wrong passphrase, a cut file and a full disk are refused;
+- an off-site copy (a faked disk), restored from there, and the retention
+  rule over 120 days (12 kept, exactly which);
+- a missing mysqldump is recorded as failed, with why, and the command
+  fails;
+- the schedule is `0 3 * * *`, Maldives.
+
+`BackupRun` has its morph alias `backup_run` (ADR-005). The whole suite has
+3380 tests, all passing; pint is clean. CI gains the `sodium` extension. The new `composer.lock` entries came from
+git source here (the proxy refuses GitHub's zip downloads); the server's
+`composer install` takes them as usual.
+
+**Not in this slice:** BK2, the System Settings card (last backup, size,
+where; red after 26 hours) and the office's alert when a run fails.
+
 ## 5uq. Security update: Laravel and thirteen other packages (SEC1, 2026-10-29)
 
 `composer audit` found 43 advisories in 14 installed packages, found while
