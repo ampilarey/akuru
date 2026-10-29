@@ -1597,4 +1597,20 @@ return [
     'library_bundles_error_items' => 'Choose :min to :max paid, published works.',
     'library_bundles_error_price' => 'The bundle price must be more than nothing and less than the works cost apart (MVR :total).',
     'library_office_bundles' => 'Bundles',
+
+    // BK2: backups on System Settings, and the alert when one fails.
+    'backup_heading' => 'Backups',
+    'backup_last_good' => 'Last backup: :at, :size MB.',
+    'backup_never' => 'No backup has been made yet. The first runs tonight at 03:00, or run php artisan akuru:backup.',
+    'backup_stale' => 'That is more than :hours hours ago: check the scheduler cron and the last run.',
+    'backup_last_failed' => 'The last run (:at) did not finish: :why',
+    'backup_where_both' => 'Kept on this server and off it.',
+    'backup_where_here' => 'Kept on this server only.',
+    'backup_no_offsite' => 'No store off this server is set. A lost server takes its backups with it: set BACKUP_DISK and its keys (docs/deployment.md).',
+    'backup_app_key' => 'Encrypted with APP_KEY. Set BACKUP_PASSPHRASE and keep a copy of it in a password manager: no backup opens without it.',
+    'backup_off' => 'Backups are switched off (BACKUP_ENABLED=false).',
+    'backup_failed_title' => 'The nightly backup failed',
+    'backup_failed_body' => 'No backup was made. Why: :why. Open System Settings, and see docs/deployment.md.',
+    'backup_partial_title' => 'The backup was kept on this server only',
+    'backup_partial_body' => 'The copy off the server failed: :why. The local copy is fine.',
 ];

@@ -57,7 +57,31 @@ function Languages({ languages, t }) {
     );
 }
 
-export default function Index({ settings, sms_configured, bml_configured, configuration_cached, routes_cached = false, languages = {}, links = [], t = {} }) {
+const fillIn = (s, vars) => Object.entries(vars).reduce((out, [k, v]) => out.split(`:${k}`).join(String(v ?? '')), s || '');
+
+/** BK2 (STATUS §5ur): the nightly backups — the last good one, and red when it is too long ago. */
+function Backups({ backup, t }) {
+    if (!backup) return null;
+    const good = backup.last_good;
+    const failed = backup.last && backup.last.status !== 'succeeded' && backup.last.status !== 'running';
+    return (
+        <section className={`mb-6 rounded-lg border p-4 ${backup.stale ? 'border-red-300 bg-red-50' : 'bg-white'}`} data-testid="backup-status" data-stale={backup.stale ? 'yes' : 'no'}>
+            <h2 className="text-sm font-semibold">{t.backup_heading}</h2>
+            {!backup.enabled ? <p className="mt-1 text-sm text-amber-800">{t.backup_off}</p> : (
+                <p className={`mt-1 text-sm ${backup.stale ? 'font-semibold text-red-800' : 'text-gray-800'}`} role={backup.stale ? 'alert' : undefined} data-testid="backup-last-good">
+                    {good ? fillIn(t.backup_last_good, { at: good.at, size: good.size_mb }) : t.backup_never}
+                    {backup.stale && good && <> {fillIn(t.backup_stale, { hours: 26 })}</>}
+                </p>
+            )}
+            {good && <p className="mt-1 text-sm text-gray-600">{good.offsite ? t.backup_where_both : t.backup_where_here}</p>}
+            {failed && <p className="mt-1 text-sm text-red-800" data-testid="backup-last-failed">{fillIn(t.backup_last_failed, { at: backup.last.at, why: backup.last.error || '—' })}</p>}
+            {!backup.offsite_configured && <p className="mt-1 text-sm text-amber-800" data-testid="backup-no-offsite">{t.backup_no_offsite}</p>}
+            {backup.uses_app_key && <p className="mt-1 text-sm text-amber-800" data-testid="backup-app-key">{t.backup_app_key}</p>}
+        </section>
+    );
+}
+
+export default function Index({ settings, sms_configured, bml_configured, configuration_cached, routes_cached = false, backup = null, languages = {}, links = [], t = {} }) {
     const cap = (s) => (s ? s.charAt(0).toUpperCase() + s.slice(1) : '—');
     const configured = (on) => (on ? t.system_settings_configured || 'Configured' : t.system_settings_not_configured || 'Not configured');
     const tone = (on) => (on ? 'text-green-800' : 'text-amber-800');
@@ -86,6 +110,8 @@ export default function Index({ settings, sms_configured, bml_configured, config
                 />
                 <Card icon="🗄️" label={t.system_settings_cache || 'Cache / session'} value={`${cap(settings.cache_driver)} / ${cap(settings.session_driver)}`} note={`${t.system_settings_queue || 'Queue'}: ${cap(settings.queue_connection)}`} />
             </div>
+
+            <Backups backup={backup} t={t} />
 
             <details className="mb-6 rounded-lg border bg-white" data-testid="application-info">
                 <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">{t.system_settings_about || 'About this server'}</summary>

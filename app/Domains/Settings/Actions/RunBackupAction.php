@@ -40,6 +40,9 @@ class RunBackupAction
             $run->fill(['status' => 'failed', 'finished_at' => now(), 'error' => mb_substr($e->getMessage(), 0, 2000)])->save();
         }
 
+        // BK2: a failed or local-only run is told to the super admins.
+        app(NotifyBackupFailureAction::class)->execute($run);
+
         return $run->refresh();
     }
 
