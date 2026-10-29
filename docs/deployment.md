@@ -107,6 +107,10 @@ off-site copy, the retention rule, and a failed run being recorded.
 
 ### If a backup fails
 
+System Settings (`/admin/settings`) shows the last good backup and turns
+red when it is more than 26 hours old. A failed run, or one kept on this
+server only, is also sent to every super admin's notifications.
+
 Each run is a row in `backup_runs`, with the reason when it fails. The usual
 causes:
 - **`mysqldump` not found:** set `BACKUP_MYSQLDUMP_PATH` (and

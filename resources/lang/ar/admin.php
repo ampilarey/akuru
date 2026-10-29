@@ -1594,4 +1594,20 @@ return [
     'library_bundles_error_items' => 'اختر من :min إلى :max من الأعمال المدفوعة المنشورة.',
     'library_bundles_error_price' => 'يجب أن يكون سعر الحزمة أكثر من صفر وأقل من ثمن الأعمال متفرقة (:total روفية).',
     'library_office_bundles' => 'الحزم',
+
+    // BK2: backups on System Settings, and the alert when one fails.
+    'backup_heading' => 'النسخ الاحتياطية',
+    'backup_last_good' => 'آخر نسخة احتياطية: :at، :size ميغابايت.',
+    'backup_never' => 'لم تُنشأ أي نسخة احتياطية بعد. أول نسخة الليلة الساعة 03:00، أو شغّل php artisan akuru:backup.',
+    'backup_stale' => 'كان ذلك قبل أكثر من :hours ساعة: افحص مهمة المجدول وآخر تشغيل.',
+    'backup_last_failed' => 'آخر تشغيل (:at) لم يكتمل: :why',
+    'backup_where_both' => 'محفوظة على هذا الخادم وخارجه.',
+    'backup_where_here' => 'محفوظة على هذا الخادم فقط.',
+    'backup_no_offsite' => 'لم يُضبط مخزن خارج هذا الخادم. إن فُقد الخادم فُقدت نسخه معه: اضبط BACKUP_DISK ومفاتيحه (docs/deployment.md).',
+    'backup_app_key' => 'مشفّرة بـ APP_KEY. اضبط BACKUP_PASSPHRASE واحتفظ بنسخة منها في مدير كلمات المرور: لا تُفتح أي نسخة بدونها.',
+    'backup_off' => 'النسخ الاحتياطي متوقف (BACKUP_ENABLED=false).',
+    'backup_failed_title' => 'فشل النسخ الاحتياطي الليلي',
+    'backup_failed_body' => 'لم تُنشأ نسخة احتياطية. السبب: :why. افتح إعدادات النظام، وانظر docs/deployment.md.',
+    'backup_partial_title' => 'حُفظت النسخة الاحتياطية على هذا الخادم فقط',
+    'backup_partial_body' => 'فشل النسخ إلى خارج الخادم: :why. النسخة المحلية سليمة.',
 ];

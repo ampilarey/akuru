@@ -25,6 +25,8 @@ class SettingsController extends Controller
         return Inertia::render('Settings/Index', app(ResolveIntegrationStatusAction::class)->execute() + [
             // STATUS §5su: Dhivehi and Arabic each switch on or off.
             'languages' => app(ListEnabledLocalesAction::class)->states(),
+            // BK2: the nightly backups.
+            'backup' => app(\App\Domains\Settings\Actions\ResolveBackupStatusAction::class)->execute(),
             't' => Phrases::once('admin'),
         ]);
     }

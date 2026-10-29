@@ -4983,6 +4983,42 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ur. Backups on System Settings, and an alert when one fails (BK2, 2026-10-29)
+
+BK1 (§5up) made the nightly backup. BK2 makes it visible:
+- **System Settings** gains a *Backups* card (`ResolveBackupStatusAction`).
+  - It shows the last good backup (time and size) and whether it is kept
+    off the server too.
+  - It turns **red after 26 hours** with no good backup, which catches a
+    stopped cron as well as failed runs, or when there has never been one.
+  - It shows the last run if it failed, with why.
+  - It warns while no off-site store is set, and while the copies are
+    encrypted with `APP_KEY` rather than a passphrase kept elsewhere.
+- **The alert** (`NotifyBackupFailureAction`): a run that failed, or one
+  kept on this server only, is told to every super admin, the people who
+  can open System Settings. It is in their language, in the `system`
+  category, which no preference switches off. `RunBackupAction` raises it
+  itself.
+
+Phrases in EN, DV and AR.
+
+**Tests:** `BackupStatusTest` (3):
+- the card's figures, through none, good, failed since, 30 hours on, and a
+  non-admin's 403;
+- two super admins told of a failed and a partial run, nobody of a good
+  one, and a bystander not at all;
+- the nightly run raising it itself.
+
+**Walk:** `system-backups.mjs` (new, in `all.mjs`), at 390 px under /dv:
+- red with none on record, and saying no off-site store is set;
+- a good one three hours old shows its size and is not red; nothing
+  sideways;
+- red again at 30 hours, with the failed run's reason;
+- under /en, left to right.
+
+7/7. Also `admin-mobile` 13/13, `admin` 43/43 and `admin-hub` 26/26.
+The whole suite has 3383 tests, all passing; pint is clean. No migration.
+
 ## 5up. Nightly backups, encrypted, with a tested restore (BK1, 2026-10-29)
 
 SPEC "Backups" asks for four things: a nightly database backup, a backup of
