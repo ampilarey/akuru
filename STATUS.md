@@ -4983,6 +4983,13 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5up-0. The full walk run after the PP7 and bundles slices (2026-10-29)
+
+All 164 walks (`all.mjs`) were run on a fresh seed, after PP7a–c, C26, O15,
+leave and bundles. 163 passed. `admin-hub` counted the Library office's
+screens as ten; bundles (§5un) made eleven. The walk now counts eleven and
+passes 26/26, so 164/164.
+
 ## 5uo. What is left, brought up to date (2026-10-21)
 
 After the owner's "complete all that can be completed", the lists that say
