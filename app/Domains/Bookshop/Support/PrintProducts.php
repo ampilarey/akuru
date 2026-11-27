@@ -141,6 +141,32 @@ final class PrintProducts
         return PrintDesk::settings()['enabled'] && ($kind === self::DEFAULT || self::onSale($kind));
     }
 
+    /**
+     * The print products open to customers, for the Bookstore's front
+     * (STATUS §5us): none while the desk is off.
+     *
+     * @return list<array{kind: string, path: string, title: string, summary: string}>
+     */
+    public static function shopFront(string $locale): array
+    {
+        if (! PrintDesk::settings()['enabled']) {
+            return [];
+        }
+        $out = [];
+        foreach (self::KINDS as $kind => $meta) {
+            if (! self::open($kind)) {
+                continue;
+            }
+            $product = self::product($kind);
+            $out[] = [
+                'kind' => $kind, 'path' => $meta['path'], 'title' => self::title($kind, $locale),
+                'summary' => (string) ($product?->{$locale === 'en' ? 'summary' : 'summary_'.$locale} ?: $meta['summary']),
+            ];
+        }
+
+        return $out;
+    }
+
     /** The product's name in the page's language. */
     public static function title(string $kind, string $locale): string
     {

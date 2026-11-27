@@ -35,6 +35,8 @@
     <nav class="shop-scroll container mx-auto flex min-w-0 gap-2 overflow-x-auto px-4 pb-3 pt-3 text-sm sm:flex-wrap sm:overflow-visible" aria-label="{{ __('site.store_menu') }}" data-testid="shop-links">
         <a href="{{ $home ? '#shops' : route('public.shop.index').'#shops' }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 font-semibold text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-shops">{{ __('site.shops') }}</a>
         <a href="{{ route('public.shop.deals') }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-deals">{{ __('site.store_deals') }}</a>
+        {{-- STATUS §5us: name tags, cards and the rest Akuru prints — while the print desk is on. --}}
+        @if(\App\Domains\Bookshop\Support\PrintDesk::settings()['enabled'])<a href="{{ route('public.shop.print.index') }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-print">{{ __('shop.print_link') }}</a>@endif
         {{-- LENDING_AND_USED_BOOKS_PLAN U1: old and used books. --}}
         <a href="{{ route('public.shop.used') }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-used">{{ __('shop.used_heading') }}</a>
         <a href="{{ route('public.lending.index') }}" class="inline-flex shrink-0 items-center whitespace-nowrap rounded-full border border-brandMaroon-200 bg-white px-3 py-1.5 text-brandMaroon-800 hover:bg-brandMaroon-50" data-testid="shop-link-lending">{{ __('lending.borrow_heading') }}</a>
@@ -497,6 +499,30 @@
 
     {{-- STATUS §5lc: the schools' book lists — find your school and grade, buy the list. --}}
     {{-- Shown even when empty: the Bookstore menu links here. --}}
+    {{-- STATUS §5us: what Akuru prints, one card each — while the print desk is on. --}}
+    @if(count($home['print'] ?? []) > 0)
+        <section id="print" class="scroll-mt-24 pt-8" data-testid="shop-print">
+            <div class="container mx-auto px-4">
+                <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+                    <h2 class="text-2xl font-bold text-brandMaroon-900">{{ __('shop.print_heading') }}</h2>
+                    <a href="{{ route('public.shop.print.index') }}" class="text-sm font-semibold text-brandMaroon-700 underline">{{ __('shop.print_all') }}</a>
+                </div>
+                <p class="mb-4 text-sm text-gray-600">{{ __('shop.print_intro') }}</p>
+                <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach($home['print'] as $print)
+                        <a href="{{ route('public.shop.print.kind', $print['path']) }}" class="flex min-h-[7rem] flex-col justify-between rounded-2xl border border-brandMaroon-100 bg-white p-4 hover:shadow-md" data-testid="shop-print-{{ $print['kind'] }}">
+                            <span>
+                                <span class="block text-lg font-semibold text-brandMaroon-900">{{ $print['title'] }}</span>
+                                <span class="mt-1 block text-sm text-gray-600">{{ $print['summary'] }}</span>
+                            </span>
+                            <span class="mt-3 text-sm font-semibold text-brandMaroon-700">{{ __('shop.print_open') }} <span class="rtl-flip" aria-hidden="true">→</span></span>
+                        </a>
+                    @endforeach
+                </div>
+            </div>
+        </section>
+    @endif
+
     @if(isset($home['book_lists']))
         <section id="book-lists" class="scroll-mt-24 mt-8 bg-brandBeige-50 py-8" data-testid="shop-book-lists">
             <div class="container mx-auto px-4">
