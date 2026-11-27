@@ -50,7 +50,7 @@ try {
     await page.locator('input[name="password"]').fill(PASSWORD);
     await Promise.all([page.waitForLoadState('networkidle'), page.locator('form[action$="/login"] button[type="submit"]').first().click()]);
 
-    await page.goto(`${BASE}/en/admin/settings`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE}/en/admin/settings/system`, { waitUntil: 'networkidle' });
     check('System Settings shows Languages with Dhivehi and Arabic both on',
         (await page.locator('[data-testid="languages"]').count()) === 1
             && await page.locator('[data-testid="language-dv"]').isChecked() && await page.locator('[data-testid="language-ar"]').isChecked());
@@ -69,7 +69,7 @@ try {
     await visitor.goto(`${BASE}/dv/library`, { waitUntil: 'networkidle' });
     check('/dv/library stays in Dhivehi', path(visitor) === '/dv/library' && (await visitor.locator('html').getAttribute('lang')) === 'dv');
 
-    await page.goto(`${BASE}/en/admin/settings`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE}/en/admin/settings/system`, { waitUntil: 'networkidle' });
     await page.locator('[data-testid="language-ar"]').check();
     await Promise.all([page.waitForResponse((r) => r.url().endsWith('/admin/settings/languages')), page.click('[data-testid="languages-save"]')]);
     await page.waitForSelector('[data-testid="flash-success"]');

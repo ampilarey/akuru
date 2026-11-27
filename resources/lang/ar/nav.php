@@ -266,4 +266,7 @@ return [
 
     // B4d: Library bundles.
     'library_bundles' => 'الحزم',
+
+    // ST1: the Settings index.
+    'all_settings' => 'كل الإعدادات',
 ];

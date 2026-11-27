@@ -20,6 +20,20 @@ use Inertia\Response;
  */
 class SettingsController extends Controller
 {
+    /**
+     * ST1 (STATUS §5ut): the Settings index — one card per product's own
+     * settings page, for whoever may open at least one of the Institute's.
+     */
+    public function home(Request $request): Response
+    {
+        $cards = app(\App\Domains\Settings\Actions\ListSettingsIndexAction::class)->execute($request->user(), app()->getLocale());
+        // The index is the Institute's: the School's cards are links for whoever also holds one of its own (ADR-040).
+        abort_unless(collect($cards)->contains('group', 'institute'), 403);
+
+        return Inertia::render('Settings/Home', ['cards' => $cards, 't' => Phrases::once('admin')]);
+    }
+
+    /** The system's own page: health, languages, caches, backups. */
     public function index(): Response
     {
         return Inertia::render('Settings/Index', app(ResolveIntegrationStatusAction::class)->execute() + [

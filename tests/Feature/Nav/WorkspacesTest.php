@@ -203,9 +203,10 @@ it('composes the Institute and the School homes from the workspace’s own menu'
             ->where('parts.0.sections.2.key', 'prayer_times')->has('parts.0.sections.2.children', 4)
             ->where('parts.1.key', 'panel_admissions')->has('parts.1.sections', 1)
             ->where('parts.2.key', 'panel_money')->has('parts.2.sections', 10)->has('parts.2.sections.1.children', 11)
-            ->where('parts.3.key', 'panel_settings')->where('parts.3.label', 'Settings')->has('parts.3.sections', 5)
-            ->where('parts.3.sections.2.key', 'bookshop_settings')->where('parts.3.sections.2.href', '/admin/bookshop/settings')
-            ->where('parts.3.sections.3.key', 'print_desk')->where('parts.3.sections.3.href', '/admin/bookshop/print')
+            ->where('parts.3.key', 'panel_settings')->where('parts.3.label', 'Settings')->has('parts.3.sections', 6)
+            ->where('parts.3.sections.0.key', 'all_settings')->where('parts.3.sections.0.href', '/admin/settings')
+            ->where('parts.3.sections.3.key', 'bookshop_settings')->where('parts.3.sections.3.href', '/admin/bookshop/settings')
+            ->where('parts.3.sections.4.key', 'print_desk')->where('parts.3.sections.4.href', '/admin/bookshop/print')
             ->where('parts.4.key', 'panel_system')->has('parts.4.sections', 3)->where('parts.4.sections.0.key', 'manage_users')
             ->has('today.tiles', 2)->where('today.tiles.0.key', 'new_accounts')->where('today.tiles.1.key', 'paid_today')
             ->where('today.more.href', '/dashboard/numbers'));

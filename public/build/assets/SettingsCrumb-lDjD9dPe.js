@@ -1,0 +1,1 @@
+import{j as e,L as s}from"./vendor-DDl4dp4B.js";function i({t={}}){return e.jsx("p",{className:"mb-3 text-sm","data-testid":"settings-crumb",children:e.jsxs(s,{href:"/admin/settings",className:"inline-flex min-h-[2rem] items-center text-blue-700 underline",children:["← ",t.settings_all||"All settings"]})})}export{i as S};

@@ -751,8 +751,12 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     });
 
     // Admin Settings
+    // ST1 (STATUS §5ut): the Settings index — a card per product's own settings
+    // page. Gated to the roles that hold an Institute settings page, so the menu
+    // offers it to nobody else; the handler still shows only the cards that open.
+    Route::get('admin/settings', [AdminSettingsController::class, 'home'])->name('admin.settings.index')->middleware('role:super_admin|bookshop_manager');
     Route::prefix('admin/settings')->middleware(['role:super_admin'])->group(function () {
-        Route::get('/', [AdminSettingsController::class, 'index'])->name('admin.settings.index');
+        Route::get('/system', [AdminSettingsController::class, 'index'])->name('admin.settings.system');
         Route::post('/clear-cache', [AdminSettingsController::class, 'clearCache'])->name('admin.settings.clear-cache');
         Route::put('/languages', [AdminSettingsController::class, 'languages'])->name('admin.settings.languages');
     });

@@ -1,5 +1,6 @@
 import { useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import SettingsCrumb from '../../Components/Settings/SettingsCrumb';
 import FormErrors from '../../Components/FormErrors';
 
 /**
@@ -38,6 +39,7 @@ export default function Settings({ settings, t = {} }) {
 
     return (
         <AppShell title={t.library_settings_title || 'Digital Library settings'}>
+            <SettingsCrumb t={t} />
             <p className="mb-4 text-sm text-gray-600">{t.library_settings_intro || 'Money, publishing and notices. Each field shows the deploy\'s default beside it; what you save here is in force at once.'}</p>
             <form
                 onSubmit={(e) => { e.preventDefault(); form.put('/admin/library/settings', { preserveScroll: true }); }}

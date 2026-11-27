@@ -273,4 +273,7 @@ return [
 
     // B4d: Library bundles.
     'library_bundles' => 'Bundles',
+
+    // ST1: the Settings index.
+    'all_settings' => 'All settings',
 ];

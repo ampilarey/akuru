@@ -58,7 +58,7 @@ class ListFeatureWalkthroughAction
                 ['key' => 'ft-institute-4', 'label' => 'Instructors shown on the website', 'where' => '/admin/instructors'],
                 ['key' => 'ft-institute-5', 'label' => 'Prayer times: islands, groups, broadcasts, import', 'where' => '/admin/prayer-times/islands'],
                 ['key' => 'ft-institute-6', 'label' => 'Manage users: create, set roles, activate and deactivate', 'where' => '/admin/users'],
-                ['key' => 'ft-institute-7', 'label' => 'System settings and clear caches', 'where' => '/admin/settings'],
+                ['key' => 'ft-institute-7', 'label' => 'System settings and clear caches', 'where' => '/admin/settings/system'],
                 ['key' => 'ft-institute-8', 'label' => 'Commerce: gift cards, discounts, wallets', 'where' => '/admin/commerce'],
                 ['key' => 'ft-institute-9', 'label' => 'Payments list and refunds', 'where' => '/admin/enrollments/payments'],
                 ['key' => 'ft-institute-10', 'label' => 'Translations: edit Dhivehi and Arabic wording', 'where' => '/admin/translations'],

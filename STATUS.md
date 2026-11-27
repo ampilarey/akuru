@@ -4983,6 +4983,65 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ut. Settings is an index of each product's own page (ST1, 2026-11-27)
+
+The owner asked for a full audit of the admin panel: "too much setting on
+one page", and each domain's settings to be "independent and separate".
+The audit's findings:
+- 61 admin screens and 273 actions.
+- The Bookstore office carries 19 sections and 61 inputs on one page; the
+  print desk 43 inputs.
+- Settings live in five kinds of place: settings pages, work pages, the
+  School workspace, about 70 business knobs in `.env` only, and nowhere at
+  all for Lending, the wallet, prayer times and the website.
+
+The owner said "Do one by one. Until completed". The plan, one slice per
+PR:
+- **ST1:** the Settings index and the way back (this slice).
+- **ST2:** the Bookstore office split.
+- **ST3:** the print desk split.
+- **ST4:** `.env` business settings onto screens.
+- **ST5:** a Blogs office and the menu clean-up.
+
+**ST1:**
+- **`/admin/settings` is an index** (`Settings/Home`,
+  `ListSettingsIndexAction`): one card per product's own settings page.
+  - The Institute's cards: System, Digital Library, Bookstore, Printing
+    and Translations.
+  - The School's cards, apart: Fees and finance, Staff and HR. They stay in
+    the School workspace (ADR-040) and the cards only open them there.
+  - Nothing is edited on the index.
+- **Who sees what:** a card shows only to whoever its page admits, read off
+  the route's own gate (`BuildNavigationAction::admits`). The index itself
+  is the Institute's: a Bookstore manager sees the Bookstore's two cards,
+  and a school-only admin is refused, as before.
+- **The system's own page moved** to `/admin/settings/system`, unchanged
+  (health, languages, caches, backups). The backup alert links there.
+- **The way back:** System, Library and Bookstore settings each carry *← All
+  settings* (`SettingsCrumb`).
+- **The menu:** the Settings part starts with *All settings*.
+
+Phrases in EN, DV and AR.
+
+**Tests:** `SettingsIndexTest` (2):
+- the super admin's seven cards in order, each opening, and nothing of the
+  system page on the index;
+- a Bookstore manager's two cards, with the system page refused;
+- a plain account and a school-only admin are refused.
+
+The menu tests count the new entry. The settings tests moved to the
+system page's address.
+
+**Walks:** `settings-index.mjs` (new, in `all.mjs`), at 390 px under /dv:
+the cards in two groups, no form on the page, every card opening with
+nothing sideways, the three pages leading back; /en left to right. 6/6.
+Also `admin` 43/43, `admin-mobile` 13/13, `admin-pages` 3/3,
+`admin-layout` 15/15, `admin-hub` 26/26, `language-switch` 7/7,
+`system-backups` 7/7, `once-props` 9/9 and `nav` 14/14.
+
+The whole suite: 3384 passed, 3 skipped (they need Chrome or Ghostscript,
+which this container lacks; CI runs them). Pint is clean. No migration.
+
 ## 5us. Printing on the Bookstore's front (2026-11-27)
 
 The owner asked how name cards work, then "I couldn't see it in the book

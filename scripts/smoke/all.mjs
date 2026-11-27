@@ -212,6 +212,7 @@ const WALKS = [
     { name: 'admin-pages', writes: false, asks: 'Does every admin page draw, desktop and phone?' },
     { name: 'admin-mobile', writes: false, asks: 'Does every admin landing fit a 390 px phone?' },
     { name: 'system-backups', writes: true, asks: 'Does System Settings say how the backups stand — red when the last good one is over 26 hours old — on a phone, in Dhivehi?' },
+    { name: 'settings-index', writes: false, asks: 'Is Settings an index — a card per product\'s own settings page, nothing edited on it — on a phone, in Dhivehi?' },
     { name: 'admin-layout', writes: false, asks: 'Do the admin panel\'s shells work for the office, on a phone and a desktop?' },
     { name: 'long-pages', writes: false, asks: 'Are the four long admin pages short on a phone?' },
     { name: 'phone-targets', writes: false, asks: 'Is every tap target in the admin panel big enough for a thumb?' },

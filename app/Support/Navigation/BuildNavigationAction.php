@@ -117,6 +117,21 @@ class BuildNavigationAction
     }
 
     /**
+     * May this person open this link? The menu's own answer, for a page that
+     * lists links of its own (the Settings index, STATUS §5ut).
+     *
+     * @param  array{key: string, href: string, roles?: ?list<string>, can?: list<string>}  $item
+     */
+    public function admits(?object $user, array $item, string $locale): bool
+    {
+        if ($user === null || ! method_exists($user, 'hasAnyRole')) {
+            return false;
+        }
+
+        return $this->mayOpen($user, $user->getRoleNames()->all(), $item, Route::getRoutes()->getRoutesByMethod()['GET'] ?? [], $locale);
+    }
+
+    /**
      * @param  array{key: string, href: string, roles?: ?list<string>, can?: list<string>}  $item
      * @param  list<string>  $roles
      * @param  array<string, RouteInstance>  $routes

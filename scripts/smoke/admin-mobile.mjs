@@ -23,7 +23,7 @@ const SHOTS = process.env.SMOKE_SHOTS ?? null;
 const PAGES = [
     // The landings that send an administrator into the panel (the owner's phone screenshot, 2026-09-26).
     '/en/admin', '/en/school', '/en/dashboard', '/en/dashboard/numbers', '/en/portal/overview',
-    '/en/admin/users', '/en/admin/users/otp-abuse', '/en/admin/settings',
+    '/en/admin/users', '/en/admin/users/otp-abuse', '/en/admin/settings', '/en/admin/settings/system',
     '/en/admin/enrollments', '/en/admin/enrollments/payments',
     '/en/admin/instructors', '/en/admin/instructors/create',
     '/en/admin/public-site/pages', '/en/admin/public-site/pages/create',

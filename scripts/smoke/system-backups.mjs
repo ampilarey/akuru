@@ -48,7 +48,7 @@ try {
     await page.locator('form[action$="/login"] button[type="submit"]').first().click();
     await page.waitForURL((u) => !String(u).includes('/login'), { timeout: 20000 });
     const card = page.locator('[data-testid="backup-status"]');
-    const open = async (locale = 'dv') => page.goto(`${BASE}/${locale}/admin/settings`, { waitUntil: 'networkidle' });
+    const open = async (locale = 'dv') => page.goto(`${BASE}/${locale}/admin/settings/system`, { waitUntil: 'networkidle' });
 
     await open();
     check('/dv with no backup on record, the card is red and says none was made', (await card.getAttribute('data-stale')) === 'yes' && (await card.innerText()).includes(tinker(`echo trans('admin.backup_never', [], 'dv');`).slice(0, 20)));
