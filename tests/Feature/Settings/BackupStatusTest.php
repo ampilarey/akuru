@@ -29,20 +29,20 @@ it('shows the last good backup, and turns red after 26 hours without one', funct
     $web = test()->withoutLocalizationMiddleware()->actingAs($admin);
 
     // None yet: red, and says so.
-    $web->get('/admin/settings')->assertOk()->assertInertia(fn (Assert $page) => $page->component('Settings/Index')
+    $web->get('/admin/settings/system')->assertOk()->assertInertia(fn (Assert $page) => $page->component('Settings/Index')
         ->where('backup.stale', true)->where('backup.last_good', null)->where('backup.offsite_configured', false)->has('t.backup_never'));
 
     BackupRun::query()->create(['name' => 'akuru-20261029-030000.akb', 'status' => 'succeeded', 'started_at' => now()->subHours(3), 'finished_at' => now()->subHours(3), 'size_bytes' => 5 * 1048576, 'offsite' => true]);
-    $web->get('/admin/settings')->assertInertia(fn (Assert $page) => $page->where('backup.stale', false)
+    $web->get('/admin/settings/system')->assertInertia(fn (Assert $page) => $page->where('backup.stale', false)
         ->where('backup.last_good.size_mb', 5)->where('backup.last_good.offsite', true));
 
     // A failed run since: the good one still counts, and the failure is shown.
     BackupRun::query()->create(['status' => 'failed', 'started_at' => now()->subHour(), 'finished_at' => now()->subHour(), 'error' => 'mysqldump failed: access denied']);
-    $web->get('/admin/settings')->assertInertia(fn (Assert $page) => $page->where('backup.stale', false)
+    $web->get('/admin/settings/system')->assertInertia(fn (Assert $page) => $page->where('backup.stale', false)
         ->where('backup.last.status', 'failed')->where('backup.last.error', 'mysqldump failed: access denied'));
 
     $this->travel(30)->hours();
-    $web->get('/admin/settings')->assertInertia(fn (Assert $page) => $page->where('backup.stale', true));
+    $web->get('/admin/settings/system')->assertInertia(fn (Assert $page) => $page->where('backup.stale', true));
 
     // Only the super admin sees it.
     test()->withoutLocalizationMiddleware()->actingAs(User::factory()->create())->get('/admin/settings')->assertForbidden();

@@ -17,7 +17,7 @@ uses(RefreshDatabase::class);
 it('has every language on until the office switches one off', function () {
     expect(app(ListEnabledLocalesAction::class)->execute())->toBe(['en', 'dv', 'ar']);
 
-    test()->withoutLocalizationMiddleware()->actingAs(actingSystemAdmin())->get('/admin/settings')
+    test()->withoutLocalizationMiddleware()->actingAs(actingSystemAdmin())->get('/admin/settings/system')
         ->assertInertia(fn (Assert $page) => $page->component('Settings/Index')
             ->where('languages', ['dv' => true, 'ar' => true])
             ->where('locales', ['en', 'dv', 'ar']));
@@ -31,7 +31,7 @@ it('switches Arabic off: the menus, the sitemap, the hreflang links and the loca
         ->assertSessionHas('success', __('admin.system_settings_languages_saved'));
     expect(app(ListEnabledLocalesAction::class)->execute())->toBe(['en', 'dv']);
 
-    $web->actingAs($office)->get('/admin/settings')->assertInertia(fn (Assert $page) => $page
+    $web->actingAs($office)->get('/admin/settings/system')->assertInertia(fn (Assert $page) => $page
         ->where('languages', ['dv' => true, 'ar' => false])
         ->where('locales', ['en', 'dv'])
         ->where('locale_urls', fn ($urls) => array_keys(collect($urls)->all()) === ['en', 'dv']));

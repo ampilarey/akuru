@@ -270,4 +270,7 @@ return [
 
     // B4d: Library bundles.
     'library_bundles' => 'ބަންޑަލްތައް',
+
+    // ST1: the Settings index.
+    'all_settings' => 'ހުރިހާ ސެޓިންގްސް',
 ];

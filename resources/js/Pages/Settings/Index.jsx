@@ -1,5 +1,6 @@
 import { router, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import SettingsCrumb from '../../Components/Settings/SettingsCrumb';
 
 /**
  * System Settings: whether mail, SMS and payments are set up, the cache
@@ -96,6 +97,7 @@ export default function Index({ settings, sms_configured, bml_configured, config
 
     return (
         <AppShell title={t.system_settings_title || 'System Settings'}>
+            <SettingsCrumb t={t} />
             <p className="mb-4 text-sm text-gray-600">{t.system_settings_intro || 'Whether mail, text messages, payments and the cache are set up.'}</p>
             <div className="mb-6 grid gap-3 md:grid-cols-2 lg:grid-cols-4" data-testid="integration-status">
                 <Card icon="📩" label={t.system_settings_mail || 'Mail driver'} value={cap(settings.mail_mailer)} note={settings.mail_from} />

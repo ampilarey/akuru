@@ -24,7 +24,7 @@ class NotifyBackupFailureAction
         $body = Said::of($run->status === 'failed' ? 'admin.backup_failed_body' : 'admin.backup_partial_body', ['why' => $why]);
         $sent = 0;
         foreach (app(ListAdminUsersAction::class)->query(['role' => 'super_admin'])->pluck('id') as $id) {
-            app(SendUserNotificationAction::class)->execute((int) $id, $title, $body, ['category' => 'system', 'href' => '/admin/settings']);
+            app(SendUserNotificationAction::class)->execute((int) $id, $title, $body, ['category' => 'system', 'href' => '/admin/settings/system']);
             $sent++;
         }
 

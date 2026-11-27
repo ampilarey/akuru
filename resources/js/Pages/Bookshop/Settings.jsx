@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import SettingsCrumb from '../../Components/Settings/SettingsCrumb';
 import FormErrors from '../../Components/FormErrors';
 
 /**
@@ -160,11 +161,12 @@ function NoticeSwitches({ notices, t }) {
     );
 }
 
-export default function Settings({ t, notices = null, cod_on = true, rewards = null, referrals = null, shop_open = { open: true, message: null } }) {
+export default function Settings({ t, notices = null, cod_on = true, rewards = null, referrals = null, shop_open = { open: true, message: null }, settings_all: settingsAll }) {
     const { errors } = usePage().props;
 
     return (
         <AppShell title={t.settings_heading}>
+            <SettingsCrumb t={{ settings_all: settingsAll }} />
             <FormErrors errors={errors} className="mb-4" />
             <p className="mb-6 text-sm text-gray-600">{t.settings_hint}</p>
             <div className="space-y-8" data-testid="bookshop-settings">

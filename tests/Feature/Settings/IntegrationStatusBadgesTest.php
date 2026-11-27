@@ -38,7 +38,7 @@ function settingsPage(array $config): \Illuminate\Testing\TestResponse
     $admin->assignRole('super_admin');
 
     return test()->withoutLocalizationMiddleware()->actingAs($admin->fresh())
-        ->get(route('admin.settings.index'));
+        ->get(route('admin.settings.system'));
 }
 
 it('does not call SMS configured when only the defaulted url is set', function () {

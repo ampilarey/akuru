@@ -333,7 +333,7 @@ check('the translation editor opens with rows to correct', translationRows > 0, 
 // the configuration was cached it is rebuilt rather than left off.
 // C9 slice 1 (STATUS §5jb): the screen is an Inertia page now; the button
 // posts without a page load and the flash arrives in the shell.
-await su.goto(`${BASE}/en/admin/settings`, { waitUntil: 'networkidle' });
+await su.goto(`${BASE}/en/admin/settings/system`, { waitUntil: 'networkidle' });
 await settle(su, '[data-testid="cache-management"]');
 await su.click('[data-testid="clear-caches"]');
 const cacheCleared = await su.waitForFunction(() => /All caches cleared/.test(document.body.innerText), null, { timeout: 20000 }).then(() => true).catch(() => false);

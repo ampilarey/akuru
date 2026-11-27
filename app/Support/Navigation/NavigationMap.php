@@ -503,7 +503,9 @@ final class NavigationMap
             // Print desk stays under Shops as well; this is a second way in.
             // School screens stay on the School workspace (ADR-040).
             ['key' => 'panel_settings', 'items' => [
-                ['key' => 'system_settings', 'href' => '/admin/settings'],
+                // ST1: the index of every product's settings page, then each.
+                ['key' => 'all_settings', 'href' => '/admin/settings'],
+                ['key' => 'system_settings', 'href' => '/admin/settings/system'],
                 ['key' => 'library_settings', 'href' => '/admin/library/settings'],
                 ['key' => 'bookshop_settings', 'href' => '/admin/bookshop/settings', 'can' => ['bookshop.manage']],
                 ['key' => 'print_desk', 'href' => '/admin/bookshop/print', 'can' => ['bookshop.manage']],

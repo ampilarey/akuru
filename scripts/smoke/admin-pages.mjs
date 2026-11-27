@@ -30,7 +30,7 @@ const PASSWORD = process.env.SMOKE_PASSWORD ?? 'password';
 // Landing pages, each with the index it belongs to (null: it is an index).
 const LANDINGS = [
     ['/en/admin', null], ['/en/school', null], ['/en/dashboard', null], ['/en/dashboard/numbers', '/en/admin'], ['/en/portal/overview', null],
-    ['/en/admin/users', null], ['/en/admin/users/otp-abuse', '/en/admin/users'], ['/en/admin/settings', null],
+    ['/en/admin/users', null], ['/en/admin/users/otp-abuse', '/en/admin/users'], ['/en/admin/settings', null], ['/en/admin/settings/system', '/en/admin/settings'],
     ['/en/admin/enrollments', null], ['/en/admin/enrollments/payments', '/en/admin/enrollments'],
     ['/en/admin/instructors', null], ['/en/admin/instructors/create', '/en/admin/instructors'],
     ['/en/admin/public-site/pages', null], ['/en/admin/public-site/pages/create', '/en/admin/public-site/pages'], ['/en/admin/public-site/pages/1', '/en/admin/public-site/pages'],
