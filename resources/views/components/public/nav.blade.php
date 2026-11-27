@@ -34,6 +34,8 @@
       ['key' => 'all', 'label' => __('site.store_all'), 'href' => route('public.shop.index')],
       ['key' => 'shops', 'label' => __('site.shops'), 'href' => route('public.shop.index').'#shops'],
       ['key' => 'deals', 'label' => __('site.store_deals'), 'href' => route('public.shop.deals')],
+      // STATUS §5us: printing, while the print desk is on.
+      ...(\App\Domains\Bookshop\Support\PrintDesk::settings()['enabled'] ? [['key' => 'print', 'label' => __('shop.print_link'), 'href' => route('public.shop.print.index')]] : []),
       ['key' => 'book-lists', 'label' => __('site.store_book_lists'), 'href' => route('public.shop.index').'#book-lists'],
       ['key' => 'categories', 'label' => __('site.shop_categories'), 'href' => route('public.shop.index').'#categories'],
       ['key' => 'my-orders', 'label' => __('site.my_orders'), 'href' => route('public.shop.orders')],

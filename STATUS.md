@@ -4983,6 +4983,52 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5us. Printing on the Bookstore's front (2026-11-27)
+
+The owner asked how name cards work, then "I couldn't see it in the book
+store". Two reasons:
+- **The print desk is off on production** (an owner item: OWNER_TODO C).
+  The print pages answer 404 to customers and the print products stay
+  drafts.
+- **The Bookstore's front had no way to printing at all.** Name tags and
+  cards were reachable only from a print product's own page, a book list's
+  name-tag card, or an order.
+
+The owner said "Add". Each of these shows only while the print desk is on:
+- a **print chip** (*Name tags & printing*) in the Bookstore's link row;
+- a ***Printed for you*** section on the Bookstore home: a card per print
+  product open to customers, each with its summary, opening its design
+  page, plus *Everything we print*;
+- an entry in the site's **Bookstore menu**.
+
+`PrintProducts::shopFront()` lists the open products (none while the desk is
+off). Phrases in EN, DV and AR.
+
+**Tests:** `PrintOnShopFrontTest` (2):
+- desk off: no chip, no section, no link;
+- desk on with Cards on sale: chip, section, name tags and cards (not
+  stickers), the cards link and the menu entry.
+
+**Walk:** `shop-print-front.mjs` (new, in `all.mjs`), at 390 px:
+- under /dv, nothing with the desk off;
+- with it on, the chip and the section (name tags and cards, not
+  stickers), nothing sideways, and the cards card opening the cards page in
+  Dhivehi;
+- under /en, the same, left to right.
+
+6/6. Also `shop` 80/80, `bookstore-language` 13/13, `nav` 14/14,
+`print-products` 13/13 and `print-cards` 8/8.
+
+**This container was new**, with PHP 8.3 and no database. PHP 8.4 and
+MariaDB were installed to match production and CI. Composer fetched the
+packages by git, because GitHub's download API is limited to this session's
+repository; phpstan, which has no git source, came from its public git
+repository through the local cache. `composer.lock` is unchanged.
+
+The whole suite has 3382 tests passing and 3 skipped: those three need
+Chrome or Ghostscript, which this new container lacks, and CI runs them.
+Pint is clean.
+
 ## 5ur. Backups on System Settings, and an alert when one fails (BK2, 2026-10-29)
 
 BK1 (§5up) made the nightly backup. BK2 makes it visible:

@@ -2039,4 +2039,11 @@ return [
 
     // PP7b: a printing shop's own desk.
     'print_desk_title' => 'مكتب الطباعة',
+
+    // STATUS §5us: printing on the Bookstore's front.
+    'print_link' => 'بطاقات الأسماء والطباعة',
+    'print_heading' => 'نطبع لك',
+    'print_intro' => 'بطاقات الأسماء والبطاقات والملصقات وطباعة الصور. صمّمها هنا، ووافق على المسودة، ونطبعها لك.',
+    'print_all' => 'كل ما نطبعه',
+    'print_open' => 'صمّم الآن',
 ];

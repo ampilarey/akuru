@@ -38,6 +38,8 @@ class ShopController extends Controller
             'home' => $browsing ? app(PresentShopHomeAction::class)->execute() + [
                 'recently_viewed' => app(CustomerListsAction::class)->recentlyViewed($request->session()),
                 'applications_open' => app(ApplyToSellAction::class)->isOpen(),
+                // STATUS §5us: what Akuru prints, while the print desk is on.
+                'print' => \App\Domains\Bookshop\Support\PrintProducts::shopFront(app()->getLocale()),
             ] : null,
             'products' => app(ListShopProductsAction::class)->execute($filters),
             'filters' => $filters,

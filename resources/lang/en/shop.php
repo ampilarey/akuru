@@ -2044,4 +2044,11 @@ return [
 
     // PP7b: a printing shop's own desk.
     'print_desk_title' => 'Print desk',
+
+    // STATUS §5us: printing on the Bookstore's front.
+    'print_link' => 'Name tags & printing',
+    'print_heading' => 'Printed for you',
+    'print_intro' => 'Name tags, cards, stickers and photo prints. Design yours here, approve a proof, and it is printed for you.',
+    'print_all' => 'Everything we print',
+    'print_open' => 'Design yours',
 ];
