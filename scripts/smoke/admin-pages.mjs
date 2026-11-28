@@ -42,7 +42,7 @@ const LANDINGS = [
     ['/en/admin/prayer-times/broadcasts', '/en/admin/prayer-times/islands'], ['/en/admin/prayer-times/broadcasts/create', '/en/admin/prayer-times/broadcasts'], ['/en/admin/prayer-times/import', '/en/admin/prayer-times/islands'],
     ['/en/admin/operations', null], ['/en/admin/operations/features', '/en/admin/operations'], ['/en/admin/translations', null],
     ['/en/admin/commerce', null], ['/en/admin/library', null], ['/en/admin/library/reading-alerts', '/en/admin/library'],
-    ['/en/admin/pronunciation', null], ['/en/admin/bookshop', null],
+    ['/en/admin/pronunciation', null], ['/en/admin/bookshop', null], ['/en/admin/bookshop/office/shops', '/en/admin/bookshop'], ['/en/admin/bookshop/office/storefront', '/en/admin/bookshop'], ['/en/admin/bookshop/office/checks', '/en/admin/bookshop'], ['/en/admin/bookshop/office/money', '/en/admin/bookshop'], ['/en/admin/bookshop/office/reports', '/en/admin/bookshop'],
 ];
 
 // Detail pages found on an index: [index, link pattern, the index they belong to].
@@ -56,7 +56,7 @@ const DISCOVER = [
     ['/en/admin/public-site/daily-content', /\/admin\/public-site\/daily-content\/\d+\/edit$/, '/en/admin/public-site/daily-content'],
     ['/en/admin/prayer-times/groups', /\/admin\/prayer-times\/groups\/\d+\/edit$/, '/en/admin/prayer-times/groups'],
     ['/en/admin/prayer-times/broadcasts', /\/admin\/prayer-times\/broadcasts\/\d+\/edit$/, '/en/admin/prayer-times/broadcasts'],
-    ['/en/admin/bookshop', /\/admin\/bookshop\/invoices\/\d+$/, '/en/admin/bookshop'],
+    ['/en/admin/bookshop/office/money', /\/admin\/bookshop\/invoices\/\d+$/, '/en/admin/bookshop/office/money'],
 ];
 
 const HERMETIC_ARGS = [

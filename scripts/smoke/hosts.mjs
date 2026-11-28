@@ -127,7 +127,7 @@ check('while it waits, the domain is not the shop', !waiting.location.includes('
 // ------------------------------------------------------------ 3. the office
 
 const office = await signIn(ADMIN);
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/shops`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="office-hosts"]');
 check('the office sees the request', (await office.locator('[data-testid="host-fitrah"]').getAttribute('data-status')) === 'requested');
 await office.click('[data-testid="host-check-fitrah"]');

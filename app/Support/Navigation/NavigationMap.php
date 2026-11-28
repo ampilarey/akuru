@@ -476,7 +476,14 @@ final class NavigationMap
                     // BACKLOG B11 (BP3): copyright reports from the public pages.
                     ['key' => 'library_copyright', 'href' => '/admin/library/copyright'],
                 ]],
-                ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage']],
+                // ST2: the office's own pages (Today is the office itself).
+                ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage'], 'children' => [
+                    ['key' => 'bookshop_shops', 'href' => '/admin/bookshop/office/shops'],
+                    ['key' => 'bookshop_storefront', 'href' => '/admin/bookshop/office/storefront'],
+                    ['key' => 'bookshop_checks', 'href' => '/admin/bookshop/office/checks'],
+                    ['key' => 'bookshop_money', 'href' => '/admin/bookshop/office/money'],
+                    ['key' => 'bookshop_reports', 'href' => '/admin/bookshop/office/reports'],
+                ]],
                 // COMMERCE_PARITY_PLAN P6a: the orders Akuru packs, and its charges.
                 ['key' => 'akuru_fulfilment', 'href' => '/admin/bookshop/akuru', 'can' => ['bookshop.manage']],
                 // NAME_TAGS_PLAN NT1: the print desk's settings and lists; NT2: its templates, opened from the desk.

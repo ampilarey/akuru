@@ -40,7 +40,8 @@ const SHOP = 'SMOKE-Walk SH1 Shop';
 // Props that carry the phrase books and codes the page must name.
 const CODE_KEYS = new Set(['i18n', 't', 'id_l', 'nav', 'auth', 'locale', 'locales', 'locale_urls', 'errors', 'flash', 'href', 'status', 'state', 'kind']);
 // Codes the same in every language: file formats and sizes, a currency, a product code, a setting's name.
-const ALWAYS_FINE = [/https?:\/\/\S*/g, /\bwww\.\S+/g, /[\w.+*-]+@[\w-]+(\.[\w-]+)+/g, /\bCSV\b/g, /\bCSS\b/g, /\bJPEG\b/g, /\bPNG\b/g, /\bWebP\b/g, /\bPDF\b/g, /\b[KM]B\b/g, /\bMVR\b/g, /\bSKU\b/g, /\bSMS\b/g, /\bTIN\b/g, /\bBOOKSHOP_[A-Z_]+\b/g];
+// A shop's own address (`/shop/fitrah`) is an address, not a sentence (ST2: the Shops page shows them alone).
+const ALWAYS_FINE = [/https?:\/\/\S*/g, /\/shop\/[\w<>.-]*/g, /\bwww\.\S+/g, /[\w.+*-]+@[\w-]+(\.[\w-]+)+/g, /\bCSV\b/g, /\bCSS\b/g, /\bJPEG\b/g, /\bPNG\b/g, /\bWebP\b/g, /\bPDF\b/g, /\b[KM]B\b/g, /\bMVR\b/g, /\bSKU\b/g, /\bSMS\b/g, /\bTIN\b/g, /\bBOOKSHOP_[A-Z_]+\b/g];
 
 const browser = await chromium.launch({
     args: ['--no-first-run', '--disable-background-networking'],
@@ -160,6 +161,12 @@ check('the application is sent, and waits for the office', (await applicant.loca
 
 // ------------------------------------- the office reads it in Dhivehi
 const office = await signIn(ADMIN);
+// ST2: the office's other pages, then Today, where the walk goes on.
+await readScreen(office, '/admin/bookshop/office/shops');
+await readScreen(office, '/admin/bookshop/office/storefront');
+await readScreen(office, '/admin/bookshop/office/checks');
+await readScreen(office, '/admin/bookshop/office/money');
+await readScreen(office, '/admin/bookshop/office/reports');
 await readScreen(office, '/admin/bookshop');
 const row = office.locator('[data-testid^="application-"][data-status="pending"]').filter({ hasText: SHOP }).first();
 const appId = ((await row.getAttribute('data-testid').catch(() => '')) || '').replace('application-', '');

@@ -128,7 +128,7 @@ it('lets the system admin and the Bookstore admin run the Institute', function (
 
     // The Bookstore office stays with its manager, who may not manage the team.
     $manager = seededRoleUser('bookshop_manager');
-    permissionAs($manager)->get(route('admin.bookshop.index'))->assertOk()
+    permissionAs($manager)->get(route('admin.bookshop.office.shops'))->assertOk()
         ->assertInertia(fn ($page) => $page->where('team.can_manage', false));
-    permissionAs($super)->get(route('admin.bookshop.index'))->assertInertia(fn ($page) => $page->where('team.can_manage', true));
+    permissionAs($super)->get(route('admin.bookshop.office.shops'))->assertInertia(fn ($page) => $page->where('team.can_manage', true));
 });

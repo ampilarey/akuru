@@ -91,7 +91,7 @@ try {
 
     // The office's print sales.
     const office = await signIn(OFFICE, 'en');
-    await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+    await office.goto(`${BASE}/en/admin/bookshop/office/reports`, { waitUntil: 'networkidle' });
     const sales = office.locator('[data-testid="office-print-sales"]');
     check('the office sees Print sales by paper and month, with a CSV', (await sales.count()) === 1 && flat(await sales.locator('h2').textContent()) === say('shop.print_sales_heading', 'en') && (await sales.locator('[data-testid="export-print-sales"]').count()) === 1);
     const csv = await office.request.get(`${BASE}/en/admin/bookshop/insights/print-sales/export`);

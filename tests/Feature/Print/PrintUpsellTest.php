@@ -118,7 +118,7 @@ it('reports print sales by paper and month for the office, with a CSV', function
         ->and($rows[0]['sheets'])->toBe(6)->and($rows[0]['revenue'])->toBe('21.00')->and($rows[0]['paper'])->toBe($paper->name);
 
     $office = printOffice();
-    printWeb()->actingAs($office)->get(route('admin.bookshop.index'))->assertOk()->assertInertia(fn (Assert $page) => $page->has('insights.print_sales', 1)->where('insights.print_sales.0.revenue', '21.00'));
+    printWeb()->actingAs($office)->get(route('admin.bookshop.office.reports'))->assertOk()->assertInertia(fn (Assert $page) => $page->has('insights.print_sales', 1)->where('insights.print_sales.0.revenue', '21.00'));
     $csv = printWeb()->actingAs($office)->get(route('admin.bookshop.insights.print-sales.export'))->assertOk()->streamedContent();
     expect($csv)->toContain('month,paper,jobs,sheets,revenue')->toContain('21.00');
     printWeb()->actingAs($customer)->get(route('admin.bookshop.insights.print-sales.export'))->assertForbidden();

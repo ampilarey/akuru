@@ -196,7 +196,7 @@ it('lets the owner enter bank details and request the matured balance, and the o
     moneyAs($owner)->post(route('vendor.money.payout-request'))->assertSessionHasErrors('payout');
 
     // The office sees where to pay, pays with a reference (a reference is required), and the earnings are paid.
-    moneyAs($office)->get(route('admin.bookshop.index'))->assertInertia(fn ($p) => $p->has('money.requests', 1)->where('money.requests.0.bank.account_number', '7730000123456')->where('money.requests.0.vendor', 'Fitrah')->where('money.vendors.0.requested', '330.00')->where('money.vendors.0.requestable_money', '0.00'));
+    moneyAs($office)->get(route('admin.bookshop.office.money'))->assertInertia(fn ($p) => $p->has('money.requests', 1)->where('money.requests.0.bank.account_number', '7730000123456')->where('money.requests.0.vendor', 'Fitrah')->where('money.vendors.0.requested', '330.00')->where('money.vendors.0.requestable_money', '0.00'));
     moneyAs($office)->post(route('admin.bookshop.payouts.decide', $payout->id), ['decision' => 'paid'])->assertSessionHasErrors('reference');
     moneyAs($office)->post(route('admin.bookshop.payouts.decide', $payout->id), ['decision' => 'paid', 'reference' => 'BML-TRF-0001'])->assertRedirect()->assertSessionHasNoErrors();
     expect($payout->refresh()->status->value)->toBe('paid')->and($payout->reference)->toBe('BML-TRF-0001')
@@ -264,7 +264,7 @@ it('issues Akuru\'s monthly commission tax invoice per vendor, with GST only whe
     expect((string) $september->tax)->toBe('0.80')->and((string) $september->total)->toBe('10.80')->and($september->issuer_tin)->toBe('1000001GST501');
 
     // The office's tax report and CSVs.
-    moneyAs($office)->get(route('admin.bookshop.index'))->assertInertia(fn ($p) => $p->where('money.tax_report.0.month', '2026-09')->where('money.tax_report.0.commission_tax', '0.80')->where('money.tax_report.1.month', '2026-08')->where('money.tax_report.1.commission', '30.00')->where('money.tax_report.1.invoiced', '30.00'));
+    moneyAs($office)->get(route('admin.bookshop.office.money'))->assertInertia(fn ($p) => $p->where('money.tax_report.0.month', '2026-09')->where('money.tax_report.0.commission_tax', '0.80')->where('money.tax_report.1.month', '2026-08')->where('money.tax_report.1.commission', '30.00')->where('money.tax_report.1.invoiced', '30.00'));
     expect(moneyAs($office)->get(route('admin.bookshop.money.export', 'tax-report'))->assertOk()->streamedContent())->toContain('2026-08')->toContain('30.00');
     expect(moneyAs($office)->get(route('admin.bookshop.money.export', 'balances'))->assertOk()->streamedContent())->toContain('Fitrah');
     expect(moneyAs($owner)->get(route('vendor.money.earnings.export'))->assertOk()->streamedContent())->toContain($a->number)->toContain('reversed');

@@ -247,7 +247,7 @@ check('and the checkout no longer offers it', (await count(student, '[data-testi
 
 // ------------------------------------------------------------ 6. the office pauses Fitrah (STATUS §5lo)
 
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/shops`, { waitUntil: 'networkidle' });
 await office.click('[data-testid="vendor-edit-fitrah"]');
 await office.selectOption('[data-testid="vendor-editor-fitrah"] [data-testid="vendor-status"]', 'paused');
 await office.click('[data-testid="vendor-editor-fitrah"] [data-testid="vendor-save"]');

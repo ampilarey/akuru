@@ -182,7 +182,7 @@ it('shows a shop its returns rate and the office the GST the shops collected, in
 
     // GST collected: 100 inclusive at 8% is 7.41 per order, three orders.
     expect((string) $kept->refresh()->tax)->toBe('7.41');
-    followAs($office)->get(route('admin.bookshop.index'))->assertInertia(fn ($p) => $p->where('money.tax_report.0.orders', 3)->where('money.tax_report.0.sales_tax', '22.23'));
+    followAs($office)->get(route('admin.bookshop.office.money'))->assertInertia(fn ($p) => $p->where('money.tax_report.0.orders', 3)->where('money.tax_report.0.sales_tax', '22.23'));
     $csv = followAs($office)->get(route('admin.bookshop.money.export', 'tax-report'))->assertOk()->streamedContent();
     expect($csv)->toContain('sales_gst')->toContain('22.23');
     expect($waiting->refresh()->status->value)->toBe('paid');

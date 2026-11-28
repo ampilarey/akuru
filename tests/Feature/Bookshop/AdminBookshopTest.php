@@ -126,9 +126,10 @@ it('keeps the shared categories and brands and lists vendors with their owner an
             ->component('Bookshop/Admin')
             ->where('vendors.0.name', 'Fitrah')
             ->where('vendors.0.owners.0.email', 'owner@example.test')
-            ->where('vendors.0.effective_commission_rate', '10.00')
-            ->where('catalogue.categories.0.name', 'Stationery')
-            ->where('catalogue.brands.0.name', 'Faber-Castell'));
+            ->where('vendors.0.effective_commission_rate', '10.00'));
+    // ST2: the shared categories and brands are on the office's Storefront page.
+    $this->withoutLocalizationMiddleware()->actingAs($office)->get(route('admin.bookshop.office.storefront'))
+        ->assertInertia(fn ($page) => $page->where('catalogue.categories.0.name', 'Stationery')->where('catalogue.brands.0.name', 'Faber-Castell'));
 
     $csv = $this->withoutLocalizationMiddleware()->actingAs($office)->get(route('admin.bookshop.vendors.export'))->assertOk()->streamedContent();
     expect($csv)->toContain('Fitrah')->toContain('owner@example.test')->toContain('10.00');

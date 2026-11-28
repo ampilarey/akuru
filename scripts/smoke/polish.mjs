@@ -251,7 +251,7 @@ check('the reply shows under the review on the product', (await inner(student, `
 // ------------------------------------------------------------ 5. the office
 
 const office = await signIn(ADMIN);
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/storefront`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="office-home"]');
 await office.fill('[data-testid="hero-heading"]', HERO);
 await office.selectOption('[data-testid="hero-link-kind"]', 'vendor');
@@ -287,7 +287,7 @@ check('and a guest reads "1 person found this helpful"', (await inner(visitor, `
 await student.goto(`${BASE}/en/shop/products/${BOOK}`, { waitUntil: 'networkidle' });
 check('the author has no vote button on their own review', (await count(student, `[data-testid="helpful-${reviewId}"]`)) === 0);
 
-await office.reload({ waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/checks`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="office-reviews"]');
 check('the office sees the review with the reply', (await inner(office, `[data-testid="office-review-${reviewId}"]`)).includes(REVIEW) && (await inner(office, `[data-testid="office-review-${reviewId}"]`)).includes(REPLY));
 await office.fill(`[data-testid="review-note-${reviewId}"]`, 'SMOKE-Note: names a teacher');

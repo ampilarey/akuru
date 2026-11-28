@@ -69,7 +69,7 @@ class RequestVendorPayoutAction
             return $payout;
         });
 
-        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_payout_requested_title'), Said::of('shop.notice_payout_requested_body', ['vendor' => $scope->vendorName, 'amount' => $payout->currency.' '.number_format((float) $payout->amount, 2)]), '/admin/bookshop');
+        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_payout_requested_title'), Said::of('shop.notice_payout_requested_body', ['vendor' => $scope->vendorName, 'amount' => $payout->currency.' '.number_format((float) $payout->amount, 2)]), '/admin/bookshop/office/money');
 
         return $payout;
     }

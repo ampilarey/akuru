@@ -96,7 +96,7 @@ it('lets a shop offer its published look, and the office publish, decline or wit
     expect(UserNotification::query()->where('user_id', $office->id)->where('title', __('shop.notice_theme_offered_title'))->exists())->toBeTrue();
     galleryAs($noorOwner)->get(route('vendor.storefront.index'))->assertInertia(fn ($page) => $page->has('gallery.themes', 4)->where('gallery.offered', null));
 
-    galleryAs($office)->get(route('admin.bookshop.index'))->assertInertia(fn ($page) => $page->where('themes.waiting.0.name', 'Fitrah warm')->has('themes.gallery', 4));
+    galleryAs($office)->get(route('admin.bookshop.office.checks'))->assertInertia(fn ($page) => $page->where('themes.waiting.0.name', 'Fitrah warm')->has('themes.gallery', 4));
     galleryAs($owner)->post(route('admin.bookshop.themes.decide', $offered->id), ['decision' => 'publish'])->assertForbidden();
     galleryAs($office)->post(route('admin.bookshop.themes.decide', $offered->id), ['decision' => 'decline'])->assertSessionHasErrors('note');
     galleryAs($office)->post(route('admin.bookshop.themes.decide', $offered->id), ['decision' => 'publish', 'name' => 'Forest serif'])->assertSessionHasNoErrors();

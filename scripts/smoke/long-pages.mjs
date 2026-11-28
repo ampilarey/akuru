@@ -126,7 +126,7 @@ await page.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
 await settle('[data-testid="section-nav"]');
 const chips = await page.locator('[data-testid="section-nav"] a').allTextContents();
 const chipBox = await page.locator('[data-testid="section-nav"]').boundingBox();
-check('the office has a row of jump chips, inside the phone', chips.length >= 8 && chipBox && chipBox.x >= 0 && chipBox.x + chipBox.width <= 391, `${chips.length} chips: ${chips.slice(0, 5).join(', ')}…`);
+check('the office\'s Today page has its own row of jump chips, inside the phone (six pages since ST2)', chips.length >= 5 && chipBox && chipBox.x >= 0 && chipBox.x + chipBox.width <= 391, `${chips.length} chips: ${chips.slice(0, 5).join(', ')}…`);
 const missing = [];
 for (const id of await page.locator('[data-testid="section-nav"] a').evaluateAll((as) => as.map((a) => a.getAttribute('href').slice(1)))) {
     if ((await count(`#${id}`)) !== 1) missing.push(id);

@@ -95,7 +95,7 @@ it('lets the owner ask for a domain, and the office check it and turn it on', fu
     hostAs($office)->post(hostPath('admin.bookshop.hosts.decide', $fitrah->id), ['decision' => 'approve'])->assertSessionHasNoErrors();
     expect($fitrah->refresh()->custom_host_status)->toBe('active');
     expect(UserNotification::query()->where('user_id', $owner->id)->where('title', __('shop.notice_host_active_title'))->exists())->toBeTrue();
-    hostAs($office)->get(hostPath('admin.bookshop.index'))->assertInertia(fn ($page) => $page->where('hosts.shops.0.host', 'www.fitrahbooks.mv')->where('hosts.shops.0.status', 'active')->where('hosts.shop_host', 'shop.akuru.test'));
+    hostAs($office)->get(hostPath('admin.bookshop.office.shops'))->assertInertia(fn ($page) => $page->where('hosts.shops.0.host', 'www.fitrahbooks.mv')->where('hosts.shops.0.status', 'active')->where('hosts.shop_host', 'shop.akuru.test'));
 
     // The domain now opens the shop on the canonical site; a path goes under it; a POST there does nothing.
     $this->get('http://www.fitrahbooks.mv/')->assertRedirect('https://akuru.test/shop/fitrah');

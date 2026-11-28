@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { router, useForm, usePage } from '@inertiajs/react';
+import { Link, router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import FormErrors from '../../Components/FormErrors';
 import SectionNav from '../../Components/SectionNav';
@@ -863,7 +863,7 @@ function Funnels({ insights, t }) {
                 <span className="flex flex-wrap gap-1">
                     {insights.ranges.map((d) => (
                         <button key={d} type="button" className={`rounded px-2 py-1 text-sm ${d === insights.days ? 'bg-gray-800 text-white' : 'bg-gray-100'}`}
-                            onClick={() => router.get('/admin/bookshop', { insight_days: d }, { preserveScroll: true })}>{fill(t.insights_last_days, { days: d })}</button>
+                            onClick={() => router.get('/admin/bookshop/office/reports', { insight_days: d }, { preserveScroll: true })}>{fill(t.insights_last_days, { days: d })}</button>
                     ))}
                     <a href={`/admin/bookshop/insights/export?days=${insights.days}`} className="btn-secondary" data-testid="export-insights">{t.export_csv}</a>
                 </span>
@@ -1113,69 +1113,109 @@ function ShopHome({ home, t }) {
     );
 }
 
-export default function Admin({ t, vendors, catalogue, slips = [], orders = [], refunds = [], money = null, reviews = [], questions = [], home = null, low_stock = [], order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, default_commission_rate, sign_in_url, section_types = [], identity_checks = [], id_l = {}, listings = [] }) {
+/**
+ * ST2 (admin audit 2026-11-27, STATUS §5uu): the office's own pages. One
+ * row of tabs, thumb-sized, two to a row on a phone; the page you are on is
+ * filled in, and Today carries how many things wait.
+ */
+function OfficeTabs({ tabs, tab, t }) {
+    return (
+        <nav className="mb-4" aria-label={t.office_title} data-testid="office-tabs">
+            <ul className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
+                {tabs.map((item) => (
+                    <li key={item.key} className="min-w-0">
+                        <Link
+                            href={item.href}
+                            aria-current={item.key === tab ? 'page' : undefined}
+                            className={`flex min-h-[2.5rem] items-center justify-center gap-2 rounded-full border px-4 py-1 text-center text-sm ${item.key === tab ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-300 bg-white text-gray-800'}`}
+                            data-testid={`office-tab-${item.key}`}
+                        >
+                            {t[`office_tab_${item.key}`]}
+                            {item.waiting > 0 && <span className="rounded-full bg-red-600 px-2 text-xs font-semibold text-white" data-testid="office-tab-waiting">{item.waiting}</span>}
+                        </Link>
+                    </li>
+                ))}
+            </ul>
+        </nav>
+    );
+}
+
+export default function Admin({ t, tab = 'today', tabs = [], vendors = [], catalogue = null, slips = [], orders = [], refunds = [], money = null, reviews = [], questions = [], home = null, low_stock = [], order_statuses = [], applications = [], applications_open = true, quotes = null, insights = null, hosts = null, team = null, custom_css = null, themes = null, default_commission_rate, sign_in_url, section_types = [], identity_checks = [], id_l = {}, listings = [] }) {
     const { flash = {}, errors } = usePage().props;
+    // Each page's own sections, for the jump chips under the tabs.
+    const jumps = {
+        today: [['listings', t.listings_title], ['identity', id_l.id_checks_title], ['bank-slips', t.bank_slips], ['refunds', refunds.some((r) => r.status === 'pending') ? t.refunds_heading : null], ['applications', t.applications_heading], ['orders', t.orders], ['quotes', quotes ? t.quotes_title : null]],
+        shops: [['vendors', t.vendors], ['team', team ? t.team_heading : null], ['hosts', hosts ? t.hosts_heading : null]],
+        storefront: [['home', home ? t.shop_home_heading : null], ['catalogue', t.categories]],
+        checks: [['css', custom_css ? t.css_heading : null], ['themes', themes ? t.gallery_office_heading : null], ['reviews', t.reviews_heading], ['questions', t.questions_heading]],
+        money: [['money', money ? t.money_title : null], ['refunds', t.refunds_heading]],
+        reports: [['insights', insights ? t.insights_office_heading : null], ['print-sales', t.print_sales_heading], ['low-stock', t.low_stock_heading]],
+    }[tab] || [];
 
     return (
         <AppShell title={t.office_title}>
             <FormErrors errors={errors} className="mb-4" />
-            {/* STATUS §5no: the office is ten tables one under another, 10,600px on a phone (ADMIN_PANEL.md §7 P5, M6); the chips the vendor portal got (§5mp) jump to each. */}
-            <SectionNav t={t} items={[
-                ['listings', t.listings_title],
-                ['identity', id_l.id_checks_title],
-                ['vendors', t.vendors],
-                ['bank-slips', t.bank_slips],
-                ['orders', t.orders],
-                ['refunds', t.refunds_heading],
-                ...(money ? [['money', t.money_title]] : []),
-                ['applications', t.applications_heading],
-                ...(quotes ? [['quotes', t.quotes_title]] : []),
-                ...(insights ? [['insights', t.insights_office_heading]] : []),
-                ...(hosts ? [['hosts', t.hosts_heading]] : []),
-                ...(team ? [['team', t.team_heading]] : []),
-                ['low-stock', t.low_stock_heading],
-                ['catalogue', t.categories],
-            ]} />
-            {flash.vendor_invite && <InviteCard invite={flash.vendor_invite} t={t} signInUrl={sign_in_url} />}
-
-            {slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
-            {refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
-            {money && money.requests.length > 0 && <Money money={money} t={t} />}
-            {applications.some((a) => a.status === 'pending') && <Applications applications={applications} open={applications_open} t={t} />}
-            <Listings rows={listings} t={t} />
-            {/* COMMERCE_PARITY_PLAN P2: shop owners' identity cards. */}
-            <div id="identity" className="mt-8 scroll-mt-14"><IdentityChecks rows={identity_checks} l={id_l} /></div>
-
-            <InviteVendor t={t} defaultRate={default_commission_rate} />
-
-            <div id="vendors" className="mb-2 flex scroll-mt-14 items-center justify-between">
-                <h2 className="text-lg font-semibold">{t.vendors}</h2>
-                <span className="flex flex-wrap gap-2"><a href="/admin/bookshop/akuru" className="btn-secondary" data-testid="open-akuru">{t.akuru_page_title}</a><a href="/admin/bookshop/vendors/export" className="btn-secondary" data-testid="export-vendors">{t.export_csv}</a></span>
+            <OfficeTabs tabs={tabs} tab={tab} t={t} />
+            <p className="mb-3 text-sm text-gray-600" data-testid="office-tab-intro">{t[`office_tab_${tab}_intro`]}</p>
+            <SectionNav t={t} items={jumps} />
+            <div data-phone-main data-testid={`office-page-${tab}`}>
+                {tab === 'today' && (
+                    <>
+                        <Listings rows={listings} t={t} />
+                        {/* COMMERCE_PARITY_PLAN P2: shop owners' identity cards. */}
+                        <div id="identity" className="mt-8 scroll-mt-14"><IdentityChecks rows={identity_checks} l={id_l} /></div>
+                        <Slips slips={slips} t={t} />
+                        {refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
+                        <Applications applications={applications} open={applications_open} t={t} />
+                        <Orders orders={orders} vendors={vendors} statuses={order_statuses} t={t} />
+                        {quotes && <Quotes quotes={quotes} t={t} />}
+                    </>
+                )}
+                {tab === 'shops' && (
+                    <>
+                        {flash.vendor_invite && <InviteCard invite={flash.vendor_invite} t={t} signInUrl={sign_in_url} />}
+                        <InviteVendor t={t} defaultRate={default_commission_rate} />
+                        <div id="vendors" className="mb-2 flex scroll-mt-14 items-center justify-between">
+                            <h2 className="text-lg font-semibold">{t.vendors}</h2>
+                            <span className="flex flex-wrap gap-2"><a href="/admin/bookshop/akuru" className="btn-secondary" data-testid="open-akuru">{t.akuru_page_title}</a><a href="/admin/bookshop/vendors/export" className="btn-secondary" data-testid="export-vendors">{t.export_csv}</a></span>
+                        </div>
+                        <VendorTable vendors={vendors} t={t} sectionTypes={section_types} />
+                        {team && <Team team={team} t={t} />}
+                        {hosts && <Hosts hosts={hosts} t={t} />}
+                    </>
+                )}
+                {tab === 'storefront' && (
+                    <>
+                        {home && <ShopHome home={home} t={t} />}
+                        {catalogue && <Catalogue catalogue={catalogue} t={t} />}
+                    </>
+                )}
+                {tab === 'checks' && (
+                    <>
+                        {custom_css && <CustomCssReviews rows={custom_css} t={t} />}
+                        {themes && <ThemeGalleryOffice themes={themes} t={t} />}
+                        <Reviews reviews={reviews} t={t} />
+                        <Questions questions={questions} t={t} />
+                    </>
+                )}
+                {tab === 'money' && (
+                    <>
+                        {money && <Money money={money} t={t} />}
+                        <Refunds refunds={refunds} t={t} />
+                    </>
+                )}
+                {tab === 'reports' && (
+                    <>
+                        {insights && <Funnels insights={insights} t={t} />}
+                        {insights?.print_sales && <PrintSales rows={insights.print_sales} t={t} />}
+                        <LowStockAll rows={low_stock} t={t} />
+                    </>
+                )}
             </div>
-            <VendorTable vendors={vendors} t={t} sectionTypes={section_types} />
-
-            {!slips.some((s) => s.status === 'waiting') && <Slips slips={slips} t={t} />}
-            {!refunds.some((r) => r.status === 'pending') && <Refunds refunds={refunds} t={t} />}
-            {money && money.requests.length === 0 && <Money money={money} t={t} />}
-            {!applications.some((a) => a.status === 'pending') && <Applications applications={applications} open={applications_open} t={t} />}
-            {quotes && <Quotes quotes={quotes} t={t} />}
-            {insights && <Funnels insights={insights} t={t} />}
-            {insights?.print_sales && <PrintSales rows={insights.print_sales} t={t} />}
-            {hosts && <Hosts hosts={hosts} t={t} />}
-            {custom_css && <CustomCssReviews rows={custom_css} t={t} />}
-            {themes && <ThemeGalleryOffice themes={themes} t={t} />}
-            {team && <Team team={team} t={t} />}
-            <Orders orders={orders} vendors={vendors} statuses={order_statuses} t={t} />
-            <LowStockAll rows={low_stock} t={t} />
-            <Reviews reviews={reviews} t={t} />
-            <Questions questions={questions} t={t} />
-            {home && <ShopHome home={home} t={t} />}
             <section className="mt-10 border-t border-[#E6D9C8] pt-6" data-testid="office-settings-link">
                 <a href="/admin/bookshop/settings" className="btn-secondary" data-testid="open-bookshop-settings">{t.settings_heading}</a>
                 <p className="mt-2 text-sm text-gray-600">{t.settings_hint}</p>
             </section>
-
-            <Catalogue catalogue={catalogue} t={t} />
         </AppShell>
     );
 }

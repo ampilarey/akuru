@@ -4983,6 +4983,53 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5uu. The Bookstore office is six pages, not one (ST2, 2026-11-28)
+
+The second slice of the admin audit (§5ut). `/admin/bookshop` was one page
+of 19 sections, 61 inputs and 23 actions, 10,600 px tall on a phone.
+- **Six pages, one row of tabs** (`OfficeTabs`, two to a row on a phone,
+  the current one filled in):
+  - **Today** (`/admin/bookshop`): listings and ID cards to approve, bank
+    slips, pending refunds, shop applications, the orders, quotes.
+  - **Shops** (`/admin/bookshop/office/shops`): invite a shop, the shop
+    list and its editor, the Bookstore team, shops' own domains.
+  - **Storefront:** the Bookstore's own front page, and the shared
+    categories and brands.
+  - **Checks:** shop styles and themes, reviews, questions.
+  - **Money:** payouts, balances, commission invoices, the tax report,
+    every refund.
+  - **Reports:** visits and sales by shop, print sales, low stock.
+- **Today's tab says how many things wait** (slips, pending refunds and
+  applications, listings), on every page.
+- **Each page loads only its own lists** (`PresentBookshopOfficeAction`).
+  The single page loaded all nineteen every time.
+- **Each page has a line saying what it is for**, and its own jump chips.
+- **Nothing was removed.** Every form posts where it did and returns to
+  the page it was on. The office's notices open the right page (a domain
+  request opens Shops, a payout request Money, a style or review Checks).
+- **The menu** lists the five pages under Bookstore.
+
+Phrases in EN, DV and AR.
+
+**Tests:** `BookshopOfficePagesTest` (2): each page carries its own lists
+and none of another's, with the six tabs; every page is the Bookstore
+managers' alone, and there is no page by another name. Fourteen existing
+tests now read their lists on the page that holds them.
+
+**Walks:** `office-pages.mjs` (new, in `all.mjs`), at 390 px under /dv:
+six thumb-sized tabs; each opening its own sections and none of another's,
+right to left, nothing sideways, tables stacked; none as tall as the old
+page; /en left to right. 4/4. Twelve Bookstore walks now open the page
+their section is on, and the phone sweeps cover the five new pages.
+
+**The full run:** all 168 walks (`all.mjs`) on a fresh seed, after the
+split: 167 passed. `bookstore-language` read a shop's address
+(`/shop/fitrah`) on the new Shops page as English; an address is now
+allowed there, and it passes 23/23. So 168/168.
+
+The whole suite: 3386 passed, 3 skipped (they need Ghostscript or a Chrome
+the test host lacks; CI runs them). Pint is clean. No migration.
+
 ## 5ut. Settings is an index of each product's own page (ST1, 2026-11-27)
 
 The owner asked for a full audit of the admin panel: "too much setting on

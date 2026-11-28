@@ -144,7 +144,7 @@ check('the offered look waits for the office', (await vendor.locator('[data-test
 // ------------------------------------------------------------ 5. the office publishes it
 
 const office = await signIn(ADMIN);
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/checks`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="office-themes"]');
 const waiting = office.locator('[data-testid^="theme-waiting-"]', { hasText: LOOK });
 check('the office sees it with its CSS', (await waiting.count()) === 1 && (await waiting.innerText()).includes('letter-spacing: .02em'));

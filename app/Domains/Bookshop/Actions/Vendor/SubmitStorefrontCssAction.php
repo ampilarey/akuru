@@ -60,7 +60,7 @@ class SubmitStorefrontCssAction
             'custom_css_pending' => $result['css'], 'custom_css_status' => 'pending', 'custom_css_note' => null,
             'custom_css_submitted_at' => now(), 'custom_css_reviewed_at' => null, 'custom_css_reviewed_by' => null,
         ]);
-        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_css_submitted_title'), Said::of('shop.notice_css_submitted_body', ['vendor' => $scope->vendorName]), '/admin/bookshop');
+        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_css_submitted_title'), Said::of('shop.notice_css_submitted_body', ['vendor' => $scope->vendorName]), '/admin/bookshop/office/checks#css');
 
         return $storefront->refresh();
     }

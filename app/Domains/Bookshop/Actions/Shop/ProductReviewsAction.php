@@ -127,7 +127,7 @@ class ProductReviewsAction
         $notify = app(NotifyBookshopUserAction::class);
         $notify->vendor((int) $product->vendor_id, Said::of('shop.notice_review_title'), Said::of('shop.notice_review_body', ['title' => $product->title, 'rating' => $rating]), '/vendor/reviews', 'review');
         if ($premoderate) {
-            $notify->office(Said::of('shop.notice_review_pending_title'), Said::of('shop.notice_review_body', ['title' => $product->title, 'rating' => $rating]), '/admin/bookshop');
+            $notify->office(Said::of('shop.notice_review_pending_title'), Said::of('shop.notice_review_body', ['title' => $product->title, 'rating' => $rating]), '/admin/bookshop/office/checks#reviews');
         }
 
         return $review;

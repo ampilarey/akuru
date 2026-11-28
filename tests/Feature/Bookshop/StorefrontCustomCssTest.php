@@ -97,7 +97,7 @@ it('shows the shop its CSS in the preview at once, and visitors only once the of
 
     // Sent back with a note, then approved: live.
     cssAs($owner)->post(route('admin.bookshop.storefront.css', $fitrah->id), ['decision' => 'approve'])->assertForbidden();
-    cssAs($office)->get(route('admin.bookshop.index'))->assertInertia(fn ($page) => $page->where('custom_css.0.slug', 'fitrah')->where('custom_css.0.status', 'pending'));
+    cssAs($office)->get(route('admin.bookshop.office.checks'))->assertInertia(fn ($page) => $page->where('custom_css.0.slug', 'fitrah')->where('custom_css.0.status', 'pending'));
     cssAs($office)->post(route('admin.bookshop.storefront.css', $fitrah->id), ['decision' => 'decline'])->assertSessionHasErrors('note');
     cssAs($office)->post(route('admin.bookshop.storefront.css', $fitrah->id), ['decision' => 'decline', 'note' => 'Too wide'])->assertSessionHasNoErrors();
     expect($storefront->refresh()->custom_css_status)->toBe('declined');

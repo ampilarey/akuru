@@ -38,7 +38,7 @@ class RequestVendorHostAction
         }
         $vendor->update(['custom_host' => $host, 'custom_host_status' => 'requested', 'custom_host_requested_at' => now(), 'custom_host_approved_at' => null]);
         ResolveShopHostAction::forget($old);
-        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_host_requested_title'), Said::of('shop.notice_host_requested_body', ['vendor' => $vendor->name, 'host' => $host]), '/admin/bookshop');
+        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_host_requested_title'), Said::of('shop.notice_host_requested_body', ['vendor' => $vendor->name, 'host' => $host]), '/admin/bookshop/office/shops#hosts');
 
         return $vendor->refresh();
     }
