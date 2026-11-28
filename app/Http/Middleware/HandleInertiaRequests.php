@@ -110,6 +110,8 @@ class HandleInertiaRequests extends Middleware
         return [
             ...parent::share($request),
             'locale' => $locale,
+            // PW2: which version is running, for whoever is signed in.
+            'app_version' => $request->user() ? \App\Support\AppVersion::label() : '',
             'locales' => $locales,
             'locale_urls' => collect($locales)->mapWithKeys(
                 fn (string $code) => [$code => LaravelLocalization::getLocalizedURL($code) ?: '/'.$code],

@@ -421,4 +421,8 @@ return [
     'update_ready' => 'އަކުރުގެ އައު ވާޝަނެއް ތައްޔާރުވެއްޖެ.',
     'update_refresh' => 'ރިފްރެޝްކުރޭ',
     'update_later' => 'ފަހުން',
+
+    // PW2.
+    'app_version' => 'ވާޝަން :id · އަޕްޑޭޓުކުރީ :at',
+    'app_version_bare' => 'ވާޝަން :id',
 ];

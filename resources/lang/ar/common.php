@@ -421,4 +421,8 @@ return [
     'update_ready' => 'نسخة جديدة من أكورو جاهزة.',
     'update_refresh' => 'تحديث',
     'update_later' => 'لاحقًا',
+
+    // PW2.
+    'app_version' => 'الإصدار :id · حُدّث في :at',
+    'app_version_bare' => 'الإصدار :id',
 ];
