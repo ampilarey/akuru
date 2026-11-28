@@ -1,6 +1,5 @@
 <?php
 
-use App\Domains\Identity\Models\User;
 use App\Support\AppVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia as Assert;
