@@ -4983,6 +4983,49 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5uy. A Blogs office, settings only under Settings, and each office leads to its own (ST5, 2026-11-28)
+
+The fifth and last slice of the admin audit (§5ut). **The audit's plan
+(ST1–ST5) is complete.**
+- **A Blogs office.** The five blog screens were inner screens of the
+  Library office, which made its card eleven chips long. *Blogs* is now its
+  own section in *Shops & money* (`blogs_office`): the glance is the office
+  itself, with Requests, Page changes, Comments and Tips inside it. The
+  Library office keeps its own six. No address changed.
+- **One row of tabs** (`BlogOfficeTabs`) on all five pages: At a glance,
+  Requests, Page changes, Comments, Tips, Settings. The Settings tab opens
+  the blog settings (ST4b).
+- **The Settings part lists settings only**, each product's together: All
+  settings, System, Library, Blogs, Bookstore, Bookstore rules, Bookstore
+  money and tax, Printing, Lending, Wallet, Translations. The entry that
+  read *Print desk* reads *Printing settings* — the desk's work stays under
+  Shops. The Settings index's cards follow the same order.
+- **Each office leads to its own settings** (`OfficeSettingsLinks`,
+  `ListSettingsIndexAction::links`): Lending and Commerce carry a button to
+  their settings page; the Bookstore's settings page links its rules, its
+  money and the printing settings. A button shows only to someone who may
+  open the page: a Bookstore manager is not offered the money page.
+- **Each settings page leads back to its office** as well as to the index
+  (`office` in `config/office-knobs.php`).
+
+Phrases in EN, DV and AR. No migration.
+
+**Tests:** `OfficesLeadToTheirSettingsTest` (3): the Blogs section and its
+four inner screens, none left under the Library's; the Settings part without
+a duplicate address or an inner screen; each office's buttons and each
+settings page's way back; a manager's buttons. `AdminHubTest`,
+`WorkspacesTest` and `SettingsIndexTest` read the new order.
+
+**Walks:** `blogs-office.mjs` (new, in `all.mjs`), at 390 px under /dv: five
+pages under one row of six thumb-sized tabs with the open one marked; the
+Settings tab and its way back; the three offices' buttons; /en left to
+right. 6/6. Also run: `admin-hub` 26/26, `nav` 14/14, `settings-index` 6/6,
+`office-settings` 14/14, `admin-pages` 3/3, `phone-targets` 5/5,
+`admin-mobile` 13/13.
+
+**What stays the owner's:** read the five new settings pages once
+(`docs/OWNER_TODO.md` E).
+
 ## 5ux. Bookstore rules, Bookstore money and Blogs: their `.env` settings on a screen (ST4b, 2026-11-28)
 
 The fourth slice of the admin audit (§5ut), second half, on ST4a's

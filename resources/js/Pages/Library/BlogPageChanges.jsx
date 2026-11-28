@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import BlogOfficeTabs from '../../Components/Library/BlogOfficeTabs';
 import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
 
 /**
@@ -44,6 +45,7 @@ export default function BlogPageChanges({ changes = [], t = {} }) {
 
     return (
         <AppShell title={t.pages_title || 'Blog page changes'}>
+            <BlogOfficeTabs t={t} current="pages" />
             <p className="mb-4 text-sm text-gray-600">{t.pages_intro || 'Changes bloggers sent to their pages. Readers see a page as it was until you approve.'}</p>
             <div className="mb-4">
                 <a className="btn-secondary" href="/admin/library/blog-pages/export" data-testid="blog-pages-export">{t.export_csv || 'Export CSV'}</a>

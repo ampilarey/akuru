@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import OfficeSettingsLinks from '../../Components/Settings/OfficeSettingsLinks';
 import SettingsCrumb from '../../Components/Settings/SettingsCrumb';
 import FormErrors from '../../Components/FormErrors';
 
@@ -169,6 +170,7 @@ export default function Settings({ t, notices = null, cod_on = true, rewards = n
             <SettingsCrumb t={{ settings_all: settingsAll }} />
             <FormErrors errors={errors} className="mb-4" />
             <p className="mb-6 text-sm text-gray-600">{t.settings_hint}</p>
+            <OfficeSettingsLinks links={usePage().props.settings_links} className="mb-6" />
             <div className="space-y-8" data-testid="bookshop-settings">
                 {notices && <NoticeSwitches key={JSON.stringify(notices)} notices={notices} t={t} />}
                 <CodSwitch on={cod_on} t={t} />

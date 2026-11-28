@@ -11,13 +11,15 @@
  * default, shown beside each field. Secrets, server paths and anything a
  * wrong value could break the site with stay in `.env`.
  *
- * product => [gate (an ability), groups =>
+ * product => [office (the product's own office: href and its menu label),
+ *   gate (an ability), groups =>
  *   [group => [knob => [config, type, min?, max?, at_most? (another knob of the group)]]]]
  * Types: int, decimal, bool, text (max = characters), url (empty, a path
  * on this site, or an http(s) address). Phrases: resources/lang/<locale>/knobs.php.
  */
 return [
     'lending' => [
+        'office' => ['href' => '/admin/lending', 'nav' => 'lending_office'],
         'gate' => 'bookshop.manage',
         'groups' => [
             'loans' => [
@@ -34,6 +36,7 @@ return [
         ],
     ],
     'wallet' => [
+        'office' => ['href' => '/admin/commerce', 'nav' => 'commerce'],
         'gate' => 'commerce.manage',
         'groups' => [
             'alerts' => [
@@ -43,6 +46,7 @@ return [
     ],
     // ST4b: the Bookstore's own rules, for whoever runs the Bookstore office.
     'bookstore' => [
+        'office' => ['href' => '/admin/bookshop', 'nav' => 'bookshop'],
         'gate' => 'bookshop.manage',
         'groups' => [
             'checkout' => [
@@ -56,6 +60,7 @@ return [
     ],
     // ST4b: commission, payouts, tax and where bank transfers go — the system admin's alone.
     'bookstore_money' => [
+        'office' => ['href' => '/admin/bookshop', 'nav' => 'bookshop'],
         'gate' => 'bookshop.manage',
         'groups' => [
             'commission' => [
@@ -79,6 +84,7 @@ return [
     ],
     // ST4b: student blogs. Tips and rewards are on the Library's own settings page.
     'blogs' => [
+        'office' => ['href' => '/admin/library/blog-insights', 'nav' => 'blogs_office'],
         'gate' => 'library.manage',
         'groups' => [
             'students' => [

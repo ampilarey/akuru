@@ -1,5 +1,6 @@
 import { useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import OfficeSettingsLinks from '../../Components/Settings/OfficeSettingsLinks';
 import FormErrors from '../../Components/FormErrors';
 import { IdentityChecks } from '../../Components/IdentityCard';
 
@@ -146,6 +147,7 @@ export default function Admin({ t = {}, id_l = {}, admin = {} }) {
                     </div>
                 )}
             </section>
+            <OfficeSettingsLinks links={usePage().props.settings_links} />
         </AppShell>
     );
 }

@@ -331,4 +331,12 @@ return [
     'error_reward_once' => 'نالت هذه التدوينة مكافأتها.',
     'flash_featured' => 'مُيّزت هذا الشهر.',
     'flash_unfeatured' => 'لم تعد مميّزة.',
+    // ST5.
+    'office_tabs_label' => 'صفحات مكتب المدونات',
+    'office_tab_insights' => 'نظرة سريعة',
+    'office_tab_requests' => 'الطلبات',
+    'office_tab_pages' => 'تغييرات الصفحات',
+    'office_tab_comments' => 'التعليقات',
+    'office_tab_tips' => 'الإكراميات',
+    'office_tab_settings' => 'الإعدادات',
 ];

@@ -331,4 +331,12 @@ return [
     'error_reward_once' => 'މި ޕޯސްޓަށް އިނާމު ލިބިފައި.',
     'flash_featured' => 'މި މަހަށް ޚާއްޞަކުރެވިއްޖެ.',
     'flash_unfeatured' => 'ޚާއްޞަކުރުން ހުއްޓާލެވިއްޖެ.',
+    // ST5.
+    'office_tabs_label' => 'ބްލޮގް އޮފީހުގެ ސަފުހާތައް',
+    'office_tab_insights' => 'ކުރު ނަޒަރެއް',
+    'office_tab_requests' => 'ހުށަހެޅުންތައް',
+    'office_tab_pages' => 'ސަފުހާގެ ބަދަލުތައް',
+    'office_tab_comments' => 'ކޮމެންޓުތައް',
+    'office_tab_tips' => 'ޓިޕްތައް',
+    'office_tab_settings' => 'ސެޓިންގްތައް',
 ];

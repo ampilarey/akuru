@@ -77,6 +77,7 @@ production.
 |---|---|---|---|
 | ☐ | **Bookstore rewards** | `/admin/bookshop` → *Rewards*: the share (default 1%), the smallest order that earns, and the most one order earns. Then **Turn rewards on**. | OWNER_ACTIONS 20 |
 | ☐ | **Referral credit** | `/admin/bookshop` → *Referral credit*: the credit to each side (default MVR 25) and the smallest first order (default MVR 100). Then **Turn referral credit on**. | OWNER_ACTIONS 21 |
+| ☐ | **Business settings on screens** | `/admin/settings` → the *Lending*, *Wallet*, *Bookstore rules*, *Bookstore money and tax* and *Blogs* cards. Read each once. The values shown are what `.env` set; change one only if it is wrong. On *Bookstore money and tax*, check the bank account number digit by digit, and set Akuru's TIN if it has one. | STATUS §5uw–§5uy |
 | ☐ | **Blog tips** | `/admin/library/settings`: the tip amounts and Akuru's share of each tip. | BLOG_PLAN D17 |
 | ☐ | **Featured-post rewards** | `/admin/library/settings`: on or off, and the most one reward may be. | BLOG_PLAN D12 |
 | ☐ | **Text recognition** (off) | In `.env`: `LIBRARY_OCR_TESSERACT_PATH=` the path `which tesseract` prints, and `LIBRARY_OCR_ENABLED=true`, then `php artisan config:cache`. Upload one scanned PDF in the Library: its pages should appear within minutes. For books saved before, run `php artisan library:sync-pages`. | STATUS §5tg |

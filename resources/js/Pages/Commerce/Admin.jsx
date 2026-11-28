@@ -1,5 +1,6 @@
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import OfficeSettingsLinks from '../../Components/Settings/OfficeSettingsLinks';
 import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
 import PersonPicker from '../../Components/PersonPicker';
 
@@ -277,6 +278,7 @@ export default function Admin({ gift_cards, gift_card_orders = [], discount_code
                     </tbody>
                 </table>
             </div>
+            <OfficeSettingsLinks links={usePage().props.settings_links} />
         </AppShell>
     );
 }

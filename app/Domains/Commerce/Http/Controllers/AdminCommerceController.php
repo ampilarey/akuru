@@ -56,6 +56,8 @@ class AdminCommerceController extends Controller
             'account_matches' => fn () => app(SearchAccountsAction::class)->execute((string) $request->query('account_q', '')),
             // CO1: the page's words, in the page's language.
             't' => Phrases::once('admin'),
+            // ST5: the office's one Settings button.
+            'settings_links' => app(\App\Domains\Settings\Actions\ListSettingsIndexAction::class)->links($request->user(), app()->getLocale(), ['wallet_settings']),
         ]);
     }
 

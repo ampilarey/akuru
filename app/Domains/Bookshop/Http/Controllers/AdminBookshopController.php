@@ -82,6 +82,8 @@ class AdminBookshopController extends Controller
             't' => Phrases::once('shop'),
             // ST1: the way back to the Settings index, in the page's language.
             'settings_all' => __('admin.settings_all'),
+            // ST5: the Bookstore's other settings pages, for whoever may open them.
+            'settings_links' => app(\App\Domains\Settings\Actions\ListSettingsIndexAction::class)->links($request->user(), app()->getLocale(), ['bookstore_rules', 'bookstore_money', 'print_settings']),
             'notices' => NotifyBookshopUserAction::officeSwitches() + NotifyBookshopUserAction::officeContact(),
             'cod_on' => app(CashOnDeliveryAction::class)->isOn(),
             'rewards' => app(LoyaltyRewardsAction::class)->report() + ['max_percent' => (float) config('bookshop.loyalty.max_percent')],

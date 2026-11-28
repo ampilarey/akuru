@@ -331,4 +331,12 @@ return [
     'error_reward_once' => 'This post already has its reward.',
     'flash_featured' => 'Featured this month.',
     'flash_unfeatured' => 'No longer featured.',
+    // ST5: the Blogs office's row of tabs.
+    'office_tabs_label' => 'Blogs office pages',
+    'office_tab_insights' => 'At a glance',
+    'office_tab_requests' => 'Requests',
+    'office_tab_pages' => 'Page changes',
+    'office_tab_comments' => 'Comments',
+    'office_tab_tips' => 'Tips',
+    'office_tab_settings' => 'Settings',
 ];
