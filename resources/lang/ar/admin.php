@@ -1634,4 +1634,12 @@ return [
     'settings_card_finance_settings_about' => 'ترقيم الفواتير، وأيام الاستحقاق، والتذكيرات.',
     'settings_card_hr_settings' => 'الموظفون والموارد البشرية',
     'settings_card_hr_settings_about' => 'حضور الموظفين، وتسجيل الحضور، ومفاتيح الرواتب.',
+
+    // ST4: the settings that lived in .env.
+    'desc_lending_settings' => 'مدد الإعارة وحدود العرض والتذكيرات والإشعارات.',
+    'desc_wallet_settings' => 'متى تنبّه الإضافة اليدوية إلى محفظة المكتبَ.',
+    'settings_card_lending_settings' => 'الإعارة',
+    'settings_card_lending_settings_about' => 'مدد الإعارة، وعدد الكتب التي يعرضها المعير، والتذكيرات والإشعارات.',
+    'settings_card_wallet_settings' => 'المحفظة',
+    'settings_card_wallet_settings_about' => 'الإضافة اليدوية التي تنبّه مديري التجارة الآخرين.',
 ];

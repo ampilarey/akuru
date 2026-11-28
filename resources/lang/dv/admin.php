@@ -1634,4 +1634,12 @@ return [
     'settings_card_finance_settings_about' => 'އިންވޮއިސް ނަންބަރު، މުއްދަތު އަދި ހަނދާންކޮށްދިނުން.',
     'settings_card_hr_settings' => 'މުވައްޒަފުންނާއި އެޗްއާރު',
     'settings_card_hr_settings_about' => 'މުވައްޒަފުންގެ ހާޒިރީ، ޗެކް-އިން އަދި މުސާރައިގެ ސްވިޗްތައް.',
+
+    // ST4: the settings that lived in .env.
+    'desc_lending_settings' => 'ދަރަނީގެ މުއްދަތާއި، ލިސްޓުކުރުމުގެ ހައްދާއި، ހަނދާންކޮށްދިނުމާއި ނޯޓިސް.',
+    'desc_wallet_settings' => 'އަތުން ވޮލެޓަކަށް ފައިސާ އިތުރުކުރުމުން އޮފީހަށް އަންގާނެ ހިސާބު.',
+    'settings_card_lending_settings' => 'ފޮތް ދޫކުރުން',
+    'settings_card_lending_settings_about' => 'ދަރަނީގެ މުއްދަތާއި، ދޫކުރާ ފަރާތަކަށް ލިސްޓުކުރެވޭ ފޮތުގެ އަދަދާއި، ހަނދާންކޮށްދިނުމާއި ނޯޓިސް.',
+    'settings_card_wallet_settings' => 'ވޮލެޓް',
+    'settings_card_wallet_settings_about' => 'އެހެން ކޮމާސް މެނޭޖަރުންނަށް އަންގާ، އަތުން އިތުރުކުރާ ފައިސާގެ އަދަދު.',
 ];

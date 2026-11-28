@@ -285,4 +285,8 @@ return [
     'print_papers' => 'ކަރުދާހާއި ފިނިޝިންގ',
     'print_layouts' => 'ޕްރިންޓް ލޭއައުޓްތައް',
     'print_products' => 'ޕްރިންޓް ޕްރޮޑަކްޓާއި ފިހާރަ',
+
+    // ST4: the settings that lived in .env.
+    'lending_settings' => 'ފޮތް ދޫކުރުމުގެ ސެޓިންގް',
+    'wallet_settings' => 'ވޮލެޓުގެ ސެޓިންގް',
 ];

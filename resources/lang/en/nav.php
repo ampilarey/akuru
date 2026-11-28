@@ -288,4 +288,8 @@ return [
     'print_papers' => 'Papers & finishing',
     'print_layouts' => 'Layouts',
     'print_products' => 'Products & shops',
+
+    // ST4: the settings that lived in .env.
+    'lending_settings' => 'Lending settings',
+    'wallet_settings' => 'Wallet settings',
 ];

@@ -520,6 +520,9 @@ final class NavigationMap
                 ['key' => 'library_settings', 'href' => '/admin/library/settings'],
                 ['key' => 'bookshop_settings', 'href' => '/admin/bookshop/settings', 'can' => ['bookshop.manage']],
                 ['key' => 'print_desk', 'href' => '/admin/bookshop/print', 'can' => ['bookshop.manage']],
+                // ST4: the settings that lived in `.env` (config/office-knobs.php).
+                ['key' => 'lending_settings', 'href' => '/admin/settings/office/lending', 'can' => ['bookshop.manage']],
+                ['key' => 'wallet_settings', 'href' => '/admin/settings/office/wallet', 'can' => ['commerce.manage']],
                 ['key' => 'translations', 'href' => '/admin/translations'],
             ]],
             ['key' => 'panel_system', 'items' => [
