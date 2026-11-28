@@ -292,4 +292,8 @@ return [
     // ST4: the settings that lived in .env.
     'lending_settings' => 'Lending settings',
     'wallet_settings' => 'Wallet settings',
+    // ST4b.
+    'bookstore_rules' => 'Bookstore rules',
+    'bookstore_money' => 'Bookstore money and tax',
+    'blog_settings' => 'Blog settings',
 ];
