@@ -276,4 +276,9 @@ return [
     'bookshop_checks' => 'المراجعات',
     'bookshop_money' => 'الأموال',
     'bookshop_reports' => 'التقارير',
+
+    // ST3: the print desk's pages.
+    'print_papers' => 'الأوراق والتشطيب',
+    'print_layouts' => 'تخطيطات الطباعة',
+    'print_products' => 'منتجات الطباعة والمتاجر',
 ];

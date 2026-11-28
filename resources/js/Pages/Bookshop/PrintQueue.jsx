@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, router, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import PrintDeskTabs from '../../Components/Print/PrintDeskTabs';
 import FormErrors from '../../Components/FormErrors';
 
 /**
@@ -61,6 +62,7 @@ export default function PrintQueue({ t = {}, rows = [], all = false }) {
 
     return (
         <AppShell title={t.queue_title}>
+            <PrintDeskTabs t={t} current="queue" />
             <FormErrors errors={errors} className="mb-4" />
             <p className="mb-3 text-sm text-gray-600">{t.queue_intro} <Link href="/admin/bookshop/print" className="text-blue-700 underline">{t.title} →</Link></p>
             <div className="mb-3 flex flex-wrap items-center gap-3">

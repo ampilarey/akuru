@@ -55,7 +55,15 @@ it('opens the office for the Bookstore manager only, with every list and the rea
         ->assertInertia(fn (Assert $page) => $page->component('Bookshop/Print')
             ->where('settings.enabled', false)->where('can_enable', false)
             ->where('cannot_enable_because', __('print.error_enable_no_chrome'))
-            ->where('product.status', 'draft')->has('papers', 6)->has('layouts', 18)->has('subject_sets', 3)->has('finishing', 5)->has('t'));
+            ->where('product.status', 'draft')->where('page', 'settings')->missing('papers')->missing('layouts')->has('t'));
+    // ST3 (STATUS §5uv): the desk's lists are on their own pages, each without the others'.
+    printWeb()->actingAs(printOffice())->get(route('admin.bookshop.print.desk.papers'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('page', 'papers')->has('papers', 6)->has('finishing', 5)->missing('settings')->missing('layouts')->has('t.desk_tab_papers_intro'));
+    printWeb()->actingAs(printOffice())->get(route('admin.bookshop.print.desk.layouts'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('page', 'layouts')->has('layouts', 18)->has('subject_sets', 3)->missing('papers')->missing('settings'));
+    printWeb()->actingAs(printOffice())->get(route('admin.bookshop.print.desk.products'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('page', 'products')->has('products')->has('shops')->missing('papers')->missing('settings'));
+    printWeb()->actingAs(User::factory()->create())->get(route('admin.bookshop.print.desk.papers'))->assertForbidden();
 });
 
 it('refuses to switch the service on without a Chrome, then without a priced paper, and puts the product on sale when it can', function () {

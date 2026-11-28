@@ -1,6 +1,7 @@
 import { Link, router, usePage } from '@inertiajs/react';
 import { useMemo } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import PrintDeskTabs from '../../Components/Print/PrintDeskTabs';
 import FormErrors from '../../Components/FormErrors';
 import TagCanvas from '../../Components/Print/TagCanvas';
 import { normaliseDesign } from '../../Components/Print/design';
@@ -18,6 +19,7 @@ export default function PrintTemplates({ t = {}, templates = [], fonts = {}, fon
 
     return (
         <AppShell title={t.templates_title}>
+            <PrintDeskTabs t={t} current="templates" />
             <style>{fontCss}</style>
             <FormErrors errors={errors} className="mb-4" />
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import PrintDeskTabs from '../../Components/Print/PrintDeskTabs';
 import FormErrors from '../../Components/FormErrors';
 import VendorNav from '../../Components/Bookshop/VendorNav';
 
@@ -93,12 +94,13 @@ function QuoteCard({ quote, t, defaultDays, maxDays, base }) {
     );
 }
 
-export default function VendorQuotes({ t, vendor, quotes, counts, statuses, status, default_valid_days, max_valid_days, base = '/vendor/quotes', office = false }) {
+export default function VendorQuotes({ t, vendor, quotes, counts, statuses, status, default_valid_days, max_valid_days, base = '/vendor/quotes', office = false, desk_t: deskT = null }) {
     const { errors } = usePage().props;
 
     return (
         <AppShell title={t.quotes_title}>
             <FormErrors errors={errors} className="mb-4" />
+            {office && deskT && <PrintDeskTabs t={deskT} current="quotes" />}
             <header className="mb-4">
                 <div className="mb-3 flex flex-wrap items-end justify-between gap-2">
                     <div>

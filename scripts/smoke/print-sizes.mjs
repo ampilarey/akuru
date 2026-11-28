@@ -57,7 +57,7 @@ await Promise.all([page.waitForLoadState('networkidle'), page.locator('form[acti
 check('the system admin signs in', !new URL(page.url()).pathname.endsWith('/login'), new URL(page.url()).pathname);
 
 // The office: an A3 paper and an A3 layout.
-await page.goto(`${BASE}/dv/admin/bookshop/print`, { waitUntil: 'networkidle' });
+await page.goto(`${BASE}/dv/admin/bookshop/print/desk/papers`, { waitUntil: 'networkidle' });
 await page.locator('[data-testid="print-paper-name"]').fill(`${MARK} Gloss A3`);
 await page.locator('[data-testid="print-paper-name-dv"]').fill('ގްލޯސް A3');
 await page.locator('[data-testid="print-paper-size"]').selectOption('a3');
@@ -69,6 +69,7 @@ await page.waitForTimeout(400);
 const paperRow = page.locator('[data-testid="print-papers"] tbody tr', { hasText: `${MARK} Gloss A3` });
 check('/dv the A3 paper is listed as A3, with its colour price', await paperRow.count() === 1 && /A3/.test(await paperRow.locator(`[data-label="${say('print.sheet_size', 'dv')}"]`).textContent()) && /7\.50/.test(await paperRow.textContent()), flat(await paperRow.textContent().catch(() => '')).slice(0, 160));
 
+await page.goto(`${BASE}/dv/admin/bookshop/print/desk/layouts`, { waitUntil: 'networkidle' });
 const layoutForm = page.locator('[data-testid="print-layout-form"]');
 await page.locator('[data-testid="print-layout-name"]').fill(`${MARK} A3 — 24 tags`);
 await page.locator('[data-testid="print-layout-size"]').selectOption('a3');

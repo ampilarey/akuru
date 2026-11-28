@@ -59,7 +59,8 @@ await page.goto(`${BASE}/dv/admin/bookshop/print`, { waitUntil: 'networkidle' })
 check('/dv the print desk opens, right to left, in Dhivehi', await page.locator('html').getAttribute('dir') === 'rtl' && flat(await page.locator('h1').first().textContent()) === say('print.title', 'dv'));
 check('it names the product as not on sale', (await page.locator('[data-testid="print-product"]').textContent()).includes(say('print.status_draft', 'dv')));
 
-// A paper, priced in colour, active.
+// A paper, priced in colour, active (ST3: on the desk's Papers page).
+await page.goto(`${BASE}/dv/admin/bookshop/print/desk/papers`, { waitUntil: 'networkidle' });
 await page.locator('[data-testid="print-paper-name"]').fill(`${MARK} Pearl`);
 await page.locator('[data-testid="print-paper-name-dv"]').fill('ޕާލް ކާޑު');
 await page.locator('[data-testid="print-paper-price-bw"]').fill('0');
@@ -70,7 +71,8 @@ await page.waitForTimeout(400);
 const paperRow = page.locator('[data-testid="print-papers"] tbody tr', { hasText: `${MARK} Pearl` });
 check('the paper is listed with its Dhivehi name, its colour price and active', await paperRow.count() === 1 && /ޕާލް ކާޑު/.test(await paperRow.textContent()) && /4\.50/.test(await paperRow.textContent()) && (await paperRow.textContent()).includes(say('print.active', 'dv')), flat(await paperRow.textContent().catch(() => '')).slice(0, 160));
 
-// A subject set from three lists.
+// A subject set from three lists (ST3: on the Layouts page).
+await page.goto(`${BASE}/dv/admin/bookshop/print/desk/layouts`, { waitUntil: 'networkidle' });
 await page.locator('[data-testid="print-set-label"]').fill(`${MARK} Grade 5`);
 await page.locator('[data-testid="print-set-en"]').fill('Dhivehi\nEnglish');
 await page.locator('[data-testid="print-set-dv"]').fill('ދިވެހި\nއިނގިރޭސި');
@@ -84,7 +86,8 @@ await Promise.all([page.waitForLoadState('networkidle'), page.locator('[data-tes
 await page.waitForTimeout(400);
 check('the subject set is listed with two subjects', await page.locator('[data-testid="print-subject_sets"] li', { hasText: `${MARK} Grade 5` }).count() === 1);
 
-// The switch.
+// The switch (ST3: the desk's own Settings page).
+await page.goto(`${BASE}/dv/admin/bookshop/print`, { waitUntil: 'networkidle' });
 await page.locator('[data-testid="print-enabled"]').check();
 await Promise.all([page.waitForLoadState('networkidle'), page.locator('[data-testid="print-save-settings"]').click()]);
 await page.waitForTimeout(400);

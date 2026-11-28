@@ -532,4 +532,17 @@ return [
     'printer_intro' => 'Akuru, or a shop the office approves to print. Each has its own papers and prices; changing moves you to its first paper.',
     'error_printer' => 'Choose a printer from the list.',
     'error_printer_no_paper' => 'That printer has no paper of this sheet size. Choose another, or another layout.',
+
+    // ST3: the print desk's pages.
+    'desk_tab_queue' => 'Queue',
+    'desk_tab_quotes' => 'School quotes',
+    'desk_tab_templates' => 'Templates',
+    'desk_tab_papers' => 'Papers & finishing',
+    'desk_tab_layouts' => 'Layouts',
+    'desk_tab_products' => 'Products & shops',
+    'desk_tab_settings' => 'Settings',
+    'desk_tab_settings_intro' => 'Switch the desk on or off, and set the lead days, the smallest order, quantity breaks and whether cash is taken.',
+    'desk_tab_papers_intro' => 'The papers Akuru prints on, each with its price per sheet, and the finishing customers can add.',
+    'desk_tab_layouts_intro' => 'How many fit on a sheet, for each product and sheet size, and the subject lists for subject tags.',
+    'desk_tab_products_intro' => 'Which print products are on sale, and which shops the office lets print.',
 ];

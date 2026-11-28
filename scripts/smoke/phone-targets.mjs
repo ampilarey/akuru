@@ -24,7 +24,7 @@ const PAGES = [
     '/en/admin/library', '/en/admin/library/promotions', '/en/admin/library/reviewers', '/en/admin/library/insights',
     '/en/admin/commerce', '/en/admin/pronunciation', '/en/admin/prayer-times/islands', '/en/admin/prayer-times/groups/create',
     '/en/admin/operations', '/en/admin/operations/features', '/en/admin/translations',
-    '/en/admin/bookshop', '/en/admin/bookshop/office/shops', '/en/admin/bookshop/office/storefront', '/en/admin/bookshop/office/checks', '/en/admin/bookshop/office/money', '/en/admin/bookshop/office/reports', '/en/admin/bookshop/akuru', '/en/admin/lending',
+    '/en/admin/bookshop', '/en/admin/bookshop/print/desk/papers', '/en/admin/bookshop/print/desk/layouts', '/en/admin/bookshop/print/desk/products', '/en/admin/bookshop/office/shops', '/en/admin/bookshop/office/storefront', '/en/admin/bookshop/office/checks', '/en/admin/bookshop/office/money', '/en/admin/bookshop/office/reports', '/en/admin/bookshop/akuru', '/en/admin/lending',
 ];
 
 const browser = await chromium.launch({

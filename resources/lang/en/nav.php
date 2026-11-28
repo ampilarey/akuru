@@ -283,4 +283,9 @@ return [
     'bookshop_checks' => 'Checks',
     'bookshop_money' => 'Money',
     'bookshop_reports' => 'Reports',
+
+    // ST3: the print desk's pages.
+    'print_papers' => 'Papers & finishing',
+    'print_layouts' => 'Layouts',
+    'print_products' => 'Products & shops',
 ];

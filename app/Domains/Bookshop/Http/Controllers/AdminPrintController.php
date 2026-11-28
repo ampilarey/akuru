@@ -40,11 +40,17 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class AdminPrintController extends Controller
 {
-    public function index(Request $request): Response
+    /**
+     * ST3 (admin audit, STATUS §5uv): the desk was one page of 43 inputs. It
+     * is four — settings, papers and finishing, layouts, products — beside
+     * the queue, the templates and the quotes.
+     */
+    public function index(Request $request, string $page = 'settings'): Response
     {
         abort_unless($request->user()?->can('bookshop.manage'), 403);
+        abort_unless(isset(ListPrintDeskAction::PAGES[$page]), 404);
 
-        return Inertia::render('Bookshop/Print', ['t' => Phrases::once('print'), ...app(ListPrintDeskAction::class)->execute()]);
+        return Inertia::render('Bookshop/Print', ['t' => Phrases::once('print'), ...app(ListPrintDeskAction::class)->page($page)]);
     }
 
     /** PP7a: approve a shop to print, or stop it. */
@@ -84,6 +90,8 @@ class AdminPrintController extends Controller
             'default_valid_days' => (int) config('bookshop.quotes.default_valid_days', 14),
             'max_valid_days' => (int) config('bookshop.quotes.max_valid_days', 60),
             'base' => '/admin/bookshop/print/quotes', 'office' => true,
+            // ST3: the print desk's tabs, named from the print book (this page reads the shop's).
+            'desk_t' => collect((array) trans('print'))->filter(fn ($v, $k) => $k === 'title' || str_starts_with((string) $k, 'desk_tab_'))->all(),
         ]);
     }
 

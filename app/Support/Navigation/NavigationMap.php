@@ -493,6 +493,10 @@ final class NavigationMap
                     ['key' => 'print_queue', 'href' => '/admin/bookshop/print/queue'],
                     // PRINT_PRODUCTS_PLAN PP6b: Akuru's school quotes for print.
                     ['key' => 'print_quotes', 'href' => '/admin/bookshop/print/quotes'],
+                    // ST3: the desk's own pages (its settings are the desk itself).
+                    ['key' => 'print_papers', 'href' => '/admin/bookshop/print/desk/papers'],
+                    ['key' => 'print_layouts', 'href' => '/admin/bookshop/print/desk/layouts'],
+                    ['key' => 'print_products', 'href' => '/admin/bookshop/print/desk/products'],
                 ]],
                 // COMMERCE_PARITY_PLAN P7a: the problems customers report on orders.
                 ['key' => 'complaints', 'href' => '/admin/bookshop/complaints', 'can' => ['bookshop.manage']],

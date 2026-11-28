@@ -80,10 +80,11 @@ it('keeps the office\'s desk to Akuru\'s papers, and lists the shops it may appr
     PrintPaperOption::query()->create(['name' => 'Akuru plain', 'kind' => 'plain', 'sheet_size' => 'a4', 'price_bw' => 1, 'price_colour' => 3, 'is_active' => true]);
     $office = printOffice();
 
-    printWeb()->actingAs($office)->get(route('admin.bookshop.print'))->assertOk()
+    printWeb()->actingAs($office)->get(route('admin.bookshop.print.desk.papers'))->assertOk()
         ->assertInertia(fn (Assert $page) => $page->component('Bookshop/Print')
-            ->where('papers', fn ($papers) => collect($papers)->pluck('name')->contains('Akuru plain') && ! collect($papers)->pluck('name')->contains('Fitrah plain'))
-            ->where('shops.0.slug', 'fitrah')->where('shops.0.print_enabled', false)->where('shops.0.papers', 1));
+            ->where('papers', fn ($papers) => collect($papers)->pluck('name')->contains('Akuru plain') && ! collect($papers)->pluck('name')->contains('Fitrah plain')));
+    printWeb()->actingAs($office)->get(route('admin.bookshop.print.desk.products'))->assertOk()
+        ->assertInertia(fn (Assert $page) => $page->where('shops.0.slug', 'fitrah')->where('shops.0.print_enabled', false)->where('shops.0.papers', 1));
     // A shop's paper is not the office's to change from its desk.
     printWeb()->actingAs($office)->post(route('admin.bookshop.print.paper', $shopPaper->id), ['name' => 'Taken', 'kind' => 'plain', 'sheet_size' => 'a4', 'price_bw' => 1, 'price_colour' => 1])->assertNotFound();
     expect($shopPaper->fresh()->name)->toBe('Fitrah plain');

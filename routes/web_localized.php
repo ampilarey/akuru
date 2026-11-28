@@ -1017,6 +1017,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('credit/{account}', [\App\Domains\Bookshop\Http\Controllers\AdminCreditController::class, 'update'])->name('admin.bookshop.credit.update')->whereNumber('account');
         // NAME_TAGS_PLAN NT1: the print desk's settings and lists.
         Route::get('print', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'index'])->name('admin.bookshop.print');
+        // ST3 (STATUS §5uv): the desk's other pages — papers and finishing, layouts, products.
+        foreach (['papers', 'layouts', 'products'] as $deskPage) {
+            Route::get('print/desk/'.$deskPage, [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'index'])->name('admin.bookshop.print.desk.'.$deskPage)->defaults('page', $deskPage);
+        }
         Route::get('print/export', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'export'])->name('admin.bookshop.print.export');
         Route::post('print/settings', [\App\Domains\Bookshop\Http\Controllers\AdminPrintController::class, 'settings'])->name('admin.bookshop.print.settings');
         // PP7a: the office approves a shop to print, or stops it.
