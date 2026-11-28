@@ -4983,6 +4983,49 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5uv. The print desk is four pages under one row of tabs (ST3, 2026-11-28)
+
+The third slice of the admin audit (§5ut). `/admin/bookshop/print` was one
+page of 43 inputs: the desk's settings, the products, the shops that print,
+papers, finishing, layouts and subject sets.
+- **Four pages** (`ListPrintDeskAction::page`), each with a line saying
+  what it is for:
+  - **Settings** (`/admin/bookshop/print`, as before): on or off, lead
+    days, the smallest order, quantity breaks, cash. This is the page the
+    Settings index's *Printing* card opens, and now it is settings only.
+  - **Papers & finishing** (`/admin/bookshop/print/desk/papers`).
+  - **Layouts** (`…/desk/layouts`): layouts and subject sets.
+  - **Products & shops** (`…/desk/products`): what is on sale, and the
+    shops that may print.
+- **One row of tabs for the whole desk** (`PrintDeskTabs`): Queue, School
+  quotes, Templates, Papers & finishing, Layouts, Products & shops,
+  Settings. The daily work comes first. The same row is on the queue, the
+  quotes and the templates pages, which were only links in a sentence.
+- **Nothing was removed:** every form posts where it did and returns to its
+  page.
+- **The menu** lists the three new pages under Print desk.
+
+Phrases in EN, DV and AR.
+
+**Tests:** `PrintDeskTest` now reads each list on its own page and checks
+that each page lacks the others' lists, and that a stranger is refused.
+`VendorsPrintTest` reads papers and shops on their pages.
+
+**Walks:** `print-desk-pages.mjs` (new, in `all.mjs`), at 390 px under /dv:
+seven thumb-sized tabs; the desk's own page is its settings alone; each tab
+opening its own sections and none of another's, right to left, nothing
+sideways, tables stacked; /en left to right. 4/4.
+
+`print-office`, `print-products`, `print-sizes` and `print-shops` now open
+the page each step is on, and the phone sweeps cover the new pages. Run
+after the split: `print-office` 7/7, `print-products` 13/13, `print-sizes`
+10/10, `print-shops` 5/5, `print-quote` 9/9, `print-templates` 13/13,
+`print-order` 15/15, `admin-mobile` 13/13, `phone-targets` 5/5,
+`admin-hub` 26/26, `admin-pages` 3/3, `settings-index` 6/6 and `nav` 14/14.
+
+The whole suite: 3386 passed, 3 skipped (as before; CI runs them). Pint is
+clean. No migration.
+
 ## 5uu. The Bookstore office is six pages, not one (ST2, 2026-11-28)
 
 The second slice of the admin audit (§5ut). `/admin/bookshop` was one page

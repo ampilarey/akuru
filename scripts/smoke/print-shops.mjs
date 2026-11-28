@@ -40,7 +40,7 @@ try {
     await page.fill('input[name="password"]', PASSWORD);
     await page.locator('form[action$="/login"] button[type="submit"]').first().click();
     await page.waitForURL((u) => !String(u).includes('/login'));
-    await page.goto(`${BASE}/dv/admin/bookshop/print`, { waitUntil: 'networkidle' });
+    await page.goto(`${BASE}/dv/admin/bookshop/print/desk/products`, { waitUntil: 'networkidle' });
     const row = page.locator('[data-testid="print-shop-fitrah"]');
     check('/dv the desk lists Fitrah under Shops that print, not printing', (await row.getAttribute('data-print')) === 'no');
     check('/dv the desk does not scroll sideways at 390 px', await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth) <= 1);

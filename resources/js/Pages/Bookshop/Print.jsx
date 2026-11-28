@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, router, useForm, usePage } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import PrintDeskTabs from '../../Components/Print/PrintDeskTabs';
 import FormErrors from '../../Components/FormErrors';
 
 /**
@@ -306,22 +307,41 @@ function Shops({ t, shops }) {
     );
 }
 
-export default function Print({ t = {}, settings, can_enable: canEnable, cannot_enable_because: why, product, vendor, papers = [], finishing = [], layouts = [], subject_sets: sets = [], kinds = [], sheet_sizes: sizes = ['a4'], products = [], shops = [] }) {
+export default function Print({ t = {}, page = 'settings', settings = null, can_enable: canEnable, cannot_enable_because: why, product, vendor, papers = [], finishing = [], layouts = [], subject_sets: sets = [], kinds = [], sheet_sizes: sizes = ['a4'], products = [], shops = [] }) {
     const { errors } = usePage().props;
 
     return (
         <AppShell title={t.title}>
             <FormErrors errors={errors} className="mb-4" />
-            <p className="mb-1 text-sm text-gray-600">{t.intro} <Link href="/admin/bookshop/print/templates" className="text-blue-700 underline" data-testid="print-templates-link">{t.templates_link} →</Link> · <Link href="/admin/bookshop/print/queue" className="text-blue-700 underline" data-testid="print-queue-link">{t.queue_link} →</Link> · <Link href="/admin/bookshop/print/quotes" className="text-blue-700 underline" data-testid="print-quotes-link">{t.quotes_link} →</Link></p>
-            {vendor && <p className="mb-1 text-sm text-gray-600" data-testid="print-vendor">{fill(t.vendor_line, { name: vendor.name, slug: vendor.slug })}</p>}
-            {product && <p className="mb-4 text-sm text-gray-600" data-testid="print-product">{fill(t.product_line, { title: product.title, status: product.status === 'active' ? t.status_active : t.status_draft })}</p>}
-            <Settings t={t} settings={settings} canEnable={canEnable} why={why} />
-            <Products t={t} products={products} />
-            <Shops t={t} shops={shops} />
-            <Papers t={t} papers={papers} kinds={kinds} sizes={sizes} />
-            <Finishing t={t} finishing={finishing} />
-            <Layouts t={t} layouts={layouts} sizes={sizes} products={products} />
-            <SubjectSets t={t} sets={sets} />
+            <PrintDeskTabs t={t} current={page} />
+            <p className="mb-3 text-sm text-gray-600" data-testid="print-desk-intro">{t[`desk_tab_${page}_intro`]}</p>
+            <div data-phone-main data-testid={`print-desk-page-${page}`}>
+                {page === 'settings' && (
+                    <>
+                        {vendor && <p className="mb-1 text-sm text-gray-600" data-testid="print-vendor">{fill(t.vendor_line, { name: vendor.name, slug: vendor.slug })}</p>}
+                        {product && <p className="mb-4 text-sm text-gray-600" data-testid="print-product">{fill(t.product_line, { title: product.title, status: product.status === 'active' ? t.status_active : t.status_draft })}</p>}
+                        {settings && <Settings t={t} settings={settings} canEnable={canEnable} why={why} />}
+                    </>
+                )}
+                {page === 'papers' && (
+                    <>
+                        <Papers t={t} papers={papers} kinds={kinds} sizes={sizes} />
+                        <Finishing t={t} finishing={finishing} />
+                    </>
+                )}
+                {page === 'layouts' && (
+                    <>
+                        <Layouts t={t} layouts={layouts} sizes={sizes} products={products} />
+                        <SubjectSets t={t} sets={sets} />
+                    </>
+                )}
+                {page === 'products' && (
+                    <>
+                        <Products t={t} products={products} />
+                        <Shops t={t} shops={shops} />
+                    </>
+                )}
+            </div>
         </AppShell>
     );
 }

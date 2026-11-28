@@ -70,19 +70,21 @@ const signIn = async (page, who) => {
 check('the system admin signs in', await signIn(office, STAFF));
 check('the customer signs in', await signIn(customer, CUSTOMER));
 
-await office.goto(`${BASE}/dv/admin/bookshop/print`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/dv/admin/bookshop/print/desk/products`, { waitUntil: 'networkidle' });
 check('/dv the desk lists the four print products', await office.locator('[data-testid^="print-product-"][data-on-sale]').count() === 4);
 await Promise.all([office.waitForLoadState('networkidle'), office.locator('[data-testid="print-product-stickers-toggle"]').click()]);
 await office.waitForTimeout(400);
 const refusal = say('print.error_product_no_layout', 'dv', `['product' => 'ސްޓިކަރު']`);
 check('/dv Stickers is refused without a layout of its own, in Dhivehi', flat(await office.locator('body').textContent()).includes(refusal), refusal);
 
+await office.goto(`${BASE}/dv/admin/bookshop/print/desk/layouts`, { waitUntil: 'networkidle' });
 const form = office.locator('[data-testid="print-layout-form"]');
 await office.locator('[data-testid="print-layout-name"]').fill(`${MARK} Business cards`);
 await office.locator('[data-testid="print-layout-product"]').selectOption('cards');
 for (const [n, v] of [[0, 2], [1, 5], [2, 85], [3, 55], [4, 10], [5, 15]]) await form.locator('input[type="number"]').nth(n).fill(String(v));
 await Promise.all([office.waitForLoadState('networkidle'), form.locator('button[type="submit"]').first().click()]);
 await office.waitForTimeout(400);
+await office.goto(`${BASE}/dv/admin/bookshop/print/desk/products`, { waitUntil: 'networkidle' });
 await Promise.all([office.waitForLoadState('networkidle'), office.locator('[data-testid="print-product-cards-toggle"]').click()]);
 await office.waitForTimeout(400);
 check('/dv with a cards layout, Cards goes on sale', await office.locator('[data-testid="print-product-cards"]').getAttribute('data-on-sale') === 'yes');

@@ -15,6 +15,27 @@ use App\Domains\Bookshop\Support\PrintSheet;
 class ListPrintDeskAction
 {
     /** @return array<string, mixed> */
+    /** ST3 (STATUS §5uv): the desk's own pages, and what each carries beside the common facts. */
+    public const PAGES = [
+        'settings' => ['settings', 'can_enable', 'cannot_enable_because', 'product', 'vendor'],
+        'papers' => ['papers', 'finishing', 'kinds'],
+        'layouts' => ['layouts', 'subject_sets'],
+        'products' => ['shops'],
+    ];
+
+    /**
+     * One of the desk's pages: its own lists, with the sheet sizes and the
+     * print products every page names.
+     *
+     * @return array<string, mixed>
+     */
+    public function page(string $page): array
+    {
+        $all = $this->execute();
+
+        return array_intersect_key($all, array_flip([...self::PAGES[$page], 'sheet_sizes', 'products'])) + ['page' => $page];
+    }
+
     public function execute(): array
     {
         [, $product] = PrintDesk::ensure();

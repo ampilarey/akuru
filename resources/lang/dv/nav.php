@@ -280,4 +280,9 @@ return [
     'bookshop_checks' => 'ޗެކްކުރުން',
     'bookshop_money' => 'ފައިސާ',
     'bookshop_reports' => 'ރިޕޯޓްތައް',
+
+    // ST3: the print desk's pages.
+    'print_papers' => 'ކަރުދާހާއި ފިނިޝިންގ',
+    'print_layouts' => 'ޕްރިންޓް ލޭއައުޓްތައް',
+    'print_products' => 'ޕްރިންޓް ޕްރޮޑަކްޓާއި ފިހާރަ',
 ];
