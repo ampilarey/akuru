@@ -5011,7 +5011,7 @@ files stayed on the phone.
 
 Phrases in EN, DV and AR (`common.update_*`). No migration.
 
-**Tests:** `InstalledAppUpdatesTest` (2): the build and the bar's words on
+**Tests:** `PwaAndI18nTest` reads the new cache name. `InstalledAppUpdatesTest` (2): the build and the bar's words on
 the partial in three languages, on all three shells; the worker's rules.
 
 **Walk:** `app-update.mjs` (new, in `all.mjs`), at 390 px under /dv: no bar
