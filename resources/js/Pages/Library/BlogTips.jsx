@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
+import BlogOfficeTabs from '../../Components/Library/BlogOfficeTabs';
 import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
 
 /**
@@ -14,6 +15,7 @@ export default function BlogTips({ tips = [], notes = false, t = {} }) {
 
     return (
         <AppShell title={t.tips_admin_title || 'Blog tips'}>
+            <BlogOfficeTabs t={t} current="tips" />
             <p className="mb-4 text-sm text-gray-600">{t.tips_admin_intro || 'Tips are paid on the bank’s confirmation, never the return page. A refund adds a reversing row; nothing is edited.'}</p>
             <div className="mb-4 flex flex-wrap items-center gap-3">
                 <label className="flex items-center gap-2 text-sm">

@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import BlogOfficeTabs from '../../Components/Library/BlogOfficeTabs';
 import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
 
 /**
@@ -17,6 +18,7 @@ export default function BlogComments({ comments = [], statuses = [], status = ''
 
     return (
         <AppShell title={t.comments_admin_title || 'Blog comments'}>
+            <BlogOfficeTabs t={t} current="comments" />
             <p className="mb-4 text-sm text-gray-600">{t.comments_admin_intro || 'Every comment and reply waits here before readers see it. A reported comment is off the page until you decide.'}</p>
             <div className="mb-4 flex flex-wrap items-center gap-3">
                 <select className="form-input" aria-label={col.status} value={status} onChange={(e) => router.get('/admin/library/comments', e.target.value ? { status: e.target.value } : {}, { preserveState: true })} data-testid="comments-filter">

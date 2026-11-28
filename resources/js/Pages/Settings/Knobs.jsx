@@ -1,4 +1,4 @@
-import { useForm } from '@inertiajs/react';
+import { Link, useForm } from '@inertiajs/react';
 import AppShell from '../../Layouts/AppShell';
 import SettingsCrumb from '../../Components/Settings/SettingsCrumb';
 
@@ -68,10 +68,17 @@ function Group({ group, saveUrl, t }) {
     );
 }
 
-export default function Knobs({ product, title, intro, groups = [], save_url: saveUrl, t = {}, admin_t: adminT = {} }) {
+export default function Knobs({ product, title, intro, groups = [], office = null, save_url: saveUrl, t = {}, admin_t: adminT = {} }) {
     return (
         <AppShell title={title}>
             <SettingsCrumb t={adminT} />
+            {office?.href && (
+                <p className="-mt-2 mb-3 text-sm" data-testid="knobs-office">
+                    <Link href={office.href} className="inline-flex min-h-[2rem] items-center text-blue-700 underline">
+                        ← {office.label}
+                    </Link>
+                </p>
+            )}
             <p className="mb-4 text-sm text-gray-600">{intro}</p>
             <div data-phone-main data-testid={`knobs-${product}`}>
                 {groups.map((group) => (

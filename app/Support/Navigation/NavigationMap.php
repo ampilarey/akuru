@@ -463,18 +463,17 @@ final class NavigationMap
                     ['key' => 'library_bundles', 'href' => '/admin/library/bundles'],
                     ['key' => 'library_reviewers', 'href' => '/admin/library/reviewers'],
                     ['key' => 'library_settings', 'href' => '/admin/library/settings'],
-                    // BLOG_PLAN BL1: students' requests to start a blog.
-                    ['key' => 'blog_requests', 'href' => '/admin/library/blog-requests'],
-                    // BLOG_PLAN BL3a: blog page changes, checked before they show.
-                    ['key' => 'blog_pages', 'href' => '/admin/library/blog-pages'],
-                    // BLOG_PLAN BL5: comments, checked before they show.
-                    ['key' => 'blog_comments', 'href' => '/admin/library/comments'],
-                    // BLOG_PLAN BL6a: tips to blog writers.
-                    ['key' => 'blog_tips', 'href' => '/admin/library/tips'],
-                    // BLOG_PLAN BL7: the blogs at a glance, and Featured this month.
-                    ['key' => 'blog_insights', 'href' => '/admin/library/blog-insights'],
                     // BACKLOG B11 (BP3): copyright reports from the public pages.
                     ['key' => 'library_copyright', 'href' => '/admin/library/copyright'],
+                ]],
+                // ST5 (STATUS §5uy): the Blogs office, out from under the
+                // Library's — the glance is the office itself (BLOG_PLAN BL7),
+                // then requests (BL1), page changes (BL3a), comments (BL5), tips (BL6a).
+                ['key' => 'blogs_office', 'href' => '/admin/library/blog-insights', 'children' => [
+                    ['key' => 'blog_requests', 'href' => '/admin/library/blog-requests'],
+                    ['key' => 'blog_pages', 'href' => '/admin/library/blog-pages'],
+                    ['key' => 'blog_comments', 'href' => '/admin/library/comments'],
+                    ['key' => 'blog_tips', 'href' => '/admin/library/tips'],
                 ]],
                 // ST2: the office's own pages (Today is the office itself).
                 ['key' => 'bookshop', 'href' => '/admin/bookshop', 'can' => ['bookshop.manage'], 'children' => [
@@ -509,23 +508,22 @@ final class NavigationMap
                 // LENDING_AND_USED_BOOKS_PLAN L1: lenders, their ID cards, the loans (D6: the Bookstore team).
                 ['key' => 'lending_office', 'href' => '/admin/lending', 'can' => ['bookshop.manage']],
             ]],
-            // Every product's settings in one part (ADMIN_PANEL.md §8).
-            // Order: health, library, bookstore, print desk, translations.
-            // Print desk stays under Shops as well; this is a second way in.
-            // School screens stay on the School workspace (ADR-040).
+            // Every product's settings in one part (ADMIN_PANEL.md §8), and
+            // settings only (ST5): the index, then one entry per settings
+            // page, each product's together. School screens stay on the
+            // School workspace (ADR-040).
             ['key' => 'panel_settings', 'items' => [
-                // ST1: the index of every product's settings page, then each.
                 ['key' => 'all_settings', 'href' => '/admin/settings'],
                 ['key' => 'system_settings', 'href' => '/admin/settings/system'],
                 ['key' => 'library_settings', 'href' => '/admin/library/settings'],
+                ['key' => 'blog_settings', 'href' => '/admin/settings/office/blogs', 'can' => ['library.manage']],
                 ['key' => 'bookshop_settings', 'href' => '/admin/bookshop/settings', 'can' => ['bookshop.manage']],
-                ['key' => 'print_desk', 'href' => '/admin/bookshop/print', 'can' => ['bookshop.manage']],
-                // ST4: the settings that lived in `.env` (config/office-knobs.php).
-                ['key' => 'lending_settings', 'href' => '/admin/settings/office/lending', 'can' => ['bookshop.manage']],
-                ['key' => 'wallet_settings', 'href' => '/admin/settings/office/wallet', 'can' => ['commerce.manage']],
                 ['key' => 'bookstore_rules', 'href' => '/admin/settings/office/bookstore', 'can' => ['bookshop.manage']],
                 ['key' => 'bookstore_money', 'href' => '/admin/settings/office/bookstore_money', 'can' => ['bookshop.manage']],
-                ['key' => 'blog_settings', 'href' => '/admin/settings/office/blogs', 'can' => ['library.manage']],
+                // The print desk's own page is its settings since ST3; the desk's work is under Shops.
+                ['key' => 'print_settings', 'href' => '/admin/bookshop/print', 'can' => ['bookshop.manage']],
+                ['key' => 'lending_settings', 'href' => '/admin/settings/office/lending', 'can' => ['bookshop.manage']],
+                ['key' => 'wallet_settings', 'href' => '/admin/settings/office/wallet', 'can' => ['commerce.manage']],
                 ['key' => 'translations', 'href' => '/admin/translations'],
             ]],
             ['key' => 'panel_system', 'items' => [

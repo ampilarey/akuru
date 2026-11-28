@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import BlogOfficeTabs from '../../Components/Library/BlogOfficeTabs';
 import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
 
 /**
@@ -23,6 +24,7 @@ export default function BlogInsights({ totals = {}, queues = {}, recent = [], re
 
     return (
         <AppShell title={t.insights_title || 'Blog insights'}>
+            <BlogOfficeTabs t={t} current="insights" />
             <div className="mb-6 grid grid-cols-2 gap-3 md:grid-cols-4" data-testid="insights-totals">
                 {tiles.map(([key, label]) => (
                     <div key={key} className="rounded-lg border bg-white p-3" data-testid={`insights-${key}`}>

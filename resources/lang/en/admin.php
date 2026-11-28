@@ -1655,4 +1655,7 @@ return [
     'settings_card_bookstore_money_about' => 'Commission, shop payouts, GST rates, and the bank account for transfers.',
     'settings_card_blog_settings' => 'Blogs',
     'settings_card_blog_settings_about' => 'The class teacher\'s check, posts a student may send, and the writing guidelines.',
+    // ST5.
+    'desc_blogs_office' => 'Student and writer blogs: requests, page changes, comments and tips.',
+    'desc_print_settings' => 'The print desk on or off, lead days, the smallest order.',
 ];

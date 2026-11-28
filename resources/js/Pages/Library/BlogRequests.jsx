@@ -1,6 +1,7 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
 import AppShell from '../../Layouts/AppShell';
+import BlogOfficeTabs from '../../Components/Library/BlogOfficeTabs';
 import FormErrors, { useRowRefusals } from '../../Components/FormErrors';
 
 /**
@@ -27,6 +28,7 @@ export default function BlogRequests({ requests = [], statuses = [], status = ''
 
     return (
         <AppShell title={t.admin_title || 'Blog requests'}>
+            <BlogOfficeTabs t={t} current="requests" />
             <p className="mb-4 text-sm text-gray-600">{t.admin_intro || 'Students who asked to start a blog. Under 18, a parent agrees first.'}</p>
             <div className="mb-4 flex flex-wrap items-center gap-3">
                 <select className="form-input" aria-label={col.status} value={status} onChange={(e) => router.get('/admin/library/blog-requests', e.target.value ? { status: e.target.value } : {}, { preserveState: true })} data-testid="blog-requests-filter">

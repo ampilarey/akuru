@@ -37,6 +37,8 @@ class OfficeSettingsController extends Controller
             'title' => (string) __("knobs.{$product}_title"),
             'intro' => (string) __("knobs.{$product}_intro"),
             'groups' => $groups,
+            // ST5: the way back to the product's own office.
+            'office' => ['href' => (string) config("office-knobs.{$product}.office.href"), 'label' => (string) __('nav.'.config("office-knobs.{$product}.office.nav"))],
             'save_url' => route("admin.settings.office.{$product}.save", [], false),
             't' => Phrases::once('knobs'),
             'admin_t' => Phrases::once('admin'),

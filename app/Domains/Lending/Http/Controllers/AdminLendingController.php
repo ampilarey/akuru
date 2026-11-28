@@ -27,6 +27,8 @@ class AdminLendingController extends Controller
         return Inertia::render('Lending/Admin', [
             't' => Phrases::once('lending'),
             'id_l' => trans('account'),
+            // ST5: the office's one Settings button.
+            'settings_links' => app(\App\Domains\Settings\Actions\ListSettingsIndexAction::class)->links($request->user(), app()->getLocale(), ['lending_settings']),
             'admin' => app(PresentLendingAdminAction::class)->execute(),
         ]);
     }

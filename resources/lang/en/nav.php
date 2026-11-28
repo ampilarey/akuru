@@ -296,4 +296,7 @@ return [
     'bookstore_rules' => 'Bookstore rules',
     'bookstore_money' => 'Bookstore money and tax',
     'blog_settings' => 'Blog settings',
+    // ST5.
+    'blogs_office' => 'Blogs',
+    'print_settings' => 'Printing settings',
 ];

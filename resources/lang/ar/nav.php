@@ -289,4 +289,7 @@ return [
     'bookstore_rules' => 'قواعد متجر الكتب',
     'bookstore_money' => 'أموال متجر الكتب وضريبتها',
     'blog_settings' => 'إعدادات المدونات',
+    // ST5.
+    'blogs_office' => 'المدونات',
+    'print_settings' => 'إعدادات الطباعة',
 ];
