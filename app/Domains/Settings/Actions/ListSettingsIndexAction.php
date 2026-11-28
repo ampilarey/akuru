@@ -27,6 +27,9 @@ class ListSettingsIndexAction
         // ST4: the business settings that lived in `.env` (config/office-knobs.php).
         ['key' => 'lending_settings', 'href' => '/admin/settings/office/lending', 'group' => 'institute', 'can' => ['bookshop.manage']],
         ['key' => 'wallet_settings', 'href' => '/admin/settings/office/wallet', 'group' => 'institute', 'can' => ['commerce.manage']],
+        ['key' => 'bookstore_rules', 'href' => '/admin/settings/office/bookstore', 'group' => 'institute', 'can' => ['bookshop.manage']],
+        ['key' => 'bookstore_money', 'href' => '/admin/settings/office/bookstore_money', 'group' => 'institute', 'can' => ['bookshop.manage']],
+        ['key' => 'blog_settings', 'href' => '/admin/settings/office/blogs', 'group' => 'institute', 'can' => ['library.manage']],
         ['key' => 'translations', 'href' => '/admin/translations', 'group' => 'institute'],
         ['key' => 'finance_settings', 'href' => '/finance/settings', 'group' => 'school'],
         ['key' => 'hr_settings', 'href' => '/hr/settings', 'group' => 'school'],

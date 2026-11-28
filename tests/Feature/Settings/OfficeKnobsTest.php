@@ -88,3 +88,52 @@ it('opens each page only to its own office, and lists it on the Settings index f
     expect(config('commerce.wallet.alert_credit_at'))->toBe(250.5);
     $web->actingAs($office)->get('/admin/settings')->assertInertia(fn (Assert $page) => $page->where('cards', fn ($cards) => collect($cards)->pluck('key')->contains('wallet_settings')));
 });
+
+it('keeps the Bookstore\'s money, tax and bank to the system admin, and its rules to its office (ST4b)', function () {
+    \Spatie\Permission\Models\Role::findOrCreate('bookshop_manager', 'web');
+    \Spatie\Permission\Models\Permission::findOrCreate('bookshop.manage', 'web');
+    $manager = User::factory()->create();
+    $manager->assignRole('bookshop_manager');
+    $manager->givePermissionTo('bookshop.manage');
+    config(['bookshop.checkout.reservation_minutes' => 30, 'bookshop.default_commission_rate' => 10.0, 'bookshop.bank_transfer.account_number' => '7730000000001']);
+    $web = test()->withoutLocalizationMiddleware();
+
+    $web->actingAs($manager)->post('/admin/settings/office/bookstore', ['group' => 'checkout', 'values' => ['reservation_minutes' => '45', 'cart_reminders' => true]])->assertSessionHasNoErrors();
+    expect(config('bookshop.checkout.reservation_minutes'))->toBe(45);
+    $web->actingAs($manager)->get('/admin/settings/office/bookstore_money')->assertForbidden();
+    $web->actingAs($manager)->post('/admin/settings/office/bookstore_money', ['group' => 'bank', 'values' => ['bank_name' => 'B', 'bank_account_name' => 'Mine', 'bank_account_number' => '1']])->assertForbidden();
+    expect(config('bookshop.bank_transfer.account_number'))->toBe('7730000000001');
+
+    $office = actingSystemAdmin(['bookshop.manage']);
+    $web->actingAs($office)->get('/admin/settings/office/bookstore_money')->assertOk()->assertInertia(fn (Assert $page) => $page
+        ->where('groups', fn ($groups) => collect($groups)->pluck('key')->all() === ['commission', 'tax', 'bank']
+            && collect($groups)->flatMap(fn ($g) => $g['knobs'])->every(fn ($k) => ! str_starts_with($k['label'], 'knobs.') && ! str_starts_with($k['hint'], 'knobs.'))));
+    $web->actingAs($office)->post('/admin/settings/office/bookstore_money', ['group' => 'commission', 'values' => ['default_commission_rate' => '12.5', 'payouts_enabled' => true, 'min_payout' => '250']])->assertSessionHasNoErrors();
+    $web->actingAs($office)->post('/admin/settings/office/bookstore_money', ['group' => 'tax', 'values' => ['tax_standard' => '8', 'commission_tax_rate' => '8', 'issuer_gst_registered' => true, 'issuer_name' => 'Akuru Institute Pvt Ltd', 'issuer_tin' => '']])->assertSessionHasNoErrors();
+    $web->actingAs($office)->post('/admin/settings/office/bookstore_money', ['group' => 'bank', 'values' => ['bank_name' => 'Bank of Maldives', 'bank_account_name' => 'Akuru Institute', 'bank_account_number' => '7730000000999']])->assertSessionHasNoErrors();
+    expect(config('bookshop.default_commission_rate'))->toBe(12.5)->and(config('bookshop.money.min_payout'))->toBe(250.0)
+        ->and(config('bookshop.money.issuer_name'))->toBe('Akuru Institute Pvt Ltd')->and(config('bookshop.money.issuer_tin'))->toBeNull()
+        ->and(config('bookshop.money.issuer_gst_registered'))->toBeTrue()
+        ->and(config('bookshop.bank_transfer.account_number'))->toBe('7730000000999');
+
+    // A rate past its bound, a name left empty and one too long are refused.
+    $web->actingAs($office)->post('/admin/settings/office/bookstore_money', ['group' => 'commission', 'values' => ['default_commission_rate' => '80', 'min_payout' => '-1']])->assertSessionHasErrors(['default_commission_rate', 'min_payout']);
+    $web->actingAs($office)->post('/admin/settings/office/bookstore_money', ['group' => 'tax', 'values' => ['issuer_name' => '', 'issuer_tin' => str_repeat('9', 41)]])->assertSessionHasErrors(['issuer_name', 'issuer_tin']);
+    expect(config('bookshop.default_commission_rate'))->toBe(12.5)->and(config('bookshop.money.issuer_name'))->toBe('Akuru Institute Pvt Ltd');
+});
+
+it('sets the student blog rules, and takes only a safe address for the guidelines (ST4b)', function () {
+    config(['library.blog.teacher_review' => true, 'library.blog.posts_per_week' => 3, 'library.blog.guidelines_url' => null]);
+    $web = test()->withoutLocalizationMiddleware()->actingAs(actingSystemAdmin(['library.manage']));
+
+    $web->get('/admin/settings/office/blogs')->assertOk()->assertInertia(fn (Assert $page) => $page->where('groups.0.knobs.2.value', '')->where('groups.0.knobs.2.type', 'url'));
+    foreach (['javascript:alert(1)', '//evil.example/x', 'ftp://x.example', 'https://x.example/<script>'] as $bad) {
+        $web->post('/admin/settings/office/blogs', ['group' => 'students', 'values' => ['posts_per_week' => '3', 'guidelines_url' => $bad]])->assertSessionHasErrors('guidelines_url');
+    }
+    expect(config('library.blog.guidelines_url'))->toBeNull();
+
+    $web->post('/admin/settings/office/blogs', ['group' => 'students', 'values' => ['posts_per_week' => '5', 'guidelines_url' => '/page/blog-guidelines']])->assertSessionHasNoErrors();
+    expect(config('library.blog.teacher_review'))->toBeFalse()->and(config('library.blog.posts_per_week'))->toBe(5)->and(config('library.blog.guidelines_url'))->toBe('/page/blog-guidelines');
+    $web->post('/admin/settings/office/blogs', ['group' => 'students', 'values' => ['teacher_review' => true, 'posts_per_week' => '5', 'guidelines_url' => '']])->assertSessionHasNoErrors();
+    expect(config('library.blog.teacher_review'))->toBeTrue()->and(config('library.blog.guidelines_url'))->toBeNull();
+});

@@ -289,4 +289,8 @@ return [
     // ST4: the settings that lived in .env.
     'lending_settings' => 'ފޮތް ދޫކުރުމުގެ ސެޓިންގް',
     'wallet_settings' => 'ވޮލެޓުގެ ސެޓިންގް',
+    // ST4b.
+    'bookstore_rules' => 'ފޮތްފިހާރައިގެ ގަވާއިދު',
+    'bookstore_money' => 'ފޮތްފިހާރައިގެ ފައިސާއާއި ޓެކްސް',
+    'blog_settings' => 'ބްލޮގުގެ ސެޓިންގް',
 ];

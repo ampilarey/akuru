@@ -285,4 +285,8 @@ return [
     // ST4: the settings that lived in .env.
     'lending_settings' => 'إعدادات الإعارة',
     'wallet_settings' => 'إعدادات المحفظة',
+    // ST4b.
+    'bookstore_rules' => 'قواعد متجر الكتب',
+    'bookstore_money' => 'أموال متجر الكتب وضريبتها',
+    'blog_settings' => 'إعدادات المدونات',
 ];

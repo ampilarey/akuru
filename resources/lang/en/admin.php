@@ -1645,4 +1645,14 @@ return [
     'settings_card_lending_settings_about' => 'Loan lengths, how many books a lender may list, reminders and notices.',
     'settings_card_wallet_settings' => 'Wallet',
     'settings_card_wallet_settings_about' => 'The hand credit that alerts the other commerce managers.',
+    // ST4b.
+    'desc_bookstore_rules' => 'Stock holds, basket reminders and review checks.',
+    'desc_bookstore_money' => 'Commission, payouts, tax and the bank account.',
+    'desc_blog_settings' => 'The teacher check, posts a week and the guidelines.',
+    'settings_card_bookstore_rules' => 'Bookstore rules',
+    'settings_card_bookstore_rules_about' => 'How long stock is held at checkout, basket reminders, and checking reviews first.',
+    'settings_card_bookstore_money' => 'Bookstore money and tax',
+    'settings_card_bookstore_money_about' => 'Commission, shop payouts, GST rates, and the bank account for transfers.',
+    'settings_card_blog_settings' => 'Blogs',
+    'settings_card_blog_settings_about' => 'The class teacher\'s check, posts a student may send, and the writing guidelines.',
 ];

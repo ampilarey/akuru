@@ -1642,4 +1642,14 @@ return [
     'settings_card_lending_settings_about' => 'مدد الإعارة، وعدد الكتب التي يعرضها المعير، والتذكيرات والإشعارات.',
     'settings_card_wallet_settings' => 'المحفظة',
     'settings_card_wallet_settings_about' => 'الإضافة اليدوية التي تنبّه مديري التجارة الآخرين.',
+    // ST4b.
+    'desc_bookstore_rules' => 'حجز المخزون وتذكيرات السلة ومراجعة التقييمات.',
+    'desc_bookstore_money' => 'العمولة والمدفوعات والضريبة والحساب البنكي.',
+    'desc_blog_settings' => 'مراجعة المعلم وعدد التدوينات أسبوعيًا والإرشادات.',
+    'settings_card_bookstore_rules' => 'قواعد متجر الكتب',
+    'settings_card_bookstore_rules_about' => 'مدة حجز المخزون عند الدفع، وتذكيرات السلة، ومراجعة التقييمات أولًا.',
+    'settings_card_bookstore_money' => 'أموال متجر الكتب وضريبتها',
+    'settings_card_bookstore_money_about' => 'العمولة، ومدفوعات المتاجر، ونسب الضريبة، والحساب البنكي للتحويلات.',
+    'settings_card_blog_settings' => 'المدونات',
+    'settings_card_blog_settings_about' => 'مراجعة معلم الصف، وعدد ما يرسله الطالب، وإرشادات الكتابة.',
 ];

@@ -4983,6 +4983,45 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5ux. Bookstore rules, Bookstore money and Blogs: their `.env` settings on a screen (ST4b, 2026-11-28)
+
+The fourth slice of the admin audit (§5ut), second half, on ST4a's
+mechanism (§5uw, ADR-047). Three more pages, each linked from the Settings
+index and the Settings menu:
+- **Bookstore rules** (`/admin/settings/office/bookstore`, the Bookstore
+  office's gate): minutes stock is held at checkout, basket reminders,
+  checking reviews before they show.
+- **Bookstore money, tax and bank** (`…/office/bookstore_money`, the system
+  admin alone — a Bookstore manager is refused): commission for a new shop,
+  payouts on or off, the smallest payout; the GST standard rate, GST on
+  commission, whether Akuru is GST registered, the name and TIN on
+  commission invoices; the bank, account name and account number for bank
+  transfers.
+- **Blogs** (`…/office/blogs`, the Library office's gate): the class
+  teacher's check, posts a student may send in seven days, the address of
+  the writing guidelines.
+- **Two new field types:** `text` (with a shortest and longest length) and
+  `url` — empty, a path on this site, or an http(s) address; anything else
+  is refused. An empty text is stored and read back as "not set".
+- **Not moved, because a screen already holds them:** SMS campaign rate and
+  budget (the campaigns page), blog tips and rewards (the Library's
+  settings), Akuru's delivery fees and the office's address (the Bookstore
+  settings).
+
+Phrases in EN, DV and AR. No migration.
+
+**Tests:** `OfficeKnobsTest` gains two: the Bookstore's money refused to a
+manager and saved by the system admin, with bounds and name lengths held;
+the blog rules saved and four unsafe addresses refused. `SettingsIndexTest`,
+`AdminHubTest` and `WorkspacesTest` read the three new entries.
+
+**Walk:** `office-settings.mjs` now also opens the three pages at 390 px
+under /dv (groups, every field in Dhivehi, the way back, nothing sideways)
+and has an unsafe address refused. 14/14. Also run: `admin-hub` 26/26,
+`settings-index` 6/6, `phone-targets` 5/5.
+
+**Next:** ST5 — a Blogs office and the menu clean-up.
+
 ## 5uw. Lending and the wallet: business settings on a screen, not in `.env` (ST4a, 2026-11-28)
 
 The fourth slice of the admin audit (§5ut), first half. A loan's length, how

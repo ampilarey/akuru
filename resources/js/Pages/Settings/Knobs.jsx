@@ -11,7 +11,8 @@ import SettingsCrumb from '../../Components/Settings/SettingsCrumb';
 function Group({ group, saveUrl, t }) {
     const form = useForm({ group: group.key, values: Object.fromEntries(group.knobs.map((k) => [k.name, k.type === 'bool' ? !!k.value : k.value ?? ''])) });
     const set = (name, value) => form.setData('values', { ...form.data.values, [name]: value });
-    const shown = (knob, value) => (knob.type === 'bool' ? (value ? t.on : t.off) : String(value ?? ''));
+    const worded = (knob) => knob.type === 'text' || knob.type === 'url';
+    const shown = (knob, value) => (knob.type === 'bool' ? (value ? t.on : t.off) : String(value ?? '') === '' ? t.not_set : String(value));
 
     return (
         <form
@@ -35,13 +36,14 @@ function Group({ group, saveUrl, t }) {
                             <label className="block">
                                 <span className="mb-1 block font-medium text-gray-900">{knob.label}</span>
                                 <input
-                                    type={knob.type === 'text' ? 'text' : 'number'}
+                                    type={worded(knob) ? 'text' : 'number'}
                                     inputMode={knob.type === 'int' ? 'numeric' : knob.type === 'decimal' ? 'decimal' : undefined}
                                     step={knob.type === 'decimal' ? '0.01' : knob.type === 'int' ? '1' : undefined}
-                                    min={knob.type === 'text' ? undefined : knob.min ?? undefined}
-                                    max={knob.type === 'text' ? undefined : knob.max ?? undefined}
-                                    dir="ltr"
-                                    className="min-h-[2.75rem] w-full rounded border px-3 sm:max-w-xs"
+                                    min={worded(knob) ? undefined : knob.min ?? undefined}
+                                    max={worded(knob) ? undefined : knob.max ?? undefined}
+                                    maxLength={worded(knob) ? knob.max ?? 255 : undefined}
+                                    dir={knob.type === 'text' ? 'auto' : 'ltr'}
+                                    className={`min-h-[2.75rem] w-full rounded border px-3 ${worded(knob) ? 'sm:max-w-lg' : 'sm:max-w-xs'}`}
                                     value={form.data.values[knob.name]}
                                     onChange={(e) => set(knob.name, e.target.value)}
                                 />
@@ -49,7 +51,7 @@ function Group({ group, saveUrl, t }) {
                         )}
                         <p className="mt-1 text-sm text-gray-600">{knob.hint}</p>
                         <p className="text-xs text-gray-500">
-                            {t.server_value} <bdi dir="ltr">{shown(knob, knob.default)}</bdi>
+                            {t.server_value} <bdi dir={knob.type === 'text' || knob.type === 'bool' ? 'auto' : 'ltr'}>{shown(knob, knob.default)}</bdi>
                         </p>
                         {form.errors[knob.name] && (
                             <p role="alert" className="mt-1 text-sm text-red-700">

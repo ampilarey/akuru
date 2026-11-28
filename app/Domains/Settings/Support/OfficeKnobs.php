@@ -38,7 +38,7 @@ final class OfficeKnobs
                 self::$defaults[$knob['config']] ??= config($knob['config']);
                 $key = self::key($product, $name);
                 if (array_key_exists($key, $stored) && ($value = self::read($knob, $stored[$key])) !== null) {
-                    config([$knob['config'] => $value]);
+                    config([$knob['config'] => $value === '' ? null : $value]);
                 }
             }
         }
@@ -63,8 +63,8 @@ final class OfficeKnobs
             foreach ($knobs as $name => $knob) {
                 $rows[] = [
                     'name' => $name, 'type' => $knob['type'],
-                    'value' => config($knob['config']),
-                    'default' => self::$defaults[$knob['config']] ?? config($knob['config']),
+                    'value' => config($knob['config']) ?? ($knob['type'] === 'bool' ? false : ''),
+                    'default' => self::$defaults[$knob['config']] ?? config($knob['config']) ?? '',
                     'min' => $knob['min'] ?? null, 'max' => $knob['max'] ?? null,
                 ];
             }
@@ -94,7 +94,9 @@ final class OfficeKnobs
             }
             $value = self::read($knob, $data[$name] ?? false);
             if ($value === null) {
-                $errors[$name] = __('knobs.error_range', ['label' => __("knobs.{$product}_{$name}"), 'min' => $knob['min'] ?? '', 'max' => $knob['max'] ?? '']);
+                $errors[$name] = __(match ($knob['type']) {
+                    'text' => 'knobs.error_text', 'url' => 'knobs.error_url', default => 'knobs.error_range',
+                }, ['label' => __("knobs.{$product}_{$name}"), 'min' => $knob['min'] ?? '', 'max' => $knob['max'] ?? '']);
 
                 continue;
             }
@@ -114,7 +116,7 @@ final class OfficeKnobs
             $knob = $knobs[$name];
             app(SetSettingAction::class)->execute(self::key($product, $name), is_bool($value) ? ($value ? '1' : '0') : (string) $value, $knob['type'] === 'bool' ? 'boolean' : 'string', 'knobs', "$product: $name");
             self::$defaults[$knob['config']] ??= config($knob['config']);
-            config([$knob['config'] => $value]);
+            config([$knob['config'] => $value === '' ? null : $value]);
         }
         Cache::forget(self::CACHE);
         // A queue worker booted before this save still holds the old values:
@@ -149,9 +151,17 @@ final class OfficeKnobs
             case 'bool':
                 return filter_var($raw, FILTER_VALIDATE_BOOLEAN);
             case 'text':
+            case 'url':
                 $text = trim((string) $raw);
+                if (mb_strlen($text) > (int) ($knob['max'] ?? 255) || mb_strlen($text) < (int) ($knob['min'] ?? 0)) {
+                    return null;
+                }
+                // An address is empty, a path on this site, or http(s) — never a script.
+                if ($knob['type'] === 'url' && $text !== '' && ! preg_match('#^(/(?!/)|https?://)[^\s<>"\']*$#i', $text)) {
+                    return null;
+                }
 
-                return mb_strlen($text) <= (int) ($knob['max'] ?? 255) ? $text : null;
+                return $text;
             case 'int':
             case 'decimal':
                 if (! is_numeric($raw) || ($knob['type'] === 'int' && (string) (int) $raw !== trim((string) $raw))) {
