@@ -82,7 +82,7 @@ class StorefrontGalleryAction
             'source_vendor_id' => $scope->vendorId,
             'submitted_by' => $scope->userId,
         ]);
-        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_theme_offered_title'), Said::of('shop.notice_theme_offered_body', ['vendor' => $scope->vendorName, 'name' => $theme->name]), '/admin/bookshop');
+        app(NotifyBookshopUserAction::class)->office(Said::of('shop.notice_theme_offered_title'), Said::of('shop.notice_theme_offered_body', ['vendor' => $scope->vendorName, 'name' => $theme->name]), '/admin/bookshop/office/checks#themes');
 
         return $theme;
     }

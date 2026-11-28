@@ -199,7 +199,7 @@ check('the money page shows the returns rate, of the orders delivered', rate.inc
 // ------------------------------------------------------------ 6. GST collected on the tax report
 
 const office = await signIn(ADMIN);
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/money`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="tax-report"]');
 const taxHead = await inner(office, '[data-testid="tax-report"] thead');
 check('the tax report has a GST collected column', taxHead.includes('GST collected') && (await count(office, '[data-testid^="tax-sales-gst-"]')) >= 1, taxHead);

@@ -964,6 +964,10 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
     });
     Route::prefix('admin/bookshop')->middleware(['role:super_admin|bookshop_manager', 'can:bookshop.manage'])->group(function () {
         Route::get('/', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'index'])->name('admin.bookshop.index');
+        // ST2 (STATUS §5uu): the office's other pages — shops, storefront, checks, money, reports.
+        foreach (['shops', 'storefront', 'checks', 'money', 'reports'] as $officeTab) {
+            Route::get('office/'.$officeTab, [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'index'])->name('admin.bookshop.office.'.$officeTab)->defaults('tab', $officeTab);
+        }
         Route::get('settings', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'settings'])->name('admin.bookshop.settings');
         Route::get('vendors/export', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'exportVendors'])->name('admin.bookshop.vendors.export');
         Route::post('vendors', [\App\Domains\Bookshop\Http\Controllers\AdminBookshopController::class, 'storeVendor'])->name('admin.bookshop.vendors.store');

@@ -139,7 +139,7 @@ check(`the payout of MVR ${BALANCE} is requested and the button held`, (await in
 // ------------------------------------------------------------ 4. the office pays
 
 const office = await signIn(ADMIN);
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/money`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="payout-requests"]');
 const requestRow = office.locator('[data-testid^="payout-request-"]').first();
 const requestId = ((await requestRow.getAttribute('data-testid').catch(() => '')) || '').replace('payout-request-', '');
@@ -163,7 +163,7 @@ if (officeInvoiceHref) {
     await office.goto(officeInvoiceHref.startsWith('http') ? officeInvoiceHref : `${BASE}${officeInvoiceHref}`, { waitUntil: 'networkidle' });
 }
 check('and reads it on a printable page', (await count(office, '[data-testid="commission-invoice"]')) === 1 && (await inner(office, '[data-testid="invoice-number"]')) === invoiceNumber && (await inner(office, '[data-testid="invoice-totals"]')).includes(COMMISSION));
-check('the tax report shows the month', (await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' }), await count(office, `[data-testid="tax-${month}"]`)) === 1);
+check('the tax report shows the month', (await office.goto(`${BASE}/en/admin/bookshop/office/money`, { waitUntil: 'networkidle' }), await count(office, `[data-testid="tax-${month}"]`)) === 1);
 
 // ------------------------------------------------------------ 6. the vendor sees the outcome
 

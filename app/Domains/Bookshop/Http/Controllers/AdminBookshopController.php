@@ -10,9 +10,6 @@ use App\Domains\Bookshop\Actions\DecideStorefrontThemeAction;
 use App\Domains\Bookshop\Actions\DecideVendorApplicationAction;
 use App\Domains\Bookshop\Actions\DecideVendorHostAction;
 use App\Domains\Bookshop\Actions\DecideVendorPayoutAction;
-use App\Domains\Bookshop\Actions\ListBankTransferSlipsAction;
-use App\Domains\Bookshop\Actions\ListCatalogueOptionsAction;
-use App\Domains\Bookshop\Actions\ListingApprovalAction;
 use App\Domains\Bookshop\Actions\ListLowStockAction;
 use App\Domains\Bookshop\Actions\ListOrdersAction;
 use App\Domains\Bookshop\Actions\ListPendingRefundsAction;
@@ -40,7 +37,6 @@ use App\Domains\Bookshop\Enums\OrderStatus;
 use App\Domains\Bookshop\Support\InsightsReport;
 use App\Domains\Bookshop\Support\PrintSalesReport;
 use App\Domains\Bookshop\Support\SectionTypes;
-use App\Domains\Identity\Actions\IdentityVerificationAction;
 use App\Http\Controllers\Controller;
 use App\Support\Csv;
 use App\Support\Inertia\Phrases;
@@ -58,39 +54,19 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class AdminBookshopController extends Controller
 {
-    public function index(Request $request): Response
+    /**
+     * ST2 (admin audit 2026-11-27, STATUS §5uu): the office was one page of
+     * 19 sections. It is six pages now — what needs doing today, the shops,
+     * the storefront, the checks, the money, the reports — and each loads
+     * only its own lists.
+     */
+    public function index(Request $request, string $tab = 'today'): Response
     {
         abort_unless($request->user()?->can('bookshop.manage'), 403);
+        abort_unless(in_array($tab, \App\Domains\Bookshop\Actions\PresentBookshopOfficeAction::TABS, true), 404);
 
-        return Inertia::render('Bookshop/Admin', [
+        return Inertia::render('Bookshop/Admin', app(\App\Domains\Bookshop\Actions\PresentBookshopOfficeAction::class)->execute($tab, $request) + [
             't' => Phrases::once('shop'),
-            'vendors' => app(ListVendorsAction::class)->execute(),
-            'catalogue' => app(ListCatalogueOptionsAction::class)->execute(activeOnly: false),
-            'slips' => app(ListBankTransferSlipsAction::class)->execute(),
-            'orders' => app(ListOrdersAction::class)->execute(200),
-            'refunds' => app(ListPendingRefundsAction::class)->execute(),
-            'money' => app(ListVendorMoneyReportAction::class)->execute(),
-            'reviews' => app(ModerateReviewAction::class)->list(),
-            'questions' => app(ModerateQuestionAction::class)->list(),
-            'home' => app(ManageShopHomeAction::class)->list(),
-            'low_stock' => app(ListLowStockAction::class)->execute(500),
-            'order_statuses' => array_map(fn (OrderStatus $s) => $s->value, OrderStatus::cases()),
-            'applications' => app(DecideVendorApplicationAction::class)->list(),
-            'applications_open' => app(ApplyToSellAction::class)->isOpen(),
-            'quotes' => app(ListQuotesAction::class)->summary(),
-            'custom_css' => app(DecideStorefrontCssAction::class)->list(),
-            'themes' => app(DecideStorefrontThemeAction::class)->list(),
-            'team' => ['members' => app(ManageBookshopTeamAction::class)->list(), 'can_manage' => (bool) $request->user()?->hasRole('super_admin'), 'added' => $request->session()->get('team_added')],
-            'hosts' => ['shops' => app(DecideVendorHostAction::class)->list(), 'shop_host' => config('bookshop.hosts.shop_host'), 'check' => $request->session()->get('host_check')],
-            'insights' => ['days' => InsightsReport::days((int) $request->query('insight_days', 30)), 'shops' => InsightsReport::byShop((int) $request->query('insight_days', 30)), 'ranges' => array_map('intval', (array) config('bookshop.insights.ranges')), 'print_sales' => PrintSalesReport::byPaperAndMonth(PrintSalesReport::MONTHS, app()->getLocale())],
-            'default_commission_rate' => number_format((float) config('bookshop.default_commission_rate'), 2, '.', ''),
-            'agreement_url' => route('public.page.show', 'vendor-agreement'),
-            'sign_in_url' => route('login'),
-            'section_types' => array_keys(SectionTypes::TYPES),
-            // COMMERCE_PARITY_PLAN P2: shop owners' identity cards, waiting first.
-            // …and P4's listings awaiting approval, oldest first.
-            'identity_checks' => app(IdentityVerificationAction::class)->list('vendor'), 'listings' => app(ListingApprovalAction::class)->queue(),
-            'id_l' => trans('account'),
         ]);
     }
 

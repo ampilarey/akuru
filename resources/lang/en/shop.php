@@ -2051,4 +2051,18 @@ return [
     'print_intro' => 'Name tags, cards, stickers and photo prints. Design yours here, approve a proof, and it is printed for you.',
     'print_all' => 'Everything we print',
     'print_open' => 'Design yours',
+
+    // ST2: the Bookstore office's pages.
+    'office_tab_today' => 'Today',
+    'office_tab_shops' => 'Shops',
+    'office_tab_storefront' => 'Storefront',
+    'office_tab_checks' => 'Checks',
+    'office_tab_money' => 'Money',
+    'office_tab_reports' => 'Reports',
+    'office_tab_today_intro' => 'What waits for the office: listings and ID cards to approve, bank slips to check, refunds and applications to decide, and the orders.',
+    'office_tab_shops_intro' => 'Invite a shop, change or suspend one, and manage the Bookstore team and shops\' own domains.',
+    'office_tab_storefront_intro' => 'The Bookstore\'s own front page, and the categories and brands every shop shares.',
+    'office_tab_checks_intro' => 'What shops and customers wrote, checked before it shows: shop styles and themes, reviews and questions.',
+    'office_tab_money_intro' => 'Payout requests, shop balances, commission invoices, the tax report and every refund.',
+    'office_tab_reports_intro' => 'Visits and sales by shop, print sales, and stock running low.',
 ];

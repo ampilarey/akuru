@@ -40,7 +40,7 @@ const PAGES = [
     // than the phone for four days and nothing said so.
     '/en/admin/library/insights', '/en/admin/library/promotions', '/en/admin/library/reviewers', '/en/admin/library/settings',
     '/en/admin/lending',
-    '/en/admin/pronunciation', '/en/admin/bookshop',
+    '/en/admin/pronunciation', '/en/admin/bookshop', '/en/admin/bookshop/office/shops', '/en/admin/bookshop/office/storefront', '/en/admin/bookshop/office/checks', '/en/admin/bookshop/office/money', '/en/admin/bookshop/office/reports',
     '/en/admin/bookshop/akuru', '/en/admin/bookshop/campaigns', '/en/admin/bookshop/complaints', '/en/admin/bookshop/credit', '/en/admin/bookshop/customers',
 ];
 

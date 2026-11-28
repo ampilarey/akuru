@@ -158,7 +158,7 @@ check('the owner looking at their own product is not counted', (await stepCount(
 // ------------------------------------------------------------ 6. the office
 
 const office = await signIn(ADMIN);
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/reports`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="office-insights"]');
 check('the office sees Fitrah\'s funnel', (await inner(office, '[data-testid="insights-fitrah"]')).startsWith('Fitrah 1 1 1'), await inner(office, '[data-testid="insights-fitrah"]'));
 const all = await csvOf(office, '/en/admin/bookshop/insights/export?days=30');

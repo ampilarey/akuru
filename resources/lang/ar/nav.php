@@ -269,4 +269,11 @@ return [
 
     // ST1: the Settings index.
     'all_settings' => 'كل الإعدادات',
+
+    // ST2: the Bookstore office's pages.
+    'bookshop_shops' => 'المتاجر',
+    'bookshop_storefront' => 'واجهة المتجر',
+    'bookshop_checks' => 'المراجعات',
+    'bookshop_money' => 'الأموال',
+    'bookshop_reports' => 'التقارير',
 ];

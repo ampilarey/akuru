@@ -113,7 +113,7 @@ it('lets the office hide a question and its answer with a note, and publish it a
     $office->assignRole('super_admin');
     $office->givePermissionTo('bookshop.manage');
 
-    qaAs($office)->get(route('admin.bookshop.index'))->assertOk()->assertInertia(fn ($page) => $page->where('questions.0.question', 'A rude question'));
+    qaAs($office)->get(route('admin.bookshop.office.checks'))->assertOk()->assertInertia(fn ($page) => $page->where('questions.0.question', 'A rude question'));
     qaAs($office)->post(route('admin.bookshop.questions.moderate', $question->id), ['action' => 'hide'])->assertSessionHasErrors('note');
     qaAs($office)->post(route('admin.bookshop.questions.moderate', $question->id), ['action' => 'hide', 'note' => 'Not about the product'])->assertSessionHasNoErrors();
     qaAs()->get(route('public.shop.product', $book->slug))->assertDontSee('A rude question');

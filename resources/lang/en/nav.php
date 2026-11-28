@@ -276,4 +276,11 @@ return [
 
     // ST1: the Settings index.
     'all_settings' => 'All settings',
+
+    // ST2: the Bookstore office's pages.
+    'bookshop_shops' => 'Shops',
+    'bookshop_storefront' => 'Storefront',
+    'bookshop_checks' => 'Checks',
+    'bookshop_money' => 'Money',
+    'bookshop_reports' => 'Reports',
 ];

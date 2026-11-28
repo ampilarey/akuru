@@ -99,7 +99,7 @@ check('paid from the wallet, with an order for the shop Akuru packs for', (await
 
 // ------------------------------------------------------------ 2. the office packs and delivers
 const office = await signIn(ADMIN);
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/shops`, { waitUntil: 'networkidle' });
 check('the Bookstore office links to Akuru fulfilment', (await office.locator('[data-testid="open-akuru"]').count()) === 1);
 await office.goto(`${BASE}/en/admin/bookshop/akuru`, { waitUntil: 'networkidle' });
 const row = office.locator(`[data-testid="akuru-order-${orderNumber}"]`);

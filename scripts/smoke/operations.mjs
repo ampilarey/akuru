@@ -224,9 +224,10 @@ check('order lines export from a date, one row per line', linesHref.includes(`fr
 // ------------------------------------------------------------ 8. the office
 
 const office = await signIn(ADMIN);
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/reports`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="office-low-stock"]');
 check('the office sees low stock across shops', (await inner(office, '[data-testid="office-low-stock"]')).includes('Wooden Quran Stand'), (await inner(office, '[data-testid="office-low-stock"]')).slice(0, 160));
+await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
 const officeLines = await csvOf(office, await office.locator('[data-testid="export-order-lines"]').getAttribute('href'));
 check('and exports order lines for every shop', officeLines.status === 200 && officeLines.text.startsWith('number,status,vendor'));
 // The office closes shop SMS: Fitrah's SMS choice is disabled and the note

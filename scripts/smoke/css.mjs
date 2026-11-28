@@ -144,7 +144,7 @@ check('a guest does not see it yet', (await count(guest, 'style[data-testid="sho
 // ------------------------------------------------------------ 4. the office approves
 
 const office = await signIn(ADMIN);
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/checks`, { waitUntil: 'networkidle' });
 await settle(office, '[data-testid="office-css"]');
 check('the office sees it waiting, with the CSS and a preview link',
     (await office.locator('[data-testid="css-fitrah"]').getAttribute('data-status')) === 'pending'

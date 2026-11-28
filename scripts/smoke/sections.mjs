@@ -253,7 +253,7 @@ check('the product page carries structured data with the price', jsonLd.some((s)
 // ------------------------------------------------------------ 5. the office moderates
 
 const office = await signIn(ADMIN);
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/shops`, { waitUntil: 'networkidle' });
 await office.locator('[data-testid="vendor-row-fitrah"] button').click();
 await settle(office, '[data-testid="moderation-fitrah"]');
 check('the office opens Fitrah and sees the storefront is published', (await office.locator('[data-testid="moderation-fitrah"] [data-testid="moderation-state"]').innerText()).includes('published'), (await office.locator('[data-testid="moderation-fitrah"] [data-testid="moderation-state"]').innerText().catch(() => '')).slice(0, 80));

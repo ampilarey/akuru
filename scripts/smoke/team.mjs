@@ -100,7 +100,7 @@ const csvOf = async (page, href) => {
 // ------------------------------------------------------------ 1. the admin adds them
 
 const admin = await signIn(ADMIN);
-await admin.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await admin.goto(`${BASE}/en/admin/bookshop/office/shops`, { waitUntil: 'networkidle' });
 await settle(admin, '[data-testid="office-team"]');
 await admin.fill('[data-testid="team-email"]', PARENT);
 await admin.click('[data-testid="team-add"]');

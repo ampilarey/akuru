@@ -34,7 +34,7 @@ it('lets a Bookstore admin run the bookstore screen and nothing of the school sy
     $manager->assignRole('bookshop_manager');
 
     expect($manager->can('bookshop.manage'))->toBeTrue();
-    teamAs($manager)->get(route('admin.bookshop.index'))->assertOk()->assertInertia(fn ($page) => $page->component('Bookshop/Admin')->where('team.can_manage', false));
+    teamAs($manager)->get(route('admin.bookshop.office.shops'))->assertOk()->assertInertia(fn ($page) => $page->component('Bookshop/Admin')->where('team.can_manage', false));
     teamAs($manager)->get(route('dashboard'))->assertRedirect(route('admin.bookshop.index'));
     teamAs($manager)->get('/admin/operations')->assertForbidden();
 
@@ -58,7 +58,7 @@ it('lets a full admin add an existing account or a new one, and remove them', fu
     $new = User::query()->where('email', 'new@example.test')->sole();
     expect($new->hasRole('bookshop_manager'))->toBeTrue()->and((bool) $new->force_password_change)->toBeTrue();
 
-    teamAs($admin)->get(route('admin.bookshop.index'))->assertInertia(fn ($page) => $page->where('team.can_manage', true)->has('team.members', 2)->where('team.members.0.name', 'Aisha'));
+    teamAs($admin)->get(route('admin.bookshop.office.shops'))->assertInertia(fn ($page) => $page->where('team.can_manage', true)->has('team.members', 2)->where('team.members.0.name', 'Aisha'));
 
     teamAs($admin)->post(route('admin.bookshop.team.remove', $existing->id))->assertSessionHasNoErrors();
     expect($existing->refresh()->hasRole('bookshop_manager'))->toBeFalse();

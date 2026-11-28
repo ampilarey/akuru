@@ -119,7 +119,7 @@ const settle = async (page, selector = null) => {
 const office = await signIn(ADMIN);
 check('the office signs in', !office.url().includes('/login'), office.url());
 
-await office.goto(`${BASE}/en/admin/bookshop`, { waitUntil: 'networkidle' });
+await office.goto(`${BASE}/en/admin/bookshop/office/shops`, { waitUntil: 'networkidle' });
 const fitrahRow = office.locator('[data-testid="vendor-row-fitrah"]');
 check('the Akuru Bookstore screen lists Fitrah with its owner', (await fitrahRow.count()) === 1 && (await fitrahRow.innerText()).includes(VENDOR), (await fitrahRow.count()) ? (await fitrahRow.innerText()).replace(/\s+/g, ' ') : (await text(office)).slice(0, 160));
 
