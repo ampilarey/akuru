@@ -1658,4 +1658,8 @@ return [
     // ST5.
     'desc_blogs_office' => 'Student and writer blogs: requests, page changes, comments and tips.',
     'desc_print_settings' => 'The print desk on or off, lead days, the smallest order.',
+
+    // PW2: which version is running.
+    'version_heading' => 'Running version',
+    'version_hint' => 'The time changes each time the server is updated. If it has not changed after a pull, the pull did not take. The same line is at the bottom of every page.',
 ];

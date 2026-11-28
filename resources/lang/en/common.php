@@ -428,4 +428,8 @@ return [
     'update_ready' => 'A new version of Akuru is ready.',
     'update_refresh' => 'Refresh',
     'update_later' => 'Later',
+
+    // PW2: which version is running.
+    'app_version' => 'Version :id · updated :at',
+    'app_version_bare' => 'Version :id',
 ];

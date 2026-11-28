@@ -62,6 +62,15 @@ try {
     }
     check('/dv the system, Library and Bookstore pages lead back to the index', back.length === 0, back.join(' | '));
 
+    // PW2 (STATUS §5va): which version is running — on System Settings and at the foot of every page.
+    await page.goto(`${BASE}/dv/admin/settings/system`, { waitUntil: 'networkidle' });
+    const card = await page.locator('[data-testid="running-version"]').innerText().catch(() => '');
+    const foot = await page.locator('[data-testid="app-version"]').innerText().catch(() => '');
+    check('/dv System Settings says which version is running and when it arrived; the same line is at the foot of the page', /[0-9a-f]{7}/.test(card) && /\d{4}, \d{2}:\d{2}/.test(card) && /[\u0780-\u07BF]/.test(card) && foot !== '' && card.includes(foot) && await sideways(page) <= 1, `${card} | ${foot}`);
+    if (SHOTS) await page.screenshot({ path: `${SHOTS}/pw2-version-dv.png` });
+    await page.goto(`${BASE}/dv/admin/lending`, { waitUntil: 'networkidle' });
+    check('/dv another page carries the same line', (await page.locator('[data-testid="app-version"]').innerText().catch(() => '')) === foot && foot !== '');
+
     await page.goto(`${BASE}/en/admin/settings`, { waitUntil: 'networkidle' });
     check('/en the index reads left to right, nothing sideways', await page.evaluate(() => document.documentElement.dir) === 'ltr' && await page.locator('[data-testid^="settings-card-"]').count() === hrefs.length && await sideways(page) <= 1);
 } catch (e) {

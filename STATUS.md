@@ -4983,6 +4983,36 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5va. The running version is on every page (PW2, 2026-11-28)
+
+The owner asked how to see the app's version: after a pull there was no way
+to tell whether it had taken.
+- **`App\Support\AppVersion`** reads the checked-out commit from `.git`'s
+  own files (a branch, a packed ref or a detached head; no shell) and the
+  time that commit was put in place on this server. Without a `.git` the
+  front end's build stands in. A ref that points outside `refs/` is not
+  followed.
+- **At the foot of every signed-in page** (`AppShell`, shared prop
+  `app_version`): *Version 0e8cf71 · updated 28 Nov 2026, 14:38*. Not shown
+  to a visitor who is not signed in.
+- **On System Settings**, a *Running version* card at the top with the same
+  line and what it means: the time changes each time the server is
+  updated; if it has not after a pull, the pull did not take.
+- The commit and the date are held left to right inside Dhivehi and Arabic,
+  so the day is not carried to the far side of the month.
+
+Phrases in EN, DV and AR. No migration.
+
+**Tests:** `AppVersionTest` (3): the commit from a branch, a packed ref and
+a detached head with its time; the build as the fallback and a crooked ref
+refused; the line shared with a signed-in page and System Settings, in
+three languages.
+
+**Walk:** `settings-index.mjs` gains two steps at 390 px under /dv: the
+card with the commit, date and Dhivehi words and the same line at the foot;
+another page carrying it. 8/8. Also run: `app-update` 11/11,
+`phone-targets` 5/5.
+
 ## 5uz. An installed app is told when a new version is out (PW1, 2026-11-28)
 
 The owner asked whether the installed app updates itself, as Bake and

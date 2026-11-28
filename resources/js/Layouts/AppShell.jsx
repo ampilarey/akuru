@@ -446,6 +446,12 @@ export default function AppShell({ title, children }) {
                     </div>
                 )}
                 {children}
+                {/* PW2 (STATUS §5va): which version is running, so a pull can be seen to have taken. */}
+                {props.app_version && (
+                    <p className="mt-10 text-center text-xs text-gray-400" data-testid="app-version">
+                        <bdi>{props.app_version}</bdi>
+                    </p>
+                )}
             </main>
             {showTabs && (
                 <>
