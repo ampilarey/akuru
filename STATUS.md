@@ -5024,6 +5024,14 @@ Dhivehi, a wrong value refused beside its field and nothing changed, a right
 one saved, there after a reload and put back, the way back, the wallet's
 page; /en left to right. 12/12.
 
+`AdminHubTest`, `WorkspacesTest` and the `admin-hub` walk count the
+Settings part's two new entries. Also run: `admin-hub` 26/26,
+`settings-index` 6/6, `nav` 14/14, `admin-pages` 3/3, `phone-targets` 5/5,
+`admin-mobile` 13/13.
+
+The whole suite: 3390 passed, 3 skipped (as before; CI runs them). Pint is
+clean.
+
 **Next:** ST4b — the Bookstore's money, tax and bank settings, and Blogs.
 
 ## 5uv. The print desk is four pages under one row of tabs (ST3, 2026-11-28)

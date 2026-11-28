@@ -2,9 +2,9 @@
 
 namespace App\Domains\Settings\Http\Controllers\Admin;
 
+use App\Domains\Settings\Support\OfficeKnobs;
 use App\Http\Controllers\Controller;
 use App\Support\Inertia\Phrases;
-use App\Domains\Settings\Support\OfficeKnobs;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;

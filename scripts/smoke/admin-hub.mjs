@@ -173,11 +173,11 @@ if (SUPER) {
     // Twenty-one since the navigation re-audit (ADMIN_PANEL.md §8, STATUS
     // §5nw): Admissions joined the Institute and a Settings part holds every
     // product's settings — system, Library, Bookstore, translations.
-    check('in five parts: Website & content, Admissions, Shops & money, Settings, System — twenty-four sections', suParts.join(' | ') === 'Website & content | Admissions | Shops & money | Settings | System' && (await count(su, '[data-testid^="section-"]')) === 24, `${suParts.join(' | ')} ${await count(su, '[data-testid^="section-"]')}`);
+    check('in five parts: Website & content, Admissions, Shops & money, Settings, System — twenty-six sections', suParts.join(' | ') === 'Website & content | Admissions | Shops & money | Settings | System' && (await count(su, '[data-testid^="section-"]')) === 26, `${suParts.join(' | ')} ${await count(su, '[data-testid^="section-"]')}`);
     const cmsChips = await texts(su, '[data-testid="section-website_cms"] [data-testid^="child-"]');
     check('the Website card lists its ten screens, the prayer-times card its four, the Library office its eleven (bundles, §5un)', cmsChips.length === 10 && cmsChips[0] === 'Pages' && (await count(su, '[data-testid="section-prayer_times"] [data-testid^="child-"]')) === 4 && (await count(su, '[data-testid="section-library_office"] [data-testid^="child-"]')) === 11, cmsChips.join(', '));
     const settings = await texts(su, '[data-testid="part-panel_settings"] [data-testid^="open-"]');
-    check('the Settings part: All settings first (ST1), then System, Library, Bookstore, Print desk, Translations', settings.join(' | ') === 'All settings | System settings | Library settings | Bookstore settings | Print desk | Translations', settings.join(' | '));
+    check('the Settings part: All settings first (ST1), then System, Library, Bookstore, Print desk, Lending, Wallet (ST4a), Translations', settings.join(' | ') === 'All settings | System settings | Library settings | Bookstore settings | Print desk | Lending settings | Wallet settings | Translations', settings.join(' | '));
     const bar = (await su.locator('header nav a[aria-current], header nav a:not([hrefLang])').allInnerTexts()).map((t) => t.trim()).filter(Boolean);
     check('the Institute bar: Website CMS, Commerce, Library office, Akuru Bookstore, Manage users', ['Website CMS', 'Commerce', 'Library office', 'Akuru Bookstore', 'Manage users'].every((label) => bar.includes(label)), bar.join(' | '));
     const institute = await moreGroups(su);
