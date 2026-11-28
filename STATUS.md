@@ -4983,6 +4983,57 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5uw. Lending and the wallet: business settings on a screen, not in `.env` (ST4a, 2026-11-28)
+
+The fourth slice of the admin audit (§5ut), first half. A loan's length, how
+many books a lender may list and the wallet alert could be changed only in
+`.env` on the server.
+- **A registry** (`config/office-knobs.php`): per product, its gate and its
+  settings in groups — each names the config key it sets, its type and its
+  bounds.
+- **The office's value is laid over the deploy's at boot**
+  (`Settings\Support\OfficeKnobs::apply`, from `SettingsServiceProvider`,
+  ADR-047). Every existing `config('lending.max_days')` reader sees it; no
+  reader changed. The `.env` value stays the default and is shown beside
+  each field. A stored value out of bounds is ignored. Saving asks the queue
+  workers to restart, so a worker does not keep the old value.
+- **A page per product** (`Settings/Knobs`, `OfficeSettingsController`):
+  `/admin/settings/office/lending` (the Lending office's gate) and
+  `/admin/settings/office/wallet` (the commerce office's). One small form
+  per group, each with its own Save; every field says what it does.
+  - **Lending:** usual loan, longest loan, books per lender, days a taken
+    give-away stays shown, reminder days, notices by email, notices by SMS.
+    The usual loan may not pass the longest.
+  - **Wallet:** the hand credit that alerts the other commerce managers.
+- **Linked** from the Settings index (two cards) and the Settings menu.
+- **Left in `.env` on purpose:** secrets, server paths, and the Library's
+  reading-abuse limits.
+
+Phrases in EN, DV and AR (a new `knobs` book). No migration: the values are
+rows in `settings`.
+
+**Tests:** `OfficeKnobsTest` (4): the page and its groups; a save in force
+at once and after a new boot, the server's value kept as the default; bounds,
+the usual-over-longest rule and a foreign group refused, a hand-edited
+nonsense row ignored; each page open only to its own office.
+`SettingsIndexTest` reads the two new cards.
+
+**Walk:** `office-settings.mjs` (new, in `all.mjs`), at 390 px under /dv:
+the cards, two groups each with its own Save, every field explained in
+Dhivehi, a wrong value refused beside its field and nothing changed, a right
+one saved, there after a reload and put back, the way back, the wallet's
+page; /en left to right. 12/12.
+
+`AdminHubTest`, `WorkspacesTest` and the `admin-hub` walk count the
+Settings part's two new entries. Also run: `admin-hub` 26/26,
+`settings-index` 6/6, `nav` 14/14, `admin-pages` 3/3, `phone-targets` 5/5,
+`admin-mobile` 13/13.
+
+The whole suite: 3390 passed, 3 skipped (as before; CI runs them). Pint is
+clean.
+
+**Next:** ST4b — the Bookstore's money, tax and bank settings, and Blogs.
+
 ## 5uv. The print desk is four pages under one row of tabs (ST3, 2026-11-28)
 
 The third slice of the admin audit (§5ut). `/admin/bookshop/print` was one

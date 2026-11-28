@@ -281,4 +281,8 @@ return [
     'print_papers' => 'الأوراق والتشطيب',
     'print_layouts' => 'تخطيطات الطباعة',
     'print_products' => 'منتجات الطباعة والمتاجر',
+
+    // ST4: the settings that lived in .env.
+    'lending_settings' => 'إعدادات الإعارة',
+    'wallet_settings' => 'إعدادات المحفظة',
 ];

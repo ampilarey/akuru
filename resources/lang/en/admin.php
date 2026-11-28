@@ -1637,4 +1637,12 @@ return [
     'settings_card_finance_settings_about' => 'Invoice numbering, due days and reminders.',
     'settings_card_hr_settings' => 'Staff and HR',
     'settings_card_hr_settings_about' => 'Staff attendance, check-in and payroll switches.',
+
+    // ST4: the settings that lived in .env.
+    'desc_lending_settings' => 'Loan lengths, listing limits, reminders and notices.',
+    'desc_wallet_settings' => 'When a hand credit to a wallet alerts the office.',
+    'settings_card_lending_settings' => 'Lending',
+    'settings_card_lending_settings_about' => 'Loan lengths, how many books a lender may list, reminders and notices.',
+    'settings_card_wallet_settings' => 'Wallet',
+    'settings_card_wallet_settings_about' => 'The hand credit that alerts the other commerce managers.',
 ];

@@ -16,14 +16,14 @@ it('gives the super admin a card per product, the School\'s apart, and edits not
 
     $web->get('/admin/settings')->assertOk()->assertInertia(fn (Assert $page) => $page->component('Settings/Home')
         ->where('cards', fn ($cards) => collect($cards)->pluck('href')->all() === [
-            '/admin/settings/system', '/admin/library/settings', '/admin/bookshop/settings', '/admin/bookshop/print', '/admin/translations',
+            '/admin/settings/system', '/admin/library/settings', '/admin/bookshop/settings', '/admin/bookshop/print', '/admin/settings/office/lending', '/admin/settings/office/wallet', '/admin/translations',
             '/finance/settings', '/hr/settings',
         ] && collect($cards)->where('group', 'school')->count() === 2
             && collect($cards)->every(fn ($c) => $c['title'] !== '' && ! str_starts_with($c['title'], 'admin.') && ! str_starts_with($c['description'], 'admin.')))
         ->missing('settings')->missing('backup')->has('t.settings_index_title'));
 
     // Every card opens.
-    foreach (['/admin/settings/system', '/admin/library/settings', '/admin/bookshop/settings', '/admin/bookshop/print', '/admin/translations', '/finance/settings', '/hr/settings'] as $href) {
+    foreach (['/admin/settings/system', '/admin/library/settings', '/admin/bookshop/settings', '/admin/bookshop/print', '/admin/settings/office/lending', '/admin/settings/office/wallet', '/admin/translations', '/finance/settings', '/hr/settings'] as $href) {
         $web->get($href)->assertOk();
     }
     $web->get('/admin/settings/system')->assertInertia(fn (Assert $page) => $page->component('Settings/Index')->has('backup')->has('t.settings_all'));
@@ -38,7 +38,7 @@ it('shows each person only the cards their own gates admit, and refuses whoever 
     $web = test()->withoutLocalizationMiddleware();
 
     $web->actingAs($manager)->get('/admin/settings')->assertOk()->assertInertia(fn (Assert $page) => $page
-        ->where('cards', fn ($cards) => collect($cards)->pluck('key')->all() === ['bookshop_settings', 'print_settings']));
+        ->where('cards', fn ($cards) => collect($cards)->pluck('key')->all() === ['bookshop_settings', 'print_settings', 'lending_settings']));
     $web->actingAs($manager)->get('/admin/settings/system')->assertForbidden();
 
     $web->actingAs(User::factory()->create())->get('/admin/settings')->assertForbidden();

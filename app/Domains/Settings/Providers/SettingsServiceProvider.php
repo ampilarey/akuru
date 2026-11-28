@@ -24,6 +24,8 @@ class SettingsServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        // ST4 (STATUS §5uw): the office's own values for the business
+        // settings, laid over the deploy's before anything reads them.
+        \App\Domains\Settings\Support\OfficeKnobs::apply();
     }
 }

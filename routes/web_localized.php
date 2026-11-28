@@ -760,6 +760,13 @@ Route::middleware(['auth', 'trackActivity'])->group(function () {
         Route::post('/clear-cache', [AdminSettingsController::class, 'clearCache'])->name('admin.settings.clear-cache');
         Route::put('/languages', [AdminSettingsController::class, 'languages'])->name('admin.settings.languages');
     });
+    // ST4 (STATUS §5uw): a product's business settings, on its own page —
+    // the values that lived in `.env` (config/office-knobs.php). Fixed
+    // addresses, each behind the gate of the office it belongs to.
+    foreach (['lending' => ['role:super_admin|bookshop_manager', 'can:bookshop.manage'], 'wallet' => ['role:super_admin', 'can:commerce.manage']] as $product => $gate) {
+        Route::get("admin/settings/office/{$product}", [\App\Domains\Settings\Http\Controllers\Admin\OfficeSettingsController::class, 'show'])->defaults('product', $product)->middleware($gate)->name("admin.settings.office.{$product}");
+        Route::post("admin/settings/office/{$product}", [\App\Domains\Settings\Http\Controllers\Admin\OfficeSettingsController::class, 'save'])->defaults('product', $product)->middleware($gate)->name("admin.settings.office.{$product}.save");
+    }
 
     // Admin CMS routes: the public website is the system admin's. Until
     // ADR-040 slice 2 a headmaster or supervisor could edit the public site by
