@@ -4983,6 +4983,44 @@ today": today is a Friday, the school week's day off, so the seeder
 plants none) — the portal's own cards are untouched by the one rule that
 reached them.
 
+## 5uz. An installed app is told when a new version is out (PW1, 2026-11-28)
+
+The owner asked whether the installed app updates itself, as Bake and
+Grill's says when it has. It did update — pages are never cached, and
+Inertia reloads onto a new build at the next navigation — but silently, and
+with three gaps: a screen left open stayed old, an image replaced under the
+same name never reached an installed app, and every past deploy's build
+files stayed on the phone.
+- **The update bar** (`partials/pwa.blade.php`, so on all three shells):
+  each page carries the build it was served with (`<meta name="app-build">`,
+  the SHA-256 of `public/build/manifest.json`). When the tab comes back into
+  view, when the phone comes back online, and every fifteen minutes while
+  open, the page reads the server's manifest and compares. A different one
+  shows a bar at the top: *A new version of Akuru is ready.* with **Refresh**
+  and **Later**. Nothing reloads by itself: a reload would lose a
+  half-written form.
+- **The service worker** (`public/sw.js`, cache `akuru-shell-v2`):
+  - never caches the build's manifest, so the comparison is true;
+  - clears the `/build/` files the current build no longer names, on the
+    page's `prune` message at each load;
+  - serves images and fonts from the cache and refreshes them behind it.
+  - Pages and the offline page are as before. The old cache
+    (`akuru-shell-v1`) is deleted when the new worker takes over.
+- No server change is needed: the manifest is a file the web server already
+  serves.
+
+Phrases in EN, DV and AR (`common.update_*`). No migration.
+
+**Tests:** `InstalledAppUpdatesTest` (2): the build and the bar's words on
+the partial in three languages, on all three shells; the worker's rules.
+
+**Walk:** `app-update.mjs` (new, in `all.mjs`), at 390 px under /dv: no bar
+on the current build; after a deploy the bar in Dhivehi at the top with a
+thumb-sized Refresh, nothing sideways, never doubled; Later puts it away;
+Refresh reloads onto the new build; /en in English; the worker controlling
+the page under the new cache alone; a retired build file cleared and a
+current one kept; offline falls back to the offline page. 11/11.
+
 ## 5uy. A Blogs office, settings only under Settings, and each office leads to its own (ST5, 2026-11-28)
 
 The fifth and last slice of the admin audit (§5ut). **The audit's plan

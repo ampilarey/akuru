@@ -212,6 +212,7 @@ const WALKS = [
     { name: 'admin-pages', writes: false, asks: 'Does every admin page draw, desktop and phone?' },
     { name: 'admin-mobile', writes: false, asks: 'Does every admin landing fit a 390 px phone?' },
     { name: 'system-backups', writes: true, asks: 'Does System Settings say how the backups stand — red when the last good one is over 26 hours old — on a phone, in Dhivehi?' },
+    { name: 'app-update', writes: false, asks: 'Is an installed app told when a new version is out, and does it clear what a deploy retired — on a phone, in Dhivehi?' },
     { name: 'settings-index', writes: false, asks: 'Is Settings an index — a card per product\'s own settings page, nothing edited on it — on a phone, in Dhivehi?' },
     { name: 'office-settings', writes: true, asks: 'Are a product\'s business settings — loan lengths, the wallet alert — changed on its own page rather than on the server, on a phone, in Dhivehi?' },
     { name: 'blogs-office', writes: false, asks: 'Is there a Blogs office — five pages under one row of tabs — and does each office lead to its own settings, on a phone, in Dhivehi?' },
