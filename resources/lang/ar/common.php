@@ -416,4 +416,9 @@ return [
     'upload_error_document_type' => 'ارفع ملف PDF أو JPEG أو PNG.',
     'library_student_blog_body' => 'مدونتك الطلابية جاهزة. تُفتح كتابة المنشورات قريبًا؛ يُراجَع كل منشور قبل نشره.',
     'library_student_blog_open' => 'افتح مدونتي',
+
+    // PW1.
+    'update_ready' => 'نسخة جديدة من أكورو جاهزة.',
+    'update_refresh' => 'تحديث',
+    'update_later' => 'لاحقًا',
 ];

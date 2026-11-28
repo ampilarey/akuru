@@ -16,7 +16,7 @@ it('serves the pwa manifest service worker and offline page', function () {
 
     $sw = $this->get(route('pwa.service-worker'))->assertOk();
     $swBody = $sw->streamedContent() ?: $sw->getContent();
-    expect($swBody)->toContain('akuru-shell-v1')->and($swBody)->toContain('/offline.html');
+    expect($swBody)->toContain('akuru-shell-v2')->and($swBody)->toContain('/offline.html');
 
     $offline = $this->get(route('pwa.offline'))->assertOk();
     $offlineBody = $offline->streamedContent() ?: $offline->getContent();
